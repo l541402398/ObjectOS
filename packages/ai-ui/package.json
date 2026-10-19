@@ -1,0 +1,19 @@
+{
+  "name": "@projectos/ai-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles.css"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "@projectos/contracts": "workspace:*",
+    "antd": "^6.6.6",
+    "@projectos/design-tokens": "workspace:*",
+    "@projectos/ui": "workspace:*",
+    "@ant-design/x": "2.9.0",
+    "@ant-design/icons": "^6.3.4"
+  }
+}

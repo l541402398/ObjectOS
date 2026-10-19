@@ -1,0 +1,14 @@
+{
+  "name": "@projectos/persistence",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@projectos/contracts": "workspace:*",
+    "@projectos/domain": "workspace:*",
+    "@projectos/application": "workspace:*"
+  }
+}

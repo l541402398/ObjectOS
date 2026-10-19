@@ -1,0 +1,16 @@
+{
+  "name": "@projectos/tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@projectos/workspace": "workspace:*",
+    "@projectos/contracts": "workspace:*",
+    "@projectos/domain": "workspace:*",
+    "@projectos/policy": "workspace:*",
+    "@projectos/provider-interfaces": "workspace:*"
+  }
+}

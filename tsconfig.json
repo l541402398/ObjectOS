@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types"]
+  },
+  "include": [
+    "packages/*/src/**/*.ts",
+    "packages/*/src/**/*.tsx",
+    "apps/runtime/src/**/*.ts",
+    "apps/desktop/src/**/*.ts",
+    "apps/desktop/src/**/*.tsx",
+    "tests/**/*.ts",
+    "scripts/**/*.ts",
+    "tooling/**/*.ts"
+  ],
+  "exclude": ["**/node_modules", "**/dist", "**/out", "examples"]
+}

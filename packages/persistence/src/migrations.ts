@@ -1,0 +1,535 @@
+import { createHash } from 'node:crypto'
+import type { DatabaseSync } from 'node:sqlite'
+
+export interface Migration {
+  version: number
+  name: string
+  sql: string
+}
+
+const V1 = `
+CREATE TABLE projects (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  root_path TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
+  current_stage TEXT NOT NULL DEFAULT 'ideation',
+  version INTEGER NOT NULL DEFAULT 0,
+  is_demo INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE project_stages (
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  stage TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  position INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (project_id, stage)
+);
+
+CREATE TABLE requirements (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  body TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'draft',
+  source TEXT NOT NULL DEFAULT 'local',
+  acceptance_json TEXT NOT NULL DEFAULT '[]',
+  version INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_requirements_project_status ON requirements(project_id, status);
+
+CREATE TABLE milestones (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  due_at INTEGER,
+  status TEXT NOT NULL DEFAULT 'planned',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_milestones_project ON milestones(project_id, status);
+
+CREATE TABLE tasks (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  parent_id TEXT REFERENCES tasks(id),
+  milestone_id TEXT REFERENCES milestones(id),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'backlog',
+  priority INTEGER NOT NULL DEFAULT 3,
+  assignee_agent_id TEXT REFERENCES agents(id),
+  acceptance_json TEXT NOT NULL DEFAULT '[]',
+  labels_json TEXT NOT NULL DEFAULT '[]',
+  version INTEGER NOT NULL DEFAULT 0,
+  due_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_tasks_project_status ON tasks(project_id, status);
+CREATE INDEX idx_tasks_assignee ON tasks(assignee_agent_id);
+
+CREATE TABLE task_dependencies (
+  task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  depends_on_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  PRIMARY KEY (task_id, depends_on_id),
+  CHECK (task_id <> depends_on_id)
+);
+
+CREATE TABLE task_attempts (
+  id TEXT PRIMARY KEY,
+  task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  attempt_no INTEGER NOT NULL,
+  agent_id TEXT NOT NULL REFERENCES agents(id),
+  run_id TEXT,
+  status TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE (task_id, attempt_no)
+);
+
+CREATE TABLE task_leases (
+  task_id TEXT PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE,
+  holder_id TEXT NOT NULL,
+  fencing_token INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL
+);
+
+CREATE TABLE agents (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  role TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  kind TEXT NOT NULL DEFAULT 'builtin',
+  driver_id TEXT NOT NULL,
+  capabilities_json TEXT NOT NULL DEFAULT '[]',
+  accent TEXT NOT NULL DEFAULT '#4C8DFF',
+  system_prompt TEXT NOT NULL DEFAULT '',
+  builtin INTEGER NOT NULL DEFAULT 1,
+  created_at INTEGER NOT NULL
+);
+
+CREATE TABLE agent_instances (
+  id TEXT PRIMARY KEY,
+  agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+  session_id TEXT,
+  status TEXT NOT NULL,
+  last_seen_at INTEGER NOT NULL
+);
+
+CREATE TABLE sessions (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  agent_id TEXT NOT NULL REFERENCES agents(id),
+  title TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_sessions_project ON sessions(project_id, updated_at DESC);
+
+CREATE TABLE messages (
+  id TEXT PRIMARY KEY,
+  session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  seq INTEGER NOT NULL,
+  role TEXT NOT NULL,
+  content TEXT NOT NULL,
+  run_id TEXT,
+  metadata_json TEXT NOT NULL DEFAULT '{}',
+  created_at INTEGER NOT NULL,
+  UNIQUE (session_id, seq)
+);
+CREATE INDEX idx_messages_session_seq ON messages(session_id, seq);
+
+CREATE TABLE agent_runs (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  task_id TEXT REFERENCES tasks(id),
+  session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  agent_id TEXT NOT NULL REFERENCES agents(id),
+  attempt INTEGER NOT NULL DEFAULT 1,
+  status TEXT NOT NULL DEFAULT 'created',
+  error TEXT,
+  summary TEXT,
+  input_tokens INTEGER NOT NULL DEFAULT 0,
+  output_tokens INTEGER NOT NULL DEFAULT 0,
+  checkpoint_id TEXT,
+  started_at INTEGER,
+  finished_at INTEGER,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_runs_project ON agent_runs(project_id, created_at DESC);
+CREATE INDEX idx_runs_task ON agent_runs(task_id, created_at DESC);
+CREATE INDEX idx_runs_status ON agent_runs(status);
+
+CREATE TABLE run_steps (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
+  seq INTEGER NOT NULL,
+  kind TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'completed',
+  title TEXT NOT NULL DEFAULT '',
+  payload_json TEXT NOT NULL DEFAULT '{}',
+  created_at INTEGER NOT NULL,
+  UNIQUE (run_id, seq)
+);
+
+CREATE TABLE checkpoints (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
+  seq INTEGER NOT NULL,
+  schema_version INTEGER NOT NULL,
+  state_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE (run_id, seq)
+);
+
+CREATE TABLE project_events (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  seq INTEGER NOT NULL,
+  aggregate_id TEXT NOT NULL,
+  event_type TEXT NOT NULL,
+  payload_json TEXT NOT NULL DEFAULT '{}',
+  created_at INTEGER NOT NULL,
+  UNIQUE (project_id, seq)
+);
+CREATE INDEX idx_events_project_seq ON project_events(project_id, seq DESC);
+
+CREATE TABLE outbox (
+  id TEXT PRIMARY KEY,
+  event_id TEXT NOT NULL REFERENCES project_events(id) ON DELETE CASCADE,
+  destination TEXT NOT NULL,
+  payload_json TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  attempts INTEGER NOT NULL DEFAULT 0,
+  next_attempt_at INTEGER NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE (event_id, destination)
+);
+CREATE INDEX idx_outbox_pending ON outbox(status, next_attempt_at);
+
+CREATE TABLE agent_inbox (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  recipient_agent_id TEXT NOT NULL REFERENCES agents(id),
+  recipient_session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  message_id TEXT NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+  idempotency_key TEXT NOT NULL,
+  envelope_json TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'delivered',
+  attempts INTEGER NOT NULL DEFAULT 0,
+  error TEXT,
+  created_at INTEGER NOT NULL,
+  delivered_at INTEGER,
+  accepted_at INTEGER,
+  completed_at INTEGER,
+  UNIQUE (project_id, idempotency_key)
+);
+CREATE INDEX idx_inbox_recipient ON agent_inbox(recipient_session_id, created_at DESC);
+
+CREATE TABLE handoffs (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  from_agent_id TEXT NOT NULL REFERENCES agents(id),
+  from_session_id TEXT NOT NULL REFERENCES sessions(id),
+  to_agent_id TEXT NOT NULL REFERENCES agents(id),
+  to_session_id TEXT REFERENCES sessions(id),
+  status TEXT NOT NULL DEFAULT 'requested',
+  summary TEXT NOT NULL,
+  payload_json TEXT NOT NULL DEFAULT '{}',
+  requested_at INTEGER NOT NULL,
+  decided_at INTEGER
+);
+
+CREATE TABLE tool_calls (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
+  tool_name TEXT NOT NULL,
+  idempotency_key TEXT NOT NULL,
+  status TEXT NOT NULL,
+  args_hash TEXT NOT NULL,
+  args_json TEXT NOT NULL DEFAULT '{}',
+  result_json TEXT,
+  error TEXT,
+  created_at INTEGER NOT NULL,
+  started_at INTEGER,
+  finished_at INTEGER,
+  UNIQUE (run_id, idempotency_key)
+);
+
+CREATE TABLE approvals (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
+  tool_call_id TEXT REFERENCES tool_calls(id),
+  status TEXT NOT NULL DEFAULT 'pending',
+  title TEXT NOT NULL,
+  detail TEXT NOT NULL DEFAULT '',
+  request_json TEXT NOT NULL DEFAULT '{}',
+  decision TEXT,
+  requested_at INTEGER NOT NULL,
+  decided_at INTEGER,
+  expires_at INTEGER
+);
+CREATE INDEX idx_approvals_status ON approvals(status, requested_at DESC);
+
+CREATE TABLE artifacts (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  task_id TEXT REFERENCES tasks(id) ON DELETE SET NULL,
+  run_id TEXT REFERENCES agent_runs(id) ON DELETE SET NULL,
+  kind TEXT NOT NULL,
+  title TEXT NOT NULL,
+  uri TEXT,
+  content_hash TEXT,
+  git_commit TEXT,
+  verified_at INTEGER,
+  body TEXT,
+  is_demo INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_artifacts_project ON artifacts(project_id, created_at DESC);
+CREATE INDEX idx_artifacts_task ON artifacts(task_id);
+
+CREATE TABLE decisions (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  body TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'proposed',
+  supersedes_id TEXT REFERENCES decisions(id),
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE knowledge_entries (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  source_uri TEXT,
+  source_version TEXT,
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE plugin_installations (
+  id TEXT PRIMARY KEY,
+  version TEXT NOT NULL,
+  enabled INTEGER NOT NULL DEFAULT 1,
+  config_json TEXT NOT NULL DEFAULT '{}',
+  installed_at INTEGER NOT NULL
+);
+
+CREATE TABLE app_settings (
+  key TEXT PRIMARY KEY,
+  value_json TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+`
+
+const V2 = `
+CREATE TABLE ai_connection_profiles (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  backend_kind TEXT NOT NULL DEFAULT 'native-llm',
+  provider_id TEXT NOT NULL DEFAULT 'custom',
+  protocol TEXT NOT NULL DEFAULT 'openai-chat',
+  base_url TEXT NOT NULL DEFAULT '',
+  default_model_id TEXT,
+  secret_ref TEXT,
+  enabled INTEGER NOT NULL DEFAULT 1,
+  is_default INTEGER NOT NULL DEFAULT 0,
+  timeout_ms INTEGER NOT NULL DEFAULT 30000,
+  temperature REAL NOT NULL DEFAULT 0.2,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX idx_ai_connection_default ON ai_connection_profiles(is_default) WHERE is_default = 1;
+CREATE INDEX idx_ai_connection_enabled ON ai_connection_profiles(enabled, updated_at DESC);
+
+CREATE TABLE ai_models (
+  connection_id TEXT NOT NULL REFERENCES ai_connection_profiles(id) ON DELETE CASCADE,
+  model_id TEXT NOT NULL,
+  display_name TEXT NOT NULL,
+  source TEXT NOT NULL DEFAULT 'manual',
+  capabilities_json TEXT NOT NULL DEFAULT '{}',
+  context_window INTEGER,
+  max_output_tokens INTEGER,
+  verified_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (connection_id, model_id)
+);
+CREATE INDEX idx_ai_models_connection ON ai_models(connection_id, updated_at DESC);
+
+CREATE TABLE ai_connection_checks (
+  id TEXT PRIMARY KEY,
+  connection_id TEXT NOT NULL REFERENCES ai_connection_profiles(id) ON DELETE CASCADE,
+  stage TEXT NOT NULL,
+  status TEXT NOT NULL,
+  error_code TEXT,
+  message TEXT NOT NULL DEFAULT '',
+  latency_ms INTEGER NOT NULL DEFAULT 0,
+  checked_at INTEGER NOT NULL
+);
+CREATE INDEX idx_ai_checks_connection ON ai_connection_checks(connection_id, checked_at DESC);
+
+CREATE TABLE ai_usage_records (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  connection_id TEXT,
+  model_id TEXT,
+  input_tokens INTEGER,
+  output_tokens INTEGER,
+  usage_source TEXT NOT NULL DEFAULT 'unknown',
+  estimated_cost REAL,
+  currency TEXT,
+  pricing_version TEXT,
+  created_at INTEGER NOT NULL,
+  UNIQUE (run_id, connection_id, model_id)
+);
+
+CREATE TABLE agent_backend_bindings (
+  id TEXT PRIMARY KEY,
+  scope_type TEXT NOT NULL,
+  scope_id TEXT,
+  agent_role TEXT,
+  task_type TEXT,
+  connection_id TEXT REFERENCES ai_connection_profiles(id) ON DELETE SET NULL,
+  model_id TEXT,
+  priority INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_agent_backend_bindings_scope ON agent_backend_bindings(scope_type, scope_id, priority DESC);
+
+CREATE TABLE external_agent_installations (
+  adapter_id TEXT PRIMARY KEY,
+  executable_path TEXT,
+  detected_version TEXT,
+  auth_state TEXT NOT NULL DEFAULT 'unknown',
+  last_checked_at INTEGER NOT NULL
+);
+`
+
+const V3 = `
+CREATE TABLE project_snapshots (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  git_head TEXT,
+  payload_json TEXT NOT NULL,
+  index_version INTEGER NOT NULL,
+  scanned_at INTEGER NOT NULL
+);
+CREATE INDEX idx_project_snapshots_project ON project_snapshots(project_id, scanned_at DESC);
+
+CREATE TABLE plan_revisions (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  revision INTEGER NOT NULL,
+  status TEXT NOT NULL,
+  goal TEXT NOT NULL,
+  plan_json TEXT NOT NULL,
+  approved_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE (project_id, revision)
+);
+CREATE INDEX idx_plan_revisions_project ON plan_revisions(project_id, revision DESC);
+
+CREATE TABLE graph_layouts (
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  view_id TEXT NOT NULL,
+  layout_json TEXT NOT NULL,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (project_id, view_id)
+);
+`
+
+const V4 = `
+CREATE VIRTUAL TABLE knowledge_fts USING fts5(
+  title,
+  body,
+  content='knowledge_entries',
+  content_rowid='rowid'
+);
+
+INSERT INTO knowledge_fts(rowid, title, body)
+SELECT rowid, title, body FROM knowledge_entries;
+
+CREATE TRIGGER knowledge_fts_ai AFTER INSERT ON knowledge_entries BEGIN
+  INSERT INTO knowledge_fts(rowid, title, body) VALUES (new.rowid, new.title, new.body);
+END;
+
+CREATE TRIGGER knowledge_fts_ad AFTER DELETE ON knowledge_entries BEGIN
+  INSERT INTO knowledge_fts(knowledge_fts, rowid, title, body)
+  VALUES ('delete', old.rowid, old.title, old.body);
+END;
+
+CREATE TRIGGER knowledge_fts_au AFTER UPDATE ON knowledge_entries BEGIN
+  INSERT INTO knowledge_fts(knowledge_fts, rowid, title, body)
+  VALUES ('delete', old.rowid, old.title, old.body);
+  INSERT INTO knowledge_fts(rowid, title, body) VALUES (new.rowid, new.title, new.body);
+END;
+`
+
+export const MIGRATIONS: Migration[] = [
+  { version: 1, name: 'initial lifecycle schema', sql: V1 },
+  { version: 2, name: 'ai connections and model catalog', sql: V2 },
+  { version: 3, name: 'project snapshots plans and graph layouts', sql: V3 },
+  { version: 4, name: 'knowledge full text index', sql: V4 },
+]
+
+function checksum(sql: string): string {
+  return createHash('sha256').update(sql).digest('hex')
+}
+
+export function applyMigrations(db: DatabaseSync, log: (message: string) => void = () => {}): void {
+  db.exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
+    version INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    checksum TEXT NOT NULL,
+    applied_at INTEGER NOT NULL
+  )`)
+  const applied = new Map<number, string>()
+  for (const row of db.prepare('SELECT version, checksum FROM schema_migrations').all() as Array<{
+    version: number
+    checksum: string
+  }>) {
+    applied.set(Number(row.version), String(row.checksum))
+  }
+  for (const migration of MIGRATIONS) {
+    const expected = checksum(migration.sql)
+    const existing = applied.get(migration.version)
+    if (existing) {
+      if (existing !== expected) {
+        throw new Error(
+          `Database migration ${migration.version} checksum mismatch; refusing to mutate an incompatible database`,
+        )
+      }
+      continue
+    }
+    db.exec('BEGIN IMMEDIATE')
+    try {
+      db.exec(migration.sql)
+      db.prepare(
+        'INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?, ?, ?, ?)',
+      ).run(migration.version, migration.name, expected, Date.now())
+      db.exec('COMMIT')
+      log(`applied migration ${migration.version}: ${migration.name}`)
+    } catch (error) {
+      db.exec('ROLLBACK')
+      throw error
+    }
+  }
+}

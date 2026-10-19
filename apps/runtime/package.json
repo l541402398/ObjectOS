@@ -1,0 +1,38 @@
+{
+  "name": "@projectos/runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsup --config ../../tooling/tsup.runtime.config.ts",
+    "start": "node ./dist/index.js"
+  },
+  "dependencies": {
+    "@projectos/contracts": "workspace:*",
+    "@projectos/domain": "workspace:*",
+    "@projectos/application": "workspace:*",
+    "@projectos/persistence": "workspace:*",
+    "@projectos/agent-runtime": "workspace:*",
+    "@projectos/context-engine": "workspace:*",
+    "@projectos/session-manager": "workspace:*",
+    "@projectos/collaboration": "workspace:*",
+    "@projectos/skills": "workspace:*",
+    "@projectos/tools": "workspace:*",
+    "@projectos/policy": "workspace:*",
+    "@projectos/workspace": "workspace:*",
+    "@projectos/provider-interfaces": "workspace:*",
+    "@projectos/provider-openai-compatible": "workspace:*",
+    "@projectos/kernel": "workspace:*",
+    "pino": "^10.4.0",
+    "zod": "^4.6.7",
+    "cross-spawn": "^7.0.6",
+    "@projectos/connection-diagnostics": "workspace:*",
+    "@projectos/project-analyzer": "workspace:*",
+    "@projectos/planning": "workspace:*",
+    "@projectos/graph-projection": "workspace:*",
+    "@projectos/worktree": "workspace:*",
+    "@projectos/provider-anthropic": "workspace:*",
+    "@projectos/provider-openai-responses": "workspace:*"
+  }
+}

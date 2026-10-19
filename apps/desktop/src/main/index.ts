@@ -1,0 +1,159 @@
+import { mkdirSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+import { app, BrowserWindow, Menu, nativeTheme, session } from 'electron'
+import { createMainLogger } from './logger.js'
+import { ProviderConfigStore } from './provider-config.js'
+import { ConnectionSecretStore } from './connection-secrets.js'
+import { RuntimeSupervisor } from './runtime-supervisor.js'
+import { registerIpc } from './ipc.js'
+import { applyContentSecurityPolicy, hardenWebContents } from './security.js'
+
+const isDev = !app.isPackaged
+const isDevServer = Boolean(process.env.ELECTRON_RENDERER_URL)
+const rendererWidth = Number(process.env.PROJECTOS_WINDOW_WIDTH ?? 1440)
+const rendererHeight = Number(process.env.PROJECTOS_WINDOW_HEIGHT ?? 900)
+
+app.setName('ProjectOS')
+app.setAppUserModelId('ai.projectos.desktop')
+
+let mainWindow: BrowserWindow | null = null
+let supervisor: RuntimeSupervisor | null = null
+let disposeIpc: (() => void) | null = null
+let quitting = false
+let dataDir = ''
+let logger: ReturnType<typeof createMainLogger>
+let providerConfig: ProviderConfigStore
+let connectionSecrets: ConnectionSecretStore
+
+function broadcast(channel: string, payload: unknown): void {
+  if (!mainWindow || mainWindow.isDestroyed()) return
+  mainWindow.webContents.send(channel, payload)
+}
+
+function createWindow(): BrowserWindow {
+  const isMac = process.platform === 'darwin'
+  const window = new BrowserWindow({
+    width: Math.max(1024, Math.min(rendererWidth, 2560)),
+    height: Math.max(700, Math.min(rendererHeight, 1600)),
+    minWidth: 1024,
+    minHeight: 700,
+    show: false,
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#0A0C11' : '#F4F5F7',
+    title: 'ProjectOS',
+    frame: isMac,
+    titleBarStyle: isMac ? 'hiddenInset' : undefined,
+    trafficLightPosition: isMac ? { x: 16, y: 15 } : undefined,
+    roundedCorners: true,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      webviewTag: false,
+      spellcheck: false,
+      devTools: isDev || process.env.PROJECTOS_ENABLE_DEVTOOLS === '1',
+    },
+  })
+  window.setMenuBarVisibility(false)
+  hardenWebContents(window.webContents, isDev, process.env.ELECTRON_RENDERER_URL)
+  window.once('ready-to-show', () => window.show())
+  window.on('closed', () => {
+    if (mainWindow === window) mainWindow = null
+  })
+  if (isDev && process.env.ELECTRON_RENDERER_URL) {
+    void window.loadURL(process.env.ELECTRON_RENDERER_URL)
+  } else {
+    void window.loadFile(join(__dirname, '../renderer/index.html'))
+  }
+  window.webContents.on('did-finish-load', () => {
+    if (supervisor) broadcast('projectos:runtime-status', supervisor.getStatus())
+  })
+  if (isDev && process.env.PROJECTOS_DEVTOOLS === '1') {
+    window.webContents.openDevTools({ mode: 'detach' })
+  }
+  return window
+}
+
+async function bootstrap(): Promise<void> {
+  await app.whenReady()
+  dataDir = resolve(process.env.PROJECTOS_DATA_DIR ?? join(app.getPath('userData'), 'data'))
+  mkdirSync(dataDir, { recursive: true })
+  logger = createMainLogger(dataDir)
+  providerConfig = new ProviderConfigStore(dataDir, logger)
+  connectionSecrets = new ConnectionSecretStore(dataDir, logger)
+  Menu.setApplicationMenu(null)
+  applyContentSecurityPolicy(session.defaultSession, isDevServer)
+  nativeTheme.themeSource = 'system'
+
+  mainWindow = createWindow()
+
+  const runtimeEntry = app.isPackaged
+    ? join(process.resourcesPath, 'runtime', 'index.mjs')
+    : resolve(app.getAppPath(), '../runtime/dist/index.mjs')
+
+  supervisor = new RuntimeSupervisor({
+    entryPath: runtimeEntry,
+    dataDir,
+    providerConfig: () => providerConfig.runtimeConfig(),
+    logger,
+    onEvent: (seq, event) => broadcast('projectos:event', { seq, event }),
+    onStatus: (status) => broadcast('projectos:runtime-status', status),
+  })
+
+  disposeIpc = registerIpc({
+    supervisor,
+    providerConfig,
+    connectionSecrets,
+    dataDir,
+    window: mainWindow,
+    logger,
+  })
+
+  mainWindow.on('closed', () => {
+    mainWindow = null
+  })
+
+  supervisor.start()
+}
+
+const gotLock = app.requestSingleInstanceLock()
+if (!gotLock) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.focus()
+    }
+  })
+
+  void bootstrap().catch((error) => {
+    logger.error('failed to bootstrap desktop app', { error: String(error) })
+    app.quit()
+  })
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      mainWindow = createWindow()
+    }
+  })
+
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') app.quit()
+  })
+
+  app.on('before-quit', (event) => {
+    if (quitting) return
+    event.preventDefault()
+    quitting = true
+    const finish = (): void => {
+      disposeIpc?.()
+      app.quit()
+    }
+    if (supervisor) {
+      void supervisor.stop().finally(finish)
+    } else {
+      finish()
+    }
+  })
+}

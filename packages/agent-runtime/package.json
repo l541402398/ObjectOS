@@ -1,0 +1,17 @@
+{
+  "name": "@projectos/agent-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@projectos/provider-interfaces": "workspace:*",
+    "@projectos/domain": "workspace:*",
+    "@projectos/contracts": "workspace:*",
+    "@projectos/context-engine": "workspace:*",
+    "@projectos/tools": "workspace:*",
+    "@projectos/session-manager": "workspace:*"
+  }
+}

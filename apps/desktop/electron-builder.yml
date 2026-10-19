@@ -1,0 +1,34 @@
+appId: ai.projectos.desktop
+productName: ProjectOS
+copyright: Copyright © 2026 ProjectOS contributors
+
+directories:
+  output: ../../release
+  buildResources: resources
+
+asar: true
+npmRebuild: false
+compression: normal
+
+files:
+  - out/**/*
+  - package.json
+  - "!out/**/*.map"
+  - "!node_modules/**/*"
+
+extraResources:
+  - from: ../runtime/dist/index.mjs
+    to: runtime/index.mjs
+
+win:
+  icon: resources/icon.ico
+  requestedExecutionLevel: asInvoker
+  target:
+    - target: portable
+      arch:
+        - x64
+  artifactName: ProjectOS-${version}-portable.${ext}
+
+portable:
+  artifactName: ProjectOS-${version}-portable.${ext}
+  unpackDirName: ProjectOS-${version}

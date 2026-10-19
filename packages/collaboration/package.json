@@ -1,0 +1,14 @@
+{
+  "name": "@projectos/collaboration",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@projectos/session-manager": "workspace:*",
+    "@projectos/contracts": "workspace:*",
+    "@projectos/domain": "workspace:*"
+  }
+}

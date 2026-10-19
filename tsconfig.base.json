@@ -1,0 +1,53 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "useDefineForClassFields": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "@projectos/contracts": ["packages/contracts/src/index.ts"],
+      "@projectos/domain": ["packages/domain/src/index.ts"],
+      "@projectos/application": ["packages/application/src/index.ts"],
+      "@projectos/persistence": ["packages/persistence/src/index.ts"],
+      "@projectos/kernel": ["packages/kernel/src/index.ts"],
+      "@projectos/agent-runtime": ["packages/agent-runtime/src/index.ts"],
+      "@projectos/context-engine": ["packages/context-engine/src/index.ts"],
+      "@projectos/session-manager": ["packages/session-manager/src/index.ts"],
+      "@projectos/collaboration": ["packages/collaboration/src/index.ts"],
+      "@projectos/skills": ["packages/skills/src/index.ts"],
+      "@projectos/tools": ["packages/tools/src/index.ts"],
+      "@projectos/policy": ["packages/policy/src/index.ts"],
+      "@projectos/workspace": ["packages/workspace/src/index.ts"],
+      "@projectos/provider-interfaces": ["packages/provider-interfaces/src/index.ts"],
+      "@projectos/connection-diagnostics": ["packages/connection-diagnostics/src/index.ts"],
+      "@projectos/project-analyzer": ["packages/project-analyzer/src/index.ts"],
+      "@projectos/planning": ["packages/planning/src/index.ts"],
+      "@projectos/graph-projection": ["packages/graph-projection/src/index.ts"],
+      "@projectos/worktree": ["packages/worktree/src/index.ts"],
+      "@projectos/provider-openai-compatible": ["packages/provider-openai-compatible/src/index.ts"],
+      "@projectos/provider-anthropic": ["packages/provider-anthropic/src/index.ts"],
+      "@projectos/provider-openai-responses": ["packages/provider-openai-responses/src/index.ts"],
+      "@projectos/design-tokens": ["packages/design-tokens/src/index.ts"],
+      "@projectos/ui": ["packages/ui/src/index.ts"],
+      "@projectos/ai-ui": ["packages/ai-ui/src/index.ts"]
+    }
+  }
+}
+
+
+
+
+
