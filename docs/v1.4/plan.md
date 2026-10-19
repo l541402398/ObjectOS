@@ -14,7 +14,7 @@
 ## 当前进度
 
 - 已完成：健康检查、Finding/Evidence、指纹去重、提案审批、运营工作台、模式持久化、重启恢复、软预算阻断。
-- 已完成：修复结果回写、interval 持久化调度。`r`n- 已完成：AutomationGrant（授权/过期/撤销/次数）。`r`n- 进行中：项目事件触发、风险矩阵、完整成功路径验收。
+- 已完成：修复结果回写、interval 持久化调度。`r`n- 已完成：AutomationGrant（授权/过期/撤销/次数）。`r`n- 已完成：完整成功路径 E2E（含真实 Worktree 与质量门禁）。`r`n- 进行中：项目事件触发、风险矩阵、P1 集成。
 - 详见 [验收报告](./acceptance-report.md)。
 
 ## V1.4 P0
@@ -40,6 +40,7 @@
 - 默认 observe，不自动写主分支。
 - 所有检查/修复走 V1.3 Policy、Approval、Run、Artifact 与 Worktree。
 - 复用 V1.3 编排与图，不新建第二套运行时。
+
 
 
 

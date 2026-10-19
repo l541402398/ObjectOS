@@ -44,7 +44,7 @@ ProjectOS 把项目从构思、需求、架构、规划、实现、测试、发�
   不自动重试。
 - **UI/UX**：设计令牌、Light/Dark/System、克制玻璃拟态、响应式 1440×900 与 1024×768、
   设置弹层、显式折叠侧栏、截图验证。
-- **测试**：68 个单元/集成/协议测试 + 六个 Playwright Electron E2E + 打包产物冒烟测试。
+- **测试**：68 个单元/集成/协议测试 + 七个 Playwright Electron E2E + 打包产物冒烟测试。
 
 ## 二期增量（V1.2 核心）
 
@@ -268,6 +268,7 @@ ProjectOS-0.1.0-portable.exe → 直接启动成功（无 node_modules，Runtime
 ## License
 
 MIT
+
 
 
 

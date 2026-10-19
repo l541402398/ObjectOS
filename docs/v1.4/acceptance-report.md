@@ -13,7 +13,8 @@
 | 修复计划启动 | 完成（首版） | 提案批准后生成计划、审批、启动 scheduler 并创建 Worktree |
 | 修复结果回写 | 完成（首版） | 计划 completed → proposal completed + findings resolved；failed → proposal failed |
 | 间隔触发器 | 完成（首版） | automation_triggers + API + 30s due timer；重启保留 nextRunAt |
-| AutomationGrant | 完成（首版） | 24h/5 次默认授权；过期/撤销/次数校验；startRepair 无授权拒绝 |`r`n| 重启恢复 | 完成（E2E） | Findings、Proposal、planId 与 mode 重启后保留 |
+| AutomationGrant | 完成（首版） | 24h/5 次默认授权；过期/撤销/次数校验；startRepair 无授权拒绝 |
+| 完整修复成功路径 | 完成（E2E） | Finding → Proposal → Grant → Worktree → 质量门禁通过 → Proposal completed + Finding resolved |`r`n| 重启恢复 | 完成（E2E） | Findings、Proposal、planId 与 mode 重启后保留 |
 | 软预算阻断 | 完成 | 超预算启动需确认；`BUDGET_EXCEEDED` |
 
 ## 未完成
@@ -30,10 +31,13 @@
 ```text
 pnpm test → 17 files / 68 tests
 node scripts/v14-e2e.mjs → PASS
+node scripts/v14-success-e2e.mjs → PASS
+  finding resolved / proposal completed / worktree created
   findings: 1
   proposals: 1 · executing
   mode: propose
 ```
+
 
 
 
