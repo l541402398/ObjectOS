@@ -68,6 +68,15 @@ export type RepairProposal = z.infer<typeof RepairProposalSchema>
 export const AutonomyModeSchema = z.enum(['observe', 'propose', 'approved-autofix'])
 export type AutonomyMode = z.infer<typeof AutonomyModeSchema>
 
+export const AutomationTriggerSchema = z.object({
+  projectId: IdSchema,
+  intervalMinutes: z.number().int().min(5).max(1440),
+  enabled: z.boolean(),
+  nextRunAt: TimestampSchema.nullable(),
+})
+
+export type AutomationTrigger = z.infer<typeof AutomationTriggerSchema>
+
 export const OperationsSnapshotSchema = z.object({
   projectId: IdSchema,
   mode: AutonomyModeSchema,
@@ -76,3 +85,4 @@ export const OperationsSnapshotSchema = z.object({
   proposals: z.array(RepairProposalSchema),
 })
 export type OperationsSnapshot = z.infer<typeof OperationsSnapshotSchema>
+

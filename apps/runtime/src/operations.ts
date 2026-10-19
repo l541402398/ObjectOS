@@ -21,6 +21,7 @@ export class OperationsService {
   ) {}
 
   snapshot(projectId: string) {
+    this.reconcile(projectId)
     const project = this.store.read.getProject(projectId)
     if (!project) throw new AppError('NOT_FOUND', '项目不存在')
     return {
@@ -169,8 +170,22 @@ export class OperationsService {
     return this.snapshot(projectId)
   }
 
-  propose(projectId: string, findingIds: string[]) {
-    const findings = this.store.read.listFindings(projectId).filter((finding) => findingIds.includes(finding.id))
+  private reconcile(projectId: string): void {
+    for (const proposal of this.store.read.listProposals(projectId)) {
+      if (proposal.status !== 'executing' || !proposal.planId) continue
+      const plan = this.store.read.getPlanRevision(proposal.planId)
+      const status = plan?.execution?.status
+      if (!status) continue
+      if (status === 'completed') {
+        this.store.updateProposalStatus(proposal.id, 'completed')
+        this.store.resolveProposalFindings(proposal.id)
+      } else if (status === 'failed' || status === 'cancelled') {
+        this.store.updateProposalStatus(proposal.id, 'failed')
+      }
+    }
+  }
+
+  propose(projectId: string, findingIds: string[]) {    const findings = this.store.read.listFindings(projectId).filter((finding) => findingIds.includes(finding.id))
     if (!findings.length) throw new AppError('BAD_REQUEST', '没有可提案的 Finding')
     const proposal = {
       id: newId('prp'),

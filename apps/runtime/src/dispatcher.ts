@@ -587,6 +587,16 @@ export class RuntimeDispatcher {
         const input = this.parse('operations.propose', rawInput)
         return this.operations.propose(input.projectId, input.findingIds)
       }
+      case 'operations.getTrigger': {
+        const input = this.parse('operations.getTrigger', rawInput)
+        return this.deps.store.read.getAutomationTrigger(input.projectId)
+      }
+      case 'operations.setTrigger': {
+        const input = this.parse('operations.setTrigger', rawInput)
+        const nextRunAt = input.enabled ? Date.now() + input.intervalMinutes * 60_000 : null
+        this.deps.store.upsertAutomationTrigger(input.projectId, input.intervalMinutes, input.enabled, nextRunAt)
+        return this.deps.store.read.getAutomationTrigger(input.projectId)
+      }
       case 'operations.startRepair': {
         const input = this.parse('operations.startRepair', rawInput)
         const proposal = this.deps.store.read.getProposal(input.proposalId)
@@ -701,6 +711,8 @@ export function emitLog(hub: RuntimeEventHub, level: 'debug' | 'info' | 'warn' |
   const event: RuntimeEvent = { type: 'runtime.log', level, message, createdAt: Date.now() }
   hub.publish(event)
 }
+
+
 
 
 

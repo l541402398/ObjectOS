@@ -1349,6 +1349,16 @@ export class ReadModels {
     }
   }
 
+  getAutomationTrigger(projectId: string): { projectId: string; intervalMinutes: number; enabled: boolean; nextRunAt: number | null } | null {
+    const row = this.get<{ project_id: string; config_json: string; enabled: number; next_run_at: number | null }>(
+      "SELECT project_id, config_json, enabled, next_run_at FROM automation_triggers WHERE project_id = ? AND kind = 'interval'",
+      projectId,
+    )
+    if (!row) return null
+    const config = JSON.parse(row.config_json) as { intervalMinutes?: number }
+    return { projectId: row.project_id, intervalMinutes: config.intervalMinutes ?? 30, enabled: Boolean(row.enabled), nextRunAt: row.next_run_at }
+  }
+
   getAutonomyMode(projectId: string): AutonomyMode {
     const row = this.get<{ mode: string }>('SELECT mode FROM autonomy_settings WHERE project_id = ?', projectId)
     return (row?.mode as AutonomyMode | undefined) ?? 'observe'

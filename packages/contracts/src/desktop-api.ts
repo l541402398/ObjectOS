@@ -176,6 +176,8 @@ export interface ProjectOSDesktopApi {
     reviewProposal: (proposalId: string, decision: 'approved' | 'rejected') => Promise<Out<'operations.reviewProposal'>>
     startRepair: (proposalId: string) => Promise<Out<'operations.startRepair'>>
     setMode: (projectId: string, mode: 'observe' | 'propose' | 'approved-autofix') => Promise<Out<'operations.setMode'>>
+    getTrigger: (projectId: string) => Promise<Out<'operations.getTrigger'>>
+    setTrigger: (projectId: string, intervalMinutes: number, enabled: boolean) => Promise<Out<'operations.setTrigger'>>
   }
   orchestration: {
     start: (planId: string, concurrency?: number, maxRetries?: number, allowOverBudget?: boolean) => Promise<Out<'orchestration.start'>>
@@ -221,6 +223,7 @@ declare global {
     projectos: ProjectOSDesktopApi
   }
 }
+
 
 
 

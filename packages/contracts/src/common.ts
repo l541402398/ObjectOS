@@ -36,6 +36,7 @@ export const ID_PREFIXES = {
   finding: 'fnd',
   findingEvidence: 'fev',
   repairProposal: 'prp',
+  automationTrigger: 'atr',
   agentBinding: 'bnd',
   snapshot: 'snp',
   plan: 'pln',
@@ -77,5 +78,6 @@ export const ActorSchema = z.object({
 export type Actor = z.infer<typeof ActorSchema>
 
 export const emptyInput = z.object({}).default({})
+
 
 

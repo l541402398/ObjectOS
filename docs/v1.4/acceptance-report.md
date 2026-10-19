@@ -10,12 +10,14 @@
 | 修复提案 | 完成（首版） | repair_proposals / proposal_findings；pending_approval → approved/rejected |
 | 自主运营工作台 | 完成（首版） | `/projects/:id/operations`；检查、Findings、提案、模式 |
 | 模式设置 | 完成（持久化） | observe / propose / approved-autofix |
-| 修复计划启动 | 完成（首版） | 提案批准后生成计划、审批、启动 scheduler 并创建 Worktree |`r`n| 重启恢复 | 完成（E2E） | Findings、Proposal、planId 与 mode 重启后保留 |
+| 修复计划启动 | 完成（首版） | 提案批准后生成计划、审批、启动 scheduler 并创建 Worktree |
+| 修复结果回写 | 完成（首版） | 计划 completed → proposal completed + findings resolved；failed → proposal failed |
+| 间隔触发器存储 | 部分 | automation_triggers + API；运行时定时执行未接 |`r`n| 重启恢复 | 完成（E2E） | Findings、Proposal、planId 与 mode 重启后保留 |
 | 软预算阻断 | 完成 | 超预算启动需确认；`BUDGET_EXCEEDED` |
 
 ## 未完成
 
-- 间隔/项目事件持久化调度与 lease
+- 间隔触发器运行时定时执行（存储/API 已有，timer 未接）`r`n- 项目事件触发与 lease
 - 修复执行结果回写 Finding/Proposal 状态（当前计划已启动，完成态未回写）
 - AutomationGrant 限定授权/过期/撤销与风险矩阵
 - 预算并发/重试 circuit breaker
@@ -31,4 +33,5 @@ node scripts/v14-e2e.mjs → PASS
   proposals: 1 · executing
   mode: propose
 ```
+
 

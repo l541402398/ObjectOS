@@ -1632,6 +1632,15 @@ export class SqliteStore {
     })
   }
 
+  resolveProposalFindings(proposalId: string): void {
+    this.write(() => {
+      this.run(
+        "UPDATE findings SET status = 'resolved' WHERE id IN (SELECT finding_id FROM proposal_findings WHERE proposal_id = ?)",
+        proposalId,
+      )
+    })
+  }
+
   updateProposalStatus(id: string, status: string): void {
     this.write(() => {
       this.run('UPDATE repair_proposals SET status = ?, updated_at = ? WHERE id = ?', status, now(), id)
@@ -1644,6 +1653,18 @@ export class SqliteStore {
         `INSERT INTO autonomy_settings (project_id, mode, updated_at) VALUES (?, ?, ?)
          ON CONFLICT(project_id) DO UPDATE SET mode = excluded.mode, updated_at = excluded.updated_at`,
         projectId, mode, now(),
+      )
+    })
+  }
+
+  upsertAutomationTrigger(projectId: string, intervalMinutes: number, enabled: boolean, nextRunAt: number | null): void {
+    this.write(() => {
+      this.run(
+        `INSERT INTO automation_triggers (id, project_id, kind, config_json, enabled, next_run_at)
+         VALUES (?, ?, 'interval', ?, ?, ?)
+         ON CONFLICT(project_id, kind) DO UPDATE SET config_json = excluded.config_json,
+           enabled = excluded.enabled, next_run_at = excluded.next_run_at`,
+        newId('atr'), projectId, JSON.stringify({ intervalMinutes }), enabled ? 1 : 0, nextRunAt,
       )
     })
   }

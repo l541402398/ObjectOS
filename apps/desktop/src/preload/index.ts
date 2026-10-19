@@ -206,6 +206,8 @@ const api: ProjectOSDesktopApi = {
     reviewProposal: (proposalId, decision) => call('operations.reviewProposal', { proposalId, decision }),
     startRepair: (proposalId) => call('operations.startRepair', { proposalId }),
     setMode: (projectId, mode) => call('operations.setMode', { projectId, mode }),
+    getTrigger: (projectId) => call('operations.getTrigger', { projectId }),
+    setTrigger: (projectId, intervalMinutes, enabled) => call('operations.setTrigger', { projectId, intervalMinutes, enabled }),
   },
   orchestration: {
     start: (planId, concurrency = 2, maxRetries = 2, allowOverBudget = false) => call('orchestration.start', { planId, concurrency, maxRetries, allowOverBudget }),
@@ -248,6 +250,7 @@ const api: ProjectOSDesktopApi = {
 }
 
 contextBridge.exposeInMainWorld('projectos', api)
+
 
 
 

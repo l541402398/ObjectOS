@@ -580,6 +580,18 @@ CREATE TABLE autonomy_settings (
 
 const V9 = `ALTER TABLE repair_proposals ADD COLUMN repair_plan_id TEXT;`
 
+const V10 = `
+CREATE TABLE automation_triggers (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL,
+  config_json TEXT NOT NULL DEFAULT '{}',
+  enabled INTEGER NOT NULL DEFAULT 0,
+  next_run_at INTEGER,
+  UNIQUE(project_id, kind)
+);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -590,6 +602,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 7, name: 'agent routing policy', sql: V7 },
   { version: 8, name: 'operations health findings and proposals', sql: V8 },
   { version: 9, name: 'proposal repair plan', sql: V9 },
+  { version: 10, name: 'operations interval triggers', sql: V10 },
 ]
 
 function checksum(sql: string): string {

@@ -45,7 +45,7 @@ import {
   PlanUpdateInputSchema,
   ProjectSnapshotSchema,
 } from './orchestration.js'
-import { OperationsSnapshotSchema, RepairProposalSchema, AutonomyModeSchema } from './operations.js'
+import { OperationsSnapshotSchema, RepairProposalSchema, AutonomyModeSchema, AutomationTriggerSchema } from './operations.js'
 import {
   ActivityItemSchema,
   AgentViewSchema,
@@ -663,6 +663,14 @@ export const ApiSchemas = {
     input: z.object({ proposalId: IdSchema, decision: z.enum(['approved', 'rejected']) }),
     output: RepairProposalSchema,
   },
+  'operations.getTrigger': {
+    input: z.object({ projectId: IdSchema }),
+    output: AutomationTriggerSchema.nullable(),
+  },
+  'operations.setTrigger': {
+    input: z.object({ projectId: IdSchema, intervalMinutes: z.number().int().min(5).max(1440), enabled: z.boolean() }),
+    output: AutomationTriggerSchema,
+  },
   'operations.setMode': {
     input: z.object({ projectId: IdSchema, mode: AutonomyModeSchema }),
     output: OperationsSnapshotSchema,
@@ -835,6 +843,7 @@ export function isMainMethod(value: string): value is MainMethod {
 export const ApprovalDecisionSchema = ApprovalStatusSchema.extract(['approved', 'rejected'])
 export const PageSchema = PageInputSchema
 export const HandoffDecisionSchema = HandoffStatusSchema.extract(['accepted', 'rejected'])
+
 
 
 
