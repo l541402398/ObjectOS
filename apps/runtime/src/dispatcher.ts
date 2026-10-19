@@ -93,8 +93,36 @@ export class RuntimeDispatcher {
       )
       void this.operations
         .runChecks(trigger.projectId)
+        .then(() => this.autoStartRepairs(trigger.projectId))
         .catch((error) => this.deps.logger.warn({ err: error, projectId: trigger.projectId }, 'scheduled health checks failed'))
     }
+  }
+
+  private async autoStartRepairs(projectId: string): Promise<void> {
+    if (this.deps.store.read.getAutonomyMode(projectId) !== 'approved-autofix') return
+    for (const proposal of this.deps.store.read.listProposals(projectId)) {
+      if (proposal.status !== 'approved' || proposal.planId) continue
+      if (!this.operations.risk(proposal.id).allowed) continue
+      try {
+        await this.startRepair(proposal.id)
+      } catch (error) {
+        this.deps.logger.warn({ err: error, proposalId: proposal.id }, 'automatic repair start failed')
+      }
+    }
+  }
+
+  private async startRepair(proposalId: string) {
+    const proposal = this.deps.store.read.getProposal(proposalId)
+    if (!proposal) throw new Error('修复提案不存在')
+    if (proposal.status !== 'approved') throw new Error('提案尚未批准')
+    if (proposal.planId) throw new Error('提案已有修复计划')
+    this.operations.assertGrant(proposal.projectId)
+    const draft = this.orchestration.generatePlan(proposal.projectId, '修复健康检查问题：' + proposal.scope.join('；'))
+    this.orchestration.approvePlan(draft.id)
+    this.deps.store.setProposalPlan(proposal.id, draft.id)
+    this.deps.store.updateProposalStatus(proposal.id, 'executing')
+    const plan = await this.scheduler.start(draft.id, 2, 2, true)
+    return { proposal: this.deps.store.read.getProposal(proposal.id), plan }
   }
 
   private parse<M extends ApiMethod>(method: M, raw: unknown): ApiParsedInput<M> {
@@ -599,7 +627,9 @@ export class RuntimeDispatcher {
       }
       case 'operations.runChecks': {
         const input = this.parse('operations.runChecks', rawInput)
-        return this.operations.runChecks(input.projectId)
+        await this.operations.runChecks(input.projectId)
+        await this.autoStartRepairs(input.projectId)
+        return this.operations.snapshot(input.projectId)
       }
       case 'operations.propose': {
         const input = this.parse('operations.propose', rawInput)
@@ -633,17 +663,7 @@ export class RuntimeDispatcher {
       }
       case 'operations.startRepair': {
         const input = this.parse('operations.startRepair', rawInput)
-        const proposal = this.deps.store.read.getProposal(input.proposalId)
-        if (!proposal) throw new Error('修复提案不存在')
-        if (proposal.status !== 'approved') throw new Error('提案尚未批准')
-        if (proposal.planId) throw new Error('提案已有修复计划')
-        this.operations.assertGrant(proposal.projectId)
-        const draft = this.orchestration.generatePlan(proposal.projectId, '修复健康检查问题：' + proposal.scope.join('；'))
-        this.orchestration.approvePlan(draft.id)
-        this.deps.store.setProposalPlan(proposal.id, draft.id)
-        this.deps.store.updateProposalStatus(proposal.id, 'executing')
-        const plan = await this.scheduler.start(draft.id, 2, 2, true)
-        return { proposal: this.deps.store.read.getProposal(proposal.id), plan }
+        return this.startRepair(input.proposalId)
       }
       case 'operations.reviewProposal': {
         const input = this.parse('operations.reviewProposal', rawInput)
