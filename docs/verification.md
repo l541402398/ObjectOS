@@ -229,7 +229,7 @@ building target=portable file=release\ProjectOS-0.1.0-portable.exe
 SHA256：
 
 ```text
-DA8D6EA7E04580BF63C049C1AADA4F8E2600D0173875B966EDDCCDA8DF3648F8
+0A4321BE2F33445C55DF766871687D36DC495EC14CD55B71F388783F0049A9D5
 ```
 
 - `app.asar` 只含 `out/**`，不含 node_modules。
@@ -263,6 +263,7 @@ PACKAGE SMOKE PASS — packaged EXE creates a project, writes starter files and 
 - 符号链接越界测试因 Windows 权限未自动化；代码使用 realpath + 前缀校验，路径穿越已有测试。
 - Supervisor 崩溃退避的故障注入 E2E 未自动化；Runtime 子进程协议重启测试已覆盖数据恢复。
 - Outbox ACK 丢失重投未做故障注入；收件箱幂等已覆盖。
+
 
 
 

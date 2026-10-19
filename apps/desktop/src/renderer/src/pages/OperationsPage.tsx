@@ -192,11 +192,12 @@ export default function OperationsPage() {
         <div className="po-insights-meta">
           <span>依赖 {insights.data?.dependencies ?? 0}</span>
           <span>开发依赖 {insights.data?.devDependencies ?? 0}</span>
-          <span>CI {insights.data?.ciWorkflows.length ?? 0}</span>
+          <span>CI {insights.data?.ciWorkflows.length ?? 0}</span>`r`n          <span>Hooks {insights.data?.gitHooks.length ?? 0}</span>
         </div>
         <pre className="po-changelog">{insights.data?.changelog || '暂无 Git 历史'}</pre>
       </section>
     </div>
   )
 }
+
 

@@ -80,6 +80,7 @@ export type AutomationGrant = z.infer<typeof AutomationGrantSchema>
 export const OperationsInsightsSchema = z.object({
   projectId: IdSchema,
   ciWorkflows: z.array(z.string()),
+  gitHooks: z.array(z.string()),
   changelog: z.string(),
   dependencies: z.number().int().nonnegative(),
   devDependencies: z.number().int().nonnegative(),
@@ -117,6 +118,7 @@ export const OperationsSnapshotSchema = z.object({
   proposals: z.array(RepairProposalSchema),
 })
 export type OperationsSnapshot = z.infer<typeof OperationsSnapshotSchema>
+
 
 
 

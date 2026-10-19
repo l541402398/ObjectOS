@@ -204,12 +204,16 @@ export class OperationsService {
     try {
       ciWorkflows = (await readdir(join(project.rootPath, '.github', 'workflows'))).filter((name) => name.endsWith('.yml') || name.endsWith('.yaml'))
     } catch { /* no workflows */ }
+    let gitHooks: string[] = []
+    try {
+      gitHooks = (await readdir(join(project.rootPath, '.git', 'hooks'))).filter((name) => !name.endsWith('.sample'))
+    } catch { /* no hooks */ }
     let changelog = ''
     try {
       const { stdout } = await promisify(execFile)('git', ['log', '-12', '--pretty=format:%h %s'], { cwd: project.rootPath })
       changelog = '# Changelog\\n\\n' + stdout.split('\\n').map((line: string) => '- ' + line).join('\\n') + '\\n'
     } catch { /* no git */ }
-    return { projectId, ciWorkflows, changelog, dependencies, devDependencies }
+    return { projectId, ciWorkflows, gitHooks, changelog, dependencies, devDependencies }
   }
 
   getGrant(projectId: string) {
@@ -314,6 +318,7 @@ export class OperationsService {
     return this.snapshot(projectId)
   }
 }
+
 
 
 
