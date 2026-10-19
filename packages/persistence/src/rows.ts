@@ -142,6 +142,13 @@ export interface AIModelPriceRow {
   updated_at: number
 }
 
+export interface ProjectBudgetRow {
+  project_id: string
+  soft_limit: number
+  currency: string
+  updated_at: number
+}
+
 export interface ProjectSnapshotRow {
   id: string
   project_id: string

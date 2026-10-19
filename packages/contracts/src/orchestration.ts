@@ -188,3 +188,19 @@ export const ProjectMetricsSchema = z.object({
   planRevision: z.number().int().positive().nullable(),
 })
 export type ProjectMetrics = z.infer<typeof ProjectMetricsSchema>
+
+export const ProjectBudgetSchema = z.object({
+  projectId: IdSchema,
+  softLimit: z.number().nonnegative(),
+  currency: z.string().min(1).max(12),
+  updatedAt: TimestampSchema,
+})
+export type ProjectBudget = z.infer<typeof ProjectBudgetSchema>
+
+export const ProjectBudgetStatusSchema = z.object({
+  budget: ProjectBudgetSchema.nullable(),
+  spent: z.number().nonnegative(),
+  remaining: z.number().nonnegative().nullable(),
+  exceeded: z.boolean(),
+})
+export type ProjectBudgetStatus = z.infer<typeof ProjectBudgetStatusSchema>

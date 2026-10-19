@@ -70,8 +70,26 @@ export class OrchestrationService {
     return this.store.read.getLatestProjectSnapshot(projectId)
   }
 
-  metrics(projectId: string) {
+  budget(projectId: string) {
     if (!this.store.read.getProject(projectId)) throw new AppError('NOT_FOUND', '项目不存在')
+    const budget = this.store.read.getProjectBudget(projectId)
+    const spent = this.store.read.summarizeAIUsage(projectId).estimatedCost
+    const remaining = budget ? Math.max(0, budget.softLimit - spent) : null
+    return {
+      budget,
+      spent,
+      remaining,
+      exceeded: Boolean(budget && budget.softLimit > 0 && spent > budget.softLimit),
+    }
+  }
+
+  setBudget(projectId: string, softLimit: number, currency: string) {
+    if (!this.store.read.getProject(projectId)) throw new AppError('NOT_FOUND', '项目不存在')
+    this.store.upsertProjectBudget({ projectId, softLimit, currency })
+    return this.budget(projectId)
+  }
+
+  metrics(projectId: string) {    if (!this.store.read.getProject(projectId)) throw new AppError('NOT_FOUND', '项目不存在')
     const board = this.services.tasks.board(projectId)
     const done = board.tasks.filter((task) => task.status === 'done')
     const blocked = board.tasks.filter((task) => task.status === 'blocked')

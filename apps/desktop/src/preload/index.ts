@@ -187,6 +187,8 @@ const api: ProjectOSDesktopApi = {
     scan: (projectId) => call('project.scan', { projectId }),
     snapshot: (projectId) => call('project.snapshot.get', { projectId }),
     metrics: (projectId) => call('project.metrics', { projectId }),
+    budget: (projectId) => call('project.budget.get', { projectId }),
+    setBudget: (projectId, softLimit, currency = 'USD') => call('project.budget.set', { projectId, softLimit, currency }),
   },
   plans: {
     generate: (projectId, goal) => call('plan.generate', { projectId, goal }),

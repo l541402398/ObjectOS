@@ -572,6 +572,14 @@ export class RuntimeDispatcher {
         const input = this.parse('project.metrics', rawInput)
         return this.orchestration.metrics(input.projectId)
       }
+      case 'project.budget.get': {
+        const input = this.parse('project.budget.get', rawInput)
+        return this.orchestration.budget(input.projectId)
+      }
+      case 'project.budget.set': {
+        const input = this.parse('project.budget.set', rawInput)
+        return this.orchestration.setBudget(input.projectId, input.softLimit, input.currency)
+      }
       case 'plan.generate': {
         const input = this.parse('plan.generate', rawInput)
         return this.orchestration.generatePlan(input.projectId, input.goal)

@@ -84,6 +84,7 @@ import {
   type AIModelRow,
   type AIModelPriceRow,
   type AgentBackendBindingRow,
+  type ProjectBudgetRow,
   type GraphLayoutRow,
   type PlanRevisionRow,
   type ProjectSnapshotRow,
@@ -1234,6 +1235,18 @@ export class ReadModels {
       modelId,
     )
     return row ? toAIModelPrice(row) : null
+  }
+
+  getProjectBudget(projectId: string): { projectId: string; softLimit: number; currency: string; updatedAt: number } | null {
+    const row = this.get<ProjectBudgetRow>('SELECT * FROM project_budgets WHERE project_id = ?', projectId)
+    return row
+      ? {
+          projectId: row.project_id,
+          softLimit: Number(row.soft_limit),
+          currency: row.currency,
+          updatedAt: Number(row.updated_at),
+        }
+      : null
   }
 
   summarizeAIUsage(projectId?: string): AIUsageSummary {

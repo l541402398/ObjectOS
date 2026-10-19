@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { App as AntApp, Button, DatePicker, Form, Input, Modal, Select, Tooltip } from 'antd'
+import { App as AntApp, Button, DatePicker, Form, Input, InputNumber, Modal, Select, Tooltip } from 'antd'
 import type { Dayjs } from 'dayjs'
 import {
   ArrowRightOutlined,
@@ -31,7 +31,7 @@ import {
   toneForStatus,
 } from '@projectos/ui'
 import { ApprovalCard } from '@projectos/ai-ui'
-import { useApprovals, useProjectMetrics, useProjectOverview } from '../lib/queries'
+import { useApprovals, useProjectBudget, useProjectMetrics, useProjectOverview } from '../lib/queries'
 import { formatDate, formatRelative, parseLines, percent } from '../lib/format'
 import {
   DECISION_LABELS,
@@ -97,6 +97,8 @@ export default function ProjectOverviewPage() {
   const overview = useProjectOverview(projectId)
   const approvals = useApprovals(projectId)
   const metrics = useProjectMetrics(projectId)
+  const budget = useProjectBudget(projectId)
+  const [budgetLimit, setBudgetLimit] = useState<number | null>(null)
   const [advanceOpen, setAdvanceOpen] = useState(false)
   const [createKind, setCreateKind] = useState<LifecycleKind | null>(null)
   const [lifecycleForm] = Form.useForm<LifecycleFormValues>()
@@ -131,6 +133,17 @@ export default function ProjectOverviewPage() {
 
   const reveal = useMutation({
     mutationFn: () => window.projectos.projects.reveal(projectId),
+    onError: (error) => message.error(errorMessage(error)),
+  })
+
+  const saveBudget = useMutation({
+    mutationFn: () =>
+      window.projectos.projectAnalysis.setBudget(projectId, budgetLimit ?? budget.data?.budget?.softLimit ?? 0, 'USD'),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['project-budget', projectId] })
+      await queryClient.invalidateQueries({ queryKey: ['ai-usage'] })
+      message.success('软预算已保存')
+    },
     onError: (error) => message.error(errorMessage(error)),
   })
 
@@ -605,6 +618,25 @@ export default function ProjectOverviewPage() {
             ) : (
               <EmptyState compact title="暂无指标" />
             )}
+            <div className="po-budget-editor">
+              <div>
+                <span className="po-caption po-muted">软预算（USD）</span>
+                <strong>
+                  {budget.data?.spent.toFixed(4) ?? '0.0000'} / {budget.data?.budget?.softLimit ?? '未设置'}
+                  {budget.data?.exceeded ? ' · 已超限' : ''}
+                </strong>
+              </div>
+              <InputNumber
+                min={0}
+                step={1}
+                value={budgetLimit ?? budget.data?.budget?.softLimit ?? 0}
+                onChange={(value) => setBudgetLimit(value ?? 0)}
+                style={{ width: 110 }}
+              />
+              <Button size="small" loading={saveBudget.isPending} onClick={() => saveBudget.mutate()}>
+                保存
+              </Button>
+            </div>
           </SectionCard>
 
           <SectionCard

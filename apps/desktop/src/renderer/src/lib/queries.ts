@@ -56,6 +56,15 @@ export function useProjectMetrics(projectId: string | null | undefined) {
   })
 }
 
+export function useProjectBudget(projectId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['project-budget', projectId ?? ''] as const,
+    queryFn: () => window.projectos.projectAnalysis.budget(projectId!),
+    enabled: Boolean(projectId),
+    staleTime: 10_000,
+  })
+}
+
 export function useTaskBoard(projectId: string | null | undefined) {
   return useQuery({
     queryKey: qk.board(projectId ?? ''),

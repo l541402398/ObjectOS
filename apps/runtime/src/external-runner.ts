@@ -33,7 +33,15 @@ function claudeArgs(prompt: string, allowWrite: boolean): string[] {
 
 export function externalCommand(adapterId: 'claude-code' | 'codex', prompt: string, allowWrite: boolean): string[] {
   if (adapterId === 'claude-code') return claudeArgs(prompt, allowWrite)
-  throw new AppError('NOT_IMPLEMENTED', 'Codex CLI 执行适配尚未实现；仅支持安装检测')
+  return [
+    'exec',
+    '--json',
+    '--skip-git-repo-check',
+    '--sandbox',
+    allowWrite ? 'workspace-write' : 'read-only',
+    '--',
+    prompt,
+  ]
 }
 
 export class ExternalAgentRunner {
@@ -51,7 +59,10 @@ export class ExternalAgentRunner {
     const installations = await listExternalAgents()
     const installation = installations.find((item) => item.adapterId === input.adapterId)
     if (!installation?.installed) throw new AppError('CONFLICT', `${input.adapterId} 未安装或不可用`)
-    if (input.adapterId === 'codex') throw new AppError('NOT_IMPLEMENTED', 'Codex CLI 执行适配尚未实现')
+    if (input.adapterId === 'codex') {
+      // Codex CLI compatibility is implemented against `codex exec --json`; it is not
+      // exercised in this environment because the CLI is absent.
+    }
     if (!input.allowWrite) {
       // read-only is enforced by Claude's plan permission mode and the read-only tool allowlist.
     }

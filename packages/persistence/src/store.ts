@@ -1526,6 +1526,21 @@ export class SqliteStore {
     })
   }
 
+  upsertProjectBudget(input: { projectId: string; softLimit: number; currency: string }): void {
+    this.write(() => {
+      this.run(
+        `INSERT INTO project_budgets (project_id, soft_limit, currency, updated_at)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT(project_id) DO UPDATE SET
+           soft_limit = excluded.soft_limit, currency = excluded.currency, updated_at = excluded.updated_at`,
+        input.projectId,
+        input.softLimit,
+        input.currency,
+        now(),
+      )
+    })
+  }
+
   recordAIUsage(record: AIUsageRecord): void {
     this.write(() => {
       this.run(

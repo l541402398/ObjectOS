@@ -39,6 +39,7 @@ import {
   GraphLayoutPositionsSchema,
   GraphSnapshotSchema,
   PlanDraftSchema,
+  ProjectBudgetStatusSchema,
   ProjectMetricsSchema,
   WorktreeInfoSchema,
   PlanUpdateInputSchema,
@@ -640,6 +641,18 @@ export const ApiSchemas = {
   'project.metrics': {
     input: z.object({ projectId: IdSchema }),
     output: ProjectMetricsSchema,
+  },
+  'project.budget.get': {
+    input: z.object({ projectId: IdSchema }),
+    output: ProjectBudgetStatusSchema,
+  },
+  'project.budget.set': {
+    input: z.object({
+      projectId: IdSchema,
+      softLimit: z.number().nonnegative(),
+      currency: z.string().trim().min(1).max(12).default('USD'),
+    }),
+    output: ProjectBudgetStatusSchema,
   },
   'plan.generate': {
     input: z.object({ projectId: IdSchema, goal: z.string().trim().min(3).max(8000) }),

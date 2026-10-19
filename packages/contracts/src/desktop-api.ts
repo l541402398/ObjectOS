@@ -157,6 +157,8 @@ export interface ProjectOSDesktopApi {
     scan: (projectId: string) => Promise<Out<'project.scan'>>
     snapshot: (projectId: string) => Promise<Out<'project.snapshot.get'>>
     metrics: (projectId: string) => Promise<Out<'project.metrics'>>
+    budget: (projectId: string) => Promise<Out<'project.budget.get'>>
+    setBudget: (projectId: string, softLimit: number, currency?: string) => Promise<Out<'project.budget.set'>>
   }
   plans: {
     generate: (projectId: string, goal: string) => Promise<Out<'plan.generate'>>

@@ -18,4 +18,13 @@ describe('external agent command', () => {
     expect(args).toContain('acceptEdits')
     expect(args).toContain('Read,Edit,Write,Glob,Grep')
   })
+
+  it('uses Codex exec with an explicit sandbox mode', () => {
+    const readOnly = externalCommand('codex', '分析项目', false)
+    expect(readOnly).toContain('exec')
+    expect(readOnly).toContain('--json')
+    expect(readOnly).toContain('read-only')
+    const write = externalCommand('codex', '修改项目', true)
+    expect(write).toContain('workspace-write')
+  })
 })
