@@ -82,6 +82,7 @@ export const OperationsInsightsSchema = z.object({
   ciWorkflows: z.array(z.string()),
   gitHooks: z.array(z.string()),
   audit: z.object({ status: z.enum(['passed', 'failed', 'unavailable']), vulnerabilities: z.number().int().nonnegative() }),
+  trend: z.array(z.object({ date: z.string(), count: z.number().int().nonnegative() })),
   changelog: z.string(),
   dependencies: z.number().int().nonnegative(),
   devDependencies: z.number().int().nonnegative(),

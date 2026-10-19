@@ -194,11 +194,12 @@ export default function OperationsPage() {
           <span>开发依赖 {insights.data?.devDependencies ?? 0}</span>
           <span>CI {insights.data?.ciWorkflows.length ?? 0}</span>`r`n          <span>Hooks {insights.data?.gitHooks.length ?? 0}</span>`r`n          <span>安全审计 {insights.data?.audit.vulnerabilities ?? 0}</span>
         </div>
-        <pre className="po-changelog">{insights.data?.changelog || '暂无 Git 历史'}</pre>
+        <div className="po-trend">`r`n          {(insights.data?.trend ?? []).map((point) => <span key={point.date} title={`${point.date}: ${point.count}`} style={{ height: `${Math.min(36, 6 + point.count * 6)}px` }} />)}`r`n        </div>`r`n        <pre className="po-changelog">{insights.data?.changelog || '暂无 Git 历史'}</pre>
       </section>
     </div>
   )
 }
+
 
 
 

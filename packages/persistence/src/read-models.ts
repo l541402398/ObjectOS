@@ -1373,6 +1373,14 @@ export class ReadModels {
       return { projectId: row.project_id, intervalMinutes: config.intervalMinutes ?? 30, nextRunAt: row.next_run_at }
     })
   }
+  completionTrend(projectId: string, days = 7): Array<{ date: string; count: number }> {
+    const since = Date.now() - days * 86_400_000
+    return this.all<{ day: string; count: number }>(
+      "SELECT date(created_at / 1000, 'unixepoch') AS day, count(*) AS count FROM project_events WHERE project_id = ? AND event_type LIKE '%task%completed%' AND created_at >= ? GROUP BY day ORDER BY day",
+      projectId, since,
+    ).map((row) => ({ date: row.day, count: Number(row.count) }))
+  }
+
   getAutomationGrant(projectId: string): {
     projectId: string
     allowedActions: string[]

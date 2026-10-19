@@ -229,7 +229,7 @@ export class OperationsService {
         } catch { /* unavailable */ }
       }
     }
-    return { projectId, ciWorkflows, gitHooks, audit, changelog, dependencies, devDependencies }
+    return { projectId, ciWorkflows, gitHooks, audit, trend: this.store.read.completionTrend(projectId), changelog, dependencies, devDependencies }
   }
 
   getGrant(projectId: string) {
@@ -334,6 +334,7 @@ export class OperationsService {
     return this.snapshot(projectId)
   }
 }
+
 
 
 
