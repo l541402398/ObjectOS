@@ -1,6 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { app, BrowserWindow, Menu, nativeTheme, session } from 'electron'
+import { app, BrowserWindow, Menu, Tray, nativeImage, nativeTheme, session } from 'electron'
 import { createMainLogger } from './logger.js'
 import { ProviderConfigStore } from './provider-config.js'
 import { ConnectionSecretStore } from './connection-secrets.js'
@@ -17,6 +17,7 @@ app.setName('ProjectOS')
 app.setAppUserModelId('ai.projectos.desktop')
 
 let mainWindow: BrowserWindow | null = null
+let tray: Tray | null = null
 let supervisor: RuntimeSupervisor | null = null
 let disposeIpc: (() => void) | null = null
 let quitting = false
@@ -57,6 +58,11 @@ function createWindow(): BrowserWindow {
   window.setMenuBarVisibility(false)
   hardenWebContents(window.webContents, isDev, process.env.ELECTRON_RENDERER_URL)
   window.once('ready-to-show', () => window.show())
+  window.on('close', (event) => {
+    if (quitting) return
+    event.preventDefault()
+    window.hide()
+  })
   window.on('closed', () => {
     if (mainWindow === window) mainWindow = null
   })
@@ -74,6 +80,41 @@ function createWindow(): BrowserWindow {
   return window
 }
 
+function showMainWindow(): void {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    mainWindow = createWindow()
+    return
+  }
+  if (mainWindow.isMinimized()) mainWindow.restore()
+  mainWindow.show()
+  mainWindow.focus()
+}
+
+function createTray(): void {
+  if (tray) return
+  const iconPath = app.isPackaged
+    ? join(process.resourcesPath, 'tray.png')
+    : join(__dirname, '../../resources/tray.png')
+  const image = nativeImage.createFromPath(iconPath)
+  tray = new Tray(image.isEmpty() ? nativeImage.createEmpty() : image)
+  tray.setToolTip('ProjectOS')
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      { label: '显示 ProjectOS', click: showMainWindow },
+      { type: 'separator' },
+      {
+        label: '退出 ProjectOS',
+        click: () => {
+          quitting = true
+          app.quit()
+        },
+      },
+    ]),
+  )
+  tray.on('click', showMainWindow)
+  tray.on('double-click', showMainWindow)
+}
+
 async function bootstrap(): Promise<void> {
   await app.whenReady()
   dataDir = resolve(process.env.PROJECTOS_DATA_DIR ?? join(app.getPath('userData'), 'data'))
@@ -86,6 +127,7 @@ async function bootstrap(): Promise<void> {
   nativeTheme.themeSource = 'system'
 
   mainWindow = createWindow()
+  createTray()
 
   const runtimeEntry = app.isPackaged
     ? join(process.resourcesPath, 'runtime', 'index.mjs')
@@ -123,6 +165,7 @@ if (!gotLock) {
   app.on('second-instance', () => {
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.show()
       mainWindow.focus()
     }
   })
@@ -139,7 +182,7 @@ if (!gotLock) {
   })
 
   app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit()
+    // Keep the runtime and tray resident so closing the window does not interrupt work.
   })
 
   app.on('before-quit', (event) => {
@@ -148,6 +191,8 @@ if (!gotLock) {
     quitting = true
     const finish = (): void => {
       disposeIpc?.()
+      tray?.destroy()
+      tray = null
       app.quit()
     }
     if (supervisor) {

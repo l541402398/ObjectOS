@@ -221,7 +221,7 @@ building target=portable file=release\ProjectOS-0.1.0-portable.exe
 
 | 文件 | 大小 | 说明 |
 |---|---:|---|
-| `release/ProjectOS-0.1.0-portable.exe` | 99.3 MB | 单文件便携版，双击运行 |
+| `release/ProjectOS-0.1.0-portable.exe` | 99.4 MB | 单文件便携版，双击运行 |
 | `release/win-unpacked/ProjectOS.exe` | - | 解包调试版 |
 | `release/win-unpacked/resources/runtime/index.mjs` | 1.39 MB | 独立 Runtime bundle |
 | `release/SHA256SUMS.txt` | - | SHA256 |
@@ -229,7 +229,7 @@ building target=portable file=release\ProjectOS-0.1.0-portable.exe
 SHA256：
 
 ```text
-A8E097CDE5AB2738158A6993C80B0A4819BA65FECC60A23012D116C61283354E
+9590E31E8E264A2DF56044409B90A33E3773599641EF3C9E2633FEFE7784303C
 ```
 
 - `app.asar` 只含 `out/**`，不含 node_modules。
@@ -263,6 +263,8 @@ PACKAGE SMOKE PASS — packaged EXE creates a project, writes starter files and 
 - 符号链接越界测试因 Windows 权限未自动化；代码使用 realpath + 前缀校验，路径穿越已有测试。
 - Supervisor 崩溃退避的故障注入 E2E 未自动化；Runtime 子进程协议重启测试已覆盖数据恢复。
 - Outbox ACK 丢失重投未做故障注入；收件箱幂等已覆盖。
+
+
 
 
 

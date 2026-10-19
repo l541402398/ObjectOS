@@ -3,14 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom'
 import {
   App as AntApp,
   Button,
-  ConfigProvider,
   Input,
   Modal,
   Popconfirm,
   Select,
   Tabs,
   Tag,
-  theme as antdTheme,
 } from 'antd'
 import {
   ApartmentOutlined,
@@ -63,6 +61,7 @@ import {
 import { errorMessage } from '../../../lib/errors'
 import { formatRelative } from '../../../lib/format'
 import { useQueryClient } from '@tanstack/react-query'
+import { useResolvedTheme } from '../../../stores/ui'
 import './orchestration.css'
 
 interface WorkbenchData extends Record<string, unknown> {
@@ -298,6 +297,7 @@ export default function OrchestrationWorkspace() {
   const [inspectorTab, setInspectorTab] = useState('overview')
   const flowRef = useRef<ReactFlowInstance<FlowNode> | null>(null)
   const autoScan = useRef(false)
+  const resolvedTheme = useResolvedTheme()
   const initialSelection = useRef(false)
 
   const snapshot = snapshotQuery.data?.snapshot ?? null
@@ -807,8 +807,7 @@ export default function OrchestrationWorkspace() {
   })()
 
   return (
-    <ConfigProvider theme={{ algorithm: antdTheme.darkAlgorithm }}>
-      <div className="po-page po-page-wide po-orchestration-page">
+    <div className="po-page po-page-wide po-orchestration-page">
         <header className="po-orch-header">
           <div className="po-orch-identity">
             <div className="po-orch-kicker"><NodeIndexOutlined /> 编排工作台</div>
@@ -882,7 +881,7 @@ export default function OrchestrationWorkspace() {
                 onPaneClick={() => setSelected(null)}
                 proOptions={{ hideAttribution: true }}
               >
-                <Background gap={20} size={1} color="#202a39" />
+                <Background gap={20} size={1} color={resolvedTheme === "dark" ? "#202a39" : "#d5dce8"} />
                 <Controls showInteractive={false} />
                 <MiniMap pannable zoomable nodeColor={(node) => {
                   const graph = (node.data as WorkbenchData).graph
@@ -1082,8 +1081,10 @@ export default function OrchestrationWorkspace() {
           <pre className="po-diff-view">{worktreeInfo?.diff || '暂无改动'}</pre>
         </Modal>
       </div>
-    </ConfigProvider>
   )
 }
+
+
+
 
 

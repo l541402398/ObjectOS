@@ -1236,3 +1236,116 @@
   background: rgba(18, 25, 38, 0.8);
   font-size: 9px;
 }
+
+/* Light theme follows the app theme instead of forcing a dark canvas. */
+:root[data-theme='light'] .po-orchestration-page {
+  --orch-bg: #f2f5fa;
+  --orch-panel: #ffffff;
+  --orch-panel-raised: #f7f9fd;
+  --orch-border: #d7dfeb;
+  --orch-border-soft: #e7ecf4;
+  --orch-text: #182233;
+  --orch-text-dim: #536177;
+  --orch-text-faint: #7c8799;
+  --orch-blue: #2f6fe4;
+  --orch-green: #16a34a;
+  --orch-amber: #b7791f;
+  --orch-red: #dc4c55;
+  background: radial-gradient(900px 420px at 25% -20%, rgba(47, 111, 228, 0.1), transparent 65%), #f2f5fa;
+}
+
+:root[data-theme='light'] .po-orch-metrics > div {
+  background: linear-gradient(180deg, #ffffff, #f5f8fd);
+}
+
+:root[data-theme='light'] .po-orch-progress-line,
+:root[data-theme='light'] .po-orch-canvas-toolbar,
+:root[data-theme='light'] .po-orch-canvas-card,
+:root[data-theme='light'] .po-orch-inspector,
+:root[data-theme='light'] .po-dep-flow {
+  background: #ffffff;
+}
+
+:root[data-theme='light'] .po-orch-progress-line > div,
+:root[data-theme='light'] .po-flow-progress {
+  background: #e3e9f2;
+}
+
+:root[data-theme='light'] .po-orch-canvas-toolbar .ant-btn {
+  background: #f6f8fc;
+  color: #46546a;
+}
+
+:root[data-theme='light'] .po-orch-canvas .react-flow__controls-button,
+:root[data-theme='light'] .po-orch-canvas .react-flow__minimap {
+  background: #ffffff;
+  color: #46546a;
+}
+
+:root[data-theme='light'] .po-orch-canvas .react-flow__minimap-mask {
+  fill: rgba(220, 227, 238, 0.55);
+}
+
+:root[data-theme='light'] .po-orch-legend {
+  background: rgba(255, 255, 255, 0.9);
+  color: #6b778b;
+}
+
+:root[data-theme='light'] .po-flow-orchestrator {
+  background: linear-gradient(110deg, rgba(219, 233, 255, 0.95), #ffffff);
+  box-shadow: 0 12px 28px -20px rgba(24, 45, 80, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+}
+
+:root[data-theme='light'] .po-flow-agent {
+  background: linear-gradient(180deg, #ffffff, #f8fafd);
+  box-shadow: 0 10px 24px -20px rgba(23, 43, 74, 0.45);
+}
+
+:root[data-theme='light'] .po-flow-agent-task {
+  background: #f2f6fc;
+  color: #526078;
+}
+
+:root[data-theme='light'] .po-flow-task {
+  background: #ffffff;
+  box-shadow: 0 8px 18px -18px rgba(23, 43, 74, 0.45);
+}
+
+:root[data-theme='light'] .po-flow-handle {
+  background: #ffffff;
+  border-color: #7d94b3;
+}
+
+:root[data-theme='light'] .po-flow-edge path {
+  stroke: #8fa2ba !important;
+}
+
+:root[data-theme='light'] .po-flow-state {
+  background: #f7f9fc;
+}
+
+:root[data-theme='light'] .po-orch-inspector-metrics span,
+:root[data-theme='light'] .po-inspector-task,
+:root[data-theme='light'] .po-inspector-approval,
+:root[data-theme='light'] .po-dep-chain {
+  background: #f7f9fc;
+}
+
+:root[data-theme='light'] .po-orch-seq {
+  background: #f7f9fc;
+}
+
+:root[data-theme='light'] .po-orch-filter .ant-input {
+  background: #ffffff;
+  color: #182233;
+}
+
+:root[data-theme='light'] .po-inspector-metrics span {
+  background: #f7f9fc;
+  color: #6b778b;
+}
+
+:root[data-theme='light'] .po-inspector-metrics span {
+  background: #f7f9fc !important;
+  color: #6b778b !important;
+}

@@ -71,9 +71,20 @@ const NAV_PATHS: Record<string, string> = {
 function Logo() {
   return (
     <span className="po-logo" aria-hidden="true">
-      <i />
-      <i />
-      <i />
+      <svg viewBox="0 0 64 64">
+        <rect x="2" y="2" width="60" height="60" rx="14" fill="#0A1220" />
+        <g fill="none" stroke="#E8F6FF" strokeWidth="2.4">
+          <ellipse cx="32" cy="32" rx="22" ry="8" />
+          <ellipse cx="32" cy="32" rx="22" ry="8" transform="rotate(60 32 32)" />
+          <ellipse cx="32" cy="32" rx="22" ry="8" transform="rotate(120 32 32)" />
+        </g>
+        <g fill="#5DC8FF">
+          <circle cx="10" cy="32" r="1.9" />
+          <circle cx="54" cy="32" r="1.9" />
+        </g>
+        <circle cx="32" cy="32" r="4.2" fill="#F5FAFF" />
+        <circle cx="32" cy="32" r="1.8" fill="#2F8CFF" />
+      </svg>
     </span>
   )
 }

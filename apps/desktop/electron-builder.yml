@@ -19,6 +19,8 @@ files:
 extraResources:
   - from: ../runtime/dist/index.mjs
     to: runtime/index.mjs
+  - from: resources/tray.png
+    to: tray.png
 
 win:
   icon: resources/icon.ico

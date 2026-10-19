@@ -9,14 +9,14 @@
 | 便携版 EXE | `release/ProjectOS-0.1.0-portable.exe` | 单文件，双击直接运行，无需安装 |
 | 解包目录 | `release/win-unpacked/ProjectOS.exe` | 用于调试/冒烟测试 |
 
-- 便携版大小约 **99 MB**。
+- 便携版大小约 **99.4 MB**。
 - 未做数字签名；Windows SmartScreen 可能提示“未知发布者”，选择“更多信息 → 仍要运行”。
 - 仅支持 Windows x64；macOS/Linux 需要对应构建。
 
 SHA256：
 
 ```text
-A8E097CDE5AB2738158A6993C80B0A4819BA65FECC60A23012D116C61283354E  ProjectOS-0.1.0-portable.exe
+9590E31E8E264A2DF56044409B90A33E3773599641EF3C9E2633FEFE7784303C  ProjectOS-0.1.0-portable.exe
 ```
 
 ## 运行
@@ -99,6 +99,8 @@ PACKAGE SMOKE PASS — packaged EXE creates a project, writes starter files and 
 - 未签名（无 Authenticode 证书），SmartScreen 可能拦截。
 - 未做安装器（NSIS）、自动更新、卸载器、代码签名与 CI 发布。
 - 未在干净 Windows 虚拟机验证；当前验证机已安装 Node/Electron，但打包产物不依赖它们。
+
+
 
 
 
