@@ -168,3 +168,23 @@ export const WorktreeInfoSchema = z.object({
   mergedAt: TimestampSchema.nullable(),
 })
 export type WorktreeInfo = z.infer<typeof WorktreeInfoSchema>
+
+export const ProjectMetricsSchema = z.object({
+  projectId: IdSchema,
+  tasksTotal: z.number().int().nonnegative(),
+  tasksDone: z.number().int().nonnegative(),
+  completionRate: z.number().min(0).max(1),
+  blockedTasks: z.number().int().nonnegative(),
+  activeRuns: z.number().int().nonnegative(),
+  averageCycleTimeMs: z.number().nonnegative(),
+  throughput7d: z.number().int().nonnegative(),
+  agents: z.array(z.object({
+    agentId: IdSchema,
+    name: z.string(),
+    runs: z.number().int().nonnegative(),
+    completed: z.number().int().nonnegative(),
+  })),
+  criticalPath: z.array(z.object({ key: z.string(), title: z.string() })),
+  planRevision: z.number().int().positive().nullable(),
+})
+export type ProjectMetrics = z.infer<typeof ProjectMetricsSchema>

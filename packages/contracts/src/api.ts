@@ -37,6 +37,7 @@ import {
   GraphLayoutPositionsSchema,
   GraphSnapshotSchema,
   PlanDraftSchema,
+  ProjectMetricsSchema,
   WorktreeInfoSchema,
   PlanUpdateInputSchema,
   ProjectSnapshotSchema,
@@ -148,6 +149,7 @@ export const CreateDecisionInputSchema = z.object({
   title: z.string().trim().min(1).max(240),
   body: z.string().max(40_000).default(''),
   status: DecisionStatusSchema.default('proposed'),
+  supersedesId: IdSchema.nullable().optional(),
 })
 export type CreateDecisionInput = z.infer<typeof CreateDecisionInputSchema>
 
@@ -620,6 +622,10 @@ export const ApiSchemas = {
   'project.snapshot.get': {
     input: z.object({ projectId: IdSchema }),
     output: z.object({ snapshot: ProjectSnapshotSchema.nullable() }),
+  },
+  'project.metrics': {
+    input: z.object({ projectId: IdSchema }),
+    output: ProjectMetricsSchema,
   },
   'plan.generate': {
     input: z.object({ projectId: IdSchema, goal: z.string().trim().min(3).max(8000) }),

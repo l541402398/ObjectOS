@@ -555,6 +555,10 @@ export class RuntimeDispatcher {
         const input = this.parse('project.snapshot.get', rawInput)
         return { snapshot: this.orchestration.snapshot(input.projectId) }
       }
+      case 'project.metrics': {
+        const input = this.parse('project.metrics', rawInput)
+        return this.orchestration.metrics(input.projectId)
+      }
       case 'plan.generate': {
         const input = this.parse('plan.generate', rawInput)
         return this.orchestration.generatePlan(input.projectId, input.goal)

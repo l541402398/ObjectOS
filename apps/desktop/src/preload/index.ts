@@ -181,6 +181,7 @@ const api: ProjectOSDesktopApi = {
   projectAnalysis: {
     scan: (projectId) => call('project.scan', { projectId }),
     snapshot: (projectId) => call('project.snapshot.get', { projectId }),
+    metrics: (projectId) => call('project.metrics', { projectId }),
   },
   plans: {
     generate: (projectId, goal) => call('plan.generate', { projectId, goal }),

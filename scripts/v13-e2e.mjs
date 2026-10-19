@@ -90,6 +90,8 @@ try {
     throw new Error('approved plan revision was not created as a new draft')
   }
 
+  const metrics = await page.evaluate(async (projectId) => window.projectos.projectAnalysis.metrics(projectId), project.id)
+  if (metrics.tasksTotal < 4 || metrics.criticalPath.length < 1) throw new Error('project metrics invalid')
   const graph = await page.evaluate(async (projectId) => window.projectos.graph.snapshot(projectId), project.id)
   const planTasks = graph.nodes.filter((node) => node.kind === 'task' && approved.taskIds.includes(node.taskId))
   if (planTasks.length !== 4) throw new Error('approved plan tasks missing from graph')
@@ -177,6 +179,8 @@ try {
     }
   }
 }
+
+
 
 
 

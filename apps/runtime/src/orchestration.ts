@@ -12,6 +12,7 @@ import type { SqliteStore } from '@projectos/persistence'
 import { buildGraphSnapshot } from '@projectos/graph-projection'
 import {
   agentForPlanRole,
+  criticalPathTasks,
   generateLocalPlan,
   topologicalPlanTasks,
   validatePlanDraft,
@@ -67,6 +68,43 @@ export class OrchestrationService {
   snapshot(projectId: string): ProjectSnapshot | null {
     if (!this.store.read.getProject(projectId)) throw new AppError('NOT_FOUND', '项目不存在')
     return this.store.read.getLatestProjectSnapshot(projectId)
+  }
+
+  metrics(projectId: string) {
+    if (!this.store.read.getProject(projectId)) throw new AppError('NOT_FOUND', '项目不存在')
+    const board = this.services.tasks.board(projectId)
+    const done = board.tasks.filter((task) => task.status === 'done')
+    const blocked = board.tasks.filter((task) => task.status === 'blocked')
+    const runs = this.store.read.listRunSummaries(projectId, 500)
+    const activeRuns = runs.filter((run) => ['created', 'queued', 'running', 'waiting_tool', 'waiting_approval', 'verifying', 'needs_reconciliation'].includes(run.status))
+    const agents = this.services.projects.listAgents(projectId)
+    const plans = this.store.read.listPlanRevisions(projectId)
+    const approved = plans.find((plan) => plan.status === 'approved')
+    const critical = approved
+      ? criticalPathTasks(approved).map((task) => ({ key: task.key, title: task.title }))
+      : []
+    const cutoff = now() - 7 * 24 * 60 * 60 * 1000
+    const cycleTimes = done.map((task) => Math.max(0, task.updatedAt - task.createdAt))
+    return {
+      projectId,
+      tasksTotal: board.tasks.length,
+      tasksDone: done.length,
+      completionRate: board.tasks.length ? done.length / board.tasks.length : 0,
+      blockedTasks: blocked.length,
+      activeRuns: activeRuns.length,
+      averageCycleTimeMs: cycleTimes.length
+        ? Math.round(cycleTimes.reduce((sum, value) => sum + value, 0) / cycleTimes.length)
+        : 0,
+      throughput7d: done.filter((task) => task.updatedAt >= cutoff).length,
+      agents: agents.map((view) => ({
+        agentId: view.agent.id,
+        name: view.agent.name,
+        runs: runs.filter((run) => run.agentId === view.agent.id).length,
+        completed: runs.filter((run) => run.agentId === view.agent.id && run.status === 'completed').length,
+      })),
+      criticalPath: critical,
+      planRevision: approved?.revision ?? null,
+    }
   }
 
   generatePlan(projectId: string, goal: string): PlanDraft {

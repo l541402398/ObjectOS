@@ -173,5 +173,26 @@ describe('application services', () => {
     expect(store.read.getTask(task.id)?.assigneeAgentId).toBe('agt_qa')
     expect(store.read.getSession(accepted.sessionId)?.agentId).toBe('agt_qa')
   })
+
+  it('supersedes an old decision when a replacement is created', async () => {
+    const { services, store, dir } = makeServices()
+    const project = await createProject(services, dir)
+    const old = services.projects.createDecision({
+      projectId: project.id,
+      title: 'Old ADR',
+      body: 'Old choice',
+      status: 'accepted',
+    })
+    const replacement = services.projects.createDecision({
+      projectId: project.id,
+      title: 'New ADR',
+      body: 'New choice',
+      status: 'accepted',
+      supersedesId: old.id,
+    })
+    expect(replacement.supersedesId).toBe(old.id)
+    expect(store.read.getDecision(old.id)?.status).toBe('superseded')
+    expect(store.read.listDecisions(project.id).find((decision) => decision.id === replacement.id)?.status).toBe('accepted')
+  })
 })
 

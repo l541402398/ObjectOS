@@ -44,7 +44,7 @@ ProjectOS 把项目从构思、需求、架构、规划、实现、测试、发�
   不自动重试。
 - **UI/UX**：设计令牌、Light/Dark/System、克制玻璃拟态、响应式 1440×900 与 1024×768、
   设置弹层、显式折叠侧栏、截图验证。
-- **测试**：64 个单元/集成/协议测试 + 六个 Playwright Electron E2E + 打包产物冒烟测试。
+- **测试**：65 个单元/集成/协议测试 + 六个 Playwright Electron E2E + 打包产物冒烟测试。
 
 ## 二期增量（V1.2 核心）
 
@@ -224,7 +224,7 @@ Node Runtime（application / agent loop / tools）
 ```text
 pnpm lint       → 0 errors, 0 warnings
 pnpm typecheck  → pass
-pnpm test       → 16 files, 64 tests passed
+pnpm test       → 16 files, 65 tests passed
 pnpm build      → Runtime bundle + Electron main/preload/renderer built
 node scripts/e2e.mjs       → PASS（UI 创建项目，关闭重启后恢复）
 node scripts/agent-e2e.mjs → PASS（审批暂停、批准写文件、继续循环、Run completed）
@@ -266,6 +266,7 @@ ProjectOS-0.1.0-portable.exe → 直接启动成功（无 node_modules，Runtime
 ## License
 
 MIT
+
 
 
 

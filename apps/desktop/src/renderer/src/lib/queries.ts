@@ -47,6 +47,15 @@ export function useProjectOverview(projectId: string | null | undefined, enabled
   })
 }
 
+export function useProjectMetrics(projectId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['project-metrics', projectId ?? ''] as const,
+    queryFn: () => window.projectos.projectAnalysis.metrics(projectId!),
+    enabled: Boolean(projectId),
+    staleTime: 10_000,
+  })
+}
+
 export function useTaskBoard(projectId: string | null | undefined) {
   return useQuery({
     queryKey: qk.board(projectId ?? ''),

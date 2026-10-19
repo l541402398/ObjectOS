@@ -320,21 +320,29 @@ export class ProjectService {
   createDecision(input: CreateDecisionInput, actor: ActionActor = USER_ACTOR): Decision {
     const project = this.getProjectOrThrow(input.projectId)
     const timestamp = now()
+    const superseded = input.supersedesId ? this.store.read.getDecision(input.supersedesId) : null
+    if (input.supersedesId && (!superseded || superseded.projectId !== project.id)) {
+      throw new AppError('NOT_FOUND', '被取代的决策不存在')
+    }
     const decision: Decision = {
       id: newId('dec'),
       projectId: input.projectId,
       title: input.title,
       body: input.body,
       status: input.status,
-      supersedesId: null,
+      supersedesId: input.supersedesId ?? null,
       createdAt: timestamp,
       updatedAt: timestamp,
     }
     return this.store.transaction(() => {
       this.store.createDecision(decision)
+      if (superseded) {
+        this.store.setDecisionStatus(superseded.id, 'superseded')
+      }
       this.store.appendEvent(project.id, decision.id, PROJECT_EVENT_TYPES.decisionCreated, {
         title: decision.title,
         status: decision.status,
+        supersedesId: decision.supersedesId,
         actor,
         actorName: actor.name,
       })

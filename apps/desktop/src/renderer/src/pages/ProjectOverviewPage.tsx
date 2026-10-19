@@ -31,7 +31,7 @@ import {
   toneForStatus,
 } from '@projectos/ui'
 import { ApprovalCard } from '@projectos/ai-ui'
-import { useApprovals, useProjectOverview } from '../lib/queries'
+import { useApprovals, useProjectMetrics, useProjectOverview } from '../lib/queries'
 import { formatDate, formatRelative, parseLines, percent } from '../lib/format'
 import {
   DECISION_LABELS,
@@ -78,6 +78,7 @@ interface LifecycleFormValues {
   acceptance?: string
   dueAt?: Dayjs
   status?: 'proposed' | 'accepted'
+  supersedesId?: string
 }
 
 type LifecycleKind = 'requirement' | 'milestone' | 'decision'
@@ -95,6 +96,7 @@ export default function ProjectOverviewPage() {
   const { message } = AntApp.useApp()
   const overview = useProjectOverview(projectId)
   const approvals = useApprovals(projectId)
+  const metrics = useProjectMetrics(projectId)
   const [advanceOpen, setAdvanceOpen] = useState(false)
   const [createKind, setCreateKind] = useState<LifecycleKind | null>(null)
   const [lifecycleForm] = Form.useForm<LifecycleFormValues>()
@@ -159,6 +161,7 @@ export default function ProjectOverviewPage() {
         title,
         body,
         status: values.status ?? 'proposed',
+        supersedesId: values.supersedesId ?? null,
       })
     },
     onSuccess: async (_result, variables) => {
@@ -582,6 +585,28 @@ export default function ProjectOverviewPage() {
             />
           </SectionCard>
 
+          <SectionCard title="项目指标" subtitle="真实任务与运行数据" className="po-compact-card">
+            {metrics.isLoading ? (
+              <LoadingBlock rows={3} />
+            ) : metrics.data ? (
+              <KeyValueList
+                items={[
+                  { label: '完成率', value: percent(metrics.data.completionRate) },
+                  { label: '平均周期', value: metrics.data.averageCycleTimeMs ? `${Math.round(metrics.data.averageCycleTimeMs / 3_600_000)}h` : '—' },
+                  { label: '7 日吞吐', value: `${metrics.data.throughput7d} 任务` },
+                  { label: '阻塞 / 活跃 Run', value: `${metrics.data.blockedTasks} / ${metrics.data.activeRuns}` },
+                  { label: '计划 revision', value: metrics.data.planRevision ? `r${metrics.data.planRevision}` : '—' },
+                  {
+                    label: '关键路径',
+                    value: metrics.data.criticalPath.map((task) => task.key).join(' → ') || '—',
+                  },
+                ]}
+              />
+            ) : (
+              <EmptyState compact title="暂无指标" />
+            )}
+          </SectionCard>
+
           <SectionCard
             title="决策记录"
             subtitle="已接受的 ADR 会进入上下文"
@@ -656,14 +681,25 @@ export default function ProjectOverviewPage() {
             </Form.Item>
           ) : null}
           {createKind === 'decision' ? (
-            <Form.Item name="status" label="决策状态">
-              <Select
-                options={[
-                  { value: 'proposed', label: '提议中' },
-                  { value: 'accepted', label: '已接受' },
-                ]}
-              />
-            </Form.Item>
+            <>
+              <Form.Item name="status" label="决策状态">
+                <Select
+                  options={[
+                    { value: 'proposed', label: '提议中' },
+                    { value: 'accepted', label: '已接受' },
+                  ]}
+                />
+              </Form.Item>
+              <Form.Item name="supersedesId" label="取代旧决策（可选）" extra="旧决策会标记为 superseded，不再进入有效上下文。">
+                <Select
+                  allowClear
+                  placeholder="不取代"
+                  options={(overview.data?.decisions ?? [])
+                    .filter((decision) => decision.status !== 'superseded')
+                    .map((decision) => ({ value: decision.id, label: decision.title }))}
+                />
+              </Form.Item>
+            </>
           ) : null}
         </Form>
       </Modal>
