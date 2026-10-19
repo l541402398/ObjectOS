@@ -112,6 +112,10 @@ export interface AgentBackendBindingRow {
   connection_id: string | null
   model_id: string | null
   priority: number
+  required_capabilities_json: string
+  max_concurrency: number
+  budget_limit: number | null
+  failure_policy: string
   created_at: number
   updated_at: number
 }
@@ -784,6 +788,17 @@ export function toAgentBackendBinding(row: AgentBackendBindingRow): AgentBackend
     connectionId: row.connection_id,
     modelId: row.model_id,
     priority: Number(row.priority),
+    requiredCapabilities: (() => {
+      try {
+        const parsed = JSON.parse(row.required_capabilities_json) as unknown
+        return Array.isArray(parsed) ? (parsed as AgentBackendBinding['requiredCapabilities']) : []
+      } catch {
+        return []
+      }
+    })(),
+    maxConcurrency: Number(row.max_concurrency ?? 0),
+    budgetLimit: row.budget_limit === null ? null : Number(row.budget_limit),
+    failurePolicy: row.failure_policy === 'fail' ? 'fail' : 'fallback',
     createdAt: Number(row.created_at),
     updatedAt: Number(row.updated_at),
   }

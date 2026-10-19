@@ -1465,12 +1465,15 @@ export class SqliteStore {
     this.write(() => {
       this.run(
         `INSERT INTO agent_backend_bindings
-         (id, scope_type, scope_id, agent_role, task_type, connection_id, model_id, priority, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         (id, scope_type, scope_id, agent_role, task_type, connection_id, model_id, priority,
+          required_capabilities_json, max_concurrency, budget_limit, failure_policy, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(id) DO UPDATE SET
            scope_type = excluded.scope_type, scope_id = excluded.scope_id, agent_role = excluded.agent_role,
            task_type = excluded.task_type, connection_id = excluded.connection_id, model_id = excluded.model_id,
-           priority = excluded.priority, updated_at = excluded.updated_at`,
+           priority = excluded.priority, required_capabilities_json = excluded.required_capabilities_json,
+           max_concurrency = excluded.max_concurrency, budget_limit = excluded.budget_limit,
+           failure_policy = excluded.failure_policy, updated_at = excluded.updated_at`,
         binding.id,
         binding.scopeType,
         binding.scopeId,
@@ -1479,6 +1482,10 @@ export class SqliteStore {
         binding.connectionId,
         binding.modelId,
         binding.priority,
+        JSON.stringify(binding.requiredCapabilities),
+        binding.maxConcurrency,
+        binding.budgetLimit,
+        binding.failurePolicy,
         binding.createdAt,
         binding.updatedAt,
       )
@@ -1769,3 +1776,4 @@ export function createArtifactRecord(input: {
 }
 
 export { toProject, toTask, toSession, toMessage, toRun, toRunStep, toStage }
+

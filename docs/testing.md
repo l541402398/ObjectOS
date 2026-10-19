@@ -72,7 +72,7 @@ pnpm screenshots   # 构建后生成 1440x900 / 1024x768 的 Light/Dark 截图
 ```text
 pnpm lint      → 0 errors, 0 warnings
 pnpm typecheck → pass (strict, noEmit)
-pnpm test      → 17 files / 67 tests passed
+pnpm test      → 17 files / 68 tests passed
 pnpm build     → runtime bundle ~1.4 MB; Electron out/main, out/preload, out/renderer
 e2e.mjs        → PASS (T-001)
 agent-e2e.mjs  → PASS (approval + write + resume + completed, 2 provider requests)
@@ -96,6 +96,7 @@ V1.3 验收用例（T01–T18）见 [`docs/v1.3/acceptance-report.md`](v1.3/acce
 - 路由、费用、Anthropic 原生协议未实现，见 V1.2 验收报告。
 - V1.3 仍未实现外部 Agent 执行、原生 Anthropic 协议、事件 seq 补齐、200 节点压测。
 - Electron 崩溃重启的 UI 状态恢复有事件驱动刷新，但没有专门的故障注入 E2E。
+
 
 
 

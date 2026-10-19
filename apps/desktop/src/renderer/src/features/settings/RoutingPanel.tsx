@@ -16,6 +16,9 @@ const ROLES = [
 interface Draft {
   connectionId: string | null
   modelId: string
+  requiredCapabilities: Array<'streaming' | 'toolCalling' | 'vision' | 'reasoning'>
+  maxConcurrency: number
+  failurePolicy: 'fail' | 'fallback'
 }
 
 function bindingFor(bindings: AgentBackendBinding[], role: string): AgentBackendBinding | null {
@@ -75,7 +78,13 @@ export function RoutingPanel() {
     onError: (error) => message.error(errorMessage(error)),
   })
   const [drafts, setDrafts] = useState<Record<string, Draft>>({})
-  const [globalDraft, setGlobalDraft] = useState<Draft>({ connectionId: null, modelId: '' })
+  const [globalDraft, setGlobalDraft] = useState<Draft>({
+    connectionId: null,
+    modelId: '',
+    requiredCapabilities: [],
+    maxConcurrency: 0,
+    failurePolicy: 'fallback',
+  })
 
   const connections = useMemo(() => connectionsQuery.data?.connections ?? [], [connectionsQuery.data])
   const executable = useMemo(
@@ -95,11 +104,23 @@ export function RoutingPanel() {
     const next: Record<string, Draft> = {}
     for (const role of ROLES) {
       const binding = bindingFor(bindings, role.role)
-      next[role.role] = { connectionId: binding?.connectionId ?? null, modelId: binding?.modelId ?? '' }
+      next[role.role] = {
+        connectionId: binding?.connectionId ?? null,
+        modelId: binding?.modelId ?? '',
+        requiredCapabilities: binding?.requiredCapabilities ?? [],
+        maxConcurrency: binding?.maxConcurrency ?? 0,
+        failurePolicy: binding?.failurePolicy ?? 'fallback',
+      }
     }
     setDrafts(next)
     const fallback = globalBinding(bindings)
-    setGlobalDraft({ connectionId: fallback?.connectionId ?? null, modelId: fallback?.modelId ?? '' })
+    setGlobalDraft({
+      connectionId: fallback?.connectionId ?? null,
+      modelId: fallback?.modelId ?? '',
+      requiredCapabilities: fallback?.requiredCapabilities ?? [],
+      maxConcurrency: fallback?.maxConcurrency ?? 0,
+      failurePolicy: fallback?.failurePolicy ?? 'fallback',
+    })
   }, [routingQuery.data])
 
   const save = useMutation({
@@ -120,6 +141,9 @@ export function RoutingPanel() {
         connectionId: draft.connectionId,
         modelId: draft.modelId.trim() || null,
         priority: 0,
+        requiredCapabilities: draft.requiredCapabilities,
+        maxConcurrency: draft.maxConcurrency,
+        failurePolicy: draft.failurePolicy,
       })
     },
     onSuccess: async () => {
@@ -142,7 +166,13 @@ export function RoutingPanel() {
       <div className="po-routing-list">
         {ROLES.map(({ role, hint }) => {
           const binding = bindingFor(routingQuery.data?.bindings ?? [], role)
-          const draft = drafts[role] ?? { connectionId: null, modelId: '' }
+          const draft = drafts[role] ?? {
+            connectionId: null,
+            modelId: '',
+            requiredCapabilities: [],
+            maxConcurrency: 0,
+            failurePolicy: 'fallback' as const,
+          }
           return (
             <div className="po-routing-row" key={role}>
               <div className="po-routing-role">

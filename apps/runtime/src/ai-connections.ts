@@ -246,6 +246,10 @@ export class AIConnectionService {
       connectionId: input.connectionId,
       modelId: input.modelId ?? null,
       priority: input.priority,
+      requiredCapabilities: input.requiredCapabilities,
+      maxConcurrency: input.maxConcurrency,
+      budgetLimit: input.budgetLimit ?? null,
+      failurePolicy: input.failurePolicy,
       createdAt: existing?.createdAt ?? timestamp,
       updatedAt: timestamp,
     })
@@ -295,7 +299,7 @@ export class AIConnectionService {
     agentId: string
     agentRole: string
     taskId?: string | null
-  }): { connectionId: string; modelId: string | null } | null {
+  }, activeByConnection: Record<string, number> = {}): { connectionId: string; modelId: string | null } | null {
     const connections = new Map(
       this.listViews()
         .filter((connection) => connection.enabled && connection.backendKind === 'native-llm' && (connection.protocol === 'openai-chat' || connection.protocol === 'anthropic-messages' || connection.protocol === 'openai-responses'))
@@ -313,9 +317,39 @@ export class AIConnectionService {
       })
       .filter((item): item is { binding: AgentBackendBinding; score: number } => item !== null)
       .sort((a, b) => b.score - a.score)
-    const selected = scored[0]?.binding
+    let selected: AgentBackendBinding | null = null
+    let rejected = false
+    for (const candidate of scored) {
+      const connection = connections.get(candidate.binding.connectionId ?? '')
+      if (!connection) continue
+      const modelId = candidate.binding.modelId ?? connection.defaultModelId
+      if (candidate.binding.requiredCapabilities.length > 0) {
+        const model = modelId ? this.store.read.getAIModel(connection.id, modelId) : null
+        if (
+          !model ||
+          candidate.binding.requiredCapabilities.some(
+            (capability) => model.capabilities[capability] === 'no',
+          )
+        ) {
+          rejected = true
+          continue
+        }
+      }
+      if (
+        candidate.binding.maxConcurrency > 0 &&
+        (activeByConnection[connection.id] ?? 0) >= candidate.binding.maxConcurrency
+      ) {
+        rejected = true
+        continue
+      }
+      selected = candidate.binding
+      break
+    }
     if (selected?.connectionId) {
       return { connectionId: selected.connectionId, modelId: selected.modelId }
+    }
+    if (rejected && scored[0]?.binding.failurePolicy === 'fail') {
+      throw new AppError('PROVIDER_ERROR', '路由候选连接不满足能力或并发限制，且策略为 fail')
     }
     const fallback = this.getDefault()
     if (!fallback || !fallback.enabled || (fallback.protocol !== 'openai-chat' && fallback.protocol !== 'anthropic-messages' && fallback.protocol !== 'openai-responses')) return null

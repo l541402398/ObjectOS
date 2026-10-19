@@ -82,6 +82,44 @@ describe('AI connection registry', () => {
     expect(service.listPrices(connection.id)).toHaveLength(1)
   })
 
+  it('rejects explicit policies when capabilities or concurrency do not match', () => {
+    const { service } = setup()
+    const connection = service.create(input({ name: 'Policy' }))
+    service.createModel({ connectionId: connection.id, modelId: 'no-tools', capabilities: { toolCalling: 'no' } })
+    service.upsertBinding(
+      AgentBackendBindingUpsertSchema.parse({
+        scopeType: 'agent',
+        agentRole: '开发工程师',
+        connectionId: connection.id,
+        modelId: 'no-tools',
+        requiredCapabilities: ['toolCalling'],
+        failurePolicy: 'fail',
+      }),
+    )
+    expect(() =>
+      service.resolveForRun({
+        projectId: 'prj_demo',
+        agentId: 'agt_engineer',
+        agentRole: '开发工程师',
+      }),
+    ).toThrow(/不满足能力或并发限制/)
+    service.createModel({ connectionId: connection.id, modelId: 'tools', capabilities: { toolCalling: 'yes' } })
+    service.upsertBinding(
+      AgentBackendBindingUpsertSchema.parse({
+        scopeType: 'agent',
+        agentRole: '开发工程师',
+        connectionId: connection.id,
+        modelId: 'tools',
+        requiredCapabilities: ['toolCalling'],
+        maxConcurrency: 1,
+        failurePolicy: 'fail',
+      }),
+    )
+    expect(() =>
+      service.resolveForRun({ projectId: 'prj_demo', agentId: 'agt_engineer', agentRole: '开发工程师' }, { [connection.id]: 1 }),
+    ).toThrow(/不满足能力或并发限制/)
+  })
+
   it('routes by task, agent role, project and global scope with default fallback', () => {
     const { service } = setup()
     const fallback = service.create(input({ name: 'Default', isDefault: true }))
@@ -204,4 +242,5 @@ describe('connection probes', () => {
     }
   })
 })
+
 

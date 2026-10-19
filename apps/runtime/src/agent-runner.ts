@@ -89,6 +89,7 @@ interface ActiveRun {
 
 export class AgentRunner {  private readonly active = new Map<string, ActiveRun>()
   private readonly sessionIndex = new Map<string, string>()
+  private readonly activeConnections = new Map<string, number>()
   private aiConnections: import('./ai-connections.js').AIConnectionService | null = null
 
   constructor(
@@ -147,7 +148,7 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
       agentId: agent.id,
       agentRole: agent.role,
       taskId: task?.id ?? null,
-    }) ?? null
+    }, Object.fromEntries(this.activeConnections)) ?? null
     const provider = this.provider.createProvider(routed?.connectionId, routed?.modelId)
     const timestamp = now()
     const runId = newId('run')
@@ -264,6 +265,9 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
     }
     this.active.set(runId, state)
     this.sessionIndex.set(session.id, runId)
+    if (state.connectionId) {
+      this.activeConnections.set(state.connectionId, (this.activeConnections.get(state.connectionId) ?? 0) + 1)
+    }
     if (lease && task) {
       state.leaseTimer = setInterval(() => {
         try {
@@ -555,6 +559,11 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
     }
     this.active.delete(state.runId)
     this.sessionIndex.delete(state.sessionId)
+    if (state.connectionId) {
+      const remaining = (this.activeConnections.get(state.connectionId) ?? 1) - 1
+      if (remaining <= 0) this.activeConnections.delete(state.connectionId)
+      else this.activeConnections.set(state.connectionId, remaining)
+    }
     this.logger.info({ runId: state.runId, status }, 'agent run finished')
   }
 
@@ -1168,7 +1177,7 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
           agentId: agent.id,
           agentRole: agent.role,
           taskId: run.taskId,
-        }) ?? null
+        }, Object.fromEntries(this.activeConnections)) ?? null
       : null
     const provider = this.provider.createProvider(routed?.connectionId, routed?.modelId)
     const project = this.store.read.getProject(run.projectId)
@@ -1206,6 +1215,9 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
     }
     this.active.set(runId, state)
     this.sessionIndex.set(run.sessionId, runId)
+    if (state.connectionId) {
+      this.activeConnections.set(state.connectionId, (this.activeConnections.get(state.connectionId) ?? 0) + 1)
+    }
     return state
   }
 

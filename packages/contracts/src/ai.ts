@@ -238,6 +238,12 @@ export type ExternalAgentRunResult = z.infer<typeof ExternalAgentRunResultSchema
 export const AgentBackendScopeSchema = z.enum(['global', 'project', 'agent', 'task'])
 export type AgentBackendScope = z.infer<typeof AgentBackendScopeSchema>
 
+export const RoutingCapabilitySchema = z.enum(['streaming', 'toolCalling', 'vision', 'reasoning'])
+export type RoutingCapability = z.infer<typeof RoutingCapabilitySchema>
+
+export const RoutingFailurePolicySchema = z.enum(['fail', 'fallback'])
+export type RoutingFailurePolicy = z.infer<typeof RoutingFailurePolicySchema>
+
 export const AgentBackendBindingSchema = z.object({
   id: IdSchema,
   scopeType: AgentBackendScopeSchema,
@@ -247,6 +253,10 @@ export const AgentBackendBindingSchema = z.object({
   connectionId: IdSchema.nullable(),
   modelId: z.string().max(200).nullable(),
   priority: z.number().int().min(-100).max(100),
+  requiredCapabilities: z.array(RoutingCapabilitySchema).default([]),
+  maxConcurrency: z.number().int().min(0).max(20).default(0),
+  budgetLimit: z.number().nonnegative().nullable().default(null),
+  failurePolicy: RoutingFailurePolicySchema.default('fallback'),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,
 })
@@ -266,6 +276,10 @@ export const AgentBackendBindingUpsertSchema = z.object({
   connectionId: IdSchema.nullable().optional(),
   modelId: z.string().max(200).nullable().optional(),
   priority: z.number().int().min(-100).max(100).default(0),
+  requiredCapabilities: z.array(RoutingCapabilitySchema).default([]),
+  maxConcurrency: z.number().int().min(0).max(20).default(0),
+  budgetLimit: z.number().nonnegative().nullable().optional(),
+  failurePolicy: RoutingFailurePolicySchema.default('fallback'),
 })
 export type AgentBackendBindingUpsert = z.infer<typeof AgentBackendBindingUpsertSchema>
 

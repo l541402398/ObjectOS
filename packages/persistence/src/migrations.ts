@@ -509,6 +509,13 @@ CREATE TABLE project_budgets (
 );
 `
 
+const V7 = `
+ALTER TABLE agent_backend_bindings ADD COLUMN required_capabilities_json TEXT NOT NULL DEFAULT '[]';
+ALTER TABLE agent_backend_bindings ADD COLUMN max_concurrency INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE agent_backend_bindings ADD COLUMN budget_limit REAL;
+ALTER TABLE agent_backend_bindings ADD COLUMN failure_policy TEXT NOT NULL DEFAULT 'fallback';
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -516,6 +523,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 4, name: 'knowledge full text index', sql: V4 },
   { version: 5, name: 'ai model pricing', sql: V5 },
   { version: 6, name: 'project soft budgets', sql: V6 },
+  { version: 7, name: 'agent routing policy', sql: V7 },
 ]
 
 function checksum(sql: string): string {
