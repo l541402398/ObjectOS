@@ -13,6 +13,7 @@
 | 修复计划启动 | 完成（首版） | 提案批准后生成计划、审批、启动 scheduler 并创建 Worktree |
 | 修复结果回写 | 完成（首版） | 计划 completed → proposal completed + findings resolved；failed → proposal failed |
 | 间隔触发器 | 完成（首版） | automation_triggers + API + 30s due timer；重启保留 nextRunAt |
+| 项目事件触发 | 完成（首版） | task.blocked / run.failed 事件触发健康检查，60s 去抖 |
 | AutomationGrant | 完成（首版） | 24h/5 次默认授权；过期/撤销/次数校验；startRepair 无授权拒绝 |
 | 风险矩阵 | 完成（首版） | low/medium 可自动；high/critical 强制人工；需有效 Grant |
 | approved-autofix 自动执行 | 完成（首版） | 检查后自动提案/批准，低/中风险且授权有效时自动 startRepair |
@@ -21,9 +22,9 @@
 
 ## 未完成
 
-- 项目事件触发（interval 已接）`r`n- 项目事件触发与 lease
+- P1：CI / 依赖安全 / Changelog / 趋势图`r`n- 项目事件触发与 lease
 - 修复执行结果回写 Finding/Proposal 状态（当前计划已启动，完成态未回写）
-- 项目事件触发（interval 已接）
+- P1：CI / 依赖安全 / Changelog / 趋势图
 - 预算并发/重试 circuit breaker
 - Git hooks / CI / 依赖安全 / Changelog 趋势
 - 真实 Claude/付费 API 验收（按用户要求未测）
@@ -39,6 +40,7 @@ node scripts/v14-success-e2e.mjs → PASS
   proposals: 1 · executing
   mode: propose
 ```
+
 
 
 

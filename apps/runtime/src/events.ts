@@ -9,6 +9,7 @@ export interface RuntimeEventSink {
 
 export class RuntimeEventHub {
   private seq = 0
+  private readonly listeners = new Set<(event: RuntimeEvent) => void>()
 
   constructor(
     private readonly sink: RuntimeEventSink,
@@ -23,6 +24,11 @@ export class RuntimeEventHub {
     } catch (error) {
       this.logger.warn({ err: error }, 'failed to emit runtime event')
     }
+  }
+
+  subscribe(listener: (event: RuntimeEvent) => void): () => void {
+    this.listeners.add(listener)
+    return () => this.listeners.delete(listener)
   }
 
   publishCommitted(events: ProjectEvent[]): void {
@@ -145,3 +151,4 @@ export class RuntimeEventHub {
     }
   }
 }
+
