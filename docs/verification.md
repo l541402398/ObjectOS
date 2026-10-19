@@ -44,7 +44,7 @@ $ pnpm test
  ✓ tests/worktree.test.ts             (2 tests)
 
  Test Files  17 passed (17)
-      Tests  64 passed (64)
+      Tests  65 passed (65)
 ```
 
 `runtime-protocol` 启动真实的 `tsx apps/runtime/src/main.ts` 子进程，验证握手、创建项目、
@@ -263,6 +263,7 @@ PACKAGE SMOKE PASS — packaged EXE creates a project, writes starter files and 
 - 符号链接越界测试因 Windows 权限未自动化；代码使用 realpath + 前缀校验，路径穿越已有测试。
 - Supervisor 崩溃退避的故障注入 E2E 未自动化；Runtime 子进程协议重启测试已覆盖数据恢复。
 - Outbox ACK 丢失重投未做故障注入；收件箱幂等已覆盖。
+
 
 
 
