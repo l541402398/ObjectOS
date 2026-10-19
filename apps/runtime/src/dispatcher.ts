@@ -605,6 +605,18 @@ export class RuntimeDispatcher {
         const input = this.parse('operations.propose', rawInput)
         return this.operations.propose(input.projectId, input.findingIds)
       }
+      case 'operations.getGrant': {
+        const input = this.parse('operations.getGrant', rawInput)
+        return this.operations.getGrant(input.projectId)
+      }
+      case 'operations.grant': {
+        const input = this.parse('operations.grant', rawInput)
+        return this.operations.grant(input.projectId, input.hours, input.maxRuns)
+      }
+      case 'operations.revokeGrant': {
+        const input = this.parse('operations.revokeGrant', rawInput)
+        return this.operations.revokeGrant(input.projectId)
+      }
       case 'operations.getTrigger': {
         const input = this.parse('operations.getTrigger', rawInput)
         return this.deps.store.read.getAutomationTrigger(input.projectId)
@@ -621,6 +633,7 @@ export class RuntimeDispatcher {
         if (!proposal) throw new Error('修复提案不存在')
         if (proposal.status !== 'approved') throw new Error('提案尚未批准')
         if (proposal.planId) throw new Error('提案已有修复计划')
+        this.operations.assertGrant(proposal.projectId)
         const draft = this.orchestration.generatePlan(proposal.projectId, '修复健康检查问题：' + proposal.scope.join('；'))
         this.orchestration.approvePlan(draft.id)
         this.deps.store.setProposalPlan(proposal.id, draft.id)
@@ -729,6 +742,7 @@ export function emitLog(hub: RuntimeEventHub, level: 'debug' | 'info' | 'warn' |
   const event: RuntimeEvent = { type: 'runtime.log', level, message, createdAt: Date.now() }
   hub.publish(event)
 }
+
 
 
 

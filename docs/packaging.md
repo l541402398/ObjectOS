@@ -16,7 +16,7 @@
 SHA256：
 
 ```text
-A280BAB711057C83F4052D5697C249BDBF604CD28658709CBDF4D6FA2562CE55  ProjectOS-0.1.0-portable.exe
+BFFD9066AEC46BAC6508C430B3C56A7B2D48F52FCFA83E70343CA3B7EE8F970F  ProjectOS-0.1.0-portable.exe
 ```
 
 ## 运行
@@ -99,6 +99,7 @@ PACKAGE SMOKE PASS — packaged EXE creates a project, writes starter files and 
 - 未签名（无 Authenticode 证书），SmartScreen 可能拦截。
 - 未做安装器（NSIS）、自动更新、卸载器、代码签名与 CI 发布。
 - 未在干净 Windows 虚拟机验证；当前验证机已安装 Node/Electron，但打包产物不依赖它们。
+
 
 
 

@@ -1668,8 +1668,49 @@ export class SqliteStore {
       )
     })
   }
-  upsertProjectBudget(input: { projectId: string; softLimit: number; currency: string }): void {
+  upsertAutomationGrant(input: {
+    projectId: string
+    allowedActions: string[]
+    allowedPaths: string[]
+    expiresAt: number
+    maxRuns: number
+  }): void {
     this.write(() => {
+      this.run(
+        `INSERT INTO automation_grants
+         (project_id, allowed_actions_json, allowed_paths_json, expires_at, max_runs, used_runs, revoked_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, 0, NULL, ?)
+         ON CONFLICT(project_id) DO UPDATE SET
+           allowed_actions_json = excluded.allowed_actions_json,
+           allowed_paths_json = excluded.allowed_paths_json,
+           expires_at = excluded.expires_at,
+           max_runs = excluded.max_runs,
+           used_runs = 0,
+           revoked_at = NULL,
+           updated_at = excluded.updated_at`,
+        input.projectId,
+        JSON.stringify(input.allowedActions),
+        JSON.stringify(input.allowedPaths),
+        input.expiresAt,
+        input.maxRuns,
+        now(),
+      )
+    })
+  }
+
+  consumeAutomationGrant(projectId: string): void {
+    this.write(() => {
+      this.run('UPDATE automation_grants SET used_runs = used_runs + 1, updated_at = ? WHERE project_id = ?', now(), projectId)
+    })
+  }
+
+  revokeAutomationGrant(projectId: string): void {
+    this.write(() => {
+      this.run('UPDATE automation_grants SET revoked_at = ?, updated_at = ? WHERE project_id = ?', now(), now(), projectId)
+    })
+  }
+
+  upsertProjectBudget(input: { projectId: string; softLimit: number; currency: string }): void {    this.write(() => {
       this.run(
         `INSERT INTO project_budgets (project_id, soft_limit, currency, updated_at)
          VALUES (?, ?, ?, ?)

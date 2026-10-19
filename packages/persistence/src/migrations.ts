@@ -592,6 +592,19 @@ CREATE TABLE automation_triggers (
 );
 `
 
+const V11 = `
+CREATE TABLE automation_grants (
+  project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,
+  allowed_actions_json TEXT NOT NULL DEFAULT '[]',
+  allowed_paths_json TEXT NOT NULL DEFAULT '[]',
+  expires_at INTEGER NOT NULL,
+  max_runs INTEGER NOT NULL DEFAULT 1,
+  used_runs INTEGER NOT NULL DEFAULT 0,
+  revoked_at INTEGER,
+  updated_at INTEGER NOT NULL
+);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -603,6 +616,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 8, name: 'operations health findings and proposals', sql: V8 },
   { version: 9, name: 'proposal repair plan', sql: V9 },
   { version: 10, name: 'operations interval triggers', sql: V10 },
+  { version: 11, name: 'automation grants', sql: V11 },
 ]
 
 function checksum(sql: string): string {

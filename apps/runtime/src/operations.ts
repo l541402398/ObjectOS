@@ -185,6 +185,40 @@ export class OperationsService {
     }
   }
 
+  getGrant(projectId: string) {
+    if (!this.store.read.getProject(projectId)) throw new AppError('NOT_FOUND', '项目不存在')
+    return this.store.read.getAutomationGrant(projectId)
+  }
+
+  grant(projectId: string, hours = 24, maxRuns = 5) {
+    if (!this.store.read.getProject(projectId)) throw new AppError('NOT_FOUND', '项目不存在')
+    this.store.upsertAutomationGrant({
+      projectId,
+      allowedActions: ['repair'],
+      allowedPaths: ['.'],
+      expiresAt: now() + hours * 3_600_000,
+      maxRuns,
+    })
+    return this.store.read.getAutomationGrant(projectId)
+  }
+
+  revokeGrant(projectId: string) {
+    if (!this.store.read.getAutomationGrant(projectId)) throw new AppError('NOT_FOUND', '没有可撤销的授权')
+    this.store.revokeAutomationGrant(projectId)
+    return this.store.read.getAutomationGrant(projectId)
+  }
+
+  assertGrant(projectId: string): void {
+    const grant = this.store.read.getAutomationGrant(projectId)
+    if (!grant || grant.revokedAt || grant.expiresAt <= now() || grant.usedRuns >= grant.maxRuns) {
+      throw new AppError('APPROVAL_REQUIRED', '没有有效的自主修复授权')
+    }
+  }
+
+  consumeGrant(projectId: string): void {
+    this.store.consumeAutomationGrant(projectId)
+  }
+
   propose(projectId: string, findingIds: string[]) {    const findings = this.store.read.listFindings(projectId).filter((finding) => findingIds.includes(finding.id))
     if (!findings.length) throw new AppError('BAD_REQUEST', '没有可提案的 Finding')
     const proposal = {

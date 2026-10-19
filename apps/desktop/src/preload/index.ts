@@ -207,6 +207,9 @@ const api: ProjectOSDesktopApi = {
     startRepair: (proposalId) => call('operations.startRepair', { proposalId }),
     setMode: (projectId, mode) => call('operations.setMode', { projectId, mode }),
     getTrigger: (projectId) => call('operations.getTrigger', { projectId }),
+    getGrant: (projectId) => call('operations.getGrant', { projectId }),
+    grant: (projectId, hours = 24, maxRuns = 5) => call('operations.grant', { projectId, hours, maxRuns }),
+    revokeGrant: (projectId) => call('operations.revokeGrant', { projectId }),
     setTrigger: (projectId, intervalMinutes, enabled) => call('operations.setTrigger', { projectId, intervalMinutes, enabled }),
   },
   orchestration: {
@@ -250,6 +253,7 @@ const api: ProjectOSDesktopApi = {
 }
 
 contextBridge.exposeInMainWorld('projectos', api)
+
 
 
 

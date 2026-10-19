@@ -33,6 +33,9 @@ try {
   if (proposal.status !== 'pending_approval') throw new Error('proposal status invalid')
   const approved = await page.evaluate(async (proposalId) => window.projectos.operations.reviewProposal(proposalId, 'approved'), proposal.id)
   if (approved.status !== 'approved') throw new Error('proposal approval failed')
+  const denied = await page.evaluate(async (proposalId) => { try { await window.projectos.operations.startRepair(proposalId); return false } catch { return true } }, proposal.id)
+  if (!denied) throw new Error('repair without grant was not denied')
+  await page.evaluate(async (projectId) => window.projectos.operations.grant(projectId, 24, 5), project.id)
   const repair = await page.evaluate(async (proposalId) => window.projectos.operations.startRepair(proposalId), proposal.id)
   if (!repair.proposal.planId || repair.plan.status !== 'approved') throw new Error('repair plan not started')
   await page.evaluate(async (projectId) => window.projectos.operations.setMode(projectId, 'propose'), project.id)
@@ -57,6 +60,8 @@ try {
   if (app) await app.close().catch(() => {})
   if (passed) rmSync(dataDir, { recursive: true, force: true })
 }
+
+
 
 
 

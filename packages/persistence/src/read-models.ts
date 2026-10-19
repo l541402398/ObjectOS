@@ -1373,8 +1373,37 @@ export class ReadModels {
       return { projectId: row.project_id, intervalMinutes: config.intervalMinutes ?? 30, nextRunAt: row.next_run_at }
     })
   }
-  getProjectBudget(projectId: string): { projectId: string; softLimit: number; currency: string; updatedAt: number } | null {
-    const row = this.get<ProjectBudgetRow>('SELECT * FROM project_budgets WHERE project_id = ?', projectId)
+  getAutomationGrant(projectId: string): {
+    projectId: string
+    allowedActions: string[]
+    allowedPaths: string[]
+    expiresAt: number
+    maxRuns: number
+    usedRuns: number
+    revokedAt: number | null
+  } | null {
+    const row = this.get<{
+      project_id: string
+      allowed_actions_json: string
+      allowed_paths_json: string
+      expires_at: number
+      max_runs: number
+      used_runs: number
+      revoked_at: number | null
+    }>('SELECT * FROM automation_grants WHERE project_id = ?', projectId)
+    if (!row) return null
+    return {
+      projectId: row.project_id,
+      allowedActions: JSON.parse(row.allowed_actions_json) as string[],
+      allowedPaths: JSON.parse(row.allowed_paths_json) as string[],
+      expiresAt: Number(row.expires_at),
+      maxRuns: Number(row.max_runs),
+      usedRuns: Number(row.used_runs),
+      revokedAt: row.revoked_at,
+    }
+  }
+
+  getProjectBudget(projectId: string): { projectId: string; softLimit: number; currency: string; updatedAt: number } | null {    const row = this.get<ProjectBudgetRow>('SELECT * FROM project_budgets WHERE project_id = ?', projectId)
     return row
       ? {
           projectId: row.project_id,

@@ -57,6 +57,7 @@ export default function OperationsPage() {
   const startRepair = async (proposalId: string): Promise<void> => {
     setBusy(proposalId)
     try {
+      await window.projectos.operations.grant(projectId, 24, 5)
       await window.projectos.operations.startRepair(proposalId)
       await refresh()
       message.success('修复计划已启动')
@@ -184,3 +185,4 @@ export default function OperationsPage() {
     </div>
   )
 }
+
