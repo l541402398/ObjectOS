@@ -37,7 +37,7 @@
   align-items: center;
   gap: 5px;
   color: var(--orch-text-faint);
-  font-size: 9.5px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -62,7 +62,7 @@
   border-color: rgba(76, 141, 255, 0.35);
   background: rgba(76, 141, 255, 0.12);
   color: #9fc1ff;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .po-orch-sub {
@@ -71,7 +71,7 @@
   gap: 12px;
   margin-top: 4px;
   color: var(--orch-text-faint);
-  font-size: 9.5px;
+  font-size: 11px;
 }
 
 .po-orch-sub span:first-child {
@@ -95,7 +95,7 @@
 .po-orch-metrics span {
   display: block;
   color: var(--orch-text-faint);
-  font-size: 8.5px;
+  font-size: 11px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -121,7 +121,7 @@
 
 .po-orch-actions .ant-btn {
   height: 28px;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .po-orch-progress-line {
@@ -134,7 +134,7 @@
   border-radius: 8px;
   background: rgba(13, 18, 27, 0.72);
   color: var(--orch-text-faint);
-  font-size: 9.5px;
+  font-size: 11px;
 }
 
 .po-orch-progress-line > div {
@@ -154,7 +154,7 @@
 
 .po-orch-progress-line strong {
   color: #9fc1ff;
-  font-size: 10px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -188,7 +188,7 @@
   padding: 0 9px;
   border-bottom: 1px solid var(--orch-border-soft);
   color: var(--orch-text-faint);
-  font-size: 8.5px;
+  font-size: 11px;
   letter-spacing: 0.08em;
 }
 
@@ -198,7 +198,7 @@
   border-color: var(--orch-border);
   background: rgba(18, 25, 38, 0.8);
   color: var(--orch-text-dim);
-  font-size: 9.5px;
+  font-size: 11px;
 }
 
 .po-orch-canvas {
@@ -249,7 +249,7 @@
   border-radius: 6px;
   background: rgba(10, 15, 23, 0.82);
   color: var(--orch-text-faint);
-  font-size: 8.5px;
+  font-size: 11px;
   backdrop-filter: blur(8px);
 }
 
@@ -347,7 +347,7 @@
 
 .po-flow-orchestrator-main span:last-child {
   color: var(--orch-text-faint);
-  font-size: 8.5px;
+  font-size: 11px;
 }
 
 .po-flow-state {
@@ -426,7 +426,7 @@
 
 .po-flow-agent-head > div > span {
   color: var(--orch-text-faint);
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .po-flow-agent-task {
@@ -439,7 +439,7 @@
   border-radius: 5px;
   background: rgba(7, 11, 17, 0.55);
   color: var(--orch-text-dim);
-  font-size: 8.5px;
+  font-size: 11px;
 }
 
 .po-flow-agent-metrics {
@@ -453,7 +453,7 @@
 
 .po-flow-agent-metrics strong {
   color: var(--orch-text);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -504,7 +504,7 @@
   border-radius: 5px;
   background: rgba(111, 128, 150, 0.12);
   color: var(--orch-text-faint);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .po-flow-task-main {
@@ -519,7 +519,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 8.5px;
+  font-size: 11px;
   font-weight: 500;
 }
 
@@ -590,7 +590,7 @@
   padding: 0 10px;
   border-bottom: 1px solid var(--orch-border-soft);
   color: var(--orch-text-faint);
-  font-size: 8.5px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -613,7 +613,7 @@
 
 .po-orch-inspector .ant-tabs-tab {
   padding: 7px 0;
-  font-size: 9.5px;
+  font-size: 11px;
 }
 
 .po-orch-inspector .ant-tabs-content,
@@ -668,7 +668,7 @@
 
 .po-inspector-identity span {
   color: var(--orch-text-faint);
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .po-inspector-panel {
@@ -719,7 +719,7 @@
 
 .po-inspector-task strong,
 .po-inspector-approval strong {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 500;
   line-height: 1.4;
 }
@@ -735,14 +735,14 @@
   align-self: flex-start;
   height: 18px;
   padding: 0;
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .po-inspector-kv {
   display: grid;
   grid-template-columns: 54px minmax(0, 1fr);
   gap: 5px 8px;
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .po-inspector-kv > span {
@@ -766,7 +766,7 @@
 
 .po-inspector-actions .ant-btn {
   height: 23px;
-  font-size: 8.5px;
+  font-size: 11px;
 }
 
 .po-inspector-activity {
@@ -781,7 +781,7 @@
   gap: 8px;
   margin-bottom: 6px;
   color: var(--orch-text-faint);
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .po-inspector-event {
@@ -820,7 +820,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 400;
 }
 
@@ -836,7 +836,7 @@
   padding: 5px 0;
   border-bottom: 1px solid var(--orch-border-soft);
   color: var(--orch-text-dim);
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .po-inspector-file span {
@@ -855,7 +855,7 @@
 .po-inspector-empty {
   padding: 12px 0;
   color: var(--orch-text-faint);
-  font-size: 8.5px;
+  font-size: 11px;
   text-align: center;
 }
 
@@ -872,7 +872,7 @@
 
 .po-inspector-overview > span:last-child {
   color: var(--orch-text-faint);
-  font-size: 8px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
@@ -907,7 +907,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 8.5px;
+  font-size: 11px;
   font-weight: 400;
 }
 
@@ -936,7 +936,7 @@
   padding: 0 10px;
   border-bottom: 1px solid var(--orch-border-soft);
   color: var(--orch-text-faint);
-  font-size: 8.5px;
+  font-size: 11px;
 }
 
 .po-dep-head > span:first-child {
@@ -944,12 +944,12 @@
   align-items: center;
   gap: 4px;
   color: var(--orch-text-dim);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .po-dep-head .ant-btn {
   height: 20px;
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .po-dep-body {
@@ -987,12 +987,12 @@
 
 .po-dep-arrow {
   color: var(--orch-text-faint);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .po-dep-empty {
   color: var(--orch-text-faint);
-  font-size: 8.5px;
+  font-size: 11px;
 }
 
 .po-orch-page .ant-btn-primary {
@@ -1009,7 +1009,7 @@
 
 .po-plan-label {
   color: var(--orch-text-faint);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1020,7 +1020,7 @@
   align-items: center;
   gap: 10px;
   color: var(--orch-text-faint);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .po-plan-task-list {
@@ -1051,12 +1051,12 @@
   gap: 4px;
   margin-top: 6px;
   color: var(--orch-text-faint);
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .po-plan-task-deps .ant-tag {
   margin: 0;
-  font-size: 8px;
+  font-size: 11px;
   line-height: 15px;
 }
 
@@ -1075,7 +1075,7 @@
   border-radius: 7px;
   background: rgba(13, 19, 29, 0.8);
   color: var(--orch-text-faint);
-  font-size: 8.5px;
+  font-size: 11px;
   line-height: 1.45;
 }
 
@@ -1159,7 +1159,7 @@
   border-radius: 7px;
   background: rgba(13, 19, 29, 0.8);
   color: var(--orch-text-faint);
-  font-size: 8.5px;
+  font-size: 11px;
 }
 
 .po-plan-execution em {
@@ -1176,7 +1176,7 @@
   gap: 8px;
   overflow: hidden;
   color: var(--orch-text-faint);
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .po-plan-branch span {
@@ -1196,7 +1196,7 @@
   gap: 10px;
   margin-bottom: 8px;
   color: var(--orch-text-faint);
-  font-size: 8.5px;
+  font-size: 11px;
 }
 
 .po-diff-view {
@@ -1209,7 +1209,7 @@
   background: #080b11;
   color: #c8d5e6;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
   white-space: pre-wrap;
 }
@@ -1221,7 +1221,7 @@
   border-radius: 4px;
   color: var(--orch-text-faint);
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 0;
 }
 
@@ -1234,7 +1234,7 @@
   height: 22px;
   border-color: var(--orch-border);
   background: rgba(18, 25, 38, 0.8);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 /* Light theme follows the app theme instead of forcing a dark canvas. */
@@ -1349,3 +1349,4 @@
   background: #f7f9fc !important;
   color: #6b778b !important;
 }
+

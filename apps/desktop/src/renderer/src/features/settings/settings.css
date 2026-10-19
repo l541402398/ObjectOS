@@ -235,7 +235,7 @@
   border-radius: 5px;
   background: var(--color-accent-soft);
   color: var(--color-accent);
-  font-size: 9.5px;
+  font-size: 11px;
   font-weight: var(--weight-semibold);
 }
 
@@ -315,7 +315,7 @@
   border-radius: 5px;
   background: var(--color-surface);
   color: var(--color-text-tertiary);
-  font-size: 9.5px;
+  font-size: 11px;
 }
 
 .po-ai-test-stages span.is-failed {
@@ -368,7 +368,7 @@
 .po-model-name span {
   color: var(--color-text-tertiary);
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 11px;
 }
 
 .po-model-actions {
@@ -438,7 +438,7 @@
 .po-external-head span {
   color: var(--color-text-tertiary);
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 11px;
 }
 
 .po-external-meta {
@@ -488,7 +488,7 @@
   border: 1px solid var(--color-border);
   border-radius: 6px;
   color: var(--color-text-secondary);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .po-about-links {
@@ -557,7 +557,7 @@
 .po-form-section-title {
   margin: 8px 0 10px;
   color: var(--color-text-tertiary);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: var(--weight-semibold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -660,7 +660,7 @@
 
 .po-routing-role span {
   color: var(--color-text-tertiary);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .po-routing-global-head {
@@ -684,7 +684,7 @@
 .po-usage-grid span {
   display: block;
   color: var(--color-text-tertiary);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .po-usage-grid strong {
@@ -697,7 +697,7 @@
 .po-routing-footnote {
   margin-top: 10px;
   color: var(--color-text-tertiary);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 @media (max-width: 900px) {
@@ -748,7 +748,7 @@
 
 .po-external-runner > label {
   color: var(--color-text-tertiary);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .po-external-runner-actions {
@@ -763,7 +763,7 @@
   align-items: center;
   gap: 8px;
   color: var(--color-text-secondary);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .po-price-row {
@@ -786,7 +786,7 @@
   border: 1px solid var(--color-border);
   border-radius: 6px;
   color: var(--color-text-secondary);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .po-price-item code {
@@ -795,5 +795,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 11px;
 }
+
