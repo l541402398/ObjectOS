@@ -11,6 +11,11 @@ import { formatRelative } from '../lib/format'
 export default function OperationsPage() {
   const { projectId = '' } = useParams<{ projectId: string }>()
   const query = useOperations(projectId)
+  const insights = useQuery({
+    queryKey: ['operations-insights', projectId],
+    queryFn: () => window.projectos.operations.insights(projectId),
+    enabled: Boolean(projectId),
+  })
   const trigger = useQuery({
     queryKey: ['operations-trigger', projectId],
     queryFn: () => window.projectos.operations.getTrigger(projectId),
@@ -182,6 +187,15 @@ export default function OperationsPage() {
           {!data?.proposals.length ? <EmptyState compact title="没有修复提案" /> : null}
         </section>
       </div>
+      <section className="po-operations-card po-insights-card">
+        <div className="po-operations-card-head"><strong>项目洞察</strong><span>P1</span></div>
+        <div className="po-insights-meta">
+          <span>依赖 {insights.data?.dependencies ?? 0}</span>
+          <span>开发依赖 {insights.data?.devDependencies ?? 0}</span>
+          <span>CI {insights.data?.ciWorkflows.length ?? 0}</span>
+        </div>
+        <pre className="po-changelog">{insights.data?.changelog || '暂无 Git 历史'}</pre>
+      </section>
     </div>
   )
 }

@@ -207,6 +207,7 @@ const api: ProjectOSDesktopApi = {
     startRepair: (proposalId) => call('operations.startRepair', { proposalId }),
     setMode: (projectId, mode) => call('operations.setMode', { projectId, mode }),
     getTrigger: (projectId) => call('operations.getTrigger', { projectId }),
+    insights: (projectId) => call('operations.insights', { projectId }),
     risk: (proposalId) => call('operations.risk', { proposalId }),
     getGrant: (projectId) => call('operations.getGrant', { projectId }),
     grant: (projectId, hours = 24, maxRuns = 5) => call('operations.grant', { projectId, hours, maxRuns }),
@@ -254,6 +255,7 @@ const api: ProjectOSDesktopApi = {
 }
 
 contextBridge.exposeInMainWorld('projectos', api)
+
 
 
 

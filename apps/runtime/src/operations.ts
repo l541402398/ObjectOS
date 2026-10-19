@@ -1,4 +1,8 @@
 import { createHash } from 'node:crypto'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
+import { readFile, readdir } from 'node:fs/promises'
+import { join } from 'node:path'
 import { AppError, newId, now, type AutonomyMode } from '@projectos/contracts'
 import type { CoreServices } from '@projectos/application'
 import type { SqliteStore } from '@projectos/persistence'
@@ -186,6 +190,28 @@ export class OperationsService {
     }
   }
 
+  async insights(projectId: string) {
+    const project = this.store.read.getProject(projectId)
+    if (!project) throw new AppError('NOT_FOUND', '项目不存在')
+    let dependencies = 0
+    let devDependencies = 0
+    try {
+      const pkg = JSON.parse(await readFile(join(project.rootPath, 'package.json'), 'utf8')) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> }
+      dependencies = Object.keys(pkg.dependencies ?? {}).length
+      devDependencies = Object.keys(pkg.devDependencies ?? {}).length
+    } catch { /* no manifest */ }
+    let ciWorkflows: string[] = []
+    try {
+      ciWorkflows = (await readdir(join(project.rootPath, '.github', 'workflows'))).filter((name) => name.endsWith('.yml') || name.endsWith('.yaml'))
+    } catch { /* no workflows */ }
+    let changelog = ''
+    try {
+      const { stdout } = await promisify(execFile)('git', ['log', '-12', '--pretty=format:%h %s'], { cwd: project.rootPath })
+      changelog = '# Changelog\\n\\n' + stdout.split('\\n').map((line: string) => '- ' + line).join('\\n') + '\\n'
+    } catch { /* no git */ }
+    return { projectId, ciWorkflows, changelog, dependencies, devDependencies }
+  }
+
   getGrant(projectId: string) {
     if (!this.store.read.getProject(projectId)) throw new AppError('NOT_FOUND', '项目不存在')
     return this.store.read.getAutomationGrant(projectId)
@@ -288,6 +314,8 @@ export class OperationsService {
     return this.snapshot(projectId)
   }
 }
+
+
 
 
 

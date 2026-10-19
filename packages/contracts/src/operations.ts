@@ -77,6 +77,16 @@ export const AutomationGrantSchema = z.object({
 
 export type AutomationGrant = z.infer<typeof AutomationGrantSchema>
 
+export const OperationsInsightsSchema = z.object({
+  projectId: IdSchema,
+  ciWorkflows: z.array(z.string()),
+  changelog: z.string(),
+  dependencies: z.number().int().nonnegative(),
+  devDependencies: z.number().int().nonnegative(),
+})
+
+export type OperationsInsights = z.infer<typeof OperationsInsightsSchema>
+
 export const RiskDecisionSchema = z.object({
   proposalId: IdSchema,
   level: z.enum(['low', 'medium', 'high', 'critical']),
@@ -107,6 +117,7 @@ export const OperationsSnapshotSchema = z.object({
   proposals: z.array(RepairProposalSchema),
 })
 export type OperationsSnapshot = z.infer<typeof OperationsSnapshotSchema>
+
 
 
 

@@ -39,6 +39,8 @@ try {
   const repair = await page.evaluate(async (proposalId) => window.projectos.operations.startRepair(proposalId), proposal.id)
   if (!repair.proposal.planId || repair.plan.status !== 'approved') throw new Error('repair plan not started')
   await page.evaluate(async (projectId) => window.projectos.operations.setMode(projectId, 'propose'), project.id)
+  const insights = await page.evaluate(async (projectId) => window.projectos.operations.insights(projectId), project.id)
+  if (typeof insights.dependencies !== 'number') throw new Error('insights invalid')
   const trigger = await page.evaluate(async (projectId) => window.projectos.operations.setTrigger(projectId, 15, true), project.id)
   if (!trigger.enabled || trigger.intervalMinutes !== 15) throw new Error('trigger not persisted')
   await page.goto(`http://localhost/#/projects/${project.id}/operations`).catch(() => {})
@@ -60,6 +62,7 @@ try {
   if (app) await app.close().catch(() => {})
   if (passed) rmSync(dataDir, { recursive: true, force: true })
 }
+
 
 
 

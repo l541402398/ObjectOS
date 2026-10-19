@@ -4009,3 +4009,7 @@
   .po-operations-grid { grid-template-columns: 1fr; }
 }
 
+
+.po-insights-card { margin-top: 12px; }
+.po-insights-meta { display: flex; gap: 14px; margin-bottom: 8px; color: var(--color-text-secondary); font-size: 11px; }
+.po-changelog { max-height: 190px; overflow: auto; margin: 0; color: var(--color-text-secondary); font-family: var(--font-mono); font-size: 10px; line-height: 1.6; white-space: pre-wrap; }
