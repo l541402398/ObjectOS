@@ -45,6 +45,7 @@ import {
   PlanUpdateInputSchema,
   ProjectSnapshotSchema,
 } from './orchestration.js'
+import { OperationsSnapshotSchema, RepairProposalSchema, AutonomyModeSchema } from './operations.js'
 import {
   ActivityItemSchema,
   AgentViewSchema,
@@ -642,6 +643,26 @@ export const ApiSchemas = {
     input: z.object({ projectId: IdSchema }),
     output: ProjectMetricsSchema,
   },
+  'operations.snapshot': {
+    input: z.object({ projectId: IdSchema }),
+    output: OperationsSnapshotSchema,
+  },
+  'operations.runChecks': {
+    input: z.object({ projectId: IdSchema }),
+    output: OperationsSnapshotSchema,
+  },
+  'operations.propose': {
+    input: z.object({ projectId: IdSchema, findingIds: z.array(IdSchema).min(1) }),
+    output: RepairProposalSchema,
+  },
+  'operations.reviewProposal': {
+    input: z.object({ proposalId: IdSchema, decision: z.enum(['approved', 'rejected']) }),
+    output: RepairProposalSchema,
+  },
+  'operations.setMode': {
+    input: z.object({ projectId: IdSchema, mode: AutonomyModeSchema }),
+    output: OperationsSnapshotSchema,
+  },
   'project.budget.get': {
     input: z.object({ projectId: IdSchema }),
     output: ProjectBudgetStatusSchema,
@@ -683,7 +704,7 @@ export const ApiSchemas = {
     output: PlanDraftSchema,
   },
   'orchestration.start': {
-    input: z.object({ planId: IdSchema, concurrency: z.number().int().min(1).max(8).default(2), maxRetries: z.number().int().min(0).max(5).default(2) }),
+    input: z.object({ planId: IdSchema, concurrency: z.number().int().min(1).max(8).default(2), maxRetries: z.number().int().min(0).max(5).default(2), allowOverBudget: z.boolean().default(false) }),
     output: PlanDraftSchema,
   },
   'orchestration.pause': {
@@ -810,4 +831,6 @@ export function isMainMethod(value: string): value is MainMethod {
 export const ApprovalDecisionSchema = ApprovalStatusSchema.extract(['approved', 'rejected'])
 export const PageSchema = PageInputSchema
 export const HandoffDecisionSchema = HandoffStatusSchema.extract(['accepted', 'rejected'])
+
+
 

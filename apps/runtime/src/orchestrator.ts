@@ -57,9 +57,16 @@ export class OrchestrationScheduler {
     return updated
   }
 
-  async start(planId: string, concurrency = 2, maxRetries = 2): Promise<PlanDraft> {
+  async start(planId: string, concurrency = 2, maxRetries = 2, allowOverBudget = false): Promise<PlanDraft> {
     const plan = this.getPlan(planId)
     if (plan.status !== 'approved') throw new AppError('CONFLICT', '计划尚未批准，不能开始执行')
+    const budget = this.store.read.getProjectBudget(plan.projectId)
+    if (budget && budget.softLimit > 0 && !allowOverBudget) {
+      const spent = this.store.read.summarizeAIUsage(plan.projectId).estimatedCost
+      if (spent > budget.softLimit) {
+        throw new AppError('BUDGET_EXCEEDED', `项目已用估算费用 ${spent.toFixed(4)} 超过软预算 ${budget.softLimit}，需确认后继续`)
+      }
+    }
     if (!plan.createdTaskIds.length) throw new AppError('CONFLICT', '计划没有已创建的任务')
     if (plan.execution?.status === 'running') throw new AppError('CONFLICT', '计划已经在执行中')
     const next = this.saveExecution(plan, {
@@ -443,3 +450,4 @@ export class OrchestrationScheduler {
     }
   }
 }
+

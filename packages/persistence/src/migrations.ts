@@ -516,6 +516,68 @@ ALTER TABLE agent_backend_bindings ADD COLUMN budget_limit REAL;
 ALTER TABLE agent_backend_bindings ADD COLUMN failure_policy TEXT NOT NULL DEFAULT 'fallback';
 `
 
+const V8 = `
+CREATE TABLE health_check_runs (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  check_id TEXT NOT NULL,
+  source_revision TEXT,
+  status TEXT NOT NULL,
+  started_at INTEGER NOT NULL,
+  finished_at INTEGER,
+  result_json TEXT NOT NULL DEFAULT '{}'
+);
+CREATE INDEX idx_health_project_time ON health_check_runs(project_id, started_at DESC);
+
+CREATE TABLE findings (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  fingerprint TEXT NOT NULL,
+  category TEXT NOT NULL,
+  severity TEXT NOT NULL,
+  status TEXT NOT NULL,
+  title TEXT NOT NULL,
+  first_seen_at INTEGER NOT NULL,
+  last_seen_at INTEGER NOT NULL,
+  occurrence_count INTEGER NOT NULL DEFAULT 1,
+  UNIQUE(project_id, fingerprint)
+);
+
+CREATE TABLE finding_evidence (
+  id TEXT PRIMARY KEY,
+  finding_id TEXT NOT NULL REFERENCES findings(id) ON DELETE CASCADE,
+  check_run_id TEXT REFERENCES health_check_runs(id),
+  source_uri TEXT,
+  source_revision TEXT,
+  excerpt TEXT,
+  content_hash TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
+CREATE TABLE repair_proposals (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  status TEXT NOT NULL,
+  risk_level TEXT NOT NULL,
+  scope_json TEXT NOT NULL,
+  acceptance_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE proposal_findings (
+  proposal_id TEXT NOT NULL REFERENCES repair_proposals(id) ON DELETE CASCADE,
+  finding_id TEXT NOT NULL REFERENCES findings(id) ON DELETE CASCADE,
+  PRIMARY KEY(proposal_id, finding_id)
+);
+
+CREATE TABLE autonomy_settings (
+  project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,
+  mode TEXT NOT NULL DEFAULT 'observe',
+  updated_at INTEGER NOT NULL
+);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -524,6 +586,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 5, name: 'ai model pricing', sql: V5 },
   { version: 6, name: 'project soft budgets', sql: V6 },
   { version: 7, name: 'agent routing policy', sql: V7 },
+  { version: 8, name: 'operations health findings and proposals', sql: V8 },
 ]
 
 function checksum(sql: string): string {

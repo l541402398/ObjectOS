@@ -272,7 +272,7 @@ export default function OrchestrationWorkspace() {
   const { projectId = '' } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { message } = AntApp.useApp()
+  const { message, modal } = AntApp.useApp()
   const bootstrap = useBootstrap()
   const project = bootstrap.data?.projects.find((item) => item.id === projectId) ?? null
   const snapshotQuery = useProjectSnapshot(projectId)
@@ -497,12 +497,12 @@ export default function OrchestrationWorkspace() {
     }
   }
 
-  const controlExecution = async (action: 'start' | 'pause' | 'resume' | 'cancel'): Promise<void> => {
+  const controlExecution = async (action: 'start' | 'pause' | 'resume' | 'cancel', forceBudget = false): Promise<void> => {
     if (!draft) return
     try {
       const result =
         action === 'start'
-          ? await window.projectos.orchestration.start(draft.id)
+          ? await window.projectos.orchestration.start(draft.id, 2, 2, forceBudget)
           : action === 'pause'
             ? await window.projectos.orchestration.pause(draft.id)
             : action === 'resume'
@@ -514,7 +514,18 @@ export default function OrchestrationWorkspace() {
         action === 'start' ? '计划开始执行' : action === 'pause' ? '已暂停' : action === 'resume' ? '已继续' : '已取消',
       )
     } catch (error) {
-      message.error(errorMessage(error))
+      const text = errorMessage(error)
+      if (action === 'start' && !forceBudget && text.includes('软预算')) {
+        modal.confirm({
+          title: '已超过软预算',
+          content: text,
+          okText: '继续执行',
+          cancelText: '取消',
+          onOk: () => controlExecution('start', true),
+        })
+        return
+      }
+      message.error(text)
     }
   }
 

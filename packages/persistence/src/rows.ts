@@ -146,6 +146,41 @@ export interface AIModelPriceRow {
   updated_at: number
 }
 
+export interface HealthCheckRunRow {
+  id: string
+  project_id: string
+  check_id: string
+  source_revision: string | null
+  status: string
+  started_at: number
+  finished_at: number | null
+  result_json: string
+}
+
+export interface FindingRow {
+  id: string
+  project_id: string
+  fingerprint: string
+  category: string
+  severity: string
+  status: string
+  title: string
+  first_seen_at: number
+  last_seen_at: number
+  occurrence_count: number
+}
+
+export interface ProposalRow {
+  id: string
+  project_id: string
+  status: string
+  risk_level: string
+  scope_json: string
+  acceptance_json: string
+  created_at: number
+  updated_at: number
+}
+
 export interface ProjectBudgetRow {
   project_id: string
   soft_limit: number
@@ -821,3 +856,4 @@ export function toGraphLayout(row: GraphLayoutRow): GraphLayout {
     updatedAt: Number(row.updated_at),
   }
 }
+

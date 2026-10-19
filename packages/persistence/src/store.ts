@@ -1533,6 +1533,114 @@ export class SqliteStore {
     })
   }
 
+  createHealthCheckRun(run: {
+    id: string
+    projectId: string
+    checkId: string
+    sourceRevision: string | null
+    status: string
+    startedAt: number
+    finishedAt: number | null
+    result: Record<string, unknown>
+  }): void {
+    this.write(() => {
+      this.run(
+        `INSERT INTO health_check_runs (id, project_id, check_id, source_revision, status, started_at, finished_at, result_json)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        run.id, run.projectId, run.checkId, run.sourceRevision, run.status,
+        run.startedAt, run.finishedAt, JSON.stringify(run.result),
+      )
+    })
+  }
+
+  recordFinding(input: {
+    id: string
+    projectId: string
+    fingerprint: string
+    category: string
+    severity: string
+    title: string
+    checkRunId: string
+    evidenceId: string
+    sourceUri: string | null
+    sourceRevision: string | null
+    excerpt: string
+    contentHash: string
+    at: number
+  }): void {
+    this.write(() => {
+      const existing = this.get<{ id: string; occurrence_count: number }>(
+        'SELECT id, occurrence_count FROM findings WHERE project_id = ? AND fingerprint = ?',
+        input.projectId, input.fingerprint,
+      )
+      if (existing) {
+        this.run(
+          "UPDATE findings SET last_seen_at = ?, occurrence_count = occurrence_count + 1, status = CASE WHEN status = 'resolved' THEN 'reopened' ELSE status END WHERE id = ?",
+          input.at, existing.id,
+        )
+        this.run(
+          `INSERT INTO finding_evidence (id, finding_id, check_run_id, source_uri, source_revision, excerpt, content_hash, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          input.evidenceId, existing.id, input.checkRunId, input.sourceUri,
+          input.sourceRevision, input.excerpt, input.contentHash, input.at,
+        )
+        return
+      }
+      this.run(
+        `INSERT INTO findings (id, project_id, fingerprint, category, severity, status, title, first_seen_at, last_seen_at, occurrence_count)
+         VALUES (?, ?, ?, ?, ?, 'open', ?, ?, ?, 1)`,
+        input.id, input.projectId, input.fingerprint, input.category,
+        input.severity, input.title, input.at, input.at,
+      )
+      this.run(
+        `INSERT INTO finding_evidence (id, finding_id, check_run_id, source_uri, source_revision, excerpt, content_hash, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        input.evidenceId, input.id, input.checkRunId, input.sourceUri,
+        input.sourceRevision, input.excerpt, input.contentHash, input.at,
+      )
+    })
+  }
+
+  createRepairProposal(proposal: {
+    id: string
+    projectId: string
+    status: string
+    riskLevel: string
+    scope: string[]
+    acceptanceCriteria: string[]
+    findingIds: string[]
+    createdAt: number
+  }): void {
+    this.write(() => {
+      this.run(
+        `INSERT INTO repair_proposals (id, project_id, status, risk_level, scope_json, acceptance_json, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        proposal.id, proposal.projectId, proposal.status, proposal.riskLevel,
+        JSON.stringify(proposal.scope), JSON.stringify(proposal.acceptanceCriteria),
+        proposal.createdAt, proposal.createdAt,
+      )
+      for (const findingId of proposal.findingIds) {
+        this.run('INSERT OR IGNORE INTO proposal_findings (proposal_id, finding_id) VALUES (?, ?)', proposal.id, findingId)
+        this.run("UPDATE findings SET status = 'proposed' WHERE id = ?", findingId)
+      }
+    })
+  }
+
+  updateProposalStatus(id: string, status: string): void {
+    this.write(() => {
+      this.run('UPDATE repair_proposals SET status = ?, updated_at = ? WHERE id = ?', status, now(), id)
+    })
+  }
+
+  setAutonomyMode(projectId: string, mode: string): void {
+    this.write(() => {
+      this.run(
+        `INSERT INTO autonomy_settings (project_id, mode, updated_at) VALUES (?, ?, ?)
+         ON CONFLICT(project_id) DO UPDATE SET mode = excluded.mode, updated_at = excluded.updated_at`,
+        projectId, mode, now(),
+      )
+    })
+  }
   upsertProjectBudget(input: { projectId: string; softLimit: number; currency: string }): void {
     this.write(() => {
       this.run(
@@ -1776,4 +1884,5 @@ export function createArtifactRecord(input: {
 }
 
 export { toProject, toTask, toSession, toMessage, toRun, toRunStep, toStage }
+
 

@@ -11,6 +11,12 @@
 | 项目图标改为原子图标 | 完成 | `icon.png` / `icon.ico` / `icon-512.png` / Tray 图标 |
 | 编译 EXE 关闭窗口后驻留托盘 | 完成 | Tray 菜单；关闭隐藏；`scripts/tray-e2e.mjs` PASS |
 
+## 当前进度
+
+- 已完成：健康检查、Finding/Evidence、指纹去重、提案审批、运营工作台、模式持久化、重启恢复、软预算阻断。
+- 进行中：修复执行闭环、持久化调度、AutomationGrant。
+- 详见 [验收报告](./acceptance-report.md)。
+
 ## V1.4 P0
 
 1. 健康检查：Git / build / test / lint / task blocked。
@@ -34,3 +40,4 @@
 - 默认 observe，不自动写主分支。
 - 所有检查/修复走 V1.3 Policy、Approval、Run、Artifact 与 Worktree。
 - 复用 V1.3 编排与图，不新建第二套运行时。
+

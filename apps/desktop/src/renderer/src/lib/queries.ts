@@ -56,6 +56,15 @@ export function useProjectMetrics(projectId: string | null | undefined) {
   })
 }
 
+export function useOperations(projectId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['operations', projectId ?? ''] as const,
+    queryFn: () => window.projectos.operations.snapshot(projectId!),
+    enabled: Boolean(projectId),
+    refetchInterval: 15_000,
+  })
+}
+
 export function useProjectBudget(projectId: string | null | undefined) {
   return useQuery({
     queryKey: ['project-budget', projectId ?? ''] as const,
@@ -280,4 +289,5 @@ export function useAgents(projectId: string | null | undefined) {
     enabled: Boolean(projectId),
   })
 }
+
 

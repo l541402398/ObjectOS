@@ -7,6 +7,11 @@ import {
   type AIModel,
   type AIModelPrice,
   type AIUsageSummary,
+  type Finding,
+  type FindingEvidence,
+  type HealthCheckRun,
+  type RepairProposal,
+  type AutonomyMode,
   type AgentBackendBinding,
   type GraphLayout,
   type PlanDraft,
@@ -52,6 +57,7 @@ import {
 } from '@projectos/contracts'
 import { evaluateStageGates, summarizeProjectEvent } from '@projectos/domain'
 import {
+  parseObject,
   parseUnknown,
   toAIConnection,
   toAIConnectionCheck,
@@ -85,6 +91,9 @@ import {
   type AIModelPriceRow,
   type AgentBackendBindingRow,
   type ProjectBudgetRow,
+  type HealthCheckRunRow,
+  type FindingRow,
+  type ProposalRow,
   type GraphLayoutRow,
   type PlanRevisionRow,
   type ProjectSnapshotRow,
@@ -1237,6 +1246,111 @@ export class ReadModels {
     return row ? toAIModelPrice(row) : null
   }
 
+  listHealthCheckRuns(projectId: string, limit = 30): HealthCheckRun[] {
+    return this.all<HealthCheckRunRow>(
+      'SELECT * FROM health_check_runs WHERE project_id = ? ORDER BY started_at DESC LIMIT ?',
+      projectId,
+      limit,
+    ).map((row) => ({
+      id: row.id,
+      projectId: row.project_id,
+      checkId: row.check_id,
+      sourceRevision: row.source_revision,
+      status: row.status as HealthCheckRun['status'],
+      startedAt: Number(row.started_at),
+      finishedAt: row.finished_at === null ? null : Number(row.finished_at),
+      result: parseObject(row.result_json),
+    }))
+  }
+
+  listFindings(projectId: string): Finding[] {
+    return this.all<FindingRow>(
+      "SELECT * FROM findings WHERE project_id = ? ORDER BY CASE severity WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END, last_seen_at DESC",
+      projectId,
+    ).map((row) => ({
+      id: row.id,
+      projectId: row.project_id,
+      fingerprint: row.fingerprint,
+      category: row.category,
+      severity: row.severity as Finding['severity'],
+      status: row.status as Finding['status'],
+      title: row.title,
+      firstSeenAt: Number(row.first_seen_at),
+      lastSeenAt: Number(row.last_seen_at),
+      occurrenceCount: Number(row.occurrence_count),
+      evidence: this.listFindingEvidence(row.id),
+    }))
+  }
+
+  listFindingEvidence(findingId: string): FindingEvidence[] {
+    return this.all<{
+      id: string
+      finding_id: string
+      check_run_id: string | null
+      source_uri: string | null
+      source_revision: string | null
+      excerpt: string
+      content_hash: string
+      created_at: number
+    }>('SELECT * FROM finding_evidence WHERE finding_id = ? ORDER BY created_at DESC LIMIT 20', findingId).map((row) => ({
+      id: row.id,
+      findingId: row.finding_id,
+      checkRunId: row.check_run_id,
+      sourceUri: row.source_uri,
+      sourceRevision: row.source_revision,
+      excerpt: row.excerpt,
+      contentHash: row.content_hash,
+      createdAt: Number(row.created_at),
+    }))
+  }
+
+  getFindingByFingerprint(projectId: string, fingerprint: string): { id: string; occurrenceCount: number } | null {
+    const row = this.get<{ id: string; occurrence_count: number }>(
+      'SELECT id, occurrence_count FROM findings WHERE project_id = ? AND fingerprint = ?',
+      projectId,
+      fingerprint,
+    )
+    return row ? { id: row.id, occurrenceCount: Number(row.occurrence_count) } : null
+  }
+
+  listProposals(projectId: string): RepairProposal[] {
+    return this.all<ProposalRow>('SELECT * FROM repair_proposals WHERE project_id = ? ORDER BY updated_at DESC', projectId).map((row) => ({
+      id: row.id,
+      projectId: row.project_id,
+      status: row.status as RepairProposal['status'],
+      riskLevel: row.risk_level as RepairProposal['riskLevel'],
+      scope: JSON.parse(row.scope_json) as string[],
+      acceptanceCriteria: JSON.parse(row.acceptance_json) as string[],
+      findingIds: this.all<{ finding_id: string }>('SELECT finding_id FROM proposal_findings WHERE proposal_id = ?', row.id).map((item) => item.finding_id),
+      createdAt: Number(row.created_at),
+      updatedAt: Number(row.updated_at),
+    }))
+  }
+
+  getProposal(id: string): RepairProposal | null {
+    return this.listProposalsForId(id)
+  }
+
+  private listProposalsForId(id: string): RepairProposal | null {
+    const row = this.get<ProposalRow>('SELECT * FROM repair_proposals WHERE id = ?', id)
+    if (!row) return null
+    return {
+      id: row.id,
+      projectId: row.project_id,
+      status: row.status as RepairProposal['status'],
+      riskLevel: row.risk_level as RepairProposal['riskLevel'],
+      scope: JSON.parse(row.scope_json) as string[],
+      acceptanceCriteria: JSON.parse(row.acceptance_json) as string[],
+      findingIds: this.all<{ finding_id: string }>('SELECT finding_id FROM proposal_findings WHERE proposal_id = ?', row.id).map((item) => item.finding_id),
+      createdAt: Number(row.created_at),
+      updatedAt: Number(row.updated_at),
+    }
+  }
+
+  getAutonomyMode(projectId: string): AutonomyMode {
+    const row = this.get<{ mode: string }>('SELECT mode FROM autonomy_settings WHERE project_id = ?', projectId)
+    return (row?.mode as AutonomyMode | undefined) ?? 'observe'
+  }
   getProjectBudget(projectId: string): { projectId: string; softLimit: number; currency: string; updatedAt: number } | null {
     const row = this.get<ProjectBudgetRow>('SELECT * FROM project_budgets WHERE project_id = ?', projectId)
     return row
@@ -1417,4 +1531,7 @@ export class ReadModels {
     return row ? toRun(row) : null
   }
 }
+
+
+
 

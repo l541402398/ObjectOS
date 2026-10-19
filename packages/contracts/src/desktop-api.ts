@@ -169,8 +169,15 @@ export interface ProjectOSDesktopApi {
     approve: (planId: string) => Promise<Out<'plan.approve'>>
     reject: (planId: string) => Promise<Out<'plan.reject'>>
   }
+  operations: {
+    snapshot: (projectId: string) => Promise<Out<'operations.snapshot'>>
+    runChecks: (projectId: string) => Promise<Out<'operations.runChecks'>>
+    propose: (projectId: string, findingIds: string[]) => Promise<Out<'operations.propose'>>
+    reviewProposal: (proposalId: string, decision: 'approved' | 'rejected') => Promise<Out<'operations.reviewProposal'>>
+    setMode: (projectId: string, mode: 'observe' | 'propose' | 'approved-autofix') => Promise<Out<'operations.setMode'>>
+  }
   orchestration: {
-    start: (planId: string, concurrency?: number, maxRetries?: number) => Promise<Out<'orchestration.start'>>
+    start: (planId: string, concurrency?: number, maxRetries?: number, allowOverBudget?: boolean) => Promise<Out<'orchestration.start'>>
     pause: (planId: string) => Promise<Out<'orchestration.pause'>>
     resume: (planId: string) => Promise<Out<'orchestration.resume'>>
     cancel: (planId: string) => Promise<Out<'orchestration.cancel'>>
@@ -213,3 +220,5 @@ declare global {
     projectos: ProjectOSDesktopApi
   }
 }
+
+

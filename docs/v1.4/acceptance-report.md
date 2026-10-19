@@ -1,0 +1,33 @@
+# V1.4 验收报告（进行中）
+
+## 已实现
+
+| 能力 | 状态 | 证据 |
+|---|---|---|
+| 健康检查 | 完成（首版） | Git 状态、test/lint/build 质量门禁、任务阻塞；health_check_runs |
+| Evidence-backed Finding | 完成（首版） | finding_evidence、Git SHA、命令输出摘要、内容哈希 |
+| 指纹去重 | 完成 | project + checkId + 归一化错误哈希；occurrenceCount |
+| 修复提案 | 完成（首版） | repair_proposals / proposal_findings；pending_approval → approved/rejected |
+| 自主运营工作台 | 完成（首版） | `/projects/:id/operations`；检查、Findings、提案、模式 |
+| 模式设置 | 完成（持久化） | observe / propose / approved-autofix |
+| 重启恢复 | 完成（E2E） | Findings 与 Proposal 状态重启后保留 |
+| 软预算阻断 | 完成 | 超预算启动需确认；`BUDGET_EXCEEDED` |
+
+## 未完成
+
+- 间隔/项目事件持久化调度与 lease
+- 提案批准后自动创建 Task DAG + Worktree + Developer/Tester/Reviewer 执行
+- AutomationGrant 限定授权/过期/撤销与风险矩阵
+- 预算并发/重试 circuit breaker
+- Git hooks / CI / 依赖安全 / Changelog 趋势
+- 真实 Claude/付费 API 验收（按用户要求未测）
+
+## 测试
+
+```text
+pnpm test → 17 files / 68 tests
+node scripts/v14-e2e.mjs → PASS
+  findings: 1
+  proposals: 1 · approved
+  mode: propose
+```

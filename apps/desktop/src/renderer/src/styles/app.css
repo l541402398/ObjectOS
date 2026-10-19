@@ -3917,3 +3917,94 @@
   font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
+
+.po-operations-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.po-operations-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.po-operations-card {
+  min-height: 280px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.po-operations-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 9px;
+  margin-bottom: 9px;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.po-operations-card-head > span {
+  color: var(--color-text-tertiary);
+  font-size: 9px;
+}
+
+.po-check-row,
+.po-finding-row,
+.po-proposal-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.po-check-row > div,
+.po-finding-row > div,
+.po-proposal-row > div:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.po-check-row strong,
+.po-finding-row strong,
+.po-proposal-row strong {
+  font-size: 10px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.po-check-row span,
+.po-finding-row span,
+.po-proposal-row span {
+  color: var(--color-text-tertiary);
+  font-size: 8.5px;
+}
+
+.po-finding-row code {
+  max-height: 62px;
+  overflow: hidden;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  white-space: pre-wrap;
+}
+
+.po-proposal-actions {
+  display: flex;
+  gap: 4px;
+}
+
+@media (max-width: 1100px) {
+  .po-operations-grid { grid-template-columns: 1fr; }
+}

@@ -27,6 +27,7 @@ import {
 import { AIConnectionService } from './ai-connections.js'
 import { listExternalAgents } from './external-agents.js'
 import { ExternalAgentRunner } from './external-runner.js'
+import { OperationsService } from './operations.js'
 import { OrchestrationService } from './orchestration.js'
 import type { AgentRunner } from './agent-runner.js'
 import type { RuntimeConfig } from './config.js'
@@ -53,12 +54,14 @@ export class RuntimeDispatcher {
   private readonly orchestration: OrchestrationService
   private readonly scheduler: OrchestrationScheduler
   private readonly externalRunner: ExternalAgentRunner
+  private readonly operations: OperationsService
 
   constructor(private readonly deps: DispatcherDeps) {
     this.aiConnections = new AIConnectionService(deps.store)
     deps.runner.setAIConnections(this.aiConnections)
     this.orchestration = new OrchestrationService(deps.store, deps.services)
     this.externalRunner = new ExternalAgentRunner(deps.store, deps.services, deps.logger)
+    this.operations = new OperationsService(deps.store, deps.services)
     this.scheduler = new OrchestrationScheduler(
       deps.store,
       deps.services,
@@ -572,6 +575,26 @@ export class RuntimeDispatcher {
         const input = this.parse('project.metrics', rawInput)
         return this.orchestration.metrics(input.projectId)
       }
+      case 'operations.snapshot': {
+        const input = this.parse('operations.snapshot', rawInput)
+        return this.operations.snapshot(input.projectId)
+      }
+      case 'operations.runChecks': {
+        const input = this.parse('operations.runChecks', rawInput)
+        return this.operations.runChecks(input.projectId)
+      }
+      case 'operations.propose': {
+        const input = this.parse('operations.propose', rawInput)
+        return this.operations.propose(input.projectId, input.findingIds)
+      }
+      case 'operations.reviewProposal': {
+        const input = this.parse('operations.reviewProposal', rawInput)
+        return this.operations.reviewProposal(input.proposalId, input.decision)
+      }
+      case 'operations.setMode': {
+        const input = this.parse('operations.setMode', rawInput)
+        return this.operations.setMode(input.projectId, input.mode)
+      }
       case 'project.budget.get': {
         const input = this.parse('project.budget.get', rawInput)
         return this.orchestration.budget(input.projectId)
@@ -610,7 +633,7 @@ export class RuntimeDispatcher {
       }
       case 'orchestration.start': {
         const input = this.parse('orchestration.start', rawInput)
-        return this.scheduler.start(input.planId, input.concurrency, input.maxRetries)
+        return this.scheduler.start(input.planId, input.concurrency, input.maxRetries, input.allowOverBudget)
       }
       case 'orchestration.pause': {
         const input = this.parse('orchestration.pause', rawInput)
@@ -665,4 +688,6 @@ export function emitLog(hub: RuntimeEventHub, level: 'debug' | 'info' | 'warn' |
   const event: RuntimeEvent = { type: 'runtime.log', level, message, createdAt: Date.now() }
   hub.publish(event)
 }
+
+
 

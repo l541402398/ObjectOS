@@ -199,8 +199,15 @@ const api: ProjectOSDesktopApi = {
     approve: (planId) => call('plan.approve', { planId }),
     reject: (planId) => call('plan.reject', { planId }),
   },
+  operations: {
+    snapshot: (projectId) => call('operations.snapshot', { projectId }),
+    runChecks: (projectId) => call('operations.runChecks', { projectId }),
+    propose: (projectId, findingIds) => call('operations.propose', { projectId, findingIds }),
+    reviewProposal: (proposalId, decision) => call('operations.reviewProposal', { proposalId, decision }),
+    setMode: (projectId, mode) => call('operations.setMode', { projectId, mode }),
+  },
   orchestration: {
-    start: (planId, concurrency = 2, maxRetries = 2) => call('orchestration.start', { planId, concurrency, maxRetries }),
+    start: (planId, concurrency = 2, maxRetries = 2, allowOverBudget = false) => call('orchestration.start', { planId, concurrency, maxRetries, allowOverBudget }),
     pause: (planId) => call('orchestration.pause', { planId }),
     resume: (planId) => call('orchestration.resume', { planId }),
     cancel: (planId) => call('orchestration.cancel', { planId }),
@@ -240,3 +247,5 @@ const api: ProjectOSDesktopApi = {
 }
 
 contextBridge.exposeInMainWorld('projectos', api)
+
+

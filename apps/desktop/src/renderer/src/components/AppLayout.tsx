@@ -5,6 +5,7 @@ import {
   ApartmentOutlined,
   AppstoreOutlined,
   ReadOutlined,
+  SafetyCertificateOutlined,
   BellOutlined,
   BorderOutlined,
   CloseOutlined,
@@ -49,6 +50,7 @@ const PAGE_LABELS: Record<string, string> = {
   orchestration: '编排工作台',
   tasks: '任务看板',
   knowledge: '知识库',
+  operations: '自主运营',
   agents: 'Agent 工作台',
   collaboration: '跨会话中心',
   workspace: '工作区',
@@ -62,6 +64,7 @@ const NAV_PATHS: Record<string, string> = {
   orchestration: '/orchestration',
   tasks: '/tasks',
   knowledge: '/knowledge',
+  operations: '/operations',
   agents: '/agents',
   collaboration: '/collaboration',
   workspace: '/workspace',
@@ -221,6 +224,7 @@ export default function AppLayout() {
         { id: 'orchestration', label: '编排工作台', group: currentProject?.name ?? '项目', icon: <ApartmentOutlined />, run: () => handleNavigate('orchestration') },
         { id: 'tasks', label: '任务看板', group: currentProject?.name ?? '项目', icon: <UnorderedListOutlined />, run: () => handleNavigate('tasks') },
         { id: 'knowledge', label: '知识库', group: currentProject?.name ?? '项目', icon: <ReadOutlined />, run: () => handleNavigate('knowledge') },
+        { id: 'operations', label: '自主运营', group: currentProject?.name ?? '项目', icon: <SafetyCertificateOutlined />, run: () => handleNavigate('operations') },
         { id: 'agents', label: 'Agent 工作台', group: currentProject?.name ?? '项目', icon: <RobotOutlined />, run: () => handleNavigate('agents') },
         { id: 'collaboration', label: '跨会话中心', group: currentProject?.name ?? '项目', icon: <SendOutlined />, run: () => handleNavigate('collaboration') },
         { id: 'workspace', label: '工作区', group: currentProject?.name ?? '项目', icon: <CodeOutlined />, run: () => handleNavigate('workspace') },
@@ -274,6 +278,7 @@ export default function AppLayout() {
         { key: 'orchestration', label: '编排工作台', icon: <ApartmentOutlined /> },
         { key: 'tasks', label: '任务看板', icon: <UnorderedListOutlined />, badge: taskBadge || null },
         { key: 'knowledge', label: '知识库', icon: <ReadOutlined /> },
+        { key: 'operations', label: '自主运营', icon: <SafetyCertificateOutlined /> },
         { key: 'agents', label: 'Agent 工作台', icon: <RobotOutlined />, badge: approvalBadge || null },
         { key: 'collaboration', label: '跨会话中心', icon: <SendOutlined /> },
       ],
@@ -547,4 +552,5 @@ export default function AppLayout() {
     </>
   )
 }
+
 
