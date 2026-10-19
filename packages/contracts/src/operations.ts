@@ -77,6 +77,16 @@ export const AutomationGrantSchema = z.object({
 
 export type AutomationGrant = z.infer<typeof AutomationGrantSchema>
 
+export const RiskDecisionSchema = z.object({
+  proposalId: IdSchema,
+  level: z.enum(['low', 'medium', 'high', 'critical']),
+  allowed: z.boolean(),
+  requiresApproval: z.boolean(),
+  reasons: z.array(z.string()),
+})
+
+export type RiskDecision = z.infer<typeof RiskDecisionSchema>
+
 export const AutonomyModeSchema = z.enum(['observe', 'propose', 'approved-autofix'])
 export type AutonomyMode = z.infer<typeof AutonomyModeSchema>
 
@@ -97,5 +107,6 @@ export const OperationsSnapshotSchema = z.object({
   proposals: z.array(RepairProposalSchema),
 })
 export type OperationsSnapshot = z.infer<typeof OperationsSnapshotSchema>
+
 
 

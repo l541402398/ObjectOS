@@ -167,6 +167,7 @@ export class OperationsService {
       findings: this.store.read.listFindings(projectId).length,
       revision,
     })
+    this.autoTriage(projectId)
     return this.snapshot(projectId)
   }
 
@@ -219,6 +220,43 @@ export class OperationsService {
     this.store.consumeAutomationGrant(projectId)
   }
 
+  risk(proposalId: string) {
+    const proposal = this.store.read.getProposal(proposalId)
+    if (!proposal) throw new AppError('NOT_FOUND', '修复提案不存在')
+    const mode = this.store.read.getAutonomyMode(proposal.projectId)
+    const grant = this.store.read.getAutomationGrant(proposal.projectId)
+    const grantValid = Boolean(grant && !grant.revokedAt && grant.expiresAt > now() && grant.usedRuns < grant.maxRuns)
+    const requiresApproval = proposal.riskLevel === 'high' || proposal.riskLevel === 'critical'
+    const reasons = [
+      `风险级别：${proposal.riskLevel}`,
+      `模式：${mode}`,
+      grantValid ? '授权有效' : '无有效授权',
+    ]
+    if (requiresApproval) reasons.push('高风险必须人工批准')
+    return {
+      proposalId,
+      level: proposal.riskLevel,
+      allowed: mode === 'approved-autofix' && !requiresApproval && grantValid,
+      requiresApproval,
+      reasons,
+    }
+  }
+
+  private autoTriage(projectId: string): void {
+    const mode = this.store.read.getAutonomyMode(projectId)
+    if (mode === 'observe') return
+    const proposals = this.store.read.listProposals(projectId)
+    const covered = new Set(proposals.flatMap((proposal) => proposal.findingIds))
+    const open = this.store.read.listFindings(projectId).filter((finding) => finding.status === 'open' && !covered.has(finding.id))
+    if (open.length) {
+      const created = this.propose(projectId, open.map((finding) => finding.id))
+      if (mode === 'approved-autofix' && created) {
+        const decision = this.risk(created.id)
+        if (decision.allowed) this.store.updateProposalStatus(created.id, 'approved')
+      }
+    }
+  }
+
   propose(projectId: string, findingIds: string[]) {    const findings = this.store.read.listFindings(projectId).filter((finding) => findingIds.includes(finding.id))
     if (!findings.length) throw new AppError('BAD_REQUEST', '没有可提案的 Finding')
     const proposal = {
@@ -250,5 +288,6 @@ export class OperationsService {
     return this.snapshot(projectId)
   }
 }
+
 
 

@@ -177,6 +177,7 @@ export interface ProjectOSDesktopApi {
     startRepair: (proposalId: string) => Promise<Out<'operations.startRepair'>>
     setMode: (projectId: string, mode: 'observe' | 'propose' | 'approved-autofix') => Promise<Out<'operations.setMode'>>
     getTrigger: (projectId: string) => Promise<Out<'operations.getTrigger'>>
+    risk: (proposalId: string) => Promise<Out<'operations.risk'>>
     getGrant: (projectId: string) => Promise<Out<'operations.getGrant'>>
     grant: (projectId: string, hours?: number, maxRuns?: number) => Promise<Out<'operations.grant'>>
     revokeGrant: (projectId: string) => Promise<Out<'operations.revokeGrant'>>
@@ -226,6 +227,7 @@ declare global {
     projectos: ProjectOSDesktopApi
   }
 }
+
 
 
 

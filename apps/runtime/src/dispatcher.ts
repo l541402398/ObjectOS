@@ -605,6 +605,10 @@ export class RuntimeDispatcher {
         const input = this.parse('operations.propose', rawInput)
         return this.operations.propose(input.projectId, input.findingIds)
       }
+      case 'operations.risk': {
+        const input = this.parse('operations.risk', rawInput)
+        return this.operations.risk(input.proposalId)
+      }
       case 'operations.getGrant': {
         const input = this.parse('operations.getGrant', rawInput)
         return this.operations.getGrant(input.projectId)
@@ -742,6 +746,7 @@ export function emitLog(hub: RuntimeEventHub, level: 'debug' | 'info' | 'warn' |
   const event: RuntimeEvent = { type: 'runtime.log', level, message, createdAt: Date.now() }
   hub.publish(event)
 }
+
 
 
 
