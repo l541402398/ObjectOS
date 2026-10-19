@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { App, Button, Checkbox, Select, Tag } from 'antd'
 import { PlayCircleOutlined, SafetyCertificateOutlined } from '@ant-design/icons'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { EmptyState, ErrorState, LoadingBlock, StatusPill } from '@projectos/ui'
 import { useOperations } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
@@ -11,6 +11,11 @@ import { formatRelative } from '../lib/format'
 export default function OperationsPage() {
   const { projectId = '' } = useParams<{ projectId: string }>()
   const query = useOperations(projectId)
+  const trigger = useQuery({
+    queryKey: ['operations-trigger', projectId],
+    queryFn: () => window.projectos.operations.getTrigger(projectId),
+    enabled: Boolean(projectId),
+  })
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { message } = App.useApp()
@@ -97,6 +102,23 @@ export default function OperationsPage() {
             ]}
             onChange={(mode) => {
               void window.projectos.operations.setMode(projectId, mode as 'observe' | 'propose' | 'approved-autofix').then(refresh)
+            }}
+          />
+          <Select
+            value={trigger.data?.enabled ? trigger.data.intervalMinutes : 0}
+            options={[
+              { value: 0, label: '自动检查关闭' },
+              { value: 15, label: '每 15 分钟' },
+              { value: 30, label: '每 30 分钟' },
+              { value: 60, label: '每 60 分钟' },
+            ]}
+            onChange={(minutes) => {
+              void window.projectos.operations
+                .setTrigger(projectId, minutes || 30, minutes > 0)
+                .then(async () => {
+                  await queryClient.invalidateQueries({ queryKey: ['operations-trigger', projectId] })
+                  message.success(minutes > 0 ? `自动检查已设为每 ${minutes} 分钟` : '自动检查已关闭')
+                })
             }}
           />
           <Button type="primary" icon={<PlayCircleOutlined />} loading={busy === 'checks'} onClick={() => void runChecks()}>

@@ -85,7 +85,7 @@ package-smoke.mjs → PASS (packaged EXE create + starter files + restart)
 V1.2 验收用例（AI-001–AI-014）见 [`docs/v1.2/acceptance-report.md`](v1.2/acceptance-report.md)。  
 V1.3 验收用例（T01–T18）见 [`docs/v1.3/acceptance-report.md`](v1.3/acceptance-report.md)。
 
-截图：`docs/screenshots/`（43 张，1440×900 与 1024×768，Light/Dark，含编排工作台、设置弹层、内联连接编辑与折叠侧栏）。
+截图：`docs/screenshots/`（47 张，1440×900 与 1024×768，Light/Dark，含编排工作台、设置弹层、内联连接编辑与折叠侧栏）。
 
 ## 未覆盖 / 风险
 
@@ -96,6 +96,7 @@ V1.3 验收用例（T01–T18）见 [`docs/v1.3/acceptance-report.md`](v1.3/acce
 - 路由、费用、Anthropic 原生协议未实现，见 V1.2 验收报告。
 - V1.3 仍未实现外部 Agent 执行、原生 Anthropic 协议、事件 seq 补齐、200 节点压测。
 - Electron 崩溃重启的 UI 状态恢复有事件驱动刷新，但没有专门的故障注入 E2E。
+
 
 
 

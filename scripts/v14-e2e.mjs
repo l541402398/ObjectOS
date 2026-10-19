@@ -36,6 +36,8 @@ try {
   const repair = await page.evaluate(async (proposalId) => window.projectos.operations.startRepair(proposalId), proposal.id)
   if (!repair.proposal.planId || repair.plan.status !== 'approved') throw new Error('repair plan not started')
   await page.evaluate(async (projectId) => window.projectos.operations.setMode(projectId, 'propose'), project.id)
+  const trigger = await page.evaluate(async (projectId) => window.projectos.operations.setTrigger(projectId, 15, true), project.id)
+  if (!trigger.enabled || trigger.intervalMinutes !== 15) throw new Error('trigger not persisted')
   await page.goto(`http://localhost/#/projects/${project.id}/operations`).catch(() => {})
   await app.close()
   app = await electron.launch({ executablePath: resolve(root, 'node_modules/electron/dist/electron.exe'), args: ['.'], cwd: desktopDir, env, timeout: 60_000 })
@@ -44,6 +46,8 @@ try {
   const recovered = await page2.evaluate(async (projectId) => window.projectos.operations.snapshot(projectId), project.id)
   if (!recovered.findings.length || !recovered.proposals[0]?.planId) throw new Error('operations recovery failed')
   if (recovered.mode !== 'propose') throw new Error('autonomy mode not persisted')
+  const recoveredTrigger = await page2.evaluate(async (projectId) => window.projectos.operations.getTrigger(projectId), project.id)
+  if (!recoveredTrigger?.enabled) throw new Error('trigger not recovered')
   console.log('V1.4 E2E PASS — health checks create evidence-backed findings, proposals approve and survive restart.')
   console.log(`  findings: ${recovered.findings.length}`)
   console.log(`  proposals: ${recovered.proposals.length} · ${recovered.proposals[0].status}`)
@@ -53,5 +57,6 @@ try {
   if (app) await app.close().catch(() => {})
   if (passed) rmSync(dataDir, { recursive: true, force: true })
 }
+
 
 

@@ -55,6 +55,7 @@ export class RuntimeDispatcher {
   private readonly scheduler: OrchestrationScheduler
   private readonly externalRunner: ExternalAgentRunner
   private readonly operations: OperationsService
+  private readonly operationsTimer: NodeJS.Timeout
 
   constructor(private readonly deps: DispatcherDeps) {
     this.aiConnections = new AIConnectionService(deps.store)
@@ -62,6 +63,8 @@ export class RuntimeDispatcher {
     this.orchestration = new OrchestrationService(deps.store, deps.services)
     this.externalRunner = new ExternalAgentRunner(deps.store, deps.services, deps.logger)
     this.operations = new OperationsService(deps.store, deps.services)
+    this.operationsTimer = setInterval(() => this.runDueChecks(), 30_000)
+    this.operationsTimer.unref()
     this.scheduler = new OrchestrationScheduler(
       deps.store,
       deps.services,
@@ -76,7 +79,22 @@ export class RuntimeDispatcher {
   }
 
   shutdownOrchestrations(): void {
+    clearInterval(this.operationsTimer)
     this.scheduler.shutdown()
+  }
+
+  private runDueChecks(): void {
+    for (const trigger of this.deps.store.read.listDueAutomationTriggers(Date.now())) {
+      this.deps.store.upsertAutomationTrigger(
+        trigger.projectId,
+        trigger.intervalMinutes,
+        true,
+        Date.now() + trigger.intervalMinutes * 60_000,
+      )
+      void this.operations
+        .runChecks(trigger.projectId)
+        .catch((error) => this.deps.logger.warn({ err: error, projectId: trigger.projectId }, 'scheduled health checks failed'))
+    }
   }
 
   private parse<M extends ApiMethod>(method: M, raw: unknown): ApiParsedInput<M> {

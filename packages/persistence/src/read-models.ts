@@ -1363,6 +1363,16 @@ export class ReadModels {
     const row = this.get<{ mode: string }>('SELECT mode FROM autonomy_settings WHERE project_id = ?', projectId)
     return (row?.mode as AutonomyMode | undefined) ?? 'observe'
   }
+
+  listDueAutomationTriggers(at: number): Array<{ projectId: string; intervalMinutes: number; nextRunAt: number | null }> {
+    return this.all<{ project_id: string; config_json: string; next_run_at: number | null }>(
+      "SELECT project_id, config_json, next_run_at FROM automation_triggers WHERE kind = 'interval' AND enabled = 1 AND (next_run_at IS NULL OR next_run_at <= ?)",
+      at,
+    ).map((row) => {
+      const config = JSON.parse(row.config_json) as { intervalMinutes?: number }
+      return { projectId: row.project_id, intervalMinutes: config.intervalMinutes ?? 30, nextRunAt: row.next_run_at }
+    })
+  }
   getProjectBudget(projectId: string): { projectId: string; softLimit: number; currency: string; updatedAt: number } | null {
     const row = this.get<ProjectBudgetRow>('SELECT * FROM project_budgets WHERE project_id = ?', projectId)
     return row
