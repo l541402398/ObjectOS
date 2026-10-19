@@ -31,6 +31,7 @@ export const ID_PREFIXES = {
   aiConnection: 'aic',
   aiConnectionCheck: 'ack',
   aiUsage: 'usg',
+  aiPrice: 'aip',
   agentBinding: 'bnd',
   snapshot: 'snp',
   plan: 'pln',
@@ -72,3 +73,4 @@ export const ActorSchema = z.object({
 export type Actor = z.infer<typeof ActorSchema>
 
 export const emptyInput = z.object({}).default({})
+

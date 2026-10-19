@@ -66,6 +66,22 @@ describe('AI connection registry', () => {
     expect(service.getView(connection.id).defaultModelId).toBeNull()
   })
 
+  it('stores per-model pricing for cost estimation', () => {
+    const { service } = setup()
+    const connection = service.create(input())
+    service.upsertPrice({
+      connectionId: connection.id,
+      modelId: 'test-model',
+      inputPerMillion: 0.5,
+      outputPerMillion: 1.5,
+      currency: 'USD',
+    })
+    const price = service.listPrices(connection.id)[0]
+    expect(price?.inputPerMillion).toBe(0.5)
+    expect(price?.outputPerMillion).toBe(1.5)
+    expect(service.listPrices(connection.id)).toHaveLength(1)
+  })
+
   it('routes by task, agent role, project and global scope with default fallback', () => {
     const { service } = setup()
     const fallback = service.create(input({ name: 'Default', isDefault: true }))
@@ -188,3 +204,4 @@ describe('connection probes', () => {
     }
   })
 })
+

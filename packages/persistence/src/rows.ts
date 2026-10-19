@@ -7,6 +7,7 @@ import type {
   AIErrorCode,
   AIModel,
   AIModelCapabilities,
+  AIModelPrice,
   AIModelSource,
   AIProviderId,
   AIProviderProtocol,
@@ -126,6 +127,19 @@ export interface AIUsageRow {
   estimated_cost: number | null
   currency: string | null
   created_at: number
+}
+
+export interface AIModelPriceRow {
+  id: string
+  connection_id: string
+  model_id: string
+  input_per_million: number
+  output_per_million: number
+  currency: string
+  version: string
+  effective_at: number
+  created_at: number
+  updated_at: number
 }
 
 export interface ProjectSnapshotRow {
@@ -739,8 +753,22 @@ export function toAIConnectionCheck(row: AIConnectionCheckRow): AIConnectionChec
   }
 }
 
-export function toAgentBackendBinding(row: AgentBackendBindingRow): AgentBackendBinding {
+export function toAIModelPrice(row: AIModelPriceRow): AIModelPrice {
   return {
+    id: row.id,
+    connectionId: row.connection_id,
+    modelId: row.model_id,
+    inputPerMillion: Number(row.input_per_million),
+    outputPerMillion: Number(row.output_per_million),
+    currency: row.currency,
+    version: row.version,
+    effectiveAt: Number(row.effective_at),
+    createdAt: Number(row.created_at),
+    updatedAt: Number(row.updated_at),
+  }
+}
+
+export function toAgentBackendBinding(row: AgentBackendBindingRow): AgentBackendBinding {  return {
     id: row.id,
     scopeType: row.scope_type as AgentBackendBinding['scopeType'],
     scopeId: row.scope_id,

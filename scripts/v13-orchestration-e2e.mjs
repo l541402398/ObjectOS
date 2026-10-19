@@ -104,6 +104,21 @@ try {
       }),
     { baseUrl },
   )
+  const connections = await page.evaluate(async () => window.projectos.aiConnections.list())
+  const defaultConnection = connections.connections.find((connection) => connection.isDefault) ?? connections.connections[0]
+  if (defaultConnection) {
+    await page.evaluate(
+      async ({ connectionId, modelId }) =>
+        window.projectos.aiPricing.upsert({
+          connectionId,
+          modelId,
+          inputPerMillion: 1,
+          outputPerMillion: 2,
+          currency: 'USD',
+        }),
+      { connectionId: defaultConnection.id, modelId: defaultConnection.defaultModelId ?? 'fake-orchestrator-model' },
+    )
+  }
   const plan = await page.evaluate(
     async ({ projectId }) => window.projectos.plans.generate(projectId, '增加 RBAC'),
     { projectId: project.project.id },
@@ -137,6 +152,7 @@ try {
   if (tasks.some((task) => task.status !== 'done')) throw new Error('not all orchestrated tasks are done')
   const usage = await page.evaluate(async () => window.projectos.aiUsage.summary())
   if (usage.runs < 4 || usage.inputTokens <= 0) throw new Error('usage was not recorded')
+  if (usage.estimatedCost <= 0) throw new Error('estimated cost was not recorded')
   const artifacts = await page.evaluate(
     async (projectId) => window.projectos.artifacts.list(projectId),
     project.project.id,
@@ -189,6 +205,7 @@ try {
   server.close()
   if (passed) rmSync(dataDir, { recursive: true, force: true })
 }
+
 
 
 

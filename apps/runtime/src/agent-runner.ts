@@ -521,6 +521,14 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
   }
 
   private cleanup(state: ActiveRun, status: RunStatus): void {
+    const price =
+      state.connectionId && state.modelId
+        ? this.store.read.getAIModelPrice(state.connectionId, state.modelId)
+        : null
+    const estimatedCost = price
+      ? (state.inputTokens / 1_000_000) * price.inputPerMillion +
+        (state.outputTokens / 1_000_000) * price.outputPerMillion
+      : null
     try {
       this.store.recordAIUsage({
         id: newId('usg'),
@@ -530,8 +538,8 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
         inputTokens: state.inputTokens,
         outputTokens: state.outputTokens,
         usageSource: state.inputTokens || state.outputTokens ? 'provider' : 'unknown',
-        estimatedCost: null,
-        currency: null,
+        estimatedCost,
+        currency: price?.currency ?? null,
         createdAt: now(),
       })
     } catch (error) {

@@ -154,6 +154,32 @@ export type AIConnectionTestResult = z.infer<typeof AIConnectionTestResultSchema
 export const AIModelListSchema = z.object({ models: z.array(AIModelSchema) })
 export type AIModelList = z.infer<typeof AIModelListSchema>
 
+export const AIModelPriceSchema = z.object({
+  id: IdSchema,
+  connectionId: IdSchema,
+  modelId: z.string().min(1).max(200),
+  inputPerMillion: z.number().nonnegative(),
+  outputPerMillion: z.number().nonnegative(),
+  currency: z.string().min(1).max(12),
+  version: z.string().min(1).max(40),
+  effectiveAt: TimestampSchema,
+  createdAt: TimestampSchema,
+  updatedAt: TimestampSchema,
+})
+export type AIModelPrice = z.infer<typeof AIModelPriceSchema>
+
+export const AIModelPriceListSchema = z.object({ prices: z.array(AIModelPriceSchema) })
+export type AIModelPriceList = z.infer<typeof AIModelPriceListSchema>
+
+export const AIModelPriceUpsertSchema = z.object({
+  connectionId: IdSchema,
+  modelId: z.string().trim().min(1).max(200),
+  inputPerMillion: z.number().nonnegative().default(0),
+  outputPerMillion: z.number().nonnegative().default(0),
+  currency: z.string().trim().min(1).max(12).default('USD'),
+})
+export type AIModelPriceUpsert = z.infer<typeof AIModelPriceUpsertSchema>
+
 export const AIModelCreateInputSchema = z.object({
   connectionId: IdSchema,
   modelId: z.string().trim().min(1).max(200),

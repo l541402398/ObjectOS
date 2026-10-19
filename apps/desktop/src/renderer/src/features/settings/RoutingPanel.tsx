@@ -47,6 +47,33 @@ export function RoutingPanel() {
     queryKey: ['ai-usage'],
     queryFn: () => window.projectos.aiUsage.summary(),
   })
+  const pricesQuery = useQuery({
+    queryKey: ['ai-pricing'],
+    queryFn: () => window.projectos.aiPricing.list(),
+  })
+  const [priceDraft, setPriceDraft] = useState({
+    connectionId: null as string | null,
+    modelId: '',
+    inputPerMillion: 0,
+    outputPerMillion: 0,
+    currency: 'USD',
+  })
+  const savePrice = useMutation({
+    mutationFn: () =>
+      window.projectos.aiPricing.upsert({
+        connectionId: priceDraft.connectionId ?? '',
+        modelId: priceDraft.modelId.trim(),
+        inputPerMillion: priceDraft.inputPerMillion,
+        outputPerMillion: priceDraft.outputPerMillion,
+        currency: priceDraft.currency.trim() || 'USD',
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['ai-pricing'] })
+      setPriceDraft((current) => ({ ...current, modelId: '' }))
+      message.success('价格已保存')
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
   const [drafts, setDrafts] = useState<Record<string, Draft>>({})
   const [globalDraft, setGlobalDraft] = useState<Draft>({ connectionId: null, modelId: '' })
 
@@ -200,8 +227,65 @@ export function RoutingPanel() {
         <div><span>Output tokens</span><strong>{usageQuery.data?.outputTokens ?? 0}</strong></div>
         <div><span>估算费用</span><strong>{usageQuery.data?.estimatedCost ?? 0}</strong></div>
       </div>
+
+      <div className="po-settings-section-head po-routing-global-head">
+        <div>
+          <h2>模型价格</h2>
+          <p>按每百万 tokens 计价；仅用于估算，不代表账单。</p>
+        </div>
+      </div>
+      <div className="po-routing-row po-price-row">
+        <Select
+          value={priceDraft.connectionId}
+          placeholder="连接"
+          options={connections.map((connection) => ({ value: connection.id, label: connection.name }))}
+          onChange={(connectionId) => setPriceDraft((current) => ({ ...current, connectionId }))}
+        />
+        <Input
+          value={priceDraft.modelId}
+          placeholder="模型 ID"
+          onChange={(event) => setPriceDraft((current) => ({ ...current, modelId: event.target.value }))}
+        />
+        <Input
+          type="number"
+          value={priceDraft.inputPerMillion}
+          addonBefore="输入 / 1M"
+          onChange={(event) => setPriceDraft((current) => ({ ...current, inputPerMillion: Number(event.target.value) || 0 }))}
+        />
+        <Input
+          type="number"
+          value={priceDraft.outputPerMillion}
+          addonBefore="输出 / 1M"
+          onChange={(event) => setPriceDraft((current) => ({ ...current, outputPerMillion: Number(event.target.value) || 0 }))}
+        />
+        <Button
+          type="primary"
+          icon={<SaveOutlined />}
+          disabled={!priceDraft.connectionId || !priceDraft.modelId.trim()}
+          loading={savePrice.isPending}
+          onClick={() => savePrice.mutate()}
+        />
+      </div>
+      <div className="po-price-list">
+        {(pricesQuery.data?.prices ?? []).map((price) => (
+          <div className="po-price-item" key={price.id}>
+            <code>{price.modelId}</code>
+            <span>{price.inputPerMillion} / {price.outputPerMillion} {price.currency} · 1M</span>
+            <Button
+              type="text"
+              size="small"
+              icon={<DeleteOutlined />}
+              onClick={() => {
+                void window.projectos.aiPricing.delete(price.id).then(async () => {
+                  await queryClient.invalidateQueries({ queryKey: ['ai-pricing'] })
+                })
+              }}
+            />
+          </div>
+        ))}
+      </div>
       <div className="po-routing-footnote">
-        路由只对原生 openai-chat 连接生效；外部 Agent 与未验证协议不会被静默降级。
+        路由支持原生 openai-chat、openai-responses 与 anthropic-messages；外部 Agent 不会被静默降级。
       </div>
     </div>
   )

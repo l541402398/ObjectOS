@@ -143,6 +143,11 @@ export interface ProjectOSDesktopApi {
   aiUsage: {
     summary: (projectId?: string) => Promise<Out<'aiUsage.summary'>>
   }
+  aiPricing: {
+    list: (connectionId?: string) => Promise<Out<'aiPricing.list'>>
+    upsert: (input: In<'aiPricing.upsert'>) => Promise<Out<'aiPricing.upsert'>>
+    delete: (id: string) => Promise<Out<'aiPricing.delete'>>
+  }
   externalAgents: {
     list: () => Promise<Out<'externalAgents.list'>>
     execute: (input: In<'externalAgents.execute'>) => Promise<Out<'externalAgents.execute'>>

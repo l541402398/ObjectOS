@@ -10,6 +10,8 @@ import {
   type AIModel,
   type AIModelCapabilities,
   type AIModelCreateInput,
+  type AIModelPrice,
+  type AIModelPriceUpsert,
   type AgentBackendBinding,
   type AgentBackendBindingUpsert,
   type AIUsageSummary,
@@ -257,6 +259,33 @@ export class AIConnectionService {
     this.store.deleteAgentBackendBinding(id)
   }
 
+  listPrices(connectionId?: string): AIModelPrice[] {
+    return this.store.read.listAIModelPrices(connectionId)
+  }
+
+  upsertPrice(input: AIModelPriceUpsert): AIModelPrice[] {
+    if (!this.store.read.getAIConnection(input.connectionId)) throw new AppError('NOT_FOUND', 'AI 连接不存在')
+    const existing = this.store.read.getAIModelPrice(input.connectionId, input.modelId)
+    const timestamp = now()
+    this.store.upsertAIModelPrice({
+      id: existing?.id ?? newId('aip'),
+      connectionId: input.connectionId,
+      modelId: input.modelId,
+      inputPerMillion: input.inputPerMillion,
+      outputPerMillion: input.outputPerMillion,
+      currency: input.currency,
+      version: 'v1',
+      effectiveAt: existing?.effectiveAt ?? timestamp,
+      createdAt: existing?.createdAt ?? timestamp,
+      updatedAt: timestamp,
+    })
+    return this.listPrices(input.connectionId)
+  }
+
+  deletePrice(id: string): void {
+    this.store.deleteAIModelPrice(id)
+  }
+
   usageSummary(projectId?: string): AIUsageSummary {
     return this.store.read.summarizeAIUsage(projectId)
   }
@@ -502,3 +531,4 @@ export class AIConnectionService {
     }
   }
 }
+

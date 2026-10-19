@@ -5,6 +5,7 @@ import {
   type AIConnectionProfile,
   type AIConnectionView,
   type AIModel,
+  type AIModelPrice,
   type AIUsageSummary,
   type AgentBackendBinding,
   type GraphLayout,
@@ -55,6 +56,7 @@ import {
   toAIConnection,
   toAIConnectionCheck,
   toAIModel,
+  toAIModelPrice,
   toAgentBackendBinding,
   toGraphLayout,
   toPlanRevision,
@@ -80,6 +82,7 @@ import {
   type AIConnectionCheckRow,
   type AIConnectionRow,
   type AIModelRow,
+  type AIModelPriceRow,
   type AgentBackendBindingRow,
   type GraphLayoutRow,
   type PlanRevisionRow,
@@ -1213,6 +1216,24 @@ export class ReadModels {
     return this.all<AgentBackendBindingRow>(
       'SELECT * FROM agent_backend_bindings ORDER BY priority DESC, updated_at DESC',
     ).map(toAgentBackendBinding)
+  }
+
+  listAIModelPrices(connectionId?: string): AIModelPrice[] {
+    return connectionId
+      ? this.all<AIModelPriceRow>(
+          'SELECT * FROM ai_model_prices WHERE connection_id = ? ORDER BY model_id',
+          connectionId,
+        ).map(toAIModelPrice)
+      : this.all<AIModelPriceRow>('SELECT * FROM ai_model_prices ORDER BY connection_id, model_id').map(toAIModelPrice)
+  }
+
+  getAIModelPrice(connectionId: string, modelId: string): AIModelPrice | null {
+    const row = this.get<AIModelPriceRow>(
+      'SELECT * FROM ai_model_prices WHERE connection_id = ? AND model_id = ?',
+      connectionId,
+      modelId,
+    )
+    return row ? toAIModelPrice(row) : null
   }
 
   summarizeAIUsage(projectId?: string): AIUsageSummary {

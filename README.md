@@ -44,7 +44,7 @@ ProjectOS 把项目从构思、需求、架构、规划、实现、测试、发�
   不自动重试。
 - **UI/UX**：设计令牌、Light/Dark/System、克制玻璃拟态、响应式 1440×900 与 1024×768、
   设置弹层、显式折叠侧栏、截图验证。
-- **测试**：65 个单元/集成/协议测试 + 六个 Playwright Electron E2E + 打包产物冒烟测试。
+- **测试**：66 个单元/集成/协议测试 + 六个 Playwright Electron E2E + 打包产物冒烟测试。
 
 ## 二期增量（V1.2 核心）
 
@@ -74,6 +74,7 @@ ProjectOS 把项目从构思、需求、架构、规划、实现、测试、发�
 - **自动编排**：计划 start/pause/resume/cancel、并发执行、自动验收推进与重启恢复。
 - **Worktree**：计划级隔离分支、diff artifact、干净主工作区才可合并，UI 提供查看/合并/丢弃。
 - **计划修订与知识库**：已批准计划创建新 revision；SQLite FTS5 全文检索与知识库页面。
+- **成本与指标**：按模型 token 价格估算费用；项目指标面板含周期、吞吐、利用率与关键路径。
 - **Agent 路由与用量**：按任务/Agent/项目/全局路由连接，Run 结束记录 tokens 与用量汇总。
 - 数据库 v3：`project_snapshots` / `plan_revisions` / `graph_layouts`。
 
@@ -224,7 +225,7 @@ Node Runtime（application / agent loop / tools）
 ```text
 pnpm lint       → 0 errors, 0 warnings
 pnpm typecheck  → pass
-pnpm test       → 17 files, 65 tests passed
+pnpm test       → 17 files, 66 tests passed
 pnpm build      → Runtime bundle + Electron main/preload/renderer built
 node scripts/e2e.mjs       → PASS（UI 创建项目，关闭重启后恢复）
 node scripts/agent-e2e.mjs → PASS（审批暂停、批准写文件、继续循环、Run completed）
@@ -266,6 +267,8 @@ ProjectOS-0.1.0-portable.exe → 直接启动成功（无 node_modules，Runtime
 ## License
 
 MIT
+
+
 
 
 

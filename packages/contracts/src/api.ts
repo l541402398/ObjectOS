@@ -24,6 +24,8 @@ import {
   AIModelCreateInputSchema,
   AIModelDeleteInputSchema,
   AIModelListSchema,
+  AIModelPriceListSchema,
+  AIModelPriceUpsertSchema,
   AIModelSetDefaultInputSchema,
   AgentBackendBindingDeleteSchema,
   AgentBackendBindingListSchema,
@@ -586,6 +588,18 @@ export const ApiSchemas = {
   'aiModels.setDefault': {
     input: AIModelSetDefaultInputSchema,
     output: AIConnectionViewSchema,
+  },
+  'aiPricing.list': {
+    input: z.object({ connectionId: IdSchema.optional() }).default({}),
+    output: AIModelPriceListSchema,
+  },
+  'aiPricing.upsert': {
+    input: AIModelPriceUpsertSchema,
+    output: AIModelPriceListSchema,
+  },
+  'aiPricing.delete': {
+    input: z.object({ id: IdSchema }),
+    output: ok,
   },
   'aiRouting.list': {
     input: z.object({ projectId: IdSchema.optional() }).default({}),

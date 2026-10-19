@@ -11,6 +11,7 @@ import {
   type AIConnectionProfile,
   type AIModel,
   type AIModelCapabilities,
+  type AIModelPrice,
   type AgentBackendBinding,
   type AIUsageRecord,
   type GraphLayout,
@@ -1488,6 +1489,40 @@ export class SqliteStore {
   deleteAgentBackendBinding(id: string): void {
     this.write(() => {
       this.run('DELETE FROM agent_backend_bindings WHERE id = ?', id)
+    })
+  }
+
+  upsertAIModelPrice(price: AIModelPrice): AIModelPrice {
+    this.write(() => {
+      this.run(
+        `INSERT INTO ai_model_prices
+         (id, connection_id, model_id, input_per_million, output_per_million, currency, version, effective_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(connection_id, model_id) DO UPDATE SET
+           input_per_million = excluded.input_per_million,
+           output_per_million = excluded.output_per_million,
+           currency = excluded.currency,
+           version = excluded.version,
+           effective_at = excluded.effective_at,
+           updated_at = excluded.updated_at`,
+        price.id,
+        price.connectionId,
+        price.modelId,
+        price.inputPerMillion,
+        price.outputPerMillion,
+        price.currency,
+        price.version,
+        price.effectiveAt,
+        price.createdAt,
+        price.updatedAt,
+      )
+    })
+    return price
+  }
+
+  deleteAIModelPrice(id: string): void {
+    this.write(() => {
+      this.run('DELETE FROM ai_model_prices WHERE id = ?', id)
     })
   }
 

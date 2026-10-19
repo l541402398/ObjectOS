@@ -483,11 +483,29 @@ CREATE TRIGGER knowledge_fts_au AFTER UPDATE ON knowledge_entries BEGIN
 END;
 `
 
+const V5 = `
+CREATE TABLE ai_model_prices (
+  id TEXT PRIMARY KEY,
+  connection_id TEXT NOT NULL REFERENCES ai_connection_profiles(id) ON DELETE CASCADE,
+  model_id TEXT NOT NULL,
+  input_per_million REAL NOT NULL DEFAULT 0,
+  output_per_million REAL NOT NULL DEFAULT 0,
+  currency TEXT NOT NULL DEFAULT 'USD',
+  version TEXT NOT NULL DEFAULT 'v1',
+  effective_at INTEGER NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE(connection_id, model_id)
+);
+CREATE INDEX idx_ai_model_prices_connection ON ai_model_prices(connection_id);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
   { version: 3, name: 'project snapshots plans and graph layouts', sql: V3 },
   { version: 4, name: 'knowledge full text index', sql: V4 },
+  { version: 5, name: 'ai model pricing', sql: V5 },
 ]
 
 function checksum(sql: string): string {

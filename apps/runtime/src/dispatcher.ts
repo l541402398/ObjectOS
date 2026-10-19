@@ -118,6 +118,19 @@ export class RuntimeDispatcher {
         this.aiConnections.deleteBinding(input.id)
         return { ok: true as const }
       }
+      case 'aiPricing.list': {
+        const input = this.parse('aiPricing.list', rawInput)
+        return { prices: this.aiConnections.listPrices(input.connectionId) }
+      }
+      case 'aiPricing.upsert': {
+        const input = this.parse('aiPricing.upsert', rawInput)
+        return { prices: this.aiConnections.upsertPrice(input) }
+      }
+      case 'aiPricing.delete': {
+        const input = this.parse('aiPricing.delete', rawInput)
+        this.aiConnections.deletePrice(input.id)
+        return { ok: true as const }
+      }
       case 'aiUsage.summary': {
         const input = this.parse('aiUsage.summary', rawInput)
         return this.aiConnections.usageSummary(input.projectId)
@@ -644,3 +657,4 @@ export function emitLog(hub: RuntimeEventHub, level: 'debug' | 'info' | 'warn' |
   const event: RuntimeEvent = { type: 'runtime.log', level, message, createdAt: Date.now() }
   hub.publish(event)
 }
+

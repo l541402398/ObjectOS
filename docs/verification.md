@@ -44,7 +44,7 @@ $ pnpm test
  ✓ tests/worktree.test.ts             (2 tests)
 
  Test Files  17 passed (17)
-      Tests  65 passed (65)
+      Tests  66 passed (66)
 ```
 
 `runtime-protocol` 启动真实的 `tsx apps/runtime/src/main.ts` 子进程，验证握手、创建项目、
@@ -229,7 +229,7 @@ building target=portable file=release\ProjectOS-0.1.0-portable.exe
 SHA256：
 
 ```text
-B8C1FE5A67B315955148BC122DEC8FFD0737E8F944B612C98E2859636369021A
+977E7299470D3483D04C87BD257F5A39C486B6DF8B971930FC95C282EE232BD4
 ```
 
 - `app.asar` 只含 `out/**`，不含 node_modules。
@@ -263,6 +263,9 @@ PACKAGE SMOKE PASS — packaged EXE creates a project, writes starter files and 
 - 符号链接越界测试因 Windows 权限未自动化；代码使用 realpath + 前缀校验，路径穿越已有测试。
 - Supervisor 崩溃退避的故障注入 E2E 未自动化；Runtime 子进程协议重启测试已覆盖数据恢复。
 - Outbox ACK 丢失重投未做故障注入；收件箱幂等已覆盖。
+
+
+
 
 
 

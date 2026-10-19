@@ -173,6 +173,11 @@ const api: ProjectOSDesktopApi = {
   aiUsage: {
     summary: (projectId) => call('aiUsage.summary', projectId ? { projectId } : {}),
   },
+  aiPricing: {
+    list: (connectionId) => call('aiPricing.list', connectionId ? { connectionId } : {}),
+    upsert: (input) => call('aiPricing.upsert', input),
+    delete: (id) => call('aiPricing.delete', { id }),
+  },
   externalAgents: {
     list: () => call('externalAgents.list'),
     execute: (input) => call('externalAgents.execute', input),
