@@ -15,7 +15,7 @@
 | 间隔触发器 | 完成（首版） | automation_triggers + API + 30s due timer；重启保留 nextRunAt |
 | 项目事件触发 | 完成（首版） | task.blocked / run.failed 事件触发健康检查，60s 去抖 |
 | AutomationGrant | 完成（首版） | 24h/5 次默认授权；过期/撤销/次数校验；startRepair 无授权拒绝 |
-| P1 项目洞察 | 部分 | 依赖统计、CI workflow、Git hooks、Changelog 草稿；趋势图/安全审计未接 |
+| P1 项目洞察 | 部分 | 依赖统计、CI workflow、Git hooks、npm audit、Changelog 草稿；趋势图未接 |
 | UI 可读性 | 完成（首版） | 全部 8–10px 字号提升到 10–11px；Light/Dark 截图复核 |
 | 风险矩阵 | 完成（首版） | low/medium 可自动；high/critical 强制人工；需有效 Grant |
 | approved-autofix 自动执行 | 完成（首版） | 检查后自动提案/批准，低/中风险且授权有效时自动 startRepair |
@@ -42,6 +42,7 @@ node scripts/v14-success-e2e.mjs → PASS
   proposals: 1 · executing
   mode: propose
 ```
+
 
 
 

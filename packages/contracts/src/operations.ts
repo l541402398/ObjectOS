@@ -81,6 +81,7 @@ export const OperationsInsightsSchema = z.object({
   projectId: IdSchema,
   ciWorkflows: z.array(z.string()),
   gitHooks: z.array(z.string()),
+  audit: z.object({ status: z.enum(['passed', 'failed', 'unavailable']), vulnerabilities: z.number().int().nonnegative() }),
   changelog: z.string(),
   dependencies: z.number().int().nonnegative(),
   devDependencies: z.number().int().nonnegative(),
@@ -118,6 +119,7 @@ export const OperationsSnapshotSchema = z.object({
   proposals: z.array(RepairProposalSchema),
 })
 export type OperationsSnapshot = z.infer<typeof OperationsSnapshotSchema>
+
 
 
 

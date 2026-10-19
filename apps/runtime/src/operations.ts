@@ -213,7 +213,23 @@ export class OperationsService {
       const { stdout } = await promisify(execFile)('git', ['log', '-12', '--pretty=format:%h %s'], { cwd: project.rootPath })
       changelog = '# Changelog\\n\\n' + stdout.split('\\n').map((line: string) => '- ' + line).join('\\n') + '\\n'
     } catch { /* no git */ }
-    return { projectId, ciWorkflows, gitHooks, changelog, dependencies, devDependencies }
+    let audit: { status: 'passed' | 'failed' | 'unavailable'; vulnerabilities: number } = { status: 'unavailable', vulnerabilities: 0 }
+    try {
+      const { stdout } = await promisify(execFile)('npm', ['audit', '--json', '--omit=dev'], { cwd: project.rootPath, timeout: 15_000 })
+      const parsed = JSON.parse(stdout) as { metadata?: { vulnerabilities?: { total?: number } } }
+      const total = parsed.metadata?.vulnerabilities?.total ?? 0
+      audit = { status: total > 0 ? 'failed' : 'passed', vulnerabilities: total }
+    } catch (error) {
+      const stdout = (error as { stdout?: string }).stdout
+      if (stdout) {
+        try {
+          const parsed = JSON.parse(stdout) as { metadata?: { vulnerabilities?: { total?: number } } }
+          const total = parsed.metadata?.vulnerabilities?.total ?? 0
+          audit = { status: total > 0 ? 'failed' : 'passed', vulnerabilities: total }
+        } catch { /* unavailable */ }
+      }
+    }
+    return { projectId, ciWorkflows, gitHooks, audit, changelog, dependencies, devDependencies }
   }
 
   getGrant(projectId: string) {
@@ -318,6 +334,7 @@ export class OperationsService {
     return this.snapshot(projectId)
   }
 }
+
 
 
 
