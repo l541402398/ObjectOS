@@ -174,6 +174,7 @@ export interface ProjectOSDesktopApi {
     runChecks: (projectId: string) => Promise<Out<'operations.runChecks'>>
     propose: (projectId: string, findingIds: string[]) => Promise<Out<'operations.propose'>>
     reviewProposal: (proposalId: string, decision: 'approved' | 'rejected') => Promise<Out<'operations.reviewProposal'>>
+    startRepair: (proposalId: string) => Promise<Out<'operations.startRepair'>>
     setMode: (projectId: string, mode: 'observe' | 'propose' | 'approved-autofix') => Promise<Out<'operations.setMode'>>
   }
   orchestration: {
@@ -220,5 +221,6 @@ declare global {
     projectos: ProjectOSDesktopApi
   }
 }
+
 
 

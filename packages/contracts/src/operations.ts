@@ -59,6 +59,7 @@ export const RepairProposalSchema = z.object({
   scope: z.array(z.string()),
   acceptanceCriteria: z.array(z.string()),
   findingIds: z.array(IdSchema),
+  planId: IdSchema.nullable(),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,
 })

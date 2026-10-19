@@ -1322,6 +1322,7 @@ export class ReadModels {
       scope: JSON.parse(row.scope_json) as string[],
       acceptanceCriteria: JSON.parse(row.acceptance_json) as string[],
       findingIds: this.all<{ finding_id: string }>('SELECT finding_id FROM proposal_findings WHERE proposal_id = ?', row.id).map((item) => item.finding_id),
+      planId: row.repair_plan_id,
       createdAt: Number(row.created_at),
       updatedAt: Number(row.updated_at),
     }))
@@ -1342,6 +1343,7 @@ export class ReadModels {
       scope: JSON.parse(row.scope_json) as string[],
       acceptanceCriteria: JSON.parse(row.acceptance_json) as string[],
       findingIds: this.all<{ finding_id: string }>('SELECT finding_id FROM proposal_findings WHERE proposal_id = ?', row.id).map((item) => item.finding_id),
+      planId: row.repair_plan_id,
       createdAt: Number(row.created_at),
       updatedAt: Number(row.updated_at),
     }
@@ -1531,6 +1533,7 @@ export class ReadModels {
     return row ? toRun(row) : null
   }
 }
+
 
 
 

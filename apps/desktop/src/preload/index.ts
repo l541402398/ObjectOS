@@ -204,6 +204,7 @@ const api: ProjectOSDesktopApi = {
     runChecks: (projectId) => call('operations.runChecks', { projectId }),
     propose: (projectId, findingIds) => call('operations.propose', { projectId, findingIds }),
     reviewProposal: (proposalId, decision) => call('operations.reviewProposal', { proposalId, decision }),
+    startRepair: (proposalId) => call('operations.startRepair', { proposalId }),
     setMode: (projectId, mode) => call('operations.setMode', { projectId, mode }),
   },
   orchestration: {
@@ -247,5 +248,6 @@ const api: ProjectOSDesktopApi = {
 }
 
 contextBridge.exposeInMainWorld('projectos', api)
+
 
 

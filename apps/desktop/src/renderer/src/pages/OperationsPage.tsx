@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { App, Button, Checkbox, Select, Tag } from 'antd'
 import { PlayCircleOutlined, SafetyCertificateOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
@@ -11,6 +11,7 @@ import { formatRelative } from '../lib/format'
 export default function OperationsPage() {
   const { projectId = '' } = useParams<{ projectId: string }>()
   const query = useOperations(projectId)
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { message } = App.useApp()
   const [selected, setSelected] = useState<string[]>([])
@@ -41,6 +42,20 @@ export default function OperationsPage() {
       setSelected([])
       await refresh()
       message.success('修复提案已创建')
+    } catch (error) {
+      message.error(errorMessage(error))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const startRepair = async (proposalId: string): Promise<void> => {
+    setBusy(proposalId)
+    try {
+      await window.projectos.operations.startRepair(proposalId)
+      await refresh()
+      message.success('修复计划已启动')
+      navigate(`/projects/${projectId}/orchestration`)
     } catch (error) {
       message.error(errorMessage(error))
     } finally {
@@ -136,7 +151,9 @@ export default function OperationsPage() {
                   <Button size="small" type="primary" loading={busy === proposal.id} onClick={() => void review(proposal.id, 'approved')}>批准</Button>
                   <Button size="small" onClick={() => void review(proposal.id, 'rejected')}>拒绝</Button>
                 </div>
-              ) : <Tag>{proposal.status}</Tag>}
+              ) : proposal.status === 'approved' && !proposal.planId ? (
+                <Button size="small" type="primary" loading={busy === proposal.id} onClick={() => void startRepair(proposal.id)}>启动修复</Button>
+              ) : <Tag>{proposal.planId ? '已排程' : proposal.status}</Tag>}
             </div>
           ))}
           {!data?.proposals.length ? <EmptyState compact title="没有修复提案" /> : null}

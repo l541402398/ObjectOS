@@ -177,6 +177,7 @@ export interface ProposalRow {
   risk_level: string
   scope_json: string
   acceptance_json: string
+  repair_plan_id: string | null
   created_at: number
   updated_at: number
 }
@@ -856,4 +857,5 @@ export function toGraphLayout(row: GraphLayoutRow): GraphLayout {
     updatedAt: Number(row.updated_at),
   }
 }
+
 

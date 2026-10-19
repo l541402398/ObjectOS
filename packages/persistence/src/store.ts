@@ -1626,6 +1626,12 @@ export class SqliteStore {
     })
   }
 
+  setProposalPlan(id: string, planId: string): void {
+    this.write(() => {
+      this.run('UPDATE repair_proposals SET repair_plan_id = ?, updated_at = ? WHERE id = ?', planId, now(), id)
+    })
+  }
+
   updateProposalStatus(id: string, status: string): void {
     this.write(() => {
       this.run('UPDATE repair_proposals SET status = ?, updated_at = ? WHERE id = ?', status, now(), id)
@@ -1884,5 +1890,6 @@ export function createArtifactRecord(input: {
 }
 
 export { toProject, toTask, toSession, toMessage, toRun, toRunStep, toStage }
+
 
 

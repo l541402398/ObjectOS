@@ -578,6 +578,8 @@ CREATE TABLE autonomy_settings (
 );
 `
 
+const V9 = `ALTER TABLE repair_proposals ADD COLUMN repair_plan_id TEXT;`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -587,6 +589,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 6, name: 'project soft budgets', sql: V6 },
   { version: 7, name: 'agent routing policy', sql: V7 },
   { version: 8, name: 'operations health findings and proposals', sql: V8 },
+  { version: 9, name: 'proposal repair plan', sql: V9 },
 ]
 
 function checksum(sql: string): string {

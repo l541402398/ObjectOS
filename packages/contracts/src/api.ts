@@ -655,6 +655,10 @@ export const ApiSchemas = {
     input: z.object({ projectId: IdSchema, findingIds: z.array(IdSchema).min(1) }),
     output: RepairProposalSchema,
   },
+  'operations.startRepair': {
+    input: z.object({ proposalId: IdSchema }),
+    output: z.object({ proposal: RepairProposalSchema, plan: PlanDraftSchema }),
+  },
   'operations.reviewProposal': {
     input: z.object({ proposalId: IdSchema, decision: z.enum(['approved', 'rejected']) }),
     output: RepairProposalSchema,
@@ -831,6 +835,7 @@ export function isMainMethod(value: string): value is MainMethod {
 export const ApprovalDecisionSchema = ApprovalStatusSchema.extract(['approved', 'rejected'])
 export const PageSchema = PageInputSchema
 export const HandoffDecisionSchema = HandoffStatusSchema.extract(['accepted', 'rejected'])
+
 
 
 

@@ -587,6 +587,19 @@ export class RuntimeDispatcher {
         const input = this.parse('operations.propose', rawInput)
         return this.operations.propose(input.projectId, input.findingIds)
       }
+      case 'operations.startRepair': {
+        const input = this.parse('operations.startRepair', rawInput)
+        const proposal = this.deps.store.read.getProposal(input.proposalId)
+        if (!proposal) throw new Error('修复提案不存在')
+        if (proposal.status !== 'approved') throw new Error('提案尚未批准')
+        if (proposal.planId) throw new Error('提案已有修复计划')
+        const draft = this.orchestration.generatePlan(proposal.projectId, '修复健康检查问题：' + proposal.scope.join('；'))
+        this.orchestration.approvePlan(draft.id)
+        this.deps.store.setProposalPlan(proposal.id, draft.id)
+        this.deps.store.updateProposalStatus(proposal.id, 'executing')
+        const plan = await this.scheduler.start(draft.id, 2, 2, true)
+        return { proposal: this.deps.store.read.getProposal(proposal.id), plan }
+      }
       case 'operations.reviewProposal': {
         const input = this.parse('operations.reviewProposal', rawInput)
         return this.operations.reviewProposal(input.proposalId, input.decision)
@@ -688,6 +701,8 @@ export function emitLog(hub: RuntimeEventHub, level: 'debug' | 'info' | 'warn' |
   const event: RuntimeEvent = { type: 'runtime.log', level, message, createdAt: Date.now() }
   hub.publish(event)
 }
+
+
 
 
 

@@ -21,7 +21,7 @@ try {
   const page = await app.firstWindow()
   await page.waitForSelector('.po-nav-item', { timeout: 30_000 })
   const project = await page.evaluate(async (workspaceDir) => (await window.projectos.projects.create({
-    name: 'V1.4 Health Project', description: '', rootPath: workspaceDir, createDirectory: false, initGit: false,
+    name: 'V1.4 Health Project', description: '', rootPath: workspaceDir, createDirectory: false, initGit: true,
   })).project, workspaceDir)
   await page.reload()
   await page.waitForTimeout(1800)
@@ -33,6 +33,8 @@ try {
   if (proposal.status !== 'pending_approval') throw new Error('proposal status invalid')
   const approved = await page.evaluate(async (proposalId) => window.projectos.operations.reviewProposal(proposalId, 'approved'), proposal.id)
   if (approved.status !== 'approved') throw new Error('proposal approval failed')
+  const repair = await page.evaluate(async (proposalId) => window.projectos.operations.startRepair(proposalId), proposal.id)
+  if (!repair.proposal.planId || repair.plan.status !== 'approved') throw new Error('repair plan not started')
   await page.evaluate(async (projectId) => window.projectos.operations.setMode(projectId, 'propose'), project.id)
   await page.goto(`http://localhost/#/projects/${project.id}/operations`).catch(() => {})
   await app.close()
@@ -40,7 +42,7 @@ try {
   const page2 = await app.firstWindow()
   await page2.waitForSelector('.po-nav-item', { timeout: 30_000 })
   const recovered = await page2.evaluate(async (projectId) => window.projectos.operations.snapshot(projectId), project.id)
-  if (!recovered.findings.length || recovered.proposals[0]?.status !== 'approved') throw new Error('operations recovery failed')
+  if (!recovered.findings.length || !recovered.proposals[0]?.planId) throw new Error('operations recovery failed')
   if (recovered.mode !== 'propose') throw new Error('autonomy mode not persisted')
   console.log('V1.4 E2E PASS — health checks create evidence-backed findings, proposals approve and survive restart.')
   console.log(`  findings: ${recovered.findings.length}`)
@@ -51,4 +53,5 @@ try {
   if (app) await app.close().catch(() => {})
   if (passed) rmSync(dataDir, { recursive: true, force: true })
 }
+
 
