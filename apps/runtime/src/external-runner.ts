@@ -61,6 +61,12 @@ export class ExternalAgentRunner {
       if (!plan || plan.projectId !== project.id) throw new AppError('NOT_FOUND', '计划不存在')
       if (plan.execution?.workspaceRef) workspaceRoot = plan.execution.workspaceRef
     }
+    if (input.allowWrite && !input.planId) {
+      throw new AppError('CONFLICT', '写模式必须绑定已创建的隔离 Worktree 计划')
+    }
+    if (input.allowWrite && workspaceRoot === project.rootPath) {
+      throw new AppError('CONFLICT', '该计划尚未创建 Worktree，拒绝在主工作区启用写模式')
+    }
     const agents = this.services.projects.listAgents(project.id)
     const agent = agents.find((item) => item.agent.role === '开发工程师') ?? agents[0]
     if (!agent) throw new AppError('NOT_FOUND', '缺少可用的 Agent')

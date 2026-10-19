@@ -224,7 +224,7 @@ Node Runtime（application / agent loop / tools）
 ```text
 pnpm lint       → 0 errors, 0 warnings
 pnpm typecheck  → pass
-pnpm test       → 16 files, 65 tests passed
+pnpm test       → 17 files, 65 tests passed
 pnpm build      → Runtime bundle + Electron main/preload/renderer built
 node scripts/e2e.mjs       → PASS（UI 创建项目，关闭重启后恢复）
 node scripts/agent-e2e.mjs → PASS（审批暂停、批准写文件、继续循环、Run completed）
@@ -266,6 +266,7 @@ ProjectOS-0.1.0-portable.exe → 直接启动成功（无 node_modules，Runtime
 ## License
 
 MIT
+
 
 
 

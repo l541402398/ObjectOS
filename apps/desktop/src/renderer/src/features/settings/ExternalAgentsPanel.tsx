@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { App, Button, Input, Select } from 'antd'
+import { App, Button, Input, Select, Switch } from 'antd'
 import { ArrowLeftOutlined, PlayCircleOutlined, ReloadOutlined, RobotOutlined } from '@ant-design/icons'
+import { useQuery } from '@tanstack/react-query'
 import { ErrorState, LoadingBlock, StatusPill } from '@projectos/ui'
 import { useBootstrap, useExternalAgents } from '../../lib/queries'
 import { errorMessage } from '../../lib/errors'
@@ -17,10 +18,21 @@ export function ExternalAgentsPanel() {
   const [projectId, setProjectId] = useState<string | null>(null)
   const [prompt, setPrompt] = useState('')
   const [running, setRunning] = useState(false)
+  const [allowWrite, setAllowWrite] = useState(false)
+  const [planId, setPlanId] = useState<string | null>(null)
+  const plans = useQuery({
+    queryKey: ['external-plans', projectId ?? ''],
+    queryFn: () => window.projectos.plans.list(projectId!),
+    enabled: Boolean(projectId),
+  })
 
   const start = async (): Promise<void> => {
     if (!adapter || !projectId || prompt.trim().length < 3) {
       message.warning('请选择项目和填写任务描述')
+      return
+    }
+    if (allowWrite && !planId) {
+      message.warning('写模式必须选择一个已创建 Worktree 的计划')
       return
     }
     setRunning(true)
@@ -29,7 +41,8 @@ export function ExternalAgentsPanel() {
         projectId,
         adapterId: adapter,
         prompt: prompt.trim(),
-        allowWrite: false,
+        allowWrite,
+        planId: allowWrite ? planId : null,
       })
       closeSettings()
       navigate(`/projects/${projectId}/agents?session=${result.sessionId}`)
@@ -102,15 +115,32 @@ export function ExternalAgentsPanel() {
             <Button type="text" size="small" icon={<ArrowLeftOutlined />} onClick={() => setAdapter(null)}>
               外部 Agent
             </Button>
-            <strong>{adapter} · 只读 Plan</strong>
+            <strong>{adapter} · {allowWrite ? '隔离 Worktree 写模式' : '只读 Plan'}</strong>
           </div>
           <label>项目</label>
           <Select
             value={projectId}
             placeholder="选择项目"
             options={(bootstrap.data?.projects ?? []).map((project) => ({ value: project.id, label: project.name }))}
-            onChange={setProjectId}
+            onChange={(value) => { setProjectId(value); setPlanId(null) }}
           />
+          <div className="po-external-write">
+            <Switch checked={allowWrite} onChange={setAllowWrite} />
+            <span>允许编辑（仅限隔离 Worktree）</span>
+          </div>
+          {allowWrite ? (
+            <>
+              <label>执行 Worktree</label>
+              <Select
+                value={planId}
+                placeholder="选择已创建 Worktree 的计划"
+                options={(plans.data?.plans ?? [])
+                  .filter((plan) => Boolean(plan.execution?.workspaceRef))
+                  .map((plan) => ({ value: plan.id, label: `r${plan.revision} · ${plan.goal}` }))}
+                onChange={setPlanId}
+              />
+            </>
+          ) : null}
           <label>任务描述</label>
           <Input.TextArea rows={5} value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder="让外部 Agent 分析或规划什么？" />
           <div className="po-external-runner-actions">

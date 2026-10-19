@@ -43,7 +43,7 @@ $ pnpm test
  ✓ tests/orchestration.test.ts        (5 tests)
  ✓ tests/worktree.test.ts             (2 tests)
 
- Test Files  16 passed (16)
+ Test Files  17 passed (17)
       Tests  64 passed (64)
 ```
 
@@ -229,7 +229,7 @@ building target=portable file=release\ProjectOS-0.1.0-portable.exe
 SHA256：
 
 ```text
-32E9679F9C93714009FDCCD710AEA394296C46DDD941C5D2029BEF9889D1DE35
+B8C1FE5A67B315955148BC122DEC8FFD0737E8F944B612C98E2859636369021A
 ```
 
 - `app.asar` 只含 `out/**`，不含 node_modules。
@@ -263,6 +263,8 @@ PACKAGE SMOKE PASS — packaged EXE creates a project, writes starter files and 
 - 符号链接越界测试因 Windows 权限未自动化；代码使用 realpath + 前缀校验，路径穿越已有测试。
 - Supervisor 崩溃退避的故障注入 E2E 未自动化；Runtime 子进程协议重启测试已覆盖数据恢复。
 - Outbox ACK 丢失重投未做故障注入；收件箱幂等已覆盖。
+
+
 
 
 
