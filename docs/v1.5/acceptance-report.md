@@ -137,3 +137,11 @@ ACP permission request 现按 Agent 的 files/shell/network 权限自动批准�
 - 已推送 main：ac06c83
 - 包 SHA256：369EE150F801B316811A41B1CF5BFCF6D0D6D0EFBAD0B72C5061819F455AD061
 - 已知 UX 限制：Runtime 编辑使用浏览器 prompt；未提供独立工具审批卡片，但 ACP 权限按 Agent grants 自动批准/拒绝。
+
+## Ubuntu 22.04
+
+- AppImage 已构建：release/ProjectOS-0.1.0-linux-x86_64.AppImage
+- SHA256：DEA530688C3BE6EB779552538E0B109ADA3B13A2E2F8C1AB1EAF3350E93C69AF
+- AppImage --appimage-extract 校验通过，包含 ProjectOS 可执行文件与桌面入口
+- 常驻构建：.github/workflows/linux-build.yml、pnpm package:linux
+- 详见 docs/v1.5/ubuntu-build.md
