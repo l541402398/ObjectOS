@@ -65,6 +65,7 @@ export const PlanExecutionSchema = z.object({
   retries: z.record(z.string(), z.number().int().nonnegative()).default({}),
   nextAttemptAt: z.record(z.string(), TimestampSchema).default({}),
   retryForRun: z.record(z.string(), IdSchema).default({}),
+  requireWorktree: z.boolean().default(false),
 })
 export type PlanExecution = z.infer<typeof PlanExecutionSchema>
 

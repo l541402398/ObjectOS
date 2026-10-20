@@ -57,9 +57,14 @@ export class WorktreeManager {
     if (clean.code !== 0) return { ok: false, message: clean.stderr.trim() || '无法读取主工作区状态' }
     if (clean.stdout.trim()) return { ok: false, message: '主工作区存在未提交改动，拒绝合并' }
     const result = await runGit(['merge', '--no-ff', branch, '-m', message], repoRoot)
+    if (result.code === 0) return { ok: true, message: result.stdout.trim().slice(0, 4000) }
+    // Never leave the main workspace in a half-merged state; restore it and report the conflict.
+    const conflicts = await runGit(['diff', '--name-only', '--diff-filter=U'], repoRoot)
+    await runGit(['merge', '--abort'], repoRoot)
+    const files = conflicts.stdout.trim()
     return {
-      ok: result.code === 0,
-      message: (result.code === 0 ? result.stdout : result.stderr).trim().slice(0, 4000),
+      ok: false,
+      message: (files ? `合并冲突，已中止合并：\n${files}` : (result.stderr || result.stdout).trim()).slice(0, 4000),
     }
   }
 

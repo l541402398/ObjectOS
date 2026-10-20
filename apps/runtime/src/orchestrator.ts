@@ -27,6 +27,7 @@ function execution(status: PlanExecution['status'], concurrency: number, previou
     retries: previous?.retries ?? {},
     nextAttemptAt: previous?.nextAttemptAt ?? {},
     retryForRun: previous?.retryForRun ?? {},
+    requireWorktree: previous?.requireWorktree ?? false,
   }
 }
 
@@ -57,7 +58,13 @@ export class OrchestrationScheduler {
     return updated
   }
 
-  async start(planId: string, concurrency = 2, maxRetries = 2, allowOverBudget = false): Promise<PlanDraft> {
+  async start(
+    planId: string,
+    concurrency = 2,
+    maxRetries = 2,
+    allowOverBudget = false,
+    requireWorktree = false,
+  ): Promise<PlanDraft> {
     const plan = this.getPlan(planId)
     if (plan.status !== 'approved') throw new AppError('CONFLICT', '计划尚未批准，不能开始执行')
     const budget = this.store.read.getProjectBudget(plan.projectId)
@@ -72,8 +79,20 @@ export class OrchestrationScheduler {
     const next = this.saveExecution(plan, {
       ...execution('running', concurrency, plan.execution),
       maxRetries: Math.max(0, Math.min(5, maxRetries)),
+      requireWorktree: requireWorktree || Boolean(plan.execution?.requireWorktree),
     })
-    await this.ensureWorkspace(next)
+    try {
+      await this.ensureWorkspace(next)
+    } catch (error) {
+      const failed = this.getPlan(next.id)
+      this.saveExecution(failed, {
+        ...failed.execution!,
+        status: 'failed',
+        error: error instanceof Error ? error.message : String(error),
+        updatedAt: now(),
+      })
+      throw error
+    }
     this.arm(next.id)
     void this.tick(next.id)
     return this.getPlan(next.id)
@@ -215,7 +234,12 @@ export class OrchestrationScheduler {
       })
       return ref.path
     } catch (error) {
-      this.logger.warn({ err: error, planId: plan.id }, 'git worktree unavailable; using project root')
+      // A Git project must never fall back to writing the main workspace; only non-Git V1.3 plans may.
+      if (plan.execution?.requireWorktree || existsSync(join(project.rootPath, '.git'))) {
+        const reason = error instanceof Error ? error.message : String(error)
+        throw new AppError('CONFLICT', `无法创建隔离 Worktree，已停止执行：${reason}`)
+      }
+      this.logger.warn({ err: error, planId: plan.id }, 'non-git project; using project root')
       return project.rootPath
     }
   }
@@ -237,7 +261,18 @@ export class OrchestrationScheduler {
 
       for (const card of cards) {
         const latest = this.store.read.getLatestRunForTask(card.id)
-        if (latest && (latest.status === 'failed' || latest.status === 'needs_reconciliation')) {
+        if (latest?.status === 'needs_reconciliation') {
+          // Side effects are unknown: never replay automatically, wait for a human to reconcile the run.
+          this.saveExecution(plan, {
+            ...plan.execution!,
+            status: 'paused',
+            error: `运行 ${latest.id} 待人工核对，核对后再继续`,
+            updatedAt: now(),
+          })
+          this.disarm(planId)
+          return
+        }
+        if (latest?.status === 'failed') {
           const retries = plan.execution?.retries ?? {}
           const used = retries[card.id] ?? 0
           const nextAt = plan.execution?.nextAttemptAt[card.id] ?? 0
@@ -306,7 +341,7 @@ export class OrchestrationScheduler {
             this.saveExecution(plan, {
               ...plan.execution!,
               status: 'failed',
-              error: `质量门禁未通过：${report.checks.filter((check) => check.status === 'failed').map((check) => check.name).join(', ')}`,
+              error: `质量门禁未通过：${report.checks.filter((check) => check.status === 'failed' || check.status === 'error').map((check) => check.name).join(', ')}`,
               updatedAt: now(),
             })
             this.disarm(planId)

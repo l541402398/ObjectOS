@@ -672,7 +672,7 @@ export const ApiSchemas = {
     output: AutomationTriggerSchema,
   },
   'operations.insights': {
-    input: z.object({ projectId: IdSchema }),
+    input: z.object({ projectId: IdSchema, runAudit: z.boolean().default(false) }),
     output: OperationsInsightsSchema,
   },
   'operations.risk': {

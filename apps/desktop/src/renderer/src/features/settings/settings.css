@@ -84,7 +84,7 @@
   background: transparent;
   color: var(--color-text-secondary);
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--text-small);
   text-align: left;
   cursor: pointer;
 }
@@ -219,7 +219,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
+  font-size: var(--text-small);
 }
 
 .po-ai-connection-title > span {
@@ -227,7 +227,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--color-text-tertiary);
-  font-size: 10.5px;
+  font-size: var(--text-small);
 }
 
 .po-ai-default-tag {
@@ -235,7 +235,7 @@
   border-radius: 5px;
   background: var(--color-accent-soft);
   color: var(--color-accent);
-  font-size: 11px;
+  font-size: var(--text-small);
   font-weight: var(--weight-semibold);
 }
 
@@ -245,7 +245,7 @@
   gap: 4px 14px;
   margin: 9px 0 0 42px;
   color: var(--color-text-tertiary);
-  font-size: 10.5px;
+  font-size: var(--text-small);
 }
 
 .po-ai-last-check {
@@ -254,7 +254,7 @@
   gap: 6px;
   margin: 9px 0 0 42px;
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: var(--text-small);
   line-height: 1.45;
 }
 
@@ -274,7 +274,7 @@
   border: 1px solid var(--color-border);
   border-radius: 9px;
   background: var(--color-surface-sunken);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-ai-test.is-ok {
@@ -315,7 +315,7 @@
   border-radius: 5px;
   background: var(--color-surface);
   color: var(--color-text-tertiary);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-ai-test-stages span.is-failed {
@@ -332,7 +332,7 @@
 }
 
 .po-ai-connection-actions .ant-btn {
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-model-summary {
@@ -343,7 +343,7 @@
   border: 1px solid var(--color-border);
   border-radius: 9px;
   background: var(--color-surface-sunken);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-model-summary span {
@@ -361,14 +361,14 @@
 }
 
 .po-model-name strong {
-  font-size: 12px;
+  font-size: var(--text-small);
   font-weight: var(--weight-medium);
 }
 
 .po-model-name span {
   color: var(--color-text-tertiary);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-model-actions {
@@ -406,7 +406,7 @@
   border-radius: 9px;
   background: var(--color-surface-sunken);
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-external-list {
@@ -438,7 +438,7 @@
 .po-external-head span {
   color: var(--color-text-tertiary);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-external-meta {
@@ -446,7 +446,7 @@
   grid-template-columns: 42px minmax(0, 1fr);
   gap: 8px;
   margin-top: 9px;
-  font-size: 10.5px;
+  font-size: var(--text-small);
 }
 
 .po-external-meta span {
@@ -465,7 +465,7 @@
   padding-top: 8px;
   border-top: 1px solid var(--color-divider);
   color: var(--color-text-tertiary);
-  font-size: 10.5px;
+  font-size: var(--text-small);
 }
 
 .po-settings-panel .po-setting-row {
@@ -488,14 +488,14 @@
   border: 1px solid var(--color-border);
   border-radius: 6px;
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-about-links {
   display: flex;
   justify-content: space-between;
   color: var(--color-text-tertiary);
-  font-size: 10.5px;
+  font-size: var(--text-small);
 }
 
 .po-ai-editor {
@@ -538,7 +538,7 @@
 .po-ai-editor-title p {
   margin: 4px 0 0;
   color: var(--color-text-tertiary);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-ai-editor-form {
@@ -557,7 +557,7 @@
 .po-form-section-title {
   margin: 8px 0 10px;
   color: var(--color-text-tertiary);
-  font-size: 11px;
+  font-size: var(--text-small);
   font-weight: var(--weight-semibold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -655,12 +655,12 @@
 }
 
 .po-routing-role strong {
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-routing-role span {
   color: var(--color-text-tertiary);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-routing-global-head {
@@ -684,7 +684,7 @@
 .po-usage-grid span {
   display: block;
   color: var(--color-text-tertiary);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-usage-grid strong {
@@ -697,7 +697,7 @@
 .po-routing-footnote {
   margin-top: 10px;
   color: var(--color-text-tertiary);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 @media (max-width: 900px) {
@@ -743,12 +743,12 @@
 }
 
 .po-external-runner-head strong {
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-external-runner > label {
   color: var(--color-text-tertiary);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-external-runner-actions {
@@ -763,7 +763,7 @@
   align-items: center;
   gap: 8px;
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-price-row {
@@ -786,7 +786,7 @@
   border: 1px solid var(--color-border);
   border-radius: 6px;
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 
 .po-price-item code {
@@ -795,6 +795,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--text-small);
 }
 

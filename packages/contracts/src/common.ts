@@ -37,6 +37,8 @@ export const ID_PREFIXES = {
   findingEvidence: 'fev',
   repairProposal: 'prp',
   automationTrigger: 'atr',
+  automationRun: 'aur',
+  automationRunEvent: 'are',
   agentBinding: 'bnd',
   snapshot: 'snp',
   plan: 'pln',

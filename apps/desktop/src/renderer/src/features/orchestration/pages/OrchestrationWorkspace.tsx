@@ -181,6 +181,9 @@ function WorkbenchNode({ data, selected }: NodeProps<FlowNode>) {
 
 const nodeTypes = { workbench: WorkbenchNode }
 
+/** Below this zoom node metadata is hidden so only legible title and status remain. */
+const COMPACT_GRAPH_ZOOM = 0.85
+
 function buildLayout(
   snapshot: NonNullable<ReturnType<typeof useGraph>['data']>,
   selectedId: string | null,
@@ -291,6 +294,7 @@ export default function OrchestrationWorkspace() {
   const [seqCursor, setSeqCursor] = useState(0)
   const [seqGap, setSeqGap] = useState(false)
   const [nodeFilter, setNodeFilter] = useState('')
+  const [compactGraph, setCompactGraph] = useState(false)
   const seqCursorRef = useRef(0)
   const saveLayoutRef = useRef<() => void>(() => undefined)
   const [flowNodes, setFlowNodes] = useState<FlowNode[]>([])
@@ -873,7 +877,7 @@ export default function OrchestrationWorkspace() {
               <Button size="small" icon={<CompressOutlined />} onClick={() => void flowRef.current?.fitView({ padding: 0.04 })}>适配</Button>
               <Button size="small" icon={<ReloadOutlined />} onClick={() => void graphQuery.refetch()} />
             </div>
-            <div className="po-orch-canvas">
+            <div className={`po-orch-canvas${compactGraph ? ' is-compact' : ''}`}>
               <ReactFlow
                 nodes={visibleNodes}
                 edges={visibleEdges}
@@ -882,7 +886,11 @@ export default function OrchestrationWorkspace() {
                 fitViewOptions={{ padding: 0.02, maxZoom: 1.1 }}
                 minZoom={0.3}
                 maxZoom={1.5}
-                onInit={(flow) => { flowRef.current = flow }}
+                onInit={(flow) => {
+                  flowRef.current = flow
+                  setCompactGraph(flow.getZoom() < COMPACT_GRAPH_ZOOM)
+                }}
+                onMove={(_event, viewport) => setCompactGraph(viewport.zoom < COMPACT_GRAPH_ZOOM)}
                 onNodesChange={(changes: NodeChange<FlowNode>[]) => setFlowNodes((current) => applyNodeChanges(changes, current))}
                 onNodeClick={(_event, node) => {
                   const graph = graphQuery.data?.nodes.find((item) => item.id === node.id) ?? null
@@ -1048,13 +1056,18 @@ export default function OrchestrationWorkspace() {
                   {draft.execution?.status === 'completed' && draft.execution.branch ? (
                     <>
                       <Button icon={<FileTextOutlined />} onClick={() => void loadWorktree()}>查看 Diff</Button>
-                      <Button
-                        type="primary"
+                      <Popconfirm
+                        title="合并到主分支？"
+                        description={`将 ${draft.execution.branch} 合并进主工作区，需先查看 Diff。`}
+                        okText="合并"
+                        cancelText="取消"
                         disabled={Boolean(draft.execution.mergedAt)}
-                        onClick={() => void mergeWorktree()}
+                        onConfirm={() => void mergeWorktree()}
                       >
-                        {draft.execution.mergedAt ? '已合并' : '合并到主分支'}
-                      </Button>
+                        <Button type="primary" disabled={Boolean(draft.execution.mergedAt)}>
+                          {draft.execution.mergedAt ? '已合并' : '合并到主分支'}
+                        </Button>
+                      </Popconfirm>
                       <Popconfirm
                         title="丢弃该计划的 Worktree？"
                         description="分支上的改动将不再合并，主工作区不受影响。"

@@ -1575,8 +1575,8 @@ export class SqliteStore {
       )
       if (existing) {
         this.run(
-          "UPDATE findings SET last_seen_at = ?, occurrence_count = occurrence_count + 1, status = CASE WHEN status = 'resolved' THEN 'reopened' ELSE status END WHERE id = ?",
-          input.at, existing.id,
+          "UPDATE findings SET title = ?, last_seen_at = ?, occurrence_count = occurrence_count + 1, status = CASE WHEN status = 'resolved' THEN 'reopened' ELSE status END WHERE id = ?",
+          input.title, input.at, existing.id,
         )
         this.run(
           `INSERT INTO finding_evidence (id, finding_id, check_run_id, source_uri, source_revision, excerpt, content_hash, created_at)
@@ -1632,11 +1632,16 @@ export class SqliteStore {
     })
   }
 
-  resolveProposalFindings(proposalId: string): void {
+  /** Moves the proposal's findings that are currently in one of `from` to `to`. */
+  transitionProposalFindings(proposalId: string, from: string[], to: string): void {
     this.write(() => {
       this.run(
-        "UPDATE findings SET status = 'resolved' WHERE id IN (SELECT finding_id FROM proposal_findings WHERE proposal_id = ?)",
+        `UPDATE findings SET status = ?
+         WHERE id IN (SELECT finding_id FROM proposal_findings WHERE proposal_id = ?)
+           AND status IN (SELECT value FROM json_each(?))`,
+        to,
         proposalId,
+        JSON.stringify(from),
       )
     })
   }
@@ -1678,8 +1683,8 @@ export class SqliteStore {
     this.write(() => {
       this.run(
         `INSERT INTO automation_grants
-         (project_id, allowed_actions_json, allowed_paths_json, expires_at, max_runs, used_runs, revoked_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, 0, NULL, ?)
+         (project_id, allowed_actions_json, allowed_paths_json, expires_at, max_runs, used_runs, revoked_at, updated_at, issued_at)
+         VALUES (?, ?, ?, ?, ?, 0, NULL, ?, ?)
          ON CONFLICT(project_id) DO UPDATE SET
            allowed_actions_json = excluded.allowed_actions_json,
            allowed_paths_json = excluded.allowed_paths_json,
@@ -1687,20 +1692,97 @@ export class SqliteStore {
            max_runs = excluded.max_runs,
            used_runs = 0,
            revoked_at = NULL,
-           updated_at = excluded.updated_at`,
+           updated_at = excluded.updated_at,
+           issued_at = excluded.issued_at`,
         input.projectId,
         JSON.stringify(input.allowedActions),
         JSON.stringify(input.allowedPaths),
         input.expiresAt,
         input.maxRuns,
         now(),
+        now(),
       )
     })
   }
 
-  consumeAutomationGrant(projectId: string): void {
+  /**
+   * Claims an automation run under `idempotencyKey`. Returns `null` when the key was already
+   * claimed, so concurrent triggers produce one run. The lease token is a monotonic fencing token.
+   */
+  claimAutomationRun(input: {
+    id: string
+    projectId: string
+    kind: 'checks' | 'repair'
+    source: string
+    proposalId: string | null
+    idempotencyKey: string
+  }): { id: string; leaseToken: number } | null {
+    return this.write(() => {
+      const existing = this.get<{ id: string }>('SELECT id FROM automation_runs WHERE idempotency_key = ?', input.idempotencyKey)
+      if (existing) return null
+      const next = this.get<{ token: number }>('SELECT COALESCE(MAX(lease_token), 0) + 1 AS token FROM automation_runs')
+      const leaseToken = Number(next?.token ?? 1)
+      const at = now()
+      this.run(
+        `INSERT INTO automation_runs (id, project_id, kind, source, proposal_id, idempotency_key, status, attempt, lease_token, started_at)
+         VALUES (?, ?, ?, ?, ?, ?, 'running', 1, ?, ?)`,
+        input.id, input.projectId, input.kind, input.source, input.proposalId, input.idempotencyKey, leaseToken, at,
+      )
+      this.insertAutomationRunEvent(input.id, 'claimed', { source: input.source, leaseToken }, at)
+      return { id: input.id, leaseToken }
+    })
+  }
+
+  setAutomationRunPlan(id: string, planId: string): void {
     this.write(() => {
-      this.run('UPDATE automation_grants SET used_runs = used_runs + 1, updated_at = ? WHERE project_id = ?', now(), projectId)
+      this.run('UPDATE automation_runs SET plan_id = ? WHERE id = ?', planId, id)
+    })
+  }
+
+  /** Commits a terminal status only if the caller still holds the lease (fencing). */
+  finishAutomationRun(
+    id: string,
+    leaseToken: number,
+    status: 'completed' | 'failed' | 'cancelled' | 'reconciliation_required',
+    error: string | null = null,
+  ): boolean {
+    return this.write(() => {
+      const at = now()
+      const result = this.db
+        .prepare(
+          `UPDATE automation_runs SET status = ?, error = ?, finished_at = ?
+           WHERE id = ? AND lease_token = ? AND status = 'running'`,
+        )
+        .run(status, error, at, id, leaseToken)
+      const committed = Number(result.changes) === 1
+      if (committed) this.insertAutomationRunEvent(id, status, error ? { error } : {}, at)
+      return committed
+    })
+  }
+
+  appendAutomationRunEvent(runId: string, type: string, payload: Record<string, unknown> = {}): void {
+    this.write(() => this.insertAutomationRunEvent(runId, type, payload, now()))
+  }
+
+  private insertAutomationRunEvent(runId: string, type: string, payload: Record<string, unknown>, at: number): void {
+    this.run(
+      'INSERT INTO automation_run_events (id, run_id, type, payload_json, created_at) VALUES (?, ?, ?, ?, ?)',
+      newId('are'), runId, type, JSON.stringify(payload), at,
+    )
+  }
+
+  /** Atomically consumes one run of a valid grant; returns false when none is left. */
+  consumeAutomationGrant(projectId: string, action: string): boolean {
+    return this.write(() => {
+      const at = now()
+      const result = this.db
+        .prepare(
+          `UPDATE automation_grants SET used_runs = used_runs + 1, updated_at = ?
+           WHERE project_id = ? AND revoked_at IS NULL AND expires_at > ? AND used_runs < max_runs
+             AND EXISTS (SELECT 1 FROM json_each(allowed_actions_json) WHERE value = ?)`,
+        )
+        .run(at, projectId, at, action)
+      return Number(result.changes) === 1
     })
   }
 

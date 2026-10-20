@@ -95,14 +95,30 @@ describe('quality gate', () => {
     const gate = new QualityGateService()
     const passed = await gate.run(dir)
     expect(passed.passed).toBe(true)
-    expect(passed.checks[0]?.name).toBe('test')
+    expect(passed.checks.find((check) => check.status !== 'skipped')?.name).toBe('test')
+    expect(passed.checks.find((check) => check.name === 'lint')?.status).toBe('skipped')
     writeFileSync(
       join(dir, 'package.json'),
       JSON.stringify({ name: 'gate', scripts: { test: 'node -e "process.exit(7)"' } }),
     )
     const failed = await gate.run(dir)
     expect(failed.passed).toBe(false)
-    expect(failed.checks[0]?.exitCode).not.toBe(0)
+    expect(failed.checks.find((check) => check.name === 'test')?.exitCode).not.toBe(0)
+  }, 20_000)
+
+  it('kills a hanging check tree on timeout and reports error, not failed', async () => {
+    const dir = root()
+    writeFileSync(
+      join(dir, 'package.json'),
+      JSON.stringify({ name: 'gate', scripts: { test: 'node -e "require(\'child_process\').spawn(process.execPath, [\'-e\', \'setInterval(() => {}, 1000)\'], { stdio: \'inherit\' }); setInterval(() => {}, 1000)"' } }),
+    )
+    const startedAt = Date.now()
+    const report = await new QualityGateService().run(dir, { timeoutMs: 1_500 })
+    const test = report.checks.find((check) => check.name === 'test')
+    expect(test?.status).toBe('error')
+    expect(test?.output).toContain('timeout')
+    expect(report.passed).toBe(false)
+    expect(Date.now() - startedAt).toBeLessThan(10_000)
   }, 20_000)
 })
 

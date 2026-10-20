@@ -11,6 +11,7 @@ import {
   type FindingEvidence,
   type HealthCheckRun,
   type RepairProposal,
+  type AutomationRun,
   type AutonomyMode,
   type AgentBackendBinding,
   type GraphLayout,
@@ -94,6 +95,8 @@ import {
   type HealthCheckRunRow,
   type FindingRow,
   type ProposalRow,
+  type AutomationRunRow,
+  automationRunFromRow,
   type GraphLayoutRow,
   type PlanRevisionRow,
   type ProjectSnapshotRow,
@@ -1328,6 +1331,40 @@ export class ReadModels {
     }))
   }
 
+  listAutomationRuns(projectId: string, limit = 30): AutomationRun[] {
+    return this.all<AutomationRunRow>(
+      'SELECT * FROM automation_runs WHERE project_id = ? ORDER BY started_at DESC, lease_token DESC LIMIT ?',
+      projectId,
+      limit,
+    ).map(automationRunFromRow)
+  }
+
+  listRunningAutomationRuns(): AutomationRun[] {
+    return this.all<AutomationRunRow>("SELECT * FROM automation_runs WHERE status = 'running'").map(automationRunFromRow)
+  }
+
+  getAutomationRunByKey(idempotencyKey: string): AutomationRun | null {
+    const row = this.get<AutomationRunRow>('SELECT * FROM automation_runs WHERE idempotency_key = ?', idempotencyKey)
+    return row ? automationRunFromRow(row) : null
+  }
+
+  /** Failed automatic repairs since `since` with no successful repair in between (most recent first). */
+  countConsecutiveFailedRepairs(projectId: string, since: number): number {
+    const rows = this.all<{ status: string }>(
+      `SELECT status FROM automation_runs
+       WHERE project_id = ? AND kind = 'repair' AND started_at >= ? AND status IN ('completed', 'failed')
+       ORDER BY started_at DESC, lease_token DESC`,
+      projectId,
+      since,
+    )
+    let count = 0
+    for (const row of rows) {
+      if (row.status !== 'failed') break
+      count += 1
+    }
+    return count
+  }
+
   getProposal(id: string): RepairProposal | null {
     return this.listProposalsForId(id)
   }
@@ -1389,6 +1426,7 @@ export class ReadModels {
     maxRuns: number
     usedRuns: number
     revokedAt: number | null
+    issuedAt: number
   } | null {
     const row = this.get<{
       project_id: string
@@ -1398,6 +1436,7 @@ export class ReadModels {
       max_runs: number
       used_runs: number
       revoked_at: number | null
+      issued_at: number | null
     }>('SELECT * FROM automation_grants WHERE project_id = ?', projectId)
     if (!row) return null
     return {
@@ -1408,6 +1447,7 @@ export class ReadModels {
       maxRuns: Number(row.max_runs),
       usedRuns: Number(row.used_runs),
       revokedAt: row.revoked_at,
+      issuedAt: Number(row.issued_at ?? 0),
     }
   }
 

@@ -13,6 +13,7 @@ import {
   type ApiParsedInput,
   type ApprovalView,
   type Project,
+  type ProjectEvent,
   type RuntimeEvent,
 } from '@projectos/contracts'
 import type { CoreServices } from '@projectos/application'
@@ -27,7 +28,7 @@ import {
 import { AIConnectionService } from './ai-connections.js'
 import { listExternalAgents } from './external-agents.js'
 import { ExternalAgentRunner } from './external-runner.js'
-import { OperationsService } from './operations.js'
+import { OperationsService, repairRunKey } from './operations.js'
 import { OrchestrationService } from './orchestration.js'
 import type { AgentRunner } from './agent-runner.js'
 import type { RuntimeConfig } from './config.js'
@@ -36,6 +37,10 @@ import type { Logger } from './logger.js'
 import type { ProviderManager } from './provider-manager.js'
 import { seedDemo } from './demo.js'
 import { OrchestrationScheduler } from './orchestrator.js'
+
+const EVENT_CHECK_DEBOUNCE_MS = 60_000
+const REPAIR_MAX_RUN_MS = 60 * 60_000
+const MAX_CONCURRENT_REPAIRS = 1
 
 export interface DispatcherDeps {
   config: RuntimeConfig
@@ -56,6 +61,7 @@ export class RuntimeDispatcher {
   private readonly externalRunner: ExternalAgentRunner
   private readonly operations: OperationsService
   private readonly operationsTimer: NodeJS.Timeout
+  private readonly eventChecks = new Map<string, NodeJS.Timeout>()
 
   constructor(private readonly deps: DispatcherDeps) {
     this.aiConnections = new AIConnectionService(deps.store)
@@ -65,6 +71,7 @@ export class RuntimeDispatcher {
     this.operations = new OperationsService(deps.store, deps.services)
     this.operationsTimer = setInterval(() => this.runDueChecks(), 30_000)
     this.operationsTimer.unref()
+    deps.hub.onCommitted((event) => this.onProjectEvent(event))
     this.scheduler = new OrchestrationScheduler(
       deps.store,
       deps.services,
@@ -75,15 +82,35 @@ export class RuntimeDispatcher {
   }
 
   recoverOrchestrations(): void {
+    this.operations.recoverRuns()
     this.scheduler.recover()
   }
 
   shutdownOrchestrations(): void {
     clearInterval(this.operationsTimer)
+    for (const timer of this.eventChecks.values()) clearTimeout(timer)
+    this.eventChecks.clear()
     this.scheduler.shutdown()
   }
 
+  /** Task blocked / run failed schedules a debounced health check while monitoring is enabled. */
+  private onProjectEvent(event: ProjectEvent): void {
+    if (!this.deps.store.read.getAutomationTrigger(event.projectId)?.enabled) return
+    if (!this.operations.isTriggerEvent(event)) return
+    if (this.eventChecks.has(event.projectId)) return
+    const timer = setTimeout(() => {
+      this.eventChecks.delete(event.projectId)
+      void this.operations
+        .runChecks(event.projectId, `event:${event.eventType}`, `checks:event:${event.projectId}:${event.id}`)
+        .then(() => this.autoStartRepairs(event.projectId))
+        .catch((error) => this.deps.logger.warn({ err: error, projectId: event.projectId }, 'event-triggered health checks failed'))
+    }, EVENT_CHECK_DEBOUNCE_MS)
+    timer.unref?.()
+    this.eventChecks.set(event.projectId, timer)
+  }
+
   private runDueChecks(): void {
+    this.stopOverdueRepairs()
     for (const trigger of this.deps.store.read.listDueAutomationTriggers(Date.now())) {
       this.deps.store.upsertAutomationTrigger(
         trigger.projectId,
@@ -91,37 +118,83 @@ export class RuntimeDispatcher {
         true,
         Date.now() + trigger.intervalMinutes * 60_000,
       )
+      // The scheduled slot is the idempotency key: a duplicate timer firing for it runs nothing.
       void this.operations
-        .runChecks(trigger.projectId)
+        .runChecks(trigger.projectId, 'interval', `checks:interval:${trigger.projectId}:${trigger.nextRunAt ?? 0}`)
         .then(() => this.autoStartRepairs(trigger.projectId))
         .catch((error) => this.deps.logger.warn({ err: error, projectId: trigger.projectId }, 'scheduled health checks failed'))
     }
   }
 
+  /** Cancels repair plans that exceeded the maximum run time; reconcile then marks them failed. */
+  private stopOverdueRepairs(): void {
+    const repairing = new Set(
+      this.deps.store.read.listRunningAutomationRuns().filter((run) => run.kind === 'repair').map((run) => run.projectId),
+    )
+    // Reconcile first so plans that already finished close their automation runs.
+    for (const projectId of repairing) this.operations.snapshot(projectId)
+    for (const run of this.deps.store.read.listRunningAutomationRuns()) {
+      if (run.kind !== 'repair' || !run.planId || Date.now() - run.startedAt < REPAIR_MAX_RUN_MS) continue
+      this.deps.store.appendAutomationRunEvent(run.id, 'timeout', { maxRunMs: REPAIR_MAX_RUN_MS })
+      void this.scheduler
+        .cancel(run.planId)
+        .then(() => this.operations.snapshot(run.projectId))
+        .catch((error) => this.deps.logger.warn({ err: error, runId: run.id }, 'failed to stop overdue repair'))
+    }
+  }
+
   private async autoStartRepairs(projectId: string): Promise<void> {
     if (this.deps.store.read.getAutonomyMode(projectId) !== 'approved-autofix') return
+    if (this.operations.circuitOpen(projectId)) {
+      this.deps.logger.warn({ projectId }, 'automatic repairs paused by circuit breaker')
+      return
+    }
     for (const proposal of this.deps.store.read.listProposals(projectId)) {
       if (proposal.status !== 'approved' || proposal.planId) continue
       if (!this.operations.risk(proposal.id).allowed) continue
       try {
-        await this.startRepair(proposal.id)
+        await this.startRepair(proposal.id, 'autofix')
       } catch (error) {
         this.deps.logger.warn({ err: error, proposalId: proposal.id }, 'automatic repair start failed')
       }
     }
   }
 
-  private async startRepair(proposalId: string) {
+  private async startRepair(proposalId: string, source: 'manual' | 'autofix' = 'manual') {
     const proposal = this.deps.store.read.getProposal(proposalId)
-    if (!proposal) throw new Error('修复提案不存在')
-    if (proposal.status !== 'approved') throw new Error('提案尚未批准')
-    if (proposal.planId) throw new Error('提案已有修复计划')
-    this.operations.assertGrant(proposal.projectId)
+    if (!proposal) throw new AppError('NOT_FOUND', '修复提案不存在')
+    if (proposal.status !== 'approved') throw new AppError('CONFLICT', '提案尚未批准')
+    if (proposal.planId) throw new AppError('CONFLICT', '提案已有修复计划')
+    const running = this.deps.store.read
+      .listRunningAutomationRuns()
+      .filter((run) => run.kind === 'repair' && run.projectId === proposal.projectId)
+    if (running.length >= MAX_CONCURRENT_REPAIRS) throw new AppError('CONFLICT', '该项目已有修复在执行')
+    this.operations.consumeGrant(proposal.projectId)
+    const claim = this.deps.store.claimAutomationRun({
+      id: newId('aur'),
+      projectId: proposal.projectId,
+      kind: 'repair',
+      source,
+      proposalId: proposal.id,
+      idempotencyKey: repairRunKey(proposal.id),
+    })
+    if (!claim) throw new AppError('CONFLICT', '该提案已启动过修复')
     const draft = this.orchestration.generatePlan(proposal.projectId, '修复健康检查问题：' + proposal.scope.join('；'))
     this.orchestration.approvePlan(draft.id)
     this.deps.store.setProposalPlan(proposal.id, draft.id)
+    this.deps.store.setAutomationRunPlan(claim.id, draft.id)
     this.deps.store.updateProposalStatus(proposal.id, 'executing')
-    const plan = await this.scheduler.start(draft.id, 2, 2, true)
+    this.deps.store.transitionProposalFindings(proposal.id, ['proposed', 'open', 'reopened'], 'in_progress')
+    // Repairs always run in an isolated worktree and respect the project budget.
+    let plan
+    try {
+      plan = await this.scheduler.start(draft.id, 2, 2, false, true)
+    } catch (error) {
+      this.deps.store.updateProposalStatus(proposal.id, 'failed')
+      this.deps.store.transitionProposalFindings(proposal.id, ['in_progress'], 'open')
+      this.deps.store.finishAutomationRun(claim.id, claim.leaseToken, 'failed', error instanceof Error ? error.message : String(error))
+      throw error
+    }
     return { proposal: this.deps.store.read.getProposal(proposal.id), plan }
   }
 
@@ -637,7 +710,7 @@ export class RuntimeDispatcher {
       }
       case 'operations.insights': {
         const input = this.parse('operations.insights', rawInput)
-        return this.operations.insights(input.projectId)
+        return this.operations.insights(input.projectId, input.runAudit)
       }
       case 'operations.risk': {
         const input = this.parse('operations.risk', rawInput)

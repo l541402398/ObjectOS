@@ -11,24 +11,24 @@
   --color-overlay: rgba(255, 255, 255, 0.82);
 
   --color-text-primary: #17191e;
-  --color-text-secondary: #5f6774;
-  --color-text-tertiary: #89919e;
+  --color-text-secondary: #4f5663;
+  --color-text-tertiary: #5c6370;
   --color-text-disabled: #b5bcc7;
   --color-text-inverse: #ffffff;
 
-  --color-accent: #1677ff;
-  --color-accent-strong: #0a5cd6;
+  --color-accent: #0b5ed7;
+  --color-accent-strong: #0848ab;
   --color-accent-soft: #eaf2ff;
   --color-accent-border: rgba(22, 119, 255, 0.28);
   --color-accent-contrast: #ffffff;
 
-  --color-success: #168f5b;
+  --color-success: #11774b;
   --color-success-soft: #e7f7ef;
-  --color-warning: #b86b08;
+  --color-warning: #95560a;
   --color-warning-soft: #fff4e2;
-  --color-danger: #d22d23;
+  --color-danger: #c0281f;
   --color-danger-soft: #feecea;
-  --color-info: #0b76b7;
+  --color-info: #0a64a0;
   --color-info-soft: #e7f5fc;
 
   --color-border: rgba(18, 28, 45, 0.09);
@@ -67,9 +67,9 @@
   --color-surface-hover: #1d222d;
   --color-overlay: rgba(20, 23, 31, 0.86);
 
-  --color-text-primary: #f3f5f9;
-  --color-text-secondary: #a6aebc;
-  --color-text-tertiary: #7b8494;
+  --color-text-primary: #f5f7fa;
+  --color-text-secondary: #c5cbd5;
+  --color-text-tertiary: #aeb7c4;
   --color-text-disabled: #525b6b;
   --color-text-inverse: #0a0c11;
 
@@ -118,11 +118,11 @@
     'Hiragino Sans GB', sans-serif;
   --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 
-  --text-micro: 10px;
-  --text-caption: 11px;
-  --text-small: 12px;
-  --text-body: 13px;
-  --text-body-lg: 14px;
+  --text-micro: 12px;
+  --text-caption: 13px;
+  --text-small: 13px;
+  --text-body: 14px;
+  --text-body-lg: 15px;
   --text-title: 16px;
   --text-heading: 20px;
   --text-display: 28px;

@@ -81,7 +81,11 @@ export const OperationsInsightsSchema = z.object({
   projectId: IdSchema,
   ciWorkflows: z.array(z.string()),
   gitHooks: z.array(z.string()),
-  audit: z.object({ status: z.enum(['passed', 'failed', 'unavailable']), vulnerabilities: z.number().int().nonnegative() }),
+  audit: z.object({
+    status: z.enum(['not_run', 'passed', 'failed', 'unavailable']),
+    vulnerabilities: z.number().int().nonnegative().nullable(),
+    reason: z.string().max(500).nullable(),
+  }),
   trend: z.array(z.object({ date: z.string(), count: z.number().int().nonnegative() })),
   changelog: z.string(),
   dependencies: z.number().int().nonnegative(),
@@ -112,12 +116,34 @@ export const AutomationTriggerSchema = z.object({
 
 export type AutomationTrigger = z.infer<typeof AutomationTriggerSchema>
 
+export const AutomationRunStatusSchema = z.enum(['running', 'completed', 'failed', 'cancelled', 'reconciliation_required'])
+
+export const AutomationRunSchema = z.object({
+  id: IdSchema,
+  projectId: IdSchema,
+  kind: z.enum(['checks', 'repair']),
+  source: z.string(),
+  proposalId: IdSchema.nullable(),
+  planId: IdSchema.nullable(),
+  idempotencyKey: z.string(),
+  status: AutomationRunStatusSchema,
+  attempt: z.number().int().positive(),
+  leaseToken: z.number().int().positive(),
+  error: z.string().nullable(),
+  startedAt: TimestampSchema,
+  finishedAt: TimestampSchema.nullable(),
+})
+export type AutomationRun = z.infer<typeof AutomationRunSchema>
+
 export const OperationsSnapshotSchema = z.object({
   projectId: IdSchema,
   mode: AutonomyModeSchema,
   checks: z.array(HealthCheckRunSchema),
   findings: z.array(FindingSchema),
   proposals: z.array(RepairProposalSchema),
+  runs: z.array(AutomationRunSchema),
+  /** Open after repeated failed automatic repairs; cleared by issuing a new grant. */
+  circuitOpen: z.boolean(),
 })
 export type OperationsSnapshot = z.infer<typeof OperationsSnapshotSchema>
 

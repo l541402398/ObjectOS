@@ -1,4 +1,5 @@
 import { _electron as electron } from 'playwright-core'
+import { execFileSync } from 'node:child_process'
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -23,6 +24,9 @@ try {
   const project = await page.evaluate(async (workspaceDir) => (await window.projectos.projects.create({
     name: 'V1.4 Health Project', description: '', rootPath: workspaceDir, createDirectory: false, initGit: true,
   })).project, workspaceDir)
+  // Repairs require an isolated worktree, which needs a commit to branch from.
+  execFileSync('git', ['add', '.'], { cwd: workspaceDir })
+  execFileSync('git', ['-c', 'user.name=ProjectOS E2E', '-c', 'user.email=e2e@example.com', 'commit', '-qm', 'initial'], { cwd: workspaceDir })
   await page.reload()
   await page.waitForTimeout(1800)
   const snapshot = await page.evaluate(async (projectId) => window.projectos.operations.runChecks(projectId), project.id)
@@ -39,8 +43,11 @@ try {
   const repair = await page.evaluate(async (proposalId) => window.projectos.operations.startRepair(proposalId), proposal.id)
   if (!repair.proposal.planId || repair.plan.status !== 'approved') throw new Error('repair plan not started')
   await page.evaluate(async (projectId) => window.projectos.operations.setMode(projectId, 'propose'), project.id)
+  const second = await page.evaluate(async (projectId) => window.projectos.operations.runChecks(projectId), project.id)
+  if (second.findings.filter((finding) => finding.category === 'test').length !== 1) throw new Error('repeated check duplicated the finding')
   const insights = await page.evaluate(async (projectId) => window.projectos.operations.insights(projectId), project.id)
   if (typeof insights.dependencies !== 'number') throw new Error('insights invalid')
+  if (insights.audit.status !== 'not_run') throw new Error('dependency audit ran without being requested')
   const trigger = await page.evaluate(async (projectId) => window.projectos.operations.setTrigger(projectId, 15, true), project.id)
   if (!trigger.enabled || trigger.intervalMinutes !== 15) throw new Error('trigger not persisted')
   await page.goto(`http://localhost/#/projects/${project.id}/operations`).catch(() => {})
@@ -49,8 +56,9 @@ try {
   const page2 = await app.firstWindow()
   await page2.waitForSelector('.po-nav-item', { timeout: 30_000 })
   const recovered = await page2.evaluate(async (projectId) => window.projectos.operations.snapshot(projectId), project.id)
-  if (!recovered.findings.length || !recovered.proposals[0]?.planId) throw new Error('operations recovery failed')
+  if (!recovered.findings.length || !recovered.proposals.some((item) => item.id === proposal.id && item.planId)) throw new Error('operations recovery failed')
   if (recovered.mode !== 'propose') throw new Error('autonomy mode not persisted')
+  if (!recovered.runs.some((run) => run.kind === 'repair')) throw new Error('repair automation run not recorded')
   const recoveredTrigger = await page2.evaluate(async (projectId) => window.projectos.operations.getTrigger(projectId), project.id)
   if (!recoveredTrigger?.enabled) throw new Error('trigger not recovered')
   console.log('V1.4 E2E PASS — health checks create evidence-backed findings, proposals approve and survive restart.')

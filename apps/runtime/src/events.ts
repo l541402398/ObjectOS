@@ -9,7 +9,7 @@ export interface RuntimeEventSink {
 
 export class RuntimeEventHub {
   private seq = 0
-  private readonly listeners = new Set<(event: RuntimeEvent) => void>()
+  private readonly committedListeners = new Set<(event: ProjectEvent) => void>()
 
   constructor(
     private readonly sink: RuntimeEventSink,
@@ -26,9 +26,10 @@ export class RuntimeEventHub {
     }
   }
 
-  subscribe(listener: (event: RuntimeEvent) => void): () => void {
-    this.listeners.add(listener)
-    return () => this.listeners.delete(listener)
+  /** Listens to committed domain events (after the transaction that wrote them). */
+  onCommitted(listener: (event: ProjectEvent) => void): () => void {
+    this.committedListeners.add(listener)
+    return () => this.committedListeners.delete(listener)
   }
 
   publishCommitted(events: ProjectEvent[]): void {
@@ -37,6 +38,13 @@ export class RuntimeEventHub {
         this.mapCommittedEvent(event)
       } catch (error) {
         this.logger.warn({ err: error, eventId: event.id }, 'failed to map committed event')
+      }
+      for (const listener of this.committedListeners) {
+        try {
+          listener(event)
+        } catch (error) {
+          this.logger.warn({ err: error, eventId: event.id }, 'committed event listener failed')
+        }
       }
     }
   }

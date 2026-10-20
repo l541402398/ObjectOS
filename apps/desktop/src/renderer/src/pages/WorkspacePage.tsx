@@ -336,7 +336,7 @@ export default function WorkspacePage() {
                     readOnly: true,
                     domReadOnly: true,
                     minimap: { enabled: false },
-                    fontSize: 12.5,
+                    fontSize: 13,
                     lineHeight: 20,
                     fontFamily: 'var(--font-mono)',
                     padding: { top: 14, bottom: 18 },

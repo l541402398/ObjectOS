@@ -37,7 +37,7 @@
   background: var(--color-accent);
   color: var(--color-accent-contrast);
   text-decoration: none;
-  font-size: 12px;
+  font-size: var(--text-small);
 }
 
 .po-skip-link:focus {
@@ -399,7 +399,7 @@
   border-radius: 8px;
   background: var(--color-surface-sunken);
   color: var(--color-text-tertiary);
-  font-size: 14px;
+  font-size: var(--text-body);
 }
 
 .po-metric-value {
@@ -707,7 +707,7 @@
   border-radius: 50%;
   background: var(--color-danger);
   color: #fff;
-  font-size: 12px;
+  font-size: var(--text-small);
   font-weight: 700;
   margin-top: 1px;
 }

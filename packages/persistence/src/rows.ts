@@ -1,5 +1,6 @@
 import type {
   Agent,
+  AutomationRun,
   AgentBackendBinding,
   AgentCapability,
   AIConnectionCheck,
@@ -180,6 +181,40 @@ export interface ProposalRow {
   repair_plan_id: string | null
   created_at: number
   updated_at: number
+}
+
+export interface AutomationRunRow {
+  id: string
+  project_id: string
+  kind: string
+  source: string
+  proposal_id: string | null
+  plan_id: string | null
+  idempotency_key: string
+  status: string
+  attempt: number
+  lease_token: number
+  error: string | null
+  started_at: number
+  finished_at: number | null
+}
+
+export function automationRunFromRow(row: AutomationRunRow): AutomationRun {
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    kind: row.kind as AutomationRun['kind'],
+    source: row.source,
+    proposalId: row.proposal_id,
+    planId: row.plan_id,
+    idempotencyKey: row.idempotency_key,
+    status: row.status as AutomationRun['status'],
+    attempt: Number(row.attempt),
+    leaseToken: Number(row.lease_token),
+    error: row.error,
+    startedAt: Number(row.started_at),
+    finishedAt: row.finished_at === null ? null : Number(row.finished_at),
+  }
 }
 
 export interface ProjectBudgetRow {

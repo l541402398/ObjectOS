@@ -605,6 +605,35 @@ CREATE TABLE automation_grants (
 );
 `
 
+const V12 = `
+CREATE TABLE automation_runs (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL CHECK(kind IN ('checks','repair')),
+  source TEXT NOT NULL,
+  proposal_id TEXT REFERENCES repair_proposals(id) ON DELETE SET NULL,
+  plan_id TEXT,
+  idempotency_key TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL CHECK(status IN ('running','completed','failed','cancelled','reconciliation_required')),
+  attempt INTEGER NOT NULL DEFAULT 1,
+  lease_token INTEGER NOT NULL,
+  error TEXT,
+  started_at INTEGER NOT NULL,
+  finished_at INTEGER
+);
+CREATE INDEX idx_automation_runs_project ON automation_runs(project_id, started_at DESC);
+CREATE INDEX idx_automation_runs_status ON automation_runs(status);
+CREATE TABLE automation_run_events (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES automation_runs(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  payload_json TEXT NOT NULL DEFAULT '{}',
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_automation_run_events_run ON automation_run_events(run_id, created_at);
+ALTER TABLE automation_grants ADD COLUMN issued_at INTEGER;
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -617,6 +646,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 9, name: 'proposal repair plan', sql: V9 },
   { version: 10, name: 'operations interval triggers', sql: V10 },
   { version: 11, name: 'automation grants', sql: V11 },
+  { version: 12, name: 'automation runs and audit events', sql: V12 },
 ]
 
 function checksum(sql: string): string {

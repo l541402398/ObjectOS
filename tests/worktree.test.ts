@@ -45,6 +45,25 @@ describe('worktree isolation', () => {
     expect(readFileSync(join(root, 'feature.txt'), 'utf8').replace(/\r\n/g, '\n')).toBe('feature\n')
   })
 
+  it('aborts a conflicting merge and leaves the main workspace clean', async () => {
+    const root = await repo()
+    const manager = new WorktreeManager()
+    const path = join(root, '..', `${root.split(/[\\/]/).pop()}-conflict`)
+    dirs.push(path)
+    await manager.create(root, path, 'projectos/plan-conflict')
+    writeFileSync(join(path, 'app.txt'), 'branch\n')
+    await exec('git', ['commit', '-qam', 'branch'], { cwd: path })
+    writeFileSync(join(root, 'app.txt'), 'main\n')
+    await exec('git', ['commit', '-qam', 'main'], { cwd: root })
+
+    const merged = await manager.merge(root, 'projectos/plan-conflict', 'merge conflict')
+    expect(merged.ok).toBe(false)
+    expect(merged.message).toContain('app.txt')
+    const status = await exec('git', ['status', '--porcelain=v1'], { cwd: root })
+    expect(status.stdout.trim()).toBe('')
+    expect(readFileSync(join(root, 'app.txt'), 'utf8').replace(/\r\n/g, '\n')).toBe('main\n')
+  })
+
   it('refuses to merge into a dirty main workspace', async () => {
     const root = await repo()
     const manager = new WorktreeManager()
