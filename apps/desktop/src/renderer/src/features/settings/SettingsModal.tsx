@@ -26,6 +26,7 @@ import { TeamSettingsPanel } from './TeamSettingsPanel'
 import { ToolsSettingsPanel } from './ToolsSettingsPanel'
 import { AppearanceSettingsPanel, DataSecuritySettingsPanel, OpenSpecSettingsPanel, PermissionsSettingsPanel } from './AdvancedSettingsPanels'
 import { UsageSettingsPanel } from './UsageSettingsPanel'
+import { IntegrationsSettingsPanel } from './IntegrationsSettingsPanel'
 import './settings.css'
 
 const SECTIONS: Array<{ key: SettingsSection; label: string; icon: ReactNode }> = [
@@ -36,6 +37,7 @@ const SECTIONS: Array<{ key: SettingsSection; label: string; icon: ReactNode }> 
   { key: 'tools', label: '工具与插件', icon: <ToolOutlined /> },
   { key: 'permissions', label: '工具权限', icon: <SafetyCertificateOutlined /> },
   { key: 'external-agents', label: '外部 Agent', icon: <RobotOutlined /> },
+  { key: 'integrations', label: '第三方连接', icon: <ApiOutlined /> },
   { key: 'team', label: '团队与权限', icon: <TeamOutlined /> },
   { key: 'data-security', label: '存储与安全', icon: <SafetyCertificateOutlined /> },
   { key: 'appearance', label: '外观与快捷键', icon: <DesktopOutlined /> },
@@ -76,6 +78,8 @@ function renderSection(section: SettingsSection): ReactNode {
       return <RuntimeSettingsPanel />
     case 'external-agents':
       return <ExternalAgentsPanel />
+    case 'integrations':
+      return <IntegrationsSettingsPanel />
     case 'about':
       return <AboutSettingsPanel />
     default:
