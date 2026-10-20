@@ -21,7 +21,7 @@ export class RuntimeExecutionService {
 
   constructor(private readonly store: SqliteStore) {}
 
-  async execute(profileId: string, prompt: string, cwd?: string) {
+  async execute(profileId: string, prompt: string, cwd?: string, onStart?: (executionId: string) => void) {
     const profile = this.store.read.listRuntimeProfiles().find((item) => item.id === profileId)
     if (!profile) throw new AppError('NOT_FOUND', 'Runtime 不存在')
     if (profile.protocol === 'native') throw new AppError('BAD_REQUEST', 'ProjectOS Native 由内置 AgentRunner 执行，不走 CLI Adapter')
@@ -38,6 +38,7 @@ export class RuntimeExecutionService {
     })
     const state: ActiveExecution = { child, cancelled: false }
     this.active.set(executionId, state)
+    onStart?.(executionId)
     let output = ''
     const events: Array<{ type: string; text: string }> = []
     let timedOut = false

@@ -56,6 +56,7 @@ const PAGE_LABELS: Record<string, string> = {
   workspace: '工作区',
   runs: '运行审计',
   center: '项目中心',
+  notifications: '通知中心',
   resources: '资源中心',
   approvals: '审批中心',
   health: '项目健康',

@@ -87,6 +87,7 @@ interface ActiveRun {
   pendingApprovalId: string | null
   leaseTimer: NodeJS.Timeout | null
   startedAt: number
+  runtimeCancel: (() => void) | null
 }
 
 export class AgentRunner {
@@ -274,6 +275,7 @@ export class AgentRunner {
       pendingApprovalId: null,
       leaseTimer: null,
       startedAt: timestamp,
+      runtimeCancel: null,
     }
     this.active.set(runId, state)
     this.sessionIndex.set(session.id, runId)
@@ -359,6 +361,7 @@ export class AgentRunner {
       if (profile.protocol === 'acp') {
         if (!profile.executable) throw new AppError('BAD_REQUEST', 'ACP Runtime 未配置可执行路径')
         const client = new AcpClient(profile.executable, profile.args, cwd)
+        state.runtimeCancel = () => client.dispose()
         client.setPermissionHandler(async (params) => {
           const value = params as { options?: Array<{ optionId?: string }>; toolCall?: { kind?: string } }
           const kind = value.toolCall?.kind ?? ''
@@ -380,10 +383,13 @@ export class AgentRunner {
           client.dispose()
         }
       } else {
-        const result = await this.runtimeExecutor.execute(profile.id, prompt, cwd)
+        const result = await this.runtimeExecutor.execute(profile.id, prompt, cwd, (executionId) => {
+          state.runtimeCancel = () => this.runtimeExecutor.cancel(executionId)
+        })
         output = result.output
         executionId = result.executionId
-        if (result.status !== 'completed') throw new AppError('INTERNAL', output || `Runtime ${result.status}`)
+        if (state.abort.signal.aborted) return
+      if (result.status !== 'completed') throw new AppError('INTERNAL', output || `Runtime ${result.status}`)
       }
       const summary = output.trim().slice(0, 20_000) || 'Runtime 执行完成'
       this.store.appendMessage({ sessionId: state.sessionId, role: 'assistant', content: summary, runId: state.runId, metadata: { runtimeProfileId: profile.id, executionId } })
@@ -395,7 +401,10 @@ export class AgentRunner {
       this.store.updateTaskAttemptStatus(state.runId, 'completed')
       this.cleanup(state, 'completed')
     } catch (error) {
+      if (state.abort.signal.aborted) return
       throw error instanceof Error ? error : new Error(String(error))
+    } finally {
+      state.runtimeCancel = null
     }
   }
 
@@ -1332,6 +1341,7 @@ export class AgentRunner {
       pendingApprovalId: null,
       leaseTimer: null,
       startedAt: run.startedAt ?? run.createdAt,
+      runtimeCancel: null,
     }
     this.active.set(runId, state)
     this.sessionIndex.set(run.sessionId, runId)
@@ -1355,15 +1365,16 @@ export class AgentRunner {
     const state = this.active.get(runId)
     if (state) {
       state.abort.abort()
+      state.runtimeCancel?.()
       const run = this.store.read.getRun(runId)
       if (run && (run.status === 'waiting_approval' || run.status === 'running')) {
         if (run.status === 'waiting_approval') {
           this.store.cancelPendingApprovals(runId, '用户取消了运行')
-          this.transitionRun(state, 'cancelled', { error: '用户取消了运行', finishedAt: now() })
-          this.tryMoveTask(state.taskId, 'ready')
-          this.store.updateTaskAttemptStatus(runId, 'cancelled')
-          this.cleanup(state, 'cancelled')
         }
+        this.transitionRun(state, 'cancelled', { error: '用户取消了运行', finishedAt: now() })
+        this.tryMoveTask(state.taskId, 'ready')
+        this.store.updateTaskAttemptStatus(runId, 'cancelled')
+        this.cleanup(state, 'cancelled')
       }
       return
     }
@@ -1523,6 +1534,7 @@ function approvalDetail(invocation: ToolInvocation): string {
   }
   return `Agent 请求执行 ${invocation.name}。`
 }
+
 
 
 
