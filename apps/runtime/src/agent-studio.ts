@@ -33,7 +33,7 @@ const ADAPTERS: AdapterDefinition[] = [
   { id: 'projectos-native', name: 'ProjectOS Native', command: null, args: [], protocol: 'native', capabilities: CAPABILITIES.stream! },
   { id: 'claude-code', name: 'Claude Code', command: 'claude', args: ['--print'], protocol: 'cli', capabilities: CAPABILITIES.cli! },
   { id: 'codex', name: 'Codex CLI', command: 'codex', args: ['exec'], protocol: 'cli', capabilities: CAPABILITIES.cli! },
-  { id: 'opencode', name: 'OpenCode', command: 'opencode', args: ['run'], protocol: 'cli', capabilities: CAPABILITIES.cli! },
+  { id: 'opencode', name: 'OpenCode', command: 'opencode', args: ['acp'], protocol: 'acp', capabilities: CAPABILITIES.acp! },
   { id: 'qwen-code', name: 'Qwen Code', command: 'qwen', args: [], protocol: 'cli', capabilities: CAPABILITIES.cli! },
   { id: 'gemini-cli', name: 'Gemini CLI', command: 'gemini', args: [], protocol: 'cli', capabilities: CAPABILITIES.cli! },
   { id: 'deepseek-harness', name: 'DeepSeek Harness', command: 'dsh', args: ['headless'], protocol: 'cli', capabilities: CAPABILITIES.cli! },
@@ -268,8 +268,12 @@ export class AgentStudioService {
         continue
       }
       try {
-        const located = process.platform === 'win32' ? await exec('where.exe', [command]) : await exec('which', [command])
-        const executable = located.stdout.split(/\r?\n/).find(Boolean) ?? command
+        const knownOpenCode = profile.id === 'opencode' && process.env.APPDATA
+          ? join(process.env.APPDATA, 'npm', 'node_modules', 'opencode-ai', 'bin', 'opencode.exe')
+          : null
+        const executable = knownOpenCode && existsSync(knownOpenCode)
+          ? knownOpenCode
+          : (process.platform === 'win32' ? await exec('where.exe', [command]) : await exec('which', [command])).stdout.split(/\r?\n/).find(Boolean) ?? command
         let version: string | null = null
         try {
           const result = await exec(executable, ['--version'], { timeout: 10_000, windowsHide: true })
@@ -312,6 +316,8 @@ export class AgentStudioService {
     return { source: 'network', ...result }
   }
 }
+
+
 
 
 

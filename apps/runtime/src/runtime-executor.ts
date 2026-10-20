@@ -1,4 +1,5 @@
-import { spawn, spawnSync, type ChildProcess } from 'node:child_process'
+import { spawnSync, type ChildProcess } from 'node:child_process'
+import crossSpawn from 'cross-spawn'
 import { AppError, newId } from '@projectos/contracts'
 import type { SqliteStore } from '@projectos/persistence'
 
@@ -28,12 +29,12 @@ export class RuntimeExecutionService {
     const executionId = newId('exe')
     const startedAt = Date.now()
     const args = [...profile.args, prompt]
-    const child = spawn(profile.executable, args, {
+    const child = crossSpawn(profile.executable, args, {
       cwd: cwd || process.cwd(),
       shell: false,
       windowsHide: true,
       detached: process.platform !== 'win32',
-      env: { ...process.env, CI: '1', FORCE_COLOR: '0' },
+      env: Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('ELECTRON_') && key !== 'NODE_OPTIONS')),
     })
     const state: ActiveExecution = { child, cancelled: false }
     this.active.set(executionId, state)
@@ -62,10 +63,14 @@ export class RuntimeExecutionService {
       events.push({ type: 'stderr', text: line(text) })
     })
     const status = await new Promise<'completed' | 'failed' | 'cancelled' | 'timeout'>((resolve) => {
-      child.on('error', () => resolve('failed'))
+      child.on('error', (error) => {
+        output += '\n' + error.message
+        resolve('failed')
+      })
       child.on('close', (code) => {
         clearTimeout(timer)
         this.active.delete(executionId)
+        if (code !== 0 && !output.trim()) output += `\n[exit ${code ?? 'null'}]`
         if (state.cancelled) resolve('cancelled')
         else if (timedOut) resolve('timeout')
         else resolve(code === 0 ? 'completed' : 'failed')
@@ -85,4 +90,8 @@ export class RuntimeExecutionService {
 function line(text: string): string {
   return text.trim().split(/\r?\n/).slice(-1)[0] ?? ''
 }
+
+
+
+
 

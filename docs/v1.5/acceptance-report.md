@@ -93,3 +93,27 @@ RuntimeProfile 更新与删除由单测覆盖；设置页删除入口已存在�
 Runtime 管理中心支持编辑自定义 Runtime 的名称与可执行路径。
 
 已安装 OpenCode 1.19.3；DSH CLI 0.2.1-rc.2 路径探测成功。DSH/OpenCode 启动参数已内置：dsh headless / opencode run。
+
+
+## 两种 Runtime 真实执行（2026-10-20）
+
+`scripts/v15-real-e2e.mjs` 使用真实 DeepSeek API Key 执行：
+
+```text
+DSH Real Agent      → completed · 12 chars · exe_...
+OpenCode Real Agent → completed · 4268 chars · acp-run_...
+```
+
+- DSH：`dsh.cmd headless`，DEEPSEEK_API_KEY 环境注入
+- OpenCode：`opencode acp`，ACP initialize/session/prompt
+- 两者均通过 ProjectOS AgentRun，写入 Session、消息、Run 状态
+- OpenCode 需要 `~/.config/opencode/opencode.json` 指定 `model: deepseek/deepseek-flash`
+
+运行方式：
+
+```powershell
+$env:DEEPSEEK_API_KEY='<key>'
+node scripts/v15-real-e2e.mjs
+```
+
+注意：不要把真实 Key 写入仓库或日志。
