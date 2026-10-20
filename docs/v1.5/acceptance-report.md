@@ -26,7 +26,7 @@ SHA256：`F99082C1D87FD101636C6D8ECC780842580109D47DBF17047E01409CD5D1C7D0`
 
 - `docs/screenshots/1440x900-light-agent-studio.png`
 - `docs/screenshots/1440x900-light-settings-runtime.png`
-- 1024×768 对应截图`r`n- 共 50 张截图
+- 1024×768 对应截图`r`n- 共 54 张截图
 
 ## 已实现执行适配
 
@@ -130,3 +130,10 @@ scripts/v15-dpi-check.mjs 在 125% 与 150% 缩放下检查：
 - 截图：docs/screenshots/dpi-1.25-*.png、dpi-1.5-*.png
 
 ACP permission request 现按 Agent 的 files/shell/network 权限自动批准或拒绝，并记录事件。
+
+
+## 发布状态
+
+- 已推送 main：ac06c83
+- 包 SHA256：369EE150F801B316811A41B1CF5BFCF6D0D6D0EFBAD0B72C5061819F455AD061
+- 已知 UX 限制：Runtime 编辑使用浏览器 prompt；未提供独立工具审批卡片，但 ACP 权限按 Agent grants 自动批准/拒绝。
