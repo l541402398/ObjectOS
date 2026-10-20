@@ -105,7 +105,7 @@ export class AgentRunner {
     private readonly hub: RuntimeEventHub,
     private readonly logger: Logger,
   ) {
-    this.runtimeExecutor = new RuntimeExecutionService(store)
+    this.runtimeExecutor = new RuntimeExecutionService(store, () => provider.rawConfig())
   }
 
   setAIConnections(service: import('./ai-connections.js').AIConnectionService): void {

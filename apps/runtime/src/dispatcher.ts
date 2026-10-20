@@ -76,7 +76,7 @@ export class RuntimeDispatcher {
     this.externalRunner = new ExternalAgentRunner(deps.store, deps.services, deps.logger)
     this.operations = new OperationsService(deps.store, deps.services)
     this.agentStudio = new AgentStudioService(deps.store)
-    this.runtimeExecutor = new RuntimeExecutionService(deps.store)
+    this.runtimeExecutor = new RuntimeExecutionService(deps.store, () => deps.provider.rawConfig())
     this.runtimeRun = new RuntimeRunService(deps.store, this.runtimeExecutor)
     this.operationsTimer = setInterval(() => this.runDueChecks(), 30_000)
     this.operationsTimer.unref()

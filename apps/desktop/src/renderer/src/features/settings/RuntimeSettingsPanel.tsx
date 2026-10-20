@@ -16,10 +16,8 @@ export function RuntimeSettingsPanel() {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [installing, setInstalling] = useState<string | null>(null)
-  const [testProfile, setTestProfile] = useState<RuntimeProfile | null>(null)
-  const [testPrompt, setTestPrompt] = useState('')
-  const [testResult, setTestResult] = useState<string | null>(null)
-  const [testing, setTesting] = useState(false)
+  const [testResults, setTestResults] = useState<Record<string, { ok: boolean; text: string }>>({})
+  const [testingId, setTestingId] = useState<string | null>(null)
   const [form] = Form.useForm()
 
   const detect = async (): Promise<void> => {
@@ -56,17 +54,25 @@ export function RuntimeSettingsPanel() {
     })
   }
 
-  const runTest = async (): Promise<void> => {
-    if (!testProfile) return
-    setTesting(true)
-    setTestResult(null)
+  const runHarnessTest = async (profile: RuntimeProfile): Promise<void> => {
+    setTestingId(profile.id)
     try {
-      const result = await window.projectos.runtimeProfiles.execute(testProfile.id, testPrompt)
-      setTestResult(`[${result.status}] ${result.output}`)
+      const prompt = 'Reply with exactly: PROJECTOS-HARNESS-OK'
+      if (profile.protocol === 'acp') {
+        const result = await window.projectos.runtimeProfiles.acpPrompt(profile.id, prompt)
+        setTestResults((current) => ({ ...current, [profile.id]: { ok: true, text: JSON.stringify(result.result).slice(0, 4000) } }))
+        message.success('Harness 测试完成')
+      } else {
+        const result = await window.projectos.runtimeProfiles.execute(profile.id, prompt)
+        setTestResults((current) => ({ ...current, [profile.id]: { ok: result.status === 'completed', text: `[${result.status}] ${result.output}`.slice(0, 4000) } }))
+        if (result.status === 'completed') message.success('Harness 测试通过')
+        else message.warning(`Harness 测试 ${result.status}`)
+      }
     } catch (error) {
-      setTestResult(errorMessage(error))
+      setTestResults((current) => ({ ...current, [profile.id]: { ok: false, text: errorMessage(error) } }))
+      message.error(errorMessage(error))
     } finally {
-      setTesting(false)
+      setTestingId(null)
     }
   }
 
@@ -127,6 +133,7 @@ export function RuntimeSettingsPanel() {
           const adapterId = typeof profile.options.adapterId === 'string' ? profile.options.adapterId : profile.id
           const installable = ['claude-code', 'codex', 'opencode', 'qwen-code', 'gemini-cli'].includes(adapterId)
           const available = detection?.status === 'available' || profile.status === 'available'
+          const testResult = testResults[profile.id]
           return (
             <div className="po-runtime-row" key={profile.id}>
               <div className="po-runtime-row-main">
@@ -138,6 +145,9 @@ export function RuntimeSettingsPanel() {
                   {profile.capabilities.skills ? <Tag>skills</Tag> : null}
                   {profile.capabilities.systemPrompt !== 'unsupported' ? <Tag>prompt:{profile.capabilities.systemPrompt}</Tag> : null}
                 </div>
+                {testResult ? (
+                  <pre className={`po-runtime-test-inline ${testResult.ok ? 'is-ok' : 'is-error'}`}>{testResult.text}</pre>
+                ) : null}
               </div>
               <div className="po-runtime-state">
                 <StatusPill tone={available ? 'success' : detection?.status === 'unavailable' ? 'danger' : 'neutral'}>
@@ -165,7 +175,7 @@ export function RuntimeSettingsPanel() {
                   </Button>
                 ) : null}
                 {profile.protocol !== 'native' ? (
-                  <Button size="small" onClick={() => { setTestProfile(profile); setTestPrompt(''); setTestResult(null) }}>
+                  <Button size="small" loading={testingId === profile.id} onClick={() => void runHarnessTest(profile)}>
                     测试
                   </Button>
                 ) : null}
@@ -249,10 +259,6 @@ export function RuntimeSettingsPanel() {
           <Form.Item name="executable" label="可执行路径"><Input placeholder="opencode" /></Form.Item>
           <Form.Item name="endpoint" label="Endpoint"><Input placeholder="http://127.0.0.1:4096" /></Form.Item>
         </Form>
-      </Modal>
-      <Modal open={Boolean(testProfile)} title={`测试 ${testProfile?.name ?? ''}`} onCancel={() => setTestProfile(null)} onOk={() => void runTest()} okText="运行" confirmLoading={testing} width={680} destroyOnHidden>
-        <Input.TextArea rows={3} value={testPrompt} onChange={(event) => setTestPrompt(event.target.value)} placeholder="输入测试任务" />
-        {testResult ? <pre className="po-runtime-output">{testResult}</pre> : null}
       </Modal>
     </div>
   )

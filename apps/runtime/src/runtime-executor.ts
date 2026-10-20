@@ -2,6 +2,7 @@ import { spawnSync, type ChildProcess } from 'node:child_process'
 import crossSpawn from 'cross-spawn'
 import { AppError, newId } from '@projectos/contracts'
 import type { SqliteStore } from '@projectos/persistence'
+import type { ProviderRuntimeConfig } from '@projectos/contracts'
 
 interface ActiveExecution {
   child: ChildProcess
@@ -19,7 +20,10 @@ function killTree(child: ChildProcess): void {
 export class RuntimeExecutionService {
   private readonly active = new Map<string, ActiveExecution>()
 
-  constructor(private readonly store: SqliteStore) {}
+  constructor(
+    private readonly store: SqliteStore,
+    private readonly credentials?: () => ProviderRuntimeConfig,
+  ) {}
 
   async execute(profileId: string, prompt: string, cwd?: string, onStart?: (executionId: string) => void) {
     const profile = this.store.read.listRuntimeProfiles().find((item) => item.id === profileId)
@@ -34,7 +38,7 @@ export class RuntimeExecutionService {
       shell: false,
       windowsHide: true,
       detached: process.platform !== 'win32',
-      env: Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('ELECTRON_') && key !== 'NODE_OPTIONS')),
+      env: { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('ELECTRON_') && key !== 'NODE_OPTIONS')), ...this.secretEnvironment() },
     })
     const state: ActiveExecution = { child, cancelled: false }
     this.active.set(executionId, state)
@@ -78,6 +82,23 @@ export class RuntimeExecutionService {
       })
     })
     return { executionId, status, output: output.slice(0, 80_000), events: events.slice(-500), durationMs: Date.now() - startedAt }
+  }
+
+  secretEnvironment(): Record<string, string> {
+    const config = this.credentials?.()
+    if (!config?.apiKey) return {}
+    const baseUrl = config.baseUrl.toLowerCase()
+    const provider = config.provider.toLowerCase()
+    const env: Record<string, string> = {}
+    if (baseUrl.includes('deepseek') || provider.includes('deepseek')) env.DEEPSEEK_API_KEY = config.apiKey
+    if (baseUrl.includes('anthropic') || provider.includes('anthropic') || config.protocol === 'anthropic-messages') env.ANTHROPIC_API_KEY = config.apiKey
+    if (baseUrl.includes('generativelanguage') || provider.includes('gemini') || provider.includes('google')) env.GEMINI_API_KEY = config.apiKey
+    if (baseUrl.includes('dashscope') || provider.includes('qwen') || provider.includes('dashscope')) env.DASHSCOPE_API_KEY = config.apiKey
+    if (config.protocol === 'openai-chat' || config.protocol === 'openai-responses') {
+      env.OPENAI_API_KEY = config.apiKey
+      env.OPENAI_BASE_URL = config.baseUrl
+    }
+    return env
   }
 
   cancel(executionId: string): void {
