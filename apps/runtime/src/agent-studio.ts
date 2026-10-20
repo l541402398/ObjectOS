@@ -142,25 +142,29 @@ export class AgentStudioService {
 
   ensureDefaultProfiles(): RuntimeProfile[] {
     const existing = this.store.read.listRuntimeProfiles()
-    if (existing.length) return existing
     const timestamp = now()
-    const created = ADAPTERS.filter((adapter) => adapter.protocol !== 'acp').map((adapter) => this.store.upsertRuntimeProfile({
-      id: newId('rtp'),
-      name: adapter.name,
-      protocol: adapter.protocol,
-      executable: adapter.command,
-      endpoint: null,
-      args: adapter.args,
-      authRef: null,
-      modelRef: null,
-      options: { adapterId: adapter.id },
-      capabilities: adapter.capabilities,
-      status: 'unknown',
-      version: null,
-      source: 'builtin',
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    }))
+    const present = new Set(existing.map((profile) => typeof profile.options.adapterId === 'string' ? profile.options.adapterId : profile.name))
+    const created = [...existing]
+    for (const adapter of ADAPTERS) {
+      if (adapter.id === 'acp' || present.has(adapter.id)) continue
+      created.push(this.store.upsertRuntimeProfile({
+        id: newId('rtp'),
+        name: adapter.name,
+        protocol: adapter.protocol,
+        executable: adapter.command,
+        endpoint: null,
+        args: adapter.args,
+        authRef: null,
+        modelRef: null,
+        options: { adapterId: adapter.id },
+        capabilities: adapter.capabilities,
+        status: adapter.protocol === 'native' ? 'available' : 'unknown',
+        version: adapter.protocol === 'native' ? 'embedded' : null,
+        source: 'builtin',
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }))
+    }
     return created
   }
 
@@ -268,7 +272,8 @@ export class AgentStudioService {
         continue
       }
       try {
-        const knownOpenCode = profile.id === 'opencode' && process.env.APPDATA
+        const adapterId = typeof profile.options.adapterId === 'string' ? profile.options.adapterId : profile.id
+        const knownOpenCode = adapterId === 'opencode' && process.env.APPDATA
           ? join(process.env.APPDATA, 'npm', 'node_modules', 'opencode-ai', 'bin', 'opencode.exe')
           : null
         const executable = knownOpenCode && existsSync(knownOpenCode)
@@ -283,7 +288,7 @@ export class AgentStudioService {
         } catch { /* version flag is not universal */ }
         results.push({ profileId: profile.id, adapterId: profile.id, name: profile.name, installed: true, executable, version, protocol: profile.protocol, capabilities: profile.capabilities, status: 'available', message: version ? `已安装 ${version}` : '已安装' })
       } catch {
-        const fallback = profile.id === 'deepseek-harness' && process.env.LOCALAPPDATA
+        const fallback = (typeof profile.options.adapterId === 'string' ? profile.options.adapterId : profile.id) === 'deepseek-harness' && process.env.LOCALAPPDATA
           ? join(process.env.LOCALAPPDATA, 'Programs', 'DeepSeek Harness', 'resources', 'runtime', 'cli', 'bin', 'dsh.cmd')
           : null
         if (fallback && existsSync(fallback)) {
@@ -300,7 +305,7 @@ export class AgentStudioService {
     }
     for (const result of results) {
       const profile = profiles.find((item) => item.id === result.profileId)
-      if (!profile || profile.protocol === 'native') continue
+      if (!profile) continue
       this.store.upsertRuntimeProfile({
         ...profile,
         executable: result.executable,

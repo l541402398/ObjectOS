@@ -442,7 +442,7 @@ export default function TaskBoardPage() {
       ) : (
         <>
           <div className="po-board-scroll">
-            <div className="po-board">
+            <div className={`po-board ${draggingId ? 'is-dragging' : ''}`.trim()}>
               {columns.map((column) => (
                 <section
                   key={column.status}
@@ -596,6 +596,28 @@ export default function TaskBoardPage() {
               <span className="po-caption po-muted">v{taskDetail.data.task.version}</span>
             </div>
             <div className="po-task-description">{taskDetail.data.task.description || '未填写任务描述。'}</div>
+
+            <div className="po-task-assignee-row">
+              <span>指派 Agent</span>
+              <Select
+                size="small"
+                allowClear
+                showSearch
+                placeholder="选择 Agent"
+                value={taskDetail.data.task.assigneeAgentId ?? undefined}
+                options={agentOptions}
+                style={{ width: 260 }}
+                loading={updateTask.isPending}
+                onChange={(value: string | undefined) =>
+                  updateTask.mutate({
+                    taskId: taskDetail.data!.task.id,
+                    expectedVersion: taskDetail.data!.task.version,
+                    assigneeAgentId: value ?? null,
+                  })
+                }
+              />
+              {taskDetail.data.task.assigneeName ? <span className="po-caption po-muted">当前：{taskDetail.data.task.assigneeName}</span> : null}
+            </div>
 
             <SectionCard title="验收标准" subtitle="完成任务的必要条件" className="po-drawer-section">
               {taskDetail.data.task.acceptanceCriteria.length === 0 ? (

@@ -12,6 +12,8 @@ import KnowledgePage from './pages/KnowledgePage'
 import OperationsPage from './pages/OperationsPage'
 import ResourcesPage from './pages/ResourcesPage'
 import ApprovalsPage from './pages/ApprovalsPage'
+import ProjectSettingsPage from './pages/ProjectSettingsPage'
+import ProjectHealthPage from './pages/ProjectHealthPage'
 
 const WorkspacePage = lazy(() => import('./pages/WorkspacePage'))
 const OrchestrationPage = lazy(() => import('./features/orchestration/pages/OrchestrationWorkspace'))
@@ -57,6 +59,8 @@ export const router = createHashRouter([
           { path: 'operations', element: <OperationsPage /> },
           { path: 'resources', element: <ResourcesPage /> },
           { path: 'approvals', element: <ApprovalsPage /> },
+          { path: 'project-settings', element: <ProjectSettingsPage /> },
+          { path: 'health', element: <ProjectHealthPage /> },
           { path: 'runs', element: <RunsPage /> },
         ],
       },

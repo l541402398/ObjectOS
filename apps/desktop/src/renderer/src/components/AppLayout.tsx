@@ -56,6 +56,10 @@ const PAGE_LABELS: Record<string, string> = {
   workspace: '工作区',
   runs: '运行审计',
   center: '项目中心',
+  resources: '资源中心',
+  approvals: '审批中心',
+  health: '项目健康',
+  'project-settings': '项目设置',
   settings: '设置',
 }
 
@@ -69,6 +73,8 @@ const NAV_PATHS: Record<string, string> = {
   collaboration: '/collaboration',
   workspace: '/workspace',
   runs: '/runs',
+  'project-settings': '/project-settings',
+  health: '/health',
   resources: '/resources',
   approvals: '/approvals',
 }
@@ -233,6 +239,8 @@ export default function AppLayout() {
         { id: 'collaboration', label: '跨会话中心', group: currentProject?.name ?? '项目', icon: <SendOutlined />, run: () => handleNavigate('collaboration') },
         { id: 'workspace', label: '工作区', group: currentProject?.name ?? '项目', icon: <CodeOutlined />, run: () => handleNavigate('workspace') },
         { id: 'runs', label: '运行审计', group: currentProject?.name ?? '项目', icon: <HistoryOutlined />, run: () => handleNavigate('runs') },
+        { id: 'health', label: '项目健康', group: currentProject?.name ?? '项目', icon: <SafetyCertificateOutlined />, run: () => handleNavigate('health') },
+        { id: 'project-settings', label: '项目设置', group: currentProject?.name ?? '项目', icon: <SettingOutlined />, run: () => handleNavigate('project-settings') },
         {
           id: 'new-task',
           label: '新建任务',
@@ -294,6 +302,8 @@ export default function AppLayout() {
       items: [
         { key: 'workspace', label: '工作区', icon: <CodeOutlined /> },
         { key: 'runs', label: '运行审计', icon: <HistoryOutlined /> },
+        { key: 'health', label: '项目健康', icon: <SafetyCertificateOutlined /> },
+        { key: 'project-settings', label: '项目设置', icon: <SettingOutlined /> },
       ],
     })
   }
@@ -558,6 +568,8 @@ export default function AppLayout() {
     </>
   )
 }
+
+
 
 
 
