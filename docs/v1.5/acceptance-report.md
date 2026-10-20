@@ -20,7 +20,7 @@ V1.5 E2E 覆盖：
 
 ## 包
 
-SHA256：`E9DBD6726C9B27381D1C4BF297C5FBF14DA6451AA5499801A56EBE993C2E320D` 
+SHA256：`A6031CD5842911EB7D64934EAFC7016494193E4516E1F94E018DA85F8388A074` 
 
 ## 截图
 
@@ -89,3 +89,5 @@ AgentDefinition 支持 JSON 导出/导入（导入生成新 ID 与 v1）。
 Agent 管理 UI 增加导出/导入入口。
 
 RuntimeProfile 更新与删除由单测覆盖；设置页删除入口已存在。
+
+Runtime 管理中心支持编辑自定义 Runtime 的名称与可执行路径。

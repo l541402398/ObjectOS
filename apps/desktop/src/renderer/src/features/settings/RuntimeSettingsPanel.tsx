@@ -143,6 +143,36 @@ export function RuntimeSettingsPanel() {
                 {profile.source === 'custom' ? (
                   <Button
                     size="small"
+                    onClick={() => {
+                      const name = window.prompt('Runtime 名称', profile.name)
+                      if (!name) return
+                      const executable = window.prompt('可执行路径', profile.executable ?? '')
+                      void window.projectos.runtimeProfiles
+                        .upsert({
+                          id: profile.id,
+                          name,
+                          protocol: profile.protocol,
+                          executable: executable || null,
+                          endpoint: profile.endpoint,
+                          args: profile.args,
+                          authRef: profile.authRef,
+                          modelRef: profile.modelRef,
+                          options: profile.options,
+                          capabilities: profile.capabilities,
+                        })
+                        .then(() => {
+                          message.success('Runtime 已更新')
+                          void queryClient.invalidateQueries({ queryKey: ['runtime-profiles'] })
+                        })
+                        .catch((error) => message.error(errorMessage(error)))
+                    }}
+                  >
+                    编辑
+                  </Button>
+                ) : null}
+                {profile.source === 'custom' ? (
+                  <Button
+                    size="small"
                     danger
                     onClick={() => {
                       void window.projectos.runtimeProfiles
