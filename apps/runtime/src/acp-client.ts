@@ -8,6 +8,7 @@ export class AcpClient {
   private readonly child: ChildProcess
   private readonly pending = new Map<number, Pending>()
   private seq = 0
+  private readonly listeners = new Set<(message: unknown) => void>()
   private disposed = false
 
   constructor(executable: string, args: string[], cwd: string) {
@@ -22,7 +23,10 @@ export class AcpClient {
   private onLine(line: string): void {
     let message: { id?: number; result?: unknown; error?: { message?: string } }
     try { message = JSON.parse(line) as typeof message } catch { return }
-    if (typeof message.id !== 'number') return
+    if (typeof message.id !== 'number') {
+      for (const listener of this.listeners) listener(message)
+      return
+    }
     const pending = this.pending.get(message.id)
     if (!pending) return
     this.pending.delete(message.id)
@@ -37,6 +41,11 @@ export class AcpClient {
       pending.reject(error)
     }
     this.pending.clear()
+  }
+
+  onEvent(listener: (message: unknown) => void): () => void {
+    this.listeners.add(listener)
+    return () => this.listeners.delete(listener)
   }
 
   request<T>(method: string, params: unknown, timeoutMs = 20_000): Promise<T> {
@@ -71,3 +80,4 @@ export class AcpClient {
     this.child.kill()
   }
 }
+

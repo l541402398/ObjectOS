@@ -536,6 +536,10 @@ export class RuntimeDispatcher {
         const input = this.parse('runtime.detect', rawInput)
         return { detections: await this.agentStudio.detect(input.profileId) }
       }
+      case 'runtime.acpPrompt': {
+        const input = this.parse('runtime.acpPrompt', rawInput)
+        return this.agentStudio.acpPrompt(input.profileId, input.prompt, input.cwd)
+      }
       case 'runtime.acpHandshake': {
         const input = this.parse('runtime.acpHandshake', rawInput)
         return this.agentStudio.acpHandshake(input.profileId, input.cwd)
@@ -912,6 +916,7 @@ export function emitLog(hub: RuntimeEventHub, level: 'debug' | 'info' | 'warn' |
   const event: RuntimeEvent = { type: 'runtime.log', level, message, createdAt: Date.now() }
   hub.publish(event)
 }
+
 
 
 
