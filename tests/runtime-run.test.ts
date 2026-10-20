@@ -2,7 +2,6 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { newId } from '@projectos/contracts'
 import { CoreServices, type WorkspacePort } from '@projectos/application'
 import { SqliteStore } from '@projectos/persistence'
 import { ensureProjectRoot, getGitStatus, initGitRepository, readTextFile, readWorkspaceTree, writeTextFile } from '@projectos/workspace'
@@ -41,5 +40,6 @@ describe('runtime run', () => {
     expect(messages.some((message) => message.role === 'assistant' && message.content.includes('done'))).toBe(true)
   })
 })
+
 
 
