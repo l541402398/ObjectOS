@@ -183,3 +183,11 @@ screenshots     → 50 张
 ## 9. Windows 1.6.0
 
 - SHA256：
+
+## 10. AgentDefinition → 任务/DAG
+
+自定义 Agent 已可分配到任务并进入编排投影；Persona、Capabilities、Skills、权限已接入 legacy AgentRunner。详见 docs/v1.6/round3-agent-dag.md。
+
+Windows SHA256：554C9121348C7E8969D1E1C08A70DC5561D9C20715130FD6E9A0F77F48014C62
+
+Linux SHA256：94D7E963CE598309FE005AE0313EB5A7643A5A8D86BC72D4DE7251202289C7BD

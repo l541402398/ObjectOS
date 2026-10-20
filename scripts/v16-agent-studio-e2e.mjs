@@ -27,5 +27,21 @@ const agents = await page.evaluate(async () => (await window.projectos.agentDefi
 console.log(agents.map((agent) => agent.name))
 const created = agents.find((agent) => agent.name === 'V1.6 UI Agent')
 if (!created) throw new Error('Agent was not persisted')
-console.log('AGENT STUDIO CREATE PASS', created.id, created.currentVersion)
+const taskResult = await page.evaluate(async ({ projectId, agentId }) => window.projectos.tasks.create({
+  projectId,
+  title: 'V1.6 Custom Agent DAG Binding',
+  description: 'Verify a ProjectOS custom AgentDefinition can be assigned to a task and projected into orchestration.',
+  priority: 2,
+  acceptanceCriteria: ['Task is assigned to the custom agent'],
+  labels: ['v1.6'],
+  assigneeAgentId: agentId,
+  milestoneId: null,
+  dependsOn: [],
+  dueAt: null,
+}), { projectId, agentId: created.id })
+if (taskResult.task.assigneeAgentId !== created.id) throw new Error('custom agent assignee not persisted')
+const overview = await page.evaluate(async (projectId) => window.projectos.projects.overview(projectId), projectId)
+const inOverview = overview.agents.find((view) => view.agent.id === created.id)
+if (!inOverview) throw new Error('custom agent not visible to project orchestration')
+console.log('AGENT STUDIO CREATE PASS', created.id, created.currentVersion, 'orchestration-visible=' + inOverview.status, 'capabilities=' + inOverview.agent.capabilities.join(','), 'task=' + taskResult.task.id)
 await app.close()

@@ -1510,6 +1510,37 @@ export class SqliteStore {
         agent.createdAt, agent.category, agent.visibility, agent.status, agent.avatar,
         JSON.stringify(agent.persona), JSON.stringify({ modelRef: agent.modelRef, permissions: agent.permissions }), agent.currentVersion,
       )
+      const personaText = [
+        agent.persona.role ? `Role: ${agent.persona.role}` : '',
+        agent.persona.background ? `Background: ${agent.persona.background}` : '',
+        agent.persona.responsibilities ? `Responsibilities: ${agent.persona.responsibilities}` : '',
+        agent.persona.principles ? `Principles: ${agent.persona.principles}` : '',
+        agent.persona.style ? `Style: ${agent.persona.style}` : '',
+        agent.persona.constraints ? `Constraints: ${agent.persona.constraints}` : '',
+        agent.persona.systemPrompt,
+      ].filter(Boolean).join('\n')
+      const capabilities =
+        agent.category === 'code'
+          ? ['implement', 'review', 'test', 'analyze']
+          : agent.category === 'architecture'
+            ? ['architect', 'plan', 'analyze']
+            : agent.category === 'quality'
+              ? ['test', 'review', 'analyze']
+              : agent.category === 'product'
+                ? ['plan', 'coordinate', 'analyze']
+                : agent.category === 'design'
+                  ? ['analyze', 'plan', 'review']
+                  : agent.category === 'data'
+                    ? ['analyze', 'research']
+                    : agent.category === 'ops'
+                      ? ['implement', 'test', 'analyze']
+                      : ['plan', 'analyze', 'implement', 'review', 'test', 'research', 'coordinate']
+      this.run(
+        'UPDATE agents SET capabilities_json = ?, system_prompt = ? WHERE id = ?',
+        JSON.stringify(capabilities),
+        personaText || agent.persona.systemPrompt,
+        agent.id,
+      )
       this.run('DELETE FROM agent_skill_bindings WHERE agent_id = ?', agent.id)
       for (const binding of agent.skills) {
         this.run('INSERT INTO agent_skill_bindings (agent_id, skill_id, enabled, config_json) VALUES (?, ?, ?, ?)', agent.id, binding.skillId, binding.enabled ? 1 : 0, '{}')

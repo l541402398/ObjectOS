@@ -27,7 +27,7 @@ import {
   redactObject,
   redactSecrets,
 } from '@projectos/policy'
-import { getToolDefinition, toolCatalogForAgent, toolCatalogPrompt } from '@projectos/tools'
+import { getToolDefinition, toolCatalogForAgent } from '@projectos/tools'
 import {
   getGitDiff,
   getGitStatus,
@@ -309,12 +309,21 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
     const artifacts = this.store.read.listArtifacts(project.id, task?.id ?? null)
     const knowledge = this.store.read.listKnowledge(project.id)
     const agentsFile = listProjectAgentsFile(project.rootPath)
-    const skills = selectSkills({ task, agent }).map((selection) => ({
+    const definition = this.store.read.getAgentDefinition(agent.id)
+    const autoSkills = selectSkills({ task, agent }).map((selection) => ({
       id: selection.skill.id,
       name: selection.skill.name,
       description: selection.skill.description,
       prompt: selection.skill.prompt,
     }))
+    const boundSkills = definition
+      ? definition.skills
+          .filter((binding) => binding.enabled)
+          .map((binding) => this.store.read.listSkills().find((skill) => skill.id === binding.skillId))
+          .filter((skill): skill is NonNullable<typeof skill> => Boolean(skill))
+          .map((skill) => ({ id: skill.id, name: skill.name, description: skill.description, prompt: skill.content }))
+      : []
+    const skills = [...autoSkills, ...boundSkills.filter((bound) => !autoSkills.some((auto) => auto.id === bound.id))]
     const handoffs = this.store.read.listHandoffViews(project.id)
     const handoff = task
       ? handoffs.find((entry) => entry.taskId === task.id && entry.status === 'accepted')
@@ -331,8 +340,14 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
       skills,
       handoffSummary: handoff?.summary ?? null,
     })
-    const tools = toolCatalogForAgent(agent.capabilities)
-    const system = `${context.system}\n\n## 可用工具\n${toolCatalogPrompt(agent.capabilities)}\n`
+    const tools = toolCatalogForAgent(agent.capabilities).filter((tool) => {
+      if (!definition) return true
+      if (tool.name === 'write_file') return definition.permissions.files
+      if (tool.name === 'run_command' || tool.name === 'run_tests') return definition.permissions.shell
+      return true
+    })
+    const toolPrompt = tools.map((tool) => `- ${tool.name}：${tool.description}`).join('\n')
+    const system = `${context.system}\n\n## 可用工具\n${toolPrompt || '无'}\n`
     if (!resume) {
       this.store.appendRunStep({
         runId: run.id,
@@ -1403,4 +1418,5 @@ function approvalDetail(invocation: ToolInvocation): string {
   }
   return `Agent 请求执行 ${invocation.name}。`
 }
+
 
