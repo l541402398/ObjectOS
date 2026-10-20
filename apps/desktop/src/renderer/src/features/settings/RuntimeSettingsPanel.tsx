@@ -8,13 +8,14 @@ import { AcpRegistryPanel } from './AcpRegistryPanel'
 import { errorMessage } from '../../lib/errors'
 
 export function RuntimeSettingsPanel() {
-  const { message } = App.useApp()
+  const { message, modal } = App.useApp()
   const queryClient = useQueryClient()
   const preferences = useQuery({ queryKey: ['appPreferences'], queryFn: () => window.projectos.app.preferences() })
   const health = useQuery({ queryKey: ['runtimeHealth'], queryFn: () => window.projectos.runtime.health(), refetchInterval: 10_000, retry: false })
   const profiles = useQuery({ queryKey: ['runtime-profiles'], queryFn: () => window.projectos.runtimeProfiles.list() })
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [installing, setInstalling] = useState<string | null>(null)
   const [testProfile, setTestProfile] = useState<RuntimeProfile | null>(null)
   const [testPrompt, setTestPrompt] = useState('')
   const [testResult, setTestResult] = useState<string | null>(null)
@@ -32,6 +33,27 @@ export function RuntimeSettingsPanel() {
     } finally {
       setBusy(false)
     }
+  }
+
+  const install = (profile: RuntimeProfile): void => {
+    modal.confirm({
+      title: `安装 ${profile.name}？`,
+      content: '将从 npm 全局安装该 Harness。需要网络访问，安装完成后会自动重新检测。',
+      okText: '安装',
+      cancelText: '取消',
+      onOk: async () => {
+        setInstalling(profile.id)
+        try {
+          const result = await window.projectos.runtimeProfiles.install(profile.id)
+          await queryClient.invalidateQueries({ queryKey: ['runtime-profiles'] })
+          message.success(`${profile.name}：${result.detection.status === 'available' ? '已安装' : result.detection.message}`)
+        } catch (error) {
+          message.error(errorMessage(error))
+        } finally {
+          setInstalling(null)
+        }
+      },
+    })
   }
 
   const runTest = async (): Promise<void> => {
@@ -102,6 +124,9 @@ export function RuntimeSettingsPanel() {
       <div className="po-runtime-list">
         {(profiles.data?.profiles ?? []).map((profile) => {
           const detection = profiles.data?.detections.find((item) => item.profileId === profile.id)
+          const adapterId = typeof profile.options.adapterId === 'string' ? profile.options.adapterId : profile.id
+          const installable = ['claude-code', 'codex', 'opencode', 'qwen-code', 'gemini-cli'].includes(adapterId)
+          const available = detection?.status === 'available' || profile.status === 'available'
           return (
             <div className="po-runtime-row" key={profile.id}>
               <div className="po-runtime-row-main">
@@ -115,10 +140,14 @@ export function RuntimeSettingsPanel() {
                 </div>
               </div>
               <div className="po-runtime-state">
-                <StatusPill tone={detection?.status === 'available' ? 'success' : detection?.status === 'unavailable' ? 'danger' : 'neutral'}>
-                  {detection?.status === 'available' ? '可用' : detection?.status === 'unavailable' ? '不可用' : '未检测'}
+                <StatusPill tone={available ? 'success' : detection?.status === 'unavailable' ? 'danger' : 'neutral'}>
+                  {available ? '可用' : detection?.status === 'unavailable' ? '未安装' : '未检测'}
                 </StatusPill>
                 <span>{detection?.version ?? detection?.message ?? ''}</span>
+                {!available && installable ? (
+                  <Button size="small" type="primary" loading={installing === profile.id} onClick={() => install(profile)}>安装</Button>
+                ) : null}
+                {!available && adapterId === 'deepseek-harness' ? <Tag>手动安装</Tag> : null}
                 {profile.protocol === 'acp' ? (
                   <Button
                     size="small"

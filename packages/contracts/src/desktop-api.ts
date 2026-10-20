@@ -187,6 +187,7 @@ export interface ProjectOSDesktopApi {
     upsert: (input: In<'runtime.upsert'>) => Promise<Out<'runtime.upsert'>>
     delete: (id: string) => Promise<Out<'runtime.delete'>>
     detect: (profileId?: string) => Promise<Out<'runtime.detect'>>
+    install: (profileId: string) => Promise<Out<'runtime.install'>>
     registry: (force?: boolean) => Promise<Out<'runtime.registry'>>
     execute: (profileId: string, prompt: string, cwd?: string) => Promise<Out<'runtime.execute'>>
     acpHandshake: (profileId: string, cwd?: string) => Promise<Out<'runtime.acpHandshake'>>
@@ -254,6 +255,7 @@ declare global {
     projectos: ProjectOSDesktopApi
   }
 }
+
 
 
 

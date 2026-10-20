@@ -544,6 +544,10 @@ export class RuntimeDispatcher {
         const input = this.parse('runtime.detect', rawInput)
         return { detections: await this.agentStudio.detect(input.profileId) }
       }
+      case 'runtime.install': {
+        const input = this.parse('runtime.install', rawInput)
+        return this.agentStudio.install(input.profileId)
+      }
       case 'runtime.importRegistry': {
         const input = this.parse('runtime.importRegistry', rawInput)
         return this.agentStudio.importRegistry(input)

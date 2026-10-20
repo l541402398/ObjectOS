@@ -217,6 +217,7 @@ const api: ProjectOSDesktopApi = {
     upsert: (input) => call('runtime.upsert', input),
     delete: (id) => call('runtime.delete', { id }),
     detect: (profileId) => call('runtime.detect', profileId ? { profileId } : {}),
+    install: (profileId) => call('runtime.install', { profileId }),
     registry: (force = false) => call('runtime.registry', { force }),
     execute: (profileId, prompt, cwd) => call('runtime.execute', { profileId, prompt, ...(cwd ? { cwd } : {}) }),
     acpHandshake: (profileId, cwd) => call('runtime.acpHandshake', { profileId, ...(cwd ? { cwd } : {}) }),

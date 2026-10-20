@@ -437,6 +437,10 @@ export const ApiSchemas = {
     input: z.object({ profileId: IdSchema.optional() }),
     output: z.object({ detections: z.array(RuntimeDetectionSchema) }),
   },
+  'runtime.install': {
+    input: z.object({ profileId: IdSchema }),
+    output: z.object({ detection: RuntimeDetectionSchema, output: z.string() }),
+  },
   'runtime.importRegistry': {
     input: z.object({ registryId: z.string().min(1).max(200), name: z.string().trim().min(1).max(120), version: z.string().max(40).nullable().default(null), description: z.string().max(2000).default('') }),
     output: RuntimeProfileSchema,

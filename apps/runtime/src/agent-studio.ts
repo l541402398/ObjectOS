@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { AcpClient } from './acp-client.js'
 import { promisify } from 'node:util'
+import crossSpawn from 'cross-spawn'
 
 const exec = promisify(execFile)
 
@@ -315,6 +316,47 @@ export class AgentStudioService {
       })
     }
     return results
+  }
+
+  async install(profileId: string): Promise<{ detection: RuntimeDetection; output: string }> {
+    const profile = this.store.read.listRuntimeProfiles().find((item) => item.id === profileId)
+    if (!profile) throw new AppError('NOT_FOUND', 'Runtime 不存在')
+    if (profile.protocol === 'native') throw new AppError('BAD_REQUEST', '内置 Runtime 无需安装')
+    const adapterId = typeof profile.options.adapterId === 'string' ? profile.options.adapterId : profile.id
+    const packages: Record<string, string> = {
+      'claude-code': '@anthropic-ai/claude-code',
+      codex: '@openai/codex',
+      opencode: 'opencode-ai',
+      'qwen-code': '@qwen-code/qwen-code',
+      'gemini-cli': '@google/gemini-cli',
+    }
+    const packageName = packages[adapterId]
+    if (!packageName) throw new AppError('BAD_REQUEST', '该 Runtime 没有自动安装包，请手动安装')
+    const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+    const command = [npm, 'install', '-g', packageName, '--no-fund', '--no-audit'].join(' ')
+    const output = await new Promise<string>((resolve, reject) => {
+      const child = crossSpawn(npm, ['install', '-g', packageName, '--no-fund', '--no-audit'], {
+        windowsHide: true,
+        env: process.env,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      })
+      let text = ''
+      const timer = setTimeout(() => {
+        child.kill()
+        reject(new AppError('TIMEOUT', `安装超时：${command}`))
+      }, 180_000)
+      child.stdout?.on('data', (chunk: Buffer) => { text += chunk.toString('utf8') })
+      child.stderr?.on('data', (chunk: Buffer) => { text += chunk.toString('utf8') })
+      child.on('error', (error) => { clearTimeout(timer); reject(new AppError('INTERNAL', `安装失败：${error.message}`)) })
+      child.on('close', (code) => {
+        clearTimeout(timer)
+        if (code === 0) resolve(text.slice(-8000))
+        else reject(new AppError('INTERNAL', `安装失败（exit ${code}）：${text.slice(-4000)}`))
+      })
+    })
+    const detection = (await this.detect(profileId))[0]
+    if (!detection) throw new AppError('INTERNAL', '安装后无法检测 Runtime')
+    return { detection, output }
   }
 
   async registry(force = false): Promise<{ source: string; cachedAt: number; entries: RuntimeRegistryEntry[] }> {
