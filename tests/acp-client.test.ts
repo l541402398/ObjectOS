@@ -4,8 +4,13 @@ import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { newId, type RuntimeProfile } from '@projectos/contracts'
 import { SqliteStore } from '@projectos/persistence'
+import { CoreServices, type WorkspacePort } from '@projectos/application'
+import { ensureProjectRoot, getGitStatus, initGitRepository, readTextFile, readWorkspaceTree, writeTextFile } from '@projectos/workspace'
+import { RuntimeExecutionService } from '../apps/runtime/src/runtime-executor.js'
+import { RuntimeRunService } from '../apps/runtime/src/runtime-run.js'
 import { AgentStudioService } from '../apps/runtime/src/agent-studio.js'
 
+const workspace: WorkspacePort = { ensureProjectRoot, readWorkspaceTree, writeTextFile, readTextFile, getGitStatus, initGitRepository }
 const cleanup: Array<() => void> = []
 afterEach(() => { while (cleanup.length) cleanup.pop()?.() })
 
@@ -35,7 +40,20 @@ describe('acp client', () => {
     expect(prompted.sessionId).toBe('acp-session-1')
     expect(prompted.events.length).toBe(1)
     expect(prompted.result).toEqual({ stopReason: 'end_turn' })
+    const services = new CoreServices(store, workspace)
+    const project = await services.projects.create({ name: 'ACP Project', description: '', rootPath: join(dir, 'project'), createDirectory: true, initGit: false })
+    const agent = studio.upsertAgent({
+      name: 'ACP Agent', role: '执行', description: '', category: 'general', avatar: '', visibility: 'project',
+      persona: { role: '执行', background: '', responsibilities: '', principles: '', style: '', constraints: '', systemPrompt: '' },
+      skillIds: [], runtimeProfileIds: [profile.id], primaryRuntimeProfileId: profile.id, modelRef: null,
+      permissions: { tools: [], files: false, shell: false, network: false },
+    })
+    const runs = new RuntimeRunService(store, new RuntimeExecutionService(store))
+    const executed = await runs.run({ agentId: agent.id, projectId: project.id, prompt: 'hello', cwd: project.rootPath })
+    expect(executed.status).toBe('completed')
+    expect(store.read.getRun(executed.runId)?.status).toBe('completed')
   })
 })
+
 
 

@@ -71,4 +71,5 @@ ACP initialize + session/new JSON-RPC stdio 客户端及 fixture 测试已完成
 
 ACP 客户端现已支持 initialize、session/new、session/prompt、session/update 事件收集与 Runtime 管理中心测试。
 
-ACP 会话现已接入 AgentRun：创建 Session/Run、写入消息、收集事件、completed/failed 回写（专项 E2E 待补）。
+ACP 会话现已接入 AgentRun，并由 tests/acp-client.test.ts 覆盖 Session/Run/消息/completed 全链路。
+
