@@ -294,6 +294,7 @@ export default function OrchestrationWorkspace() {
   const [seqCursor, setSeqCursor] = useState(0)
   const [seqGap, setSeqGap] = useState(false)
   const [nodeFilter, setNodeFilter] = useState('')
+  const [kindFilter, setKindFilter] = useState<'all' | 'orchestrator' | 'agent' | 'task'>('all')
   const [compactGraph, setCompactGraph] = useState(false)
   const seqCursorRef = useRef(0)
   const saveLayoutRef = useRef<() => void>(() => undefined)
@@ -389,12 +390,13 @@ export default function OrchestrationWorkspace() {
 
   const visibleNodes = useMemo(() => {
     const keyword = nodeFilter.trim().toLowerCase()
-    if (!keyword) return flowNodes
     return flowNodes.filter((node) => {
       const graph = (node.data as WorkbenchData).graph
+      if (kindFilter !== 'all' && graph.kind !== kindFilter) return false
+      if (!keyword) return true
       return graph.label.toLowerCase().includes(keyword) || (graph.subtitle ?? '').toLowerCase().includes(keyword)
     })
-  }, [flowNodes, nodeFilter])
+  }, [flowNodes, nodeFilter, kindFilter])
   const visibleIds = useMemo(() => new Set(visibleNodes.map((node) => node.id)), [visibleNodes])
   const visibleEdges = useMemo(
     () => layout.edges.filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target)),
@@ -862,6 +864,12 @@ export default function OrchestrationWorkspace() {
         <div className="po-orch-grid">
           <section className="po-orch-canvas-card">
             <div className="po-orch-canvas-toolbar">
+              <div className="po-orch-kind-filter">
+                <button type="button" className={kindFilter === 'all' ? 'is-active' : ''} onClick={() => setKindFilter('all')}>全部 {counts.agents + counts.tasks + 1}</button>
+                <button type="button" className={kindFilter === 'orchestrator' ? 'is-active' : ''} onClick={() => setKindFilter('orchestrator')}>总控 1</button>
+                <button type="button" className={kindFilter === 'agent' ? 'is-active' : ''} onClick={() => setKindFilter('agent')}>Agent {counts.agents}</button>
+                <button type="button" className={kindFilter === 'task' ? 'is-active' : ''} onClick={() => setKindFilter('task')}>Task {counts.tasks}</button>
+              </div>
               <span>AGENT TOPOLOGY</span>
               <span className="po-orch-seq">SEQ {seqCursor}{seqGap ? ' · 已补齐' : ''}</span>
               <Input
@@ -929,6 +937,26 @@ export default function OrchestrationWorkspace() {
             {inspectorContent}
           </aside>
         </div>
+
+        <section className="po-orch-log">
+          <div className="po-orch-log-head">
+            <span>运行日志</span>
+            <span>{eventsQuery.data?.events.length ?? 0} 条项目事件</span>
+            <span className="po-grow" />
+            <button type="button" onClick={() => navigate(`/projects/${projectId}/runs`)}>运行审计 →</button>
+          </div>
+          <div className="po-orch-log-body">
+            {(eventsQuery.data?.events ?? []).slice(0, 8).map((event) => (
+              <div className="po-orch-log-row" key={event.id}>
+                <span>{formatRelative(event.createdAt)}</span>
+                <span className="po-flow-dot is-completed" />
+                <strong>{event.summary}</strong>
+                <em>{event.eventType}</em>
+              </div>
+            ))}
+            {!eventsQuery.data?.events.length ? <div className="po-inspector-empty">暂无运行事件</div> : null}
+          </div>
+        </section>
 
         <section className="po-dep-flow">
           <div className="po-dep-head">

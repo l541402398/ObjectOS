@@ -100,7 +100,7 @@ export class AcpClient {
   }
 
   async prompt(sessionId: string, text: string): Promise<unknown> {
-    return this.request('session/prompt', { sessionId, prompt: [{ type: 'text', text }] }, 120_000)
+    return this.request('session/prompt', { sessionId, prompt: [{ type: 'text', text }] }, 300_000)
   }
 
   dispose(): void {
@@ -109,6 +109,7 @@ export class AcpClient {
     this.child.kill()
   }
 }
+
 
 
 
