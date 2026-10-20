@@ -20,7 +20,7 @@ V1.5 E2E 覆盖：
 
 ## 包
 
-SHA256：`6EFF3EE39692CB9EE14378988CB7D523389FF2DF6A80CFC649F4FF109C316CD3` 
+SHA256：`E9DBD6726C9B27381D1C4BF297C5FBF14DA6451AA5499801A56EBE993C2E320D` 
 
 ## 截图
 
@@ -85,3 +85,5 @@ Runtime 管理中心为 ACP Profile 增加认证入口。
 Runtime 管理中心支持删除自定义 Runtime。
 
 AgentDefinition 支持 JSON 导出/导入（导入生成新 ID 与 v1）。
+
+Agent 管理 UI 增加导出/导入入口。

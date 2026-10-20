@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { App, Button, Form, Input, Modal, Select, Switch, Tag } from 'antd'
 import { DeleteOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
@@ -31,6 +31,7 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
   const skills = useSkills()
   const runtimes = useRuntimeProfiles()
   const [form] = Form.useForm<AgentFormValues>()
+  const importRef = useRef<HTMLInputElement>(null)
   const [editing, setEditing] = useState<AgentDefinition | null>(null)
   const [saving, setSaving] = useState(false)
   const [runOpen, setRunOpen] = useState(false)
@@ -111,6 +112,33 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
       message.error(errorMessage(error))
     } finally {
       setSaving(false)
+    }
+  }
+
+  const exportAgent = async (): Promise<void> => {
+    if (!editing) return
+    try {
+      const result = await window.projectos.agentDefinitions.export(editing.id)
+      const blob = new Blob([result.json], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = result.filename
+      anchor.click()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      message.error(errorMessage(error))
+    }
+  }
+
+  const importAgent = async (file: File): Promise<void> => {
+    try {
+      const json = await file.text()
+      await window.projectos.agentDefinitions.import(json)
+      await queryClient.invalidateQueries({ queryKey: ['agent-definitions'] })
+      message.success('Agent 已导入')
+    } catch (error) {
+      message.error(errorMessage(error))
     }
   }
 
@@ -197,8 +225,11 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
             <Form.Item name="shell" label="Shell" valuePropName="checked"><Switch /></Form.Item>
             <Form.Item name="network" label="网络" valuePropName="checked"><Switch /></Form.Item>
           </div>
+          <input ref={importRef} type="file" accept=".json,application/json" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) void importAgent(file); event.target.value = '' }} />
           <div className="po-agent-studio-actions">
             {editing ? <Button icon={<EyeOutlined />} onClick={() => void preview(editing.id)}>预览提示词</Button> : null}
+            {editing ? <Button onClick={() => void exportAgent()}>导出</Button> : null}
+            <Button onClick={() => importRef.current?.click()}>导入</Button>
             {editing && editing.runtimeProfileIds.length ? <Button onClick={() => { setRunOpen(true); setRunPrompt(""); setRunOutput(null) }}>运行测试</Button> : null}
             {editing ? <Button danger icon={<DeleteOutlined />} onClick={() => remove(editing)}>删除</Button> : null}
             <Button type="primary" loading={saving} onClick={() => void save()}>{editing ? '保存版本' : '创建 Agent'}</Button>
