@@ -128,3 +128,5 @@ scripts/v15-dpi-check.mjs 在 125% 与 150% 缩放下检查：
 - dpr=1.25 / 1.5
 - 项目总览与 Agent 工作台横向 overflow=0
 - 截图：docs/screenshots/dpi-1.25-*.png、dpi-1.5-*.png
+
+ACP permission request 现按 Agent 的 files/shell/network 权限自动批准或拒绝，并记录事件。

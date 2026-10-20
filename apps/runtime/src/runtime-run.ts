@@ -14,7 +14,7 @@ export class RuntimeRunService {
   ) {}
 
   private async runAcp(
-    agent: { id: string; name: string },
+    agent: { id: string; name: string; permissions: { files: boolean; shell: boolean; network: boolean } },
     project: { id: string; rootPath: string },
     profile: { id: string; name: string; executable: string | null; args: string[] },
     prompt: string,
@@ -135,6 +135,7 @@ function promptTitle(prompt: string): string {
   const first = prompt.trim().split(/\r?\n/)[0] ?? 'Runtime run'
   return first.slice(0, 120)
 }
+
 
 
 
