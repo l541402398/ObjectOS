@@ -812,3 +812,5 @@
 .po-runtime-state > span:last-child { color: var(--color-text-tertiary); font-size: 12px; text-align: right; }
 .po-runtime-registry { margin-top: 8px; }
 
+
+.po-runtime-output { max-height: 240px; overflow: auto; margin-top: 10px; padding: 9px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface-sunken); font-family: var(--font-mono); font-size: 12px; white-space: pre-wrap; }

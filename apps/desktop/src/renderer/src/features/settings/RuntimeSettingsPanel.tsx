@@ -3,6 +3,7 @@ import { App, Button, Form, Input, Modal, Select, Tag } from 'antd'
 import { PlusOutlined, ReloadOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ErrorState, KeyValueList, LoadingBlock, StatusPill } from '@projectos/ui'
+import type { RuntimeProfile } from '@projectos/contracts'
 import { errorMessage } from '../../lib/errors'
 
 export function RuntimeSettingsPanel() {
@@ -13,6 +14,10 @@ export function RuntimeSettingsPanel() {
   const profiles = useQuery({ queryKey: ['runtime-profiles'], queryFn: () => window.projectos.runtimeProfiles.list() })
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [testProfile, setTestProfile] = useState<RuntimeProfile | null>(null)
+  const [testPrompt, setTestPrompt] = useState('')
+  const [testResult, setTestResult] = useState<string | null>(null)
+  const [testing, setTesting] = useState(false)
   const [form] = Form.useForm()
 
   const detect = async (): Promise<void> => {
@@ -28,8 +33,21 @@ export function RuntimeSettingsPanel() {
     }
   }
 
-  const create = async (): Promise<void> => {
-    const values = await form.validateFields()
+  const runTest = async (): Promise<void> => {
+    if (!testProfile) return
+    setTesting(true)
+    setTestResult(null)
+    try {
+      const result = await window.projectos.runtimeProfiles.execute(testProfile.id, testPrompt)
+      setTestResult(`[${result.status}] ${result.output}`)
+    } catch (error) {
+      setTestResult(errorMessage(error))
+    } finally {
+      setTesting(false)
+    }
+  }
+
+  const create = async (): Promise<void> => {    const values = await form.validateFields()
     try {
       await window.projectos.runtimeProfiles.upsert({
         name: values.name,
@@ -100,6 +118,11 @@ export function RuntimeSettingsPanel() {
                   {detection?.status === 'available' ? '可用' : detection?.status === 'unavailable' ? '不可用' : '未检测'}
                 </StatusPill>
                 <span>{detection?.version ?? detection?.message ?? ''}</span>
+                {profile.protocol !== 'native' ? (
+                  <Button size="small" onClick={() => { setTestProfile(profile); setTestPrompt(''); setTestResult(null) }}>
+                    测试
+                  </Button>
+                ) : null}
               </div>
             </div>
           )
@@ -132,6 +155,10 @@ export function RuntimeSettingsPanel() {
           <Form.Item name="executable" label="可执行路径"><Input placeholder="opencode" /></Form.Item>
           <Form.Item name="endpoint" label="Endpoint"><Input placeholder="http://127.0.0.1:4096" /></Form.Item>
         </Form>
+      </Modal>
+      <Modal open={Boolean(testProfile)} title={`测试 ${testProfile?.name ?? ''}`} onCancel={() => setTestProfile(null)} onOk={() => void runTest()} okText="运行" confirmLoading={testing} width={680} destroyOnHidden>
+        <Input.TextArea rows={3} value={testPrompt} onChange={(event) => setTestPrompt(event.target.value)} placeholder="输入测试任务" />
+        {testResult ? <pre className="po-runtime-output">{testResult}</pre> : null}
       </Modal>
     </div>
   )
