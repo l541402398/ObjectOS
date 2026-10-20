@@ -5,7 +5,7 @@
 ```text
 pnpm typecheck
 pnpm lint
-pnpm test              → 24 files / 112 tests
+pnpm test              → 24 files / 113 tests
 node scripts/v15-e2e.mjs → PASS
 ```
 
@@ -87,3 +87,5 @@ Runtime 管理中心支持删除自定义 Runtime。
 AgentDefinition 支持 JSON 导出/导入（导入生成新 ID 与 v1）。
 
 Agent 管理 UI 增加导出/导入入口。
+
+RuntimeProfile 更新与删除由单测覆盖；设置页删除入口已存在。

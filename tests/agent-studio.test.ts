@@ -37,6 +37,16 @@ describe('agent studio', () => {
     expect(imported.currentVersion).toBe(1)
   })
 
+  it('updates and deletes custom runtime profiles', () => {
+    const { studio } = setup()
+    const created = studio.upsertRuntime({ name: 'Custom', protocol: 'cli', executable: 'node', endpoint: null, args: [], authRef: null, modelRef: null, options: {}, capabilities: {} })
+    const updated = studio.upsertRuntime({ id: created.id, name: 'Custom 2', protocol: 'cli', executable: 'node', endpoint: null, args: ['--version'], authRef: null, modelRef: null, options: {}, capabilities: {} })
+    expect(updated.name).toBe('Custom 2')
+    expect(updated.args).toEqual(['--version'])
+    studio.deleteRuntime(created.id)
+    expect(studio.listRuntimeProfiles().some((profile) => profile.id === created.id)).toBe(false)
+  })
+
   it('imports ACP registry entries without claiming availability', () => {
     const { studio } = setup()
     const profile = studio.importRegistry({ registryId: 'acp.example', name: 'Example ACP', version: '1.0.0', description: 'test' })
@@ -53,6 +63,7 @@ describe('agent studio', () => {
     expect(detections.every((item) => typeof item.message === 'string')).toBe(true)
   })
 })
+
 
 
 
