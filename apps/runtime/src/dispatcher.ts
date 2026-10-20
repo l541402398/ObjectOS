@@ -624,7 +624,14 @@ export class RuntimeDispatcher {
         const input = this.parse('run.start', rawInput)
         const session = store.read.getSession(input.sessionId)
         if (!session) throw new AppError('NOT_FOUND', '会话不存在')
-        if (!provider.isConfigured()) {
+        const runAgent = store.read.getAgent(session.agentId)
+        const agentDefinition = runAgent ? store.read.getAgentDefinition(runAgent.id) : null
+        const runtimeProfile = agentDefinition
+          ? store.read.listRuntimeProfiles().find((profile) =>
+              profile.id === (agentDefinition.primaryRuntimeProfileId ?? agentDefinition.runtimeProfileIds[0]))
+          : null
+        const usesRuntime = Boolean(runtimeProfile && runtimeProfile.protocol !== 'native' && runtimeProfile.status === 'available')
+        if (!provider.isConfigured() && !usesRuntime) {
           throw new AppError('PROVIDER_NOT_CONFIGURED', '尚未配置模型 Provider，请先在设置中配置 API Key')
         }
         const message = services.sessions.sendMessage({

@@ -273,7 +273,9 @@ export class AgentStudioService {
           : null
         const executable = knownOpenCode && existsSync(knownOpenCode)
           ? knownOpenCode
-          : (process.platform === 'win32' ? await exec('where.exe', [command]) : await exec('which', [command])).stdout.split(/\r?\n/).find(Boolean) ?? command
+          : existsSync(command)
+            ? command
+            : (process.platform === 'win32' ? await exec('where.exe', [command]) : await exec('which', [command])).stdout.split(/\r?\n/).find(Boolean) ?? command
         let version: string | null = null
         try {
           const result = await exec(executable, ['--version'], { timeout: 10_000, windowsHide: true })
@@ -296,6 +298,17 @@ export class AgentStudioService {
         results.push({ profileId: profile.id, adapterId: profile.id, name: profile.name, installed: false, executable: null, version: null, protocol: profile.protocol, capabilities: profile.capabilities, status: 'unavailable', message: '未找到可执行文件' })
       }
     }
+    for (const result of results) {
+      const profile = profiles.find((item) => item.id === result.profileId)
+      if (!profile || profile.protocol === 'native') continue
+      this.store.upsertRuntimeProfile({
+        ...profile,
+        executable: result.executable,
+        version: result.version,
+        status: result.status === 'available' ? 'available' : result.status === 'incompatible' ? 'incompatible' : 'unavailable',
+        updatedAt: now(),
+      })
+    }
     return results
   }
 
@@ -316,6 +329,7 @@ export class AgentStudioService {
     return { source: 'network', ...result }
   }
 }
+
 
 
 

@@ -28,6 +28,8 @@ import {
   redactSecrets,
 } from '@projectos/policy'
 import { getToolDefinition, toolCatalogForAgent } from '@projectos/tools'
+import { RuntimeExecutionService } from './runtime-executor.js'
+import { AcpClient } from './acp-client.js'
 import {
   getGitDiff,
   getGitStatus,
@@ -66,7 +68,7 @@ interface ActiveRun {
   agentId: string
   taskId: string | null
   workspaceRoot: string
-  provider: LlmProvider
+  provider: LlmProvider | null
   connectionId: string | null
   modelId: string | null
   abort: AbortController
@@ -87,7 +89,9 @@ interface ActiveRun {
   startedAt: number
 }
 
-export class AgentRunner {  private readonly active = new Map<string, ActiveRun>()
+export class AgentRunner {
+  private readonly active = new Map<string, ActiveRun>()
+  private readonly runtimeExecutor: RuntimeExecutionService
   private readonly sessionIndex = new Map<string, string>()
   private readonly activeConnections = new Map<string, number>()
   private aiConnections: import('./ai-connections.js').AIConnectionService | null = null
@@ -99,7 +103,9 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
     private readonly provider: ProviderManager,
     private readonly hub: RuntimeEventHub,
     private readonly logger: Logger,
-  ) {}
+  ) {
+    this.runtimeExecutor = new RuntimeExecutionService(store)
+  }
 
   setAIConnections(service: import('./ai-connections.js').AIConnectionService): void {
     this.aiConnections = service
@@ -143,13 +149,19 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
     }
     const promptMessage = this.store.getMessageById(input.messageId)
     if (!promptMessage) throw new AppError('NOT_FOUND', '触发消息不存在')
-    const routed = this.aiConnections?.resolveForRun({
+    const definition = this.store.read.getAgentDefinition(agent.id)
+    const runtimeProfiles = this.store.read.listRuntimeProfiles()
+    const runtimeProfile = definition
+      ? runtimeProfiles.find((profile) => profile.id === (definition.primaryRuntimeProfileId ?? definition.runtimeProfileIds[0]))
+      : null
+    const runtimeReady = Boolean(definition && runtimeProfile && runtimeProfile.protocol !== 'native' && runtimeProfile.status === 'available')
+    const routed = runtimeReady ? null : this.aiConnections?.resolveForRun({
       projectId: project.id,
       agentId: agent.id,
       agentRole: agent.role,
       taskId: task?.id ?? null,
     }, Object.fromEntries(this.activeConnections)) ?? null
-    const provider = this.provider.createProvider(routed?.connectionId, routed?.modelId)
+    const provider = runtimeReady ? null : this.provider.createProvider(routed?.connectionId, routed?.modelId)
     const timestamp = now()
     const runId = newId('run')
     const attemptNo = task ? this.store.nextAttemptNo(task.id) : 1
@@ -286,6 +298,16 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
         this.logger.warn({ err: error, inboxId: input.inboxId }, 'failed to mark inbox accepted')
       }
     }
+    if (definition && runtimeProfile && runtimeReady) {
+      void this.executeViaRuntime(state, definition, runtimeProfile, promptMessage.content, project.rootPath).catch((error) => {
+        this.logger.error({ err: error, runId }, 'runtime agent run crashed')
+        void this.failRun(state, error instanceof Error ? error.message : String(error)).catch((nested) => {
+          this.logger.error({ err: nested, runId }, 'failed to finalize runtime run')
+        })
+      })
+      return { runId, messageId: promptMessage.id }
+    }
+
     void this.execute(state).catch((error) => {
       this.logger.error({ err: error, runId }, 'agent run crashed')
       void this.failRun(state, error instanceof Error ? error.message : String(error)).catch((nested) => {
@@ -293,6 +315,88 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
       })
     })
     return { runId, messageId: promptMessage.id }
+  }
+
+  private async executeViaRuntime(
+    state: ActiveRun,
+    definition: NonNullable<ReturnType<SqliteStore['read']['getAgentDefinition']>>,
+    profile: NonNullable<ReturnType<SqliteStore['read']['listRuntimeProfiles']>[number]>,
+    userPrompt: string,
+    cwd: string,
+  ): Promise<void> {
+    if (profile.protocol !== 'acp' && !definition.permissions.shell) {
+      throw new AppError('APPROVAL_REQUIRED', '该 Runtime 需要 Shell 权限，请先在 Agent 权限中启用 Shell')
+    }
+    const task = state.taskId ? this.store.read.getTask(state.taskId) : null
+    const structured = [
+      `# Agent: ${definition.name}`,
+      `Role: ${definition.role}`,
+      definition.persona.background ? `Background: ${definition.persona.background}` : '',
+      definition.persona.responsibilities ? `Responsibilities: ${definition.persona.responsibilities}` : '',
+      definition.persona.principles ? `Principles: ${definition.persona.principles}` : '',
+      definition.persona.style ? `Style: ${definition.persona.style}` : '',
+      definition.persona.constraints ? `Constraints: ${definition.persona.constraints}` : '',
+      definition.persona.systemPrompt,
+    ].filter(Boolean).join('\n')
+    const boundSkills = definition.skills
+      .filter((binding) => binding.enabled)
+      .map((binding) => this.store.read.listSkills().find((skill) => skill.id === binding.skillId))
+      .filter((skill): skill is NonNullable<typeof skill> => Boolean(skill))
+    const skillText = boundSkills.map((skill) => `# Skill: ${skill.name}\n${skill.content}`).join('\n\n')
+    const taskText = task
+      ? `# Task\n${task.title}\n${task.description}\nAcceptance: ${task.acceptanceCriteria.join('; ')}`
+      : ''
+    const prompt = [structured, skillText, taskText, `# User request\n${userPrompt}`].filter(Boolean).join('\n\n')
+    this.store.appendRunStep({
+      runId: state.runId,
+      kind: 'status',
+      title: `Runtime 执行：${profile.name}`,
+      payload: { runtimeProfileId: profile.id, protocol: profile.protocol, cwd },
+    })
+    try {
+      let output: string
+      let executionId: string
+      if (profile.protocol === 'acp') {
+        if (!profile.executable) throw new AppError('BAD_REQUEST', 'ACP Runtime 未配置可执行路径')
+        const client = new AcpClient(profile.executable, profile.args, cwd)
+        client.setPermissionHandler(async (params) => {
+          const value = params as { options?: Array<{ optionId?: string }>; toolCall?: { kind?: string } }
+          const kind = value.toolCall?.kind ?? ''
+          const allowed = kind.includes('shell') || kind.includes('execute')
+            ? definition.permissions.shell
+            : kind.includes('edit') || kind.includes('write') || kind.includes('read')
+              ? definition.permissions.files
+              : kind.includes('fetch') || kind.includes('network')
+                ? definition.permissions.network
+                : false
+          return allowed ? value.options?.[0]?.optionId ?? null : null
+        })
+        try {
+          const session = await client.initialize(cwd)
+          const result = await client.prompt(session.sessionId, prompt)
+          output = JSON.stringify(result, null, 2)
+          executionId = `acp-${state.runId}`
+        } finally {
+          client.dispose()
+        }
+      } else {
+        const result = await this.runtimeExecutor.execute(profile.id, prompt, cwd)
+        output = result.output
+        executionId = result.executionId
+        if (result.status !== 'completed') throw new AppError('INTERNAL', output || `Runtime ${result.status}`)
+      }
+      const summary = output.trim().slice(0, 20_000) || 'Runtime 执行完成'
+      this.store.appendMessage({ sessionId: state.sessionId, role: 'assistant', content: summary, runId: state.runId, metadata: { runtimeProfileId: profile.id, executionId } })
+      this.transitionRun(state, 'completed', { summary, finishedAt: now() })
+      this.tryMoveTask(state.taskId, 'review')
+      if (state.inboxId) {
+        try { this.store.updateInboxStatus(state.inboxId, 'completed') } catch { /* ignore */ }
+      }
+      this.store.updateTaskAttemptStatus(state.runId, 'completed')
+      this.cleanup(state, 'completed')
+    } catch (error) {
+      throw error instanceof Error ? error : new Error(String(error))
+    }
   }
 
   private async buildMessages(state: ActiveRun, resume: boolean): Promise<{ messages: ChatMessage[]; tools: LlmToolDefinition[]; system: string }> {
@@ -421,6 +525,7 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
   }
 
   private async execute(state: ActiveRun): Promise<void> {
+    if (!state.provider) throw new AppError('INTERNAL', 'Agent 运行缺少 Provider')
     if (state.busy) return
     state.busy = true
     try {
@@ -706,7 +811,7 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
         state: {
           status: 'running',
           turn: state.checkpointSeq,
-          provider: state.provider.id,
+          provider: state.provider?.id ?? 'runtime',
           sessionId: state.sessionId,
           taskId: state.taskId,
         },
@@ -1418,5 +1523,7 @@ function approvalDetail(invocation: ToolInvocation): string {
   }
   return `Agent 请求执行 ${invocation.name}。`
 }
+
+
 
 
