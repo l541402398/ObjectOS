@@ -1,0 +1,547 @@
+[
+  {
+    "file": "01_已确认设计图/01_project_center_confirmed.png",
+    "bytes": 1942479,
+    "sha256": "ac3c70f154202a5272812b1562705c0a0abdf02cffe972c98b9a545239797871"
+  },
+  {
+    "file": "01_已确认设计图/02_project_details_confirmed.png",
+    "bytes": 1868460,
+    "sha256": "d89c18696c2cb6fe5afc936170e4eae6afd81950eed27e1ba9d491d2e72e949e"
+  },
+  {
+    "file": "01_已确认设计图/05_workflow_orchestration_confirmed.png",
+    "bytes": 1820487,
+    "sha256": "9d30567a738e4c384c3882fe9437013a5fc94fb3f45a02b2772e32fb19dc9bab"
+  },
+  {
+    "file": "01_已确认设计图/06_task_board_confirmed.png",
+    "bytes": 1875967,
+    "sha256": "2911e987ac88254d3de617203eb0d21e2c92b4d2786f2263972fa56cd64ecf08"
+  },
+  {
+    "file": "01_已确认设计图/07_run_audit_confirmed.png",
+    "bytes": 1961442,
+    "sha256": "68133941c2cd19d900691e6575314a72238570d474e41bfaa656a83db6757231"
+  },
+  {
+    "file": "01_已确认设计图/08_ai_connections_confirmed.png",
+    "bytes": 1761519,
+    "sha256": "76d624a06a8ddcb14c325c53ad5461a65b05cd1c49e22a573f6277a25289381f"
+  },
+  {
+    "file": "01_已确认设计图/11_model_catalog_confirmed.png",
+    "bytes": 1797593,
+    "sha256": "5d380c456f328d6f1898ce49624fbde9c9002709565933ebb96288c7888bd138"
+  },
+  {
+    "file": "01_已确认设计图/13_agent_routing_confirmed.png",
+    "bytes": 1808588,
+    "sha256": "0ddace33380a3ff2cd97431bd7614436026d6a84ae03df3b70947af56930b881"
+  },
+  {
+    "file": "01_已确认设计图/14_tools_plugins_confirmed.png",
+    "bytes": 1812273,
+    "sha256": "5bc430c7c0f1c8d92ad4697f0ad69e70890f2e32b9d15eb69074232dffddc5c8"
+  },
+  {
+    "file": "01_已确认设计图/15_external_agents_confirmed.png",
+    "bytes": 1843182,
+    "sha256": "17836f30736adf3303ab1a4bf1f96d76957a4cc0d2c3230337c887abac39d5b6"
+  },
+  {
+    "file": "01_已确认设计图/16_team_permissions_confirmed.png",
+    "bytes": 1789464,
+    "sha256": "766d7ff3440471d70f2eeef68e3e1306f0ab3d52ec0518e00868b21a67c57fdd"
+  },
+  {
+    "file": "01_已确认设计图/17_system_settings_confirmed.png",
+    "bytes": 1681266,
+    "sha256": "62c06867a5c2c2d4b3a275a1bd5ec615b54e186fe5cf33a438c080ace9c2132c"
+  },
+  {
+    "file": "02_新增独立设计图/03_agent_workbench.png",
+    "bytes": 944385,
+    "sha256": "567b8e345537204883fb7cb2184e9ae104bbb839eccb4801122fc1fcd336b9fa"
+  },
+  {
+    "file": "02_新增独立设计图/04_agent_studio.png",
+    "bytes": 797106,
+    "sha256": "31fd69069b8aa2eee7ddf46b29f19fbc5a8b27e85c00684ad2e9b9e835fd7835"
+  },
+  {
+    "file": "02_新增独立设计图/09_knowledge_base.png",
+    "bytes": 800528,
+    "sha256": "dee93bb609720c8f4dc98d208014dd51de4c41e737d7101f981d6bbe11b53d16"
+  },
+  {
+    "file": "02_新增独立设计图/10_resource_center.png",
+    "bytes": 788898,
+    "sha256": "7a86945d63d9632abd2b70cef57eb4423653c3350684c91ae04e34452a0b688a"
+  },
+  {
+    "file": "02_新增独立设计图/12_runtime_management_refined.png",
+    "bytes": 863027,
+    "sha256": "5815e3a1683f7c491958f3fc49fd3550ae610f92cad647a993361bbf76d1093f"
+  },
+  {
+    "file": "02_新增独立设计图/16_ai_connection_editor.png",
+    "bytes": 814154,
+    "sha256": "5b328432554b8e3e8b917f71b24836af0007638cdab39780cdef461d6a029d4f"
+  },
+  {
+    "file": "02_新增独立设计图/17_project_task_list.png",
+    "bytes": 831486,
+    "sha256": "e6f79b93f2b02b5f19999baef3c7bab566e0eb0e02ffc25906182ee1df263217"
+  },
+  {
+    "file": "02_新增独立设计图/18_cross_session_handoff.png",
+    "bytes": 892472,
+    "sha256": "c530655e52500270900ba7db25108fc735edb7a359735550126391ea05c1743e"
+  },
+  {
+    "file": "02_新增独立设计图/19_autonomous_operations.png",
+    "bytes": 887876,
+    "sha256": "05b502d611157d7fe6b0e15bfbcd6e8d8afba58ee254329c1acdcdc318680ac9"
+  },
+  {
+    "file": "02_新增独立设计图/20_approval_center.png",
+    "bytes": 835550,
+    "sha256": "258e6084710c11c8276652d9d12296348eb0f2c67a4977c1b2b9401eb9fd9abd"
+  },
+  {
+    "file": "02_新增独立设计图/21_agent_template_library.png",
+    "bytes": 793782,
+    "sha256": "8f7b183bba3a11503c38df94028e2c713eeba1af18340ccd287e04cd4e545ede"
+  },
+  {
+    "file": "02_新增独立设计图/22_agent_persona_editor.png",
+    "bytes": 827630,
+    "sha256": "f9f7fd68db27a06313d4d64a9b1f876a18f3c52c3a30b95ae9d086ee2f85cba9"
+  },
+  {
+    "file": "02_新增独立设计图/23_agent_skills_binding.png",
+    "bytes": 923301,
+    "sha256": "4df5972dcb572377105f6a6f2ec629e90c1d8f7b01378e934e353f548ab4df72"
+  },
+  {
+    "file": "02_新增独立设计图/24_agent_runtime_assignment.png",
+    "bytes": 820404,
+    "sha256": "766d821a986c7f3f6ae228eb2879168ff5895a6e9e8389de47eae4a1040245e4"
+  },
+  {
+    "file": "02_新增独立设计图/25_workflow_creation.png",
+    "bytes": 346367,
+    "sha256": "a88e23987f8dde07cd9d8392fb60ff0ef55c6d706e2ef36df44ef8c07a934a00"
+  },
+  {
+    "file": "02_新增独立设计图/26_live_run_monitor.png",
+    "bytes": 889262,
+    "sha256": "e4f2db7e9fb3d1925be667ccb84b0c2324a38598a72bfbbb21f7defc9c664b08"
+  },
+  {
+    "file": "02_新增独立设计图/27_new_project_modal.png",
+    "bytes": 337391,
+    "sha256": "a5e631a341366e09b6258ca43f66f07377074c482bb6397f1cf448e575db9d63"
+  },
+  {
+    "file": "02_新增独立设计图/28_new_task_modal.png",
+    "bytes": 343830,
+    "sha256": "e8f9ac8069a8c3fb751e076e6efbe03b1dc36569168593af7a33b8949484a2b7"
+  },
+  {
+    "file": "02_新增独立设计图/29_new_session_modal.png",
+    "bytes": 340179,
+    "sha256": "1a77c010cefcfae0834606e2dc346032bd2306de513c18c5f0ba3cd2badf4aab"
+  },
+  {
+    "file": "02_新增独立设计图/30_import_project.png",
+    "bytes": 344834,
+    "sha256": "607375a080b8d23061193a69632dedd08860c6ec4a7c2a63add6df439f84aadb"
+  },
+  {
+    "file": "02_新增独立设计图/31_project_files.png",
+    "bytes": 789215,
+    "sha256": "7b04a2bce12ff3dd326d35236beeda1af85f6f087e8ce2e0518fac7c1d9aca74"
+  },
+  {
+    "file": "02_新增独立设计图/32_tool_permissions.png",
+    "bytes": 808715,
+    "sha256": "0a412619aa4e43e9557f494f4c99bd0b019b11b106719bd9a8eebf02ce169e9c"
+  },
+  {
+    "file": "02_新增独立设计图/33_openspec_workflow.png",
+    "bytes": 823643,
+    "sha256": "ad440da6129d7f01ec44ee78b4b8d7f44098a51a008ef6d06174f86a57b1dbb0"
+  },
+  {
+    "file": "02_新增独立设计图/34_storage_data.png",
+    "bytes": 814475,
+    "sha256": "4f1bffd110a89d5dc8341d7e5017e8c9a84154908e97835753f92b61c6897a89"
+  },
+  {
+    "file": "02_新增独立设计图/35_network_proxy.png",
+    "bytes": 810692,
+    "sha256": "9966c9a13d7741f381a72946da5692bd63901cba429d2418c1e7f5518482443b"
+  },
+  {
+    "file": "02_新增独立设计图/36_security_privacy.png",
+    "bytes": 812338,
+    "sha256": "bd8d9ea2d1a807aa6540a8976ec7aaaccaac1eec01f01bc087eeb97f9335f901"
+  },
+  {
+    "file": "02_新增独立设计图/37_appearance_themes.png",
+    "bytes": 814151,
+    "sha256": "79bb48bff77ff11a4b82edb726cab8dfeccb7b1a2c3492e399c9ce4b66647e0a"
+  },
+  {
+    "file": "02_新增独立设计图/38_keyboard_shortcuts.png",
+    "bytes": 767811,
+    "sha256": "99d7fbbba473e5eb2bcffb4fd13ca893c94ef269106439e8771473d5a1d7210b"
+  },
+  {
+    "file": "02_新增独立设计图/39_notification_center.png",
+    "bytes": 755409,
+    "sha256": "82e58899138d4c420a895604cddfcb47c0fca0033cc01051a501ab8195197fb3"
+  },
+  {
+    "file": "02_新增独立设计图/40_command_palette.png",
+    "bytes": 332842,
+    "sha256": "9dd543a6c3f91191ac300c8c02b9c5b3b72c3fd4fb5e5c2ac988e514de43776c"
+  },
+  {
+    "file": "02_新增独立设计图/41_about_projectos.png",
+    "bytes": 804029,
+    "sha256": "dcfcdbf008a183a02e5a403649d4bab5aa19a062ce92182a50e4f4aba092ec26"
+  },
+  {
+    "file": "02_新增独立设计图/42_empty_states.png",
+    "bytes": 705908,
+    "sha256": "b21bb12e4f534d7fe9c1083c6e53b913489186c1f7c2b8ada3a8a6bb946a404e"
+  },
+  {
+    "file": "02_新增独立设计图/43_project_health.png",
+    "bytes": 889620,
+    "sha256": "0ee0c344420b67e1df2cdeda688dd7a195810918b17bbff499d22a43bf200608"
+  },
+  {
+    "file": "02_新增独立设计图/44_usage_pricing.png",
+    "bytes": 890970,
+    "sha256": "6360e08cacedbead35c28ba99fb956fe1cbe1d35a44156a63fcfc92978bd90bc"
+  },
+  {
+    "file": "02_新增独立设计图/45_harness_discovery.png",
+    "bytes": 752628,
+    "sha256": "9afe1884b645eb991d4ed36b4b1ecb06e525bff6ac720753a22da585bfd42cee"
+  },
+  {
+    "file": "02_新增独立设计图/46_resource_integrations.png",
+    "bytes": 746006,
+    "sha256": "4873a5724b9cb3b17b2b2d965a9babfa53e2ce9629f438d55cdbc527ad90cae8"
+  },
+  {
+    "file": "02_新增独立设计图/47_project_settings.png",
+    "bytes": 803985,
+    "sha256": "499277a418643fa0f9a195796b8b2fea08c0f1b661eafbe0aa2b7fc451bbde35"
+  },
+  {
+    "file": "02_新增独立设计图/48_plugin_detail.png",
+    "bytes": 805779,
+    "sha256": "ce4ed0c4edd3de5d056f7ddc78ebe0ce8c82d9681022aed1f66df13a1599f9ef"
+  },
+  {
+    "file": "02_新增独立设计图/49_model_details.png",
+    "bytes": 804924,
+    "sha256": "75d4c6fb88ba6463d1f4fc081e4b8e9148382044a40d52ba092b547c1f6691c7"
+  },
+  {
+    "file": "02_新增独立设计图/50_agent_studio_light.png",
+    "bytes": 500303,
+    "sha256": "5f6e62714661174f36fedf01f1c06650403cfb11841bb8ee010fcd9f50451da3"
+  },
+  {
+    "file": "02_新增独立设计图/51_ai_connection_light.png",
+    "bytes": 493040,
+    "sha256": "7226e771fef6514f45103f2a464e47ef9162c00b52ba1a69858c7606e599a2a5"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/03_agent_workbench.html",
+    "bytes": 21497,
+    "sha256": "f3f71c45ae74e88a944f18495a24b946de7109935b0db92f42389d981ec7958b"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/04_agent_studio.html",
+    "bytes": 21466,
+    "sha256": "dfc865cbac5df1932c77543b0490543ac5691e9a7f722140d893622210bf9b63"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/09_knowledge_base.html",
+    "bytes": 19948,
+    "sha256": "a874060f65e71ba36b6f4c0c398fcd9825729d5e659982b76ea5a032c5975f21"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/10_resource_center.html",
+    "bytes": 19668,
+    "sha256": "ecbffb69824d6846910cd81b7cebaa5ebd1a0c2a1353daffdaa730d35ae9ca20"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/12_runtime_management_refined.html",
+    "bytes": 22124,
+    "sha256": "fc27aa390e207467ff4a988e8a51177038fa0626d563eeb971fc70ece4855d86"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/16_ai_connection_editor.html",
+    "bytes": 20075,
+    "sha256": "8bea76f7481151eb31d2bdca773dff8d1f47d8c3ea63c1f90e7ec81d3dce490f"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/17_project_task_list.html",
+    "bytes": 22130,
+    "sha256": "6a8dd2efc77d97aba0d9a1f0c70730a371d3e13291fdf3834f46d7c258395897"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/18_cross_session_handoff.html",
+    "bytes": 21020,
+    "sha256": "06570fd473b8b07724acde45fc07badc6f651c03a29877c760b92026478990e3"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/19_autonomous_operations.html",
+    "bytes": 21020,
+    "sha256": "0d7b490726eef011c592e4074aece6f0c3f9b2c1d54740f2be59a8262583c4f8"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/20_approval_center.html",
+    "bytes": 21265,
+    "sha256": "f22b22041bc4bd11766ba5074c421151953f2e1d9ae9ca7d844d1d33f9497b5f"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/21_agent_template_library.html",
+    "bytes": 18512,
+    "sha256": "463506f5dae959cbefb681463e782671e1df6708006db0787565ef8b4f086f50"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/22_agent_persona_editor.html",
+    "bytes": 19938,
+    "sha256": "ba56ee1f26a4452ce2b4dafb3e50306cf31a92a6eb67b580ebedeeb1f7e5544a"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/23_agent_skills_binding.html",
+    "bytes": 22299,
+    "sha256": "04fd3b96250c6c08be6031e131ea9ec7601810940f210e8f264c330d70243e38"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/24_agent_runtime_assignment.html",
+    "bytes": 19803,
+    "sha256": "3160cf31f045e18654df1bbf6cbff162521d0793bedf9d4c961f97b7d23ffc5f"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/25_workflow_creation.html",
+    "bytes": 18403,
+    "sha256": "84805ae7abddfb1fe131120e5cf24fa056030c59e45c9bb2672813664d91e7ae"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/26_live_run_monitor.html",
+    "bytes": 21019,
+    "sha256": "892de493c197e71878530dac1ef6ddf5d07ff714d714d8fb00da79a5dd1396d8"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/27_new_project_modal.html",
+    "bytes": 18240,
+    "sha256": "25994509fe05878406db0246c61c6ff1ac399cabb9e15e441a8b1d2cee0844c1"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/28_new_task_modal.html",
+    "bytes": 18270,
+    "sha256": "2758309ec894775bb6aadddbb044ca19e21ae3b88da4472dadb1b17a19fca641"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/29_new_session_modal.html",
+    "bytes": 18224,
+    "sha256": "8bc2a84b0ebf325a379b08df4a5c5664e77fcb1fb02f7b2901fe22aa0c720a37"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/30_import_project.html",
+    "bytes": 18531,
+    "sha256": "9c575c7f9097e5d41cc6f635d1fd3e0bde49f7c4c6ce684c12257cd1664bed71"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/31_project_files.html",
+    "bytes": 19866,
+    "sha256": "d6f059758419884bce158e8a24bfabf032d80649d4b89dcab4d65b63eb000d4e"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/32_tool_permissions.html",
+    "bytes": 19743,
+    "sha256": "8887fa6a2fd5d0ab26788d64b0913ff0fc329bed9850e6bdd8f9cc065c7f57e6"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/33_openspec_workflow.html",
+    "bytes": 21154,
+    "sha256": "34962b520f6351556d0c43b1fd94427b3a315a6fc7fa406bd5d2b7f5e18e1f15"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/34_storage_data.html",
+    "bytes": 19753,
+    "sha256": "6e0563302f75b2182c59218c7259730f5081e86f76f5d2387b7fed56648fdb21"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/35_network_proxy.html",
+    "bytes": 19735,
+    "sha256": "f43fb277153ebd733c288b6f3b3acb5131ab6b3401209cc5b39933e41810bf9b"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/36_security_privacy.html",
+    "bytes": 19753,
+    "sha256": "527e99009b385cde330946821b21394985ec6e098ff73219ea8890b2ba6fd387"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/37_appearance_themes.html",
+    "bytes": 19729,
+    "sha256": "501524205cde3400d0d7f0e660683d38cb925acd8b01baf7fc61107a1014612a"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/38_keyboard_shortcuts.html",
+    "bytes": 18771,
+    "sha256": "dd7f83156bf603a7da1d38f20e8f5e74e59dffd9e6be6d94f8485f0ee1dee6ba"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/39_notification_center.html",
+    "bytes": 19038,
+    "sha256": "41745a8e1d9322e85d2e57b5ea8b7ce2aba2301b4736b76d5db1adaddd642bd5"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/40_command_palette.html",
+    "bytes": 18817,
+    "sha256": "766f396bfe5436c134b2ef82ed86f84c45bd70bbabaa73b6b12f4f22187857d7"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/41_about_projectos.html",
+    "bytes": 18608,
+    "sha256": "bcd40cbf130cc0eceb3ec00aa0593bc9494ae88ed3e51f908b6090c15a6e53e6"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/42_empty_states.html",
+    "bytes": 17180,
+    "sha256": "94fed36f606706759408c12d29c7a1064449a9803d2d13fcc3df5216fecda57f"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/43_project_health.html",
+    "bytes": 21012,
+    "sha256": "92aca38048362aba097234c789cb25320d5b8bdd5550474922fead0ab430fae0"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/44_usage_pricing.html",
+    "bytes": 21022,
+    "sha256": "ea3dbdabf485089ee9f97b89cdc01ef4d96f490c98428338595e912da2cef642"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/45_harness_discovery.html",
+    "bytes": 19225,
+    "sha256": "cf304dc4d211d4e315880e2203b0fce8892bb7724819166d133dd11dd4e360c6"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/46_resource_integrations.html",
+    "bytes": 19177,
+    "sha256": "ac4b5971f7b983ca10c18bcd58345f8eedfee8ab8a0849b9373cd24b62103a3e"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/47_project_settings.html",
+    "bytes": 19703,
+    "sha256": "1563949a2ede9d46960e6fe81175b20f03202b1ade12528e7dbd3aabc2e5bc13"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/48_plugin_detail.html",
+    "bytes": 19705,
+    "sha256": "c4a0e0553fb0a0d7976acb4a190acfe5ac9c9f3105dfba1e234266221a9ff4b3"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/49_model_details.html",
+    "bytes": 19692,
+    "sha256": "5077356c6ad9991aba5f0f91fb2a66770b3b7622d1336c42a4991f6ee38a0efd"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/50_agent_studio_light.html",
+    "bytes": 21469,
+    "sha256": "3f53d65b12b0f07d774b5b671384891a1d4a8d90cd68d7aa32824339a75d930d"
+  },
+  {
+    "file": "03_设计图HTML_CSS参考源码/51_ai_connection_light.html",
+    "bytes": 20071,
+    "sha256": "c96fb4f3f34a6fcc5d197773ab07deb11f2ff03a39f727472fa858c30a8f5c4d"
+  },
+  {
+    "file": "04_功能设计与优化文档/01_V1.6完整实施说明书.docx",
+    "bytes": 64693,
+    "sha256": "5e61e74d2b9bde431e779fdd9397265cf8c70640c62586fa777fed7932d60d99"
+  },
+  {
+    "file": "04_功能设计与优化文档/01_V1.6完整实施说明书.md",
+    "bytes": 63086,
+    "sha256": "8ca0e164259e66d75d845c73c414597101bac5d01504c75add7cc8f1ed482e5b"
+  },
+  {
+    "file": "04_功能设计与优化文档/02_功能需求PRD.docx",
+    "bytes": 40339,
+    "sha256": "c0d71c28541510b16248718ecca4551a9c0bbc77d3426feb2a1e9b3ae7cf4454"
+  },
+  {
+    "file": "04_功能设计与优化文档/02_功能需求PRD.md",
+    "bytes": 6508,
+    "sha256": "ed649b62d82c5c11cbbb34f17655a86d73e424a0b3bed341ec699ee8abbde39a"
+  },
+  {
+    "file": "04_功能设计与优化文档/03_UI_UX优化规范.docx",
+    "bytes": 40276,
+    "sha256": "9c367ece2400b0dbbb6a1cd0c01e980fe2acb3bfb3cd090dd206dc7948f7c685"
+  },
+  {
+    "file": "04_功能设计与优化文档/03_UI_UX优化规范.md",
+    "bytes": 5669,
+    "sha256": "8c84485214ddff46d5fee7c83ca052e7548effad6dcb1a47d1b5648539bc1022"
+  },
+  {
+    "file": "04_功能设计与优化文档/04_开发AI执行与验收指令.md",
+    "bytes": 3673,
+    "sha256": "6cf995837fff3e27709ed299167b8a0fad6b7cdad2cb5dbe7cd3b20fd17b739c"
+  },
+  {
+    "file": "05_视觉资产与现状审计/hero_photo.jpg",
+    "bytes": 77629,
+    "sha256": "ef70ccbe9105ac38b804cddaedae6698e99a92ca03c65b744aa9bf490a71aae5"
+  },
+  {
+    "file": "05_视觉资产与现状审计/prismatic_mountain_atmosphere.jpg",
+    "bytes": 59851,
+    "sha256": "c92e362ed60f28c9d699468360f3ce59db630405ad88eecc507be230adfc6792"
+  },
+  {
+    "file": "05_视觉资产与现状审计/当前系统UI审计.md",
+    "bytes": 12216,
+    "sha256": "804663875b9cdbe6c6bf2c2654799b79b1096644c4eef743ec1ab9eb8908981a"
+  },
+  {
+    "file": "05_视觉资产与现状审计/用户原始UI审计_仅作现状对照.zip",
+    "bytes": 12458472,
+    "sha256": "c538474b0b34ab50b6f3e6eeccec43ab87427ca1e6d3dd0a680d215a30422e4b"
+  },
+  {
+    "file": "05_视觉资产与现状审计/用户指定母版_参考图.jpg",
+    "bytes": 597468,
+    "sha256": "9aef0c9f4951639f23311312b0fd749f690732d251fd3f8d01ef9f4057c3ba10"
+  },
+  {
+    "file": "06_设计索引与验收清单/design_index.csv",
+    "bytes": 7853,
+    "sha256": "80c03d67ca65b5685d4b90e7e228ded9683e0f32d4e91b251c42a77c54bb8f1c"
+  },
+  {
+    "file": "06_设计索引与验收清单/验收说明.md",
+    "bytes": 655,
+    "sha256": "81e738627dd5dfca554890304cb9138bca8d697ff6b2a2c112de4d4f1a867067"
+  },
+  {
+    "file": "README_请先阅读.md",
+    "bytes": 2468,
+    "sha256": "91a294026a244087b7987be8f3107f216509f8474c5f033dad4f1e7d121d404c"
+  }
+]

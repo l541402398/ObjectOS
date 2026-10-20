@@ -1,0 +1,54 @@
+﻿id,页面名称,设计状态,图片路径,分辨率,说明
+01_project_center_confirmed,项目中心（已确认）,已逐页确认,01_APPROVED_HD/01_project_center_confirmed.png,1586×992,原始高清图
+02_project_details_confirmed,项目详情（已确认）,已逐页确认,01_APPROVED_HD/02_project_details_confirmed.png,1584×993,原始高清图
+03_agent_workbench,Agent 工作台,本轮新绘制,02_NEW_HD/03_agent_workbench.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+04_agent_studio,创建 Agent,本轮新绘制,02_NEW_HD/04_agent_studio.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+05_workflow_orchestration_confirmed,多 Agent 工作流编排（已确认）,已逐页确认,01_APPROVED_HD/05_workflow_orchestration_confirmed.png,1586×992,原始高清图
+06_task_board_confirmed,任务看板（已确认）,已逐页确认,01_APPROVED_HD/06_task_board_confirmed.png,1584×993,原始高清图
+07_run_audit_confirmed,运行审计（已确认）,已逐页确认,01_APPROVED_HD/07_run_audit_confirmed.png,1584×993,原始高清图
+08_ai_connections_confirmed,AI 连接（已确认）,已逐页确认,01_APPROVED_HD/08_ai_connections_confirmed.png,1584×993,原始高清图
+09_knowledge_base,知识库,本轮新绘制,02_NEW_HD/09_knowledge_base.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+10_resource_center,资源管理,本轮新绘制,02_NEW_HD/10_resource_center.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+11_model_catalog_confirmed,模型目录（已确认）,已逐页确认,01_APPROVED_HD/11_model_catalog_confirmed.png,1584×993,原始高清图
+12_runtime_management_refined,Runtime 管理,本轮新绘制,02_NEW_HD/12_runtime_management_refined.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+13_agent_routing_confirmed,Agent 路由（已确认）,已逐页确认,01_APPROVED_HD/13_agent_routing_confirmed.png,1584×993,原始高清图
+14_tools_plugins_confirmed,工具与插件（已确认）,已逐页确认,01_APPROVED_HD/14_tools_plugins_confirmed.png,1584×993,原始高清图
+15_external_agents_confirmed,外部 Agent（已确认）,已逐页确认,01_APPROVED_HD/15_external_agents_confirmed.png,1584×993,原始高清图
+16_ai_connection_editor,添加 AI 连接,本轮新绘制,02_NEW_HD/16_ai_connection_editor.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+16_team_permissions_confirmed,团队与权限（已确认）,已逐页确认,01_APPROVED_HD/16_team_permissions_confirmed.png,1584×993,原始高清图
+17_project_task_list,项目任务,本轮新绘制,02_NEW_HD/17_project_task_list.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+17_system_settings_confirmed,系统设置（已确认）,已逐页确认,01_APPROVED_HD/17_system_settings_confirmed.png,1584×993,原始高清图
+18_cross_session_handoff,跨会话交接,本轮新绘制,02_NEW_HD/18_cross_session_handoff.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+19_autonomous_operations,自主运营,本轮新绘制,02_NEW_HD/19_autonomous_operations.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+20_approval_center,审批中心,本轮新绘制,02_NEW_HD/20_approval_center.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+21_agent_template_library,Agent 模板库,本轮新绘制,02_NEW_HD/21_agent_template_library.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+22_agent_persona_editor,人设与提示词,本轮新绘制,02_NEW_HD/22_agent_persona_editor.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+23_agent_skills_binding,Agent Skills,本轮新绘制,02_NEW_HD/23_agent_skills_binding.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+24_agent_runtime_assignment,Agent Runtime 绑定,本轮新绘制,02_NEW_HD/24_agent_runtime_assignment.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+25_workflow_creation,新建工作流,本轮新绘制,02_NEW_HD/25_workflow_creation.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+26_live_run_monitor,实时执行监控,本轮新绘制,02_NEW_HD/26_live_run_monitor.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+27_new_project_modal,新建项目,本轮新绘制,02_NEW_HD/27_new_project_modal.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+28_new_task_modal,创建任务,本轮新绘制,02_NEW_HD/28_new_task_modal.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+29_new_session_modal,新建 Agent 会话,本轮新绘制,02_NEW_HD/29_new_session_modal.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+30_import_project,导入现有项目,本轮新绘制,02_NEW_HD/30_import_project.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+31_project_files,项目文件,本轮新绘制,02_NEW_HD/31_project_files.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+32_tool_permissions,工具权限,本轮新绘制,02_NEW_HD/32_tool_permissions.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+33_openspec_workflow,OpenSpec 工作流,本轮新绘制,02_NEW_HD/33_openspec_workflow.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+34_storage_data,存储与数据,本轮新绘制,02_NEW_HD/34_storage_data.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+35_network_proxy,网络与代理,本轮新绘制,02_NEW_HD/35_network_proxy.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+36_security_privacy,安全与隐私,本轮新绘制,02_NEW_HD/36_security_privacy.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+37_appearance_themes,外观与个性化,本轮新绘制,02_NEW_HD/37_appearance_themes.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+38_keyboard_shortcuts,快捷键,本轮新绘制,02_NEW_HD/38_keyboard_shortcuts.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+39_notification_center,通知中心,本轮新绘制,02_NEW_HD/39_notification_center.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+40_command_palette,命令面板,本轮新绘制,02_NEW_HD/40_command_palette.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+41_about_projectos,关于 ProjectOS,本轮新绘制,02_NEW_HD/41_about_projectos.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+42_empty_states,空状态与引导,本轮新绘制,02_NEW_HD/42_empty_states.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+43_project_health,项目健康,本轮新绘制,02_NEW_HD/43_project_health.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+44_usage_pricing,Token 与费用,本轮新绘制,02_NEW_HD/44_usage_pricing.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+45_harness_discovery,本地 Harness 发现,本轮新绘制,02_NEW_HD/45_harness_discovery.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+46_resource_integrations,第三方连接,本轮新绘制,02_NEW_HD/46_resource_integrations.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+47_project_settings,项目设置,本轮新绘制,02_NEW_HD/47_project_settings.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+48_plugin_detail,插件配置,本轮新绘制,02_NEW_HD/48_plugin_detail.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+49_model_details,模型详情,本轮新绘制,02_NEW_HD/49_model_details.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+50_agent_studio_light,Agent Studio 浅色,本轮新绘制,02_NEW_HD/50_agent_studio_light.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
+51_ai_connection_light,AI 连接浅色,本轮新绘制,02_NEW_HD/51_ai_connection_light.png,1584×993,HTML/CSS 渲染的静态高保真页面结构图
