@@ -1651,3 +1651,36 @@
 .v16-approval-card footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 @media (max-width: 900px) { .v16-resource-cards { grid-template-columns: repeat(2, minmax(0,1fr)); } .v16-approval-grid { grid-template-columns: 1fr; } }
 
+
+/* V1.6 project detail hero */
+.po-overview-page > .po-page-header {
+  position: relative;
+  overflow: hidden;
+  padding: 24px 26px 22px;
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  background:
+    linear-gradient(96deg, rgba(6, 11, 26, 0.92) 0%, rgba(8, 14, 32, 0.72) 48%, rgba(8, 14, 32, 0.34) 100%),
+    url('../assets/v16-hero.jpg') center 38% / cover;
+  box-shadow: var(--v16-edge), 0 24px 60px -34px rgba(0, 0, 0, 0.8);
+}
+
+.po-overview-page > .po-page-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(420px 220px at 82% 20%, rgba(150, 90, 240, 0.25), transparent 70%);
+}
+
+[data-theme='light'] .po-overview-page > .po-page-header {
+  background:
+    linear-gradient(96deg, rgba(248, 251, 255, 0.95) 0%, rgba(243, 247, 255, 0.82) 54%, rgba(240, 245, 255, 0.54) 100%),
+    url('../assets/v16-hero.jpg') center 38% / cover;
+}
+
+.po-overview-page > .po-page-header > * { position: relative; z-index: 1; }
+.po-overview-page > .po-page-header .po-page-title { font-size: 34px; text-shadow: 0 2px 20px rgba(0,0,0,.3); }
+[data-theme='light'] .po-overview-page > .po-page-header .po-page-title { text-shadow: none; }
+.po-overview-page > .po-page-header .po-page-description { max-width: 760px; color: rgba(214, 225, 246, 0.82); }
+[data-theme='light'] .po-overview-page > .po-page-header .po-page-description { color: var(--color-text-secondary); }

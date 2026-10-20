@@ -5,10 +5,12 @@ import { Button } from 'antd'
 import { CodeOutlined, DatabaseOutlined, FolderOpenOutlined, RobotOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import { PageHeader } from '@projectos/ui'
 import { useAIConnections, useRuntimeProfiles, useSkills } from '../lib/queries'
+import { useUiStore } from '../stores/ui'
 
 export default function ResourcesPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
+  const openSettings = useUiStore((state) => state.openSettings)
   const workspace = useQuery({
     queryKey: ['workspace', projectId ?? ''],
     queryFn: () => window.projectos.workspace.snapshot(projectId!),
@@ -42,17 +44,17 @@ export default function ResourcesPage() {
         <section className="v16-glass-card">
           <div className="v16-resource-icon is-teal"><RobotOutlined /></div>
           <strong>Runtime</strong><span>{runtimes.data?.profiles.length ?? 0} 个已注册</span>
-          <Button size="small" onClick={() => navigate('/')}>在设置中管理</Button>
+          <Button size="small" onClick={() => openSettings('runtime')}>在设置中管理</Button>
         </section>
         <section className="v16-glass-card">
           <div className="v16-resource-icon is-violet"><DatabaseOutlined /></div>
           <strong>Skills</strong><span>{skills.data?.skills.length ?? 0} 个已导入</span>
-          <Button size="small" onClick={() => navigate('/')}>查看 Skills</Button>
+          <Button size="small" onClick={() => openSettings('tools')}>查看 Skills</Button>
         </section>
         <section className="v16-glass-card">
           <div className="v16-resource-icon is-amber"><ThunderboltOutlined /></div>
           <strong>AI 连接</strong><span>{connections.data?.connections.length ?? 0} 个连接</span>
-          <Button size="small" onClick={() => navigate('/')}>打开设置</Button>
+          <Button size="small" onClick={() => openSettings('ai-connections')}>打开设置</Button>
         </section>
       </div>
 
