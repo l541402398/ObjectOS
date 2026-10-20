@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { App as AntApp, Button, Form, Input, InputNumber, Modal, Select, Table, Tag, type TableColumnsType } from 'antd'
+import { App as AntApp, Button, Drawer, Form, Input, InputNumber, Modal, Select, Table, Tag, type TableColumnsType } from 'antd'
 import { DeleteOutlined, PlusOutlined, ReloadOutlined, StarOutlined, SyncOutlined } from '@ant-design/icons'
 import type { AIModel } from '@projectos/contracts'
 import { EmptyState, LoadingBlock, StatusPill } from '@projectos/ui'
@@ -29,6 +29,7 @@ export function ModelCatalogPanel() {
   const setSelectedConnectionId = useUiStore((state) => state.setSettingsConnectionId)
   const openSettings = useUiStore((state) => state.openSettings)
   const [addOpen, setAddOpen] = useState(false)
+  const [detail, setDetail] = useState<AIModel | null>(null)
   const [form] = Form.useForm<ModelFormValues>()
 
   const connections = useMemo(() => connectionsQuery.data?.connections ?? [], [connectionsQuery.data])
@@ -237,9 +238,26 @@ export function ModelCatalogPanel() {
         columns={columns}
         dataSource={modelsQuery.data?.models ?? []}
         loading={modelsQuery.isLoading}
+        onRow={(model) => ({ onClick: () => setDetail(model), style: { cursor: 'pointer' } })}
         pagination={false}
         locale={{ emptyText: <EmptyState title="暂无模型" description="从服务同步，或手动添加模型 ID。" /> }}
       />
+
+      <Drawer open={Boolean(detail)} onClose={() => setDetail(null)} width={460} title="模型详情">
+        {detail ? (
+          <div className="v16-model-detail">
+            <div className="v16-card-title"><strong>{detail.displayName}</strong><Tag>{detail.source === 'discovered' ? '发现' : '手动'}</Tag></div>
+            <div className="v16-setting-kv"><span>模型 ID</span><strong>{detail.modelId}</strong></div>
+            <div className="v16-setting-kv"><span>连接</span><strong>{connection.name}</strong></div>
+            <div className="v16-setting-kv"><span>上下文</span><strong>{detail.contextWindow ? `${detail.contextWindow} tokens` : '未知'}</strong></div>
+            <div className="v16-setting-kv"><span>最大输出</span><strong>{detail.maxOutputTokens ? `${detail.maxOutputTokens} tokens` : '未知'}</strong></div>
+            <div className="v16-setting-kv"><span>流式</span><strong>{CAPABILITY_LABELS[detail.capabilities.streaming]}</strong></div>
+            <div className="v16-setting-kv"><span>工具调用</span><strong>{CAPABILITY_LABELS[detail.capabilities.toolCalling]}</strong></div>
+            <div className="v16-setting-kv"><span>默认模型</span><strong>{connection.defaultModelId === detail.modelId ? '是' : '否'}</strong></div>
+            <Button type="primary" disabled={connection.defaultModelId === detail.modelId} onClick={() => setDefaultModel.mutate(detail.modelId)}>设为默认模型</Button>
+          </div>
+        ) : null}
+      </Drawer>
 
       <Modal
         title="手动添加模型"

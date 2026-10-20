@@ -1763,3 +1763,15 @@
 .v16-permission-agent-head span { display: block; margin-top: 2px; font-size: 10px; color: var(--color-text-tertiary); }
 .v16-permission-switches { display: flex; gap: 16px; margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--color-divider); }
 .v16-permission-switches label { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--color-text-secondary); }
+
+/* V1.6 runtime detail cards */
+button.v16-tool-card {
+  width: 100%;
+  font-family: inherit;
+  color: var(--color-text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+button.v16-tool-card:hover { border-color: rgba(100,150,255,.4); background: rgba(99,140,255,.06); }
+.v16-model-detail { display: flex; flex-direction: column; gap: 4px; }
+.v16-model-detail .ant-btn { margin-top: 14px; align-self: flex-start; }
