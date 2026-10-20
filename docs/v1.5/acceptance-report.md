@@ -20,7 +20,7 @@ V1.5 E2E 覆盖：
 
 ## 包
 
-SHA256：`4FA9D4E83D6A26C4794A83955F4F35279DF7EBE3996DC12FEE181DE3AD8EADDE` 
+SHA256：`71B3F46A2D82029DBFD7E7943E8EEAE0ACB6512B64FE881A3C76D609639BFD26` 
 
 ## 截图
 
@@ -79,3 +79,5 @@ ACP Registry 条目可导入为不可用 ACP Runtime（registryId 去重，不�
 Runtime 管理中心已加入 ACP 可发现列表与导入按钮。
 
 ACP authenticate 方法已接入客户端与 AgentStudio，并由 fixture 测试验证。
+
+Runtime 管理中心为 ACP Profile 增加认证入口。

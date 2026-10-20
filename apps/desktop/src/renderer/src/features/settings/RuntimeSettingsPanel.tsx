@@ -119,6 +119,22 @@ export function RuntimeSettingsPanel() {
                   {detection?.status === 'available' ? '可用' : detection?.status === 'unavailable' ? '不可用' : '未检测'}
                 </StatusPill>
                 <span>{detection?.version ?? detection?.message ?? ''}</span>
+                {profile.protocol === 'acp' ? (
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      const method = window.prompt('认证方式 ID')
+                      if (method) {
+                        void window.projectos.runtimeProfiles
+                          .acpAuthenticate(profile.id, method)
+                          .then((result) => message.success('认证成功：' + JSON.stringify(result.result)))
+                          .catch((error) => message.error(errorMessage(error)))
+                      }
+                    }}
+                  >
+                    认证
+                  </Button>
+                ) : null}
                 {profile.protocol !== 'native' ? (
                   <Button size="small" onClick={() => { setTestProfile(profile); setTestPrompt(''); setTestResult(null) }}>
                     测试
