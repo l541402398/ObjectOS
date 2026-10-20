@@ -97,6 +97,21 @@ export class AgentStudioService {
     return this.store.upsertAgentDefinition(agent)
   }
 
+  exportAgent(id: string): { json: string; filename: string } {
+    const agent = this.store.read.getAgentDefinition(id)
+    if (!agent) throw new AppError('NOT_FOUND', 'Agent 不存在')
+    const payload = { schemaVersion: 1, agent: { name: agent.name, role: agent.role, description: agent.description, category: agent.category, avatar: agent.avatar, visibility: agent.visibility, persona: agent.persona, skillIds: agent.skills.filter((item) => item.enabled).map((item) => item.skillId), runtimeProfileIds: agent.runtimeProfileIds, primaryRuntimeProfileId: agent.primaryRuntimeProfileId, modelRef: agent.modelRef, permissions: agent.permissions } }
+    return { json: JSON.stringify(payload, null, 2), filename: agent.name.replace(/[^a-zA-Z0-9_-]+/g, '-') + '.agent.json' }
+  }
+
+  importAgent(json: string): AgentDefinition {
+    let parsed: { schemaVersion?: number; agent?: AgentDefinitionUpsert }
+    try { parsed = JSON.parse(json) as typeof parsed } catch { throw new AppError('BAD_REQUEST', 'Agent JSON 无法解析') }
+    if (!parsed.agent || typeof parsed.agent.name !== 'string') throw new AppError('BAD_REQUEST', 'Agent JSON 缺少配置')
+    const input = parsed.agent
+    return this.upsertAgent({ ...input, id: undefined })
+  }
+
   deleteAgent(id: string): void {
     try {
       this.store.deleteAgentDefinition(id)
@@ -282,6 +297,8 @@ export class AgentStudioService {
     return { source: 'network', ...result }
   }
 }
+
+
 
 
 

@@ -203,6 +203,8 @@ const api: ProjectOSDesktopApi = {
     list: () => call('agentDefinition.list', {}),
     upsert: (input) => call('agentDefinition.upsert', input),
     delete: (id) => call('agentDefinition.delete', { id }),
+    export: (id) => call('agentDefinition.export', { id }),
+    import: (json) => call('agentDefinition.import', { json }),
     preview: (id) => call('agentDefinition.preview', { id }),
     run: (input) => call('agentDefinition.run', input),
   },
@@ -279,6 +281,7 @@ const api: ProjectOSDesktopApi = {
 }
 
 contextBridge.exposeInMainWorld('projectos', api)
+
 
 
 

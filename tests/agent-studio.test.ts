@@ -30,6 +30,11 @@ describe('agent studio', () => {
       modelRef: null, permissions: { tools: [], files: false, shell: false, network: false },
     })
     expect(updated.currentVersion).toBe(2)
+    const exported = studio.exportAgent(updated.id)
+    const imported = studio.importAgent(exported.json)
+    expect(imported.id).not.toBe(updated.id)
+    expect(imported.name).toBe(updated.name)
+    expect(imported.currentVersion).toBe(1)
   })
 
   it('imports ACP registry entries without claiming availability', () => {
@@ -48,5 +53,6 @@ describe('agent studio', () => {
     expect(detections.every((item) => typeof item.message === 'string')).toBe(true)
   })
 })
+
 
 

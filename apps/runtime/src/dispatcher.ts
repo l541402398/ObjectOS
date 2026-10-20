@@ -500,6 +500,14 @@ export class RuntimeDispatcher {
         const input = this.parse('agentDefinition.upsert', rawInput)
         return this.agentStudio.upsertAgent(input)
       }
+      case 'agentDefinition.export': {
+        const input = this.parse('agentDefinition.export', rawInput)
+        return this.agentStudio.exportAgent(input.id)
+      }
+      case 'agentDefinition.import': {
+        const input = this.parse('agentDefinition.import', rawInput)
+        return this.agentStudio.importAgent(input.json)
+      }
       case 'agentDefinition.delete': {
         const input = this.parse('agentDefinition.delete', rawInput)
         this.agentStudio.deleteAgent(input.id)
@@ -924,6 +932,7 @@ export function emitLog(hub: RuntimeEventHub, level: 'debug' | 'info' | 'warn' |
   const event: RuntimeEvent = { type: 'runtime.log', level, message, createdAt: Date.now() }
   hub.publish(event)
 }
+
 
 
 

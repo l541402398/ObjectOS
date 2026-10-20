@@ -393,6 +393,14 @@ export const ApiSchemas = {
     input: AgentDefinitionUpsertSchema,
     output: AgentDefinitionSchema,
   },
+  'agentDefinition.export': {
+    input: z.object({ id: IdSchema }),
+    output: z.object({ json: z.string(), filename: z.string() }),
+  },
+  'agentDefinition.import': {
+    input: z.object({ json: z.string().min(2).max(200_000) }),
+    output: AgentDefinitionSchema,
+  },
   'agentDefinition.delete': {
     input: z.object({ id: IdSchema }),
     output: ok,
@@ -936,6 +944,7 @@ export function isMainMethod(value: string): value is MainMethod {
 export const ApprovalDecisionSchema = ApprovalStatusSchema.extract(['approved', 'rejected'])
 export const PageSchema = PageInputSchema
 export const HandoffDecisionSchema = HandoffStatusSchema.extract(['accepted', 'rejected'])
+
 
 
 

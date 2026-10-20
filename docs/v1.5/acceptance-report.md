@@ -20,7 +20,7 @@ V1.5 E2E 覆盖：
 
 ## 包
 
-SHA256：`29940A3FBCD6FE15407C578ED1C17BC9B53FECAA09E7612AF801E4AB13F332BB` 
+SHA256：`6EFF3EE39692CB9EE14378988CB7D523389FF2DF6A80CFC649F4FF109C316CD3` 
 
 ## 截图
 
@@ -83,3 +83,5 @@ ACP authenticate 方法已接入客户端与 AgentStudio，并由 fixture 测试
 Runtime 管理中心为 ACP Profile 增加认证入口。
 
 Runtime 管理中心支持删除自定义 Runtime。
+
+AgentDefinition 支持 JSON 导出/导入（导入生成新 ID 与 v1）。
