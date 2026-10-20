@@ -1,38 +1,30 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  App as AntApp,
-  Button,
-  Form,
-  Input,
-  Modal,
-  Switch,
-  Tooltip,
-} from 'antd'
+import { App as AntApp, Button, Form, Input, Modal, Switch, Tooltip } from 'antd'
 import {
   ArrowRightOutlined,
   AuditOutlined,
   ClockCircleOutlined,
   FolderAddOutlined,
   FolderOpenOutlined,
+  LockOutlined,
   PlusOutlined,
   RocketOutlined,
   SafetyCertificateOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons'
 import type { CreateProjectInput, ProjectSummary } from '@projectos/contracts'
 import {
   EmptyState,
   ErrorState,
   LoadingBlock,
-  MetricCard,
   PageHeader,
   ProgressBar,
-  SectionCard,
   StatusPill,
   toneForStatus,
 } from '@projectos/ui'
-import { useBootstrap } from '../lib/queries'
+import { useBootstrap, useProjectOverview } from '../lib/queries'
 import { formatRelative, truncate } from '../lib/format'
 import { stageLabel } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
@@ -45,40 +37,29 @@ interface CreateFormValues {
   initGit: boolean
 }
 
-function ProjectCard({ project, onOpen }: { project: ProjectSummary; onOpen: () => void }) {
-  const done = project.stats.tasksDone
-  const total = project.stats.tasksTotal
+const CATEGORY_GRADIENTS = ['violet', 'amber', 'blue', 'teal', 'rose'] as const
+
+function ProjectVisualCard({ project, index, onOpen }: { project: ProjectSummary; index: number; onOpen: () => void }) {
+  const percent = Math.round(project.stats.progress * 100)
   return (
-    <button type="button" className="po-project-card" onClick={onOpen}>
-      <div className="po-project-card-top">
-        <div className="po-project-card-title">
-          <span className={`po-status-dot is-${project.status}`} />
-          <span>{project.name}</span>
-        </div>
-        <StatusPill tone={toneForStatus(project.status)} dot={false}>
-          {stageLabel(project.currentStage)}
-        </StatusPill>
+    <button type="button" className={`v16-project-visual is-${CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length]}`} onClick={onOpen}>
+      <div className="v16-project-cover">
+        <span className="v16-project-avatar">{project.name.slice(0, 1).toUpperCase()}</span>
+        <span className="v16-project-more">•••</span>
       </div>
-      <div className="po-project-card-description">
-        {project.description ? truncate(project.description, 110) : '尚未填写项目描述。'}
-      </div>
-      <div className="po-project-card-progress">
-        <div className="po-row is-between">
-          <span className="po-caption po-muted">
-            {done}/{total} 任务完成 · {Math.round(project.stats.progress * 100)}%
+      <div className="v16-project-body">
+        <strong title={project.name}>{project.name}</strong>
+        <p>{project.description ? truncate(project.description, 58) : '尚未填写项目描述'}</p>
+        <div className="v16-project-meta">
+          <StatusPill tone={toneForStatus(project.status)}>{stageLabel(project.currentStage)}</StatusPill>
+          <span>
+            <ClockCircleOutlined /> {project.stats.tasksDone}/{project.stats.tasksTotal}
           </span>
-          <span className="po-caption po-muted">{project.stats.sessions} 个会话</span>
         </div>
-        <ProgressBar value={project.stats.progress} height={5} />
-      </div>
-      <div className="po-project-card-footer">
-        <span>
-          <ClockCircleOutlined /> {formatRelative(project.lastActivityAt)}
-        </span>
-        {project.isDemo ? <span className="po-demo-tag">示例</span> : null}
-        <span className="po-project-open">
-          打开 <ArrowRightOutlined />
-        </span>
+        <div className="v16-project-progress">
+          <ProgressBar value={project.stats.progress} height={4} />
+          <span>{percent}%</span>
+        </div>
       </div>
     </button>
   )
@@ -120,7 +101,21 @@ export default function ProjectCenterPage() {
     () => [...projects].sort((a, b) => (b.lastActivityAt ?? 0) - (a.lastActivityAt ?? 0))[0] ?? null,
     [projects],
   )
+  const overview = useProjectOverview(recentProject?.id)
   const activity = bootstrap.data?.recentActivity ?? []
+  const approvals = bootstrap.data?.pendingApprovals ?? []
+  const workingAgents = overview.data?.agents.filter((agent) => agent.status === 'working') ?? []
+
+  const successRate =
+    stats && stats.tasksDone + stats.tasksCancelled > 0
+      ? Math.round((stats.tasksDone / (stats.tasksDone + stats.tasksCancelled)) * 100)
+      : 0
+  const taskTotal = stats?.tasksTotal ?? 0
+  const donePct = taskTotal > 0 ? ((stats?.tasksDone ?? 0) / taskTotal) * 100 : 0
+  const runningPct = taskTotal > 0 ? ((stats?.tasksRunning ?? 0) / taskTotal) * 100 : 0
+  const reviewPct = taskTotal > 0 ? ((stats?.tasksReview ?? 0) / taskTotal) * 100 : 0
+  const cancelledPct = taskTotal > 0 ? ((stats?.tasksCancelled ?? 0) / taskTotal) * 100 : 0
+  const donut = `conic-gradient(#41e6b1 0 ${donePct}%, #4d8dff ${donePct}% ${donePct + runningPct}%, #c084fc ${donePct + runningPct}% ${donePct + runningPct + reviewPct}%, #ff7897 ${donePct + runningPct + reviewPct}% ${donePct + runningPct + reviewPct + cancelledPct}%, rgba(140,160,200,.18) ${donePct + runningPct + reviewPct + cancelledPct}% 100%)`
 
   const pickDirectory = async (): Promise<void> => {
     try {
@@ -145,9 +140,10 @@ export default function ProjectCenterPage() {
   }
 
   return (
-    <div className="po-page po-center-page">
+    <div className="po-page po-center-page v16-center-page">
       <PageHeader
         title="项目中心"
+        description="项目全生命周期与 Agent 执行工作台"
         actions={
           <>
             <Button icon={<FolderOpenOutlined />} onClick={() => void seedDemo.mutate()} loading={seedDemo.isPending}>
@@ -164,148 +160,225 @@ export default function ProjectCenterPage() {
         <ErrorState message={errorMessage(bootstrap.error)} onRetry={() => void bootstrap.refetch()} />
       ) : null}
 
-      {recentProject ? (
-        <section className="po-continue-card">
-          <div className="po-continue-glow" />
-          <div className="po-continue-main">
-            <div className="po-continue-eyebrow">
-              <span className="po-live-dot" /> 继续工作
-            </div>
-            <h2>{recentProject.name}</h2>
-            <p>{recentProject.description || '继续推进项目生命周期。'}</p>
-            <div className="po-continue-meta">
-              <StatusPill tone={toneForStatus(recentProject.status)}>{stageLabel(recentProject.currentStage)}</StatusPill>
-              <span>{recentProject.stats.activeRuns} 个 Agent 运行中</span>
-              <span>{recentProject.stats.pendingApprovals} 个待授权</span>
-              <span>最近活动 {formatRelative(recentProject.lastActivityAt)}</span>
-            </div>
-          </div>
-          <div className="po-continue-side">
-            <div className="po-continue-progress">
-              <strong>{Math.round(recentProject.stats.progress * 100)}%</strong>
-              <span>生命周期进度</span>
-            </div>
-            <Button type="primary" onClick={() => navigate(`/projects/${recentProject.id}`)}>
-              打开工作台 <ArrowRightOutlined />
-            </Button>
-          </div>
-        </section>
-      ) : null}
-
-      <div className="po-metric-grid">
-        <MetricCard
-          label="本地项目"
-          value={stats?.tasksTotal !== undefined ? projects.length : '—'}
-          icon={<FolderAddOutlined />}
-          tone="accent"
-          hint={`${projects.filter((project) => project.status === 'active').length} 个进行中`}
-        />
-        <MetricCard
-          label="任务进度"
-          value={stats ? `${Math.round(stats.progress * 100)}%` : '—'}
-          icon={<RocketOutlined />}
-          tone="success"
-          progress={stats?.progress}
-          hint={stats ? `${stats.tasksDone + stats.tasksCancelled}/${stats.tasksTotal} 已结束` : '暂无任务'}
-        />
-        <MetricCard
-          label="待授权"
-          value={bootstrap.data?.pendingApprovals.length ?? 0}
-          icon={<SafetyCertificateOutlined />}
-          tone={bootstrap.data?.pendingApprovals.length ? 'warning' : 'neutral'}
-          hint="写文件与命令执行需要人工确认"
-        />
-        <MetricCard
-          label="交付物"
-          value={stats?.artifacts ?? 0}
-          icon={<AuditOutlined />}
-          tone="info"
-          hint={`${stats?.requirementsApproved ?? 0} 条需求已批准`}
-        />
+      <div className="v16-stat-grid">
+        <div className="v16-stat-card is-teal">
+          <div className="v16-stat-icon"><FolderAddOutlined /></div>
+          <div className="v16-stat-value">{projects.length}</div>
+          <div className="v16-stat-label">项目总数</div>
+          <span className="v16-stat-hint">{projects.filter((project) => project.status === 'active').length} 个进行中</span>
+        </div>
+        <div className="v16-stat-card is-blue">
+          <div className="v16-stat-icon"><AuditOutlined /></div>
+          <div className="v16-stat-value">{stats?.tasksTotal ?? 0}</div>
+          <div className="v16-stat-label">任务总数</div>
+          <span className="v16-stat-hint">{stats?.tasksDone ?? 0} 个已完成</span>
+        </div>
+        <div className="v16-stat-card is-violet">
+          <div className="v16-stat-icon"><ThunderboltOutlined /></div>
+          <div className="v16-stat-value">{stats?.activeRuns ?? 0}</div>
+          <div className="v16-stat-label">运行中 Agent</div>
+          <span className="v16-stat-hint">{workingAgents.length} 个活动会话</span>
+        </div>
+        <div className="v16-stat-card is-amber">
+          <div className="v16-stat-icon"><SafetyCertificateOutlined /></div>
+          <div className="v16-stat-value">{successRate}%</div>
+          <div className="v16-stat-label">任务成功率</div>
+          <span className="v16-stat-hint">{approvals.length} 个待授权</span>
+        </div>
       </div>
 
-      <div className="po-center-grid">
-        <div className="po-center-main">
-          {bootstrap.isLoading ? (
-            <SectionCard title="最近项目">
-              <LoadingBlock rows={4} />
-            </SectionCard>
-          ) : projects.length === 0 ? (
-            <SectionCard>
-              <EmptyState
-                icon={<FolderAddOutlined />}
-                title="创建第一个本地项目"
-                description="选择一个本地目录，或载入示例项目。"
-                action={
-                  <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
-                    新建项目
-                  </Button>
-                }
-                secondary={
-                  <Button icon={<RocketOutlined />} onClick={() => void seedDemo.mutate()} loading={seedDemo.isPending}>
-                    载入示例项目
-                  </Button>
-                }
-              />
-            </SectionCard>
-          ) : (
-            <SectionCard
-              title="最近项目"
-              subtitle={`${projects.length} 个项目`}
-              extra={<span className="po-caption po-muted">按最近活动排序</span>}
-            >
-              <div className="po-project-grid">
-                {projects.map((project) => (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    onOpen={() => navigate(`/projects/${project.id}`)}
-                  />
-                ))}
-              </div>
-            </SectionCard>
-          )}
-          <SectionCard title="全生命周期">
-            <div className="po-lifecycle-strip">
-              {[
-                ['构思', 'ideation'],
-                ['需求', 'requirements'],
-                ['架构', 'architecture'],
-                ['规划', 'planning'],
-                ['实现', 'implementation'],
-                ['测试', 'testing'],
-                ['发布', 'release'],
-                ['维护', 'maintenance'],
-              ].map(([label, stage], index) => (
-                <div className="po-lifecycle-step" key={stage}>
-                  <span className="po-lifecycle-index">{String(index + 1).padStart(2, '0')}</span>
-                  <span>{label}</span>
-                </div>
-              ))}
-            </div>
-          </SectionCard>
+      <section className="v16-section">
+        <div className="v16-section-head">
+          <div>
+            <h2>最近项目</h2>
+            <span>{projects.length} 个本地项目</span>
+          </div>
+          <button type="button" className="v16-text-link" onClick={() => navigate('/')}>
+            查看全部 <ArrowRightOutlined />
+          </button>
         </div>
-        <aside className="po-center-side">
-          <SectionCard title="近期活动">
-            {activity.length === 0 ? (
-              <EmptyState compact title="暂无活动" />
-            ) : (
-              <div className="po-activity-list">
-                {activity.map((item) => (
-                  <div className="po-activity-item" key={item.id}>
+        {bootstrap.isLoading ? (
+          <LoadingBlock rows={3} />
+        ) : projects.length === 0 ? (
+          <div className="v16-glass-card">
+            <EmptyState
+              icon={<FolderAddOutlined />}
+              title="创建第一个本地项目"
+              description="选择一个本地目录，或载入示例项目。"
+              action={
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+                  新建项目
+                </Button>
+              }
+            />
+          </div>
+        ) : (
+          <div className="v16-project-visual-grid">
+            {projects.slice(0, 5).map((project, index) => (
+              <ProjectVisualCard
+                key={project.id}
+                project={project}
+                index={index}
+                onOpen={() => navigate(`/projects/${project.id}`)}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <div className="v16-quick-grid">
+        <button type="button" className="v16-quick" onClick={() => setCreateOpen(true)}>
+          <span className="v16-quick-icon is-blue"><PlusOutlined /></span>
+          <span><strong>新建项目</strong><small>从本地目录开始</small></span>
+        </button>
+        <button type="button" className="v16-quick" onClick={() => void seedDemo.mutate()}>
+          <span className="v16-quick-icon is-teal"><RocketOutlined /></span>
+          <span><strong>载入示例</strong><small>查看完整生命周期</small></span>
+        </button>
+        <button
+          type="button"
+          className="v16-quick"
+          disabled={!recentProject}
+          onClick={() => recentProject && navigate(`/projects/${recentProject.id}`)}
+        >
+          <span className="v16-quick-icon is-violet"><FolderOpenOutlined /></span>
+          <span><strong>继续工作</strong><small>{recentProject?.name ?? '暂无项目'}</small></span>
+        </button>
+      </div>
+
+      <div className="v16-center-layout">
+        <div className="v16-center-main">
+          <div className="v16-chart-row">
+            <section className="v16-glass-card v16-chart-card">
+              <div className="v16-card-title"><strong>项目进度概览</strong><span>进度</span></div>
+              <div className="v16-bars">
+                {projects.slice(0, 6).map((project) => (
+                  <div className="v16-bar-column" key={project.id}>
+                    <div className="v16-bar-value">{Math.round(project.stats.progress * 100)}%</div>
+                    <div className="v16-bar-track">
+                      <div className="v16-bar-fill" style={{ height: `${Math.max(10, project.stats.progress * 100)}%` }} />
+                    </div>
+                    <span title={project.name}>{project.name.slice(0, 4)}</span>
+                  </div>
+                ))}
+                {projects.length === 0 ? <EmptyState compact title="暂无项目" /> : null}
+              </div>
+            </section>
+
+            <section className="v16-glass-card v16-chart-card">
+              <div className="v16-card-title"><strong>任务状态</strong><span>{taskTotal} 个</span></div>
+              <div className="v16-donut-wrap">
+                <div className="v16-donut" style={{ background: donut }}>
+                  <div className="v16-donut-center"><strong>{taskTotal}</strong><span>总任务</span></div>
+                </div>
+                <div className="v16-legend">
+                  <span><i style={{ background: '#41e6b1' }} />已完成 {stats?.tasksDone ?? 0}</span>
+                  <span><i style={{ background: '#4d8dff' }} />执行中 {stats?.tasksRunning ?? 0}</span>
+                  <span><i style={{ background: '#c084fc' }} />待评审 {stats?.tasksReview ?? 0}</span>
+                  <span><i style={{ background: '#ff7897' }} />已取消 {stats?.tasksCancelled ?? 0}</span>
+                </div>
+              </div>
+            </section>
+
+            <section className="v16-glass-card v16-chart-card">
+              <div className="v16-card-title"><strong>最近动态</strong><span>全部</span></div>
+              <div className="v16-activity-compact">
+                {activity.slice(0, 6).map((item) => (
+                  <div className="v16-activity-line" key={item.id}>
                     <span className={`po-activity-mark is-${item.tone}`} />
-                    <div className="po-activity-body">
-                      <div className="po-activity-text">{item.summary}</div>
-                      <div className="po-activity-meta">
-                        {item.actorName ? `${item.actorName} · ` : ''}
-                        {formatRelative(item.createdAt)}
-                      </div>
+                    <div>
+                      <strong>{item.summary}</strong>
+                      <span>{item.actorName ? `${item.actorName} · ` : ''}{formatRelative(item.createdAt)}</span>
                     </div>
                   </div>
                 ))}
+                {activity.length === 0 ? <EmptyState compact title="暂无活动" /> : null}
+              </div>
+            </section>
+          </div>
+
+          <section className="v16-glass-card v16-table-card">
+            <div className="v16-card-title"><strong>项目列表</strong><span>{projects.length} 个</span></div>
+            <div className="v16-table">
+              <div className="v16-table-head">
+                <span>项目名称</span><span>状态</span><span>进度</span><span>任务</span><span>Agent</span><span>更新时间</span><span />
+              </div>
+              {projects.map((project) => (
+                <button type="button" className="v16-table-row" key={project.id} onClick={() => navigate(`/projects/${project.id}`)}>
+                  <span className="v16-table-name">
+                    <i className="v16-table-avatar">{project.name.slice(0, 1).toUpperCase()}</i>
+                    <strong>{project.name}</strong>
+                  </span>
+                  <span><StatusPill tone={toneForStatus(project.status)}>{stageLabel(project.currentStage)}</StatusPill></span>
+                  <span className="v16-table-progress"><ProgressBar value={project.stats.progress} height={5} /><em>{Math.round(project.stats.progress * 100)}%</em></span>
+                  <span>{project.stats.tasksDone}/{project.stats.tasksTotal}</span>
+                  <span>{project.activeAgents}</span>
+                  <span>{formatRelative(project.lastActivityAt)}</span>
+                  <span><ArrowRightOutlined /></span>
+                </button>
+              ))}
+              {projects.length === 0 ? <EmptyState compact title="暂无项目" /> : null}
+            </div>
+          </section>
+        </div>
+
+        <aside className="v16-center-side">
+          <section className="v16-glass-card">
+            <div className="v16-card-title"><strong>待授权</strong><span>{approvals.length}</span></div>
+            {approvals.length === 0 ? (
+              <div className="v16-rail-empty"><LockOutlined /> 没有待授权操作</div>
+            ) : (
+              <div className="v16-approval-rail">
+                {approvals.slice(0, 4).map((approval) => (
+                  <button
+                    type="button"
+                    key={approval.id}
+                    className="v16-approval-item"
+                    onClick={() => approval.projectId && navigate(`/projects/${approval.projectId}/agents`)}
+                  >
+                    <span className="v16-approval-icon"><SafetyCertificateOutlined /></span>
+                    <span>
+                      <strong>{approval.title}</strong>
+                      <small>{approval.agentName} · {formatRelative(approval.requestedAt)}</small>
+                    </span>
+                    <ArrowRightOutlined />
+                  </button>
+                ))}
               </div>
             )}
-          </SectionCard>
+          </section>
+
+          <section className="v16-glass-card">
+            <div className="v16-card-title"><strong>运行中的 Agent</strong><span>{workingAgents.length}</span></div>
+            {workingAgents.length === 0 ? (
+              <div className="v16-rail-empty"><ThunderboltOutlined /> 当前没有运行中的 Agent</div>
+            ) : (
+              <div className="v16-agent-rail">
+                {workingAgents.slice(0, 5).map((view) => (
+                  <button
+                    type="button"
+                    key={view.agent.id}
+                    className="v16-agent-row"
+                    onClick={() => recentProject && navigate(`/projects/${recentProject.id}/agents`)}
+                  >
+                    <span className="v16-agent-avatar" style={{ background: view.agent.accent }}>{view.agent.name.slice(0, 1)}</span>
+                    <span><strong>{view.agent.name}</strong><small>{view.agent.role}</small></span>
+                    <StatusPill tone="success" dot>执行中</StatusPill>
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="v16-glass-card">
+            <div className="v16-card-title"><strong>本地资源</strong><span>实时</span></div>
+            <div className="v16-resource-list">
+              <div><span>项目</span><strong>{projects.length}</strong><ProgressBar value={Math.min(1, projects.length / 10)} height={5} /></div>
+              <div><span>任务</span><strong>{taskTotal}</strong><ProgressBar value={Math.min(1, taskTotal / 80)} height={5} /></div>
+              <div><span>会话</span><strong>{stats?.sessions ?? 0}</strong><ProgressBar value={Math.min(1, (stats?.sessions ?? 0) / 40)} height={5} /></div>
+              <div><span>交付物</span><strong>{stats?.artifacts ?? 0}</strong><ProgressBar value={Math.min(1, (stats?.artifacts ?? 0) / 40)} height={5} /></div>
+            </div>
+          </section>
         </aside>
       </div>
 
@@ -335,12 +408,7 @@ export default function ProjectCenterPage() {
             <Input placeholder="例如：Aurora Notes" autoFocus />
           </Form.Item>
           <Form.Item name="description" label="项目描述">
-            <Input.TextArea
-              rows={3}
-              placeholder="目标、范围、技术边界。该描述会进入 Agent 执行上下文。"
-              maxLength={8000}
-              showCount
-            />
+            <Input.TextArea rows={3} placeholder="目标、范围、技术边界。" maxLength={8000} showCount />
           </Form.Item>
           <Form.Item
             name="rootPath"
@@ -356,7 +424,6 @@ export default function ProjectCenterPage() {
                 },
               },
             ]}
-            extra="ProjectOS 直接在你的目录中工作，不会复制项目文件。"
           >
             <Input
               placeholder="D:\\Projects\\aurora-notes"

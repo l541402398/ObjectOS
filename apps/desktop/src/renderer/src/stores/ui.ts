@@ -3,7 +3,17 @@ import { persist } from 'zustand/middleware'
 import { useEffect, useState } from 'react'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
-export type SettingsSection = 'ai-connections' | 'models' | 'routing' | 'general' | 'runtime' | 'external-agents' | 'about'
+export type SettingsSection =
+  | 'ai-connections'
+  | 'models'
+  | 'routing'
+  | 'runtime'
+  | 'tools'
+  | 'external-agents'
+  | 'team'
+  | 'system'
+  | 'general'
+  | 'about'
 
 interface UiState {
   themeMode: ThemeMode
@@ -102,3 +112,4 @@ export function useUiEffects(): void {
     root.dataset.highContrast = String(Boolean(contrast))
   }, [theme, reduceTransparency, reduceMotion])
 }
+

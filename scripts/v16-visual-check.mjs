@@ -10,7 +10,7 @@ const env = { ...process.env, PROJECTOS_DATA_DIR: dataDir, PROJECTOS_SEED_DEMO: 
 delete env.ELECTRON_RUN_AS_NODE
 const app = await electron.launch({ executablePath: resolve(root, 'node_modules/electron/dist/electron.exe'), args: ['.'], cwd: resolve(root, 'apps/desktop'), env, timeout: 60000 })
 const page = await app.firstWindow()
-await page.waitForSelector('.po-project-card', { timeout: 30000 })
+await page.waitForSelector('.v16-project-visual', { timeout: 30000 })
 await page.waitForTimeout(1800)
 await page.evaluate(() => { document.documentElement.dataset.theme = 'dark'; localStorage.setItem('projectos.theme', 'dark') })
 await page.waitForTimeout(700)
@@ -24,3 +24,4 @@ await page.waitForTimeout(800)
 await page.screenshot({ path: join(out, 'round1-settings-dark.png') })
 console.log('V1.6 ROUND1 SCREENSHOTS OK')
 await app.close()
+

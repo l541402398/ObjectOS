@@ -39,7 +39,7 @@ try {
   await page.waitForTimeout(2000)
   const projectId = await page.evaluate(async () => (await window.projectos.projects.list()).projects[0].id)
 
-  await navigate('#/', '.po-project-card')
+  await navigate('#/', '.v16-project-visual')
   await shot('page-project-center')
   await page.getByRole('button', { name: '新建项目' }).first().click()
   await page.waitForSelector('.ant-modal')
@@ -135,5 +135,6 @@ try {
 } finally {
   await app.close().catch(() => {})
 }
+
 
 

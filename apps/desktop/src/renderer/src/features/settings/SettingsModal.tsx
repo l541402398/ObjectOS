@@ -7,6 +7,9 @@ import {
   RobotOutlined,
   SettingOutlined,
   HddOutlined,
+  ToolOutlined,
+  TeamOutlined,
+  DesktopOutlined,
 } from '@ant-design/icons'
 import type { ReactNode } from 'react'
 import { useUiStore, type SettingsSection } from '../../stores/ui'
@@ -17,15 +20,21 @@ import { RuntimeSettingsPanel } from './RuntimeSettingsPanel'
 import { ExternalAgentsPanel } from './ExternalAgentsPanel'
 import { RoutingPanel } from './RoutingPanel'
 import { AboutSettingsPanel } from './AboutSettingsPanel'
+import { SystemSettingsPanel } from './SystemSettingsPanel'
+import { TeamSettingsPanel } from './TeamSettingsPanel'
+import { ToolsSettingsPanel } from './ToolsSettingsPanel'
 import './settings.css'
 
 const SECTIONS: Array<{ key: SettingsSection; label: string; icon: ReactNode }> = [
   { key: 'ai-connections', label: 'AI 连接', icon: <ApiOutlined /> },
   { key: 'models', label: '模型目录', icon: <AppstoreOutlined /> },
   { key: 'routing', label: 'Agent 路由', icon: <BranchesOutlined /> },
-  { key: 'general', label: '通用', icon: <SettingOutlined /> },
   { key: 'runtime', label: '运行时', icon: <HddOutlined /> },
+  { key: 'tools', label: '工具与插件', icon: <ToolOutlined /> },
   { key: 'external-agents', label: '外部 Agent', icon: <RobotOutlined /> },
+  { key: 'team', label: '团队与权限', icon: <TeamOutlined /> },
+  { key: 'system', label: '系统与外观', icon: <DesktopOutlined /> },
+  { key: 'general', label: '通用', icon: <SettingOutlined /> },
   { key: 'about', label: '关于', icon: <InfoCircleOutlined /> },
 ]
 
@@ -37,6 +46,12 @@ function renderSection(section: SettingsSection): ReactNode {
       return <ModelCatalogPanel />
     case 'routing':
       return <RoutingPanel />
+    case 'tools':
+      return <ToolsSettingsPanel />
+    case 'team':
+      return <TeamSettingsPanel />
+    case 'system':
+      return <SystemSettingsPanel />
     case 'general':
       return <GeneralSettingsPanel />
     case 'runtime':
@@ -62,7 +77,7 @@ export function SettingsModal() {
       onCancel={close}
       footer={null}
       title={null}
-      width={1000}
+      width="min(1180px, 94vw)"
       centered
       destroyOnHidden
       className="po-settings-modal"
@@ -95,3 +110,5 @@ export function SettingsModal() {
     </Modal>
   )
 }
+
+

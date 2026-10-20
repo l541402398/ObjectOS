@@ -505,38 +505,39 @@ function ConnectionEditor({
             />
           </Form.Item>
         </div>
-        <div className="po-form-section-title">模型与网络</div>
-        <div className="po-form-row">
-          <Form.Item name="protocol" label="协议">
-            <Select
-              options={[
-                { value: 'openai-chat', label: 'OpenAI Chat Completions' },
-                { value: 'anthropic-messages', label: 'Anthropic Messages' },
-                { value: 'openai-responses', label: 'OpenAI Responses' },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item name="defaultModelId" label="默认模型">
-            <Input placeholder="deepseek-chat" />
-          </Form.Item>
-        </div>
-        <div className="po-form-row">
-          <Form.Item name="timeoutMs" label="超时（毫秒）">
-            <InputNumber min={1_000} max={120_000} step={1_000} style={{ width: '100%' }} />
-          </Form.Item>
-          <div />
-        </div>
-        <div className="po-ai-editor-inline">
-          <Form.Item name="temperature" label="Temperature">
-            <Slider min={0} max={2} step={0.05} />
-          </Form.Item>
-          <Form.Item name="enabled" label="启用" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-          <Form.Item name="isDefault" label="设为默认" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-        </div>
+        <div className="po-form-section-title">模型</div>
+        <Form.Item name="defaultModelId" label="默认模型" extra="可留空；保存后可同步服务商模型列表。">
+          <Input placeholder="deepseek-chat" />
+        </Form.Item>
+
+        <details className="po-ai-advanced">
+          <summary>高级设置</summary>
+          <div className="po-form-row">
+            <Form.Item name="protocol" label="协议">
+              <Select
+                options={[
+                  { value: 'openai-chat', label: 'OpenAI Chat Completions' },
+                  { value: 'anthropic-messages', label: 'Anthropic Messages' },
+                  { value: 'openai-responses', label: 'OpenAI Responses' },
+                ]}
+              />
+            </Form.Item>
+            <Form.Item name="timeoutMs" label="超时（毫秒）">
+              <InputNumber min={1_000} max={120_000} step={1_000} style={{ width: '100%' }} />
+            </Form.Item>
+          </div>
+          <div className="po-ai-editor-inline">
+            <Form.Item name="temperature" label="Temperature">
+              <Slider min={0} max={2} step={0.05} />
+            </Form.Item>
+            <Form.Item name="enabled" label="启用" valuePropName="checked">
+              <Switch />
+            </Form.Item>
+            <Form.Item name="isDefault" label="设为默认" valuePropName="checked">
+              <Switch />
+            </Form.Item>
+          </div>
+        </details>
       </Form>
     </div>
   )

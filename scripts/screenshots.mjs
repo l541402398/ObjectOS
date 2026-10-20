@@ -29,7 +29,7 @@ async function launch(width, height) {
     if (message.type() === 'error') consoleErrors.push(message.text())
   })
   page.on('pageerror', (error) => consoleErrors.push(error.message))
-  await page.waitForSelector('.po-project-card, .po-empty-title', { timeout: 30_000 })
+  await page.waitForSelector('.po-project-card, .v16-project-visual, .po-empty-title', { timeout: 30_000 })
   return { app, page }
 }
 
@@ -234,6 +234,7 @@ try {
 }
 
 if (!existsSync(outDir)) process.exitCode = 1
+
 
 
 
