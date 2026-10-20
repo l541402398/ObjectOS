@@ -32,6 +32,15 @@ describe('agent studio', () => {
     expect(updated.currentVersion).toBe(2)
   })
 
+  it('imports ACP registry entries without claiming availability', () => {
+    const { studio } = setup()
+    const profile = studio.importRegistry({ registryId: 'acp.example', name: 'Example ACP', version: '1.0.0', description: 'test' })
+    expect(profile.source).toBe('registry')
+    expect(profile.status).toBe('unavailable')
+    expect(profile.protocol).toBe('acp')
+    expect(studio.importRegistry({ registryId: 'acp.example', name: 'Example ACP', version: '1.0.0', description: 'test' }).id).toBe(profile.id)
+  })
+
   it('detects installed runtimes without claiming missing ones', async () => {
     const { studio } = setup()
     const detections = await studio.detect()
@@ -39,4 +48,5 @@ describe('agent studio', () => {
     expect(detections.every((item) => typeof item.message === 'string')).toBe(true)
   })
 })
+
 

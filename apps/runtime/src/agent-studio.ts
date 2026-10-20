@@ -190,6 +190,18 @@ export class AgentStudioService {
     }
   }
 
+  importRegistry(input: { registryId: string; name: string; version: string | null; description: string }): RuntimeProfile {
+    const timestamp = now()
+    const existing = this.store.read.listRuntimeProfiles().find((profile) => profile.options.registryId === input.registryId)
+    if (existing) return existing
+    return this.store.upsertRuntimeProfile({
+      id: newId('rtp'), name: input.name, protocol: 'acp', executable: null, endpoint: null, args: [], authRef: null, modelRef: null,
+      options: { registryId: input.registryId, description: input.description }, status: 'unavailable', version: input.version, source: 'registry',
+      createdAt: timestamp, updatedAt: timestamp,
+      capabilities: { stream: true, toolCalls: true, skills: false, systemPrompt: 'native', sessionResume: true, subagents: false, worktree: false, permissions: true, costMetrics: false, modelSwitch: false },
+    })
+  }
+
   async acpPrompt(profileId: string, prompt: string, cwd?: string) {
     const profile = this.store.read.listRuntimeProfiles().find((item) => item.id === profileId)
     if (!profile) throw new AppError('NOT_FOUND', 'Runtime 不存在')
@@ -256,6 +268,7 @@ export class AgentStudioService {
     return { source: 'network', ...result }
   }
 }
+
 
 
 

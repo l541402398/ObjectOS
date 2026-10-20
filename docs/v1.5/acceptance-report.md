@@ -5,7 +5,7 @@
 ```text
 pnpm typecheck
 pnpm lint
-pnpm test              → 24 files / 111 tests
+pnpm test              → 24 files / 112 tests
 node scripts/v15-e2e.mjs → PASS
 ```
 
@@ -20,7 +20,7 @@ V1.5 E2E 覆盖：
 
 ## 包
 
-SHA256：`B4C6F3ABD259881C34C1E5D085A13B476A9E7A35F76B27DA46384E6E0CA06C6E` 
+SHA256：`586E399FC325008280D459EA58B13D7545829492B837DC449E373F3A00F56DDE` 
 
 ## 截图
 
@@ -73,3 +73,5 @@ ACP 客户端现已支持 initialize、session/new、session/prompt、session/up
 
 ACP 会话现已接入 AgentRun，并由 tests/acp-client.test.ts 覆盖 Session/Run/消息/completed 全链路。
 
+
+ACP Registry 条目可导入为不可用 ACP Runtime（registryId 去重，不宣称已安装）。

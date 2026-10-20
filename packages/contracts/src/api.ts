@@ -429,6 +429,10 @@ export const ApiSchemas = {
     input: z.object({ profileId: IdSchema.optional() }),
     output: z.object({ detections: z.array(RuntimeDetectionSchema) }),
   },
+  'runtime.importRegistry': {
+    input: z.object({ registryId: z.string().min(1).max(200), name: z.string().trim().min(1).max(120), version: z.string().max(40).nullable().default(null), description: z.string().max(2000).default('') }),
+    output: RuntimeProfileSchema,
+  },
   'runtime.acpPrompt': {
     input: z.object({ profileId: IdSchema, prompt: z.string().trim().min(1).max(20_000), cwd: z.string().max(2000).optional() }),
     output: z.object({ sessionId: z.string(), result: z.unknown(), events: z.array(z.unknown()), durationMs: z.number().int().nonnegative() }),
@@ -928,6 +932,7 @@ export function isMainMethod(value: string): value is MainMethod {
 export const ApprovalDecisionSchema = ApprovalStatusSchema.extract(['approved', 'rejected'])
 export const PageSchema = PageInputSchema
 export const HandoffDecisionSchema = HandoffStatusSchema.extract(['accepted', 'rejected'])
+
 
 
 

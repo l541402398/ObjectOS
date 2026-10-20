@@ -189,6 +189,7 @@ export interface ProjectOSDesktopApi {
     execute: (profileId: string, prompt: string, cwd?: string) => Promise<Out<'runtime.execute'>>
     acpHandshake: (profileId: string, cwd?: string) => Promise<Out<'runtime.acpHandshake'>>
     acpPrompt: (profileId: string, prompt: string, cwd?: string) => Promise<Out<'runtime.acpPrompt'>>
+    importRegistry: (input: In<'runtime.importRegistry'>) => Promise<Out<'runtime.importRegistry'>>
     cancel: (executionId: string) => Promise<Out<'runtime.cancel'>>
   }
   operations: {
@@ -250,6 +251,7 @@ declare global {
     projectos: ProjectOSDesktopApi
   }
 }
+
 
 
 
