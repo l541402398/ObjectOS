@@ -6,7 +6,7 @@ import type { RuntimeRegistryEntry } from '@projectos/contracts'
 import { errorMessage } from '../../lib/errors'
 
 export function AcpRegistryPanel() {
-  const { message } = App.useApp()
+  const { message, modal } = App.useApp()
   const queryClient = useQueryClient()
   const [entries, setEntries] = useState<RuntimeRegistryEntry[]>([])
   const [loading, setLoading] = useState(false)
@@ -56,10 +56,25 @@ export function AcpRegistryPanel() {
             <span>{entry.id} · {entry.version ?? '—'}</span>
           </div>
           <Tag>Registry</Tag>
-          <Button size="small" icon={<DownloadOutlined />} loading={importing === entry.id} onClick={() => void importEntry(entry)}>导入</Button>
+          <Button
+            size="small"
+            icon={<DownloadOutlined />}
+            loading={importing === entry.id}
+            onClick={() =>
+              modal.confirm({
+                title: `导入 ${entry.name}？`,
+                content: '只注册 ACP Runtime 配置，不会下载或执行安装脚本。认证与可执行路径需另行配置。',
+                okText: '导入',
+                onOk: () => importEntry(entry),
+              })
+            }
+          >
+            导入
+          </Button>
         </div>
       ))}
       {!entries.length ? <span className="po-acp-registry-empty">拉取 Registry 查看可接入 Agent</span> : null}
     </div>
   )
 }
+

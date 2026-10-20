@@ -117,3 +117,5 @@ node scripts/v15-real-e2e.mjs
 ```
 
 注意：不要把真实 Key 写入仓库或日志。
+
+Runtime 管理中心 ACP Registry 导入增加确认弹层；不执行安装脚本。ACP permission request 默认拒绝并记录事件。

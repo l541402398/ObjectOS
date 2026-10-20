@@ -9,6 +9,7 @@ export class AcpClient {
   private readonly pending = new Map<number, Pending>()
   private seq = 0
   private readonly listeners = new Set<(message: unknown) => void>()
+  private permissionHandler: ((params: unknown) => Promise<string | null>) | null = null
   private disposed = false
 
   constructor(executable: string, args: string[], cwd: string) {
@@ -33,6 +34,26 @@ export class AcpClient {
     clearTimeout(pending.timer)
     if (message.error) pending.reject(new Error(message.error.message ?? 'ACP 请求失败'))
     else pending.resolve(message.result)
+  }
+
+  private async handleRequest(id: number, method: string, params: unknown): Promise<void> {
+    if (method === 'session/request_permission') {
+      const optionId = this.permissionHandler ? await this.permissionHandler(params) : null
+      this.child.stdin?.write(JSON.stringify({
+        jsonrpc: '2.0',
+        id,
+        result: optionId
+          ? { outcome: { outcome: 'selected', optionId } }
+          : { outcome: { outcome: 'cancelled' } },
+      }) + '\\n')
+      for (const listener of this.listeners) listener({ type: 'permission.requested', method, params, approved: Boolean(optionId) })
+      return
+    }
+    this.child.stdin?.write(JSON.stringify({ jsonrpc: '2.0', id, error: { code: -32601, message: 'Method not supported' } }) + '\\n')
+  }
+
+  setPermissionHandler(handler: (params: unknown) => Promise<string | null>): void {
+    this.permissionHandler = handler
   }
 
   private failAll(error: Error): void {
@@ -88,6 +109,7 @@ export class AcpClient {
     this.child.kill()
   }
 }
+
 
 
 
