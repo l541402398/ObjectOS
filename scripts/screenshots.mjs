@@ -121,6 +121,12 @@ async function runViewport(width, height) {
       await page.waitForTimeout(900)
     }
     await capture(page, size, 'light', 'agent-workbench')
+    await page.getByRole('button', { name: 'Agent 管理' }).click()
+    await page.waitForSelector('.po-agent-studio', { timeout: 10_000 })
+    await page.waitForTimeout(400)
+    await capture(page, size, 'light', 'agent-studio')
+    await page.locator('.ant-modal-close').last().click()
+    await page.waitForTimeout(300)
     await navigate(page, `#/projects/${projectId}/collaboration`, '.po-inbox-row')
     await capture(page, size, 'light', 'cross-session')
     await navigate(page, `#/projects/${projectId}/workspace`, '.monaco-editor')
@@ -142,6 +148,9 @@ async function runViewport(width, height) {
       await page.locator('.po-settings-nav-item').filter({ hasText: 'Agent 路由' }).click()
       await page.waitForTimeout(400)
       await capture(page, size, 'light', 'settings-routing')
+      await page.locator('.po-settings-nav-item').filter({ hasText: '运行时' }).click()
+      await page.waitForTimeout(600)
+      await capture(page, size, 'light', 'settings-runtime')
     }
     await page.locator('.po-settings-nav-item').filter({ hasText: '模型目录' }).click()
     await page.waitForTimeout(500)

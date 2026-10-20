@@ -169,6 +169,22 @@ export interface ProjectOSDesktopApi {
     approve: (planId: string) => Promise<Out<'plan.approve'>>
     reject: (planId: string) => Promise<Out<'plan.reject'>>
   }
+  agentDefinitions: {
+    list: () => Promise<Out<'agentDefinition.list'>>
+    upsert: (input: In<'agentDefinition.upsert'>) => Promise<Out<'agentDefinition.upsert'>>
+    delete: (id: string) => Promise<Out<'agentDefinition.delete'>>
+    preview: (id: string) => Promise<Out<'agentDefinition.preview'>>
+  }
+  skills: {
+    list: () => Promise<Out<'skill.list'>>
+  }
+  runtimeProfiles: {
+    list: () => Promise<Out<'runtime.list'>>
+    upsert: (input: In<'runtime.upsert'>) => Promise<Out<'runtime.upsert'>>
+    delete: (id: string) => Promise<Out<'runtime.delete'>>
+    detect: (profileId?: string) => Promise<Out<'runtime.detect'>>
+    registry: (force?: boolean) => Promise<Out<'runtime.registry'>>
+  }
   operations: {
     snapshot: (projectId: string) => Promise<Out<'operations.snapshot'>>
     runChecks: (projectId: string) => Promise<Out<'operations.runChecks'>>
@@ -228,6 +244,7 @@ declare global {
     projectos: ProjectOSDesktopApi
   }
 }
+
 
 
 

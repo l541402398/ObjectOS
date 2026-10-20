@@ -29,6 +29,7 @@ import { AIConnectionService } from './ai-connections.js'
 import { listExternalAgents } from './external-agents.js'
 import { ExternalAgentRunner } from './external-runner.js'
 import { OperationsService, repairRunKey } from './operations.js'
+import { AgentStudioService } from './agent-studio.js'
 import { OrchestrationService } from './orchestration.js'
 import type { AgentRunner } from './agent-runner.js'
 import type { RuntimeConfig } from './config.js'
@@ -60,6 +61,7 @@ export class RuntimeDispatcher {
   private readonly scheduler: OrchestrationScheduler
   private readonly externalRunner: ExternalAgentRunner
   private readonly operations: OperationsService
+  private readonly agentStudio: AgentStudioService
   private readonly operationsTimer: NodeJS.Timeout
   private readonly eventChecks = new Map<string, NodeJS.Timeout>()
 
@@ -69,6 +71,7 @@ export class RuntimeDispatcher {
     this.orchestration = new OrchestrationService(deps.store, deps.services)
     this.externalRunner = new ExternalAgentRunner(deps.store, deps.services, deps.logger)
     this.operations = new OperationsService(deps.store, deps.services)
+    this.agentStudio = new AgentStudioService(deps.store)
     this.operationsTimer = setInterval(() => this.runDueChecks(), 30_000)
     this.operationsTimer.unref()
     deps.hub.onCommitted((event) => this.onProjectEvent(event))
@@ -484,6 +487,45 @@ export class RuntimeDispatcher {
         services.projects.getProjectOrThrow(input.projectId)
         return { entries: store.read.searchKnowledge(input.projectId, input.query, input.limit) }
       }
+      case 'agentDefinition.list': {
+        return { agents: this.agentStudio.listAgents() }
+      }
+      case 'agentDefinition.upsert': {
+        const input = this.parse('agentDefinition.upsert', rawInput)
+        return this.agentStudio.upsertAgent(input)
+      }
+      case 'agentDefinition.delete': {
+        const input = this.parse('agentDefinition.delete', rawInput)
+        this.agentStudio.deleteAgent(input.id)
+        return { ok: true as const }
+      }
+      case 'agentDefinition.preview': {
+        const input = this.parse('agentDefinition.preview', rawInput)
+        return this.agentStudio.preview(input.id)
+      }
+      case 'skill.list': {
+        return { skills: this.agentStudio.listSkills() }
+      }
+      case 'runtime.list': {
+        return { profiles: this.agentStudio.listRuntimeProfiles(), detections: await this.agentStudio.detect() }
+      }
+      case 'runtime.upsert': {
+        const input = this.parse('runtime.upsert', rawInput)
+        return this.agentStudio.upsertRuntime(input)
+      }
+      case 'runtime.delete': {
+        const input = this.parse('runtime.delete', rawInput)
+        this.agentStudio.deleteRuntime(input.id)
+        return { ok: true as const }
+      }
+      case 'runtime.detect': {
+        const input = this.parse('runtime.detect', rawInput)
+        return { detections: await this.agentStudio.detect(input.profileId) }
+      }
+      case 'runtime.registry': {
+        const input = this.parse('runtime.registry', rawInput)
+        return this.agentStudio.registry(input.force)
+      }
       case 'agent.list': {
         const input = this.parse('agent.list', rawInput)
         return { agents: services.projects.listAgents(input.projectId) }
@@ -843,6 +885,7 @@ export function emitLog(hub: RuntimeEventHub, level: 'debug' | 'info' | 'warn' |
   const event: RuntimeEvent = { type: 'runtime.log', level, message, createdAt: Date.now() }
   hub.publish(event)
 }
+
 
 
 

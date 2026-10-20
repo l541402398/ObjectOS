@@ -46,6 +46,7 @@ import {
 } from '../lib/queries'
 import { formatDateTime, formatRelative } from '../lib/format'
 import { runStatusLabel, taskStatusLabel } from '../lib/labels'
+import { AgentStudioModal } from '../components/AgentStudioModal'
 import { errorMessage } from '../lib/errors'
 import { useUiStore } from '../stores/ui'
 
@@ -106,6 +107,7 @@ export default function AgentWorkbenchPage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(searchParams.get('task'))
   const sessionDetail = useSessionDetail(selectedSessionId)
   const [createOpen, setCreateOpen] = useState(false)
+  const [studioOpen, setStudioOpen] = useState(false)
   const [createForm] = Form.useForm<{ agentId: string; title: string }>()
   const [streamingRunId, setStreamingRunId] = useState<string | null>(null)
   const [streamingText, setStreamingText] = useState('')
@@ -312,6 +314,7 @@ export default function AgentWorkbenchPage() {
             >
               模型设置
             </Button>
+            <Button onClick={() => setStudioOpen(true)}>Agent 管理</Button>
             <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
               新建会话
             </Button>
@@ -643,6 +646,7 @@ export default function AgentWorkbenchPage() {
           </div>
         </Form>
       </Modal>
+      <AgentStudioModal open={studioOpen} onClose={() => setStudioOpen(false)} />
     </div>
   )
 }

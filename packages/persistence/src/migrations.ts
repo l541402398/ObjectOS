@@ -634,6 +634,66 @@ CREATE INDEX idx_automation_run_events_run ON automation_run_events(run_id, crea
 ALTER TABLE automation_grants ADD COLUMN issued_at INTEGER;
 `
 
+const V13 = `
+ALTER TABLE agents ADD COLUMN category TEXT NOT NULL DEFAULT 'general';
+ALTER TABLE agents ADD COLUMN visibility TEXT NOT NULL DEFAULT 'project';
+ALTER TABLE agents ADD COLUMN status TEXT NOT NULL DEFAULT 'active';
+ALTER TABLE agents ADD COLUMN avatar TEXT NOT NULL DEFAULT '';
+ALTER TABLE agents ADD COLUMN persona_json TEXT NOT NULL DEFAULT '{}';
+ALTER TABLE agents ADD COLUMN config_json TEXT NOT NULL DEFAULT '{}';
+ALTER TABLE agents ADD COLUMN current_version INTEGER NOT NULL DEFAULT 1;
+CREATE TABLE agent_config_versions (
+  id TEXT PRIMARY KEY,
+  agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+  version INTEGER NOT NULL,
+  snapshot_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE(agent_id, version)
+);
+CREATE TABLE skills (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  version TEXT NOT NULL DEFAULT '1.0.0',
+  source TEXT NOT NULL DEFAULT 'local',
+  content TEXT NOT NULL DEFAULT '',
+  schema_version INTEGER NOT NULL DEFAULT 1,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE TABLE agent_skill_bindings (
+  agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+  skill_id TEXT NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
+  enabled INTEGER NOT NULL DEFAULT 1,
+  config_json TEXT NOT NULL DEFAULT '{}',
+  PRIMARY KEY(agent_id, skill_id)
+);
+CREATE TABLE runtime_profiles (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  protocol TEXT NOT NULL,
+  executable TEXT,
+  endpoint TEXT,
+  args_json TEXT NOT NULL DEFAULT '[]',
+  auth_ref TEXT,
+  model_ref TEXT,
+  options_json TEXT NOT NULL DEFAULT '{}',
+  capabilities_json TEXT NOT NULL DEFAULT '{}',
+  status TEXT NOT NULL DEFAULT 'unknown',
+  version TEXT,
+  source TEXT NOT NULL DEFAULT 'custom',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE TABLE agent_runtime_bindings (
+  agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+  profile_id TEXT NOT NULL REFERENCES runtime_profiles(id) ON DELETE CASCADE,
+  priority INTEGER NOT NULL DEFAULT 0,
+  is_primary INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY(agent_id, profile_id)
+);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -647,6 +707,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 10, name: 'operations interval triggers', sql: V10 },
   { version: 11, name: 'automation grants', sql: V11 },
   { version: 12, name: 'automation runs and audit events', sql: V12 },
+  { version: 13, name: 'agent definitions skills and runtime profiles', sql: V13 },
 ]
 
 function checksum(sql: string): string {

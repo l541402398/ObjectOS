@@ -56,6 +56,18 @@ export function useProjectMetrics(projectId: string | null | undefined) {
   })
 }
 
+export function useAgentDefinitions() {
+  return useQuery({ queryKey: ['agent-definitions'], queryFn: () => window.projectos.agentDefinitions.list() })
+}
+
+export function useSkills() {
+  return useQuery({ queryKey: ['skills'], queryFn: () => window.projectos.skills.list() })
+}
+
+export function useRuntimeProfiles() {
+  return useQuery({ queryKey: ['runtime-profiles'], queryFn: () => window.projectos.runtimeProfiles.list() })
+}
+
 export function useOperations(projectId: string | null | undefined) {
   return useQuery({
     queryKey: ['operations', projectId ?? ''] as const,
@@ -289,5 +301,6 @@ export function useAgents(projectId: string | null | undefined) {
     enabled: Boolean(projectId),
   })
 }
+
 
 

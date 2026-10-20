@@ -6,6 +6,10 @@ import {
   type AIConnectionView,
   type AIModel,
   type AIModelPrice,
+  type AgentDefinition,
+  type RuntimeProfile,
+  type Skill,
+  type AgentPersona,
   type AIUsageSummary,
   type Finding,
   type FindingEvidence,
@@ -59,6 +63,7 @@ import {
 import { evaluateStageGates, summarizeProjectEvent } from '@projectos/domain'
 import {
   parseObject,
+  parseStringArray,
   parseUnknown,
   toAIConnection,
   toAIConnectionCheck,
@@ -376,6 +381,60 @@ export class ReadModels {
       projectId,
       limit,
     ).map(toKnowledge)
+  }
+
+  listAgentDefinitions(): AgentDefinition[] {
+    return this.all<AgentRow>('SELECT * FROM agents WHERE builtin = 0 ORDER BY created_at ASC').map((row) => this.toAgentDefinition(row))
+  }
+
+  getAgentDefinition(id: string): AgentDefinition | null {
+    const row = this.get<AgentRow>('SELECT * FROM agents WHERE id = ? AND builtin = 0', id)
+    return row ? this.toAgentDefinition(row) : null
+  }
+
+  private toAgentDefinition(row: AgentRow & { category?: string; visibility?: string; status?: string; avatar?: string; persona_json?: string; config_json?: string; current_version?: number }): AgentDefinition {
+    const persona = parseObject(row.persona_json ?? '{}') as unknown as AgentPersona
+    const config = parseObject(row.config_json ?? '{}') as { modelRef?: string | null; permissions?: AgentDefinition['permissions'] }
+    const skills = this.all<{ skill_id: string; version: string; enabled: number }>("SELECT b.skill_id, COALESCE(s.version, '1.0.0') AS version, b.enabled FROM agent_skill_bindings b LEFT JOIN skills s ON s.id = b.skill_id WHERE b.agent_id = ?", row.id)
+      .map((item) => ({ skillId: item.skill_id, version: item.version, enabled: Boolean(item.enabled) }))
+    const runtimeProfileIds = this.all<{ profile_id: string }>('SELECT profile_id FROM agent_runtime_bindings WHERE agent_id = ? ORDER BY priority DESC', row.id).map((item) => item.profile_id)
+    const primary = this.get<{ profile_id: string }>('SELECT profile_id FROM agent_runtime_bindings WHERE agent_id = ? AND is_primary = 1 LIMIT 1', row.id)
+    return {
+      id: row.id,
+      name: row.name,
+      role: row.role,
+      description: row.description,
+      category: row.category ?? 'general',
+      avatar: row.avatar ?? '',
+      visibility: (row.visibility ?? 'project') as AgentDefinition['visibility'],
+      status: (row.status ?? 'active') as AgentDefinition['status'],
+      persona,
+      skills,
+      runtimeProfileIds,
+      primaryRuntimeProfileId: primary?.profile_id ?? null,
+      modelRef: config.modelRef ?? null,
+      permissions: config.permissions ?? { tools: [], files: false, shell: false, network: false },
+      currentVersion: Number(row.current_version ?? 1),
+      createdAt: Number(row.created_at),
+      updatedAt: Number(row.created_at),
+    }
+  }
+
+  listSkills(): Skill[] {
+    return this.all<{ id: string; name: string; description: string; version: string; source: string; content: string; schema_version: number; created_at: number; updated_at: number }>('SELECT * FROM skills ORDER BY name').map((row) => ({
+      id: row.id, name: row.name, description: row.description, version: row.version, source: row.source,
+      content: row.content, schemaVersion: Number(row.schema_version), createdAt: Number(row.created_at), updatedAt: Number(row.updated_at),
+    }))
+  }
+
+  listRuntimeProfiles(): RuntimeProfile[] {
+    return this.all<{ id: string; name: string; protocol: string; executable: string | null; endpoint: string | null; args_json: string; auth_ref: string | null; model_ref: string | null; options_json: string; capabilities_json: string; status: string; version: string | null; source: string; created_at: number; updated_at: number }>('SELECT * FROM runtime_profiles ORDER BY created_at ASC').map((row) => ({
+      id: row.id, name: row.name, protocol: row.protocol as RuntimeProfile['protocol'], executable: row.executable,
+      endpoint: row.endpoint, args: parseStringArray(row.args_json), authRef: row.auth_ref, modelRef: row.model_ref,
+      options: parseObject(row.options_json), capabilities: parseObject(row.capabilities_json) as unknown as RuntimeProfile['capabilities'],
+      status: row.status as RuntimeProfile['status'], version: row.version, source: row.source as RuntimeProfile['source'],
+      createdAt: Number(row.created_at), updatedAt: Number(row.updated_at),
+    }))
   }
 
   listAgents(): Agent[] {
@@ -1630,6 +1689,10 @@ export class ReadModels {
     return row ? toRun(row) : null
   }
 }
+
+
+
+
 
 
 

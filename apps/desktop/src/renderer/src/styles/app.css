@@ -4016,3 +4016,16 @@
 
 .po-trend { display: flex; align-items: flex-end; gap: 4px; height: 40px; margin-bottom: 8px; }
 .po-trend span { flex: 1; min-width: 4px; border-radius: 2px 2px 0 0; background: var(--color-accent); opacity: 0.55; }
+
+.po-agent-studio { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 14px; height: 560px; max-height: 560px; overflow: hidden; }
+.po-agent-studio-list { display: flex; flex-direction: column; gap: 6px; overflow: auto; min-height: 0; padding-right: 8px; border-right: 1px solid var(--color-divider); }
+.po-agent-studio-item { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 9px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); color: var(--color-text-primary); text-align: left; cursor: pointer; }
+.po-agent-studio-item span { color: var(--color-text-tertiary); font-size: 12px; }
+.po-agent-studio-item.is-active { border-color: var(--color-accent); background: var(--color-accent-soft); }
+.po-agent-studio-form { overflow: auto; min-height: 0; padding-right: 4px; }
+.po-agent-studio-actions { display: flex; justify-content: flex-end; gap: 6px; position: sticky; bottom: 0; padding-top: 10px; background: var(--color-surface); }
+.po-agent-preview { max-height: 460px; overflow: auto; white-space: pre-wrap; font-family: var(--font-mono); font-size: 12px; }
+.po-agent-permissions { display: flex; gap: 18px; }
+.po-agent-permissions .ant-form-item { margin-bottom: 8px; }
+
+

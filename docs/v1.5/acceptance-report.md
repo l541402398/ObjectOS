@@ -18,11 +18,15 @@ V1.5 E2E 覆盖：
 - 重启后 Agent 持久化
 - Agent 管理 UI 打开
 
+## 包
+
+SHA256：`293ED9178649F15D7AF9403C9C71BB65C0EC62978772B1B7ABF6571BDFE0DD30` 
+
 ## 截图
 
 - `docs/screenshots/1440x900-light-agent-studio.png`
 - `docs/screenshots/1440x900-light-settings-runtime.png`
-- 1024×768 对应截图
+- 1024×768 对应截图`r`n- 共 50 张截图
 
 ## 未通过 / 阻塞
 
@@ -35,3 +39,4 @@ V1.5 E2E 覆盖：
 ## 结论
 
 V1.5 配置、发现、检测、UI 基座已落地；真实多 Runtime 执行尚未完成，不能宣称 V1.5 全量验收通过。
+

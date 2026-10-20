@@ -199,6 +199,22 @@ const api: ProjectOSDesktopApi = {
     approve: (planId) => call('plan.approve', { planId }),
     reject: (planId) => call('plan.reject', { planId }),
   },
+  agentDefinitions: {
+    list: () => call('agentDefinition.list', {}),
+    upsert: (input) => call('agentDefinition.upsert', input),
+    delete: (id) => call('agentDefinition.delete', { id }),
+    preview: (id) => call('agentDefinition.preview', { id }),
+  },
+  skills: {
+    list: () => call('skill.list', {}),
+  },
+  runtimeProfiles: {
+    list: () => call('runtime.list', {}),
+    upsert: (input) => call('runtime.upsert', input),
+    delete: (id) => call('runtime.delete', { id }),
+    detect: (profileId) => call('runtime.detect', profileId ? { profileId } : {}),
+    registry: (force = false) => call('runtime.registry', { force }),
+  },
   operations: {
     snapshot: (projectId) => call('operations.snapshot', { projectId }),
     runChecks: (projectId) => call('operations.runChecks', { projectId }),
@@ -255,6 +271,7 @@ const api: ProjectOSDesktopApi = {
 }
 
 contextBridge.exposeInMainWorld('projectos', api)
+
 
 
 

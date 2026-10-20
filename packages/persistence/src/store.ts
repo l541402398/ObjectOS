@@ -12,6 +12,9 @@ import {
   type AIModel,
   type AIModelCapabilities,
   type AIModelPrice,
+  type AgentDefinition,
+  type RuntimeProfile,
+  type Skill,
   type AgentBackendBinding,
   type AIUsageRecord,
   type GraphLayout,
@@ -1499,6 +1502,59 @@ export class SqliteStore {
     })
   }
 
+  upsertAgentDefinition(agent: AgentDefinition): AgentDefinition {
+    this.write(() => {
+      this.run(
+        "INSERT INTO agents (id, name, role, description, kind, driver_id, capabilities_json, accent, system_prompt, builtin, created_at, category, visibility, status, avatar, persona_json, config_json, current_version) VALUES (?, ?, ?, ?, 'external', 'runtime', '[]', ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, role = excluded.role, description = excluded.description, accent = excluded.accent, system_prompt = excluded.system_prompt, category = excluded.category, visibility = excluded.visibility, status = excluded.status, avatar = excluded.avatar, persona_json = excluded.persona_json, config_json = excluded.config_json, current_version = excluded.current_version",
+        agent.id, agent.name, agent.role, agent.description, agent.avatar || '#4C8DFF', agent.persona.systemPrompt,
+        agent.createdAt, agent.category, agent.visibility, agent.status, agent.avatar,
+        JSON.stringify(agent.persona), JSON.stringify({ modelRef: agent.modelRef, permissions: agent.permissions }), agent.currentVersion,
+      )
+      this.run('DELETE FROM agent_skill_bindings WHERE agent_id = ?', agent.id)
+      for (const binding of agent.skills) {
+        this.run('INSERT INTO agent_skill_bindings (agent_id, skill_id, enabled, config_json) VALUES (?, ?, ?, ?)', agent.id, binding.skillId, binding.enabled ? 1 : 0, '{}')
+      }
+      this.run('DELETE FROM agent_runtime_bindings WHERE agent_id = ?', agent.id)
+      for (const [index, profileId] of agent.runtimeProfileIds.entries()) {
+        this.run('INSERT INTO agent_runtime_bindings (agent_id, profile_id, priority, is_primary) VALUES (?, ?, ?, ?)', agent.id, profileId, agent.runtimeProfileIds.length - index, profileId === agent.primaryRuntimeProfileId ? 1 : 0)
+      }
+      this.run('INSERT OR IGNORE INTO agent_config_versions (id, agent_id, version, snapshot_json, created_at) VALUES (?, ?, ?, ?, ?)', newId('acv'), agent.id, agent.currentVersion, JSON.stringify(agent), agent.updatedAt)
+    })
+    return agent
+  }
+
+  deleteAgentDefinition(id: string): void {
+    this.write(() => {
+      this.run('DELETE FROM agents WHERE id = ? AND builtin = 0', id)
+    })
+  }
+
+  upsertSkill(skill: Skill): Skill {
+    this.write(() => {
+      this.run(
+        "INSERT INTO skills (id, name, description, version, source, content, schema_version, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, description = excluded.description, version = excluded.version, content = excluded.content, updated_at = excluded.updated_at",
+        skill.id, skill.name, skill.description, skill.version, skill.source, skill.content, skill.schemaVersion, skill.createdAt, skill.updatedAt,
+      )
+    })
+    return skill
+  }
+
+  upsertRuntimeProfile(profile: RuntimeProfile): RuntimeProfile {
+    this.write(() => {
+      this.run(
+        "INSERT INTO runtime_profiles (id, name, protocol, executable, endpoint, args_json, auth_ref, model_ref, options_json, capabilities_json, status, version, source, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name, protocol = excluded.protocol, executable = excluded.executable, endpoint = excluded.endpoint, args_json = excluded.args_json, model_ref = excluded.model_ref, options_json = excluded.options_json, capabilities_json = excluded.capabilities_json, status = excluded.status, version = excluded.version, updated_at = excluded.updated_at",
+        profile.id, profile.name, profile.protocol, profile.executable, profile.endpoint, JSON.stringify(profile.args), profile.authRef, profile.modelRef, JSON.stringify(profile.options), JSON.stringify(profile.capabilities), profile.status, profile.version, profile.source, profile.createdAt, profile.updatedAt,
+      )
+    })
+    return profile
+  }
+
+  deleteRuntimeProfile(id: string): void {
+    this.write(() => {
+      this.run('DELETE FROM runtime_profiles WHERE id = ?', id)
+    })
+  }
+
   upsertAIModelPrice(price: AIModelPrice): AIModelPrice {
     this.write(() => {
       this.run(
@@ -2034,6 +2090,7 @@ export function createArtifactRecord(input: {
 }
 
 export { toProject, toTask, toSession, toMessage, toRun, toRunStep, toStage }
+
 
 
 

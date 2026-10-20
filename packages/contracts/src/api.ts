@@ -45,6 +45,7 @@ import {
   PlanUpdateInputSchema,
   ProjectSnapshotSchema,
 } from './orchestration.js'
+import { AgentDefinitionSchema, AgentDefinitionUpsertSchema, RuntimeProfileSchema, RuntimeProfileUpsertSchema, RuntimeDetectionSchema, RuntimeRegistryEntrySchema, SkillSchema } from './v15.js'
 import { OperationsSnapshotSchema, RepairProposalSchema, AutonomyModeSchema, AutomationTriggerSchema, AutomationGrantSchema, RiskDecisionSchema, OperationsInsightsSchema } from './operations.js'
 import {
   ActivityItemSchema,
@@ -383,6 +384,46 @@ export const ApiSchemas = {
       limit: z.number().int().min(1).max(100).default(30),
     }),
     output: z.object({ entries: z.array(KnowledgeEntrySchema) }),
+  },
+  'agentDefinition.list': {
+    input: empty,
+    output: z.object({ agents: z.array(AgentDefinitionSchema) }),
+  },
+  'agentDefinition.upsert': {
+    input: AgentDefinitionUpsertSchema,
+    output: AgentDefinitionSchema,
+  },
+  'agentDefinition.delete': {
+    input: z.object({ id: IdSchema }),
+    output: ok,
+  },
+  'agentDefinition.preview': {
+    input: z.object({ id: IdSchema }),
+    output: z.object({ prompt: z.string(), sources: z.array(z.string()) }),
+  },
+  'skill.list': {
+    input: empty,
+    output: z.object({ skills: z.array(SkillSchema) }),
+  },
+  'runtime.list': {
+    input: empty,
+    output: z.object({ profiles: z.array(RuntimeProfileSchema), detections: z.array(RuntimeDetectionSchema) }),
+  },
+  'runtime.upsert': {
+    input: RuntimeProfileUpsertSchema,
+    output: RuntimeProfileSchema,
+  },
+  'runtime.delete': {
+    input: z.object({ id: IdSchema }),
+    output: ok,
+  },
+  'runtime.detect': {
+    input: z.object({ profileId: IdSchema.optional() }),
+    output: z.object({ detections: z.array(RuntimeDetectionSchema) }),
+  },
+  'runtime.registry': {
+    input: z.object({ force: z.boolean().default(false) }),
+    output: z.object({ source: z.string(), cachedAt: TimestampSchema, entries: z.array(RuntimeRegistryEntrySchema) }),
   },
   'agent.list': {
     input: projectIdInput,
@@ -863,6 +904,7 @@ export function isMainMethod(value: string): value is MainMethod {
 export const ApprovalDecisionSchema = ApprovalStatusSchema.extract(['approved', 'rejected'])
 export const PageSchema = PageInputSchema
 export const HandoffDecisionSchema = HandoffStatusSchema.extract(['accepted', 'rejected'])
+
 
 
 
