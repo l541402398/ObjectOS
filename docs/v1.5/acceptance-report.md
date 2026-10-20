@@ -5,7 +5,7 @@
 ```text
 pnpm typecheck
 pnpm lint
-pnpm test              → 21 files / 107 tests
+pnpm test              → 22 files / 108 tests
 node scripts/v15-e2e.mjs → PASS
 ```
 
@@ -20,7 +20,7 @@ V1.5 E2E 覆盖：
 
 ## 包
 
-SHA256：`099E3FFFCB8CA7B1A3724C24717C9AAC7D31E114B91B07CE2A815EFA64D560F6` 
+SHA256：`99E1905ED9004B63BB7FC2B4D3781E8234B3160DB1D2CDA11E7AE099A0C32ADB` 
 
 ## 截图
 
@@ -50,3 +50,6 @@ V1.5 配置、发现、检测、UI 基座已落地；真实多 Runtime 执行尚
 
 
 - Runtime 管理中心提供测试入口，可执行已配置 CLI 并显示输出
+
+
+已新增 AgentDefinition.run：创建 Session/AgentRun、写消息、执行 Runtime、回写 completed/failed。

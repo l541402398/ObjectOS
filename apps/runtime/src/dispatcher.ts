@@ -31,6 +31,7 @@ import { ExternalAgentRunner } from './external-runner.js'
 import { OperationsService, repairRunKey } from './operations.js'
 import { AgentStudioService } from './agent-studio.js'
 import { RuntimeExecutionService } from './runtime-executor.js'
+import { RuntimeRunService } from './runtime-run.js'
 import { OrchestrationService } from './orchestration.js'
 import type { AgentRunner } from './agent-runner.js'
 import type { RuntimeConfig } from './config.js'
@@ -64,6 +65,7 @@ export class RuntimeDispatcher {
   private readonly operations: OperationsService
   private readonly agentStudio: AgentStudioService
   private readonly runtimeExecutor: RuntimeExecutionService
+  private readonly runtimeRun: RuntimeRunService
   private readonly operationsTimer: NodeJS.Timeout
   private readonly eventChecks = new Map<string, NodeJS.Timeout>()
 
@@ -75,6 +77,7 @@ export class RuntimeDispatcher {
     this.operations = new OperationsService(deps.store, deps.services)
     this.agentStudio = new AgentStudioService(deps.store)
     this.runtimeExecutor = new RuntimeExecutionService(deps.store)
+    this.runtimeRun = new RuntimeRunService(deps.store, this.runtimeExecutor)
     this.operationsTimer = setInterval(() => this.runDueChecks(), 30_000)
     this.operationsTimer.unref()
     deps.hub.onCommitted((event) => this.onProjectEvent(event))
@@ -502,6 +505,10 @@ export class RuntimeDispatcher {
         this.agentStudio.deleteAgent(input.id)
         return { ok: true as const }
       }
+      case 'agentDefinition.run': {
+        const input = this.parse('agentDefinition.run', rawInput)
+        return this.runtimeRun.run(input)
+      }
       case 'agentDefinition.preview': {
         const input = this.parse('agentDefinition.preview', rawInput)
         return this.agentStudio.preview(input.id)
@@ -897,6 +904,7 @@ export function emitLog(hub: RuntimeEventHub, level: 'debug' | 'info' | 'warn' |
   const event: RuntimeEvent = { type: 'runtime.log', level, message, createdAt: Date.now() }
   hub.publish(event)
 }
+
 
 
 

@@ -174,6 +174,7 @@ export interface ProjectOSDesktopApi {
     upsert: (input: In<'agentDefinition.upsert'>) => Promise<Out<'agentDefinition.upsert'>>
     delete: (id: string) => Promise<Out<'agentDefinition.delete'>>
     preview: (id: string) => Promise<Out<'agentDefinition.preview'>>
+    run: (input: In<'agentDefinition.run'>) => Promise<Out<'agentDefinition.run'>>
   }
   skills: {
     list: () => Promise<Out<'skill.list'>>
@@ -246,6 +247,7 @@ declare global {
     projectos: ProjectOSDesktopApi
   }
 }
+
 
 
 

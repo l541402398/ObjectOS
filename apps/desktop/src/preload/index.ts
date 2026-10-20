@@ -204,6 +204,7 @@ const api: ProjectOSDesktopApi = {
     upsert: (input) => call('agentDefinition.upsert', input),
     delete: (id) => call('agentDefinition.delete', { id }),
     preview: (id) => call('agentDefinition.preview', { id }),
+    run: (input) => call('agentDefinition.run', input),
   },
   skills: {
     list: () => call('skill.list', {}),
@@ -273,6 +274,7 @@ const api: ProjectOSDesktopApi = {
 }
 
 contextBridge.exposeInMainWorld('projectos', api)
+
 
 
 

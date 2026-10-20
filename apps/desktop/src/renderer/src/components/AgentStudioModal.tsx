@@ -24,7 +24,7 @@ interface AgentFormValues {
   network?: boolean
 }
 
-export function AgentStudioModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; onClose: () => void; projectId: string }) {
   const { message, modal } = App.useApp()
   const queryClient = useQueryClient()
   const agents = useAgentDefinitions()
@@ -33,6 +33,10 @@ export function AgentStudioModal({ open, onClose }: { open: boolean; onClose: ()
   const [form] = Form.useForm<AgentFormValues>()
   const [editing, setEditing] = useState<AgentDefinition | null>(null)
   const [saving, setSaving] = useState(false)
+  const [runOpen, setRunOpen] = useState(false)
+  const [runPrompt, setRunPrompt] = useState("")
+  const [runOutput, setRunOutput] = useState<string | null>(null)
+  const [running, setRunning] = useState(false)
 
   const reset = (): void => {
     setEditing(null)
@@ -110,6 +114,20 @@ export function AgentStudioModal({ open, onClose }: { open: boolean; onClose: ()
     }
   }
 
+  const runAgent = async (): Promise<void> => {
+    if (!editing) return
+    setRunning(true)
+    setRunOutput(null)
+    try {
+      const result = await window.projectos.agentDefinitions.run({ agentId: editing.id, projectId, prompt: runPrompt })
+      setRunOutput("[" + result.status + "] " + result.output)
+    } catch (error) {
+      setRunOutput(errorMessage(error))
+    } finally {
+      setRunning(false)
+    }
+  }
+
   const preview = async (id: string): Promise<void> => {
     try {
       const result = await window.projectos.agentDefinitions.preview(id)
@@ -181,11 +199,17 @@ export function AgentStudioModal({ open, onClose }: { open: boolean; onClose: ()
           </div>
           <div className="po-agent-studio-actions">
             {editing ? <Button icon={<EyeOutlined />} onClick={() => void preview(editing.id)}>预览提示词</Button> : null}
+            {editing && editing.runtimeProfileIds.length ? <Button onClick={() => { setRunOpen(true); setRunPrompt(""); setRunOutput(null) }}>运行测试</Button> : null}
             {editing ? <Button danger icon={<DeleteOutlined />} onClick={() => remove(editing)}>删除</Button> : null}
             <Button type="primary" loading={saving} onClick={() => void save()}>{editing ? '保存版本' : '创建 Agent'}</Button>
           </div>
         </Form>
       </div>
+      <Modal open={runOpen} title={"运行 " + (editing?.name ?? "")} onCancel={() => setRunOpen(false)} onOk={() => void runAgent()} okText="运行" confirmLoading={running} width={680} destroyOnHidden>
+        <Input.TextArea rows={3} value={runPrompt} onChange={(event) => setRunPrompt(event.target.value)} placeholder="输入测试任务" />
+        {runOutput ? <pre className="po-agent-preview">{runOutput}</pre> : null}
+      </Modal>
     </Modal>
   )
 }
+

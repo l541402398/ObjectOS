@@ -397,6 +397,10 @@ export const ApiSchemas = {
     input: z.object({ id: IdSchema }),
     output: ok,
   },
+  'agentDefinition.run': {
+    input: z.object({ agentId: IdSchema, projectId: IdSchema, prompt: z.string().trim().min(1).max(20_000), cwd: z.string().max(2000).optional() }),
+    output: z.object({ sessionId: IdSchema, runId: IdSchema, profileId: IdSchema, executionId: z.string(), status: z.enum(['completed', 'failed', 'cancelled', 'timeout']), output: z.string(), events: z.array(z.object({ type: z.string(), text: z.string() })), durationMs: z.number().int().nonnegative() }),
+  },
   'agentDefinition.preview': {
     input: z.object({ id: IdSchema }),
     output: z.object({ prompt: z.string(), sources: z.array(z.string()) }),
@@ -912,6 +916,7 @@ export function isMainMethod(value: string): value is MainMethod {
 export const ApprovalDecisionSchema = ApprovalStatusSchema.extract(['approved', 'rejected'])
 export const PageSchema = PageInputSchema
 export const HandoffDecisionSchema = HandoffStatusSchema.extract(['accepted', 'rejected'])
+
 
 
 

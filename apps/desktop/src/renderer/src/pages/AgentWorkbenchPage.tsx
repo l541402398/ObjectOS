@@ -646,10 +646,11 @@ export default function AgentWorkbenchPage() {
           </div>
         </Form>
       </Modal>
-      <AgentStudioModal open={studioOpen} onClose={() => setStudioOpen(false)} />
+      <AgentStudioModal open={studioOpen} onClose={() => setStudioOpen(false)} projectId={projectId} />
     </div>
   )
 }
+
 
 
 
