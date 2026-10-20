@@ -178,6 +178,7 @@ export interface ProjectOSDesktopApi {
   }
   skills: {
     list: () => Promise<Out<'skill.list'>>
+    import: (input: In<'skill.import'>) => Promise<Out<'skill.import'>>
   }
   runtimeProfiles: {
     list: () => Promise<Out<'runtime.list'>>
@@ -247,6 +248,7 @@ declare global {
     projectos: ProjectOSDesktopApi
   }
 }
+
 
 
 

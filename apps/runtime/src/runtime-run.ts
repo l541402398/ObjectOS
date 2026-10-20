@@ -1,4 +1,5 @@
 import { AppError, newId, now } from '@projectos/contracts'
+import { isAbsolute, relative, resolve } from 'node:path'
 import type { SqliteStore } from '@projectos/persistence'
 import { RuntimeExecutionService } from './runtime-executor.js'
 
@@ -11,7 +12,11 @@ export class RuntimeRunService {
   async run(input: { agentId: string; projectId: string; prompt: string; cwd?: string }) {
     const agent = this.store.read.getAgentDefinition(input.agentId)
     if (!agent) throw new AppError('NOT_FOUND', 'Agent 不存在')
-    if (!this.store.read.getProject(input.projectId)) throw new AppError('NOT_FOUND', '项目不存在')
+    const project = this.store.read.getProject(input.projectId)
+    if (!project) throw new AppError('NOT_FOUND', '项目不存在')
+    const cwd = resolve(input.cwd ?? project.rootPath)
+    const rel = relative(project.rootPath, cwd)
+    if (rel.startsWith('..') || isAbsolute(rel)) throw new AppError('WORKSPACE_OUTSIDE_ROOT', 'Runtime 工作目录必须位于项目根目录内')
     const profiles = this.store.read.listRuntimeProfiles()
     const profileId = agent.primaryRuntimeProfileId ?? agent.runtimeProfileIds[0]
     const profile = profiles.find((item) => item.id === profileId)
@@ -31,7 +36,9 @@ export class RuntimeRunService {
       checkpointId: null, startedAt: timestamp, finishedAt: null, createdAt: timestamp,
     })
     this.store.appendEvent(input.projectId, runId, 'run.started', { agentId: agent.id, runtimeProfileId: profile.id, profile: profile.name })
-    const result = await this.executor.execute(profile.id, input.prompt, input.cwd)
+    const result = await this.executor.execute(profile.id, input.prompt, cwd)
+    result.output = redact(result.output)
+    result.events = result.events.map((event) => ({ ...event, text: redact(event.text) }))
     const status = result.status === 'completed' ? 'completed' : 'failed'
     this.store.appendMessage({
       sessionId, role: 'assistant', content: result.output.slice(0, 80_000), runId,
@@ -48,7 +55,15 @@ export class RuntimeRunService {
   }
 }
 
+function redact(value: string): string {
+  return value
+    .replace(/sk-[A-Za-z0-9_-]{12,}/g, 'sk-***')
+    .replace(/Bearer\\s+[A-Za-z0-9._-]+/gi, 'Bearer ***')
+    .replace(/(api[_-]?key\\s*[=:]\\s*)[^\\s]+/gi, '***')
+}
+
 function promptTitle(prompt: string): string {
   const first = prompt.trim().split(/\r?\n/)[0] ?? 'Runtime run'
   return first.slice(0, 120)
 }
+

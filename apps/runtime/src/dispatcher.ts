@@ -516,6 +516,10 @@ export class RuntimeDispatcher {
       case 'skill.list': {
         return { skills: this.agentStudio.listSkills() }
       }
+      case 'skill.import': {
+        const input = this.parse('skill.import', rawInput)
+        return this.agentStudio.importSkill(input)
+      }
       case 'runtime.list': {
         return { profiles: this.agentStudio.listRuntimeProfiles(), detections: await this.agentStudio.detect() }
       }
@@ -904,6 +908,7 @@ export function emitLog(hub: RuntimeEventHub, level: 'debug' | 'info' | 'warn' |
   const event: RuntimeEvent = { type: 'runtime.log', level, message, createdAt: Date.now() }
   hub.publish(event)
 }
+
 
 
 

@@ -208,6 +208,7 @@ const api: ProjectOSDesktopApi = {
   },
   skills: {
     list: () => call('skill.list', {}),
+    import: (input) => call('skill.import', input),
   },
   runtimeProfiles: {
     list: () => call('runtime.list', {}),
@@ -274,6 +275,7 @@ const api: ProjectOSDesktopApi = {
 }
 
 contextBridge.exposeInMainWorld('projectos', api)
+
 
 
 

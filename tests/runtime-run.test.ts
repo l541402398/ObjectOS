@@ -21,7 +21,7 @@ describe('runtime run', () => {
     const services = new CoreServices(store, workspace)
     const project = await services.projects.create({ name: 'Runtime Run', description: '', rootPath: join(dir, 'project'), createDirectory: true, initGit: false })
     const studio = new AgentStudioService(store)
-    const script = join(dir, 'agent.mjs')
+    const script = join(project.rootPath, 'agent.mjs')
     writeFileSync(script, `console.log(JSON.stringify({ type: 'message.delta', text: 'done ' + process.argv[2] }))\n`)
     const profile = await studio.upsertRuntime({ name: 'Test CLI', protocol: 'cli', executable: process.execPath, endpoint: null, args: [script], authRef: null, modelRef: null, options: {}, capabilities: {} })
     const agent = studio.upsertAgent({
@@ -32,14 +32,25 @@ describe('runtime run', () => {
     })
     const executor = new RuntimeExecutionService(store)
     const runs = new RuntimeRunService(store, executor)
-    const result = await runs.run({ agentId: agent.id, projectId: project.id, prompt: 'hello', cwd: dir })
+    const result = await runs.run({ agentId: agent.id, projectId: project.id, prompt: 'hello', cwd: project.rootPath })
     expect(result.status).toBe('completed')
     const run = store.read.getRun(result.runId)
     expect(run?.status).toBe('completed')
     const messages = store.read.getMessages(result.sessionId)
     expect(messages.some((message) => message.role === 'assistant' && message.content.includes('done'))).toBe(true)
+    await expect(runs.run({ agentId: agent.id, projectId: project.id, prompt: 'escape', cwd: tmpdir() })).rejects.toThrow(/工作目录/)
+  })
+
+  it('imports SKILL.md content into the skill registry', () => {
+    const store = new SqliteStore({ filePath: ':memory:' })
+    cleanup.push(() => store.close())
+    const studio = new AgentStudioService(store)
+    const skill = studio.importSkill({ name: 'Code Review', content: '---\\nname: Code Review\\n---\\nReview changes.', description: 'review', version: '1.2.0' })
+    expect(studio.listSkills().some((item) => item.id === skill.id && item.version === '1.2.0')).toBe(true)
   })
 })
+
+
 
 
 

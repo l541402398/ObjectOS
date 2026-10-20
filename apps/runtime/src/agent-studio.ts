@@ -112,6 +112,15 @@ export class AgentStudioService {
 
   listSkills(): Skill[] { return this.store.read.listSkills() }
 
+  importSkill(input: { name: string; content: string; description: string; version: string }): Skill {
+    const timestamp = now()
+    const skill: Skill = {
+      id: newId('skl'), name: input.name, description: input.description, version: input.version,
+      source: 'import', content: input.content, schemaVersion: 1, createdAt: timestamp, updatedAt: timestamp,
+    }
+    return this.store.upsertSkill(skill)
+  }
+
   ensureDefaultProfiles(): RuntimeProfile[] {
     const existing = this.store.read.listRuntimeProfiles()
     if (existing.length) return existing
@@ -214,6 +223,7 @@ export class AgentStudioService {
     return { source: 'network', ...result }
   }
 }
+
 
 
 

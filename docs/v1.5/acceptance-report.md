@@ -5,7 +5,7 @@
 ```text
 pnpm typecheck
 pnpm lint
-pnpm test              → 22 files / 108 tests
+pnpm test              → 22 files / 109 tests
 node scripts/v15-e2e.mjs → PASS
 ```
 
@@ -20,7 +20,7 @@ V1.5 E2E 覆盖：
 
 ## 包
 
-SHA256：`99E1905ED9004B63BB7FC2B4D3781E8234B3160DB1D2CDA11E7AE099A0C32ADB` 
+SHA256：`E5993061B13E4254A4686D0545F10819CD5779B41135487CD7E92901F411AD78` 
 
 ## 截图
 
@@ -53,3 +53,7 @@ V1.5 配置、发现、检测、UI 基座已落地；真实多 Runtime 执行尚
 
 
 已新增 AgentDefinition.run：创建 Session/AgentRun、写消息、执行 Runtime、回写 completed/failed。
+
+
+- Runtime 工作目录限制在项目根内；输出做密钥脱敏。
+- skill.import 支持导入 SKILL.md 内容并版本固定。

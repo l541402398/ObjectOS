@@ -409,6 +409,10 @@ export const ApiSchemas = {
     input: empty,
     output: z.object({ skills: z.array(SkillSchema) }),
   },
+  'skill.import': {
+    input: z.object({ name: z.string().trim().min(1).max(120), content: z.string().min(1).max(100_000), description: z.string().max(4000).default(''), version: z.string().max(40).default('1.0.0') }),
+    output: SkillSchema,
+  },
   'runtime.list': {
     input: empty,
     output: z.object({ profiles: z.array(RuntimeProfileSchema), detections: z.array(RuntimeDetectionSchema) }),
@@ -916,6 +920,7 @@ export function isMainMethod(value: string): value is MainMethod {
 export const ApprovalDecisionSchema = ApprovalStatusSchema.extract(['approved', 'rejected'])
 export const PageSchema = PageInputSchema
 export const HandoffDecisionSchema = HandoffStatusSchema.extract(['accepted', 'rejected'])
+
 
 
 
