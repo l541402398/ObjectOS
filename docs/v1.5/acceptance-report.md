@@ -20,7 +20,7 @@ V1.5 E2E 覆盖：
 
 ## 包
 
-SHA256：`A6031CD5842911EB7D64934EAFC7016494193E4516E1F94E018DA85F8388A074` 
+SHA256：`F99082C1D87FD101636C6D8ECC780842580109D47DBF17047E01409CD5D1C7D0` 
 
 ## 截图
 
@@ -91,3 +91,5 @@ Agent 管理 UI 增加导出/导入入口。
 RuntimeProfile 更新与删除由单测覆盖；设置页删除入口已存在。
 
 Runtime 管理中心支持编辑自定义 Runtime 的名称与可执行路径。
+
+已安装 OpenCode 1.19.3；DSH CLI 0.2.1-rc.2 路径探测成功。DSH/OpenCode 启动参数已内置：dsh headless / opencode run。

@@ -1,6 +1,8 @@
 import { AppError, newId, now, type AgentDefinition, type AgentDefinitionUpsert, type AgentPersona, type RuntimeCapabilities, type RuntimeDetection, type RuntimeProfile, type RuntimeProfileUpsert, type RuntimeRegistryEntry, type Skill } from '@projectos/contracts'
 import type { SqliteStore } from '@projectos/persistence'
 import { execFile } from 'node:child_process'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { AcpClient } from './acp-client.js'
 import { promisify } from 'node:util'
 
@@ -22,19 +24,20 @@ interface AdapterDefinition {
   id: string
   name: string
   command: string | null
+  args: string[]
   protocol: RuntimeProfile['protocol']
   capabilities: RuntimeCapabilities
 }
 
 const ADAPTERS: AdapterDefinition[] = [
-  { id: 'projectos-native', name: 'ProjectOS Native', command: null, protocol: 'native', capabilities: CAPABILITIES.stream! },
-  { id: 'claude-code', name: 'Claude Code', command: 'claude', protocol: 'cli', capabilities: CAPABILITIES.cli! },
-  { id: 'codex', name: 'Codex CLI', command: 'codex', protocol: 'cli', capabilities: CAPABILITIES.cli! },
-  { id: 'opencode', name: 'OpenCode', command: 'opencode', protocol: 'cli', capabilities: CAPABILITIES.cli! },
-  { id: 'qwen-code', name: 'Qwen Code', command: 'qwen', protocol: 'cli', capabilities: CAPABILITIES.cli! },
-  { id: 'gemini-cli', name: 'Gemini CLI', command: 'gemini', protocol: 'cli', capabilities: CAPABILITIES.cli! },
-  { id: 'deepseek-harness', name: 'DeepSeek Harness', command: 'dsh', protocol: 'cli', capabilities: CAPABILITIES.cli! },
-  { id: 'acp', name: 'ACP Agent', command: null, protocol: 'acp', capabilities: CAPABILITIES.acp! },
+  { id: 'projectos-native', name: 'ProjectOS Native', command: null, args: [], protocol: 'native', capabilities: CAPABILITIES.stream! },
+  { id: 'claude-code', name: 'Claude Code', command: 'claude', args: ['--print'], protocol: 'cli', capabilities: CAPABILITIES.cli! },
+  { id: 'codex', name: 'Codex CLI', command: 'codex', args: ['exec'], protocol: 'cli', capabilities: CAPABILITIES.cli! },
+  { id: 'opencode', name: 'OpenCode', command: 'opencode', args: ['run'], protocol: 'cli', capabilities: CAPABILITIES.cli! },
+  { id: 'qwen-code', name: 'Qwen Code', command: 'qwen', args: [], protocol: 'cli', capabilities: CAPABILITIES.cli! },
+  { id: 'gemini-cli', name: 'Gemini CLI', command: 'gemini', args: [], protocol: 'cli', capabilities: CAPABILITIES.cli! },
+  { id: 'deepseek-harness', name: 'DeepSeek Harness', command: 'dsh', args: ['headless'], protocol: 'cli', capabilities: CAPABILITIES.cli! },
+  { id: 'acp', name: 'ACP Agent', command: null, args: [], protocol: 'acp', capabilities: CAPABILITIES.acp! },
 ]
 
 function personaOf(input: AgentDefinitionUpsert): AgentPersona {
@@ -147,7 +150,7 @@ export class AgentStudioService {
       protocol: adapter.protocol,
       executable: adapter.command,
       endpoint: null,
-      args: [],
+      args: adapter.args,
       authRef: null,
       modelRef: null,
       options: { adapterId: adapter.id },
@@ -274,6 +277,18 @@ export class AgentStudioService {
         } catch { /* version flag is not universal */ }
         results.push({ profileId: profile.id, adapterId: profile.id, name: profile.name, installed: true, executable, version, protocol: profile.protocol, capabilities: profile.capabilities, status: 'available', message: version ? `已安装 ${version}` : '已安装' })
       } catch {
+        const fallback = profile.id === 'deepseek-harness' && process.env.LOCALAPPDATA
+          ? join(process.env.LOCALAPPDATA, 'Programs', 'DeepSeek Harness', 'resources', 'runtime', 'cli', 'bin', 'dsh.cmd')
+          : null
+        if (fallback && existsSync(fallback)) {
+          let version: string | null = null
+          try {
+            const result = await exec(fallback, ['--version'], { timeout: 10_000, windowsHide: true })
+            version = (result.stdout || result.stderr).trim().split(/\r?\n/)[0]?.slice(0, 120) ?? null
+          } catch { /* ignore */ }
+          results.push({ profileId: profile.id, adapterId: profile.id, name: profile.name, installed: true, executable: fallback, version, protocol: profile.protocol, capabilities: profile.capabilities, status: 'available', message: version ? `已安装 ${version}` : '已安装' })
+          continue
+        }
         results.push({ profileId: profile.id, adapterId: profile.id, name: profile.name, installed: false, executable: null, version: null, protocol: profile.protocol, capabilities: profile.capabilities, status: 'unavailable', message: '未找到可执行文件' })
       }
     }
