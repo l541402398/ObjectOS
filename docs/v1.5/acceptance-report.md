@@ -119,3 +119,12 @@ node scripts/v15-real-e2e.mjs
 注意：不要把真实 Key 写入仓库或日志。
 
 Runtime 管理中心 ACP Registry 导入增加确认弹层；不执行安装脚本。ACP permission request 默认拒绝并记录事件。
+
+
+## DPI 复核
+
+scripts/v15-dpi-check.mjs 在 125% 与 150% 缩放下检查：
+
+- dpr=1.25 / 1.5
+- 项目总览与 Agent 工作台横向 overflow=0
+- 截图：docs/screenshots/dpi-1.25-*.png、dpi-1.5-*.png
