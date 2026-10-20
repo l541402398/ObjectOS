@@ -10,6 +10,7 @@ import {
   ToolOutlined,
   TeamOutlined,
   DesktopOutlined,
+  SafetyCertificateOutlined,
 } from '@ant-design/icons'
 import type { ReactNode } from 'react'
 import { useUiStore, type SettingsSection } from '../../stores/ui'
@@ -23,6 +24,7 @@ import { AboutSettingsPanel } from './AboutSettingsPanel'
 import { SystemSettingsPanel } from './SystemSettingsPanel'
 import { TeamSettingsPanel } from './TeamSettingsPanel'
 import { ToolsSettingsPanel } from './ToolsSettingsPanel'
+import { AppearanceSettingsPanel, DataSecuritySettingsPanel, OpenSpecSettingsPanel, PermissionsSettingsPanel } from './AdvancedSettingsPanels'
 import './settings.css'
 
 const SECTIONS: Array<{ key: SettingsSection; label: string; icon: ReactNode }> = [
@@ -31,9 +33,13 @@ const SECTIONS: Array<{ key: SettingsSection; label: string; icon: ReactNode }> 
   { key: 'routing', label: 'Agent 路由', icon: <BranchesOutlined /> },
   { key: 'runtime', label: '运行时', icon: <HddOutlined /> },
   { key: 'tools', label: '工具与插件', icon: <ToolOutlined /> },
+  { key: 'permissions', label: '工具权限', icon: <SafetyCertificateOutlined /> },
   { key: 'external-agents', label: '外部 Agent', icon: <RobotOutlined /> },
   { key: 'team', label: '团队与权限', icon: <TeamOutlined /> },
+  { key: 'data-security', label: '存储与安全', icon: <SafetyCertificateOutlined /> },
+  { key: 'appearance', label: '外观与快捷键', icon: <DesktopOutlined /> },
   { key: 'system', label: '系统与外观', icon: <DesktopOutlined /> },
+  { key: 'openspec', label: 'OpenSpec', icon: <SettingOutlined /> },
   { key: 'general', label: '通用', icon: <SettingOutlined /> },
   { key: 'about', label: '关于', icon: <InfoCircleOutlined /> },
 ]
@@ -48,6 +54,14 @@ function renderSection(section: SettingsSection): ReactNode {
       return <RoutingPanel />
     case 'tools':
       return <ToolsSettingsPanel />
+    case 'permissions':
+      return <PermissionsSettingsPanel />
+    case 'data-security':
+      return <DataSecuritySettingsPanel />
+    case 'appearance':
+      return <AppearanceSettingsPanel />
+    case 'openspec':
+      return <OpenSpecSettingsPanel />
     case 'team':
       return <TeamSettingsPanel />
     case 'system':

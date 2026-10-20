@@ -71,6 +71,7 @@ export default function ProjectCenterPage() {
   const { message } = AntApp.useApp()
   const bootstrap = useBootstrap()
   const [createOpen, setCreateOpen] = useState(false)
+  const [importMode, setImportMode] = useState(false)
   const [form] = Form.useForm<CreateFormValues>()
 
   const createProject = useMutation({
@@ -134,8 +135,8 @@ export default function ProjectCenterPage() {
       name: values.name.trim(),
       description: values.description?.trim() ?? '',
       rootPath: values.rootPath.trim(),
-      createDirectory: values.createDirectory,
-      initGit: values.initGit,
+      createDirectory: importMode ? false : values.createDirectory,
+      initGit: importMode ? false : values.initGit,
     })
   }
 
@@ -149,7 +150,10 @@ export default function ProjectCenterPage() {
             <Button icon={<FolderOpenOutlined />} onClick={() => void seedDemo.mutate()} loading={seedDemo.isPending}>
               载入示例项目
             </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+            <Button icon={<FolderOpenOutlined />} onClick={() => { setImportMode(true); setCreateOpen(true) }}>
+              导入项目
+            </Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => { setImportMode(false); setCreateOpen(true) }}>
               新建项目
             </Button>
           </>
@@ -383,11 +387,11 @@ export default function ProjectCenterPage() {
       </div>
 
       <Modal
-        title="新建本地项目"
+        title={importMode ? '导入现有项目' : '新建本地项目'}
         open={createOpen}
         onCancel={() => setCreateOpen(false)}
         onOk={() => void submit()}
-        okText="创建项目"
+        okText={importMode ? '导入项目' : '创建项目'}
         cancelText="取消"
         confirmLoading={createProject.isPending}
         destroyOnHidden
@@ -397,7 +401,7 @@ export default function ProjectCenterPage() {
           form={form}
           layout="vertical"
           requiredMark={false}
-          initialValues={{ createDirectory: true, initGit: false, description: '' }}
+          initialValues={{ createDirectory: !importMode, initGit: false, description: '' }}
           className="po-form"
         >
           <Form.Item
@@ -436,14 +440,16 @@ export default function ProjectCenterPage() {
               }
             />
           </Form.Item>
-          <div className="po-form-row">
-            <Form.Item name="createDirectory" label="目录不存在时创建" valuePropName="checked">
-              <Switch />
-            </Form.Item>
-            <Form.Item name="initGit" label="初始化 Git 仓库" valuePropName="checked">
-              <Switch />
-            </Form.Item>
-          </div>
+          {!importMode ? (
+            <div className="po-form-row">
+              <Form.Item name="createDirectory" label="目录不存在时创建" valuePropName="checked">
+                <Switch />
+              </Form.Item>
+              <Form.Item name="initGit" label="初始化 Git 仓库" valuePropName="checked">
+                <Switch />
+              </Form.Item>
+            </div>
+          ) : <div className="v16-inline-note">导入不会复制或移动现有文件，也不会初始化 Git。</div>}
           {createProject.error ? <ErrorState compact message={errorMessage(createProject.error)} /> : null}
         </Form>
       </Modal>

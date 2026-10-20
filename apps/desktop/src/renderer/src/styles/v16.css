@@ -1753,3 +1753,13 @@
 .po-orch-log-row > span:first-child { color: var(--color-text-tertiary); font-variant-numeric: tabular-nums; }
 .po-orch-log-row strong { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .po-orch-log-row em { font-style: normal; color: var(--color-text-tertiary); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* V1.6 tool permissions settings */
+.v16-permission-agent-list { display: flex; flex-direction: column; gap: 8px; }
+.v16-permission-agent { padding: 12px 14px; border: 1px solid var(--color-border); border-radius: 12px; background: rgba(255,255,255,.025); }
+.v16-permission-agent-head { display: flex; align-items: center; gap: 9px; }
+.v16-permission-agent-head > div:nth-child(2) { flex: 1; min-width: 0; }
+.v16-permission-agent-head strong { display: block; font-size: 12px; }
+.v16-permission-agent-head span { display: block; margin-top: 2px; font-size: 10px; color: var(--color-text-tertiary); }
+.v16-permission-switches { display: flex; gap: 16px; margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--color-divider); }
+.v16-permission-switches label { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--color-text-secondary); }
