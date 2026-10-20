@@ -12,6 +12,7 @@ export type SettingsSection =
   | 'permissions'
   | 'data-security'
   | 'appearance'
+  | 'usage'
   | 'openspec'
   | 'external-agents'
   | 'team'

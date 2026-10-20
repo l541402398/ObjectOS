@@ -25,6 +25,7 @@ import { SystemSettingsPanel } from './SystemSettingsPanel'
 import { TeamSettingsPanel } from './TeamSettingsPanel'
 import { ToolsSettingsPanel } from './ToolsSettingsPanel'
 import { AppearanceSettingsPanel, DataSecuritySettingsPanel, OpenSpecSettingsPanel, PermissionsSettingsPanel } from './AdvancedSettingsPanels'
+import { UsageSettingsPanel } from './UsageSettingsPanel'
 import './settings.css'
 
 const SECTIONS: Array<{ key: SettingsSection; label: string; icon: ReactNode }> = [
@@ -39,6 +40,7 @@ const SECTIONS: Array<{ key: SettingsSection; label: string; icon: ReactNode }> 
   { key: 'data-security', label: '存储与安全', icon: <SafetyCertificateOutlined /> },
   { key: 'appearance', label: '外观与快捷键', icon: <DesktopOutlined /> },
   { key: 'system', label: '系统与外观', icon: <DesktopOutlined /> },
+  { key: 'usage', label: '用量与价格', icon: <AppstoreOutlined /> },
   { key: 'openspec', label: 'OpenSpec', icon: <SettingOutlined /> },
   { key: 'general', label: '通用', icon: <SettingOutlined /> },
   { key: 'about', label: '关于', icon: <InfoCircleOutlined /> },
@@ -60,6 +62,8 @@ function renderSection(section: SettingsSection): ReactNode {
       return <DataSecuritySettingsPanel />
     case 'appearance':
       return <AppearanceSettingsPanel />
+    case 'usage':
+      return <UsageSettingsPanel />
     case 'openspec':
       return <OpenSpecSettingsPanel />
     case 'team':
