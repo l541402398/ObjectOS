@@ -202,6 +202,20 @@ export class AgentStudioService {
     })
   }
 
+  async acpAuthenticate(profileId: string, methodId: string, cwd?: string) {
+    const profile = this.store.read.listRuntimeProfiles().find((item) => item.id === profileId)
+    if (!profile) throw new AppError('NOT_FOUND', 'Runtime 不存在')
+    if (profile.protocol !== 'acp') throw new AppError('BAD_REQUEST', '该 Runtime 不是 ACP 协议')
+    if (!profile.executable) throw new AppError('BAD_REQUEST', 'ACP Runtime 未配置可执行路径')
+    const client = new AcpClient(profile.executable, profile.args, cwd || process.cwd())
+    try {
+      const result = await client.authenticate(methodId)
+      return { ok: true, result }
+    } finally {
+      client.dispose()
+    }
+  }
+
   async acpPrompt(profileId: string, prompt: string, cwd?: string) {
     const profile = this.store.read.listRuntimeProfiles().find((item) => item.id === profileId)
     if (!profile) throw new AppError('NOT_FOUND', 'Runtime 不存在')
@@ -268,6 +282,7 @@ export class AgentStudioService {
     return { source: 'network', ...result }
   }
 }
+
 
 
 

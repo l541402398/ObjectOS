@@ -21,6 +21,7 @@ describe('acp client', () => {
     cleanup.push(() => { store.close(); try { rmSync(dir, { recursive: true, force: true }) } catch { /* child may still hold the directory */ } })
     const script = join(dir, 'agent.mjs')
     writeFileSync(script, `import readline from 'node:readline'\nconst rl = readline.createInterface({ input: process.stdin })\nrl.on('line', (line) => {\n  const msg = JSON.parse(line)\n  if (msg.method === 'initialize') console.log(JSON.stringify({ jsonrpc: '2.0', id: msg.id, result: { protocolVersion: 1, agentInfo: { name: 'Fixture' }, capabilities: { prompt: true } } }))\n  if (msg.method === 'session/new') console.log(JSON.stringify({ jsonrpc: '2.0', id: msg.id, result: { sessionId: 'acp-session-1' } }))
+  if (msg.method === 'authenticate') console.log(JSON.stringify({ jsonrpc: '2.0', id: msg.id, result: { authenticated: true } }))
   if (msg.method === 'session/prompt') {
     console.log(JSON.stringify({ jsonrpc: '2.0', method: 'session/update', params: { sessionId: 'acp-session-1', update: { sessionUpdate: 'agent_message_chunk', content: { type: 'text', text: 'hello' } } } }))
     console.log(JSON.stringify({ jsonrpc: '2.0', id: msg.id, result: { stopReason: 'end_turn' } }))
@@ -36,6 +37,9 @@ describe('acp client', () => {
     const result = await studio.acpHandshake(profile.id, dir)
     expect(result.sessionId).toBe('acp-session-1')
     expect(result.protocolVersion).toBe(1)
+    const auth = await studio.acpAuthenticate(profile.id, 'oauth', dir)
+    expect(auth.ok).toBe(true)
+    expect(auth.result).toEqual({ authenticated: true })
     const prompted = await studio.acpPrompt(profile.id, 'hello', dir)
     expect(prompted.sessionId).toBe('acp-session-1')
     expect(prompted.events.length).toBe(1)
@@ -54,6 +58,7 @@ describe('acp client', () => {
     expect(store.read.getRun(executed.runId)?.status).toBe('completed')
   })
 })
+
 
 
 

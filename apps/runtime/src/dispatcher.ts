@@ -540,6 +540,10 @@ export class RuntimeDispatcher {
         const input = this.parse('runtime.importRegistry', rawInput)
         return this.agentStudio.importRegistry(input)
       }
+      case 'runtime.acpAuthenticate': {
+        const input = this.parse('runtime.acpAuthenticate', rawInput)
+        return this.agentStudio.acpAuthenticate(input.profileId, input.methodId, input.cwd)
+      }
       case 'runtime.acpPrompt': {
         const input = this.parse('runtime.acpPrompt', rawInput)
         return this.agentStudio.acpPrompt(input.profileId, input.prompt, input.cwd)
@@ -920,6 +924,7 @@ export function emitLog(hub: RuntimeEventHub, level: 'debug' | 'info' | 'warn' |
   const event: RuntimeEvent = { type: 'runtime.log', level, message, createdAt: Date.now() }
   hub.publish(event)
 }
+
 
 
 

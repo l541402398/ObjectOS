@@ -70,6 +70,10 @@ export class AcpClient {
     return { ...init, sessionId: session.sessionId }
   }
 
+  async authenticate(methodId: string): Promise<unknown> {
+    return this.request('authenticate', { methodId })
+  }
+
   async prompt(sessionId: string, text: string): Promise<unknown> {
     return this.request('session/prompt', { sessionId, prompt: [{ type: 'text', text }] }, 120_000)
   }
@@ -80,4 +84,5 @@ export class AcpClient {
     this.child.kill()
   }
 }
+
 
