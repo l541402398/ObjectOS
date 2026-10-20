@@ -20,7 +20,7 @@ V1.5 E2E 覆盖：
 
 ## 包
 
-SHA256：`11B1A57D2079B2C3863D7BD2F4063D6C80288F3EC733A7BDC4B3EE2B30C53ABB` 
+SHA256：`8B3BB560A79E59D4E6F989111904754E6636691474D029FE2AD25E40A1484EC2` 
 
 ## 截图
 
@@ -61,3 +61,6 @@ V1.5 配置、发现、检测、UI 基座已落地；真实多 Runtime 执行尚
 
 - Runtime 执行前检查 Agent Shell 权限与项目软预算；未授权直接返回 APPROVAL_REQUIRED。
 - 执行输出与事件脱敏，工作目录限制在项目根。
+
+
+- CLI Runtime 在 Git 项目中自动创建 projectos/runtime-* Worktree 并返回 workspaceRef（尚未专项 E2E）。

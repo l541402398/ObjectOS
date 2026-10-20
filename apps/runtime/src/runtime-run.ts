@@ -1,5 +1,7 @@
 import { AppError, newId, now } from '@projectos/contracts'
-import { isAbsolute, relative, resolve } from 'node:path'
+import { join, isAbsolute, relative, resolve } from 'node:path'
+import { existsSync } from 'node:fs'
+import { WorktreeManager } from '@projectos/worktree'
 import type { SqliteStore } from '@projectos/persistence'
 import { RuntimeExecutionService } from './runtime-executor.js'
 
@@ -7,6 +9,7 @@ export class RuntimeRunService {
   constructor(
     private readonly store: SqliteStore,
     private readonly executor: RuntimeExecutionService,
+    private readonly worktrees = new WorktreeManager(),
   ) {}
 
   async run(input: { agentId: string; projectId: string; prompt: string; cwd?: string }) {
@@ -44,7 +47,15 @@ export class RuntimeRunService {
       checkpointId: null, startedAt: timestamp, finishedAt: null, createdAt: timestamp,
     })
     this.store.appendEvent(input.projectId, runId, 'run.started', { agentId: agent.id, runtimeProfileId: profile.id, profile: profile.name })
-    const result = await this.executor.execute(profile.id, input.prompt, cwd)
+    let workspaceRef: string | null = null
+    let executionCwd = cwd
+    if (profile.capabilities.worktree && existsSync(join(project.rootPath, '.git'))) {
+      const worktreePath = join(project.rootPath, '.projectos', 'runtime-worktrees', runId)
+      const worktree = await this.worktrees.create(project.rootPath, worktreePath, 'projectos/runtime-' + runId)
+      workspaceRef = worktree.path
+      executionCwd = worktree.path
+    }
+    const result = await this.executor.execute(profile.id, input.prompt, executionCwd)
     result.output = redact(result.output)
     result.events = result.events.map((event) => ({ ...event, text: redact(event.text) }))
     const status = result.status === 'completed' ? 'completed' : 'failed'
@@ -59,7 +70,7 @@ export class RuntimeRunService {
     this.store.appendEvent(input.projectId, runId, status === 'completed' ? 'run.completed' : 'run.failed', {
       agentId: agent.id, runtimeProfileId: profile.id, executionStatus: result.status, durationMs: result.durationMs,
     })
-    return { sessionId, runId, profileId: profile.id, ...result }
+    return { sessionId, runId, profileId: profile.id, ...result, workspaceRef }
   }
 }
 
@@ -79,5 +90,6 @@ function promptTitle(prompt: string): string {
   const first = prompt.trim().split(/\r?\n/)[0] ?? 'Runtime run'
   return first.slice(0, 120)
 }
+
 
 
