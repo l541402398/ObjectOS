@@ -1,11 +1,14 @@
 {
   "name": "projectos",
-  "version": "0.1.0",
+  "version": "1.6.0",
   "private": true,
   "description": "ProjectOS — local-first AI-native project lifecycle workspace",
   "license": "MIT",
   "homepage": "https://github.com/l541402398/ObjectOS",
-  "author": { "name": "ProjectOS contributors", "email": "l541402398@users.noreply.github.com" },
+  "author": {
+    "name": "ProjectOS contributors",
+    "email": "l541402398@users.noreply.github.com"
+  },
   "packageManager": "pnpm@9.15.0",
   "engines": {
     "node": ">=22.14.0"
@@ -61,5 +64,3 @@
     "vitest": "^5.0.5"
   }
 }
-
-

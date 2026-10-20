@@ -4,7 +4,7 @@ export function AboutSettingsPanel() {
       <div className="po-settings-panel-head">
         <div>
           <h2>关于</h2>
-          <p>ProjectOS 0.1.0</p>
+          <p>ProjectOS 1.6.0</p>
         </div>
       </div>
 

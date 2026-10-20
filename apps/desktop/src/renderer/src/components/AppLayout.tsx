@@ -69,6 +69,8 @@ const NAV_PATHS: Record<string, string> = {
   collaboration: '/collaboration',
   workspace: '/workspace',
   runs: '/runs',
+  resources: '/resources',
+  approvals: '/approvals',
 }
 
 function Logo() {
@@ -226,6 +228,8 @@ export default function AppLayout() {
         { id: 'knowledge', label: '知识库', group: currentProject?.name ?? '项目', icon: <ReadOutlined />, run: () => handleNavigate('knowledge') },
         { id: 'operations', label: '自主运营', group: currentProject?.name ?? '项目', icon: <SafetyCertificateOutlined />, run: () => handleNavigate('operations') },
         { id: 'agents', label: 'Agent 工作台', group: currentProject?.name ?? '项目', icon: <RobotOutlined />, run: () => handleNavigate('agents') },
+        { id: 'resources', label: '资源中心', group: currentProject?.name ?? '项目', icon: <FolderOpenOutlined />, run: () => handleNavigate('resources') },
+        { id: 'approvals', label: '审批中心', group: currentProject?.name ?? '项目', icon: <SafetyCertificateOutlined />, run: () => handleNavigate('approvals') },
         { id: 'collaboration', label: '跨会话中心', group: currentProject?.name ?? '项目', icon: <SendOutlined />, run: () => handleNavigate('collaboration') },
         { id: 'workspace', label: '工作区', group: currentProject?.name ?? '项目', icon: <CodeOutlined />, run: () => handleNavigate('workspace') },
         { id: 'runs', label: '运行审计', group: currentProject?.name ?? '项目', icon: <HistoryOutlined />, run: () => handleNavigate('runs') },
@@ -281,6 +285,8 @@ export default function AppLayout() {
         { key: 'operations', label: '自主运营', icon: <SafetyCertificateOutlined /> },
         { key: 'agents', label: 'Agent 工作台', icon: <RobotOutlined />, badge: approvalBadge || null },
         { key: 'collaboration', label: '跨会话中心', icon: <SendOutlined /> },
+        { key: 'resources', label: '资源中心', icon: <FolderOpenOutlined /> },
+        { key: 'approvals', label: '审批中心', icon: <SafetyCertificateOutlined />, badge: approvalBadge || null },
       ],
     })
     navGroups.push({
@@ -488,7 +494,7 @@ export default function AppLayout() {
             <div className="po-sidebar-runtime">
               <span className={`po-status-dot is-${runtime?.status ?? 'unknown'}`} />
               <span>本地优先</span>
-              <span className="po-sidebar-runtime-version">v{bootstrap.data ? '0.1.0' : '—'}</span>
+              <span className="po-sidebar-runtime-version">v{bootstrap.data ? '1.6.0' : '—'}</span>
             </div>
             <Tooltip title="项目中心">
               <button type="button" className="po-icon-button" onClick={() => navigate('/')} aria-label="项目中心">
@@ -552,5 +558,7 @@ export default function AppLayout() {
     </>
   )
 }
+
+
 
 

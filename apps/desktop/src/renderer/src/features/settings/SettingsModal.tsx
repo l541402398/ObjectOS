@@ -87,7 +87,7 @@ export function SettingsModal() {
         <div className="po-settings-top">
           <div>
             <h1>设置</h1>
-            <p>ProjectOS 0.1.0</p>
+            <p>ProjectOS 1.6.0</p>
           </div>
         </div>
         <div className="po-settings-body">

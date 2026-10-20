@@ -13,10 +13,10 @@ ProjectOS 把项目从构思、需求、架构、规划、实现、测试、发�
 
 已编译便携版，**无需安装 Node/Electron，双击即可运行**：
 
-[**下载 / 打开 ProjectOS-0.1.0-portable.exe**](release/ProjectOS-0.1.0-portable.exe) · 约 99 MB
+[**下载 / 打开 ProjectOS-1.6.0-portable.exe**](release/ProjectOS-1.6.0-portable.exe) · 约 99 MB
 
 ```powershell
-.\release\ProjectOS-0.1.0-portable.exe
+.\release\ProjectOS-1.6.0-portable.exe
 ```
 
 - 未签名：SmartScreen 提示时选择“更多信息 → 仍要运行”。
@@ -235,7 +235,7 @@ node scripts/v12-e2e.mjs   → PASS（设置弹层、连接测试/模型发现�
 node scripts/v13-e2e.mjs   → PASS（扫描、计划批准、真实图、布局持久化、内联连接编辑）
 node scripts/v13-orchestration-e2e.mjs → PASS（4 任务自动编排完成、用量记录、重启恢复）
 node scripts/package-smoke.mjs → PASS（打包 EXE 创建项目、写 starter 文件、重启恢复）
-ProjectOS-0.1.0-portable.exe → 直接启动成功（无 node_modules，Runtime ready，SQLite/示例数据正常）
+ProjectOS-1.6.0-portable.exe → 直接启动成功（无 node_modules，Runtime ready，SQLite/示例数据正常）
 ```
 
 完整测试矩阵与未覆盖项见 [docs/testing.md](docs/testing.md)。
@@ -268,6 +268,7 @@ ProjectOS-0.1.0-portable.exe → 直接启动成功（无 node_modules，Runtime
 ## License
 
 MIT
+
 
 
 

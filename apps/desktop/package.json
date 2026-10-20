@@ -1,9 +1,9 @@
 {
   "name": "@projectos/desktop",
-  "version": "0.1.0",
+  "version": "1.6.0",
   "private": true,
   "homepage": "https://github.com/l541402398/ObjectOS",
-  "author": { "name": "ProjectOS contributors", "email": "l541402398@users.noreply.github.com" },
+  "author": "ProjectOS contributors",
   "main": "./out/main/index.js",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -38,7 +38,5 @@
     "vite": "^8.3.4"
   },
   "description": "ProjectOS local-first AI-native project lifecycle workspace",
-  "author": "ProjectOS contributors",
   "license": "MIT"
 }
-

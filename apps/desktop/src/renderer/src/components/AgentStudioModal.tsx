@@ -178,7 +178,6 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
     setTemplateId('general')
     form.resetFields()
     form.setFieldsValue(templateValues(TEMPLATES[0]!))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, form])
 
   useEffect(() => {
@@ -666,5 +665,6 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
     </Modal>
   )
 }
+
 
 

@@ -26,7 +26,7 @@ try {
     if (message.type() === 'error') errors.push(message.text())
   })
   page.on('pageerror', (error) => errors.push(error.message))
-  await page.waitForSelector('.po-empty-title, .po-project-card', { timeout: 60_000 })
+  await page.waitForSelector('.po-empty-title, .v16-project-visual', { timeout: 60_000 })
   await page.getByRole('button', { name: /新建项目/ }).first().click()
   await page.getByLabel('项目名称').fill('Packaged Project')
   await page.getByLabel('项目描述').fill('Created from the packaged Windows executable')
@@ -44,8 +44,8 @@ try {
 
   app = await electron.launch({ executablePath: exe, args: [], env, timeout: 60_000 })
   page = await app.firstWindow()
-  await page.waitForSelector('.po-project-card', { timeout: 60_000 })
-  const card = await page.locator('.po-project-card').first().innerText()
+  await page.waitForSelector('.v16-project-visual', { timeout: 60_000 })
+  const card = await page.locator('.v16-project-visual').first().innerText()
   if (!card.includes('Packaged Project')) throw new Error('packaged app did not persist the project')
   if (errors.length > 0) throw new Error(`renderer errors: ${errors.join(' | ')}`)
   console.log('PACKAGE SMOKE PASS — packaged EXE creates a project, writes starter files and recovers after restart.')
@@ -67,3 +67,4 @@ try {
     console.error(`  data kept for inspection: ${dataDir}`)
   }
 }
+

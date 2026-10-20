@@ -122,7 +122,7 @@ async function runViewport(width, height) {
     }
     await capture(page, size, 'light', 'agent-workbench')
     await page.getByRole('button', { name: 'Agent 管理' }).click()
-    await page.waitForSelector('.po-agent-studio', { timeout: 10_000 })
+    await page.waitForSelector('.v16-studio', { timeout: 10_000 })
     await page.waitForTimeout(400)
     await capture(page, size, 'light', 'agent-studio')
     await page.locator('.ant-modal-close').last().click()
@@ -234,6 +234,7 @@ try {
 }
 
 if (!existsSync(outDir)) process.exitCode = 1
+
 
 
 
