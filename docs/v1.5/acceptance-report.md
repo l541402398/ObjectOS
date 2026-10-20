@@ -20,7 +20,7 @@ V1.5 E2E 覆盖：
 
 ## 包
 
-SHA256：`71B3F46A2D82029DBFD7E7943E8EEAE0ACB6512B64FE881A3C76D609639BFD26` 
+SHA256：`29940A3FBCD6FE15407C578ED1C17BC9B53FECAA09E7612AF801E4AB13F332BB` 
 
 ## 截图
 
@@ -81,3 +81,5 @@ Runtime 管理中心已加入 ACP 可发现列表与导入按钮。
 ACP authenticate 方法已接入客户端与 AgentStudio，并由 fixture 测试验证。
 
 Runtime 管理中心为 ACP Profile 增加认证入口。
+
+Runtime 管理中心支持删除自定义 Runtime。

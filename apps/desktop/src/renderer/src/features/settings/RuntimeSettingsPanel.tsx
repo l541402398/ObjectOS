@@ -140,6 +140,23 @@ export function RuntimeSettingsPanel() {
                     测试
                   </Button>
                 ) : null}
+                {profile.source === 'custom' ? (
+                  <Button
+                    size="small"
+                    danger
+                    onClick={() => {
+                      void window.projectos.runtimeProfiles
+                        .delete(profile.id)
+                        .then(() => {
+                          message.success('Runtime 已删除')
+                          void queryClient.invalidateQueries({ queryKey: ['runtime-profiles'] })
+                        })
+                        .catch((error) => message.error(errorMessage(error)))
+                    }}
+                  >
+                    删除
+                  </Button>
+                ) : null}
               </div>
             </div>
           )
