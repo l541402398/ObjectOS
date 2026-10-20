@@ -5,7 +5,7 @@
 ```text
 pnpm typecheck
 pnpm lint
-pnpm test              → 20 files / 106 tests
+pnpm test              → 21 files / 107 tests
 node scripts/v15-e2e.mjs → PASS
 ```
 
@@ -20,13 +20,20 @@ V1.5 E2E 覆盖：
 
 ## 包
 
-SHA256：`293ED9178649F15D7AF9403C9C71BB65C0EC62978772B1B7ABF6571BDFE0DD30` 
+SHA256：`358B16C176EC6D232C5F51185ACA2B0962E9F0C62D5E30BB06511389D04FB7D8` 
 
 ## 截图
 
 - `docs/screenshots/1440x900-light-agent-studio.png`
 - `docs/screenshots/1440x900-light-settings-runtime.png`
 - 1024×768 对应截图`r`n- 共 50 张截图
+
+## 已实现执行适配
+
+- 自定义 CLI Runtime 真实 spawn、参数数组、超时、取消、进程树清理
+- 输出归一化为事件
+- 单测用临时 Node Agent 完成一次真实执行
+- 尚未接入 AgentRunner/AgentRun 快照与 UI 测试入口
 
 ## 未通过 / 阻塞
 
@@ -39,4 +46,5 @@ SHA256：`293ED9178649F15D7AF9403C9C71BB65C0EC62978772B1B7ABF6571BDFE0DD30`
 ## 结论
 
 V1.5 配置、发现、检测、UI 基座已落地；真实多 Runtime 执行尚未完成，不能宣称 V1.5 全量验收通过。
+
 

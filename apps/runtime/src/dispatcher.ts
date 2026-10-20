@@ -30,6 +30,7 @@ import { listExternalAgents } from './external-agents.js'
 import { ExternalAgentRunner } from './external-runner.js'
 import { OperationsService, repairRunKey } from './operations.js'
 import { AgentStudioService } from './agent-studio.js'
+import { RuntimeExecutionService } from './runtime-executor.js'
 import { OrchestrationService } from './orchestration.js'
 import type { AgentRunner } from './agent-runner.js'
 import type { RuntimeConfig } from './config.js'
@@ -62,6 +63,7 @@ export class RuntimeDispatcher {
   private readonly externalRunner: ExternalAgentRunner
   private readonly operations: OperationsService
   private readonly agentStudio: AgentStudioService
+  private readonly runtimeExecutor: RuntimeExecutionService
   private readonly operationsTimer: NodeJS.Timeout
   private readonly eventChecks = new Map<string, NodeJS.Timeout>()
 
@@ -72,6 +74,7 @@ export class RuntimeDispatcher {
     this.externalRunner = new ExternalAgentRunner(deps.store, deps.services, deps.logger)
     this.operations = new OperationsService(deps.store, deps.services)
     this.agentStudio = new AgentStudioService(deps.store)
+    this.runtimeExecutor = new RuntimeExecutionService(deps.store)
     this.operationsTimer = setInterval(() => this.runDueChecks(), 30_000)
     this.operationsTimer.unref()
     deps.hub.onCommitted((event) => this.onProjectEvent(event))
@@ -522,6 +525,15 @@ export class RuntimeDispatcher {
         const input = this.parse('runtime.detect', rawInput)
         return { detections: await this.agentStudio.detect(input.profileId) }
       }
+      case 'runtime.execute': {
+        const input = this.parse('runtime.execute', rawInput)
+        return this.runtimeExecutor.execute(input.profileId, input.prompt, input.cwd)
+      }
+      case 'runtime.cancel': {
+        const input = this.parse('runtime.cancel', rawInput)
+        this.runtimeExecutor.cancel(input.executionId)
+        return { ok: true as const }
+      }
       case 'runtime.registry': {
         const input = this.parse('runtime.registry', rawInput)
         return this.agentStudio.registry(input.force)
@@ -885,6 +897,7 @@ export function emitLog(hub: RuntimeEventHub, level: 'debug' | 'info' | 'warn' |
   const event: RuntimeEvent = { type: 'runtime.log', level, message, createdAt: Date.now() }
   hub.publish(event)
 }
+
 
 
 

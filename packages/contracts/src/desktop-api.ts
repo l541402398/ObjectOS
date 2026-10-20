@@ -184,6 +184,8 @@ export interface ProjectOSDesktopApi {
     delete: (id: string) => Promise<Out<'runtime.delete'>>
     detect: (profileId?: string) => Promise<Out<'runtime.detect'>>
     registry: (force?: boolean) => Promise<Out<'runtime.registry'>>
+    execute: (profileId: string, prompt: string, cwd?: string) => Promise<Out<'runtime.execute'>>
+    cancel: (executionId: string) => Promise<Out<'runtime.cancel'>>
   }
   operations: {
     snapshot: (projectId: string) => Promise<Out<'operations.snapshot'>>
@@ -244,6 +246,8 @@ declare global {
     projectos: ProjectOSDesktopApi
   }
 }
+
+
 
 
 

@@ -214,6 +214,8 @@ const api: ProjectOSDesktopApi = {
     delete: (id) => call('runtime.delete', { id }),
     detect: (profileId) => call('runtime.detect', profileId ? { profileId } : {}),
     registry: (force = false) => call('runtime.registry', { force }),
+    execute: (profileId, prompt, cwd) => call('runtime.execute', { profileId, prompt, ...(cwd ? { cwd } : {}) }),
+    cancel: (executionId) => call('runtime.cancel', { executionId }),
   },
   operations: {
     snapshot: (projectId) => call('operations.snapshot', { projectId }),
@@ -271,6 +273,8 @@ const api: ProjectOSDesktopApi = {
 }
 
 contextBridge.exposeInMainWorld('projectos', api)
+
+
 
 
 

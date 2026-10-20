@@ -39,6 +39,7 @@ export const ID_PREFIXES = {
   automationTrigger: 'atr',
   agentConfigVersion: 'acv',
   runtimeProfile: 'rtp',
+  runtimeExecution: 'exe',
   automationRun: 'aur',
   automationRunEvent: 'are',
   agentBinding: 'bnd',
@@ -82,6 +83,7 @@ export const ActorSchema = z.object({
 export type Actor = z.infer<typeof ActorSchema>
 
 export const emptyInput = z.object({}).default({})
+
 
 
 
