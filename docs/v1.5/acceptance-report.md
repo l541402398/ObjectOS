@@ -20,7 +20,7 @@ V1.5 E2E 覆盖：
 
 ## 包
 
-SHA256：`586E399FC325008280D459EA58B13D7545829492B837DC449E373F3A00F56DDE` 
+SHA256：`04E8C6AFC1973CBB36B7DD0182C6D82A32A20F755234823D2A6F76D30818AAD8` 
 
 ## 截图
 
@@ -75,3 +75,5 @@ ACP 会话现已接入 AgentRun，并由 tests/acp-client.test.ts 覆盖 Session
 
 
 ACP Registry 条目可导入为不可用 ACP Runtime（registryId 去重，不宣称已安装）。
+
+Runtime 管理中心已加入 ACP 可发现列表与导入按钮。

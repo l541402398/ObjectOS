@@ -4,6 +4,7 @@ import { PlusOutlined, ReloadOutlined, ThunderboltOutlined } from '@ant-design/i
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ErrorState, KeyValueList, LoadingBlock, StatusPill } from '@projectos/ui'
 import type { RuntimeProfile } from '@projectos/contracts'
+import { AcpRegistryPanel } from './AcpRegistryPanel'
 import { errorMessage } from '../../lib/errors'
 
 export function RuntimeSettingsPanel() {
@@ -128,6 +129,7 @@ export function RuntimeSettingsPanel() {
           )
         })}
       </div>
+      <AcpRegistryPanel />
       <div className="po-runtime-actions po-runtime-registry">
         <Button onClick={() => void window.projectos.runtimeProfiles.registry().then((result) => message.info(`ACP Registry：${result.entries.length} 个 Agent（${result.source}）`)).catch((error) => message.error(errorMessage(error)))}>
           拉取 ACP Registry
@@ -163,6 +165,7 @@ export function RuntimeSettingsPanel() {
     </div>
   )
 }
+
 
 
 
