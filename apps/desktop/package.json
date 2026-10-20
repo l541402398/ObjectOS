@@ -2,6 +2,8 @@
   "name": "@projectos/desktop",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://github.com/l541402398/ObjectOS",
+  "author": { "name": "ProjectOS contributors", "email": "l541402398@users.noreply.github.com" },
   "main": "./out/main/index.js",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -39,3 +41,4 @@
   "author": "ProjectOS contributors",
   "license": "MIT"
 }
+

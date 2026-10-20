@@ -4,6 +4,8 @@
   "private": true,
   "description": "ProjectOS — local-first AI-native project lifecycle workspace",
   "license": "MIT",
+  "homepage": "https://github.com/l541402398/ObjectOS",
+  "author": { "name": "ProjectOS contributors", "email": "l541402398@users.noreply.github.com" },
   "packageManager": "pnpm@9.15.0",
   "engines": {
     "node": ">=22.14.0"
@@ -27,6 +29,7 @@
     "test:agent": "pnpm build && node scripts/agent-e2e.mjs",
     "test:command": "pnpm build && node scripts/command-e2e.mjs",
     "package:win": "pnpm build && pnpm --filter @projectos/desktop package:win",
+    "package:linux": "bash scripts/package-linux.sh",
     "package:dir": "pnpm build && pnpm --filter @projectos/desktop package:dir",
     "test:package": "node scripts/package-smoke.mjs",
     "test:v12": "pnpm build && node scripts/v12-e2e.mjs",
@@ -58,3 +61,5 @@
     "vitest": "^5.0.5"
   }
 }
+
+

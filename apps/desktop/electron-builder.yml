@@ -8,6 +8,8 @@ directories:
 
 asar: true
 npmRebuild: false
+electronDownload:
+  mirror: https://npmmirror.com/mirrors/electron/
 compression: normal
 
 files:
@@ -34,3 +36,17 @@ win:
 portable:
   artifactName: ProjectOS-${version}-portable.${ext}
   unpackDirName: ProjectOS-${version}
+
+
+linux:
+  icon: resources/icon.png
+  executableName: ProjectOS
+  category: Development
+  maintainer: ProjectOS contributors <l541402398@users.noreply.github.com>
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  artifactName: ProjectOS-${version}-linux-${arch}.${ext}
+
+
