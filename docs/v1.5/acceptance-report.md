@@ -5,7 +5,7 @@
 ```text
 pnpm typecheck
 pnpm lint
-pnpm test              → 23 files / 110 tests
+pnpm test              → 24 files / 111 tests
 node scripts/v15-e2e.mjs → PASS
 ```
 
@@ -20,7 +20,7 @@ V1.5 E2E 覆盖：
 
 ## 包
 
-SHA256：`8B3BB560A79E59D4E6F989111904754E6636691474D029FE2AD25E40A1484EC2` 
+SHA256：`D4FB49E4E45E36CD59E8AA28DEF365E5178F03AFD97F612408DDB0F63BDD8B37` 
 
 ## 截图
 
@@ -66,3 +66,5 @@ V1.5 配置、发现、检测、UI 基座已落地；真实多 Runtime 执行尚
 - CLI Runtime 在 Git 项目中自动创建 projectos/runtime-* Worktree 并返回 workspaceRef（尚未专项 E2E）。
 
 Worktree 隔离已由 tests/runtime-worktree.test.ts 真实 Git 仓库验证。
+
+ACP initialize + session/new JSON-RPC stdio 客户端及 fixture 测试已完成。

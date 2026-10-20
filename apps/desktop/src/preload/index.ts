@@ -217,6 +217,7 @@ const api: ProjectOSDesktopApi = {
     detect: (profileId) => call('runtime.detect', profileId ? { profileId } : {}),
     registry: (force = false) => call('runtime.registry', { force }),
     execute: (profileId, prompt, cwd) => call('runtime.execute', { profileId, prompt, ...(cwd ? { cwd } : {}) }),
+    acpHandshake: (profileId, cwd) => call('runtime.acpHandshake', { profileId, ...(cwd ? { cwd } : {}) }),
     cancel: (executionId) => call('runtime.cancel', { executionId }),
   },
   operations: {
@@ -275,6 +276,7 @@ const api: ProjectOSDesktopApi = {
 }
 
 contextBridge.exposeInMainWorld('projectos', api)
+
 
 
 

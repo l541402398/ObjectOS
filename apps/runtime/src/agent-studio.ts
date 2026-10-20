@@ -1,6 +1,7 @@
 import { AppError, newId, now, type AgentDefinition, type AgentDefinitionUpsert, type AgentPersona, type RuntimeCapabilities, type RuntimeDetection, type RuntimeProfile, type RuntimeProfileUpsert, type RuntimeRegistryEntry, type Skill } from '@projectos/contracts'
 import type { SqliteStore } from '@projectos/persistence'
 import { execFile } from 'node:child_process'
+import { AcpClient } from './acp-client.js'
 import { promisify } from 'node:util'
 
 const exec = promisify(execFile)
@@ -176,6 +177,19 @@ export class AgentStudioService {
     this.store.deleteRuntimeProfile(id)
   }
 
+  async acpHandshake(profileId: string, cwd?: string) {
+    const profile = this.store.read.listRuntimeProfiles().find((item) => item.id === profileId)
+    if (!profile) throw new AppError('NOT_FOUND', 'Runtime 不存在')
+    if (profile.protocol !== 'acp') throw new AppError('BAD_REQUEST', '该 Runtime 不是 ACP 协议')
+    if (!profile.executable) throw new AppError('BAD_REQUEST', 'ACP Runtime 未配置可执行路径')
+    const client = new AcpClient(profile.executable, profile.args, cwd || process.cwd())
+    try {
+      return await client.initialize(cwd || process.cwd())
+    } finally {
+      client.dispose()
+    }
+  }
+
   async detect(profileId?: string): Promise<RuntimeDetection[]> {
     const profiles = this.listRuntimeProfiles().filter((profile) => !profileId || profile.id === profileId)
     const results: RuntimeDetection[] = []
@@ -223,6 +237,7 @@ export class AgentStudioService {
     return { source: 'network', ...result }
   }
 }
+
 
 
 
