@@ -20,7 +20,7 @@ V1.5 E2E 覆盖：
 
 ## 包
 
-SHA256：`37660C50B44F623A77639C0076FB129EB7855694BB72BB556A634EDD7EE5B557` 
+SHA256：`B4C6F3ABD259881C34C1E5D085A13B476A9E7A35F76B27DA46384E6E0CA06C6E` 
 
 ## 截图
 
@@ -70,3 +70,5 @@ Worktree 隔离已由 tests/runtime-worktree.test.ts 真实 Git 仓库验证。
 ACP initialize + session/new JSON-RPC stdio 客户端及 fixture 测试已完成。
 
 ACP 客户端现已支持 initialize、session/new、session/prompt、session/update 事件收集与 Runtime 管理中心测试。
+
+ACP 会话现已接入 AgentRun：创建 Session/Run、写入消息、收集事件、completed/failed 回写（专项 E2E 待补）。

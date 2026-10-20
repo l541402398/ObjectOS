@@ -4,6 +4,7 @@ import { existsSync } from 'node:fs'
 import { WorktreeManager } from '@projectos/worktree'
 import type { SqliteStore } from '@projectos/persistence'
 import { RuntimeExecutionService } from './runtime-executor.js'
+import { AcpClient } from './acp-client.js'
 
 export class RuntimeRunService {
   constructor(
@@ -11,6 +12,49 @@ export class RuntimeRunService {
     private readonly executor: RuntimeExecutionService,
     private readonly worktrees = new WorktreeManager(),
   ) {}
+
+  private async runAcp(
+    agent: { id: string; name: string },
+    project: { id: string; rootPath: string },
+    profile: { id: string; name: string; executable: string | null; args: string[] },
+    prompt: string,
+    cwd: string,
+  ) {
+    if (!profile.executable) throw new AppError('BAD_REQUEST', 'ACP Runtime 未配置可执行路径')
+    const timestamp = now()
+    const sessionId = newId('ses')
+    const runId = newId('run')
+    this.store.createSession({ id: sessionId, projectId: project.id, agentId: agent.id, title: promptTitle(prompt), status: 'active', createdAt: timestamp, updatedAt: timestamp })
+    this.store.appendMessage({ sessionId, role: 'user', content: prompt, runId, metadata: { runtimeProfileId: profile.id, protocol: 'acp' } })
+    this.store.createRun({ id: runId, projectId: project.id, taskId: null, sessionId, agentId: agent.id, attempt: 1, status: 'running', error: null, summary: null, inputTokens: 0, outputTokens: 0, checkpointId: null, startedAt: timestamp, finishedAt: null, createdAt: timestamp })
+    this.store.appendEvent(project.id, runId, 'run.started', { agentId: agent.id, runtimeProfileId: profile.id, protocol: 'acp' })
+    const client = new AcpClient(profile.executable, profile.args, cwd)
+    const rawEvents: unknown[] = []
+    const off = client.onEvent((message) => rawEvents.push(message))
+    const startedAt = Date.now()
+    try {
+      const session = await client.initialize(cwd)
+      const result = await client.prompt(session.sessionId, prompt)
+      const output = JSON.stringify({ result, events: rawEvents }, null, 2)
+      this.store.appendMessage({ sessionId, role: 'assistant', content: output.slice(0, 80_000), runId, metadata: { runtimeProfileId: profile.id, protocol: 'acp', acpSessionId: session.sessionId, events: rawEvents.length } })
+      this.store.updateRun(runId, { status: 'completed', error: null, summary: output.slice(0, 20_000), finishedAt: now() })
+      this.store.appendEvent(project.id, runId, 'run.completed', { agentId: agent.id, runtimeProfileId: profile.id, protocol: 'acp', events: rawEvents.length })
+      return {
+        sessionId, runId, profileId: profile.id, executionId: 'acp-' + runId, status: 'completed' as const,
+        output, events: rawEvents.map((event) => ({ type: 'acp.session.update', text: JSON.stringify(event).slice(0, 4000) })),
+        durationMs: Date.now() - startedAt, workspaceRef: null,
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      this.store.appendMessage({ sessionId, role: 'assistant', content: message, runId, metadata: { runtimeProfileId: profile.id, protocol: 'acp', failed: true } })
+      this.store.updateRun(runId, { status: 'failed', error: message.slice(0, 8000), summary: null, finishedAt: now() })
+      this.store.appendEvent(project.id, runId, 'run.failed', { agentId: agent.id, runtimeProfileId: profile.id, protocol: 'acp', error: message.slice(0, 2000) })
+      throw error
+    } finally {
+      off()
+      client.dispose()
+    }
+  }
 
   async run(input: { agentId: string; projectId: string; prompt: string; cwd?: string }) {
     const agent = this.store.read.getAgentDefinition(input.agentId)
@@ -32,6 +76,7 @@ export class RuntimeRunService {
     const profileId = agent.primaryRuntimeProfileId ?? agent.runtimeProfileIds[0]
     const profile = profiles.find((item) => item.id === profileId)
     if (!profile) throw new AppError('BAD_REQUEST', 'Agent 未绑定 Runtime')
+    if (profile.protocol === 'acp') return this.runAcp(agent, project, profile, input.prompt, cwd)
     if (profile.protocol === 'native') throw new AppError('BAD_REQUEST', 'Native Runtime 走内置 AgentRunner，请使用 Agent 工作台')
     const timestamp = now()
     const sessionId = newId('ses')
@@ -90,6 +135,7 @@ function promptTitle(prompt: string): string {
   const first = prompt.trim().split(/\r?\n/)[0] ?? 'Runtime run'
   return first.slice(0, 120)
 }
+
 
 
 
