@@ -1,4 +1,6 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -49,6 +51,7 @@ describe('runtime run', () => {
     expect(studio.listSkills().some((item) => item.id === skill.id && item.version === '1.2.0')).toBe(true)
   })
 })
+
 
 
 
