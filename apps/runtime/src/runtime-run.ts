@@ -17,6 +17,14 @@ export class RuntimeRunService {
     const cwd = resolve(input.cwd ?? project.rootPath)
     const rel = relative(project.rootPath, cwd)
     if (rel.startsWith('..') || isAbsolute(rel)) throw new AppError('WORKSPACE_OUTSIDE_ROOT', 'Runtime 工作目录必须位于项目根目录内')
+    if (profileRequiresShell(agent, this.store.read.listRuntimeProfiles())) {
+      throw new AppError('APPROVAL_REQUIRED', '该 Runtime 需要 Shell 权限，请先在 Agent 权限中启用 Shell')
+    }
+    const budget = this.store.read.getProjectBudget(input.projectId)
+    if (budget && budget.softLimit > 0) {
+      const spent = this.store.read.summarizeAIUsage(input.projectId).estimatedCost
+      if (spent > budget.softLimit) throw new AppError('BUDGET_EXCEEDED', '项目已超过软预算，Runtime 执行被拒绝')
+    }
     const profiles = this.store.read.listRuntimeProfiles()
     const profileId = agent.primaryRuntimeProfileId ?? agent.runtimeProfileIds[0]
     const profile = profiles.find((item) => item.id === profileId)
@@ -55,6 +63,11 @@ export class RuntimeRunService {
   }
 }
 
+function profileRequiresShell(agent: { permissions: { shell: boolean }; runtimeProfileIds: string[] }, profiles: Array<{ id: string; protocol: string }>): boolean {
+  if (agent.permissions.shell) return false
+  return profiles.some((profile) => agent.runtimeProfileIds.includes(profile.id) && profile.protocol === 'cli')
+}
+
 function redact(value: string): string {
   return value
     .replace(/sk-[A-Za-z0-9_-]{12,}/g, 'sk-***')
@@ -66,4 +79,5 @@ function promptTitle(prompt: string): string {
   const first = prompt.trim().split(/\r?\n/)[0] ?? 'Runtime run'
   return first.slice(0, 120)
 }
+
 

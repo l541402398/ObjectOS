@@ -28,7 +28,7 @@ describe('runtime run', () => {
       name: 'Runtime Agent', role: '执行', description: '', category: 'general', avatar: '', visibility: 'project',
       persona: { role: '执行', background: '', responsibilities: '', principles: '', style: '', constraints: '', systemPrompt: '' },
       skillIds: [], runtimeProfileIds: [profile.id], primaryRuntimeProfileId: profile.id, modelRef: null,
-      permissions: { tools: [], files: false, shell: false, network: false },
+      permissions: { tools: [], files: false, shell: true, network: false },
     })
     const executor = new RuntimeExecutionService(store)
     const runs = new RuntimeRunService(store, executor)
@@ -49,6 +49,7 @@ describe('runtime run', () => {
     expect(studio.listSkills().some((item) => item.id === skill.id && item.version === '1.2.0')).toBe(true)
   })
 })
+
 
 
 
