@@ -1,6 +1,6 @@
 {
   "name": "projectos",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "description": "ProjectOS — local-first AI-native project lifecycle workspace",
   "license": "MIT",

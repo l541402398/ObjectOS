@@ -505,7 +505,7 @@ export default function AppLayout() {
             <div className="po-sidebar-runtime">
               <span className={`po-status-dot is-${runtime?.status ?? 'unknown'}`} />
               <span>本地优先</span>
-              <span className="po-sidebar-runtime-version">v{bootstrap.data ? '1.6.0' : '—'}</span>
+              <span className="po-sidebar-runtime-version">v{bootstrap.data ? '1.7.0' : '—'}</span>
             </div>
             <Tooltip title="项目中心">
               <button type="button" className="po-icon-button" onClick={() => navigate('/')} aria-label="项目中心">

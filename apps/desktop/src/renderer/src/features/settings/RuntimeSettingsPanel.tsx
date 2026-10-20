@@ -241,7 +241,7 @@ export function RuntimeSettingsPanel() {
       <div className="po-settings-divider" />
       <KeyValueList items={[
         { label: '数据目录', value: preferences.data?.dataDir ?? '—', mono: true },
-        { label: '应用版本', value: preferences.data?.appVersion ?? '1.6.0' },
+        { label: '应用版本', value: preferences.data?.appVersion ?? '1.7.0' },
         { label: '平台', value: preferences.data?.platform ?? '—' },
         { label: 'Electron', value: window.projectos.system.versions.electron ?? '—' },
         { label: 'Node', value: window.projectos.system.versions.node ?? '—' },

@@ -13,6 +13,7 @@ import {
 import type { ReactNode } from 'react'
 import { useUiStore, type SettingsSection } from '../../stores/ui'
 import { AIConnectionsPanel } from './AIConnectionsPanel'
+import { SettingsOverviewPanel } from './SettingsOverviewPanel'
 import { ModelCatalogPanel } from './ModelCatalogPanel'
 import { GeneralSettingsPanel } from './GeneralSettingsPanel'
 import { RuntimeSettingsPanel } from './RuntimeSettingsPanel'
@@ -26,6 +27,7 @@ import { SkillsSettingsPanel } from './SkillsSettingsPanel'
 import './settings.css'
 
 const SECTIONS: Array<{ key: SettingsSection; label: string; icon: ReactNode }> = [
+  { key: 'overview', label: '设置概览', icon: <AppstoreOutlined /> },
   { key: 'ai-connections', label: 'AI 连接', icon: <ApiOutlined /> },
   { key: 'models', label: '模型目录', icon: <AppstoreOutlined /> },
   { key: 'runtime', label: '运行时', icon: <HddOutlined /> },
@@ -44,6 +46,8 @@ const SECTIONS: Array<{ key: SettingsSection; label: string; icon: ReactNode }> 
 
 function renderSection(section: SettingsSection): ReactNode {
   switch (section) {
+    case 'overview':
+      return <SettingsOverviewPanel />
     case 'ai-connections':
       return <AIConnectionsPanel />
     case 'models':
@@ -99,7 +103,7 @@ export function SettingsModal() {
         <div className="po-settings-top">
           <div>
             <h1>设置</h1>
-            <p>ProjectOS 1.6.0</p>
+            <p>ProjectOS 1.7.0</p>
           </div>
         </div>
         <div className="po-settings-body">

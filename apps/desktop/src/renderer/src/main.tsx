@@ -13,6 +13,7 @@ import '@projectos/ai-ui/styles.css'
 import './styles/global.css'
 import './styles/app.css'
 import './styles/v16.css'
+import './styles/v17.css'
 import { router } from './router'
 import { useResolvedTheme, useUiEffects } from './stores/ui'
 
@@ -97,4 +98,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </AppErrorBoundary>
   </React.StrictMode>,
 )
+
 

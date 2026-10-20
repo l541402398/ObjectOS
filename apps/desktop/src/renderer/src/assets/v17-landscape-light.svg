@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1200" viewBox="0 0 1920 1200">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eaf3ff"/>
+      <stop offset=".34" stop-color="#d8e8ff"/>
+      <stop offset=".58" stop-color="#c9dcf8"/>
+      <stop offset=".74" stop-color="#f2dfe8"/>
+      <stop offset=".86" stop-color="#ffe7d6"/>
+      <stop offset="1" stop-color="#fff3e7"/>
+    </linearGradient>
+    <radialGradient id="sun" cx=".72" cy=".72" r=".4">
+      <stop offset="0" stop-color="#fff7e8" stop-opacity=".98"/>
+      <stop offset=".2" stop-color="#ffe5c8" stop-opacity=".65"/>
+      <stop offset=".55" stop-color="#ffc9ba" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#ffc9ba" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="far" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b6c8e6"/>
+      <stop offset=".5" stop-color="#8fa6c9"/>
+      <stop offset="1" stop-color="#7188ad"/>
+    </linearGradient>
+    <linearGradient id="mid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8aa1c5"/>
+      <stop offset=".55" stop-color="#657c9f"/>
+      <stop offset="1" stop-color="#4b5f80"/>
+    </linearGradient>
+    <linearGradient id="near" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4d6283"/>
+      <stop offset="1" stop-color="#30415c"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d7e7f8"/>
+      <stop offset=".25" stop-color="#b9d0ea"/>
+      <stop offset=".6" stop-color="#93b2d3"/>
+      <stop offset="1" stop-color="#7898bb"/>
+    </linearGradient>
+    <linearGradient id="mist" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#ffffff" stop-opacity=".62"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="22"/></filter>
+    <filter id="soft2" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+
+  <rect width="1920" height="1200" fill="url(#sky)"/>
+  <rect width="1920" height="1200" fill="url(#sun)"/>
+
+  <path d="M0 640 L120 560 220 610 340 500 430 556 540 470 650 548 760 492 870 570 980 505 1090 560 1200 486 1300 548 1420 510 1540 586 1660 520 1780 570 1920 512 L1920 830 0 830 Z" fill="url(#far)" opacity=".7"/>
+  <path d="M0 700 L160 620 300 690 430 600 560 676 700 604 840 690 990 620 1140 700 1280 630 1420 700 1560 636 1710 706 1920 628 L1920 860 0 860 Z" fill="url(#mid)" opacity=".85"/>
+
+  <path d="M0 720 C240 680 420 760 660 724 900 688 1080 764 1320 724 1540 688 1740 748 1920 716 L1920 800 C1720 832 1540 780 1320 812 1100 844 900 780 680 816 460 852 240 800 0 836 Z" fill="url(#mist)" filter="url(#soft)"/>
+
+  <path d="M0 820 L120 770 260 826 400 744 540 812 690 754 840 822 980 762 1140 830 1280 774 1440 838 1600 780 1760 840 1920 790 L1920 980 0 980 Z" fill="url(#near)"/>
+
+  <path d="M0 860 L1920 860 L1920 1200 L0 1200 Z" fill="url(#water)"/>
+  <path d="M420 900 C620 876 860 890 1080 906 1300 922 1520 900 1920 916" stroke="#ffffff" stroke-opacity=".55" stroke-width="2" fill="none"/>
+  <path d="M180 970 C520 940 820 982 1120 962 1420 942 1710 980 1920 960" stroke="#ffe6d2" stroke-opacity=".55" stroke-width="2" fill="none"/>
+  <path d="M0 1050 C420 1018 780 1062 1180 1038 1500 1018 1760 1052 1920 1036" stroke="#ffffff" stroke-opacity=".35" stroke-width="3" fill="none"/>
+
+  <path d="M0 858 C300 842 620 872 940 858 1260 844 1580 878 1920 860 L1920 900 C1500 918 1180 884 860 900 540 916 260 892 0 900 Z" fill="#ffffff" opacity=".34" filter="url(#soft2)"/>
+
+  <path d="M0 1120 L90 1090 190 1112 280 1084 380 1120 470 1096 560 1130 680 1102 800 1140 930 1106 1060 1142 1200 1110 1340 1146 1480 1112 1620 1148 1760 1118 1920 1152 L1920 1200 0 1200 Z" fill="#3f5374" opacity=".75"/>
+  <g stroke="#415a7a" stroke-width="5" stroke-linecap="round" opacity=".6">
+    <path d="M120 1200 C118 1140 130 1110 150 1078"/>
+    <path d="M150 1200 C148 1150 160 1116 172 1098"/>
+    <path d="M1740 1200 C1738 1144 1750 1114 1768 1084"/>
+    <path d="M1780 1200 C1776 1150 1790 1120 1806 1102"/>
+  </g>
+</svg>

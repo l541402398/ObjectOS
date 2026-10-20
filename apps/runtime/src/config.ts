@@ -38,7 +38,7 @@ export function loadRuntimeConfig(): RuntimeConfig {
     dataDir,
     dbPath,
     logDir,
-    runtimeVersion: '1.6.0',
+    runtimeVersion: '1.7.0',
     provider,
     seedDemo: process.env.PROJECTOS_SEED_DEMO === '1',
   }

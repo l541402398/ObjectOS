@@ -68,7 +68,7 @@ export function DataSecuritySettingsPanel() {
       <div className="po-setting-row"><div><strong>AI 凭据</strong><span>{stored} 个连接已保存 Key；仅保存在 Main 进程安全存储，不写入 SQLite/日志。</span></div><LockOutlined /></div>
       <div className="po-setting-row"><div><strong>待审批</strong><span>{bootstrap.data?.pendingApprovals.length ?? 0} 个高风险操作等待人工确认。</span></div></div>
       <div className="po-setting-row"><div><strong>网络</strong><span>应用未设置独立代理；模型与 Runtime 请求使用系统代理和环境变量。</span></div></div>
-      <div className="po-setting-row"><div><strong>平台</strong><span>{preferences.data?.platform ?? '—'} · ProjectOS {preferences.data?.appVersion ?? '1.6.0'}</span></div></div>
+      <div className="po-setting-row"><div><strong>平台</strong><span>{preferences.data?.platform ?? '—'} · ProjectOS {preferences.data?.appVersion ?? '1.7.0'}</span></div></div>
     </div>
   )
 }
