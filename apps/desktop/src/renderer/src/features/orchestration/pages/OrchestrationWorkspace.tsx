@@ -453,6 +453,33 @@ export default function OrchestrationWorkspace() {
     })
   }
 
+  const addDraftTask = (): void => {
+    setDraft((current) => {
+      if (!current) return current
+      const key = `custom-${Date.now().toString(36)}`
+      return {
+        ...current,
+        tasks: [...current.tasks, {
+          key,
+          title: '新任务节点',
+          description: '',
+          role: 'developer' as const,
+          dependsOn: [],
+          acceptanceCriteria: ['完成后由人工确认'],
+          expectedArtifacts: [],
+          requiresApproval: true,
+        }],
+      }
+    })
+  }
+
+  const removeDraftTask = (key: string): void => {
+    setDraft((current) => current ? {
+      ...current,
+      tasks: current.tasks.filter((task) => task.key !== key).map((task) => ({ ...task, dependsOn: task.dependsOn.filter((dep) => dep !== key) })),
+    } : current)
+  }
+
   const approve = async (): Promise<void> => {
     if (!draft) return
     try {
@@ -1017,6 +1044,7 @@ export default function OrchestrationWorkspace() {
                       <div className="po-plan-task-head">
                         <Input value={task.title} disabled={draft.status !== 'draft'} onChange={(event) => updateDraftTask(index, { title: event.target.value })} />
                         <Select value={task.role} disabled={draft.status !== 'draft'} options={Object.entries(ROLE_LABELS).map(([value, label]) => ({ value, label }))} onChange={(role) => updateDraftTask(index, { role: role as PlannedTask['role'] })} />
+                        {draft.status === 'draft' ? <Button type="text" danger size="small" icon={<DeleteOutlined />} aria-label="删除任务节点" onClick={() => removeDraftTask(task.key)} /> : null}
                       </div>
                       <div className="po-plan-task-deps">
                         {draft.status === 'draft' ? (
@@ -1039,6 +1067,9 @@ export default function OrchestrationWorkspace() {
                     </div>
                   ))}
                 </div>
+                {draft.status === 'draft' ? (
+                  <Button icon={<PlusOutlined />} onClick={addDraftTask} block>添加任务节点</Button>
+                ) : null}
                 {draft.assumptions.length || draft.risks.length ? (
                   <div className="po-plan-notes">
                     {draft.assumptions.map((item) => <span key={item}>假设：{item}</span>)}
