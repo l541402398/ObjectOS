@@ -1,0 +1,35 @@
+import { _electron as electron } from 'playwright-core'
+import { mkdtempSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+const root = process.cwd()
+const env = { ...process.env, PROJECTOS_DATA_DIR: mkdtempSync(join(tmpdir(), 'v16-drag-fix-')), PROJECTOS_SEED_DEMO: '1', PROJECTOS_WINDOW_WIDTH: '1440', PROJECTOS_WINDOW_HEIGHT: '900' }
+delete env.ELECTRON_RUN_AS_NODE
+const app = await electron.launch({ executablePath: resolve(root, 'node_modules/electron/dist/electron.exe'), args: ['.', '--user-data-dir=' + mkdtempSync(join(tmpdir(), 'v16-drag-fix-user-'))], cwd: resolve(root, 'apps/desktop'), env, timeout: 60000 })
+const page = await app.firstWindow()
+await page.waitForSelector('.v16-project-visual', { timeout: 30000 })
+const projectId = await page.evaluate(async () => (await window.projectos.projects.list()).projects[0].id)
+await page.evaluate((id) => { location.hash = `#/projects/${id}/tasks` }, projectId)
+await page.waitForSelector('.po-board')
+await page.waitForTimeout(800)
+const source = page.locator('.po-board-column').nth(0).locator('.po-task-tile').first()
+const title = await source.locator('.po-task-tile-title').innerText()
+const sourceBox = await source.boundingBox()
+const targetBox = await page.locator('.po-board-column').nth(1).boundingBox()
+if (!sourceBox || !targetBox) throw new Error('boxes missing')
+await page.mouse.move(sourceBox.x + sourceBox.width / 2, sourceBox.y + 30)
+await page.mouse.down()
+await page.waitForTimeout(200)
+await page.mouse.move(sourceBox.x + sourceBox.width / 2 + 40, sourceBox.y + 60, { steps: 10 })
+await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + 120, { steps: 20 })
+await page.waitForTimeout(400)
+await page.mouse.up()
+await page.waitForTimeout(1500)
+const board = await page.evaluate(async (id) => window.projectos.tasks.board(id), projectId)
+const task = board.tasks.find((entry) => entry.title === title)
+const stuck = await page.locator('.po-board.is-dragging').count()
+console.log('status', task?.status, 'stuckClass', stuck)
+if (task?.status !== 'ready') throw new Error('drag did not move task: ' + task?.status)
+if (stuck !== 0) throw new Error('board still in dragging state')
+console.log('TASK DRAG FREEZE FIX PASS')
+await app.close()

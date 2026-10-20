@@ -81,11 +81,13 @@ function TaskTile({
   task,
   onOpen,
   onDragStart,
+  onDragEnd,
   dragging,
 }: {
   task: TaskCard
   onOpen: () => void
   onDragStart: () => void
+  onDragEnd: () => void
   dragging: boolean
 }) {
   return (
@@ -97,6 +99,7 @@ function TaskTile({
         event.dataTransfer.setData('text/plain', task.id)
         onDragStart()
       }}
+      onDragEnd={onDragEnd}
       onClick={onOpen}
       role="button"
       tabIndex={0}
@@ -442,7 +445,7 @@ export default function TaskBoardPage() {
       ) : (
         <>
           <div className="po-board-scroll">
-            <div className={`po-board ${draggingId ? 'is-dragging' : ''}`.trim()}>
+            <div className={`po-board ${draggingId ? 'is-dragging' : ''}`.trim()} onDragEnd={() => { setDraggingId(null); setDropTarget(null) }}>
               {columns.map((column) => (
                 <section
                   key={column.status}
@@ -482,6 +485,7 @@ export default function TaskBoardPage() {
                           task={task}
                           dragging={draggingId === task.id}
                           onDragStart={() => setDraggingId(task.id)}
+                          onDragEnd={() => { setDraggingId(null); setDropTarget(null) }}
                           onOpen={() => openTask(task)}
                         />
                       ))

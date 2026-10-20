@@ -1687,7 +1687,7 @@
 
 /* While dragging, task cards must not become the native drop target.
    The whole column remains a valid drop surface. */
-.po-board.is-dragging .po-task-tile {
+.po-board.is-dragging .po-task-tile:not(.is-dragging) {
   pointer-events: none;
 }
 
