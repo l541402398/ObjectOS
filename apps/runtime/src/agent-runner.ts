@@ -54,6 +54,10 @@ export interface StartRunInput {
   messageId?: string
   inboxId?: string
   workspaceRoot?: string
+  /** Group-chat: run this agent inside the shared session. */
+  agentId?: string
+  /** Replaces the visible user message only for this run's model context. */
+  promptOverride?: string
 }
 
 export interface StartRunResult {
@@ -76,6 +80,7 @@ interface ActiveRun {
   attemptNo: number
   inboxId: string | null
   promptMessageId: string
+  promptOverride?: string | null
   busy: boolean
   checkpointSeq: number
   inputTokens: number
@@ -135,7 +140,7 @@ export class AgentRunner {
     if (this.sessionIndex.has(session.id) || this.store.read.getActiveRunForSession(session.id)) {
       throw new AppError('CONFLICT', '该会话已有运行中的 Agent，请等待完成或取消')
     }
-    const agent = this.store.read.getAgent(session.agentId)
+    const agent = this.store.read.getAgent(input.agentId ?? session.agentId)
     if (!agent) throw new AppError('NOT_FOUND', 'Agent 不存在')
     let task: Task | null = null
     if (input.taskId) {
@@ -270,6 +275,7 @@ export class AgentRunner {
       attemptNo,
       inboxId: input.inboxId ?? null,
       promptMessageId: promptMessage.id,
+      promptOverride: input.promptOverride ?? null,
       busy: false,
       checkpointSeq: 0,
       inputTokens: 0,
@@ -307,7 +313,7 @@ export class AgentRunner {
       }
     }
     if (definition && runtimeProfile && runtimeReady) {
-      void this.executeViaRuntime(state, definition, runtimeProfile, promptMessage.content, project.rootPath).catch((error) => {
+      void this.executeViaRuntime(state, definition, runtimeProfile, state.promptOverride ?? promptMessage.content, project.rootPath).catch((error) => {
         this.logger.error({ err: error, runId }, 'runtime agent run crashed')
         void this.failRun(state, error instanceof Error ? error.message : String(error)).catch((nested) => {
           this.logger.error({ err: nested, runId }, 'failed to finalize runtime run')
@@ -496,6 +502,17 @@ export class AgentRunner {
     if (history.length === 0) {
       const prompt = this.store.getMessageById(state.promptMessageId)
       history.push({ role: 'user', content: prompt?.content ?? '请开始执行当前任务。' })
+    }
+    if (state.promptOverride) {
+      let replaced = false
+      for (let index = history.length - 1; index >= 0; index -= 1) {
+        if (history[index]?.role === 'user') {
+          history[index] = { role: 'user', content: state.promptOverride }
+          replaced = true
+          break
+        }
+      }
+      if (!replaced) history.push({ role: 'user', content: state.promptOverride })
     }
     const messages: ChatMessage[] = [{ role: 'system', content: system }, ...history]
     const steps = this.store.read.getRunSteps(run.id)
@@ -1336,6 +1353,7 @@ export class AgentRunner {
       attemptNo: run.attempt,
       inboxId: null,
       promptMessageId: this.findPromptMessageId(run),
+      promptOverride: null,
       busy: false,
       checkpointSeq: 0,
       inputTokens: run.inputTokens,
@@ -1540,6 +1558,7 @@ function approvalDetail(invocation: ToolInvocation): string {
   }
   return `Agent 请求执行 ${invocation.name}。`
 }
+
 
 
 

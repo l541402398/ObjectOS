@@ -198,6 +198,7 @@ const api: ProjectOSDesktopApi = {
     revise: (input) => call('plan.revise', input),
     approve: (planId) => call('plan.approve', { planId }),
     reject: (planId) => call('plan.reject', { planId }),
+    discuss: (planId, content) => call('plan.discuss', { planId, content }),
   },
   agentDefinitions: {
     list: () => call('agentDefinition.list', {}),

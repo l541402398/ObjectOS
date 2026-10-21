@@ -16,7 +16,7 @@ await page.evaluate(async (id) => {
 await page.evaluate((id) => { location.hash = `#/projects/${id}/agents` }, projectId)
 await page.waitForSelector('.po-agent-workspace')
 await page.waitForTimeout(900)
-await page.getByRole('button', { name: '计划群聊' }).click()
+await page.locator('.po-page-actions button').filter({ hasText: '计划群聊' }).click()
 await page.waitForSelector('.v17-group-drawer')
 const participants = await page.locator('.v17-group-participant').count()
 console.log('participants', participants)

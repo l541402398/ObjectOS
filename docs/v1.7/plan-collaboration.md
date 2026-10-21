@@ -71,31 +71,39 @@ newSessions 4
 
 ## 3. 计划群聊
 
-Agent 工作台新增 `计划群聊`：
+Agent 工作台新增 `计划群聊`。
 
-- 自动找到当前项目已批准计划的全部 `计划协作` 会话
-- 顶部显示计划目标与参与 Agent
-- 合并所有参与会话的消息，按时间排序
-- 用户消息去重，只显示一次
-- 输入一条消息，广播给计划内全部 Agent
-- 每个 Agent 在自己的计划会话中响应，群聊聚合展示
-- 每 4 秒刷新
-- 未配置模型时保存消息并提示
+实现方式：
+
+- 计划批准时创建**一条真正的群聊 Session**
+- 群聊参与者是计划内的全部 Agent
+- 用户消息写入群聊，只出现一次
+- `plan.discuss` 依次启动每个 Agent 在同一群聊 Session 中运行
+- 每个 Agent 启动前读取群聊前文
+- 每个 Agent 的回复以 `metadata.agentId` 标记发言者
+- 消息读取层按 `metadata.agentId` 解析真实 Agent 名称
+- 后续 Agent 能看到前面 Agent 的发言，再进行分析和回应
+- 因此形成真实的多 Agent 头脑风暴，而不是把多个单 Agent 会话拼在一起
+
+为避免并发写入导致上下文顺序混乱，群聊采用**顺序发言**：
+
+```text
+用户发言
+  → Agent A 阅读前文并回复
+  → Agent B 阅读 A 的回复并回应
+  → Agent C 阅读 A/B 的回复并回应
+  → ...
+```
+
+每个计划 Agent 仍保留自己的 `计划协作` 会话，用于任务执行和独立追踪；群聊 Session 只用于协作讨论。
 
 截图：`docs/v1.7/plan-group-chat.png`
 
 ### 说明
 
-现有数据库 `sessions` 是单 Agent 模型。V1.7 没有伪造一个新的多 Agent 表，而是：
+`agentId` 覆盖只存在于 Runtime 内部调用，不暴露给 Renderer API；`run.start` 仍然只能运行 Session 绑定的 Agent。
 
-- 每个计划 Agent 有真实独立会话
-- 群聊是这些会话的聚合视图
-- 用户消息真实广播到全部会话
-- Agent 回复真实写入各自会话
-
-这样不会破坏已有的 Session / Run / 审批 / 审计链路。
-
-真正“多个 Agent 在同一条 Session 内互相看到上下文”需要新的 `session_participants` 与多 Agent 消息归属模型，属于下一阶段数据模型改造。
+真正多 Agent 同 Session 的持久化通过消息 `metadata.agentId` 实现，不新增数据库表，不破坏现有 Session/Run/审批/审计链路。
 
 ## 4. 验证
 
@@ -105,7 +113,7 @@ pnpm lint       → PASS
 pnpm test       → 25 files / 118 tests passed
 Plan notification E2E → PASS
 Plan sessions E2E     → PASS（4 个 Agent 会话）
-Plan group chat E2E   → PASS（4 参与者，用户消息仅 1 条）
+Plan group chat E2E   → PASS（群聊 Session，4 参与者，用户消息仅 1 条）
 package x64 / ia32    → PASS
 package smoke x2      → PASS
 ```

@@ -820,6 +820,10 @@ export const ApiSchemas = {
     input: z.object({ planId: IdSchema }),
     output: PlanDraftSchema,
   },
+  'plan.discuss': {
+    input: z.object({ planId: IdSchema, content: z.string().trim().min(1).max(20_000) }),
+    output: z.object({ groupSessionId: IdSchema, queued: z.number().int().nonnegative() }),
+  },
   'orchestration.start': {
     input: z.object({ planId: IdSchema, concurrency: z.number().int().min(1).max(8).default(2), maxRetries: z.number().int().min(0).max(5).default(2), allowOverBudget: z.boolean().default(false) }),
     output: PlanDraftSchema,

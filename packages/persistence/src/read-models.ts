@@ -890,10 +890,14 @@ export class ReadModels {
     const agent = this.getAgent(session.agentId)
     if (!agent) return null
     const messages = this.getMessages(sessionId, messageLimit)
-    const messageViews: MessageView[] = messages.map((message) => ({
-      ...message,
-      agentName: message.role === 'assistant' ? agent.name : null,
-    }))
+    const agentNames = new Map(this.listAgents().map((item) => [item.id, item.name]))
+    const messageViews: MessageView[] = messages.map((message) => {
+      const speakerId = typeof message.metadata.agentId === 'string' ? message.metadata.agentId : null
+      return {
+        ...message,
+        agentName: message.role === 'assistant' ? (speakerId ? agentNames.get(speakerId) ?? agent.name : agent.name) : null,
+      }
+    })
     const activeRow = this.get<RunRow>(
       `SELECT * FROM agent_runs WHERE session_id = ? AND status IN ${ACTIVE_RUN_STATUSES}
        ORDER BY created_at DESC LIMIT 1`,

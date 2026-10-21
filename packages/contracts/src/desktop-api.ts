@@ -168,6 +168,7 @@ export interface ProjectOSDesktopApi {
     revise: (input: In<'plan.revise'>) => Promise<Out<'plan.revise'>>
     approve: (planId: string) => Promise<Out<'plan.approve'>>
     reject: (planId: string) => Promise<Out<'plan.reject'>>
+    discuss: (planId: string, content: string) => Promise<Out<'plan.discuss'>>
   }
   agentDefinitions: {
     list: () => Promise<Out<'agentDefinition.list'>>

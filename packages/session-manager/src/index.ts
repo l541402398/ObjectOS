@@ -27,6 +27,10 @@ export function assertSessionActive(status: string): void {
   }
 }
 
+export function planGroupTitle(goal: string, revision: number): string {
+  return `计划群聊 · r${revision} · ${goal.replace(/\s+/g, ' ').trim().slice(0, 70)}`.slice(0, 240)
+}
+
 export function planSessionTitle(agentName: string, revision: number): string {
   return `计划协作 · ${agentName} · r${revision}`.slice(0, 240)
 }

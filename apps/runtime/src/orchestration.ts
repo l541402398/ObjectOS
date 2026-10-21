@@ -19,7 +19,7 @@ import {
 } from '@projectos/planning'
 import { scanProject } from '@projectos/project-analyzer'
 import { getGitStatus } from '@projectos/workspace'
-import { planSessionTitle } from '@projectos/session-manager'
+import { planGroupTitle, planSessionTitle } from '@projectos/session-manager'
 
 export class OrchestrationService {
   constructor(
@@ -253,6 +253,27 @@ export class OrchestrationService {
           role: 'system',
           content: `计划「${plan.goal}」已批准。\n\n分配给 ${agent?.name ?? '当前 Agent'} 的任务：\n${titles.map((title) => `- ${title}`).join('\n')}\n\n等待用户在编排工作台确认后开始执行。`,
           metadata: { kind: 'plan-approved', planId: plan.id, revision: plan.revision },
+        })
+      }
+
+      const groupLead = [...tasksByAgent.keys()][0]
+      if (groupLead) {
+        const participants = [...tasksByAgent.keys()]
+          .map((agentId) => this.store.read.getAgent(agentId)?.name ?? 'Agent')
+          .join('、')
+        const groupSession = this.services.sessions.create(
+          {
+            projectId: plan.projectId,
+            agentId: groupLead,
+            title: planGroupTitle(plan.goal, plan.revision),
+          },
+          { kind: 'system', id: 'orchestrator', name: '编排器' },
+        )
+        this.store.appendMessage({
+          sessionId: groupSession.id,
+          role: 'system',
+          content: `计划群聊已建立。\n目标：${plan.goal}\n参与 Agent：${participants}\n\n用户和所有 Agent 的发言都会进入本群聊；Agent 会依次阅读前文后回应。`,
+          metadata: { kind: 'plan-group', planId: plan.id, revision: plan.revision },
         })
       }
 

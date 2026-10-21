@@ -125,6 +125,7 @@ export default function AgentWorkbenchPage() {
   const sessionList = useMemo(() => sessions.data?.sessions ?? [], [sessions.data])
   const latestPlan = plans.data?.plans.find((plan) => plan.status === 'approved') ?? null
   const groupSessions = useMemo(() => sessionList.filter((session) => session.title.startsWith('计划协作')), [sessionList])
+  const groupSession = useMemo(() => sessionList.find((session) => session.title.startsWith('计划群聊 ·')) ?? null, [sessionList])
   const selectedSession = sessionList.find((session) => session.id === selectedSessionId) ?? null
   const selectedRun = useMemo(() => {
     const list = runs.data?.runs ?? []
@@ -306,52 +307,34 @@ export default function AgentWorkbenchPage() {
   const displayedStream = streamingText || latestText
 
   const loadGroup = async (): Promise<void> => {
-    const details = await Promise.all(groupSessions.map((session) => window.projectos.sessions.get(session.id, 120)))
-    const seenUsers = new Set<string>()
-    const merged = details
-      .flatMap((detail) => detail.messages)
-      .sort((a, b) => a.createdAt - b.createdAt || a.seq - b.seq)
-      .filter((message) => {
-        if (message.role === 'system') return false
-        if (message.role !== 'user') return true
-        const key = `${message.content}|${Math.floor(message.createdAt / 10_000)}`
-        if (seenUsers.has(key)) return false
-        seenUsers.add(key)
-        return true
-      })
-    setGroupMessages(merged)
+    if (!groupSession) {
+      setGroupMessages([])
+      return
+    }
+    const detail = await window.projectos.sessions.get(groupSession.id, 200)
+    setGroupMessages([...detail.messages].sort((a, b) => a.createdAt - b.createdAt || a.seq - b.seq))
   }
 
   useEffect(() => {
-    if (!groupOpen || groupSessions.length === 0) return
+    if (!groupOpen || !groupSession) return
     void loadGroup()
     const timer = setInterval(() => void loadGroup(), 4_000)
     return () => clearInterval(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupOpen, groupSessions.map((session) => session.id).join(',')])
+  }, [groupOpen, groupSession?.id, sessionList.length])
 
   const sendGroup = async (): Promise<void> => {
     const content = groupInput.trim()
-    if (!content || groupSessions.length === 0) return
+    if (!content || !latestPlan || !groupSession) return
     setGroupBusy(true)
     try {
-      const sends = groupSessions.map((session) =>
-        window.projectos.sessions.sendMessage({ sessionId: session.id, content, startRun: true }),
-      )
+      const result = await window.projectos.plans.discuss(latestPlan.id, content)
       setGroupInput('')
-      message.success(`已广播给 ${groupSessions.length} 个 Agent`)
-      await new Promise((resolve) => setTimeout(resolve, 350))
+      message.success(`已发起讨论，${result.queued} 个 Agent 将依次发言`)
+      await new Promise((resolve) => setTimeout(resolve, 400))
       await loadGroup()
       setGroupBusy(false)
-      void Promise.allSettled(sends).then(async (results) => {
-        const warning = results
-          .filter((result): result is PromiseFulfilledResult<Awaited<ReturnType<typeof window.projectos.sessions.sendMessage>>> => result.status === 'fulfilled')
-          .map((result) => result.value.warning)
-          .find(Boolean)
-        if (warning) message.warning(warning)
-        await invalidateSession()
-        await loadGroup()
-      })
+      void invalidateSession()
     } catch (error) {
       setGroupBusy(false)
       message.error(errorMessage(error))
@@ -368,7 +351,7 @@ export default function AgentWorkbenchPage() {
             <Button icon={<ReloadOutlined />} onClick={() => void invalidateSession()} loading={sessions.isRefetching}>
               刷新
             </Button>
-            <Button icon={<TeamOutlined />} disabled={!latestPlan || groupSessions.length === 0} onClick={() => setGroupOpen(true)}>
+            <Button icon={<TeamOutlined />} disabled={!latestPlan || !groupSession} onClick={() => setGroupOpen(true)}>
               计划群聊
             </Button>
             <Button
@@ -723,7 +706,7 @@ export default function AgentWorkbenchPage() {
         {latestPlan ? (
           <div className="v17-group-plan-context">
             <strong>{latestPlan.goal}</strong>
-            <span>{groupSessions.length} 个 Agent · 消息会广播给全部参与者</span>
+            <span>{groupSessions.length} 个 Agent · 依次阅读前文并发言</span>
           </div>
         ) : null}
         <div className="v17-group-participants">
@@ -753,7 +736,7 @@ export default function AgentWorkbenchPage() {
             placeholder="向计划中的所有 Agent 说明你的意见、约束或下一步…"
           />
           <Button type="primary" icon={<SendOutlined />} loading={groupBusy} onClick={() => void sendGroup()}>
-            发送给全部 Agent
+            发起群聊讨论
           </Button>
         </div>
       </Drawer>
