@@ -31,11 +31,26 @@ win:
     - target: portable
       arch:
         - x64
-  artifactName: ProjectOS-${version}-portable.${ext}
+        - ia32
+    - target: nsis
+      arch:
+        - x64
+        - ia32
+  artifactName: ProjectOS-${version}-win-${arch}-portable.${ext}
 
 portable:
-  artifactName: ProjectOS-${version}-portable.${ext}
+  artifactName: ProjectOS-${version}-win-${arch}-portable.${ext}
   unpackDirName: ProjectOS-${version}
+
+nsis:
+  artifactName: ProjectOS-${version}-win-setup.${ext}
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: ProjectOS
 
 
 linux:
@@ -48,5 +63,7 @@ linux:
       arch:
         - x64
   artifactName: ProjectOS-${version}-linux-${arch}.${ext}
+
+
 
 

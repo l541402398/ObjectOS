@@ -4,8 +4,9 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
 const root = process.cwd()
-const exe = resolve(root, 'release', 'win-unpacked', 'ProjectOS.exe')
-const runtime = resolve(root, 'release', 'win-unpacked', 'resources', 'runtime', 'index.mjs')
+const packageDir = resolve(root, process.env.PROJECTOS_PACKAGE_DIR ?? 'release/win-unpacked')
+const exe = join(packageDir, 'ProjectOS.exe')
+const runtime = join(packageDir, 'resources', 'runtime', 'index.mjs')
 if (!existsSync(exe) || !existsSync(runtime)) {
   console.error('Packaged app not found. Run `pnpm package:dir` first.')
   process.exit(1)

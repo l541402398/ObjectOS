@@ -10,7 +10,9 @@
     "build": "electron-vite build",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
-    "package:win": "electron-builder --win portable --config electron-builder.yml",
+    "package:win": "electron-builder --win portable nsis --x64 --config electron-builder.yml --config.directories.output=../../release/win-x64",
+    "package:win:x64": "electron-builder --win portable nsis --x64 --config electron-builder.yml --config.directories.output=../../release/win-x64",
+    "package:win:ia32": "electron-builder --win portable nsis --ia32 --config electron-builder.yml --config.directories.output=../../release/win-ia32",
     "package:dir": "electron-builder --win dir --config electron-builder.yml"
   },
   "dependencies": {
@@ -33,7 +35,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.1.2",
-    "electron": "44.9.0",
+    "electron": "43.8.2",
     "electron-vite": "^6.0.0",
     "vite": "^8.3.4"
   },

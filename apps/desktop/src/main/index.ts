@@ -1,6 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { app, BrowserWindow, Menu, Tray, nativeImage, nativeTheme, session } from 'electron'
+import { app, BrowserWindow, Menu, Tray, dialog, nativeImage, nativeTheme, session } from 'electron'
 import { createMainLogger } from './logger.js'
 import { ProviderConfigStore } from './provider-config.js'
 import { ConnectionSecretStore } from './connection-secrets.js'
@@ -160,18 +160,29 @@ async function bootstrap(): Promise<void> {
 
 const gotLock = app.requestSingleInstanceLock()
 if (!gotLock) {
-  app.quit()
+  void app.whenReady().then(() => {
+    dialog.showErrorBox(
+      'ProjectOS 已在运行',
+      'ProjectOS 已经在后台运行。请从系统托盘打开，或先在托盘中退出旧实例后再启动。',
+    )
+    app.quit()
+  })
 } else {
   app.on('second-instance', () => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore()
-      mainWindow.show()
-      mainWindow.focus()
-    }
+    showMainWindow()
   })
 
   void bootstrap().catch((error) => {
-    logger.error('failed to bootstrap desktop app', { error: String(error) })
+    logger?.error('failed to bootstrap desktop app', { error: String(error) })
+    const message = error instanceof Error ? error.message : String(error)
+    try {
+      dialog.showErrorBox(
+        'ProjectOS 启动失败',
+        `${message}\n\n数据目录：${dataDir || '未知'}\n日志：${dataDir ? `${dataDir}/main.log` : '未知'}`,
+      )
+    } catch {
+      // ignore dialog failures during early shutdown
+    }
     app.quit()
   })
 

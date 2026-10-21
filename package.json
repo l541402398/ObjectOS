@@ -31,13 +31,15 @@
     "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "test:agent": "pnpm build && node scripts/agent-e2e.mjs",
     "test:command": "pnpm build && node scripts/command-e2e.mjs",
-    "package:win": "pnpm build && pnpm --filter @projectos/desktop package:win",
+    "package:win": "pnpm build && pnpm --filter @projectos/desktop package:win:x64 && pnpm --filter @projectos/desktop package:win:ia32 && node scripts/collect-win-artifacts.mjs",
     "package:linux": "bash scripts/package-linux.sh",
     "package:dir": "pnpm build && pnpm --filter @projectos/desktop package:dir",
     "test:package": "node scripts/package-smoke.mjs",
     "test:v12": "pnpm build && node scripts/v12-e2e.mjs",
     "test:v13": "pnpm build && node scripts/v13-e2e.mjs",
-    "test:orchestration": "pnpm build && node scripts/v13-orchestration-e2e.mjs"
+    "test:orchestration": "pnpm build && node scripts/v13-orchestration-e2e.mjs",
+    "package:win:x64": "pnpm build && pnpm --filter @projectos/desktop package:win:x64 && node scripts/collect-win-artifacts.mjs",
+    "package:win:ia32": "pnpm build && pnpm --filter @projectos/desktop package:win:ia32 && node scripts/collect-win-artifacts.mjs"
   },
   "devDependencies": {
     "@swc/core": "^1.16.18",
@@ -48,7 +50,7 @@
     "@vitejs/plugin-react": "^6.1.2",
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
-    "electron": "44.9.0",
+    "electron": "43.8.2",
     "electron-builder": "26.15.3",
     "electron-vite": "^6.0.0",
     "eslint": "^10.13.0",

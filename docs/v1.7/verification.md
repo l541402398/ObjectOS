@@ -100,10 +100,9 @@ background   v17-landscape
 
 ## 6. 产物
 
-- Windows：`release/ProjectOS-1.7.0-portable.exe`
-  `A12123C8831631FB19F3CD5488742E9B003132AB9664C6FFA53D0B53E782305E`
+- Windows x64 / ia32 便携版与安装版：见 `docs/v1.7/windows-builds.md`
 - Linux：`release/ProjectOS-1.7.0-linux-x86_64.AppImage`
-  `16DDFB53558134237B285C18AA5D33FEE8CBEE98EEF5AA9A1671929597D3E1D8`
+- 完整哈希：`release/SHA256SUMS.txt`
 
 ## 7. 尚未解决
 
@@ -112,3 +111,20 @@ background   v17-landscape
 3. 表格、Tree、Ant Design X 的深度定制仍需逐页视觉确认。
 4. 设置内页仍以表单为主，新增了概览与材质层级，但未重写全部表单交互。
 5. 未逐张对照全部 41 张新增设计稿做像素级验收。
+# ProjectOS V1.7 — 最终验证补充
+
+## Windows 双架构
+
+- x64 与 ia32 分离构建，使用独立输出目录。
+- Electron 固定 `43.8.2`，同时满足 ia32 与 Node 22 `node:sqlite`。
+- portable 与 NSIS setup 都实际启动验证。
+
+## 最终产物
+
+- `ProjectOS-1.7.0-win-x64-portable.exe`
+- `ProjectOS-1.7.0-win-x64-setup.exe`
+- `ProjectOS-1.7.0-win-ia32-portable.exe`
+- `ProjectOS-1.7.0-win-ia32-setup.exe`
+- `ProjectOS-1.7.0-linux-x86_64.AppImage`
+
+详细哈希见 `release/SHA256SUMS.txt`。
