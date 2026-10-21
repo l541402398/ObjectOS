@@ -1379,9 +1379,9 @@
   position: absolute;
   inset: 0;
   border: 0;
-  background: rgba(4, 8, 18, 0.28);
-  -webkit-backdrop-filter: blur(3px) saturate(0.9);
-  backdrop-filter: blur(3px) saturate(0.9);
+  background: rgba(4, 8, 18, 0.1);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   pointer-events: auto;
   animation: po-orch-fade-in 280ms var(--apple-ease) both;
 }

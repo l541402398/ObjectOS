@@ -303,7 +303,6 @@ export default function OrchestrationWorkspace() {
   const flowRef = useRef<ReactFlowInstance<FlowNode> | null>(null)
   const autoScan = useRef(false)
   const resolvedTheme = useResolvedTheme()
-  const initialSelection = useRef(false)
 
   const snapshot = snapshotQuery.data?.snapshot ?? null
   const latestPlan = plansQuery.data?.plans[0] ?? null
@@ -316,15 +315,6 @@ export default function OrchestrationWorkspace() {
   useEffect(() => {
     setFlowNodes(layout.nodes)
   }, [layout.nodes])
-
-  useEffect(() => {
-    if (initialSelection.current || !graphQuery.data) return
-    const firstAgent = graphQuery.data.nodes.find((node) => node.kind === 'agent') ?? null
-    if (firstAgent) {
-      initialSelection.current = true
-      setSelected(firstAgent)
-    }
-  }, [graphQuery.data])
 
   useEffect(() => {
     if (!graphQuery.data) return
