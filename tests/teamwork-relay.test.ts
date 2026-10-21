@@ -252,7 +252,15 @@ describe('Agent teamwork relay', () => {
       .listRunSummaries(project.id, 50)
       .filter((run) => Boolean(run.taskId && approved.taskIds.includes(run.taskId)))
     expect(runs.map((run) => run.status)).toEqual(['completed', 'completed', 'completed'])
+    const archRun = runs.find((run) => run.taskId === approved.taskIds[0])
     const developerRun = runs.find((run) => run.taskId === approved.taskIds[1])
+    const testerRun = runs.find((run) => run.taskId === approved.taskIds[2])
+    expect((developerRun?.startedAt ?? 0) >= (archRun?.finishedAt ?? 0)).toBe(true)
+    expect((testerRun?.startedAt ?? 0) >= (developerRun?.finishedAt ?? 0)).toBe(true)
+    const implCard = store.read.getTaskCard(approved.taskIds[1]!)
+    const testCard = store.read.getTaskCard(approved.taskIds[2]!)
+    expect(implCard?.dependencyIds).toContain(approved.taskIds[0])
+    expect(testCard?.dependencyIds).toContain(approved.taskIds[1])
     const developerDetail = store.read.getRunDetail(developerRun!.id)
     const upstreamStep = developerDetail?.steps.find((step) => step.title === '上游成果注入')
     expect(upstreamStep).toBeDefined()
@@ -262,7 +270,8 @@ describe('Agent teamwork relay', () => {
     expect(provider.calls.some((call) => call.agent === 'Iris' && call.system.includes('质量门禁'))).toBe(true)
     console.log(
       `[relay] design=${design?.id} developerRun=${developerRun?.id} injected=${injected.filter((artifact) => artifact.injected).length} ` +
-        `testReports=${testReports.length} files=src/rbac.ts+test-evidence.txt worktree=${worktree}`,
+        `testReports=${testReports.length} files=src/rbac.ts+test-evidence.txt ` +
+        `order=${archRun?.finishedAt}->${developerRun?.startedAt}->${developerRun?.finishedAt}->${testerRun?.startedAt} worktree=${worktree}`,
     )
   }, 120_000)
 
