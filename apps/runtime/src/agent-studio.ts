@@ -6,6 +6,7 @@ import { join } from 'node:path'
 import { AcpClient } from './acp-client.js'
 import { promisify } from 'node:util'
 import crossSpawn from 'cross-spawn'
+import { resolveExecutable } from './executable-resolver.js'
 
 const exec = promisify(execFile)
 
@@ -277,11 +278,11 @@ export class AgentStudioService {
         const knownOpenCode = adapterId === 'opencode' && process.env.APPDATA
           ? join(process.env.APPDATA, 'npm', 'node_modules', 'opencode-ai', 'bin', 'opencode.exe')
           : null
-        const executable = knownOpenCode && existsSync(knownOpenCode)
+        const resolved = knownOpenCode && existsSync(knownOpenCode)
           ? knownOpenCode
-          : existsSync(command)
-            ? command
-            : (process.platform === 'win32' ? await exec('where.exe', [command]) : await exec('which', [command])).stdout.split(/\r?\n/).find(Boolean) ?? command
+          : await resolveExecutable(command)
+        if (!resolved) throw new Error(`未找到可执行文件：${command}`)
+        const executable = resolved
         let version: string | null = null
         try {
           const result = await exec(executable, ['--version'], { timeout: 10_000, windowsHide: true })
