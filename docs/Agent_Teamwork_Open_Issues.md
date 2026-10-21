@@ -1,6 +1,7 @@
 # ProjectOS Agent Teamwork — Open Issues
 
 > 基线：Phase 1 `4964770`、Phase 2A `f2a20a5`/`511489a`/`93db316`、Phase 2A.1 `12b14bf`。
+> 本轮 Legacy Fixes 提交：`0e153b6`。
 > 本清单对应 Phase 2A.1 报告第 8 节的 12 项遗留问题，以及本轮 Legacy Fixes 的整改状态。
 > 状态枚举：`未开始 / 处理中 / 待验证 / 已验证关闭 / 阻塞待验证 / 明确接受风险`。
 > **没有测试证据的项目不标记为“已验证关闭”。**
