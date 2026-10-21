@@ -1158,6 +1158,43 @@ export class ReadModels {
     return stats
   }
 
+  getAppSetting(key: string): unknown {
+    const row = this.get<{ value_json: string }>('SELECT value_json FROM app_settings WHERE key = ?', key)
+    if (!row) return null
+    try {
+      return JSON.parse(row.value_json) as unknown
+    } catch {
+      return null
+    }
+  }
+
+  getHandoffMode(projectId: string): 'manual' | 'auto' {
+    return this.getAppSetting(`handoff_mode:${projectId}`) === 'auto' ? 'auto' : 'manual'
+  }
+
+  getAgentOwnerProjectId(agentId: string): string | null {
+    const value = this.getAppSetting(`agent_scope:${agentId}`)
+    return typeof value === 'string' && value.length > 0 ? value : null
+  }
+
+  /**
+   * Conservative visibility check. Legacy project Agents without an explicit
+   * scope stay available for compatibility; new Agents created from a project
+   * are scoped to that project. `global`/`space` are available everywhere;
+   * `private` needs an explicit project scope.
+   */
+  isAgentVisibleToProject(projectId: string, agentId: string): boolean {
+    const agent = this.getAgent(agentId)
+    if (!agent) return false
+    if (agent.builtin) return true
+    const definition = this.getAgentDefinition(agentId)
+    const visibility = definition?.visibility ?? 'project'
+    const ownerProjectId = this.getAgentOwnerProjectId(agentId)
+    if (visibility === 'private') return ownerProjectId === projectId
+    if (visibility === 'global' || visibility === 'space') return true
+    return ownerProjectId === null || ownerProjectId === projectId
+  }
+
   getHandoff(id: string): Handoff | null {
     const row = this.get<HandoffRow>('SELECT * FROM handoffs WHERE id = ?', id)
     return row ? toHandoff(row) : null
@@ -1192,12 +1229,41 @@ export class ReadModels {
       from_session_title: string
     },
   ): HandoffView {
+    const handoff = toHandoff(row)
+    const payload = handoff.payload as Record<string, unknown>
+    const strings = (value: unknown): string[] =>
+      Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
+    const artifactRefs = Array.isArray(payload.artifactRefs)
+      ? payload.artifactRefs.filter(
+          (item): item is { id: string; title: string; kind: string; uri: string | null; verified?: boolean } =>
+            Boolean(item) && typeof item === 'object' && typeof (item as { id?: unknown }).id === 'string',
+        ).map((item) => ({
+          id: item.id,
+          title: typeof item.title === 'string' ? item.title : item.id,
+          kind: item.kind as HandoffView['artifactRefs'][number]['kind'],
+          uri: typeof item.uri === 'string' ? item.uri : null,
+          verified: item.verified === true,
+        }))
+      : []
     return {
-      ...toHandoff(row),
+      ...handoff,
       fromAgentName: row.from_agent_name,
       toAgentName: row.to_agent_name,
       taskTitle: row.task_title,
       fromSessionTitle: row.from_session_title,
+      sourceTaskId: typeof payload.sourceTaskId === 'string' ? payload.sourceTaskId : handoff.taskId,
+      sourceAgentId: typeof payload.sourceAgentId === 'string' ? payload.sourceAgentId : handoff.fromAgentId,
+      targetAgentId: typeof payload.targetAgentId === 'string' ? payload.targetAgentId : handoff.toAgentId,
+      sourceRunId: typeof payload.sourceRunId === 'string' ? payload.sourceRunId : null,
+      completed: strings(payload.completed),
+      remaining: strings(payload.remaining),
+      risks: strings(payload.risks),
+      artifactRefs,
+      upstreamRunIds: strings(payload.upstreamRunIds),
+      nextActions: strings(payload.nextActions),
+      expiresAt: typeof payload.expiresAt === 'number' ? payload.expiresAt : null,
+      targetRunId: typeof payload.targetRunId === 'string' ? payload.targetRunId : null,
+      continuedAt: typeof payload.continuedAt === 'number' ? payload.continuedAt : null,
     }
   }
 

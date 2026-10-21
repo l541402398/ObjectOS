@@ -275,6 +275,14 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
           shell: Boolean(formValues.shell),
           network: Boolean(formValues.network),
         },
+        // New project-visible Agents are scoped to the current project; global/space
+        // Agents remain unscoped. Existing Agents keep their scope unless visibility changes.
+        ownerProjectId:
+          (formValues.visibility ?? 'project') === 'project'
+            ? editing
+              ? undefined
+              : projectId
+            : null,
       })
       await queryClient.invalidateQueries({ queryKey: ['agent-definitions'] })
       message.success(editing ? 'Agent 已更新' : 'Agent 已创建')

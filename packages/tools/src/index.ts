@@ -224,16 +224,26 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     capabilities: ['plan', 'analyze', 'architect', 'implement', 'review', 'test', 'research', 'coordinate'],
   },
   {
+    name: 'list_collaborators',
+    description:
+      '列出当前项目中可协作的 Agent（角色、能力、Skills、可用状态、委派入口）。只读，不返回密钥、模型配置或聊天内容。',
+    parameters: object({ includeSelf: { type: 'boolean', description: '是否包含当前 Agent 自身，默认 true' } }),
+    readOnly: true,
+    riskLabel: '只读',
+    capabilities: ['plan', 'analyze', 'architect', 'implement', 'review', 'test', 'research', 'coordinate'],
+  },
+  {
     name: 'send_agent_message',
     description:
-      '向同一项目中的另一个 Agent 会话发送持久化消息，并唤醒对方 Agent 处理。消息是至少一次投递，使用幂等键去重。',
+      '向同一项目中另一个可协作 Agent 发送持久化消息并唤醒对方。优先使用 toAgentId（稳定 Agent id），不需要猜 Session id；消息使用幂等键去重。',
     parameters: object(
       {
-        toSessionId: string('接收方会话 id'),
+        toAgentId: string('接收方 Agent id（推荐；会自动解析/创建目标会话）'),
+        toSessionId: string('可选：接收方会话 id（仅高级场景；与 toAgentId 二选一）'),
         body: string('消息正文'),
         type: string('消息类型', { enum: ['agent.message', 'task.delegate', 'task.result', 'agent.wake'] }),
       },
-      ['toSessionId', 'body'],
+      ['body'],
     ),
     readOnly: false,
     riskLabel: '协调',
@@ -241,12 +251,21 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
   },
   {
     name: 'handoff_task',
-    description: '把当前任务结构化交接给另一个 Agent。接收方接受后才视为交接完成。',
+    description:
+      '把当前任务结构化交接给另一个可协作 Agent。接收方接受后由调度器在 Task Lease 安全释放后继续，不会重复启动。',
     parameters: object(
       {
         toAgentId: string('接收方 Agent id'),
         summary: string('交接摘要：已完成、未完成、风险、下一步'),
         taskId: string('可选：任务 id，省略时使用当前任务'),
+        completed: stringArray('已完成事项', 20),
+        remaining: stringArray('未完成事项', 20),
+        risks: stringArray('风险与待确认项', 20),
+        nextActions: stringArray('建议下一步', 20),
+        riskLevel: string('交接风险级别；只有 low 可能在项目自动策略下免人工接受', {
+          enum: ['low', 'medium', 'high'],
+        }),
+        artifactRefs: stringArray('可选：要一并交接的 Artifact id', 20),
       },
       ['toAgentId', 'summary'],
     ),

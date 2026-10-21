@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   App as AntApp,
   Button,
@@ -121,6 +121,12 @@ export default function AgentWorkbenchPage() {
   const [streamingText, setStreamingText] = useState('')
   const streamBuffer = useRef('')
   const [groupOpen, setGroupOpen] = useState(false)
+  const handoffs = useQuery({
+    queryKey: ['handoffs', projectId],
+    queryFn: () => window.projectos.handoffs.list(projectId),
+    enabled: Boolean(projectId) && groupOpen,
+    refetchInterval: groupOpen ? 5_000 : false,
+  })
   const [groupMessages, setGroupMessages] = useState<MessageView[]>([])
   const [groupInput, setGroupInput] = useState('')
   const [groupBusy, setGroupBusy] = useState(false)
@@ -131,6 +137,15 @@ export default function AgentWorkbenchPage() {
   const latestPlan = plans.data?.plans[0] ?? null
   const groupSessions = useMemo(() => sessionList.filter((session) => session.title.startsWith('计划协作')), [sessionList])
   const groupSession = useMemo(() => sessionList.find((session) => session.title.startsWith('计划群聊 ·')) ?? null, [sessionList])
+  const groupTasks = useMemo(() => {
+    if (!latestPlan) return []
+    return latestPlan.createdTaskIds
+      .map((taskId) => board.data?.tasks.find((task) => task.id === taskId))
+      .filter((task): task is NonNullable<typeof task> => Boolean(task))
+  }, [latestPlan, board.data])
+  const groupHandoffs = handoffs.data?.handoffs ?? []
+  const pendingHandoffs = groupHandoffs.filter((handoff) => handoff.status === 'requested').length
+  const acceptedHandoffs = groupHandoffs.filter((handoff) => handoff.status === 'accepted').length
   const selectedSession = sessionList.find((session) => session.id === selectedSessionId) ?? null
   const selectedRun = useMemo(() => {
     const list = runs.data?.runs ?? []
@@ -714,6 +729,25 @@ export default function AgentWorkbenchPage() {
             </span>
           ))}
         </div>
+        {groupTasks.length > 0 || groupHandoffs.length > 0 ? (
+          <>
+            <div className="v17-group-plan-context">
+              <strong>团队进度</strong>
+              <span>
+                {groupTasks.filter((task) => task.status === 'done').length}/{groupTasks.length} 任务已交付 ·
+                交接 {pendingHandoffs} 待接受 / {acceptedHandoffs} 已接受
+              </span>
+            </div>
+            <div className="v17-group-participants">
+              {groupTasks.map((task) => (
+                <span key={task.id} className="v17-group-participant" title={task.assigneeName ?? '未分配'}>
+                  <i>{task.assigneeName?.slice(0, 1) ?? '·'}</i>
+                  {task.title} · {taskStatusLabel(task.status)}
+                </span>
+              ))}
+            </div>
+          </>
+        ) : null}
         <div className="v17-group-timeline">
           {groupMessages.length === 0 ? <div className="v16-empty-inline">计划群聊还没有消息。</div> : groupMessages.map((entry) => (
             <div key={entry.id} className={`v17-group-message is-${entry.role}`}>

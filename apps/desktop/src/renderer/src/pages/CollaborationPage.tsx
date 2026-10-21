@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   App as AntApp,
   Button,
@@ -101,11 +101,13 @@ function HandoffCard({
   handoff,
   onAccept,
   onReject,
+  onCancel,
   busy,
 }: {
   handoff: HandoffView
   onAccept: () => void
   onReject: () => void
+  onCancel: () => void
   busy: boolean
 }) {
   return (
@@ -120,10 +122,27 @@ function HandoffCard({
         <StatusPill tone={toneForStatus(handoff.status)}>{HANDOFF_LABELS[handoff.status]}</StatusPill>
       </div>
       <div className="po-handoff-summary">{truncate(handoff.summary, 220)}</div>
+      {handoff.completed.length > 0 ? (
+        <div className="po-caption po-muted">已完成：{truncate(handoff.completed.join('；'), 160)}</div>
+      ) : null}
+      {handoff.remaining.length > 0 ? (
+        <div className="po-caption po-muted">未完成：{truncate(handoff.remaining.join('；'), 160)}</div>
+      ) : null}
+      {handoff.risks.length > 0 ? (
+        <div className="po-caption po-muted">风险：{truncate(handoff.risks.join('；'), 160)}</div>
+      ) : null}
+      {handoff.artifactRefs.length > 0 ? (
+        <div className="po-caption po-muted">
+          产物：{truncate(handoff.artifactRefs.map((artifact) => artifact.title).join('；'), 160)}
+        </div>
+      ) : null}
       <div className="po-handoff-footer">
         <span className="po-caption po-muted">{formatRelative(handoff.requestedAt)}</span>
         {handoff.status === 'requested' ? (
           <div className="po-row">
+            <Button size="small" icon={<CloseOutlined />} loading={busy} onClick={onCancel}>
+              取消
+            </Button>
             <Button size="small" icon={<CloseOutlined />} loading={busy} onClick={onReject}>
               拒绝
             </Button>
@@ -144,6 +163,11 @@ export default function CollaborationPage() {
   const { message } = AntApp.useApp()
   const bootstrap = useBootstrap()
   const collaboration = useCollaboration(projectId)
+  const policy = useQuery({
+    queryKey: ['handoff-policy', projectId],
+    queryFn: () => window.projectos.handoffs.getPolicy(projectId),
+    enabled: Boolean(projectId),
+  })
   const [sendOpen, setSendOpen] = useState(false)
   const [form] = Form.useForm<{
     fromSessionId: string
@@ -216,6 +240,24 @@ export default function CollaborationPage() {
     onSuccess: async () => {
       await refresh()
       message.success('已拒绝交接')
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+
+  const cancel = useMutation({
+    mutationFn: (handoffId: string) => window.projectos.handoffs.cancel(handoffId, ''),
+    onSuccess: async () => {
+      await refresh()
+      message.success('已取消交接')
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+
+  const setPolicy = useMutation({
+    mutationFn: (mode: 'manual' | 'auto') => window.projectos.handoffs.setPolicy(projectId, mode),
+    onSuccess: async (result) => {
+      await queryClient.invalidateQueries({ queryKey: ['handoff-policy', projectId] })
+      message.success(result.mode === 'auto' ? '交接策略：自动（仅低风险）' : '交接策略：人工接受')
     },
     onError: (error) => message.error(errorMessage(error)),
   })
@@ -383,7 +425,22 @@ export default function CollaborationPage() {
             )}
           </SectionCard>
 
-          <SectionCard title="交接记录">
+          <SectionCard
+            title="交接记录"
+            extra={
+              <Select
+                size="small"
+                value={policy.data?.mode ?? 'manual'}
+                loading={policy.isLoading || setPolicy.isPending}
+                style={{ width: 150 }}
+                options={[
+                  { value: 'manual', label: '人工接受' },
+                  { value: 'auto', label: '自动（低风险）' },
+                ]}
+                onChange={(mode: 'manual' | 'auto') => setPolicy.mutate(mode)}
+              />
+            }
+          >
             {handoffs.length === 0 ? (
               <EmptyState compact icon={<SwapOutlined />} title="还没有任务交接" description="在任务详情或 Agent 工具中发起交接。" />
             ) : (
@@ -392,9 +449,10 @@ export default function CollaborationPage() {
                   <HandoffCard
                     key={handoff.id}
                     handoff={handoff}
-                    busy={accept.isPending || reject.isPending}
+                    busy={accept.isPending || reject.isPending || cancel.isPending}
                     onAccept={() => accept.mutate(handoff.id)}
                     onReject={() => reject.mutate(handoff.id)}
+                    onCancel={() => cancel.mutate(handoff.id)}
                   />
                 ))}
               </div>

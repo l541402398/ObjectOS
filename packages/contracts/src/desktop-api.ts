@@ -106,6 +106,9 @@ export interface ProjectOSDesktopApi {
     request: (input: In<'handoff.request'>) => Promise<Out<'handoff.request'>>
     accept: (handoffId: string, sessionId?: string | null) => Promise<Out<'handoff.accept'>>
     reject: (handoffId: string, reason?: string) => Promise<Out<'handoff.reject'>>
+    cancel: (handoffId: string, reason?: string) => Promise<Out<'handoff.cancel'>>
+    getPolicy: (projectId: string) => Promise<Out<'handoff.policy.get'>>
+    setPolicy: (projectId: string, mode: In<'handoff.policy.set'>['mode']) => Promise<Out<'handoff.policy.set'>>
   }
   workspace: {
     snapshot: (projectId: string) => Promise<Out<'workspace.snapshot'>>

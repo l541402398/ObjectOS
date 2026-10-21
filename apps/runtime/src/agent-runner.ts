@@ -36,6 +36,7 @@ import {
 } from '@projectos/policy'
 import { getToolDefinition, toolCatalogForAgent } from '@projectos/tools'
 import { RuntimeExecutionService } from './runtime-executor.js'
+import { collectUpstreamContext } from './upstream-context.js'
 import { AcpClient, acpTextFromEvent, acpTextFromResult } from './acp-client.js'
 import {
   getGitDiff,
@@ -333,6 +334,23 @@ export class AgentRunner {
           },
         })
         if (task) {
+          const handoff = this.store.read
+            .listHandoffViews(project.id)
+            .find((item) => item.taskId === task.id && item.status === 'accepted')
+          if (handoff) {
+            this.store.appendRunStep({
+              runId,
+              kind: 'context',
+              title: '交接来源',
+              payload: {
+                handoffId: handoff.id,
+                fromAgentName: handoff.fromAgentName,
+                sourceRunId: handoff.sourceRunId,
+                artifactRefs: handoff.artifactRefs.map((artifact) => artifact.id),
+                upstreamRunIds: handoff.upstreamRunIds,
+              },
+            })
+          }
           this.store.createAttempt({
             id: newId('att'),
             taskId: task.id,
@@ -894,6 +912,9 @@ export class AgentRunner {
     const handoff = task
       ? handoffs.find((entry) => entry.taskId === task.id && entry.status === 'accepted')
       : undefined
+    const upstream = task
+      ? collectUpstreamContext(this.store, project, task)
+      : { items: [], audit: { artifacts: [], runIds: [], skipped: [] } }
     const context = buildContext({
       project,
       task,
@@ -905,6 +926,7 @@ export class AgentRunner {
       agentsFile,
       skills,
       handoffSummary: handoff?.summary ?? null,
+      upstream: upstream.items,
     })
     const tools = toolCatalogForAgent(contextAgent.capabilities).filter((tool) => {
       if (tool.name === 'write_file') return snapshot.permissions.files
@@ -931,6 +953,21 @@ export class AgentRunner {
         title: '触发消息',
         payload: { promptMessageId: state.promptMessageId },
       })
+      const hasUpstreamStep = this.store.read
+        .getRunSteps(run.id)
+        .some((step) => step.title === '上游成果注入')
+      if (!hasUpstreamStep) {
+        this.store.appendRunStep({
+          runId: run.id,
+          kind: 'context',
+          title: '上游成果注入',
+          payload: {
+            artifacts: upstream.audit.artifacts,
+            runIds: upstream.audit.runIds,
+            skipped: upstream.audit.skipped,
+          },
+        })
+      }
     }
     const allMessages = this.store.read.getMessages(session.id, 400)
     const promptIndex = allMessages.findIndex((message) => message.id === state.promptMessageId)
@@ -1608,12 +1645,51 @@ export class AgentRunner {
           .slice(0, 8)
           .map((entry) => ({ id: entry.id, title: entry.title, body: entry.body.slice(0, 4000) }))
       }
+      case 'list_collaborators': {
+        const includeSelf = args.includeSelf !== false
+        const collaborators = this.services.collaboration
+          .listCollaborators(project.id, agent.id)
+          .filter((item) => includeSelf || !item.isSelf)
+        return { collaborators }
+      }
       case 'send_agent_message': {
+        const toSessionId = typeof args.toSessionId === 'string' && args.toSessionId ? args.toSessionId : null
+        const toAgentId = typeof args.toAgentId === 'string' && args.toAgentId ? args.toAgentId : null
+        if (!toSessionId && !toAgentId) throw new AppError('BAD_REQUEST', '需要提供 toAgentId 或 toSessionId')
+        let targetSession = toSessionId
+          ? this.services.sessions.list(project.id).find((item) => item.id === toSessionId) ?? null
+          : null
+        if (toSessionId && !targetSession) throw new AppError('NOT_FOUND', '接收方会话不存在')
+        if (toAgentId) {
+          if (!this.store.read.isAgentVisibleToProject(project.id, toAgentId)) {
+            throw new AppError('CONFLICT', '接收方 Agent 不在当前项目可见范围')
+          }
+          const targetAgent = this.store.read.getAgent(toAgentId)
+          if (!targetAgent) throw new AppError('NOT_FOUND', '接收方 Agent 不存在')
+          if (targetSession && targetSession.agentId !== toAgentId) {
+            throw new AppError('BAD_REQUEST', 'toSessionId 与 toAgentId 指向不同 Agent')
+          }
+          if (!targetSession) {
+            if (toAgentId === state.agentId) throw new AppError('BAD_REQUEST', '不能向当前 Agent 自身委派')
+            targetSession =
+              this.services.sessions.list(project.id).find(
+                (item) =>
+                  item.agentId === toAgentId &&
+                  item.status !== 'archived' &&
+                  !item.title.startsWith('计划群聊 ·'),
+              ) ??
+              this.services.sessions.create(
+                { projectId: project.id, agentId: toAgentId, title: `协作 · ${targetAgent.name}` },
+                actor,
+              )
+          }
+        }
+        if (!targetSession) throw new AppError('BAD_REQUEST', '无法解析接收方会话')
         const result = this.services.collaboration.send(
           {
             projectId: project.id,
             fromSessionId: session.id,
-            toSessionId: requiredString(args, 'toSessionId'),
+            toSessionId: targetSession.id,
             type: (typeof args.type === 'string' ? args.type : 'agent.message') as never,
             body: requiredString(args, 'body'),
             taskId: state.taskId,
@@ -1629,16 +1705,33 @@ export class AgentRunner {
         return { inboxId: result.inbox.id, status: result.inbox.status, created: result.created, woke: result.created }
       }
       case 'handoff_task': {
+        if (!taskId) throw new AppError('BAD_REQUEST', '当前运行没有关联任务，无法交接')
+        const riskLevel =
+          args.riskLevel === 'low' || args.riskLevel === 'high' || args.riskLevel === 'medium'
+            ? args.riskLevel
+            : 'medium'
         const handoff = this.services.collaboration.requestHandoff(
           {
-            taskId: taskId ?? '',
+            taskId,
             toAgentId: requiredString(args, 'toAgentId'),
             summary: requiredString(args, 'summary'),
             sessionId: session.id,
+            completed: stringArray(args, 'completed'),
+            remaining: stringArray(args, 'remaining'),
+            risks: stringArray(args, 'risks'),
+            nextActions: stringArray(args, 'nextActions'),
+            artifactRefs: stringArray(args, 'artifactRefs'),
+            riskLevel,
           },
           actor,
         )
-        return { handoffId: handoff.id, status: handoff.status, toAgentName: handoff.toAgentName }
+        return {
+          handoffId: handoff.id,
+          status: handoff.status,
+          toAgentName: handoff.toAgentName,
+          sourceRunId: handoff.sourceRunId,
+          autoAccepted: handoff.status === 'accepted',
+        }
       }
       default:
         throw new AppError('NOT_IMPLEMENTED', `工具尚未实现：${invocation.name}`)
@@ -2062,10 +2155,19 @@ export class AgentRunner {
     }
     const message = this.store.getMessageById(item.messageId)
     if (!message) throw new AppError('NOT_FOUND', '消息不存在')
+    // A message may reference the sender's task. The recipient must not take
+    // over a task that is still leased/running by someone else; deliver the
+    // message as a task-less collaboration turn instead.
+    let taskId = item.envelope.taskId ?? null
+    if (taskId) {
+      const active = this.store.read.getActiveRunForTask(taskId)
+      const lease = this.store.read.getTaskLease(taskId)
+      if (active || (lease && lease.expiresAt > now())) taskId = null
+    }
     const result = await this.startRun({
       projectId: item.projectId,
       sessionId: item.recipientSessionId,
-      taskId: item.envelope.taskId ?? null,
+      taskId,
       prompt: message.content,
       messageId: message.id,
       inboxId: item.id,

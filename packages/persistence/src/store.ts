@@ -1192,6 +1192,51 @@ export class SqliteStore {
     })
   }
 
+  /** Merge structured scheduler/audit metadata without changing lifecycle status. */
+  updateHandoffPayload(id: string, patch: Record<string, unknown>): Handoff {
+    return this.write(() => {
+      const row = this.get<HandoffRow>('SELECT * FROM handoffs WHERE id = ?', id)
+      if (!row) throw new AppError('NOT_FOUND', '交接请求不存在')
+      const current = this.parsePayload(row.payload_json)
+      this.run('UPDATE handoffs SET payload_json = ? WHERE id = ?', JSON.stringify({ ...current, ...patch }), id)
+      const updated = this.get<HandoffRow>('SELECT * FROM handoffs WHERE id = ?', id)
+      if (!updated) throw new AppError('NOT_FOUND', '交接请求不存在')
+      return toHandoff(updated)
+    })
+  }
+
+  private parsePayload(raw: string): Record<string, unknown> {
+    try {
+      const parsed = JSON.parse(raw) as unknown
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? (parsed as Record<string, unknown>)
+        : {}
+    } catch {
+      return {}
+    }
+  }
+
+  setAppSetting(key: string, value: unknown): void {
+    this.write(() => {
+      this.run(
+        `INSERT INTO app_settings (key, value_json, updated_at) VALUES (?, ?, ?)
+         ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json, updated_at = excluded.updated_at`,
+        key,
+        JSON.stringify(value ?? null),
+        now(),
+      )
+    })
+  }
+
+  setHandoffMode(projectId: string, mode: 'manual' | 'auto'): void {
+    this.setAppSetting(`handoff_mode:${projectId}`, mode)
+  }
+
+  /** Project scope for custom Agents; null means legacy/global. */
+  setAgentScope(agentId: string, projectId: string | null): void {
+    this.setAppSetting(`agent_scope:${agentId}`, projectId)
+  }
+
   insertInboxWithMessage(input: {
     projectId: string
     envelope: CrossSessionEnvelope

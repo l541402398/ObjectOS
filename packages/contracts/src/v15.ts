@@ -124,6 +124,8 @@ export const AgentDefinitionUpsertSchema = z.object({
   primaryRuntimeProfileId: IdSchema.nullable().default(null),
   modelRef: z.string().max(200).nullable().default(null),
   permissions: z.object({ tools: z.array(z.string()).default([]), files: z.boolean().default(false), shell: z.boolean().default(false), network: z.boolean().default(false) }),
+  /** Project scope for auto-assignment; null means legacy/global. */
+  ownerProjectId: IdSchema.nullable().optional(),
 })
 export type AgentDefinitionUpsert = z.infer<typeof AgentDefinitionUpsertSchema>
 

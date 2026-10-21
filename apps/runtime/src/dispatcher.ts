@@ -951,8 +951,7 @@ export class RuntimeDispatcher {
       }
       case 'handoff.list': {
         const input = this.parse('handoff.list', rawInput)
-        services.projects.getProjectOrThrow(input.projectId)
-        return { handoffs: store.read.listHandoffViews(input.projectId) }
+        return { handoffs: services.collaboration.listHandoffs(input.projectId) }
       }
       case 'handoff.request': {
         const input = this.parse('handoff.request', rawInput)
@@ -965,6 +964,18 @@ export class RuntimeDispatcher {
       case 'handoff.reject': {
         const input = this.parse('handoff.reject', rawInput)
         return { handoff: services.collaboration.rejectHandoff(input.handoffId, input.reason) }
+      }
+      case 'handoff.cancel': {
+        const input = this.parse('handoff.cancel', rawInput)
+        return { handoff: services.collaboration.cancelHandoff(input.handoffId, input.reason) }
+      }
+      case 'handoff.policy.get': {
+        const input = this.parse('handoff.policy.get', rawInput)
+        return services.collaboration.getPolicy(input.projectId)
+      }
+      case 'handoff.policy.set': {
+        const input = this.parse('handoff.policy.set', rawInput)
+        return services.collaboration.setPolicy(input.projectId, input.mode)
       }
       case 'workspace.snapshot': {
         const input = this.parse('workspace.snapshot', rawInput)

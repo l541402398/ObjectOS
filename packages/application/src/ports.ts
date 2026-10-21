@@ -1,5 +1,6 @@
 import type {
   Agent,
+  AgentDefinition,
   AgentView,
   ApprovalView,
   Artifact,
@@ -25,9 +26,11 @@ import type {
   Requirement,
   RunDetail,
   RunSummary,
+  RuntimeProfile,
   Session,
   SessionDetail,
   SessionSummary,
+  Skill,
   StageKey,
   Task,
   TaskBoard,
@@ -57,6 +60,9 @@ export interface ReadPort {
   listKnowledge(projectId: string): KnowledgeEntry[]
   listAgents(): Agent[]
   getAgent(id: string): Agent | null
+  getAgentDefinition(id: string): AgentDefinition | null
+  listSkills(): Skill[]
+  listRuntimeProfiles(): RuntimeProfile[]
   getAgentViews(projectId: string): AgentView[]
   getTask(id: string): Task | null
   listTasks(projectId: string): Task[]
@@ -80,6 +86,8 @@ export interface ReadPort {
   getHandoff(id: string): Handoff | null
   getHandoffView(id: string): HandoffView | null
   listHandoffViews(projectId: string): HandoffView[]
+  getHandoffMode(projectId: string): 'manual' | 'auto'
+  isAgentVisibleToProject(projectId: string, agentId: string): boolean
 }
 
 export interface CoreStore {
@@ -135,6 +143,8 @@ export interface CoreStore {
     id: string,
     patch: { status: Handoff['status']; toSessionId?: string | null; decidedAt?: number | null },
   ): Handoff
+  updateHandoffPayload(id: string, patch: Record<string, unknown>): Handoff
+  setHandoffMode(projectId: string, mode: 'manual' | 'auto'): void
   appendEvent(projectId: string, aggregateId: string, eventType: string, payload: Record<string, unknown>): ProjectEvent
 }
 

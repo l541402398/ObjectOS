@@ -22,6 +22,8 @@ export interface AssignmentCandidate {
   category: string
   capabilities: AgentCapability[]
   status: 'active' | 'disabled' | 'archived'
+  /** False when the Agent is outside the current project's visibility scope. */
+  visibleToProject: boolean
   skills: AssignmentSkill[]
   missingSkillIds: string[]
   runtime: { id: string; name: string; status: string } | null
@@ -79,6 +81,7 @@ const ROLE_KEYWORDS: Record<PlanRole, string[]> = {
 function candidateBlockers(candidate: AssignmentCandidate): string[] {
   const blockers: string[] = []
   if (candidate.status !== 'active') blockers.push(`Agent 状态为 ${candidate.status}`)
+  if (!candidate.visibleToProject) blockers.push('不在当前项目可见范围（仅可显式指定项目内/全局 Agent）')
   if (candidate.missingSkillIds.length > 0) {
     blockers.push(`缺少 Skill：${candidate.missingSkillIds.slice(0, 3).join(', ')}`)
   }

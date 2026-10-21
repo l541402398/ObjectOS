@@ -476,11 +476,34 @@ export const RunDetailSchema = z.object({
 })
 export type RunDetail = z.infer<typeof RunDetailSchema>
 
+export const HandoffArtifactRefSchema = z.object({
+  id: IdSchema,
+  title: z.string().max(240),
+  kind: ArtifactKindSchema,
+  uri: z.string().max(2048).nullable(),
+  verified: z.boolean().default(false),
+})
+export type HandoffArtifactRef = z.infer<typeof HandoffArtifactRefSchema>
+
 export const HandoffViewSchema = HandoffSchema.extend({
   fromAgentName: z.string(),
   toAgentName: z.string(),
   taskTitle: z.string(),
   fromSessionTitle: z.string(),
+  // Structured handoff data parsed from payload_json; old rows default to empty.
+  sourceTaskId: IdSchema.nullable().default(null),
+  sourceAgentId: IdSchema.nullable().default(null),
+  targetAgentId: IdSchema.nullable().default(null),
+  sourceRunId: IdSchema.nullable().default(null),
+  completed: z.array(z.string().max(4000)).default([]),
+  remaining: z.array(z.string().max(4000)).default([]),
+  risks: z.array(z.string().max(4000)).default([]),
+  artifactRefs: z.array(HandoffArtifactRefSchema).default([]),
+  upstreamRunIds: z.array(IdSchema).default([]),
+  nextActions: z.array(z.string().max(4000)).default([]),
+  expiresAt: nullableTimestamp.default(null),
+  targetRunId: IdSchema.nullable().default(null),
+  continuedAt: nullableTimestamp.default(null),
 })
 export type HandoffView = z.infer<typeof HandoffViewSchema>
 

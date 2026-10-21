@@ -10,6 +10,7 @@ function candidate(overrides: Partial<AssignmentCandidate> & { agentId: string; 
     category: 'code',
     capabilities: ['implement', 'analyze'],
     status: 'active',
+    visibleToProject: true,
     skills: [],
     missingSkillIds: [],
     runtime: null,
@@ -102,6 +103,32 @@ describe('agent assignment resolver', () => {
     expect(result.blocked).toBe(true)
     expect(result.reasons.join(' ')).toContain('没有可用的 Agent')
     expect(result.rejected).toHaveLength(3)
+  })
+
+  it('keeps out-of-project Agents out of candidates and blocks explicit selection', () => {
+    const hidden = candidate({
+      agentId: 'agt_other_project',
+      name: 'Other Project Agent',
+      visibleToProject: false,
+    })
+    const auto = resolveAgentAssignment({
+      role: 'developer',
+      title: '实现权限模块',
+      description: '',
+      candidates: [hidden],
+    })
+    expect(auto.agentId).toBeNull()
+    expect(auto.blocked).toBe(true)
+    expect(auto.reasons.join(' ')).toContain('可见范围')
+    const explicit = resolveAgentAssignment({
+      role: 'developer',
+      title: '实现权限模块',
+      description: '',
+      explicitAgentId: hidden.agentId,
+      candidates: [hidden],
+    })
+    expect(explicit.blocked).toBe(true)
+    expect(explicit.reasons.join(' ')).toContain('可见范围')
   })
 
   it('blocks approval when the explicitly selected Agent is unavailable', () => {

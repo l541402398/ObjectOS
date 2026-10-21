@@ -199,6 +199,7 @@ export class OrchestrationService {
         category: definition?.category ?? 'general',
         capabilities: agent.capabilities,
         status: definition?.status ?? 'active',
+        visibleToProject: this.store.read.isAgentVisibleToProject(plan.projectId, agent.id),
         skills,
         missingSkillIds,
         runtime,

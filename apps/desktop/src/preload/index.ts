@@ -136,6 +136,9 @@ const api: ProjectOSDesktopApi = {
     request: (input) => call('handoff.request', input),
     accept: (handoffId, sessionId) => call('handoff.accept', { handoffId, sessionId: sessionId ?? null }),
     reject: (handoffId, reason) => call('handoff.reject', { handoffId, reason: reason ?? '' }),
+    cancel: (handoffId, reason) => call('handoff.cancel', { handoffId, reason: reason ?? '' }),
+    getPolicy: (projectId) => call('handoff.policy.get', { projectId }),
+    setPolicy: (projectId, mode) => call('handoff.policy.set', { projectId, mode }),
   },
   workspace: {
     snapshot: (projectId) => call('workspace.snapshot', { projectId }),

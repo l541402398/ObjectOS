@@ -1,5 +1,6 @@
-import { AppError, now, type PlanDraft, type PlanExecution, type TaskCard, type WorktreeInfo } from '@projectos/contracts'
+import { AppError, now, type HandoffView, type PlanDraft, type PlanExecution, type TaskCard, type WorktreeInfo } from '@projectos/contracts'
 import type { CoreServices } from '@projectos/application'
+import { PROJECT_EVENT_TYPES } from '@projectos/domain'
 import { createArtifactRecord } from '@projectos/persistence'
 import type { SqliteStore } from '@projectos/persistence'
 import { WorktreeManager } from '@projectos/worktree'
@@ -238,6 +239,120 @@ export class OrchestrationScheduler {
     this.timers.delete(planId)
   }
 
+  private handoffPayload(handoff: HandoffView): Record<string, unknown> {
+    const payload = handoff.payload
+    return payload && typeof payload === 'object' && !Array.isArray(payload)
+      ? (payload as Record<string, unknown>)
+      : {}
+  }
+
+  /**
+   * Prepare accepted handoffs for the normal scheduler path. This method never
+   * starts a Run: it only releases finished source runs, reassigns the Task and
+   * moves it back to `ready`. The ready/start loop below remains the single
+   * starter, so Task Lease and duplicate-Run protections stay in one place.
+   */
+  private async applyAcceptedHandoffs(plan: PlanDraft): Promise<void> {
+    const handoffs = this.store.read
+      .listHandoffViews(plan.projectId)
+      .filter((handoff) => handoff.status === 'accepted' && plan.createdTaskIds.includes(handoff.taskId))
+    for (const handoff of handoffs) {
+      const payload = this.handoffPayload(handoff)
+      if (payload.schedulerPreparedAt || payload.continuedAt || payload.continuationError) continue
+      if (handoff.fromAgentId === handoff.toAgentId) continue
+      const card = this.store.read.getTaskCard(handoff.taskId)
+      if (!card || ['done', 'cancelled'].includes(card.status)) continue
+      if (!this.store.read.isAgentVisibleToProject(plan.projectId, handoff.toAgentId)) {
+        this.store.updateHandoffPayload(handoff.id, {
+          schedulerPreparedAt: now(),
+          continuationError: '接收方 Agent 不在当前项目可见范围',
+        })
+        continue
+      }
+      const activeRun = this.store.read.getActiveRunForTask(handoff.taskId)
+      if (activeRun) continue
+      const lease = this.store.read.getTaskLease(handoff.taskId)
+      if (lease && lease.expiresAt > now()) {
+        const holderRun = lease.holderId.startsWith('run:') ? this.store.read.getRun(lease.holderId.slice('run:'.length)) : null
+        const holderActive =
+          holderRun && !['completed', 'failed', 'cancelled', 'needs_reconciliation'].includes(holderRun.status)
+        if (holderActive) continue
+        try {
+          this.store.releaseTaskLease(handoff.taskId, lease.holderId, lease.fencingToken)
+        } catch (error) {
+          this.logger.warn({ err: error, taskId: handoff.taskId, handoffId: handoff.id }, 'failed to release stale source lease')
+          continue
+        }
+      }
+      try {
+        let latest = card
+        if (latest.assigneeAgentId !== handoff.toAgentId) {
+          latest = this.services.tasks.update(
+            {
+              taskId: latest.id,
+              expectedVersion: latest.version,
+              assigneeAgentId: handoff.toAgentId,
+            },
+            SYSTEM_ACTOR,
+          )
+        }
+        if (latest.status === 'review') {
+          latest = this.services.tasks.move(
+            {
+              taskId: latest.id,
+              expectedVersion: latest.version,
+              to: 'blocked',
+              note: `交接续办：等待调度器启动 ${handoff.toAgentName}`,
+            },
+            SYSTEM_ACTOR,
+          )
+        }
+        if (latest.status === 'running') {
+          latest = this.services.tasks.move(
+            {
+              taskId: latest.id,
+              expectedVersion: latest.version,
+              to: 'ready',
+              note: '交接续办：源运行已释放',
+            },
+            SYSTEM_ACTOR,
+          )
+        } else if (latest.status === 'blocked' || latest.status === 'backlog') {
+          latest = this.services.tasks.move(
+            {
+              taskId: latest.id,
+              expectedVersion: latest.version,
+              to: 'ready',
+              note: '交接续办：由调度器启动接收方',
+            },
+            SYSTEM_ACTOR,
+          )
+        }
+        this.store.updateHandoffPayload(handoff.id, { schedulerPreparedAt: now() })
+        this.store.appendEvent(plan.projectId, handoff.id, PROJECT_EVENT_TYPES.handoffContinued, {
+          title: handoff.taskTitle,
+          targetAgentId: handoff.toAgentId,
+          targetAgentName: handoff.toAgentName,
+        })
+        if (handoff.toSessionId) {
+          this.store.appendMessage({
+            sessionId: handoff.toSessionId,
+            role: 'system',
+            content: `调度器已接手交接任务「${handoff.taskTitle}」；源运行释放后将启动 ${handoff.toAgentName}。`,
+            metadata: { kind: 'handoff-scheduled', handoffId: handoff.id },
+          })
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        this.store.updateHandoffPayload(handoff.id, {
+          schedulerPreparedAt: now(),
+          continuationError: message,
+        })
+        this.logger.warn({ err: error, handoffId: handoff.id, taskId: handoff.taskId }, 'failed to prepare handoff continuation')
+      }
+    }
+  }
+
   private blockUnassignedTask(card: TaskCard, note: string): void {
     try {
       const latest = this.store.read.getTaskCard(card.id)
@@ -295,7 +410,14 @@ export class OrchestrationScheduler {
       if (cards.length === 0) throw new AppError('CONFLICT', '计划任务不存在')
       const workspaceRoot = await this.ensureWorkspace(plan)
 
-      for (const card of cards) {
+      // Accepted handoffs are prepared here, but the normal ready/start flow
+      // below is the only place that starts the receiver's Run.
+      await this.applyAcceptedHandoffs(plan)
+      const refreshedCards = plan.createdTaskIds
+        .map((taskId) => this.store.read.getTaskCard(taskId))
+        .filter((card): card is TaskCard => Boolean(card))
+
+      for (const card of refreshedCards) {
         const latest = this.store.read.getLatestRunForTask(card.id)
         if (latest?.status === 'needs_reconciliation') {
           // Side effects are unknown: never replay automatically, wait for a human to reconcile the run.
@@ -506,10 +628,30 @@ export class OrchestrationScheduler {
               .join('\n\n'),
           })
           runIds.push(result.runId)
+          const handoff = this.store.read
+            .listHandoffViews(plan.projectId)
+            .find((item) => item.status === 'accepted' && item.taskId === card.id && !this.handoffPayload(item).continuedAt)
+          if (handoff) {
+            const payload = this.handoffPayload(handoff)
+            this.store.updateHandoffPayload(handoff.id, {
+              schedulerPreparedAt: payload.schedulerPreparedAt ?? now(),
+              continuedAt: now(),
+              targetRunId: result.runId,
+            })
+          }
           changed = true
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error)
           this.logger.warn({ err: error, taskId: card.id, agentId: card.assigneeAgentId }, 'orchestrated run failed to start')
+          const handoff = this.store.read
+            .listHandoffViews(plan.projectId)
+            .find((item) => item.status === 'accepted' && item.taskId === card.id && !this.handoffPayload(item).continuedAt)
+          if (handoff) {
+            this.store.updateHandoffPayload(handoff.id, {
+              schedulerPreparedAt: this.handoffPayload(handoff).schedulerPreparedAt ?? now(),
+              continuationError: message,
+            })
+          }
           const activeRun = this.store.read.getActiveRunForTask(card.id)
           if (activeRun) {
             try {

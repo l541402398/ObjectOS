@@ -18,6 +18,7 @@ const READ_TOOLS = new Set([
   'git_diff',
   'search_knowledge',
   'list_tasks',
+  'list_collaborators',
 ])
 
 const WORKSPACE_WRITE_TOOLS = new Set(['write_file'])

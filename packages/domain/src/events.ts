@@ -33,6 +33,10 @@ export const PROJECT_EVENT_TYPES = {
   handoffRequested: 'handoff.requested',
   handoffAccepted: 'handoff.accepted',
   handoffRejected: 'handoff.rejected',
+  handoffCancelled: 'handoff.cancelled',
+  handoffExpired: 'handoff.expired',
+  handoffContinued: 'handoff.continued',
+  handoffPolicyChanged: 'handoff.policy.changed',
   messageDelivered: 'message.delivered',
   messageAcknowledged: 'message.acknowledged',
   knowledgeCreated: 'knowledge.created',
@@ -136,6 +140,18 @@ export function summarizeProjectEvent(event: Pick<ProjectEvent, 'eventType' | 'p
       return { summary: `任务交接已接受`, tone: 'success', actorName }
     case PROJECT_EVENT_TYPES.handoffRejected:
       return { summary: `任务交接被拒绝`, tone: 'danger', actorName }
+    case PROJECT_EVENT_TYPES.handoffCancelled:
+      return { summary: `任务交接已取消`, tone: 'warning', actorName }
+    case PROJECT_EVENT_TYPES.handoffExpired:
+      return { summary: `任务交接已过期`, tone: 'warning', actorName }
+    case PROJECT_EVENT_TYPES.handoffContinued:
+      return { summary: `调度器已接手交接任务`, tone: 'accent', actorName }
+    case PROJECT_EVENT_TYPES.handoffPolicyChanged:
+      return {
+        summary: `交接策略改为${payload.mode === 'auto' ? '自动（低风险）' : '人工接受'}`,
+        tone: 'neutral',
+        actorName,
+      }
     case PROJECT_EVENT_TYPES.messageDelivered:
       return { summary: `跨会话消息已投递`, tone: 'neutral', actorName }
     case PROJECT_EVENT_TYPES.messageAcknowledged:

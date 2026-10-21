@@ -199,13 +199,22 @@ export const SendCrossSessionInputSchema = z.object({
 })
 export type SendCrossSessionInput = z.infer<typeof SendCrossSessionInputSchema>
 
+export const HandoffModeSchema = z.enum(['manual', 'auto'])
+export type HandoffMode = z.infer<typeof HandoffModeSchema>
+
 export const RequestHandoffInputSchema = z.object({
   taskId: IdSchema,
   toAgentId: IdSchema,
   summary: z.string().trim().min(1).max(20_000),
   sessionId: IdSchema.nullable().default(null),
+  completed: z.array(z.string().max(4000)).default([]),
+  remaining: z.array(z.string().max(4000)).default([]),
+  risks: z.array(z.string().max(4000)).default([]),
+  nextActions: z.array(z.string().max(4000)).default([]),
+  artifactRefs: z.array(IdSchema).default([]),
+  riskLevel: z.enum(['low', 'medium', 'high']).default('medium'),
 })
-export type RequestHandoffInput = z.infer<typeof RequestHandoffInputSchema>
+export type RequestHandoffInput = z.input<typeof RequestHandoffInputSchema>
 
 export const ProviderUpdateInputSchema = z.object({
   baseUrl: z.string().trim().url().max(2048),
@@ -574,6 +583,18 @@ export const ApiSchemas = {
   'handoff.reject': {
     input: z.object({ handoffId: IdSchema, reason: z.string().max(2000).default('') }),
     output: z.object({ handoff: HandoffViewSchema }),
+  },
+  'handoff.cancel': {
+    input: z.object({ handoffId: IdSchema, reason: z.string().max(2000).default('') }),
+    output: z.object({ handoff: HandoffViewSchema }),
+  },
+  'handoff.policy.get': {
+    input: projectIdInput,
+    output: z.object({ mode: HandoffModeSchema }),
+  },
+  'handoff.policy.set': {
+    input: z.object({ projectId: IdSchema, mode: HandoffModeSchema }),
+    output: z.object({ mode: HandoffModeSchema }),
   },
   'workspace.snapshot': {
     input: projectIdInput,

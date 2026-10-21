@@ -108,7 +108,11 @@ export class AgentStudioService {
       createdAt: existing?.createdAt ?? timestamp,
       updatedAt: timestamp,
     }
-    return this.store.upsertAgentDefinition(agent)
+    const saved = this.store.upsertAgentDefinition(agent)
+    if (input.ownerProjectId !== undefined) {
+      this.store.setAgentScope(saved.id, input.ownerProjectId)
+    }
+    return saved
   }
 
   setStatus(id: string, status: 'active' | 'disabled' | 'archived'): AgentDefinition {
