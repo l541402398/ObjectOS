@@ -5,6 +5,7 @@ import {
   App as AntApp,
   Button,
   Input,
+  Modal,
   Select,
   Table,
   Tabs,
@@ -43,6 +44,7 @@ export default function RunsPage() {
   const { message } = AntApp.useApp()
   const [searchParams, setSearchParams] = useSearchParams()
   const [selectedRunId, setSelectedRunId] = useState<string | null>(searchParams.get('run'))
+  const [detailOpen, setDetailOpen] = useState(Boolean(searchParams.get('run')))
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const runs = useRuns(projectId, 100)
@@ -200,124 +202,133 @@ export default function RunsPage() {
             key: 'runs',
             label: '运行记录',
             children: (
-              <div className="po-runs-layout">
-                <div className="po-runs-list">
-                  <div className="po-board-toolbar">
-                    <Input
-                      allowClear
-                      prefix={<UnorderedListOutlined />}
-                      placeholder="搜索 Agent、任务或会话"
-                      value={query}
-                      onChange={(event) => setQuery(event.target.value)}
-                      style={{ maxWidth: 280 }}
+              <>
+              <div className="po-runs-list po-runs-full">
+                <div className="po-board-toolbar">
+                  <Input
+                    allowClear
+                    prefix={<UnorderedListOutlined />}
+                    placeholder="搜索 Agent、任务或会话"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    style={{ maxWidth: 280 }}
+                  />
+                  <Select
+                    allowClear
+                    placeholder="状态"
+                    value={statusFilter}
+                    onChange={(value) => setStatusFilter(value ?? null)}
+                    style={{ width: 150 }}
+                    options={[
+                      'completed',
+                      'failed',
+                      'running',
+                      'waiting_approval',
+                      'needs_reconciliation',
+                      'cancelled',
+                    ].map((status) => ({ value: status, label: runStatusLabel(status) }))}
+                  />
+                  <span className="po-grow" />
+                  <span className="po-board-hint">点击任意运行查看完整详情</span>
+                </div>
+                {runs.isLoading ? (
+                  <LoadingBlock rows={8} />
+                ) : runs.isError ? (
+                  <ErrorState message={errorMessage(runs.error)} onRetry={() => void runs.refetch()} />
+                ) : runList.length === 0 ? (
+                  <EmptyState
+                    icon={<HistoryOutlined />}
+                    title="还没有运行记录"
+                    description="在 Agent 工作台发送消息并配置模型后，运行记录会出现在这里。"
+                    action={<Button onClick={() => navigate(`/projects/${projectId}/agents`)}>前往 Agent 工作台</Button>}
+                  />
+                ) : (
+                  <Table
+                    rowKey="id"
+                    size="small"
+                    columns={columns}
+                    dataSource={runList}
+                    pagination={{ pageSize: 20, showSizeChanger: false }}
+                    scroll={{ y: 560 }}
+                    rowClassName={(record) => (record.id === selectedRunId ? 'po-row-selected' : '')}
+                    onRow={(record) => ({ onClick: () => { setSelectedRunId(record.id); setDetailOpen(true) } })}
+                  />
+                )}
+              </div>
+
+              <Modal
+                open={detailOpen && Boolean(selectedRun)}
+                onCancel={() => setDetailOpen(false)}
+                footer={null}
+                width={920}
+                className="po-run-detail-modal"
+                title="运行详情"
+                styles={{ body: { maxHeight: '72vh', overflow: 'auto' } }}
+              >
+                {!selectedRun ? null : runDetail.isLoading ? (
+                  <LoadingBlock rows={6} />
+                ) : runDetail.isError || !runDetail.data ? (
+                  <ErrorState compact message={runDetail.error ? errorMessage(runDetail.error) : '运行不存在'} />
+                ) : (
+                  <div className="po-run-detail">
+                    <div className="po-run-detail-head">
+                      <div>
+                        <div className="po-run-detail-title">{selectedRun.taskTitle ?? selectedRun.sessionTitle}</div>
+                        <div className="po-caption po-muted">
+                          {selectedRun.agentName} · {formatDateTime(selectedRun.startedAt)}
+                        </div>
+                      </div>
+                      <StatusPill tone={toneForStatus(selectedRun.status)}>{runStatusLabel(selectedRun.status)}</StatusPill>
+                    </div>
+                    <KeyValueList
+                      compact
+                      items={[
+                        { label: '会话', value: selectedRun.sessionTitle },
+                        { label: '尝试', value: `#${selectedRun.attempt}` },
+                        { label: '耗时', value: formatDuration(selectedRun.startedAt, selectedRun.finishedAt) },
+                        { label: 'Token', value: `${selectedRun.inputTokens} / ${selectedRun.outputTokens}` },
+                        { label: '待授权', value: selectedRun.pendingApprovals },
+                      ]}
                     />
-                    <Select
-                      allowClear
-                      placeholder="状态"
-                      value={statusFilter}
-                      onChange={(value) => setStatusFilter(value ?? null)}
-                      style={{ width: 150 }}
-                      options={[
-                        'completed',
-                        'failed',
-                        'running',
-                        'waiting_approval',
-                        'needs_reconciliation',
-                        'cancelled',
-                      ].map((status) => ({ value: status, label: runStatusLabel(status) }))}
+                    {selectedRun.error ? <ErrorState compact title="运行错误" message={selectedRun.error} /> : null}
+                    <div className="po-run-detail-actions">
+                      <Button size="small" onClick={() => navigate(`/projects/${projectId}/agents`)}>
+                        打开会话
+                      </Button>
+                      {ACTIVE.has(selectedRun.status) ? (
+                        <Button
+                          size="small"
+                          danger
+                          icon={<StopOutlined />}
+                          loading={cancel.isPending}
+                          onClick={() => cancel.mutate(selectedRun.id)}
+                        >
+                          取消运行
+                        </Button>
+                      ) : null}
+                    </div>
+                    {detailApprovals.length > 0 ? (
+                      <div className="po-approval-list">
+                        {detailApprovals.map((approval) => (
+                          <ApprovalCard
+                            key={approval.id}
+                            approval={approval}
+                            compact
+                            busy={decide.isPending}
+                            onDecide={(decision) => decide.mutate({ approvalId: approval.id, decision })}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
+                    <ToolTrace
+                      steps={runDetail.data.steps}
+                      toolCalls={runDetail.data.toolCalls}
+                      title="运行步骤"
                     />
                   </div>
-                  {runs.isLoading ? (
-                    <LoadingBlock rows={8} />
-                  ) : runs.isError ? (
-                    <ErrorState message={errorMessage(runs.error)} onRetry={() => void runs.refetch()} />
-                  ) : runList.length === 0 ? (
-                    <EmptyState
-                      icon={<HistoryOutlined />}
-                      title="还没有运行记录"
-                      description="在 Agent 工作台发送消息并配置模型后，运行记录会出现在这里。"
-                      action={<Button onClick={() => navigate(`/projects/${projectId}/agents`)}>前往 Agent 工作台</Button>}
-                    />
-                  ) : (
-                    <Table
-                      rowKey="id"
-                      size="small"
-                      columns={columns}
-                      dataSource={runList}
-                      pagination={false}
-                      scroll={{ y: 540 }}
-                      rowClassName={(record) => (record.id === selectedRunId ? 'po-row-selected' : '')}
-                      onRow={(record) => ({ onClick: () => setSelectedRunId(record.id) })}
-                    />
-                  )}
-                </div>
-                <aside className="po-run-detail-panel">
-                  {!selectedRun ? (
-                    <EmptyState compact icon={<RobotOutlined />} title="选择一个运行" description="查看步骤、工具调用与授权记录。" />
-                  ) : runDetail.isLoading ? (
-                    <LoadingBlock rows={6} />
-                  ) : runDetail.isError || !runDetail.data ? (
-                    <ErrorState compact message={runDetail.error ? errorMessage(runDetail.error) : '运行不存在'} />
-                  ) : (
-                    <div className="po-run-detail">
-                      <div className="po-run-detail-head">
-                        <div>
-                          <div className="po-run-detail-title">{selectedRun.taskTitle ?? selectedRun.sessionTitle}</div>
-                          <div className="po-caption po-muted">
-                            {selectedRun.agentName} · {formatDateTime(selectedRun.startedAt)}
-                          </div>
-                        </div>
-                        <StatusPill tone={toneForStatus(selectedRun.status)}>{runStatusLabel(selectedRun.status)}</StatusPill>
-                      </div>
-                      <KeyValueList
-                        compact
-                        items={[
-                          { label: '会话', value: selectedRun.sessionTitle },
-                          { label: '尝试', value: `#${selectedRun.attempt}` },
-                          { label: '耗时', value: formatDuration(selectedRun.startedAt, selectedRun.finishedAt) },
-                          { label: 'Token', value: `${selectedRun.inputTokens} / ${selectedRun.outputTokens}` },
-                          { label: '待授权', value: selectedRun.pendingApprovals },
-                        ]}
-                      />
-                      {selectedRun.error ? <ErrorState compact title="运行错误" message={selectedRun.error} /> : null}
-                      <div className="po-run-detail-actions">
-                        <Button size="small" onClick={() => navigate(`/projects/${projectId}/agents`)}>
-                          打开会话
-                        </Button>
-                        {ACTIVE.has(selectedRun.status) ? (
-                          <Button
-                            size="small"
-                            danger
-                            icon={<StopOutlined />}
-                            loading={cancel.isPending}
-                            onClick={() => cancel.mutate(selectedRun.id)}
-                          >
-                            取消运行
-                          </Button>
-                        ) : null}
-                      </div>
-                      {detailApprovals.length > 0 ? (
-                        <div className="po-approval-list">
-                          {detailApprovals.map((approval) => (
-                            <ApprovalCard
-                              key={approval.id}
-                              approval={approval}
-                              compact
-                              busy={decide.isPending}
-                              onDecide={(decision) => decide.mutate({ approvalId: approval.id, decision })}
-                            />
-                          ))}
-                        </div>
-                      ) : null}
-                      <ToolTrace
-                        steps={runDetail.data.steps}
-                        toolCalls={runDetail.data.toolCalls}
-                        title="运行步骤"
-                      />
-                    </div>
-                  )}
-                </aside>
-              </div>
+                )}
+              </Modal>
+              </>
             ),
           },
           {

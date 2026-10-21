@@ -1039,3 +1039,27 @@
 .ant-btn-primary:hover,
 .ant-btn-primary:focus { color: #fff !important; }
 .ant-btn-primary:disabled { color: rgba(255,255,255,.72) !important; }
+
+/* Run audit: full-width table + themed detail modal */
+.po-runs-full {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--glass-content-border);
+  border-radius: var(--apple-radius-card);
+  background: var(--glass-content-bg);
+  box-shadow: var(--glass-highlight), 0 20px 50px -38px rgba(0,0,0,.55);
+}
+.po-runs-full .ant-table-wrapper { margin-top: 10px; }
+.po-runs-full .ant-table-tbody > tr { cursor: pointer; }
+.po-runs-full .ant-table-tbody > tr.po-row-selected > td { background: rgba(10,132,255,.13) !important; }
+.po-run-detail-modal .ant-modal-container {
+  border: 1px solid var(--glass-elevated-border) !important;
+  border-radius: var(--apple-radius-panel) !important;
+  background: var(--glass-elevated-bg) !important;
+}
+.po-run-detail-modal .po-run-detail { gap: 14px; }
+.po-run-detail-modal .po-run-detail-head { padding-bottom: 12px; border-bottom: 1px solid var(--glass-content-border); }
+.po-run-detail-modal .po-run-detail-title { font-size: 17px; letter-spacing: -.015em; }
+.po-run-detail-modal .po-run-detail-actions { justify-content: flex-end; padding-top: 4px; }
+.po-run-detail-modal .ant-modal-header { border-bottom: 1px solid var(--glass-content-border); }
+[data-theme='light'] .po-runs-full { background: rgba(255,255,255,.92); border-color: rgba(40,70,120,.09); box-shadow: inset 0 1px 0 #fff, 0 20px 50px -38px rgba(30,55,100,.4); }

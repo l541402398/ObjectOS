@@ -120,3 +120,43 @@ package smoke x2    → PASS
 C4BDD2F4F4C8D844ACD426BC720FD9E279F55E451327C5898A4DD19D2131A044  ProjectOS-1.7.0-win-ia32-setup.exe
 ECBB59E9261E3A257A63DA455158676A6200E5F05C0BD27CD9F7DF5BDE09E283  ProjectOS-1.7.0-linux-x86_64.AppImage
 ```
+
+## 7. Agent 最大工具轮次
+
+旧实现硬编码：
+
+```text
+maxSteps: 8
+```
+
+分析任务需要多次 `list_directory` / `read_file` / `git_diff`，8 个 LLM 轮次很容易提前耗尽。
+
+已改为：
+
+```text
+默认 32
+PROJECTOS_MAX_AGENT_STEPS 可覆盖
+范围 8–64
+```
+
+达到上限仍会安全停止，但普通代码分析不再因为 8 轮过早失败。
+
+## 8. 运行审计重做
+
+- 移除右侧固定详情栏
+- 运行列表占满整行
+- 增加分页
+- 点击任意运行行打开主题化详情弹窗
+- 弹窗内容可独立滚动，长工具输出不会把页面撑开
+- 运行步骤、工具调用、授权记录都在弹窗中
+- 列表保留状态、Agent、任务/会话、耗时、授权
+
+截图：`docs/v1.7/run-audit-modal.png`
+
+## 9. 验证补充
+
+```text
+Runs full-width + modal E2E → PASS
+package x64 / ia32          → PASS
+package smoke x2            → PASS
+```

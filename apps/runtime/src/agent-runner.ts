@@ -90,6 +90,12 @@ interface ActiveRun {
   runtimeCancel: (() => void) | null
 }
 
+const MAX_AGENT_STEPS = (() => {
+  const configured = Number(process.env.PROJECTOS_MAX_AGENT_STEPS ?? 32)
+  if (!Number.isFinite(configured)) return 32
+  return Math.max(8, Math.min(64, Math.trunc(configured)))
+})()
+
 export class AgentRunner {
   private readonly active = new Map<string, ActiveRun>()
   private readonly runtimeExecutor: RuntimeExecutionService
@@ -544,7 +550,7 @@ export class AgentRunner {
         tools: built.tools,
         messages: built.messages,
         signal: state.abort.signal,
-        maxSteps: 8,
+        maxSteps: MAX_AGENT_STEPS,
         onTextDelta: (text) => this.onTextDelta(state, text),
         onAssistantTurn: (turn) => this.onAssistantTurn(state, turn),
         onToolResult: (invocation, outcome) => this.onToolResult(state, invocation, outcome),
