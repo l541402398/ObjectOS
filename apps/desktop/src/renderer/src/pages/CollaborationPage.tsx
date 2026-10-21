@@ -228,6 +228,7 @@ export default function CollaborationPage() {
   const providerConfigured = bootstrap.data?.provider.configured ?? false
 
   const pendingHandoffs = useMemo(() => handoffs.filter((handoff) => handoff.status === 'requested'), [handoffs])
+  const planGroups = useMemo(() => sessions.filter((session) => session.title.startsWith('计划群聊 ·')), [sessions])
 
   const openSend = (): void => {
     setSendOpen(true)
@@ -277,7 +278,7 @@ export default function CollaborationPage() {
               Agent 工作台
             </Button>
             <Button type="primary" icon={<SendOutlined />} onClick={openSend} disabled={sessions.length < 1}>
-              发送消息
+              手动投递
             </Button>
           </>
         }
@@ -334,6 +335,25 @@ export default function CollaborationPage() {
 
       <div className="po-collab-grid">
         <div className="po-collab-main">
+          {planGroups.length > 0 ? (
+            <SectionCard title="计划群聊" extra={<MessageOutlined className="po-muted" />}>
+              <div className="v17-collab-groups">
+                {planGroups.map((group) => (
+                  <button
+                    type="button"
+                    className="v17-collab-group"
+                    key={group.id}
+                    onClick={() => navigate(`/projects/${projectId}/agents?group=1`)}
+                  >
+                    <span className="v17-collab-group-icon"><MessageOutlined /></span>
+                    <span><strong>{group.title.replace(/^计划群聊 · /, '')}</strong><small>{group.messageCount} 条讨论 · 打开群聊</small></span>
+                    <ArrowRightOutlined />
+                  </button>
+                ))}
+              </div>
+            </SectionCard>
+          ) : null}
+
           <SectionCard
             title="收件箱"
 
@@ -344,8 +364,8 @@ export default function CollaborationPage() {
                 compact
                 icon={<InboxOutlined />}
                 title="还没有跨会话消息"
-                description="从任意 Agent 会话向另一个会话发送消息，或让 Agent 使用 send_agent_message 工具。"
-                action={<Button size="small" type="primary" onClick={openSend}>发送第一条消息</Button>}
+                description="Agent 会通过 send_agent_message 自行投递并唤醒其他 Agent；此处保留人工干预入口。"
+                action={<Button size="small" type="primary" onClick={openSend}>手动投递第一条</Button>}
               />
             ) : (
               <div className="po-inbox-list">

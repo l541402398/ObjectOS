@@ -226,7 +226,7 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
   {
     name: 'send_agent_message',
     description:
-      '向同一项目中的另一个 Agent 会话发送持久化消息（可唤醒对方）。消息是至少一次投递，使用幂等键去重。',
+      '向同一项目中的另一个 Agent 会话发送持久化消息，并唤醒对方 Agent 处理。消息是至少一次投递，使用幂等键去重。',
     parameters: object(
       {
         toSessionId: string('接收方会话 id'),

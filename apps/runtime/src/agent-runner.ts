@@ -1168,11 +1168,16 @@ export class AgentRunner {
             type: (typeof args.type === 'string' ? args.type : 'agent.message') as never,
             body: requiredString(args, 'body'),
             taskId: state.taskId,
-            wake: false,
+            wake: true,
           },
           actor,
         )
-        return { inboxId: result.inbox.id, status: result.inbox.status, created: result.created }
+        if (result.created) {
+          void this.wakeInbox(result.inbox.id).catch((error) => {
+            this.logger.warn({ err: error, inboxId: result.inbox.id }, 'agent message delivered but recipient wake failed')
+          })
+        }
+        return { inboxId: result.inbox.id, status: result.inbox.status, created: result.created, woke: result.created }
       }
       case 'handoff_task': {
         const handoff = this.services.collaboration.requestHandoff(

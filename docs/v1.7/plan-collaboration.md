@@ -125,3 +125,21 @@ package smoke x2      → PASS
 - Windows ia32 portable：`55052F2566AF5EE5C86D901F7F58D20EB196B52A3669D05A2594028A0623C5D6`
 - Windows ia32 setup：`70C9C708B3662256EBB86977D42A09C050719B74BBBD38B1FFDA128596EE3AEB`
 - Linux AppImage：`647C9237575FB0687EFA8188B13284483ABA74C5DDDDDE08313219838DB154CE`
+
+## 6. 与跨会话中心联动
+
+- 跨会话中心新增“计划群聊”卡片
+- 点击直接打开 Agent 工作台的计划群聊抽屉
+- `send_agent_message` 工具改为 `wake: true`
+- Agent 投递消息后会真实唤醒接收方 Agent
+- 用户手动投递入口保留，但改为“手动投递”，作为人工干预而非主流程
+- 敏感工具（写文件、执行命令、网络等）仍走审批，不会因为自动协作绕过
+
+截图：`docs/v1.7/collaboration-group-link.png`
+
+### 当前边界
+
+- Agent 可以在运行中主动投递、唤醒、请求交接
+- 交接仍需要接收方确认，避免任务责任人被静默改写
+- 计划群聊由用户发起第一轮讨论；后续 Agent 顺序阅读并回应
+- 真正“Agent 无任何触发就自己定期发起群聊”需要后台自治调度，当前未启用

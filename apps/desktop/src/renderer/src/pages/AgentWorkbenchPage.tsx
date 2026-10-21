@@ -173,6 +173,14 @@ export default function AgentWorkbenchPage() {
   }, [searchParams, setSearchParams])
 
   useEffect(() => {
+    if (searchParams.get('group') !== '1' || !groupSession) return
+    setGroupOpen(true)
+    const next = new URLSearchParams(searchParams)
+    next.delete('group')
+    setSearchParams(next, { replace: true })
+  }, [groupSession, searchParams, setSearchParams])
+
+  useEffect(() => {
     setStreamingRunId(null)
     setStreamingText('')
     streamBuffer.current = ''
