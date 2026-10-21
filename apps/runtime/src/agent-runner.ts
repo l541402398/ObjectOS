@@ -449,6 +449,37 @@ export class AgentRunner {
     return { runId, messageId: promptMessage.id }
   }
 
+  /**
+   * Wait until a Run reaches a terminal state (or needs reconciliation).
+   * On timeout the Run is cancelled so the caller never leaves a busy Session
+   * behind; the result still carries the latest persisted Run state.
+   */
+  async awaitRunTerminal(
+    runId: string,
+    options: { timeoutMs?: number; pollMs?: number } = {},
+  ): Promise<{ run: Run; timedOut: boolean }> {
+    const timeoutMs = Math.max(100, Math.trunc(options.timeoutMs ?? 120_000))
+    const pollMs = Math.max(25, Math.trunc(options.pollMs ?? 200))
+    const deadline = Date.now() + timeoutMs
+    for (;;) {
+      const run = this.store.read.getRun(runId)
+      if (!run) throw new AppError('NOT_FOUND', '运行不存在')
+      if (['completed', 'failed', 'cancelled'].includes(run.status) || run.status === 'needs_reconciliation') {
+        return { run, timedOut: false }
+      }
+      if (Date.now() >= deadline) {
+        try {
+          await this.cancel(runId)
+        } catch (error) {
+          this.logger.warn({ err: error, runId }, 'failed to cancel timed-out run')
+        }
+        const latest = this.store.read.getRun(runId)
+        return { run: latest ?? run, timedOut: true }
+      }
+      await new Promise<void>((resolve) => setTimeout(resolve, pollMs))
+    }
+  }
+
   private collectRunSkills(
     definition: AgentDefinition | null,
     task: Task | null,

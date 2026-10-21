@@ -830,7 +830,13 @@ export const ApiSchemas = {
   },
   'plan.discuss': {
     input: z.object({ planId: IdSchema, content: z.string().trim().min(1).max(20_000) }),
-    output: z.object({ groupSessionId: IdSchema, queued: z.number().int().nonnegative() }),
+    // The discussion runs in the background; the final per-agent success/failure counts
+    // are appended to the group session as a system summary message.
+    output: z.object({
+      groupSessionId: IdSchema,
+      participants: z.number().int().nonnegative(),
+      status: z.literal('started'),
+    }),
   },
   'orchestration.start': {
     input: z.object({ planId: IdSchema, concurrency: z.number().int().min(1).max(8).default(2), maxRetries: z.number().int().min(0).max(5).default(2), allowOverBudget: z.boolean().default(false) }),

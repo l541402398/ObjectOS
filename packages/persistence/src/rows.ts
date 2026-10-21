@@ -880,7 +880,15 @@ export function toProjectSnapshot(row: ProjectSnapshotRow): ProjectSnapshot {
 }
 
 export function toPlanRevision(row: PlanRevisionRow): PlanDraft {
-  return JSON.parse(row.plan_json) as PlanDraft
+  const parsed = JSON.parse(row.plan_json) as PlanDraft
+  return {
+    ...parsed,
+    tasks: (parsed.tasks ?? []).map((task) => ({
+      ...task,
+      assignmentReasons: task.assignmentReasons ?? [],
+      assignmentBlocked: task.assignmentBlocked ?? false,
+    })),
+  }
 }
 
 export function toGraphLayout(row: GraphLayoutRow): GraphLayout {

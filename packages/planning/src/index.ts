@@ -1,5 +1,7 @@
 import { newId, now, type PlanDraft, type PlannedTask, type ProjectSnapshot } from '@projectos/contracts'
 
+export * from './assignment.js'
+
 const ROLE_AGENT: Record<PlannedTask['role'], string> = {
   architect: 'agt_architect',
   developer: 'agt_engineer',
@@ -34,6 +36,8 @@ export function generateLocalPlan(input: {
       title: `分析「${goal}」的架构与影响面`,
       description: `基于项目快照（${stack}）确认边界、依赖与风险，产出实施方案。`,
       role: 'architect',
+      assignmentReasons: [],
+      assignmentBlocked: false,
       dependsOn: [],
       acceptanceCriteria: ['列出受影响模块与文件', '记录关键取舍与风险', '给出可执行的实施步骤'],
       expectedArtifacts: ['ADR / 实施说明'],
@@ -44,6 +48,8 @@ export function generateLocalPlan(input: {
       title: `实现「${goal}」`,
       description: '按架构方案完成代码修改，补充必要测试；写入和执行命令需授权。',
       role: 'developer',
+      assignmentReasons: [],
+      assignmentBlocked: false,
       dependsOn: ['architecture'],
       acceptanceCriteria: ['代码可构建', '新增逻辑有测试', '不破坏现有行为'],
       expectedArtifacts: ['代码 diff', '测试结果'],
@@ -54,6 +60,8 @@ export function generateLocalPlan(input: {
       title: `审查「${goal}」的实现`,
       description: '检查 diff、验收标准、错误处理与测试缺口。',
       role: 'reviewer',
+      assignmentReasons: [],
+      assignmentBlocked: false,
       dependsOn: ['implementation'],
       acceptanceCriteria: ['逐条核对验收标准', '指出具体风险与缺失测试'],
       expectedArtifacts: ['审查报告'],
@@ -64,6 +72,8 @@ export function generateLocalPlan(input: {
       title: `验证「${goal}」`,
       description: '执行项目已有检查与验收场景，记录真实命令和结果。',
       role: 'tester',
+      assignmentReasons: [],
+      assignmentBlocked: false,
       dependsOn: ['review'],
       acceptanceCriteria: ['记录命令、退出码与输出', '失败项进入 blocked，不标记完成'],
       expectedArtifacts: ['测试报告'],

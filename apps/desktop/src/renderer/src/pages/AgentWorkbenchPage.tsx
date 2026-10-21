@@ -348,7 +348,7 @@ export default function AgentWorkbenchPage() {
     try {
       const result = await window.projectos.plans.discuss(latestPlan.id, content)
       setGroupInput('')
-      message.success(`已发起讨论，${result.queued} 个 Agent 将依次发言`)
+      message.success(`已发起讨论：${result.participants} 个 Agent 将依次发言，完成后会显示成功/失败统计`)
       await new Promise((resolve) => setTimeout(resolve, 400))
       await loadGroup()
       setGroupBusy(false)

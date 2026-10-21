@@ -32,6 +32,28 @@ function execution(status: PlanExecution['status'], concurrency: number, previou
   }
 }
 
+/**
+ * Select at most `slots` ready tasks, and at most one task per Agent.
+ * Same-Agent tasks stay ready and are picked up on a later tick, after the
+ * Agent's current Run has released its Session. This is the serial queue that
+ * prevents "该会话已有运行中的 Agent" from failing a whole plan.
+ */
+export function selectStartableTasks(input: {
+  ready: TaskCard[]
+  activeAgentIds: Iterable<string>
+  slots: number
+}): TaskCard[] {
+  const active = new Set(input.activeAgentIds)
+  const selected: TaskCard[] = []
+  for (const card of input.ready) {
+    if (selected.length >= input.slots) break
+    if (!card.assigneeAgentId || active.has(card.assigneeAgentId)) continue
+    selected.push(card)
+    active.add(card.assigneeAgentId)
+  }
+  return selected
+}
+
 export class OrchestrationScheduler {
   private readonly timers = new Map<string, NodeJS.Timeout>()
   private readonly ticking = new Set<string>()
@@ -214,6 +236,19 @@ export class OrchestrationScheduler {
     const timer = this.timers.get(planId)
     if (timer) clearInterval(timer)
     this.timers.delete(planId)
+  }
+
+  private blockUnassignedTask(card: TaskCard, note: string): void {
+    try {
+      const latest = this.store.read.getTaskCard(card.id)
+      if (!latest || ['done', 'cancelled', 'blocked'].includes(latest.status)) return
+      this.services.tasks.move(
+        { taskId: card.id, expectedVersion: latest.version, to: 'blocked', note },
+        SYSTEM_ACTOR,
+      )
+    } catch (error) {
+      this.logger.warn({ err: error, taskId: card.id }, 'failed to block task after start failure')
+    }
   }
 
   private async ensureWorkspace(plan: PlanDraft): Promise<string> {
@@ -411,6 +446,13 @@ export class OrchestrationScheduler {
       plan = this.getPlan(planId)
       const currentExecution = plan.execution
       if (!currentExecution) throw new AppError('CONFLICT', '计划缺少执行状态')
+      const activeAgentIds = new Set<string>()
+      for (const card of refreshed) {
+        if (card.status !== 'running') continue
+        const activeRun = this.store.read.getActiveRunForTask(card.id)
+        const agentId = activeRun?.agentId ?? card.assigneeAgentId
+        if (agentId) activeAgentIds.add(agentId)
+      }
       const ready = plan.createdTaskIds
         .map((taskId) => this.store.read.getTaskCard(taskId))
         .filter((card): card is TaskCard => Boolean(card))
@@ -423,9 +465,15 @@ export class OrchestrationScheduler {
         .filter((card) => card.status === 'running').length
       const slots = Math.max(0, currentExecution.concurrency - active)
       const runIds = [...currentExecution.runIds]
-      for (const card of ready.slice(0, slots)) {
+      // One run per Agent per tick. Ready tasks for an Agent that already has a
+      // running task stay queued instead of colliding on the Agent's Session.
+      const startable = selectStartableTasks({ ready, activeAgentIds, slots })
+      let executionError = currentExecution.error
+      for (const card of startable) {
         if (!card.assigneeAgentId) {
-          this.logger.warn({ taskId: card.id }, 'orchestrated task has no assignee')
+          this.blockUnassignedTask(card, '计划任务没有 assigneeAgentId，无法自动启动')
+          executionError = `任务「${card.title}」没有 assigneeAgentId`
+          changed = true
           continue
         }
         try {
@@ -461,15 +509,68 @@ export class OrchestrationScheduler {
           changed = true
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error)
-          this.logger.warn({ err: error, taskId: card.id }, 'orchestrated run failed to start')
-          this.saveExecution(plan, { ...currentExecution, status: 'failed', error: message, runIds, updatedAt: now() })
-          this.disarm(planId)
-          return
+          this.logger.warn({ err: error, taskId: card.id, agentId: card.assigneeAgentId }, 'orchestrated run failed to start')
+          const activeRun = this.store.read.getActiveRunForTask(card.id)
+          if (activeRun) {
+            try {
+              await this.runner.cancel(activeRun.id)
+            } catch (cancelError) {
+              this.logger.warn({ err: cancelError, runId: activeRun.id }, 'failed to cancel partially started run')
+            }
+          }
+          this.blockUnassignedTask(card, `启动失败：${message}`)
+          executionError = `任务「${card.title}」启动失败：${message}`
+          changed = true
+          continue
         }
       }
 
-      if (changed || runIds.length !== currentExecution.runIds.length) {
-        this.saveExecution(plan, { ...currentExecution, status: 'running', runIds, updatedAt: now() })
+      if (changed || runIds.length !== currentExecution.runIds.length || executionError !== currentExecution.error) {
+        this.saveExecution(plan, { ...currentExecution, status: 'running', error: executionError, runIds, updatedAt: now() })
+      }
+
+      // If nothing can make progress and tasks remain, fail the plan explicitly
+      // instead of spinning the timer forever or pretending the plan is healthy.
+      const latestPlan = this.getPlan(planId)
+      const latestExecution = latestPlan.execution
+      if (!latestExecution || latestExecution.status !== 'running') return
+      const remaining = latestPlan.createdTaskIds
+        .map((taskId) => this.store.read.getTaskCard(taskId))
+        .filter((card): card is TaskCard => Boolean(card))
+      const hasRunning = remaining.some((card) => ['running', 'review'].includes(card.status))
+      const hasReady = remaining.some((card) => card.status === 'ready')
+      const hasPromotable = remaining.some((card) => card.status === 'backlog' && card.blockedBy.length === 0)
+      // A failed task waiting for its backoff must not be mistaken for a dead plan.
+      const hasPendingRetry = remaining.some((card) => {
+        if (card.status !== 'blocked') return false
+        const retryAt = latestExecution.nextAttemptAt?.[card.id] ?? 0
+        const failedRunId = latestExecution.retryForRun?.[card.id]
+        return Boolean(failedRunId) && retryAt > 0 && retryAt > now()
+      })
+      if (!hasRunning && !hasReady && !hasPromotable && !hasPendingRetry) {
+        const unresolved = remaining.filter((card) => !['done', 'cancelled'].includes(card.status))
+        if (unresolved.length > 0) {
+          this.saveExecution(latestPlan, {
+            ...latestExecution,
+            status: 'failed',
+            error:
+              latestExecution.error ??
+              `没有可继续执行的任务：${unresolved.map((card) => `${card.title}（${card.status}）`).join('；')}`,
+            updatedAt: now(),
+          })
+          this.disarm(planId)
+          return
+        }
+        if (remaining.some((card) => card.status === 'cancelled')) {
+          this.saveExecution(latestPlan, {
+            ...latestExecution,
+            status: 'failed',
+            error: '计划中有任务被取消，无法完成全部任务',
+            updatedAt: now(),
+          })
+          this.disarm(planId)
+          return
+        }
       }
     } catch (error) {
       this.logger.error({ err: error, planId }, 'orchestration tick failed')

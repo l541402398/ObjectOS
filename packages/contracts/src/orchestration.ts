@@ -39,6 +39,10 @@ export const PlannedTaskSchema = z.object({
   role: PlanRoleSchema,
   /** Explicit AgentAssignment; omitted means the role default is used. */
   agentId: IdSchema.nullable().optional(),
+  /** Why this Agent was chosen; shown in the plan editor and kept in plan JSON. */
+  assignmentReasons: z.array(z.string().max(500)).default([]),
+  /** True when no usable Agent could be resolved; approval is blocked until fixed. */
+  assignmentBlocked: z.boolean().default(false),
   dependsOn: z.array(z.string().min(1).max(80)).default([]),
   acceptanceCriteria: z.array(z.string().max(2000)).default([]),
   expectedArtifacts: z.array(z.string().max(500)).default([]),

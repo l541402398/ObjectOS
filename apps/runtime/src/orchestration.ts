@@ -11,12 +11,17 @@ import type { CoreServices } from '@projectos/application'
 import type { SqliteStore } from '@projectos/persistence'
 import { buildGraphSnapshot } from '@projectos/graph-projection'
 import {
+  agentForPlanRole,
   agentForPlannedTask,
   criticalPathTasks,
   generateLocalPlan,
+  resolveAgentAssignment,
   topologicalPlanTasks,
   validatePlanDraft,
+  type AssignmentCandidate,
+  type AssignmentSkill,
 } from '@projectos/planning'
+import { BUILTIN_SKILLS } from '@projectos/skills'
 import { scanProject } from '@projectos/project-analyzer'
 import { getGitStatus } from '@projectos/workspace'
 import { planGroupTitle, planSessionTitle } from '@projectos/session-manager'
@@ -132,20 +137,154 @@ export class OrchestrationService {
     }
   }
 
-  private validatePlanAgents(plan: PlanDraft): void {
+  private buildAssignmentCandidates(plan: PlanDraft): AssignmentCandidate[] {
+    const views = this.services.projects.listAgents(plan.projectId)
+    const profiles = this.store.read.listRuntimeProfiles()
+    const storedSkills = this.store.read.listSkills()
+    const storedById = new Map(storedSkills.map((skill) => [skill.id, skill]))
+    const builtinById = new Map(BUILTIN_SKILLS.map((skill) => [skill.id, skill]))
+    const activeByAgent = new Map<string, number>()
+    for (const run of this.store.read.listRunSummaries(plan.projectId, 1000)) {
+      if (
+        ['created', 'queued', 'running', 'waiting_tool', 'waiting_approval', 'verifying', 'needs_reconciliation'].includes(
+          run.status,
+        )
+      ) {
+        activeByAgent.set(run.agentId, (activeByAgent.get(run.agentId) ?? 0) + 1)
+      }
+    }
+    for (const task of this.services.tasks.board(plan.projectId).tasks) {
+      if (task.status !== 'running' || !task.assigneeAgentId) continue
+      activeByAgent.set(task.assigneeAgentId, (activeByAgent.get(task.assigneeAgentId) ?? 0) + 1)
+    }
+
+    return views.map((view) => {
+      const agent = view.agent
+      const definition = this.store.read.getAgentDefinition(agent.id)
+      const skills: AssignmentSkill[] = []
+      const missingSkillIds: string[] = []
+      for (const binding of definition?.skills ?? []) {
+        if (!binding.enabled) continue
+        const stored = storedById.get(binding.skillId)
+        if (stored) {
+          skills.push({
+            id: stored.id,
+            name: stored.name,
+            description: stored.description,
+            capabilities: [],
+          })
+          continue
+        }
+        const builtin = builtinById.get(binding.skillId)
+        if (builtin) {
+          skills.push({
+            id: builtin.id,
+            name: builtin.name,
+            description: builtin.description,
+            capabilities: builtin.capabilities,
+          })
+          continue
+        }
+        missingSkillIds.push(binding.skillId)
+      }
+      const profileId = definition?.primaryRuntimeProfileId ?? definition?.runtimeProfileIds[0] ?? null
+      const profile = profileId ? profiles.find((item) => item.id === profileId) ?? null : null
+      const runtime = profileId
+        ? { id: profileId, name: profile?.name ?? profileId, status: profile?.status ?? 'unavailable' }
+        : null
+      return {
+        agentId: agent.id,
+        name: agent.name,
+        role: agent.role,
+        category: definition?.category ?? 'general',
+        capabilities: agent.capabilities,
+        status: definition?.status ?? 'active',
+        skills,
+        missingSkillIds,
+        runtime,
+        activeTaskCount: activeByAgent.get(agent.id) ?? 0,
+      }
+    })
+  }
+
+  /** Resolve unassigned nodes; explicit user choices are preserved. */
+  private assignPlanAgents(plan: PlanDraft): PlanDraft {
+    if (plan.tasks.length === 0) return plan
+    const candidates = this.buildAssignmentCandidates(plan)
+    return {
+      ...plan,
+      tasks: plan.tasks.map((task) => {
+        const assignment = resolveAgentAssignment({
+          role: task.role,
+          title: task.title,
+          description: task.description,
+          explicitAgentId: task.agentId ?? null,
+          defaultAgentId: agentForPlanRole(task.role),
+          candidates,
+        })
+        return {
+          ...task,
+          agentId: assignment.agentId,
+          assignmentReasons: assignment.reasons,
+          assignmentBlocked: assignment.blocked,
+        }
+      }),
+      updatedAt: now(),
+    }
+  }
+
+  private validatePlanAgents(plan: PlanDraft, strict = false): void {
+    const profiles = strict ? this.store.read.listRuntimeProfiles() : []
     for (const task of plan.tasks) {
-      const agentId = agentForPlannedTask(task)
+      const reasons = task.assignmentReasons ?? []
+      if (task.assignmentBlocked) {
+        if (strict) {
+          throw new AppError(
+            'CONFLICT',
+            `计划节点「${task.title}」暂无可用 Agent：${reasons.join('；') || '未找到匹配的 Agent'}。请手动选择 Agent，或修复 Runtime/Skill 后重试。`,
+          )
+        }
+        continue
+      }
+      const agentId = task.agentId ?? agentForPlannedTask(task)
       const agent = this.store.read.getAgent(agentId)
-      if (!agent) throw new AppError('BAD_REQUEST', `计划节点「${task.title}」绑定的 Agent 不存在：${agentId}`)
+      if (!agent) {
+        if (strict) {
+          throw new AppError('BAD_REQUEST', `计划节点「${task.title}」绑定的 Agent 不存在：${agentId}`)
+        }
+        continue
+      }
       const definition = this.store.read.getAgentDefinition(agentId)
       if (definition && definition.status !== 'active') {
-        throw new AppError('CONFLICT', `计划节点「${task.title}」绑定的 Agent 当前不可用：${definition.status}`)
+        if (strict) {
+          throw new AppError('CONFLICT', `计划节点「${task.title}」绑定的 Agent 当前不可用：${definition.status}`)
+        }
+        continue
+      }
+      if (strict) {
+        const profileId = definition?.primaryRuntimeProfileId ?? definition?.runtimeProfileIds[0] ?? null
+        if (profileId) {
+          const profile = profiles.find((item) => item.id === profileId)
+          if (!profile || profile.status !== 'available') {
+            throw new AppError(
+              'CONFLICT',
+              `计划节点「${task.title}」绑定的 Runtime 不可用：${profile?.name ?? profileId}（${profile?.status ?? 'missing'}）`,
+            )
+          }
+        }
       }
     }
   }
 
   private ensurePlanCollaboration(plan: PlanDraft): void {
-    const agentIds = [...new Set(plan.tasks.map((task) => agentForPlannedTask(task)).filter((id): id is string => Boolean(id)))]
+    const agentIds = [
+      ...new Set(
+        plan.tasks
+          .filter((task) => !task.assignmentBlocked)
+          .map((task) => agentForPlannedTask(task))
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ]
     if (agentIds.length === 0) return
     const existing = this.services.sessions.list(plan.projectId)
     for (const agentId of agentIds) {
@@ -183,12 +322,14 @@ export class OrchestrationService {
   generatePlan(projectId: string, goal: string): PlanDraft {
     if (!this.store.read.getProject(projectId)) throw new AppError('NOT_FOUND', '项目不存在')
     const snapshot = this.store.read.getLatestProjectSnapshot(projectId)
-    const plan = generateLocalPlan({
-      projectId,
-      goal,
-      revision: this.store.read.getNextPlanRevision(projectId),
-      snapshot,
-    })
+    const plan = this.assignPlanAgents(
+      generateLocalPlan({
+        projectId,
+        goal,
+        revision: this.store.read.getNextPlanRevision(projectId),
+        snapshot,
+      }),
+    )
     validatePlanDraft(plan)
     this.validatePlanAgents(plan)
     this.store.createPlanRevision(plan)
@@ -210,14 +351,14 @@ export class OrchestrationService {
   updatePlan(input: PlanUpdateInput): PlanDraft {
     const plan = this.getPlan(input.planId)
     if (plan.status !== 'draft') throw new AppError('CONFLICT', '只有草稿计划可以编辑；已批准计划请创建新 revision')
-    const next: PlanDraft = {
+    const next: PlanDraft = this.assignPlanAgents({
       ...plan,
       goal: input.goal ?? plan.goal,
       tasks: input.tasks ?? plan.tasks,
       assumptions: input.assumptions ?? plan.assumptions,
       risks: input.risks ?? plan.risks,
       updatedAt: now(),
-    }
+    })
     validatePlanDraft(next)
     this.validatePlanAgents(next)
     this.store.updatePlanRevision(next)
@@ -232,7 +373,7 @@ export class OrchestrationService {
       throw new AppError('CONFLICT', '执行中的计划不能修订，请先暂停或取消')
     }
     const revision = this.store.read.getNextPlanRevision(source.projectId)
-    const next: PlanDraft = {
+    const next: PlanDraft = this.assignPlanAgents({
       id: newId('pln'),
       projectId: source.projectId,
       revision,
@@ -247,7 +388,7 @@ export class OrchestrationService {
       approvedAt: null,
       createdTaskIds: [],
       execution: null,
-    }
+    })
     validatePlanDraft(next)
     this.validatePlanAgents(next)
     this.store.createPlanRevision(next)
@@ -256,10 +397,10 @@ export class OrchestrationService {
   }
 
   approvePlan(planId: string): { plan: PlanDraft; taskIds: string[] } {
-    const plan = this.getPlan(planId)
+    const plan = this.assignPlanAgents(this.getPlan(planId))
     if (plan.status !== 'draft') throw new AppError('CONFLICT', '计划不是草稿状态')
     validatePlanDraft(plan)
-    this.validatePlanAgents(plan)
+    this.validatePlanAgents(plan, true)
     this.ensurePlanCollaboration(plan)
     const ordered = topologicalPlanTasks(plan)
     const taskIdByKey = new Map<string, string>()
@@ -272,7 +413,7 @@ export class OrchestrationService {
           if (!id) throw new AppError('INTERNAL', `计划依赖顺序错误：${key}`)
           return id
         })
-        const assigneeAgentId = agentForPlannedTask(planned)
+        const assigneeAgentId = planned.agentId ?? agentForPlannedTask(planned)
         const task = this.services.tasks.create({
           projectId: plan.projectId,
           title: planned.title,

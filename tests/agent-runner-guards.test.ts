@@ -441,4 +441,22 @@ describe('agent runner guards', () => {
     expect(store.read.getRun(run.id)?.status).toBe('failed')
     expect(store.read.getTask(task.id)?.status).toBe('blocked')
   })
+
+  it('cancels a run that exceeds the terminal-wait timeout', async () => {
+    const { store, services, runner, dataDir } = makeRunner()
+    const { run } = await makeRunningRun(store, services, dataDir)
+    const result = await runner.awaitRunTerminal(run.id, { timeoutMs: 100, pollMs: 20 })
+    expect(result.timedOut).toBe(true)
+    expect(result.run.status).toBe('cancelled')
+    expect(store.read.getRun(run.id)?.status).toBe('cancelled')
+  })
+
+  it('returns immediately when the run is already terminal', async () => {
+    const { store, services, runner, dataDir } = makeRunner()
+    const { run } = await makeRunningRun(store, services, dataDir)
+    store.updateRun(run.id, { status: 'completed', finishedAt: now() })
+    const result = await runner.awaitRunTerminal(run.id, { timeoutMs: 1_000, pollMs: 20 })
+    expect(result.timedOut).toBe(false)
+    expect(result.run.status).toBe('completed')
+  })
 })

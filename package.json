@@ -38,6 +38,7 @@
     "test:v12": "pnpm build && node scripts/v12-e2e.mjs",
     "test:v13": "pnpm build && node scripts/v13-e2e.mjs",
     "test:orchestration": "pnpm build && node scripts/v13-orchestration-e2e.mjs",
+    "test:teamwork": "pnpm build && node scripts/v18-teamwork-e2e.mjs",
     "package:win:x64": "pnpm build && pnpm --filter @projectos/desktop package:win:x64 && node scripts/collect-win-artifacts.mjs",
     "package:win:ia32": "pnpm build && pnpm --filter @projectos/desktop package:win:ia32 && node scripts/collect-win-artifacts.mjs"
   },

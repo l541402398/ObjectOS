@@ -466,6 +466,8 @@ export default function OrchestrationWorkspace() {
           title: '新任务节点',
           description: '',
           role: 'developer' as const,
+          assignmentReasons: [],
+          assignmentBlocked: false,
           dependsOn: [],
           acceptanceCriteria: ['完成后由人工确认'],
           expectedArtifacts: [],
@@ -1201,10 +1203,28 @@ export default function OrchestrationWorkspace() {
                           disabled={draft.status !== 'draft'}
                           style={{ minWidth: 170 }}
                           options={agentOptions}
-                          onChange={(agentId) => updateDraftTask(index, { agentId: agentId ?? null })}
+                          onChange={(agentId) => updateDraftTask(index, {
+                            agentId: agentId ?? null,
+                            assignmentBlocked: false,
+                            assignmentReasons: agentId ? ['用户手动指定'] : [],
+                          })}
                         />
                         {draft.status === 'draft' ? <Button type="text" danger size="small" icon={<DeleteOutlined />} aria-label="删除任务节点" onClick={() => removeDraftTask(task.key)} /> : null}
                       </div>
+                      {task.assignmentBlocked || (task.assignmentReasons?.length ?? 0) > 0 ? (
+                        <div className="po-plan-task-deps">
+                          {task.assignmentBlocked ? (
+                            <Tag color="error">待分配</Tag>
+                          ) : (task.assignmentReasons ?? []).some((reason) => reason.includes('显式指定') || reason.includes('手动')) ? (
+                            <Tag>手动指定</Tag>
+                          ) : (
+                            <Tag color="blue">自动分配</Tag>
+                          )}
+                          <span className="po-muted" title={(task.assignmentReasons ?? []).join('\n')}>
+                            {(task.assignmentReasons ?? []).slice(0, 3).join('；')}
+                          </span>
+                        </div>
+                      ) : null}
                       <div className="po-plan-task-deps">
                         {draft.status === 'draft' ? (
                           <Select

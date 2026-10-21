@@ -41,6 +41,7 @@ import type { ProviderManager } from './provider-manager.js'
 import { seedDemo } from './demo.js'
 import { OrchestrationScheduler } from './orchestrator.js'
 import { agentForPlannedTask } from '@projectos/planning'
+import { planGroupTitle } from '@projectos/session-manager'
 
 const EVENT_CHECK_DEBOUNCE_MS = 60_000
 const REPAIR_MAX_RUN_MS = 60 * 60_000
@@ -69,6 +70,7 @@ export class RuntimeDispatcher {
   private readonly runtimeRun: RuntimeRunService
   private readonly operationsTimer: NodeJS.Timeout
   private readonly eventChecks = new Map<string, NodeJS.Timeout>()
+  private readonly groupDiscussions = new Map<string, Promise<void>>()
 
   constructor(private readonly deps: DispatcherDeps) {
     this.aiConnections = new AIConnectionService(deps.store)
@@ -225,68 +227,222 @@ export class RuntimeDispatcher {
     return { proposal: this.deps.store.read.getProposal(proposal.id), plan }
   }
 
-  private async discussPlan(planId: string, content: string): Promise<{ groupSessionId: string; queued: number }> {
+  private async discussPlan(planId: string, content: string): Promise<{ groupSessionId: string; participants: number; status: 'started' }> {
     const plan = this.orchestration.getPlan(planId)
     if (plan.status === 'rejected') throw new AppError('CONFLICT', '已拒绝的计划不能群聊')
-    const group = this.deps.store.read
-      .listSessionSummaries(plan.projectId)
-      .find((session) => session.title.startsWith('计划群聊 ·'))
+    const sessions = this.deps.store.read.listSessionSummaries(plan.projectId)
+    const group =
+      sessions.find((session) => session.title === planGroupTitle(plan.goal, plan.revision)) ??
+      sessions.find((session) => session.title.startsWith('计划群聊 ·'))
     if (!group) throw new AppError('CONFLICT', '计划群聊尚未建立，请重新批准计划')
-    if (this.deps.store.read.getActiveRunForSession(group.id)) {
+    if (this.groupDiscussions.has(group.id) || this.deps.store.read.getActiveRunForSession(group.id)) {
       throw new AppError('CONFLICT', '计划群聊正在讨论中，请等待当前轮次完成')
     }
-    const agentIds = [...new Set(plan.tasks.map((task) => agentForPlannedTask(task)).filter((id): id is string => Boolean(id)))]
+    const agentIds = [
+      ...new Set(
+        plan.tasks
+          .filter((task) => !task.assignmentBlocked)
+          .map((task) => agentForPlannedTask(task))
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ]
     const agents = agentIds
       .map((id) => this.deps.store.read.getAgent(id))
       .filter((agent): agent is NonNullable<typeof agent> => Boolean(agent))
     if (agents.length === 0) throw new AppError('CONFLICT', '计划没有可参与群聊的 Agent')
     const message = this.deps.services.sessions.sendMessage({ sessionId: group.id, content, startRun: false })
-    void this.runGroupDiscussion(plan.projectId, group.id, agents, content, message.id)
-    return { groupSessionId: group.id, queued: agents.length }
+    const discussion = this.runGroupDiscussion(plan.projectId, plan.id, group.id, agents, content, message.id)
+      .catch((error) => {
+        this.deps.logger.error({ err: error, planId, sessionId: group.id }, 'group discussion crashed')
+      })
+      .finally(() => {
+        this.groupDiscussions.delete(group.id)
+      })
+    this.groupDiscussions.set(group.id, discussion)
+    return { groupSessionId: group.id, participants: agents.length, status: 'started' as const }
   }
 
   private async runGroupDiscussion(
     projectId: string,
+    planId: string,
     sessionId: string,
     agents: Array<{ id: string; name: string; role: string }>,
     content: string,
     messageId: string,
   ): Promise<void> {
-    for (const agent of agents) {
-      const detail = this.deps.store.read.getSessionDetail(sessionId, 80)
-      const transcript = (detail?.messages ?? [])
-        .filter((message) => message.role !== 'system')
-        .slice(-16)
-        .map((message) => `${message.role === 'user' ? '用户' : message.agentName ?? 'Agent'}：${message.content.slice(0, 1200)}`)
-        .join('\n\n')
-      const prompt = [
-        `[计划群聊] 你是 ${agent.name}（${agent.role}）。`,
-        '这是一个多 Agent 头脑风暴群聊。请阅读前文，分析其他 Agent 的观点，给出你的判断、风险、分歧和下一步建议。',
-        '不要只复述用户的话；明确提出你同意什么、反对什么、还需要什么信息。',
-        '',
-        '最近讨论：',
-        transcript,
-        '',
-        `用户最新发言：${content}`,
-      ].join('\n')
-      try {
-        await this.deps.runner.startRun({
-          projectId,
-          sessionId,
-          prompt,
-          messageId,
-          agentId: agent.id,
-          promptOverride: prompt,
-        })
-      } catch (error) {
-        this.deps.logger.warn({ err: error, agentId: agent.id, sessionId }, 'group chat agent turn failed')
-        this.deps.store.appendMessage({
-          sessionId,
-          role: 'system',
-          content: `${agent.name} 本轮未能发言：${error instanceof Error ? error.message : String(error)}`,
-          metadata: { kind: 'group-error', agentId: agent.id },
-        })
+    type TurnStatus = 'completed' | 'failed' | 'timeout' | 'cancelled' | 'skipped'
+    interface TurnResult {
+      agentId: string
+      name: string
+      status: TurnStatus
+      runId?: string
+      error?: string
+    }
+    const results: TurnResult[] = agents.map((agent) => ({ agentId: agent.id, name: agent.name, status: 'skipped' }))
+    let stopped = false
+    try {
+      for (const [index, agent] of agents.entries()) {
+        if (stopped) continue
+        const leftover = this.deps.store.read.getActiveRunForSession(sessionId)
+        if (leftover) {
+          try {
+            await this.deps.runner.cancel(leftover.id)
+          } catch (error) {
+            this.deps.logger.warn({ err: error, runId: leftover.id }, 'failed to cancel leftover group run')
+          }
+          results[index] = {
+            agentId: agent.id,
+            name: agent.name,
+            status: 'failed',
+            runId: leftover.id,
+            error: '群聊会话存在未结束的运行，已取消',
+          }
+          this.deps.store.appendMessage({
+            sessionId,
+            role: 'system',
+            content: `${agent.name} 本轮未能发言：上一条运行未结束，已取消。`,
+            metadata: { kind: 'group-error', agentId: agent.id, runId: leftover.id },
+          })
+          continue
+        }
+        const detail = this.deps.store.read.getSessionDetail(sessionId, 120)
+        const transcript = (detail?.messages ?? [])
+          .filter((message) => message.role !== 'system')
+          .slice(-24)
+          .map((message) => `${message.role === 'user' ? '用户' : message.agentName ?? 'Agent'}：${message.content.slice(0, 1200)}`)
+          .join('\n\n')
+        const prompt = [
+          `[计划群聊] 你是 ${agent.name}（${agent.role}）。`,
+          '这是一个多 Agent 头脑风暴群聊。请阅读前文，分析其他 Agent 的观点，给出你的判断、风险、分歧和下一步建议。',
+          '不要只复述用户的话；明确提出你同意什么、反对什么、还需要什么信息。',
+          '',
+          '最近讨论：',
+          transcript,
+          '',
+          `用户最新发言：${content}`,
+        ].join('\n')
+        try {
+          const started = await this.deps.runner.startRun({
+            projectId,
+            sessionId,
+            prompt,
+            messageId,
+            agentId: agent.id,
+            promptOverride: prompt,
+          })
+          const { run, timedOut } = await this.deps.runner.awaitRunTerminal(started.runId, {
+            timeoutMs: groupTurnTimeoutMs(),
+            pollMs: 200,
+          })
+          if (timedOut) {
+            results[index] = {
+              agentId: agent.id,
+              name: agent.name,
+              status: 'timeout',
+              runId: started.runId,
+              error: `超过 ${groupTurnTimeoutMs()}ms 未完成，已取消`,
+            }
+            this.deps.store.appendMessage({
+              sessionId,
+              role: 'system',
+              content: `${agent.name} 本轮超时，运行已取消；本轮讨论停止。`,
+              metadata: { kind: 'group-timeout', agentId: agent.id, runId: started.runId },
+            })
+            stopped = true
+            continue
+          }
+          if (run.status === 'completed') {
+            const hasReply = (this.deps.store.read.getMessages(sessionId, 400) ?? []).some(
+              (message) => message.runId === started.runId && message.role === 'assistant' && message.content.trim().length > 0,
+            )
+            if (!hasReply) {
+              results[index] = {
+                agentId: agent.id,
+                name: agent.name,
+                status: 'failed',
+                runId: started.runId,
+                error: '运行完成但没有可见回复',
+              }
+              this.deps.store.appendMessage({
+                sessionId,
+                role: 'system',
+                content: `${agent.name} 本轮运行完成，但没有产生可见回复。`,
+                metadata: { kind: 'group-error', agentId: agent.id, runId: started.runId },
+              })
+              continue
+            }
+            results[index] = { agentId: agent.id, name: agent.name, status: 'completed', runId: started.runId }
+            continue
+          }
+          if (run.status === 'cancelled') {
+            results[index] = {
+              agentId: agent.id,
+              name: agent.name,
+              status: 'cancelled',
+              runId: started.runId,
+              error: run.error ?? '运行已取消',
+            }
+            this.deps.store.appendMessage({
+              sessionId,
+              role: 'system',
+              content: `${agent.name} 本轮已取消；本轮讨论停止。`,
+              metadata: { kind: 'group-cancelled', agentId: agent.id, runId: started.runId },
+            })
+            stopped = true
+            continue
+          }
+          results[index] = {
+            agentId: agent.id,
+            name: agent.name,
+            status: 'failed',
+            runId: started.runId,
+            error: run.error ?? `运行状态：${run.status}`,
+          }
+          this.deps.store.appendMessage({
+            sessionId,
+            role: 'system',
+            content: `${agent.name} 本轮未能发言：${run.error ?? run.status}`,
+            metadata: { kind: 'group-error', agentId: agent.id, runId: started.runId, status: run.status },
+          })
+          if (run.status === 'needs_reconciliation') stopped = true
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
+          results[index] = { agentId: agent.id, name: agent.name, status: 'failed', error: message }
+          this.deps.logger.warn({ err: error, agentId: agent.id, sessionId }, 'group chat agent turn failed')
+          this.deps.store.appendMessage({
+            sessionId,
+            role: 'system',
+            content: `${agent.name} 本轮未能发言：${message}`,
+            metadata: { kind: 'group-error', agentId: agent.id },
+          })
+        }
       }
+    } finally {
+      const succeeded = results.filter((result) => result.status === 'completed').length
+      const failed = results.filter((result) => result.status === 'failed' || result.status === 'timeout').length
+      const cancelled = results.filter((result) => result.status === 'cancelled').length
+      const skipped = results.filter((result) => result.status === 'skipped').length
+      this.deps.store.appendMessage({
+        sessionId,
+        role: 'system',
+        content: [
+          `本轮群聊完成：成功 ${succeeded} / 失败 ${failed} / 取消 ${cancelled} / 跳过 ${skipped}`,
+          '',
+          ...results.map((result) => {
+            const suffix = result.error ? `（${result.error}）` : ''
+            return `- ${result.name}：${result.status}${suffix}`
+          }),
+        ].join('\n'),
+        metadata: {
+          kind: 'group-summary',
+          planId,
+          succeeded,
+          failed,
+          cancelled,
+          skipped,
+          results,
+        },
+      })
     }
   }
 
@@ -1029,6 +1185,14 @@ export function emitLog(hub: RuntimeEventHub, level: 'debug' | 'info' | 'warn' |
   const event: RuntimeEvent = { type: 'runtime.log', level, message, createdAt: Date.now() }
   hub.publish(event)
 }
+
+/** Per-turn group-chat timeout; configurable so regression tests never wait minutes. */
+function groupTurnTimeoutMs(): number {
+  const raw = Number(process.env.PROJECTOS_GROUP_TURN_TIMEOUT_MS ?? 120_000)
+  if (!Number.isFinite(raw)) return 120_000
+  return Math.max(1_000, Math.min(30 * 60_000, Math.trunc(raw)))
+}
+
 
 
 
