@@ -44,25 +44,31 @@ export class OrchestrationService {
   private indexSnapshot(projectId: string, projectName: string, snapshot: ProjectSnapshot): void {
     const existing = this.store.read
       .listKnowledge(projectId)
-      .some((entry) => entry.sourceUri?.startsWith('projectos://snapshot/'))
-    if (existing) return
+      .find((entry) => entry.sourceUri?.startsWith('projectos://snapshot/'))
+    const title = `项目索引 · ${projectName}`.slice(0, 240)
+    const body = [
+      `语言：${snapshot.languages.join(' / ') || '未知'}`,
+      `包管理器：${snapshot.packageManager ?? '未知'}`,
+      `框架：${snapshot.frameworks.map((item) => item.name).join('、') || '未知'}`,
+      `模块：${snapshot.modules.slice(0, 40).map((item) => `${item.path} (${item.kind})`).join('、') || '未知'}`,
+      `关键依赖：${snapshot.keyDependencies.slice(0, 40).join('、') || '无'}`,
+      `Git HEAD：${snapshot.gitHead ?? '—'}`,
+      snapshot.warnings.length ? `警告：${snapshot.warnings.join(' / ')}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n')
+    const sourceVersion = snapshot.gitHead ?? String(snapshot.scannedAt)
+    if (existing) {
+      this.store.updateKnowledge(existing.id, { title, body, sourceVersion })
+      return
+    }
     this.store.createKnowledge({
       id: newId('knw'),
       projectId,
-      title: `项目索引 · ${projectName}`.slice(0, 240),
-      body: [
-        `语言：${snapshot.languages.join(' / ') || '未知'}`,
-        `包管理器：${snapshot.packageManager ?? '未知'}`,
-        `框架：${snapshot.frameworks.map((item) => item.name).join(' / ') || '未知'}`,
-        `模块：${snapshot.modules.slice(0, 40).map((item) => `${item.path} (${item.kind})`).join(' / ') || '未知'}`,
-        `关键依赖：${snapshot.keyDependencies.slice(0, 40).join(' / ') || '无'}`,
-        `Git HEAD：${snapshot.gitHead ?? '—'}`,
-        snapshot.warnings.length ? `警告：${snapshot.warnings.join(' / ')}` : '',
-      ]
-        .filter(Boolean)
-        .join('\n'),
+      title,
+      body,
       sourceUri: `projectos://snapshot/${snapshot.id}`,
-      sourceVersion: snapshot.gitHead ?? String(snapshot.scannedAt),
+      sourceVersion,
     })
   }
 

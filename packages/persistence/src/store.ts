@@ -27,6 +27,7 @@ import {
   type Decision,
   type Handoff,
   type InboxItem,
+  type KnowledgeEntry,
   type Message,
   type MessageRole,
   type Milestone,
@@ -516,6 +517,22 @@ export class SqliteStore {
       )
       const row = this.get<KnowledgeRow>('SELECT * FROM knowledge_entries WHERE id = ?', entry.id)
       if (!row) throw new AppError('INTERNAL', '知识条目写入失败')
+      return toKnowledge(row)
+    })
+  }
+
+  updateKnowledge(id: string, patch: { title: string; body: string; sourceVersion: string | null }): KnowledgeEntry {
+    return this.transaction(() => {
+      this.run(
+        `UPDATE knowledge_entries SET title = ?, body = ?, source_version = ?, updated_at = ? WHERE id = ?`,
+        patch.title,
+        patch.body,
+        patch.sourceVersion,
+        now(),
+        id,
+      )
+      const row = this.get<KnowledgeRow>('SELECT * FROM knowledge_entries WHERE id = ?', id)
+      if (!row) throw new AppError('NOT_FOUND', '知识条目不存在')
       return toKnowledge(row)
     })
   }
@@ -2121,6 +2138,8 @@ export function createArtifactRecord(input: {
 }
 
 export { toProject, toTask, toSession, toMessage, toRun, toRunStep, toStage }
+
+
 
 
 
