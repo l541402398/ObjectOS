@@ -11,13 +11,10 @@ export type SettingsSection =
   | 'tools'
   | 'permissions'
   | 'data-security'
-  | 'appearance'
+  | 'preferences'
   | 'usage'
   | 'skills'
   | 'openspec'
-  | 'team'
-  | 'system'
-  | 'general'
   | 'about'
 
 interface UiState {

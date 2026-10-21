@@ -826,3 +826,26 @@
 .po-acp-registry-row strong { font-size: 13px; }
 .po-acp-registry-row span { color: var(--color-text-tertiary); font-size: 12px; }
 .po-acp-registry-empty { display: block; padding: 12px; color: var(--color-text-tertiary); font-size: 12px; }
+
+.v17-preferences-group {
+  padding: 0 14px;
+  border: 1px solid var(--glass-content-border);
+  border-radius: 15px;
+  background: rgba(255,255,255,.035);
+  overflow: hidden;
+}
+.v17-preferences-group .po-setting-row { margin: 0; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+.v17-preferences-group .po-setting-row:last-child { border-bottom: 0; }
+.v17-preferences-group .po-setting-row > div { min-width: 0; }
+.v17-preferences-group .po-setting-row > div > span { display: block; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+[data-theme='light'] .v17-preferences-group { background: rgba(255,255,255,.86); border-color: rgba(40,70,120,.09); }
+[data-theme='light'] .v17-preferences-group .po-setting-row { border-bottom-color: rgba(40,70,120,.07); }
+
+.v17-preferences-group .ant-switch {
+  background: rgba(120,140,170,.34);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.12);
+}
+.v17-preferences-group .ant-switch.ant-switch-checked {
+  background: linear-gradient(180deg, #4ca6ff, #0a84ff);
+}
+.v17-preferences-group .ant-switch .ant-switch-handle::before { box-shadow: 0 1px 4px rgba(0,0,0,.32); }

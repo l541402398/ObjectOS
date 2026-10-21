@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { App, Button, Form, Input, Modal, Select, Tag } from 'antd'
+import { App, Button, Form, Input, Modal, Select, Tag, Tooltip } from 'antd'
 import { PlusOutlined, ReloadOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ErrorState, KeyValueList, LoadingBlock, StatusPill } from '@projectos/ui'
+import { ErrorState, KeyValueList, StatusPill } from '@projectos/ui'
 import type { RuntimeProfile } from '@projectos/contracts'
 import { AcpRegistryPanel } from './AcpRegistryPanel'
 import { errorMessage } from '../../lib/errors'
@@ -12,12 +12,13 @@ export function RuntimeSettingsPanel() {
   const queryClient = useQueryClient()
   const preferences = useQuery({ queryKey: ['appPreferences'], queryFn: () => window.projectos.app.preferences() })
   const health = useQuery({ queryKey: ['runtimeHealth'], queryFn: () => window.projectos.runtime.health(), refetchInterval: 10_000, retry: false })
-  const profiles = useQuery({ queryKey: ['runtime-profiles'], queryFn: () => window.projectos.runtimeProfiles.list() })
+  const profiles = useQuery({ queryKey: ['runtime-profiles', 'settings'], queryFn: () => window.projectos.runtimeProfiles.list(), refetchOnMount: 'always' })
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [installing, setInstalling] = useState<string | null>(null)
   const [testResults, setTestResults] = useState<Record<string, { ok: boolean; text: string }>>({})
   const [testingId, setTestingId] = useState<string | null>(null)
+  const [filter, setFilter] = useState<'all' | 'available' | 'missing'>('all')
   const [form] = Form.useForm()
 
   const detect = async (): Promise<void> => {
@@ -98,28 +99,38 @@ export function RuntimeSettingsPanel() {
     }
   }
 
+  const profileList = profiles.data?.profiles ?? []
+  const availableCount = profileList.filter((profile) => profiles.data?.detections.find((item) => item.profileId === profile.id)?.status === 'available' || profile.status === 'available').length
+  const missingCount = profileList.filter((profile) => {
+    const detection = profiles.data?.detections.find((item) => item.profileId === profile.id)
+    return detection?.status === 'unavailable' || profile.status === 'unavailable'
+  }).length
+
   return (
-    <div className="po-settings-panel">
+    <div className="po-settings-panel v17-runtime-panel">
       <div className="po-settings-panel-head">
         <div><h2>运行时</h2><p>本地进程与 Agent Runtime</p></div>
         <Button icon={<ReloadOutlined />} onClick={() => { void health.refetch(); void preferences.refetch() }}>刷新</Button>
       </div>
 
-      <div className="po-runtime-status-card">
-        <div><span className={`po-status-dot is-${health.data ? 'ready' : 'unknown'}`} /><strong>{health.data ? '运行中' : '状态未知'}</strong></div>
-        <StatusPill tone={health.data ? 'success' : 'neutral'}>{health.data ? 'ready' : '—'}</StatusPill>
+      <div className="v17-runtime-healthbar">
+        <div className="is-status">
+          <span className={`po-status-dot is-${health.data ? 'ready' : 'unknown'}`} />
+          <strong>{health.data ? '运行中' : health.isLoading ? '检测中' : '状态未知'}</strong>
+          <StatusPill tone={health.data ? 'success' : 'neutral'}>{health.data ? 'ready' : '—'}</StatusPill>
+        </div>
+        {health.data ? (
+          <div className="is-metrics">
+            <span><em>PID</em><strong>{health.data.pid ?? '—'}</strong></span>
+            <span><em>运行时长</em><strong>{Math.round(health.data.uptimeMs / 1000)}s</strong></span>
+            <span><em>活跃运行</em><strong>{health.data.activeRuns}</strong></span>
+            <span><em>待审批</em><strong>{health.data.queuedApprovals}</strong></span>
+            <span><em>协议</em><strong>v{health.data.protocolVersion}</strong></span>
+          </div>
+        ) : null}
       </div>
-      {health.isLoading ? <LoadingBlock rows={3} /> : health.isError ? <ErrorState title="无法读取 Runtime 健康" message={errorMessage(health.error)} onRetry={() => void health.refetch()} /> : (
-        <KeyValueList items={[
-          { label: 'PID', value: health.data?.pid ?? '—' },
-          { label: '运行时长', value: health.data ? `${Math.round(health.data.uptimeMs / 1000)}s` : '—' },
-          { label: '活跃运行', value: health.data?.activeRuns ?? '—' },
-          { label: '待审批', value: health.data?.queuedApprovals ?? '—' },
-          { label: '协议版本', value: health.data?.protocolVersion ?? '—' },
-        ]} />
-      )}
+      {health.isError ? <ErrorState title="无法读取 Runtime 健康" message={errorMessage(health.error)} onRetry={() => void health.refetch()} /> : null}
 
-      <div className="po-settings-divider" />
       <div className="po-settings-section-head po-runtime-head">
         <div><h2>Agent Runtime</h2><p>检测、安装与自定义执行引擎</p></div>
         <div className="po-runtime-actions">
@@ -127,35 +138,85 @@ export function RuntimeSettingsPanel() {
           <Button icon={<PlusOutlined />} onClick={() => setOpen(true)}>自定义</Button>
         </div>
       </div>
-      <div className="po-runtime-list">
+
+      <div className="v17-runtime-toolbar">
+        <div className="v17-runtime-filter">
+          {([['all', '全部'], ['available', '可用'], ['missing', '未安装']] as const).map(([key, label]) => (
+            <button type="button" key={key} className={filter === key ? 'is-active' : ''} onClick={() => setFilter(key)}>{label}</button>
+          ))}
+        </div>
+        <span className="po-grow" />
+        <span className="v17-runtime-summary"><strong>{availableCount}</strong> 可用 · <strong>{profileList.length}</strong> 登记 · <strong>{missingCount}</strong> 待安装</span>
+        <span className="v17-runtime-hint">检测结果保存在本机</span>
+      </div>
+
+      <div className="v17-runtime-list">
         {(profiles.data?.profiles ?? []).map((profile) => {
           const detection = profiles.data?.detections.find((item) => item.profileId === profile.id)
           const adapterId = typeof profile.options.adapterId === 'string' ? profile.options.adapterId : profile.id
           const installable = ['claude-code', 'codex', 'opencode', 'qwen-code', 'gemini-cli', 'deepseek-harness'].includes(adapterId)
           const available = detection?.status === 'available' || profile.status === 'available'
+          const missing = detection?.status === 'unavailable' || profile.status === 'unavailable'
+          if (filter === 'available' && !available) return null
+          if (filter === 'missing' && !missing) return null
           const testResult = testResults[profile.id]
+          const executable = profile.executable ?? profile.endpoint ?? (profile.protocol === 'native' ? '内置运行时' : '未配置')
           return (
-            <div className="po-runtime-row" key={profile.id}>
-              <div className="po-runtime-row-main">
-                <strong>{profile.name}</strong>
-                <span>{profile.protocol} · {profile.executable ?? profile.endpoint ?? '内置'}</span>
-                <div className="po-runtime-caps">
-                  {profile.capabilities.stream ? <Tag>stream</Tag> : null}
-                  {profile.capabilities.toolCalls ? <Tag>tools</Tag> : null}
-                  {profile.capabilities.skills ? <Tag>skills</Tag> : null}
-                  {profile.capabilities.systemPrompt !== 'unsupported' ? <Tag>prompt:{profile.capabilities.systemPrompt}</Tag> : null}
+            <article className={`v17-runtime-card ${available ? 'is-available' : missing ? 'is-missing' : ''}`} key={profile.id}>
+              <div className="v17-runtime-card-head">
+                <span className="v17-runtime-icon"><ThunderboltOutlined /></span>
+                <div className="v17-runtime-title">
+                  <strong>{profile.name}</strong>
+                  <span>{profile.protocol.toUpperCase()} · {profile.source === 'builtin' ? '内置' : profile.source === 'custom' ? '自定义' : profile.source}</span>
                 </div>
-                {testResult ? (
-                  <pre className={`po-runtime-test-inline ${testResult.ok ? 'is-ok' : 'is-error'}`}>{testResult.text}</pre>
-                ) : null}
-              </div>
-              <div className="po-runtime-state">
-                <StatusPill tone={available ? 'success' : detection?.status === 'unavailable' ? 'danger' : 'neutral'}>
-                  {available ? '可用' : detection?.status === 'unavailable' ? '未安装' : '未检测'}
+                <StatusPill tone={available ? 'success' : missing ? 'danger' : 'neutral'}>
+                  {available ? '可用' : missing ? '未安装' : '未检测'}
                 </StatusPill>
-                <span>{detection?.version ?? detection?.message ?? ''}</span>
+              </div>
+
+              <div className="v17-runtime-meta">
+                <div className="v17-runtime-path">
+                  <span>可执行文件</span>
+                  <Tooltip title={executable}>
+                    <code>{executable}</code>
+                  </Tooltip>
+                </div>
+                <div>
+                  <span>版本</span>
+                  <strong>{detection?.version ?? '—'}</strong>
+                </div>
+                <div>
+                  <span>来源</span>
+                  <strong>{profile.source}</strong>
+                </div>
+              </div>
+
+              <div className="v17-runtime-caps">
+                {profile.capabilities.stream ? <Tag>stream</Tag> : null}
+                {profile.capabilities.toolCalls ? <Tag>tools</Tag> : null}
+                {profile.capabilities.skills ? <Tag>skills</Tag> : null}
+                {profile.capabilities.systemPrompt !== 'unsupported' ? <Tag>prompt:{profile.capabilities.systemPrompt}</Tag> : null}
+                {profile.capabilities.permissions ? <Tag>permissions</Tag> : null}
+                {profile.capabilities.worktree ? <Tag>worktree</Tag> : null}
+              </div>
+
+              {!available && detection?.message ? (
+                <div className="v17-runtime-warning">{detection.message.replace(/^安装不完整：/, '').slice(0, 420)}</div>
+              ) : null}
+
+              {testResult ? (
+                <div className={`v17-runtime-test ${testResult.ok ? 'is-ok' : 'is-error'}`}>
+                  <div><strong>{testResult.ok ? '测试通过' : '测试失败'}</strong><Button type="text" size="small" onClick={() => setTestResults((current) => { const next = { ...current }; delete next[profile.id]; return next })}>清除</Button></div>
+                  <pre>{testResult.text}</pre>
+                </div>
+              ) : null}
+
+              <div className="v17-runtime-card-actions">
                 {!available && installable ? (
                   <Button size="small" type="primary" loading={installing === profile.id} onClick={() => install(profile)}>安装</Button>
+                ) : null}
+                {profile.protocol !== 'native' ? (
+                  <Button size="small" loading={testingId === profile.id} onClick={() => void runHarnessTest(profile)}>测试</Button>
                 ) : null}
                 {profile.protocol === 'acp' ? (
                   <Button
@@ -173,24 +234,19 @@ export function RuntimeSettingsPanel() {
                     认证
                   </Button>
                 ) : null}
-                {profile.protocol !== 'native' ? (
-                  <Button size="small" loading={testingId === profile.id} onClick={() => void runHarnessTest(profile)}>
-                    测试
-                  </Button>
-                ) : null}
                 {profile.source === 'custom' ? (
                   <Button
                     size="small"
                     onClick={() => {
                       const name = window.prompt('Runtime 名称', profile.name)
                       if (!name) return
-                      const executable = window.prompt('可执行路径', profile.executable ?? '')
+                      const executablePath = window.prompt('可执行路径', profile.executable ?? '')
                       void window.projectos.runtimeProfiles
                         .upsert({
                           id: profile.id,
                           name,
                           protocol: profile.protocol,
-                          executable: executable || null,
+                          executable: executablePath || null,
                           endpoint: profile.endpoint,
                           args: profile.args,
                           authRef: profile.authRef,
@@ -226,10 +282,11 @@ export function RuntimeSettingsPanel() {
                   </Button>
                 ) : null}
               </div>
-            </div>
+            </article>
           )
         })}
       </div>
+
       <AcpRegistryPanel />
       <div className="po-runtime-actions po-runtime-registry">
         <Button onClick={() => void window.projectos.runtimeProfiles.registry().then((result) => message.info(`ACP Registry：${result.entries.length} 个 Agent（${result.source}）`)).catch((error) => message.error(errorMessage(error)))}>
@@ -262,6 +319,9 @@ export function RuntimeSettingsPanel() {
     </div>
   )
 }
+
+
+
 
 
 

@@ -1,4 +1,4 @@
-import { AppstoreOutlined, ApiOutlined, BgColorsOutlined, HddOutlined, SafetyOutlined, TeamOutlined, ThunderboltOutlined, ToolOutlined } from '@ant-design/icons'
+import { AppstoreOutlined, ApiOutlined, BgColorsOutlined, HddOutlined, SafetyOutlined, ThunderboltOutlined, ToolOutlined } from '@ant-design/icons'
 import { useAIConnections, useBootstrap, useRuntimeProfiles, useSkills } from '../../lib/queries'
 import { useUiStore, type SettingsSection } from '../../stores/ui'
 
@@ -23,16 +23,13 @@ const GROUPS: Array<{ title: string; items: Array<{ key: SettingsSection; label:
     title: '工作区与安全',
     items: [
       { key: 'permissions', label: '工具权限', description: '文件、Shell 与网络权限', icon: <SafetyOutlined /> },
-      { key: 'team', label: '团队与权限', description: '成员与角色边界', icon: <TeamOutlined /> },
       { key: 'data-security', label: '存储与安全', description: '数据目录、密钥与审批', icon: <SafetyOutlined /> },
     ],
   },
   {
     title: '外观与系统',
     items: [
-      { key: 'appearance', label: '外观与快捷键', description: '主题、动效与键盘操作', icon: <BgColorsOutlined /> },
-      { key: 'system', label: '系统与外观', description: '透明度、动效与界面密度', icon: <BgColorsOutlined /> },
-      { key: 'general', label: '通用', description: '语言、启动与基础偏好', icon: <AppstoreOutlined /> },
+      { key: 'preferences', label: '偏好设置', description: '外观、系统、快捷键与基础偏好', icon: <BgColorsOutlined /> },
     ],
   },
 ]

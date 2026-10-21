@@ -6,8 +6,6 @@ import {
   SettingOutlined,
   HddOutlined,
   ToolOutlined,
-  TeamOutlined,
-  DesktopOutlined,
   SafetyCertificateOutlined,
 } from '@ant-design/icons'
 import type { ReactNode } from 'react'
@@ -15,13 +13,11 @@ import { useUiStore, type SettingsSection } from '../../stores/ui'
 import { AIConnectionsPanel } from './AIConnectionsPanel'
 import { SettingsOverviewPanel } from './SettingsOverviewPanel'
 import { ModelCatalogPanel } from './ModelCatalogPanel'
-import { GeneralSettingsPanel } from './GeneralSettingsPanel'
+import { PreferencesSettingsPanel } from './PreferencesSettingsPanel'
 import { RuntimeSettingsPanel } from './RuntimeSettingsPanel'
 import { AboutSettingsPanel } from './AboutSettingsPanel'
-import { SystemSettingsPanel } from './SystemSettingsPanel'
-import { TeamSettingsPanel } from './TeamSettingsPanel'
 import { ToolsSettingsPanel } from './ToolsSettingsPanel'
-import { AppearanceSettingsPanel, DataSecuritySettingsPanel, OpenSpecSettingsPanel, PermissionsSettingsPanel } from './AdvancedSettingsPanels'
+import { DataSecuritySettingsPanel, OpenSpecSettingsPanel, PermissionsSettingsPanel } from './AdvancedSettingsPanels'
 import { UsageSettingsPanel } from './UsageSettingsPanel'
 import { SkillsSettingsPanel } from './SkillsSettingsPanel'
 import './settings.css'
@@ -34,13 +30,10 @@ const SECTIONS: Array<{ key: SettingsSection; label: string; icon: ReactNode }> 
   { key: 'tools', label: '工具与插件', icon: <ToolOutlined /> },
   { key: 'skills', label: 'Skills 管理', icon: <AppstoreOutlined /> },
   { key: 'permissions', label: '工具权限', icon: <SafetyCertificateOutlined /> },
-  { key: 'team', label: '团队与权限', icon: <TeamOutlined /> },
   { key: 'data-security', label: '存储与安全', icon: <SafetyCertificateOutlined /> },
-  { key: 'appearance', label: '外观与快捷键', icon: <DesktopOutlined /> },
-  { key: 'system', label: '系统与外观', icon: <DesktopOutlined /> },
   { key: 'usage', label: '用量与价格', icon: <AppstoreOutlined /> },
   { key: 'openspec', label: 'OpenSpec', icon: <SettingOutlined /> },
-  { key: 'general', label: '通用', icon: <SettingOutlined /> },
+  { key: 'preferences', label: '偏好设置', icon: <SettingOutlined /> },
   { key: 'about', label: '关于', icon: <InfoCircleOutlined /> },
 ]
 
@@ -60,18 +53,12 @@ function renderSection(section: SettingsSection): ReactNode {
       return <PermissionsSettingsPanel />
     case 'data-security':
       return <DataSecuritySettingsPanel />
-    case 'appearance':
-      return <AppearanceSettingsPanel />
     case 'usage':
       return <UsageSettingsPanel />
     case 'openspec':
       return <OpenSpecSettingsPanel />
-    case 'team':
-      return <TeamSettingsPanel />
-    case 'system':
-      return <SystemSettingsPanel />
-    case 'general':
-      return <GeneralSettingsPanel />
+    case 'preferences':
+      return <PreferencesSettingsPanel />
     case 'runtime':
       return <RuntimeSettingsPanel />
     case 'about':
@@ -120,12 +107,14 @@ export function SettingsModal() {
               </button>
             ))}
           </nav>
-          <div className="po-settings-content">{renderSection(section)}</div>
+          <div className="po-settings-content" key={section}>{renderSection(section)}</div>
         </div>
       </div>
     </Modal>
   )
 }
+
+
 
 
 
