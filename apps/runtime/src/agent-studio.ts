@@ -10,6 +10,15 @@ import { resolveExecutable } from './executable-resolver.js'
 
 const exec = promisify(execFile)
 
+function errorOutput(error: unknown): string {
+  const value = error as { stdout?: string | Buffer; stderr?: string | Buffer; message?: string }
+  return [value?.stdout, value?.stderr, value?.message]
+    .filter(Boolean)
+    .map((part) => String(part))
+    .join('\n')
+    .trim()
+}
+
 const DEFAULT_PERSONA: AgentPersona = {
   role: '', background: '', responsibilities: '', principles: '', style: '', constraints: '', systemPrompt: '',
 }
@@ -287,9 +296,16 @@ export class AgentStudioService {
         try {
           const result = await exec(executable, ['--version'], { timeout: 10_000, windowsHide: true })
           version = (result.stdout || result.stderr).trim().split(/\r?\n/)[0]?.slice(0, 120) ?? null
-        } catch { /* version flag is not universal */ }
+        } catch (error) {
+          const detail = errorOutput(error)
+          if (/could not locate|Cannot find module|MODULE_NOT_FOUND|ENOENT/i.test(detail)) {
+            throw new Error(`安装不完整：${detail.split(/\r?\n/).slice(-2).join(' ').slice(0, 240)}`)
+          }
+          // Some CLIs do not support --version; the executable still exists.
+        }
         results.push({ profileId: profile.id, adapterId: profile.id, name: profile.name, installed: true, executable, version, protocol: profile.protocol, capabilities: profile.capabilities, status: 'available', message: version ? `已安装 ${version}` : '已安装' })
-      } catch {
+      } catch (error) {
+        const failure = error instanceof Error ? error.message : '未找到可执行文件'
         const fallback = (typeof profile.options.adapterId === 'string' ? profile.options.adapterId : profile.id) === 'deepseek-harness' && process.env.LOCALAPPDATA
           ? join(process.env.LOCALAPPDATA, 'Programs', 'DeepSeek Harness', 'resources', 'runtime', 'cli', 'bin', 'dsh.cmd')
           : null
@@ -302,7 +318,7 @@ export class AgentStudioService {
           results.push({ profileId: profile.id, adapterId: profile.id, name: profile.name, installed: true, executable: fallback, version, protocol: profile.protocol, capabilities: profile.capabilities, status: 'available', message: version ? `已安装 ${version}` : '已安装' })
           continue
         }
-        results.push({ profileId: profile.id, adapterId: profile.id, name: profile.name, installed: false, executable: null, version: null, protocol: profile.protocol, capabilities: profile.capabilities, status: 'unavailable', message: '未找到可执行文件' })
+        results.push({ profileId: profile.id, adapterId: profile.id, name: profile.name, installed: false, executable: null, version: null, protocol: profile.protocol, capabilities: profile.capabilities, status: 'unavailable', message: failure })
       }
     }
     for (const result of results) {
@@ -330,6 +346,7 @@ export class AgentStudioService {
       opencode: 'opencode-ai',
       'qwen-code': '@qwen-code/qwen-code',
       'gemini-cli': '@google/gemini-cli',
+      'deepseek-harness': '@deepseek-ai/dsh',
     }
     const packageName = packages[adapterId]
     if (!packageName) throw new AppError('BAD_REQUEST', '该 Runtime 没有自动安装包，请手动安装')
@@ -378,6 +395,7 @@ export class AgentStudioService {
     return { source: 'network', ...result }
   }
 }
+
 
 
 

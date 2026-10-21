@@ -131,7 +131,7 @@ export function RuntimeSettingsPanel() {
         {(profiles.data?.profiles ?? []).map((profile) => {
           const detection = profiles.data?.detections.find((item) => item.profileId === profile.id)
           const adapterId = typeof profile.options.adapterId === 'string' ? profile.options.adapterId : profile.id
-          const installable = ['claude-code', 'codex', 'opencode', 'qwen-code', 'gemini-cli'].includes(adapterId)
+          const installable = ['claude-code', 'codex', 'opencode', 'qwen-code', 'gemini-cli', 'deepseek-harness'].includes(adapterId)
           const available = detection?.status === 'available' || profile.status === 'available'
           const testResult = testResults[profile.id]
           return (
@@ -157,7 +157,6 @@ export function RuntimeSettingsPanel() {
                 {!available && installable ? (
                   <Button size="small" type="primary" loading={installing === profile.id} onClick={() => install(profile)}>安装</Button>
                 ) : null}
-                {!available && adapterId === 'deepseek-harness' ? <Tag>手动安装</Tag> : null}
                 {profile.protocol === 'acp' ? (
                   <Button
                     size="small"

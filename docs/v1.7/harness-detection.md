@@ -118,3 +118,57 @@ codex --version
 如果 `which codex` 有输出但应用仍显示未安装，可在 Runtime 设置里编辑 Codex 的可执行路径为绝对路径。
 
 前提是 `codex` 必须是真实可执行文件，而不是 shell alias/function。
+
+
+## DeepSeek Harness 的“假已安装”问题
+
+如果 `~/.local/bin/dsh` 存在，但执行 `dsh --version` 返回：
+
+```text
+dsh: could not locate the @deepseek-ai/dsh installation
+```
+
+说明 `dsh` 只是一个启动 shim，真正的 npm 包已丢失或不完整。
+
+现在检测逻辑会识别：
+
+```text
+could not locate
+Cannot find module
+MODULE_NOT_FOUND
+ENOENT
+```
+
+并标记为：
+
+```text
+安装不完整：dsh: could not locate the @deepseek-ai/dsh installation
+```
+
+不会再显示“可用”。
+
+### 修复
+
+```bash
+npm install -g @deepseek-ai/dsh
+```
+
+如果原来的 `dsh` 安装在 `~/.local/bin`，使用同一前缀：
+
+```bash
+npm install -g --prefix ~/.local @deepseek-ai/dsh
+```
+
+然后：
+
+1. 设置 → 运行时 → 检测环境
+2. DeepSeek Harness 应显示“可用”
+3. 点击“测试”，系统自动执行真实测试
+
+DeepSeek Harness 已加入自动安装白名单：
+
+```text
+@deepseek-ai/dsh
+```
+
+安装完成后会自动重新检测。
