@@ -460,7 +460,12 @@ export class OrchestrationScheduler {
       }
 
       let changed = false
-      for (const card of cards) {
+      // Re-read review cards: handoff preparation and retries may have changed
+      // task versions/status since the tick started.
+      const reviewCards = plan.createdTaskIds
+        .map((taskId) => this.store.read.getTaskCard(taskId))
+        .filter((card): card is TaskCard => Boolean(card))
+      for (const card of reviewCards) {
         if (card.status !== 'review') continue
         const role = card.labels.find((label) => ['architect', 'developer', 'reviewer', 'tester'].includes(label))
         if (role === 'developer' || role === 'tester') {
