@@ -15,6 +15,7 @@ import {
   assertTaskTransition,
   wouldCreateCycle,
 } from '@projectos/domain'
+import { evaluateCompletion, type CompletionDecision } from './completion-evidence.js'
 import type { ActionActor, CoreStore } from './ports.js'
 import { USER_ACTOR } from './ports.js'
 
@@ -81,6 +82,7 @@ export class TaskService {
       priority: input.priority,
       assigneeAgentId: input.assigneeAgentId,
       acceptanceCriteria: input.acceptanceCriteria,
+      expectedArtifacts: input.expectedArtifacts ?? [],
       labels: input.labels,
       version: 0,
       dueAt: input.dueAt,
@@ -112,6 +114,7 @@ export class TaskService {
         description: input.description,
         priority: input.priority,
         acceptanceCriteria: input.acceptanceCriteria,
+        expectedArtifacts: input.expectedArtifacts,
         labels: input.labels,
         assigneeAgentId: input.assigneeAgentId,
         milestoneId: input.milestoneId,
@@ -143,32 +146,15 @@ export class TaskService {
         .map((id) => this.store.read.getTask(id))
         .filter((dependency): dependency is Task => dependency !== null)
       assertTaskCanComplete({ task, dependencies })
-    }
-    return this.store.transaction(() => {
-      if (input.to === 'done') {
-        const artifact = {
-          id: newId('art'),
-          projectId: task.projectId,
-          taskId: task.id,
-          runId: null,
-          kind: 'document' as const,
-          title: `验收记录 · ${task.title}`,
-          uri: null,
-          contentHash: null,
-          gitCommit: null,
-          verifiedAt: now(),
-          body: `由 ${actor.name} 于 ${new Date().toLocaleString('zh-CN')} 确认验收。${input.note ? `\n\n说明：${input.note}` : ''}`,
-          isDemo: false,
-          createdAt: now(),
-        }
-        this.store.createArtifact(artifact)
-        this.store.appendEvent(task.projectId, task.id, PROJECT_EVENT_TYPES.artifactCreated, {
-          title: artifact.title,
-          kind: artifact.kind,
-          actor,
-          actorName: actor.name,
+      const decision = this.completionDecision(task, card, actor, input.note ?? null)
+      if (!decision.ok) {
+        throw new AppError('CONFLICT', `任务缺少有效完成依据：${decision.reasons.join('；')}`, {
+          details: decision,
         })
       }
+      return this.finishTask(task, input.expectedVersion, input.note, actor, decision)
+    }
+    return this.store.transaction(() => {
       const updated = this.store.moveTask(task.id, input.expectedVersion, input.to)
       this.store.appendEvent(task.projectId, task.id, PROJECT_EVENT_TYPES.taskMoved, {
         taskTitle: task.title,
@@ -178,13 +164,115 @@ export class TaskService {
         actor,
         actorName: actor.name,
       })
-      if (input.to === 'done') {
-        this.store.appendEvent(task.projectId, task.id, PROJECT_EVENT_TYPES.taskCompleted, {
-          taskTitle: task.title,
-          actor,
-          actorName: actor.name,
-        })
+      const updatedCard = this.store.read.getTaskCard(updated.id)
+      if (!updatedCard) throw new AppError('INTERNAL', '任务状态更新失败')
+      return updatedCard
+    })
+  }
+
+  /** Used by the Scheduler after it has evaluated the full evidence set. */
+  complete(
+    input: { taskId: string; expectedVersion: number; note?: string; decision: CompletionDecision },
+    actor: ActionActor = USER_ACTOR,
+  ): TaskCard {
+    const task = this.getTask(input.taskId)
+    assertTaskTransition(task.status, 'done')
+    const card = this.store.read.getTaskCard(task.id)
+    if (!card) throw new AppError('NOT_FOUND', '任务不存在')
+    const dependencies = card.dependencyIds
+      .map((id) => this.store.read.getTask(id))
+      .filter((dependency): dependency is Task => dependency !== null)
+    assertTaskCanComplete({ task, dependencies })
+    if (!input.decision.ok) {
+      throw new AppError('CONFLICT', `任务缺少有效完成依据：${input.decision.reasons.join('；')}`, {
+        details: input.decision,
+      })
+    }
+    return this.finishTask(task, input.expectedVersion, input.note, actor, input.decision)
+  }
+
+  private completionDecision(
+    task: Task,
+    card: TaskCard,
+    actor: ActionActor,
+    note: string | null,
+  ): CompletionDecision {
+    const project = this.getProject(task.projectId)
+    const artifacts = this.store.read.listArtifacts(task.projectId, task.id)
+    const runs = this.store.read
+      .listRunSummaries(task.projectId, 100)
+      .filter((run) => run.taskId === task.id)
+      .slice(0, 5)
+      .map((run) => this.store.read.getRunDetail(run.id))
+      .filter((detail): detail is NonNullable<typeof detail> => Boolean(detail))
+    return evaluateCompletion({
+      task: card,
+      artifacts,
+      runs,
+      workspaceRoot: project.rootPath,
+      actorKind: actor.kind,
+      humanNote: note,
+    })
+  }
+
+  private finishTask(
+    task: Task,
+    expectedVersion: number,
+    note: string | undefined,
+    actor: ActionActor,
+    decision: CompletionDecision,
+  ): TaskCard {
+    const timestamp = now()
+    return this.store.transaction(() => {
+      const evidence = decision.requirements
+        .map((item) => `- ${item.label}：${item.satisfied ? '满足' : '缺失'}${item.evidence.length ? `（${item.evidence.join('；')}）` : ''}`)
+        .join('\n')
+      const artifact = {
+        id: newId('art'),
+        projectId: task.projectId,
+        taskId: task.id,
+        runId: null,
+        kind: 'document' as const,
+        title: `验收记录 · ${task.title}`,
+        uri: null,
+        contentHash: null,
+        gitCommit: null,
+        verifiedAt: timestamp,
+        body: [
+          `由 ${actor.name} 于 ${new Date(timestamp).toLocaleString('zh-CN')} 确认验收。`,
+          '',
+          '完成依据：',
+          evidence || '- 人工验收确认',
+          ...decision.toolOutcomes
+            .filter((item) => item.status === 'denied' || item.status === 'failed')
+            .map((item) => `- 工具 ${item.name}：${item.status}${item.detail ? `（${item.detail}）` : ''}`),
+          ...decision.reasons.map((reason) => `- ${reason}`),
+          note ? `\n说明：${note}` : '',
+        ].filter(Boolean).join('\n'),
+        isDemo: false,
+        createdAt: timestamp,
       }
+      this.store.createArtifact(artifact)
+      this.store.appendEvent(task.projectId, task.id, PROJECT_EVENT_TYPES.artifactCreated, {
+        title: artifact.title,
+        kind: artifact.kind,
+        actor,
+        actorName: actor.name,
+      })
+      const updated = this.store.moveTask(task.id, expectedVersion, 'done')
+      this.store.appendEvent(task.projectId, task.id, PROJECT_EVENT_TYPES.taskMoved, {
+        taskTitle: task.title,
+        title: task.title,
+        status: 'done',
+        note: note ?? null,
+        actor,
+        actorName: actor.name,
+      })
+      this.store.appendEvent(task.projectId, task.id, PROJECT_EVENT_TYPES.taskCompleted, {
+        taskTitle: task.title,
+        actor,
+        actorName: actor.name,
+      })
       const updatedCard = this.store.read.getTaskCard(updated.id)
       if (!updatedCard) throw new AppError('INTERNAL', '任务状态更新失败')
       return updatedCard

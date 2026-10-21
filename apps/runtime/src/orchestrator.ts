@@ -1,6 +1,7 @@
 import { AppError, now, type HandoffView, type PlanDraft, type PlanExecution, type TaskCard, type WorktreeInfo } from '@projectos/contracts'
-import type { CoreServices } from '@projectos/application'
+import { evaluateCompletion, type CoreServices } from '@projectos/application'
 import { PROJECT_EVENT_TYPES } from '@projectos/domain'
+import { getGitStatus } from '@projectos/workspace'
 import { createArtifactRecord } from '@projectos/persistence'
 import type { SqliteStore } from '@projectos/persistence'
 import { WorktreeManager } from '@projectos/worktree'
@@ -468,11 +469,9 @@ export class OrchestrationScheduler {
       for (const card of reviewCards) {
         if (card.status !== 'review') continue
         const role = card.labels.find((label) => ['architect', 'developer', 'reviewer', 'tester'].includes(label))
+        let report = this.qualityReports.get(card.id)
         if (role === 'developer' || role === 'tester') {
-          let report = this.qualityReports.get(card.id)
           if (!report) {
-            const project = this.store.read.getProject(plan.projectId)
-            if (!project) throw new AppError('NOT_FOUND', '项目不存在')
             report = await this.qualityGate.run(workspaceRoot)
             this.qualityReports.set(card.id, report)
             this.store.createArtifact(
@@ -482,17 +481,17 @@ export class OrchestrationScheduler {
                 kind: 'test-report',
                 title: `质量门禁 · ${card.title}`,
                 body: [
-                  `结果：${report.passed ? 'passed' : 'failed'}${report.skipped ? '（未配置检查脚本）' : ''}`,
+                  `结果：${report.outcome}${report.skipped ? '（未配置可执行检查脚本）' : ''}`,
                   ...report.checks.map(
                     (check) =>
                       `## ${check.name} · ${check.status} · exit ${check.exitCode ?? '—'}\n$ ${check.command}\n${check.output.slice(-6000)}`,
                   ),
                 ].join('\n\n'),
-                verified: report.passed,
+                verified: report.outcome === 'passed',
               }),
             )
           }
-          if (!report.passed) {
+          if (report.outcome === 'failed' || report.outcome === 'error') {
             try {
               this.services.tasks.move(
                 { taskId: card.id, expectedVersion: card.version, to: 'blocked', note: '质量门禁未通过' },
@@ -510,10 +509,63 @@ export class OrchestrationScheduler {
             this.disarm(planId)
             return
           }
+          if (report.outcome === 'skipped') {
+            // No configured checks is not a pass; evidence may still come from a
+            // real agent-run test report/run_tests, otherwise the task stays in review.
+            this.qualityReports.delete(card.id)
+          }
+        }
+
+        const artifacts = this.store.read.listArtifacts(plan.projectId, card.id)
+        const runDetails = this.store.read
+          .listRunSummaries(plan.projectId, 200)
+          .filter((run) => run.taskId === card.id)
+          .slice(0, 5)
+          .map((run) => this.store.read.getRunDetail(run.id))
+          .filter((detail): detail is NonNullable<typeof detail> => Boolean(detail))
+        const git = await getGitStatus(workspaceRoot).catch(() => null)
+        const decision = evaluateCompletion({
+          task: card,
+          artifacts,
+          runs: runDetails,
+          qualityGate: report
+            ? {
+                outcome: report.outcome,
+                passed: report.passed,
+                skipped: report.skipped,
+                checks: report.checks.map((check) => ({
+                  name: check.name,
+                  status: check.status,
+                  exitCode: check.exitCode,
+                })),
+              }
+            : null,
+          workspaceRoot,
+          fileExists: (relativePath) => existsSync(join(workspaceRoot, relativePath)),
+          changedFiles: git?.changes.map((change) => change.path) ?? [],
+          actorKind: 'system',
+        })
+        if (!decision.ok) {
+          const missing = decision.requirements
+            .filter((item) => !item.satisfied)
+            .map((item) => `${item.label}：${item.missing.join('；')}`)
+          this.saveExecution(plan, {
+            ...plan.execution!,
+            status: 'paused',
+            error: `任务「${card.title}」缺少有效完成依据：${missing.join('；') || decision.reasons.join('；')}`,
+            updatedAt: now(),
+          })
+          this.disarm(planId)
+          return
         }
         try {
-          this.services.tasks.move(
-            { taskId: card.id, expectedVersion: card.version, to: 'done', note: '编排器自动验收通过' },
+          this.services.tasks.complete(
+            {
+              taskId: card.id,
+              expectedVersion: card.version,
+              note: '编排器自动验收通过（完成依据已校验）',
+              decision,
+            },
             SYSTEM_ACTOR,
           )
           changed = true

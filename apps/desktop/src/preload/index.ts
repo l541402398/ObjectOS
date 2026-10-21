@@ -115,6 +115,7 @@ const api: ProjectOSDesktopApi = {
   runs: {
     start: (input) => call('run.start', input),
     cancel: (runId) => call('run.cancel', { runId }),
+    reconcile: (input) => call('run.reconcile', input),
     list: (projectId, limit) => call('run.list', { projectId, limit: limit ?? 50 }),
     get: (runId) => call('run.get', { runId }),
   },

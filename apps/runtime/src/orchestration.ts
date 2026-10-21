@@ -421,6 +421,7 @@ export class OrchestrationService {
           description: planned.description,
           priority: 2,
           acceptanceCriteria: planned.acceptanceCriteria,
+          expectedArtifacts: planned.expectedArtifacts,
           labels: ['plan', planned.role],
           assigneeAgentId,
           milestoneId: null,

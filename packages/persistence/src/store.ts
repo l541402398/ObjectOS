@@ -541,8 +541,8 @@ export class SqliteStore {
   createTask(task: Task, dependencies: string[] = []): Task {
     return this.write(() => {
       this.run(
-        `INSERT INTO tasks (id, project_id, parent_id, milestone_id, title, description, status, priority, assignee_agent_id, acceptance_json, labels_json, version, due_at, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO tasks (id, project_id, parent_id, milestone_id, title, description, status, priority, assignee_agent_id, acceptance_json, expected_artifacts_json, labels_json, version, due_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         task.id,
         task.projectId,
         task.parentId,
@@ -553,6 +553,7 @@ export class SqliteStore {
         task.priority,
         task.assigneeAgentId,
         JSON.stringify(task.acceptanceCriteria),
+        JSON.stringify(task.expectedArtifacts ?? []),
         JSON.stringify(task.labels),
         task.version,
         task.dueAt,
@@ -579,6 +580,7 @@ export class SqliteStore {
       priority?: Task['priority']
       assigneeAgentId?: string | null
       acceptanceCriteria?: string[]
+      expectedArtifacts?: string[]
       labels?: string[]
       milestoneId?: string | null
       dueAt?: number | null
@@ -606,6 +608,10 @@ export class SqliteStore {
       if (patch.acceptanceCriteria !== undefined) {
         sets.push('acceptance_json = ?')
         params.push(JSON.stringify(patch.acceptanceCriteria))
+      }
+      if (patch.expectedArtifacts !== undefined) {
+        sets.push('expected_artifacts_json = ?')
+        params.push(JSON.stringify(patch.expectedArtifacts))
       }
       if (patch.labels !== undefined) {
         sets.push('labels_json = ?')

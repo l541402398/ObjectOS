@@ -23,6 +23,7 @@ export const PROJECT_EVENT_TYPES = {
   runStatusChanged: 'run.status.changed',
   runCompleted: 'run.completed',
   runFailed: 'run.failed',
+  runReconciled: 'run.reconciled',
   toolRequested: 'tool.requested',
   toolCompleted: 'tool.completed',
   toolFailed: 'tool.failed',
@@ -118,6 +119,12 @@ export function summarizeProjectEvent(event: Pick<ProjectEvent, 'eventType' | 'p
       return { summary: `Agent 运行完成`, tone: 'success', actorName }
     case PROJECT_EVENT_TYPES.runFailed:
       return { summary: `Agent 运行失败：${String(payload.error ?? '未知错误')}`, tone: 'danger', actorName }
+    case PROJECT_EVENT_TYPES.runReconciled:
+      return {
+        summary: `人工核对运行：${payload.decision === 'completed' ? '确认完成' : payload.decision === 'retry' ? '允许重试' : '标记失败'}`,
+        tone: payload.decision === 'completed' ? 'success' : 'warning',
+        actorName,
+      }
     case PROJECT_EVENT_TYPES.approvalRequested:
       return { summary: `请求授权：${String(payload.toolName ?? '工具调用')}`, tone: 'warning', actorName }
     case PROJECT_EVENT_TYPES.approvalDecided:

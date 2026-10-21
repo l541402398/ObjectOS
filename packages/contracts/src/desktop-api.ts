@@ -85,6 +85,7 @@ export interface ProjectOSDesktopApi {
   runs: {
     start: (input: In<'run.start'>) => Promise<Out<'run.start'>>
     cancel: (runId: string) => Promise<Out<'run.cancel'>>
+    reconcile: (input: In<'run.reconcile'>) => Promise<Out<'run.reconcile'>>
     list: (projectId: string, limit?: number) => Promise<Out<'run.list'>>
     get: (runId: string) => Promise<Out<'run.get'>>
   }

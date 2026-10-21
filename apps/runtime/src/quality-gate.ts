@@ -12,9 +12,12 @@ export interface QualityCheck {
   output: string
 }
 
+export type QualityGateOutcome = 'passed' | 'failed' | 'error' | 'skipped'
+
 export interface QualityGateReport {
   passed: boolean
   skipped: boolean
+  outcome: QualityGateOutcome
   checks: QualityCheck[]
   startedAt: number
   finishedAt: number
@@ -138,9 +141,18 @@ export class QualityGateService {
       }
     }
     const executed = checks.filter((check) => check.status !== 'skipped')
+    const outcome: QualityGateOutcome =
+      executed.some((check) => check.status === 'error')
+        ? 'error'
+        : executed.some((check) => check.status === 'failed')
+          ? 'failed'
+          : executed.length === 0
+            ? 'skipped'
+            : 'passed'
     return {
-      passed: executed.every((check) => check.status === 'passed'),
-      skipped: executed.length === 0,
+      passed: outcome === 'passed',
+      skipped: outcome === 'skipped',
+      outcome,
       checks,
       startedAt,
       finishedAt: Date.now(),

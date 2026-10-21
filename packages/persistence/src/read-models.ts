@@ -1110,6 +1110,27 @@ export class ReadModels {
     return rows.map(toInboxItem)
   }
 
+  listDeliverableInbox(before: number, maxAttempts: number, limit = 20): InboxItem[] {
+    return this.all<InboxRow>(
+      `SELECT * FROM agent_inbox
+       WHERE status = 'delivered' AND created_at <= ? AND attempts < ?
+       ORDER BY created_at ASC LIMIT ?`,
+      before,
+      maxAttempts,
+      limit,
+    ).map(toInboxItem)
+  }
+
+  listStaleInbox(before: number, limit = 20): InboxItem[] {
+    return this.all<InboxRow>(
+      `SELECT * FROM agent_inbox
+       WHERE status = 'delivered' AND created_at <= ?
+       ORDER BY created_at ASC LIMIT ?`,
+      before,
+      limit,
+    ).map(toInboxItem)
+  }
+
   getInboxItemView(item: InboxItem): InboxItemView {
     const senderAgent = this.getAgent(item.envelope.sender.agentId)
     const senderSession = this.getSession(item.envelope.sender.sessionId)

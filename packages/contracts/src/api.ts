@@ -102,6 +102,7 @@ export const CreateTaskInputSchema = z.object({
   description: z.string().max(40_000).default(''),
   priority: PrioritySchema.default(3),
   acceptanceCriteria: z.array(z.string().trim().min(1).max(2000)).max(50).default([]),
+  expectedArtifacts: z.array(z.string().max(500)).max(50).optional(),
   labels: z.array(z.string().trim().min(1).max(60)).max(20).default([]),
   assigneeAgentId: IdSchema.nullable().default(null),
   milestoneId: IdSchema.nullable().default(null),
@@ -117,6 +118,7 @@ export const UpdateTaskInputSchema = z.object({
   description: z.string().max(40_000).optional(),
   priority: PrioritySchema.optional(),
   acceptanceCriteria: z.array(z.string().trim().min(1).max(2000)).max(50).optional(),
+  expectedArtifacts: z.array(z.string().max(500)).max(50).optional(),
   labels: z.array(z.string().trim().min(1).max(60)).max(20).optional(),
   assigneeAgentId: IdSchema.nullable().optional(),
   milestoneId: IdSchema.nullable().optional(),
@@ -521,6 +523,18 @@ export const ApiSchemas = {
   'run.cancel': {
     input: z.object({ runId: IdSchema }),
     output: ok,
+  },
+  'run.reconcile': {
+    input: z.object({
+      runId: IdSchema,
+      decision: z.enum(['completed', 'retry', 'failed']),
+      note: z.string().max(4000).default(''),
+    }),
+    output: z.object({
+      runId: IdSchema,
+      status: z.string().max(40),
+      taskId: IdSchema.nullable(),
+    }),
   },
   'run.list': {
     input: z.object({

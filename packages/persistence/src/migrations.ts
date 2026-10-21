@@ -698,6 +698,10 @@ const V15 = `
 ALTER TABLE autonomy_settings ADD COLUMN repair_agent_id TEXT;
 `
 
+const V16 = `
+ALTER TABLE tasks ADD COLUMN expected_artifacts_json TEXT NOT NULL DEFAULT '[]';
+`
+
 const V14 = `
 CREATE TABLE run_snapshots (
   run_id TEXT PRIMARY KEY REFERENCES agent_runs(id) ON DELETE CASCADE,
@@ -725,6 +729,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 13, name: 'agent definitions skills and runtime profiles', sql: V13 },
   { version: 14, name: 'frozen run configuration snapshots', sql: V14 },
   { version: 15, name: 'autonomy repair agent assignment', sql: V15 },
+  { version: 16, name: 'task expected artifacts for completion evidence', sql: V16 },
 ]
 
 function checksum(sql: string): string {

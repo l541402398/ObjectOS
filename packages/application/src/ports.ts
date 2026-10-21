@@ -118,7 +118,7 @@ export interface CoreStore {
     sourceVersion: string | null
   }): KnowledgeEntry
   createTask(task: Task, dependencies?: string[]): Task
-  updateTask(taskId: string, expectedVersion: number, patch: Partial<Pick<Task, 'title' | 'description' | 'priority' | 'assigneeAgentId' | 'acceptanceCriteria' | 'labels' | 'milestoneId' | 'dueAt'>>): Task
+  updateTask(taskId: string, expectedVersion: number, patch: Partial<Pick<Task, 'title' | 'description' | 'priority' | 'assigneeAgentId' | 'acceptanceCriteria' | 'expectedArtifacts' | 'labels' | 'milestoneId' | 'dueAt'>>): Task
   moveTask(taskId: string, expectedVersion: number, to: Task['status']): Task
   addDependency(taskId: string, dependsOnId: string): void
   removeDependency(taskId: string, dependsOnId: string): void

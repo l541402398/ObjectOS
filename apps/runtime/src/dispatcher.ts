@@ -69,6 +69,7 @@ export class RuntimeDispatcher {
   private readonly runtimeExecutor: RuntimeExecutionService
   private readonly runtimeRun: RuntimeRunService
   private readonly operationsTimer: NodeJS.Timeout
+  private readonly inboxTimer: NodeJS.Timeout
   private readonly eventChecks = new Map<string, NodeJS.Timeout>()
   private readonly groupDiscussions = new Map<string, Promise<void>>()
 
@@ -83,6 +84,8 @@ export class RuntimeDispatcher {
     this.runtimeRun = new RuntimeRunService(deps.store, this.runtimeExecutor)
     this.operationsTimer = setInterval(() => this.runDueChecks(), 30_000)
     this.operationsTimer.unref()
+    this.inboxTimer = setInterval(() => void deps.runner.retryPendingInbox(), 30_000)
+    this.inboxTimer.unref()
     deps.hub.onCommitted((event) => this.onProjectEvent(event))
     this.scheduler = new OrchestrationScheduler(
       deps.store,
@@ -100,6 +103,7 @@ export class RuntimeDispatcher {
 
   shutdownOrchestrations(): void {
     clearInterval(this.operationsTimer)
+    clearInterval(this.inboxTimer)
     for (const timer of this.eventChecks.values()) clearTimeout(timer)
     this.eventChecks.clear()
     this.scheduler.shutdown()
@@ -895,6 +899,11 @@ export class RuntimeDispatcher {
         const input = this.parse('run.cancel', rawInput)
         await runner.cancel(input.runId)
         return { ok: true as const }
+      }
+      case 'run.reconcile': {
+        const input = this.parse('run.reconcile', rawInput)
+        const run = await runner.reconcileRun(input.runId, input.decision, input.note)
+        return { runId: run.id, status: run.status, taskId: run.taskId }
       }
       case 'run.list': {
         const input = this.parse('run.list', rawInput)

@@ -4,11 +4,13 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { PlanDraft } from '@projectos/contracts'
+import { newId, now } from '@projectos/contracts'
 import { CoreServices, type WorkspacePort } from '@projectos/application'
 import { SqliteStore } from '@projectos/persistence'
 import { ensureProjectRoot, getGitStatus, initGitRepository, readTextFile, readWorkspaceTree, writeTextFile } from '@projectos/workspace'
 import type { ChatRequest, LlmProvider, ProviderStreamEvent, ProviderTestResult } from '@projectos/provider-interfaces'
 import { AgentRunner } from '../apps/runtime/src/agent-runner.js'
+import { AgentStudioService } from '../apps/runtime/src/agent-studio.js'
 import { RuntimeEventHub } from '../apps/runtime/src/events.js'
 import { OrchestrationService } from '../apps/runtime/src/orchestration.js'
 import { OrchestrationScheduler } from '../apps/runtime/src/orchestrator.js'
@@ -120,12 +122,17 @@ function setup(fake: LlmProvider) {
   return { store, services, runner, orchestration, scheduler, dataDir }
 }
 
-async function createGitProject(services: CoreServices, dataDir: string, name: string) {
+async function createGitProject(
+  services: CoreServices,
+  dataDir: string,
+  name: string,
+  scripts: Record<string, string> = { test: 'node -e "process.exit(0)"' },
+) {
   const rootPath = join(dataDir, name.replace(/[^a-zA-Z0-9_-]/g, '-'))
   mkdirSync(rootPath, { recursive: true })
   writeFileSync(
     join(rootPath, 'package.json'),
-    JSON.stringify({ name, private: true, scripts: { test: 'node -e "process.exit(0)"' } }, null, 2),
+    JSON.stringify({ name, private: true, scripts }, null, 2),
   )
   const project = await services.projects.create({
     name,
@@ -166,6 +173,7 @@ async function drive(
     }
     const plan = store.read.getPlanRevision(planId)
     if (plan?.execution?.status === 'completed') return plan
+    if (plan?.execution?.status === 'paused') return plan
     if (plan?.execution?.status === 'failed') throw new Error(`plan failed: ${plan.execution.error}`)
     await new Promise((resolve) => setTimeout(resolve, 150))
   }
@@ -273,12 +281,29 @@ describe('Agent teamwork relay', () => {
         `testReports=${testReports.length} files=src/rbac.ts+test-evidence.txt ` +
         `order=${archRun?.finishedAt}->${developerRun?.startedAt}->${developerRun?.finishedAt}->${testerRun?.startedAt} worktree=${worktree}`,
     )
+    const runsBeforeRecover = runs.length
+    scheduler.recover()
+    await new Promise((resolve) => setTimeout(resolve, 2_600))
+    const runsAfterRecover = store.read
+      .listRunSummaries(project.id, 50)
+      .filter((run) => Boolean(run.taskId && approved.taskIds.includes(run.taskId)))
+    expect(runsAfterRecover).toHaveLength(runsBeforeRecover)
+    expect(store.read.getPlanRevision(approved.plan.id)?.execution?.status).toBe('completed')
   }, 120_000)
 
   it('auto-accepts a low-risk handoff and lets the scheduler start the receiver after the source releases the lease', async () => {
     const provider = new FakeProvider((call) => {
-      if (call.hasToolResult) return { text: call.agent === 'Iris' ? 'IRIS-HANDOFF-OK' : 'KAI-HANDOFF-DONE' }
-      if (call.agent === 'Kai') {
+      if (call.agent === 'Iris') return { text: 'IRIS-HANDOFF-OK' }
+      if (call.agent !== 'Kai') return { text: 'HANDOFF-OK' }
+      if (call.toolResults.length === 0) {
+        return {
+          tool: {
+            name: 'create_artifact',
+            args: { title: 'RBAC 代码摘要', kind: 'code', body: 'CODE-MARKER 实现基础 RBAC' },
+          },
+        }
+      }
+      if (call.toolResults.length === 1) {
         return {
           tool: {
             name: 'handoff_task',
@@ -294,7 +319,7 @@ describe('Agent teamwork relay', () => {
           },
         }
       }
-      return { text: 'HANDOFF-OK' }
+      return { text: 'KAI-HANDOFF-DONE' }
     })
     const { store, services, runner, orchestration, scheduler, dataDir } = setup(provider)
     const project = await createGitProject(services, dataDir, 'relay-handoff')
@@ -346,12 +371,20 @@ describe('Agent teamwork relay', () => {
       if (call.agent === 'Iris') return { text: 'IRIS-MESSAGE-OK' }
       if (call.agent !== 'Kai') return { text: 'done' }
       if (call.toolResults.length === 0) {
-        return { tool: { name: 'list_collaborators', args: { includeSelf: false } } }
+        return {
+          tool: {
+            name: 'create_artifact',
+            args: { title: '协作代码摘要', kind: 'code', body: 'CODE-MARKER discovery task' },
+          },
+        }
       }
       if (call.toolResults.length === 1) {
+        return { tool: { name: 'list_collaborators', args: { includeSelf: false } } }
+      }
+      if (call.toolResults.length === 2) {
         let toAgentId = 'agt_qa'
         try {
-          const parsed = JSON.parse(call.toolResults[0] ?? '{}') as {
+          const parsed = JSON.parse(call.toolResults[1] ?? '{}') as {
             result?: { collaborators?: Array<{ agentId: string; role: string }> }
           }
           toAgentId =
@@ -428,19 +461,286 @@ describe('Agent teamwork relay', () => {
         }
       }
       final = store.read.getPlanRevision(approved.plan.id)
-      if (final?.execution?.status === 'completed' || final?.execution?.status === 'failed') break
+      if (
+        final?.execution?.status === 'completed' ||
+        final?.execution?.status === 'failed' ||
+        final?.execution?.status === 'paused'
+      ) {
+        break
+      }
       await new Promise((resolve) => setTimeout(resolve, 150))
     }
-    expect(final?.execution?.status).toBe('completed')
+    expect(final?.execution?.status).toBe('paused')
+    expect(final?.execution?.error ?? '').toMatch(/完成依据|代码/)
     const worktree = final?.execution?.workspaceRef
     expect(worktree).toBeTruthy()
     expect(existsSync(join(worktree!, 'src', 'rejected.ts'))).toBe(false)
+    const task = store.read.getTask(approved.taskIds[0]!)
+    expect(task?.status).toBe('review')
     const runs = store.read.listRunSummaries(project.id, 50).filter((run) => run.taskId === approved.taskIds[0])
     const detail = store.read.getRunDetail(runs[0]!.id)
     const denied = detail?.toolCalls.find((toolCall) => toolCall.toolName === 'write_file')
     expect(denied?.status).toBe('denied')
     const approvals = store.read.listApprovalViews(project.id, runs[0]!.id)
     expect(approvals.some((approval) => approval.status === 'rejected')).toBe(true)
-    console.log(`[rejected] run=${runs[0]?.id} toolCall=${denied?.id} status=${denied?.status} fileWritten=false`)
+    console.log(
+      `[rejected] run=${runs[0]?.id} toolCall=${denied?.id} status=${denied?.status} task=${task?.status} plan=${final?.execution?.status} fileWritten=false`,
+    )
   }, 90_000)
+
+  it('does not treat a skipped quality gate as a passed test report', async () => {
+    const provider = new FakeProvider((call) => {
+      if (call.agent === 'Kai' && !call.hasToolResult) {
+        return { tool: { name: 'write_file', args: { path: 'src/no-test.ts', content: 'export const noTest = true\n' } } }
+      }
+      return { text: '完成但没有测试脚本' }
+    })
+    const { store, services, runner, orchestration, scheduler, dataDir } = setup(provider)
+    const project = await createGitProject(services, dataDir, 'relay-no-test-script', {})
+    const approved = planWithTasks(orchestration, project.id, [
+      { key: 'impl', title: '无测试脚本实现', description: '实现', role: 'developer', agentId: 'agt_engineer', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: [], acceptanceCriteria: ['代码可构建', '测试通过'], expectedArtifacts: ['代码 diff', '测试结果'], requiresApproval: true },
+    ])
+    await scheduler.start(approved.plan.id, 1, 0)
+    const final = await drive(store, runner, project.id, approved.plan.id)
+    expect(final.execution?.status).toBe('paused')
+    expect(final.execution?.error ?? '').toMatch(/测试|完成依据/)
+    const task = store.read.getTask(approved.taskIds[0]!)
+    expect(task?.status).toBe('review')
+    const artifacts = store.read.listArtifacts(project.id, approved.taskIds[0]!)
+    const gate = artifacts.find((artifact) => artifact.title.startsWith('质量门禁'))
+    expect(gate?.verifiedAt).toBeNull()
+    expect(gate?.body ?? '').toContain('skipped')
+    const worktree = final.execution?.workspaceRef
+    expect(existsSync(join(worktree!, 'src', 'no-test.ts'))).toBe(true)
+    console.log(`[no-script] plan=${final.execution?.status} task=${task?.status} gate=${gate?.id} verified=${Boolean(gate?.verifiedAt)}`)
+  }, 90_000)
+
+  it('keeps a reviewer task incomplete until a real review Artifact exists', async () => {
+    const provider = new FakeProvider((call) => {
+      if (call.agent === 'Nova' && !call.hasToolResult) {
+        return {
+          tool: {
+            name: 'create_artifact',
+            args: { title: '审查报告', kind: 'document', body: 'REVIEW-MARKER 逐条核对验收标准，未发现阻塞项。' },
+          },
+        }
+      }
+      return { text: call.agent === 'Nova' ? '审查完成' : '完成' }
+    })
+    const { store, services, runner, orchestration, scheduler, dataDir } = setup(provider)
+    const project = await createGitProject(services, dataDir, 'relay-reviewer-artifact')
+    const approved = planWithTasks(orchestration, project.id, [
+      { key: 'review', title: '审查实现', description: '审查', role: 'reviewer', agentId: 'agt_reviewer', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: [], acceptanceCriteria: ['逐条核对'], expectedArtifacts: ['审查报告'], requiresApproval: false },
+    ])
+    await scheduler.start(approved.plan.id, 1, 0)
+    const final = await drive(store, runner, project.id, approved.plan.id)
+    expect(final.execution?.status).toBe('completed')
+    const task = store.read.getTask(approved.taskIds[0]!)
+    expect(task?.status).toBe('done')
+    const artifacts = store.read.listArtifacts(project.id, approved.taskIds[0]!)
+    expect(artifacts.some((artifact) => /审查报告/.test(artifact.title))).toBe(true)
+    console.log(`[reviewer] plan=${final.execution?.status} task=${task?.status} artifacts=${artifacts.length}`)
+  }, 90_000)
+
+  it('keeps a reviewer task in review when the Agent only claims completion', async () => {
+    const provider = new FakeProvider((call) => ({ text: call.agent === 'Nova' ? '我已审查，没有问题' : '完成' }))
+    const { store, services, runner, orchestration, scheduler, dataDir } = setup(provider)
+    const project = await createGitProject(services, dataDir, 'relay-reviewer-claim')
+    const approved = planWithTasks(orchestration, project.id, [
+      { key: 'review', title: '口头审查', description: '审查', role: 'reviewer', agentId: 'agt_reviewer', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: [], acceptanceCriteria: ['逐条核对'], expectedArtifacts: ['审查报告'], requiresApproval: false },
+    ])
+    await scheduler.start(approved.plan.id, 1, 0)
+    const final = await drive(store, runner, project.id, approved.plan.id)
+    expect(final.execution?.status).toBe('paused')
+    expect(final.execution?.error ?? '').toMatch(/审查|完成依据/)
+    const task = store.read.getTask(approved.taskIds[0]!)
+    expect(task?.status).toBe('review')
+    console.log(`[reviewer-claim] plan=${final.execution?.status} task=${task?.status}`)
+  }, 90_000)
+
+  it('retries a delivered inbox exactly once and marks it completed', async () => {
+    const provider = new FakeProvider((call) => ({ text: call.agent === 'Iris' ? 'INBOX-RETRY-OK' : 'done' }))
+    const { store, services, runner, dataDir } = setup(provider)
+    const project = await createGitProject(services, dataDir, 'relay-inbox-retry')
+    const source = services.sessions.create({ projectId: project.id, agentId: 'agt_engineer', title: 'Kai inbox' })
+    const target = services.sessions.create({ projectId: project.id, agentId: 'agt_qa', title: 'Iris inbox' })
+    const sent = services.collaboration.send({
+      projectId: project.id,
+      fromSessionId: source.id,
+      toSessionId: target.id,
+      type: 'agent.message',
+      body: '请回复收到',
+      taskId: null,
+      wake: false,
+    })
+    expect(sent.inbox.status).toBe('delivered')
+    await runner.retryPendingInbox(0)
+    await waitFor(() => store.read.getInbox(sent.inbox.id)?.status === 'completed')
+    const runs = store.read.listRunSummaries(project.id, 50).filter((run) => run.sessionId === target.id)
+    expect(runs).toHaveLength(1)
+    expect(runs[0]?.status).toBe('completed')
+    await runner.retryPendingInbox(0)
+    expect(store.read.listRunSummaries(project.id, 50).filter((run) => run.sessionId === target.id)).toHaveLength(1)
+    console.log(`[inbox-retry] inbox=${sent.inbox.id} status=completed runs=${runs.length}`)
+  }, 60_000)
+
+  it('starts a prepared handoff exactly once after a simulated restart', async () => {
+    const provider = new FakeProvider((call) => {
+      if (call.agent === 'Iris' && call.toolResults.length === 0) {
+        return {
+          tool: {
+            name: 'create_artifact',
+            args: { title: '接手实现代码', kind: 'code', body: 'CODE-MARKER prepared handoff' },
+          },
+        }
+      }
+      return { text: 'PREPARED-HANDOFF-OK' }
+    })
+    const { store, services, runner, orchestration, scheduler, dataDir } = setup(provider)
+    const project = await createGitProject(services, dataDir, 'relay-prepared')
+    const approved = planWithTasks(orchestration, project.id, [
+      { key: 'impl', title: '预定交接任务', description: '实现', role: 'developer', agentId: 'agt_engineer', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: [], acceptanceCriteria: ['代码可构建'], expectedArtifacts: ['代码 diff'], requiresApproval: false },
+    ])
+    const task = store.read.getTask(approved.taskIds[0]!)!
+    const source = services.sessions.create({ projectId: project.id, agentId: 'agt_engineer', title: 'Prepared source' })
+    const handoff = services.collaboration.requestHandoff({
+      taskId: task.id,
+      toAgentId: 'agt_qa',
+      summary: 'prepared before start',
+      sessionId: source.id,
+    })
+    services.collaboration.acceptHandoff(handoff.id)
+    store.updateHandoffPayload(handoff.id, { schedulerPreparedAt: now() })
+    const moved = store.read.getTask(task.id)!
+    services.tasks.move({ taskId: task.id, expectedVersion: moved.version, to: 'ready' }, { kind: 'system', id: 'test', name: 'test' })
+
+    await scheduler.start(approved.plan.id, 1, 0)
+    const final = await drive(store, runner, project.id, approved.plan.id)
+    expect(final.execution?.status).toBe('completed')
+    const runs = store.read.listRunSummaries(project.id, 50).filter((run) => run.taskId === task.id)
+    expect(runs).toHaveLength(1)
+    expect(runs[0]?.agentId).toBe('agt_qa')
+    const view = services.collaboration.listHandoffs(project.id).find((item) => item.id === handoff.id)
+    expect(view?.targetRunId).toBe(runs[0]?.id)
+    expect(view?.continuedAt).toBeTruthy()
+    scheduler.recover()
+    await new Promise((resolve) => setTimeout(resolve, 2_600))
+    expect(store.read.listRunSummaries(project.id, 50).filter((run) => run.taskId === task.id)).toHaveLength(1)
+    console.log(`[prepared] handoff=${handoff.id} runs=1 targetRun=${view?.targetRunId} plan=${final.execution?.status}`)
+  }, 90_000)
+
+  it('does not start a second target run when a target Run exists before continuedAt', async () => {
+    const provider = new FakeProvider(() => ({ text: 'should not start' }))
+    const { store, services, orchestration, scheduler, dataDir } = setup(provider)
+    const project = await createGitProject(services, dataDir, 'relay-target-run-window')
+    const approved = planWithTasks(orchestration, project.id, [
+      { key: 'impl', title: '已创建目标运行', description: '实现', role: 'developer', agentId: 'agt_engineer', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: [], acceptanceCriteria: ['代码可构建'], expectedArtifacts: ['代码 diff'], requiresApproval: false },
+    ])
+    const task = store.read.getTask(approved.taskIds[0]!)!
+    const source = services.sessions.create({ projectId: project.id, agentId: 'agt_engineer', title: 'Window source' })
+    const target = services.sessions.create({ projectId: project.id, agentId: 'agt_qa', title: 'Window target' })
+    const handoff = services.collaboration.requestHandoff({
+      taskId: task.id,
+      toAgentId: 'agt_qa',
+      summary: 'target run already created',
+      sessionId: source.id,
+    })
+    services.collaboration.acceptHandoff(handoff.id)
+    store.updateHandoffPayload(handoff.id, { schedulerPreparedAt: now() })
+    let moved = store.read.getTask(task.id)!
+    services.tasks.move({ taskId: task.id, expectedVersion: moved.version, to: 'ready' }, { kind: 'system', id: 'test', name: 'test' })
+    moved = store.read.getTask(task.id)!
+    services.tasks.move({ taskId: task.id, expectedVersion: moved.version, to: 'running' }, { kind: 'system', id: 'test', name: 'test' })
+    const runId = newId('run')
+    store.createRun({
+      id: runId,
+      projectId: project.id,
+      taskId: task.id,
+      sessionId: target.id,
+      agentId: 'agt_qa',
+      attempt: 1,
+      status: 'running',
+      error: null,
+      summary: null,
+      inputTokens: 0,
+      outputTokens: 0,
+      checkpointId: null,
+      startedAt: now(),
+      finishedAt: null,
+      createdAt: now(),
+    })
+    await scheduler.start(approved.plan.id, 1, 0)
+    await new Promise((resolve) => setTimeout(resolve, 3_000))
+    const runs = store.read.listRunSummaries(project.id, 50).filter((run) => run.taskId === task.id)
+    expect(runs).toHaveLength(1)
+    expect(runs[0]?.id).toBe(runId)
+    const handoffView = services.collaboration.listHandoffs(project.id).find((item) => item.id === handoff.id)
+    expect(handoffView?.targetRunId).toBeNull()
+    console.log(`[continued-window] handoff=${handoff.id} runs=${runs.length} targetRun=${runs[0]?.id}`)
+  }, 60_000)
+
+  it('records a receiver start failure without a fake run or done task', async () => {
+    const provider = new FakeProvider(() => ({ text: 'never started' }))
+    const { store, services, orchestration, scheduler, dataDir } = setup(provider)
+    const project = await createGitProject(services, dataDir, 'relay-target-start-failure')
+    const studio = new AgentStudioService(store)
+    const profile = studio.upsertRuntime({
+      name: 'Flaky Target Runtime',
+      protocol: 'cli',
+      executable: process.execPath,
+      endpoint: null,
+      args: [],
+      authRef: null,
+      modelRef: null,
+      options: {},
+      capabilities: {},
+    })
+    store.upsertRuntimeProfile({ ...profile, status: 'available' })
+    const targetAgent = studio.upsertAgent({
+      name: 'Flaky Target Agent',
+      role: '开发工程师',
+      description: '',
+      category: 'code',
+      avatar: '',
+      visibility: 'project',
+      persona: { role: '开发工程师', background: '', responsibilities: '', principles: '', style: '', constraints: '', systemPrompt: '' },
+      skillIds: [],
+      runtimeProfileIds: [profile.id],
+      primaryRuntimeProfileId: profile.id,
+      modelRef: null,
+      permissions: { tools: [], files: false, shell: false, network: false },
+      ownerProjectId: project.id,
+    })
+    const approved = planWithTasks(orchestration, project.id, [
+      { key: 'impl', title: '接收方启动失败', description: '实现', role: 'developer', agentId: 'agt_engineer', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: [], acceptanceCriteria: ['代码可构建'], expectedArtifacts: ['代码 diff'], requiresApproval: false },
+    ])
+    const task = store.read.getTask(approved.taskIds[0]!)!
+    const source = services.sessions.create({ projectId: project.id, agentId: 'agt_engineer', title: 'Failure source' })
+    const handoff = services.collaboration.requestHandoff({
+      taskId: task.id,
+      toAgentId: targetAgent.id,
+      summary: 'receiver will fail to start',
+      sessionId: source.id,
+    })
+    services.collaboration.acceptHandoff(handoff.id)
+    store.upsertRuntimeProfile({ ...profile, status: 'unavailable' })
+    const moved = store.read.getTask(task.id)!
+    services.tasks.move({ taskId: task.id, expectedVersion: moved.version, to: 'ready' }, { kind: 'system', id: 'test', name: 'test' })
+    await scheduler.start(approved.plan.id, 1, 0)
+    const deadline = Date.now() + 30_000
+    let final: PlanDraft | null = null
+    while (Date.now() < deadline) {
+      final = store.read.getPlanRevision(approved.plan.id)
+      if (final?.execution?.status === 'failed' || final?.execution?.status === 'paused') break
+      await new Promise((resolve) => setTimeout(resolve, 200))
+    }
+    expect(final?.execution?.status).toBe('failed')
+    const runs = store.read.listRunSummaries(project.id, 50).filter((run) => run.taskId === task.id)
+    expect(runs).toHaveLength(0)
+    expect(store.read.getTask(task.id)?.status).toBe('blocked')
+    const stored = store.read.getHandoff(handoff.id)
+    const payload = stored?.payload as Record<string, unknown>
+    expect(String(payload.continuationError ?? '')).toMatch(/Runtime|不可用/)
+    console.log(`[target-start-failure] plan=${final?.execution?.status} task=${store.read.getTask(task.id)?.status} runs=0 error=${String(payload.continuationError ?? '').slice(0, 60)}`)
+  }, 60_000)
 })

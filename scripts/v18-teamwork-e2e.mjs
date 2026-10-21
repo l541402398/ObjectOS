@@ -88,6 +88,14 @@ async function updatePlan(page, plan, tasks) {
   return page.evaluate(async ({ planId, tasks }) => window.projectos.plans.update({ planId, tasks }), { planId: plan.id, tasks })
 }
 
+async function seedArtifacts(page, projectId, items) {
+  await page.evaluate(async ({ projectId, items }) => {
+    for (const item of items) {
+      await window.projectos.artifacts.create({ projectId, ...item })
+    }
+  }, { projectId, items })
+}
+
 async function waitForPlan(page, projectId, planId, timeoutMs = 60_000) {
   const deadline = Date.now() + timeoutMs
   let latest = null
@@ -164,6 +172,14 @@ try {
       { key: 'impl-b', title: '同 Agent B', description: 'B', role: 'developer', agentId: 'agt_engineer', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: [], acceptanceCriteria: ['B 完成'], expectedArtifacts: [], requiresApproval: false },
     ])
     const approved = await page.evaluate(async (planId) => window.projectos.plans.approve(planId), plan.id)
+    // The fake model only returns text; seed real completion Artifacts so this
+    // scheduler E2E tests the strict completion evidence path explicitly.
+    await seedArtifacts(page, project.id, approved.taskIds.map((taskId, index) => ({
+      taskId,
+      kind: 'code',
+      title: `同 Agent 代码 ${index + 1}`,
+      body: `export const sameAgent${index + 1} = true\n`,
+    })))
     await page.evaluate(async (planId) => window.projectos.orchestration.start(planId, 2, 0), plan.id)
     const final = await waitForPlan(page, project.id, plan.id)
     const board = await page.evaluate(async (projectId) => window.projectos.tasks.board(projectId), project.id)
@@ -187,6 +203,10 @@ try {
       { key: 'verify', title: '依赖后验证', description: '验证结果', role: 'tester', agentId: 'agt_qa', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: ['arch', 'impl'], acceptanceCriteria: ['记录命令'], expectedArtifacts: [], requiresApproval: true },
     ])
     const approved = await page.evaluate(async (planId) => window.projectos.plans.approve(planId), plan.id)
+    await seedArtifacts(page, project.id, [
+      { taskId: approved.taskIds[0], kind: 'design', title: '并行架构设计', body: '并行 DAG 架构设计' },
+      { taskId: approved.taskIds[1], kind: 'code', title: '并行实现代码', body: 'export const parallel = true\n' },
+    ])
     await page.evaluate(async (planId) => window.projectos.orchestration.start(planId, 2, 0), plan.id)
     const final = await waitForPlan(page, project.id, plan.id)
     const runs = await page.evaluate(async (projectId) => window.projectos.runs.list(projectId, 50), project.id)

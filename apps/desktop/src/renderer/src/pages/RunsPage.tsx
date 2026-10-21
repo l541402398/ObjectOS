@@ -47,6 +47,9 @@ export default function RunsPage() {
   const [detailOpen, setDetailOpen] = useState(Boolean(searchParams.get('run')))
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [query, setQuery] = useState('')
+  const [reconcileOpen, setReconcileOpen] = useState(false)
+  const [reconcileDecision, setReconcileDecision] = useState<'completed' | 'retry' | 'failed'>('completed')
+  const [reconcileNote, setReconcileNote] = useState('')
   const runs = useRuns(projectId, 100)
   const runDetail = useRunDetail(selectedRunId)
   const approvals = useApprovals(projectId)
@@ -103,6 +106,24 @@ export default function RunsPage() {
       await refresh()
       await runDetail.refetch()
       message.success('已请求取消运行')
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+
+  const reconcile = useMutation({
+    mutationFn: (input: { runId: string; decision: 'completed' | 'retry' | 'failed'; note: string }) =>
+      window.projectos.runs.reconcile(input),
+    onSuccess: async (result) => {
+      await refresh()
+      await runDetail.refetch()
+      setReconcileOpen(false)
+      message.success(
+        result.status === 'completed'
+          ? '已核对为完成，请在编排工作台继续计划'
+          : result.status === 'failed'
+            ? '已记录核对结果；可重试或保持阻塞'
+            : '已记录核对结果',
+      )
     },
     onError: (error) => message.error(errorMessage(error)),
   })
@@ -318,6 +339,19 @@ export default function RunsPage() {
                       <Button size="small" onClick={() => navigate(`/projects/${projectId}/agents`)}>
                         打开会话
                       </Button>
+                      {selectedRun.status === 'needs_reconciliation' ? (
+                        <Button
+                          size="small"
+                          type="primary"
+                          onClick={() => {
+                            setReconcileDecision('completed')
+                            setReconcileNote('')
+                            setReconcileOpen(true)
+                          }}
+                        >
+                          人工核对
+                        </Button>
+                      ) : null}
                       {ACTIVE.has(selectedRun.status) ? (
                         <Button
                           size="small"
@@ -350,6 +384,41 @@ export default function RunsPage() {
                     />
                   </div>
                 )}
+              </Modal>
+              <Modal
+                title="人工核对运行"
+                open={reconcileOpen && Boolean(selectedRun)}
+                onCancel={() => setReconcileOpen(false)}
+                onOk={() => {
+                  if (!selectedRun) return
+                  reconcile.mutate({ runId: selectedRun.id, decision: reconcileDecision, note: reconcileNote })
+                }}
+                okText="记录核对"
+                cancelText="取消"
+                confirmLoading={reconcile.isPending}
+                width={520}
+                destroyOnHidden
+              >
+                <p className="po-muted">
+                  该运行在 Runtime 中断后状态未知。核对不会自动重复执行可能已写盘或产生外部副作用的操作；
+                  原始 Run、ToolCall 和 RunStep 会保留。
+                </p>
+                <Select
+                  style={{ width: '100%', marginBottom: 12 }}
+                  value={reconcileDecision}
+                  options={[
+                    { value: 'completed', label: '确认已完成（任务进入审查，计划需手动继续）' },
+                    { value: 'retry', label: '确认可重试（任务回到就绪，计划需手动继续）' },
+                    { value: 'failed', label: '确认失败（保持阻塞）' },
+                  ]}
+                  onChange={(value: 'completed' | 'retry' | 'failed') => setReconcileDecision(value)}
+                />
+                <Input.TextArea
+                  rows={4}
+                  value={reconcileNote}
+                  onChange={(event) => setReconcileNote(event.target.value)}
+                  placeholder="说明你核对到的实际状态、已验证的文件/命令，以及为什么可以继续。"
+                />
               </Modal>
               </>
             ),

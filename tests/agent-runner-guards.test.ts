@@ -459,4 +459,37 @@ describe('agent runner guards', () => {
     expect(result.timedOut).toBe(false)
     expect(result.run.status).toBe('completed')
   })
+
+  it('reconciles an interrupted run as completed while preserving evidence', async () => {
+    const { store, services, runner, dataDir } = makeRunner()
+    const { project, task, run } = await makeRunningRun(store, services, dataDir)
+    store.updateRun(run.id, { status: 'needs_reconciliation', error: 'runtime exited' })
+    const reconciled = await runner.reconcileRun(run.id, 'completed', 'file was written and verified')
+    expect(reconciled.status).toBe('completed')
+    expect(store.read.getTask(task.id)?.status).toBe('review')
+    const detail = store.read.getRunDetail(run.id)
+    expect(detail?.steps.some((step) => step.title === '人工核对')).toBe(true)
+    const artifact = store.read
+      .listArtifacts(project.id, task.id)
+      .find((item) => item.title.includes('人工核对记录'))
+    expect(artifact?.verifiedAt).not.toBeNull()
+    expect(artifact?.runId).toBe(run.id)
+  })
+
+  it('reconciles a retry by moving the task back to ready without a second run', async () => {
+    const { store, services, runner, dataDir } = makeRunner()
+    const { task, run } = await makeRunningRun(store, services, dataDir)
+    store.updateRun(run.id, { status: 'needs_reconciliation', error: 'unknown side effect' })
+    const reconciled = await runner.reconcileRun(run.id, 'retry', 'confirmed no side effect')
+    expect(reconciled.status).toBe('failed')
+    expect(store.read.getTask(task.id)?.status).toBe('ready')
+    const runs = store.read.listRunSummaries(task.projectId, 50).filter((item) => item.taskId === task.id)
+    expect(runs).toHaveLength(1)
+  })
+
+  it('rejects reconciling a run that is not needs_reconciliation', async () => {
+    const { store, services, runner, dataDir } = makeRunner()
+    const { run } = await makeRunningRun(store, services, dataDir)
+    await expect(runner.reconcileRun(run.id, 'completed', '')).rejects.toThrow(/needs_reconciliation/)
+  })
 })

@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import {
   AppError,
   TASK_STATUSES,
@@ -23,7 +25,7 @@ import {
   PROJECT_EVENT_TYPES,
   assertRunTransition,
 } from '@projectos/domain'
-import type { CoreServices } from '@projectos/application'
+import { evaluateCompletion, type CoreServices } from '@projectos/application'
 import { runAgentLoop, type AgentLoopResult, type ToolInvocation, type ToolOutcome } from '@projectos/agent-runtime'
 import { buildContext } from '@projectos/context-engine'
 import type { ChatMessage, LlmProvider, LlmToolDefinition, ToolCallRequest } from '@projectos/provider-interfaces'
@@ -47,7 +49,7 @@ import {
   runApprovedCommand,
   writeTextFile,
 } from '@projectos/workspace'
-import type { SqliteStore } from '@projectos/persistence'
+import { createArtifactRecord, type SqliteStore } from '@projectos/persistence'
 import type { RuntimeConfig } from './config.js'
 import type { ProviderManager } from './provider-manager.js'
 import type { RuntimeEventHub } from './events.js'
@@ -1575,6 +1577,36 @@ export class AgentRunner {
         if (!task) throw new AppError('NOT_FOUND', '任务不存在')
         const status = taskStatusArg(args.status)
         const note = typeof args.note === 'string' ? args.note : undefined
+        if (status === 'done') {
+          const card = this.store.read.getTaskCard(task.id)
+          if (!card) throw new AppError('NOT_FOUND', '任务不存在')
+          const artifacts = this.store.read.listArtifacts(project.id, task.id)
+          const runs = this.store.read
+            .listRunSummaries(project.id, 200)
+            .filter((run) => run.taskId === task.id)
+            .slice(0, 5)
+            .map((run) => this.store.read.getRunDetail(run.id))
+            .filter((detail): detail is NonNullable<typeof detail> => Boolean(detail))
+          const decision = evaluateCompletion({
+            task: card,
+            artifacts,
+            runs,
+            workspaceRoot: state.workspaceRoot,
+            fileExists: (relativePath) => existsSync(join(state.workspaceRoot, relativePath)),
+            actorKind: actor.kind,
+            humanNote: note,
+          })
+          if (!decision.ok) {
+            throw new AppError('CONFLICT', `任务缺少有效完成依据：${decision.reasons.join('；')}`, {
+              details: decision,
+            })
+          }
+          const completed = this.services.tasks.complete(
+            { taskId: task.id, expectedVersion: task.version, note, decision },
+            actor,
+          )
+          return { taskId: completed.id, status: completed.status }
+        }
         const card = this.services.tasks.move(
           { taskId: task.id, to: status, expectedVersion: task.version, note },
           actor,
@@ -2141,8 +2173,146 @@ export class AgentRunner {
     this.store.updateTaskAttemptStatus(runId, 'cancelled')
   }
 
-  async resumeInbox(inboxId: string): Promise<{ runId: string | null; warning: string | null }> {
-    if (!this.provider.isConfigured()) {
+  /**
+   * Human reconciliation of a run whose external side effects are unknown.
+   * History is preserved: the original status/error is written into a RunStep
+   * and an Artifact, never overwritten or deleted.
+   */
+  async reconcileRun(
+    runId: string,
+    decision: 'completed' | 'retry' | 'failed',
+    note = '',
+  ): Promise<Run> {
+    const run = this.store.read.getRun(runId)
+    if (!run) throw new AppError('NOT_FOUND', '运行不存在')
+    if (run.status !== 'needs_reconciliation') {
+      throw new AppError('CONFLICT', '只有 needs_reconciliation 运行可以人工核对')
+    }
+    const target = decision === 'completed' ? 'completed' : 'failed'
+    assertRunTransition(run.status, target)
+    const task = run.taskId ? this.store.read.getTask(run.taskId) : null
+    const originalError = run.error
+    const actor = { kind: 'user' as const, id: 'local-user', name: '你' }
+    this.store.transaction(() => {
+      this.store.appendRunStep({
+        runId,
+        kind: 'status',
+        title: '人工核对',
+        payload: {
+          decision,
+          note,
+          originalStatus: run.status,
+          originalError,
+        },
+      })
+      this.store.updateRun(runId, {
+        status: target,
+        error: decision === 'completed' ? null : `${originalError ?? '运行中断'}${note ? `；人工说明：${note}` : ''}`,
+        summary: run.summary,
+        finishedAt: now(),
+      })
+      this.store.updateTaskAttemptStatus(runId, decision === 'completed' ? 'completed' : 'failed')
+      if (task) {
+        this.store.createArtifact(
+          createArtifactRecord({
+            projectId: run.projectId,
+            taskId: task.id,
+            runId,
+            kind: 'document',
+            title: `人工核对记录 · ${task.title}`,
+            verified: decision === 'completed',
+            body: [
+              `决策：${decision}`,
+              `原运行状态：${run.status}`,
+              `原运行错误：${originalError ?? '—'}`,
+              `核对说明：${note || '—'}`,
+              '历史 Run、ToolCall、RunStep 均保留。',
+            ].join('\n'),
+          }),
+        )
+      }
+      this.store.appendEvent(run.projectId, runId, PROJECT_EVENT_TYPES.runReconciled, {
+        decision,
+        note,
+        taskId: run.taskId,
+        originalStatus: run.status,
+        originalError,
+        actorName: actor.name,
+      })
+    })
+    if (task) {
+      this.releaseStoredLease(run)
+      this.moveTaskAfterReconcile(task.id, decision)
+    }
+    const updated = this.store.read.getRun(runId)
+    if (!updated) throw new AppError('INTERNAL', '运行核对后不存在')
+    return updated
+  }
+
+  private moveTaskAfterReconcile(taskId: string, decision: 'completed' | 'retry' | 'failed'): void {
+    const actor = { kind: 'user' as const, id: 'local-user', name: '你' }
+    const current = () => this.store.read.getTask(taskId)
+    const move = (to: 'ready' | 'running' | 'review' | 'blocked'): void => {
+      const task = current()
+      if (!task || task.status === to || task.status === 'done' || task.status === 'cancelled') return
+      try {
+        this.services.tasks.move(
+          { taskId, expectedVersion: task.version, to, note: `人工核对：${decision}` },
+          actor,
+        )
+      } catch (error) {
+        this.logger.warn({ err: error, taskId, to, decision }, 'failed to move task after reconcile')
+      }
+    }
+    if (decision === 'completed') {
+      if (current()?.status === 'review') return
+      move('ready')
+      move('running')
+      move('review')
+    } else if (decision === 'retry') {
+      if (current()?.status === 'review') move('blocked')
+      move('ready')
+    } else {
+      move('blocked')
+    }
+  }
+
+  /**
+   * Persistent inbox retry: delivered items that were never accepted are retried
+   * with a bounded attempt count; stale items are marked failed instead of being
+   * silently lost. Idempotency is enforced by agent_inbox.idempotency_key.
+   */
+  async retryPendingInbox(minAgeMs = 5_000): Promise<void> {
+    if (!this.provider.isConfigured()) return
+    const nowTs = now()
+    for (const item of this.store.read.listStaleInbox(nowTs - 24 * 60 * 60 * 1000, 20)) {
+      try {
+        this.store.updateInboxStatus(item.id, 'failed', { error: '投递超时：24 小时内未唤醒接收方' })
+      } catch (error) {
+        this.logger.warn({ err: error, inboxId: item.id }, 'failed to expire stale inbox')
+      }
+    }
+    for (const item of this.store.read.listDeliverableInbox(nowTs - minAgeMs, 3, 20)) {
+      if (this.sessionIndex.has(item.recipientSessionId)) continue
+      try {
+        const result = await this.resumeInbox(item.id)
+        if (!result.runId && result.warning) continue
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        try {
+          const nextAttempt = item.attempts + 1
+          this.store.updateInboxStatus(item.id, nextAttempt >= 3 ? 'failed' : 'delivered', {
+            error: message,
+            incrementAttempts: true,
+          })
+        } catch (nested) {
+          this.logger.warn({ err: nested, inboxId: item.id }, 'failed to record inbox retry')
+        }
+      }
+    }
+  }
+
+  async resumeInbox(inboxId: string): Promise<{ runId: string | null; warning: string | null }> {    if (!this.provider.isConfigured()) {
       return { runId: null, warning: '尚未配置模型 Provider，消息已持久化但无法唤醒 Agent' }
     }
     const item = this.store.read.getInbox(inboxId)

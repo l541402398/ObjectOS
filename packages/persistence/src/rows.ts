@@ -295,6 +295,7 @@ export interface TaskRow {
   priority: number
   assignee_agent_id: string | null
   acceptance_json: string
+  expected_artifacts_json: string
   labels_json: string
   version: number
   due_at: number | null
@@ -573,6 +574,7 @@ export function toTask(row: TaskRow): Task {
     priority: Number(row.priority) as Task['priority'],
     assigneeAgentId: row.assignee_agent_id,
     acceptanceCriteria: parseStringArray(row.acceptance_json),
+    expectedArtifacts: parseStringArray(row.expected_artifacts_json ?? '[]'),
     labels: parseStringArray(row.labels_json),
     version: Number(row.version),
     dueAt: row.due_at === null ? null : Number(row.due_at),

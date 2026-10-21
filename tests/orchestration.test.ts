@@ -122,6 +122,16 @@ describe('quality gate', () => {
     expect(report.passed).toBe(false)
     expect(Date.now() - startedAt).toBeLessThan(10_000)
   }, 20_000)
+
+  it('reports skipped, not passed, when no executable scripts are configured', async () => {
+    const dir = root()
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'gate-without-scripts' }))
+    const report = await new QualityGateService().run(dir)
+    expect(report.outcome).toBe('skipped')
+    expect(report.passed).toBe(false)
+    expect(report.skipped).toBe(true)
+    expect(report.checks.every((check) => check.status === 'skipped')).toBe(true)
+  })
 })
 
 describe('graph projection', () => {  it('projects real tasks, agents and dependencies with layout positions', () => {

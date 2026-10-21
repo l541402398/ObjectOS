@@ -125,6 +125,32 @@ try {
   )
   const approved = await page.evaluate(async (planId) => window.projectos.plans.approve(planId), plan.id)
   if (approved.taskIds.length !== 4) throw new Error('plan did not create 4 tasks')
+  // The fake provider returns text only; seed real completion Artifacts for the
+  // architect/developer/reviewer tasks so the strict completion gate is exercised.
+  await page.evaluate(async ({ projectId, taskIds }) => {
+    const [architecture, implementation, review] = taskIds
+    await window.projectos.artifacts.create({
+      projectId,
+      taskId: architecture,
+      kind: 'design',
+      title: '架构设计',
+      body: 'RBAC 架构与影响面分析',
+    })
+    await window.projectos.artifacts.create({
+      projectId,
+      taskId: implementation,
+      kind: 'code',
+      title: '代码 diff',
+      body: '增加 RBAC 实现',
+    })
+    await window.projectos.artifacts.create({
+      projectId,
+      taskId: review,
+      kind: 'document',
+      title: '审查报告',
+      body: '审查通过，未发现阻塞项',
+    })
+  }, { projectId: project.project.id, taskIds: approved.taskIds })
   await page.evaluate(async (planId) => window.projectos.orchestration.start(planId, 2), plan.id)
 
   let finalPlan = null

@@ -85,6 +85,8 @@ export const TaskSchema = z.object({
   priority: PrioritySchema,
   assigneeAgentId: IdSchema.nullable(),
   acceptanceCriteria: z.array(z.string().max(2000)).max(50),
+  /** Copied from PlannedTask.expectedArtifacts at approval time. */
+  expectedArtifacts: z.array(z.string().max(500)).max(50).optional(),
   labels: z.array(z.string().max(60)).max(20),
   version: z.number().int().nonnegative(),
   dueAt: nullableTimestamp,
