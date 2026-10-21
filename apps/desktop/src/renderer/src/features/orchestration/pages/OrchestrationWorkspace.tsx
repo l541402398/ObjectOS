@@ -51,6 +51,7 @@ import {
   useAgents,
   useApprovals,
   useBootstrap,
+  useCollaboration,
   useGraph,
   usePlans,
   useProjectEvents,
@@ -76,6 +77,28 @@ interface WorkbenchData extends Record<string, unknown> {
 }
 
 type FlowNode = Node<WorkbenchData, 'workbench'>
+
+interface ReassignCandidateView {
+  agentId: string
+  name: string
+  score: number
+  reasons: string[]
+  capabilities?: string[]
+  addedCapabilities?: string[]
+  runtime?: string
+  raisesRuntimeRisk?: boolean
+}
+
+interface ReassignmentPayload {
+  status?: string
+  candidates?: ReassignCandidateView[]
+  reasons?: string[]
+  originalError?: string
+  originalAgent?: { name?: string; runtime?: string; capabilities?: string[] }
+  runtimeChange?: { from?: string; to?: string | null; increased?: boolean }
+  toAgentId?: string | null
+  requiresConfirmation?: boolean
+}
 
 const ROLE_ACCENTS: Record<string, string> = {
   产品负责人: '#4c8dff',
@@ -286,6 +309,7 @@ export default function OrchestrationWorkspace() {
   const approvalsQuery = useApprovals(projectId)
   const eventsQuery = useProjectEvents(projectId, 20)
   const workspaceQuery = useWorkspace(projectId)
+  const collaborationQuery = useCollaboration(projectId)
   const [selected, setSelected] = useState<GraphNode | null>(null)
   const [planOpen, setPlanOpen] = useState(false)
   const [goal, setGoal] = useState('')
@@ -672,6 +696,43 @@ export default function OrchestrationWorkspace() {
     }
   }
 
+  const [reassignChoice, setReassignChoice] = useState('')
+  const [reassignBusy, setReassignBusy] = useState(false)
+  const refreshReassign = async (taskId: string): Promise<void> => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: qk.graph(projectId) }),
+      queryClient.invalidateQueries({ queryKey: qk.plans(projectId) }),
+      queryClient.invalidateQueries({ queryKey: qk.collaboration(projectId) }),
+      queryClient.invalidateQueries({ queryKey: qk.task(taskId) }),
+      queryClient.invalidateQueries({ queryKey: qk.board(projectId) }),
+    ])
+  }
+  const confirmReassign = async (planId: string, taskId: string, agentId: string): Promise<void> => {
+    if (!agentId) return
+    setReassignBusy(true)
+    try {
+      await window.projectos.orchestration.reassign(planId, taskId, agentId)
+      await refreshReassign(taskId)
+      message.success('已确认替代 Agent，统一调度器将启动该任务')
+    } catch (error) {
+      message.error(errorMessage(error))
+    } finally {
+      setReassignBusy(false)
+    }
+  }
+  const declineReassign = async (planId: string, taskId: string): Promise<void> => {
+    setReassignBusy(true)
+    try {
+      await window.projectos.orchestration.declineReassign(planId, taskId, '用户在编排面板取消替代')
+      await refreshReassign(taskId)
+      message.info('已取消替代方案，任务保持阻塞，请修订计划或手动处理')
+    } catch (error) {
+      message.error(errorMessage(error))
+    } finally {
+      setReassignBusy(false)
+    }
+  }
+
   const mergeWorktree = async (): Promise<void> => {
     if (!draft) return
     try {
@@ -709,6 +770,16 @@ export default function OrchestrationWorkspace() {
 
   const selectedAgent = selected?.kind === 'agent' ? selected : null
   const selectedTask = selected?.kind === 'task' ? selected : null
+  const reassignPlan =
+    (plansQuery.data?.plans ?? []).find((plan) => plan.createdTaskIds.includes(selectedTask?.taskId ?? '')) ?? null
+  const reassignHandoff = collaborationQuery.data?.handoffs.find(
+    (handoff) => handoff.taskId === selectedTask?.taskId && handoff.status === 'accepted',
+  )
+  const reassignPayload = (reassignHandoff?.payload?.reassignment ?? null) as ReassignmentPayload | null
+  const reassignCandidates = Array.isArray(reassignPayload?.candidates) ? reassignPayload!.candidates! : []
+  const activeReassignChoice = reassignCandidates.some((candidate) => candidate.agentId === reassignChoice)
+    ? reassignChoice
+    : reassignCandidates[0]?.agentId ?? ''
   const selectedTasks = selectedAgent
     ? layout.tasks.filter((task) => task.agentId === selectedAgent.agentId)
     : []
@@ -922,6 +993,120 @@ export default function OrchestrationWorkspace() {
               {selectedTask.runId ? <Button size="small" onClick={() => navigate(`/projects/${projectId}/runs?run=${selectedTask.runId}`)}>运行记录</Button> : null}
             </div>
           </div>
+          {reassignPayload?.status === 'needs_confirmation' && reassignPlan ? (
+            <div className="po-reassign" data-testid="reassign-panel">
+              <div className="po-reassign-head">
+                <span className="po-reassign-kicker">HANDOFF FALLBACK</span>
+                <strong>交接替代待确认</strong>
+                <StatusPill tone="warning">需要确认</StatusPill>
+              </div>
+              <p className="po-reassign-error">
+                原接收方启动失败：{String(reassignPayload.originalError ?? '原因未记录')}
+              </p>
+              <div className="po-reassign-diff">
+                <span>
+                  原 Agent：{reassignPayload.originalAgent?.name ?? reassignHandoff?.toAgentName ?? '—'}
+                  {reassignPayload.originalAgent?.runtime ? ` · ${reassignPayload.originalAgent.runtime}` : ''}
+                </span>
+                {reassignPayload.runtimeChange?.to ? (
+                  <span className={reassignPayload.runtimeChange.increased ? 'is-warn' : ''}>
+                    Runtime：{reassignPayload.runtimeChange.from ?? '未知'} → {reassignPayload.runtimeChange.to}
+                  </span>
+                ) : null}
+              </div>
+              <div className="po-reassign-candidates" role="listbox" aria-label="候选替代 Agent">
+                {reassignCandidates.map((candidate) => {
+                  const selectedCandidate = candidate.agentId === activeReassignChoice
+                  return (
+                    <button
+                      key={candidate.agentId}
+                      type="button"
+                      role="option"
+                      aria-selected={selectedCandidate}
+                      className={`po-reassign-candidate${selectedCandidate ? ' is-selected' : ''}`}
+                      onClick={() => setReassignChoice(candidate.agentId)}
+                    >
+                      <span className="po-reassign-check">
+                        {selectedCandidate ? <CheckCircleOutlined /> : <span className="po-reassign-dot" />}
+                      </span>
+                      <span className="po-reassign-body">
+                        <span className="po-reassign-name">
+                          <strong>{candidate.name}</strong>
+                          <span>评分 {candidate.score}</span>
+                        </span>
+                        <span className="po-reassign-meta">
+                          {candidate.runtime ?? '内置 Provider'} ·{' '}
+                          {(candidate.capabilities ?? []).length > 0
+                            ? (candidate.capabilities ?? []).join(' / ')
+                            : '无能力标签'}
+                        </span>
+                        {candidate.addedCapabilities && candidate.addedCapabilities.length > 0 ? (
+                          <em className="po-reassign-warn">权限扩大：{candidate.addedCapabilities.join('、')}</em>
+                        ) : (
+                          <em className="po-reassign-ok">无权限扩大</em>
+                        )}
+                        {candidate.raisesRuntimeRisk ? (
+                          <em className="po-reassign-warn">Runtime 风险高于原 Agent</em>
+                        ) : null}
+                        {candidate.reasons.length > 0 ? (
+                          <span className="po-reassign-reason">{candidate.reasons.slice(0, 3).join('；')}</span>
+                        ) : null}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+              {reassignPayload.reasons && reassignPayload.reasons.length > 0 ? (
+                <div className="po-reassign-blocker">
+                  <strong>需人工确认：</strong>
+                  {reassignPayload.reasons.join('；')}
+                </div>
+              ) : null}
+              <div className="po-reassign-actions">
+                <Button
+                  size="small"
+                  type="primary"
+                  loading={reassignBusy}
+                  disabled={!activeReassignChoice}
+                  onClick={() => void confirmReassign(reassignPlan.id, selectedTask.taskId ?? '', activeReassignChoice)}
+                >
+                  确认替代
+                </Button>
+                <Button
+                  size="small"
+                  loading={reassignBusy}
+                  onClick={() => void declineReassign(reassignPlan.id, selectedTask.taskId ?? '')}
+                >
+                  取消替代
+                </Button>
+              </div>
+              <div className="po-reassign-status">
+                任务状态：{selectedTaskDetail.data?.task.status ?? selectedTask.status} · 确认后由统一调度器启动，不会在此直接执行
+              </div>
+            </div>
+          ) : reassignPayload?.status === 'confirmed' ? (
+            <div className="po-reassign is-confirmed" data-testid="reassign-confirmed">
+              <div className="po-reassign-head">
+                <span className="po-reassign-kicker">HANDOFF FALLBACK</span>
+                <strong>已确认替代 Agent</strong>
+                <StatusPill tone="success">已确认</StatusPill>
+              </div>
+              <div className="po-reassign-diff">
+                <span>替代 Agent：{reassignHandoff?.toAgentName ?? reassignPayload.toAgentId ?? '—'}</span>
+                <span>任务状态：{selectedTaskDetail.data?.task.status ?? selectedTask.status}</span>
+              </div>
+              <div className="po-reassign-status">调度器将按顺序启动并记录新的 Run；原交接与旧 Run 保留审计。</div>
+            </div>
+          ) : reassignPayload?.status === 'declined' ? (
+            <div className="po-reassign is-declined" data-testid="reassign-declined">
+              <div className="po-reassign-head">
+                <span className="po-reassign-kicker">HANDOFF FALLBACK</span>
+                <strong>已取消替代方案</strong>
+                <StatusPill tone="neutral">已取消</StatusPill>
+              </div>
+              <div className="po-reassign-status">任务保持阻塞；请修订计划或手动处理后再启动。</div>
+            </div>
+          ) : null}
         </>
       )
     }

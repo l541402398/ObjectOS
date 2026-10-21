@@ -485,6 +485,14 @@ export const ApprovalViewSchema = ApprovalSchema.extend({
 })
 export type ApprovalView = z.infer<typeof ApprovalViewSchema>
 
+export const RunFileChangeSchema = z.object({
+  path: z.string().max(2048),
+  changeType: z.enum(['added', 'modified', 'deleted']),
+  baselineHash: z.string().max(128).nullable(),
+  afterHash: z.string().max(128).nullable(),
+})
+export type RunFileChange = z.infer<typeof RunFileChangeSchema>
+
 export const RunDetailSchema = z.object({
   run: RunSummarySchema,
   snapshot: RunSnapshotSchema.nullable(),
@@ -493,6 +501,8 @@ export const RunDetailSchema = z.object({
   approvals: z.array(ApprovalViewSchema),
   session: SessionSchema,
   task: TaskSchema.nullable(),
+  /** Files whose content changed during this Run, attributed by baseline diff. */
+  fileChanges: z.array(RunFileChangeSchema).default([]),
 })
 export type RunDetail = z.infer<typeof RunDetailSchema>
 

@@ -1042,6 +1042,33 @@ export class SqliteStore {
     })
   }
 
+  replaceRunFileChanges(
+    runId: string,
+    changes: Array<{
+      path: string
+      changeType: 'added' | 'modified' | 'deleted'
+      baselineHash: string | null
+      afterHash: string | null
+    }>,
+  ): void {
+    this.write(() => {
+      this.run('DELETE FROM run_file_changes WHERE run_id = ?', runId)
+      const timestamp = now()
+      for (const change of changes) {
+        this.run(
+          `INSERT INTO run_file_changes (run_id, path, change_type, baseline_hash, after_hash, created_at)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          runId,
+          change.path,
+          change.changeType,
+          change.baselineHash,
+          change.afterHash,
+          timestamp,
+        )
+      }
+    })
+  }
+
   appendRunStep(input: {
     runId: string
     kind: RunStepKind

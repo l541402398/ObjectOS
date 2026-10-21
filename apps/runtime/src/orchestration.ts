@@ -187,6 +187,27 @@ export class OrchestrationService {
     }
   }
 
+  /**
+   * Revision reuse references. Only *completed* old tasks are linked; they are
+   * never re-executed or silently treated as fresh evidence for the new task.
+   */
+  private reuseReferences(source: PlanDraft): Map<string, { taskId: string; artifactIds: string[] }> {
+    const result = new Map<string, { taskId: string; artifactIds: string[] }>()
+    if (source.createdTaskIds.length === 0) return result
+    const ordered = topologicalPlanTasks(source)
+    source.createdTaskIds.forEach((taskId, index) => {
+      const key = ordered[index]?.key
+      if (!key) return
+      const task = this.store.read.getTask(taskId)
+      if (!task || task.status !== 'done') return
+      result.set(key, {
+        taskId,
+        artifactIds: this.store.read.listArtifacts(source.projectId, taskId).map((artifact) => artifact.id),
+      })
+    })
+    return result
+  }
+
   private validatePlanAgents(plan: PlanDraft, strict = false): void {
     const profiles = strict ? this.store.read.listRuntimeProfiles() : []
     for (const task of plan.tasks) {
@@ -344,7 +365,7 @@ export class OrchestrationService {
       }
     }
     const revision = this.store.read.getNextPlanRevision(source.projectId)
-    const next: PlanDraft = this.assignPlanAgents({
+    const assigned: PlanDraft = this.assignPlanAgents({
       id: newId('pln'),
       projectId: source.projectId,
       revision,
@@ -361,6 +382,16 @@ export class OrchestrationService {
       createdTaskIds: [],
       execution: null,
     })
+    const reuse = this.reuseReferences(source)
+    const next: PlanDraft = {
+      ...assigned,
+      tasks: assigned.tasks.map((task) => {
+        const reference = reuse.get(task.key)
+        return reference
+          ? { ...task, reuseFromTaskId: reference.taskId, reuseArtifactIds: reference.artifactIds }
+          : task
+      }),
+    }
     validatePlanDraft(next)
     this.validatePlanAgents(next)
     this.store.createPlanRevision(next)

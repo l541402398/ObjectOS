@@ -38,6 +38,9 @@ export class RuntimeExecutionService {
       shell: false,
       windowsHide: true,
       detached: process.platform !== 'win32',
+      // CLI Harnesses such as OpenCode wait for stdin EOF in `run` mode. Never
+      // hand them an open pipe, or a real Harness would hang until the timeout.
+      stdio: ['ignore', 'pipe', 'pipe'],
       env: { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('ELECTRON_') && key !== 'NODE_OPTIONS')), ...this.secretEnvironment() },
     })
     const state: ActiveExecution = { child, cancelled: false }

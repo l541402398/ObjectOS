@@ -727,6 +727,19 @@ ALTER TABLE agent_runs ADD COLUMN deadline_at INTEGER;
 ALTER TABLE agent_runs ADD COLUMN budget_json TEXT NOT NULL DEFAULT '{}';
 `
 
+const V21 = `
+CREATE TABLE run_file_changes (
+  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
+  path TEXT NOT NULL,
+  change_type TEXT NOT NULL,
+  baseline_hash TEXT,
+  after_hash TEXT,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (run_id, path)
+);
+CREATE INDEX idx_run_file_changes_path ON run_file_changes(path);
+`
+
 const V14 = `
 CREATE TABLE run_snapshots (
   run_id TEXT PRIMARY KEY REFERENCES agent_runs(id) ON DELETE CASCADE,
@@ -759,6 +772,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 18, name: 'inbox priority and retry backoff', sql: V18 },
   { version: 19, name: 'atomic global agent execution slots', sql: V19 },
   { version: 20, name: 'persisted run wall-clock deadline and budgets', sql: V20 },
+  { version: 21, name: 'per-run attributed file changes', sql: V21 },
 ]
 
 function checksum(sql: string): string {

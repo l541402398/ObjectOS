@@ -1199,6 +1199,10 @@ export class RuntimeDispatcher {
         const input = this.parse('orchestration.reassign', rawInput)
         return this.scheduler.confirmReassignment(input.planId, input.taskId, input.agentId)
       }
+      case 'orchestration.declineReassign': {
+        const input = this.parse('orchestration.declineReassign', rawInput)
+        return this.scheduler.declineReassignment(input.planId, input.taskId, input.note)
+      }
       case 'worktree.info': {
         const input = this.parse('worktree.info', rawInput)
         return this.scheduler.info(input.planId)

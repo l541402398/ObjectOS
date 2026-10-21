@@ -49,6 +49,9 @@ import {
   readWorkspaceTree,
   runApprovedCommand,
   writeTextFile,
+  diffFileFingerprints,
+  snapshotFileFingerprints,
+  type FileFingerprint,
 } from '@projectos/workspace'
 import { createArtifactRecord, type SqliteStore } from '@projectos/persistence'
 import type { RuntimeConfig } from './config.js'
@@ -980,6 +983,38 @@ export class AgentRunner {
     })
   }
 
+  /**
+   * Fencing check for the global Agent capacity slot. The 120s renewal timer is
+   * too coarse for long tool loops, so the owning Run verifies its token before
+   * every model turn and before every tool side effect.
+   */
+  private assertExecutionSlot(state: ActiveRun): void {
+    if (!state.slot) return
+    const slot = this.store.getAgentExecutionSlot(state.agentId)
+    if (!slot || slot.runId !== state.runId || slot.token !== state.slot.token) {
+      throw new AppError(
+        'CONFLICT',
+        'Agent 执行容量已失效：该 Agent 的容量槽已被其他运行占用（fencing token 不匹配）',
+      )
+    }
+  }
+
+  private handleSlotLoss(state: ActiveRun, error: unknown): void {
+    const run = this.store.read.getRun(state.runId)
+    if (!run || isTerminalRunStatus(run.status)) return
+    state.abort.abort()
+    try {
+      state.runtimeCancel?.()
+    } catch {
+      // ignore cancellation failure; the abort signal is authoritative
+    }
+    const message = error instanceof Error ? error.message : String(error)
+    this.logger.error({ err: error, runId: state.runId }, 'execution slot lost; stopping run')
+    void this.failRun(state, `Agent 执行容量已失效，运行已停止：${message}`).catch((nested) => {
+      this.logger.error({ err: nested, runId: state.runId }, 'failed to finalize run after slot loss')
+    })
+  }
+
   private async executeViaRuntime(
     state: ActiveRun,
     profile: RuntimeProfile,
@@ -1023,7 +1058,13 @@ export class AgentRunner {
       argsHash: hashArgs({ profileId: profile.id, protocol: profile.protocol, promptChars: prompt.length }),
       args: { profileId: profile.id, protocol: profile.protocol, promptChars: prompt.length, cwd },
     })
+    // Baseline before the external process starts: only files that change
+    // between these two snapshots are attributed to this Run.
+    const fileBaseline: FileFingerprint[] = snapshotFileFingerprints(cwd || state.workspaceRoot)
     try {
+      // A stolen capacity slot must stop the Run before it spawns an external
+      // process or asks for a fresh approval.
+      this.assertExecutionSlot(state)
       let output: string
       let executionId: string
       if (profile.protocol === 'acp') {
@@ -1092,6 +1133,31 @@ export class AgentRunner {
       throw error instanceof Error ? error : new Error(String(error))
     } finally {
       state.runtimeCancel = null
+      this.recordRunFileChanges(state, fileBaseline, cwd || state.workspaceRoot)
+    }
+  }
+
+  /**
+   * Attribute only the files that changed during this external-Runtime Run.
+   * A file that was already dirty before the Run keeps its baseline hash and is
+   * therefore excluded, which keeps per-Run ownership trustworthy.
+   */
+  private recordRunFileChanges(state: ActiveRun, baseline: FileFingerprint[], rootPath: string): void {
+    try {
+      const changes = diffFileFingerprints(baseline, snapshotFileFingerprints(rootPath))
+      this.store.replaceRunFileChanges(state.runId, changes)
+      this.store.appendRunStep({
+        runId: state.runId,
+        kind: 'context',
+        title: '文件变更归属',
+        payload: {
+          count: changes.length,
+          files: changes.slice(0, 200),
+          method: 'baseline-content-hash',
+        },
+      })
+    } catch (error) {
+      this.logger.warn({ err: error, runId: state.runId }, 'failed to attribute run file changes')
     }
   }
 
@@ -1256,6 +1322,12 @@ export class AgentRunner {
     if (state.busy) return
     const existing = this.store.read.getRun(state.runId)
     if (!existing || isTerminalRunStatus(existing.status)) return
+    try {
+      this.assertExecutionSlot(state)
+    } catch (error) {
+      this.handleSlotLoss(state, error)
+      return
+    }
     if (Date.now() >= state.budget.deadlineAt && state.budget.maxWallClockMs > 0) {
       await this.terminateRun(state.runId, 'timed_out', 'wall_clock_timeout', '运行墙钟预算已耗尽，未再启动新的模型轮次')
       return
@@ -1640,6 +1712,12 @@ export class AgentRunner {
     const currentRun = this.store.read.getRun(state.runId)
     if (!currentRun || isTerminalRunStatus(currentRun.status)) {
       return { status: 'failed', error: '运行已终止，不再执行工具' }
+    }
+    try {
+      this.assertExecutionSlot(state)
+    } catch (error) {
+      this.handleSlotLoss(state, error)
+      return { status: 'failed', error: 'Agent 执行容量已失效，工具未执行' }
     }
     if (state.budget.maxWallClockMs > 0 && Date.now() >= state.budget.deadlineAt) {
       await this.terminateRun(

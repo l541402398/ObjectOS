@@ -912,6 +912,10 @@ export const ApiSchemas = {
     input: z.object({ planId: IdSchema, taskId: IdSchema, agentId: IdSchema }),
     output: z.object({ taskId: IdSchema, agentId: IdSchema }),
   },
+  'orchestration.declineReassign': {
+    input: z.object({ planId: IdSchema, taskId: IdSchema, note: z.string().max(2000).default('') }),
+    output: z.object({ taskId: IdSchema, status: z.literal('declined') }),
+  },
   'worktree.info': {
     input: z.object({ planId: IdSchema }),
     output: WorktreeInfoSchema,

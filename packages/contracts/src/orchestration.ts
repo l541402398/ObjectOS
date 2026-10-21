@@ -53,6 +53,13 @@ export const PlannedTaskSchema = z.object({
   acceptanceCriteria: z.array(z.string().max(2000)).default([]),
   expectedArtifacts: z.array(z.string().max(500)).default([]),
   requiresApproval: z.boolean().default(true),
+  /**
+   * Revision reuse rule: a new node whose key matches a *completed* task in the
+   * superseded revision records the old Task and its artifacts for audit and
+   * human visibility. Evidence is never silently re-used as fresh execution.
+   */
+  reuseFromTaskId: IdSchema.nullable().optional(),
+  reuseArtifactIds: z.array(IdSchema).optional(),
 })
 export type PlannedTask = z.infer<typeof PlannedTaskSchema>
 

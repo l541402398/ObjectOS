@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process'
 import crossSpawn from 'cross-spawn'
 import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, statSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { promisify } from 'node:util'
 import { AppError, type CommandResult, type FileContent, type GitChange, type GitStatus, type WorkspaceEntry } from '@projectos/contracts'
@@ -483,4 +484,97 @@ export function listProjectAgentsFile(rootPath: string): string | null {
 
 export function workspaceBasename(rootPath: string): string {
   return basename(rootPath)
+}
+
+// ---------------------------------------------------------------------------
+// Per-Run file attribution
+// ---------------------------------------------------------------------------
+
+export interface FileFingerprint {
+  path: string
+  hash: string
+}
+
+export interface FileFingerprintChange {
+  path: string
+  changeType: 'added' | 'modified' | 'deleted'
+  baselineHash: string | null
+  afterHash: string | null
+}
+
+/**
+ * Snapshot workspace file hashes. Used to attribute only the files that changed
+ * during one external-Runtime Run; a pre-existing dirty file keeps its baseline
+ * hash and is therefore never attributed to the Run.
+ */
+export function snapshotFileFingerprints(
+  rootPath: string,
+  options: { maxFiles?: number; maxBytes?: number } = {},
+): FileFingerprint[] {
+  const root = normalizeRoot(rootPath)
+  const maxFiles = Math.max(1, Math.min(options.maxFiles ?? 4000, 20_000))
+  const maxBytes = Math.max(1024, options.maxBytes ?? 2_000_000)
+  const result: FileFingerprint[] = []
+  const walk = (directory: string, depth: number): void => {
+    if (depth > 24 || result.length >= maxFiles) return
+    let entries: string[]
+    try {
+      entries = readdirSync(directory)
+    } catch {
+      return
+    }
+    for (const entry of entries) {
+      if (result.length >= maxFiles) return
+      if (IGNORED.has(entry)) continue
+      const absolute = join(directory, entry)
+      let stat: ReturnType<typeof statSync>
+      try {
+        stat = statSync(absolute)
+      } catch {
+        continue
+      }
+      if (stat.isDirectory()) {
+        walk(absolute, depth + 1)
+        continue
+      }
+      if (!stat.isFile()) continue
+      let hash: string
+      if (stat.size > maxBytes) {
+        // Huge files are fingerprinted by size to keep the scan bounded.
+        hash = `size:${stat.size}`
+      } else {
+        try {
+          hash = createHash('sha256').update(readFileSync(absolute)).digest('hex')
+        } catch {
+          continue
+        }
+      }
+      result.push({ path: relative(root, absolute).split(sep).join('/'), hash })
+    }
+  }
+  walk(root, 0)
+  return result
+}
+
+export function diffFileFingerprints(
+  before: readonly FileFingerprint[],
+  after: readonly FileFingerprint[],
+): FileFingerprintChange[] {
+  const beforeMap = new Map(before.map((entry) => [entry.path, entry.hash]))
+  const afterMap = new Map(after.map((entry) => [entry.path, entry.hash]))
+  const changes: FileFingerprintChange[] = []
+  for (const [path, hash] of afterMap) {
+    const previous = beforeMap.get(path)
+    if (previous === undefined) {
+      changes.push({ path, changeType: 'added', baselineHash: null, afterHash: hash })
+    } else if (previous !== hash) {
+      changes.push({ path, changeType: 'modified', baselineHash: previous, afterHash: hash })
+    }
+  }
+  for (const [path, hash] of beforeMap) {
+    if (!afterMap.has(path)) {
+      changes.push({ path, changeType: 'deleted', baselineHash: hash, afterHash: null })
+    }
+  }
+  return changes.sort((a, b) => a.path.localeCompare(b.path))
 }

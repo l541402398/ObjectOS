@@ -37,6 +37,11 @@ export interface ReassignmentCandidateView {
   name: string
   score: number
   reasons: string[]
+  capabilities: string[]
+  addedCapabilities: string[]
+  runtime: string
+  runtimeRank: number
+  raisesRuntimeRisk: boolean
 }
 
 export interface ReassignmentDecision {
@@ -48,6 +53,8 @@ export interface ReassignmentDecision {
   reasons: string[]
   explicitAssignment: boolean
   error: string
+  originalAgent: { agentId: string; name: string; capabilities: string[]; runtime: string }
+  runtimeChange: { from: string; to: string | null; increased: boolean }
 }
 
 function execution(status: PlanExecution['status'], concurrency: number, previous?: PlanExecution | null): PlanExecution {
@@ -486,12 +493,27 @@ export class OrchestrationScheduler {
       description: card.description,
       candidates,
     })
-    const top = ranked.slice(0, 3).map((entry) => ({
-      agentId: entry.candidate.agentId,
-      name: entry.candidate.name,
-      score: entry.score,
-      reasons: entry.reasons,
-    }))
+    const originalAgent = card.assigneeAgentId ? this.store.read.getAgent(card.assigneeAgentId) : null
+    const originalCapabilities = originalAgent?.capabilities ?? []
+    const originalRisk = card.assigneeAgentId
+      ? this.runtimeRisk(card.assigneeAgentId)
+      : { rank: 0, label: '未知' }
+    const top = ranked.slice(0, 3).map((entry) => {
+      const risk = this.runtimeRisk(entry.candidate.agentId)
+      return {
+        agentId: entry.candidate.agentId,
+        name: entry.candidate.name,
+        score: entry.score,
+        reasons: entry.reasons,
+        capabilities: entry.candidate.capabilities,
+        addedCapabilities: entry.candidate.capabilities.filter(
+          (capability: AgentCapability) => !originalCapabilities.includes(capability),
+        ),
+        runtime: risk.label,
+        runtimeRank: risk.rank,
+        raisesRuntimeRisk: risk.rank > originalRisk.rank,
+      }
+    })
     const base: ReassignmentDecision = {
       status: 'none',
       fromAgentId: card.assigneeAgentId ?? handoff.toAgentId,
@@ -501,6 +523,13 @@ export class OrchestrationScheduler {
       reasons: [],
       explicitAssignment,
       error,
+      originalAgent: {
+        agentId: card.assigneeAgentId ?? handoff.toAgentId,
+        name: handoff.toAgentName,
+        capabilities: originalCapabilities,
+        runtime: originalRisk.label,
+      },
+      runtimeChange: { from: originalRisk.label, to: null, increased: false },
     }
     if (top.length === 0) {
       return {
@@ -517,20 +546,18 @@ export class OrchestrationScheduler {
     if (payload.riskLevel !== 'low') {
       confirmReasons.push(`交接风险等级为 ${String(payload.riskLevel ?? '未知')}，不满足低风险自动替代条件`)
     }
-    const original = candidates.find((candidate) => candidate.agentId === card.assigneeAgentId) ?? null
     const selected = ranked[0]!.candidate
-    // The failed receiver may already be excluded from the eligible candidate
-    // list (disabled/Runtime down), so compare against the Agent entity itself.
-    const originalCapabilities =
-      original?.capabilities ?? this.store.read.getAgent(card.assigneeAgentId ?? '')?.capabilities ?? []
-    const extra = selected.capabilities.filter(
-      (capability: AgentCapability) => !originalCapabilities.includes(capability),
-    )
-    if (extra.length > 0) confirmReasons.push(`替代 Agent 权限更大（新增能力：${extra.join(', ')}）`)
-    const originalRisk = card.assigneeAgentId ? this.runtimeRisk(card.assigneeAgentId) : { rank: 0, label: '未知' }
-    const selectedRisk = this.runtimeRisk(selected.agentId)
-    if (selectedRisk.rank > originalRisk.rank) {
-      confirmReasons.push(`替代 Runtime 风险更高（${originalRisk.label} → ${selectedRisk.label}）`)
+    const selectedView = top[0]!
+    if (selectedView.addedCapabilities.length > 0) {
+      confirmReasons.push(`替代 Agent 权限更大（新增能力：${selectedView.addedCapabilities.join(', ')}）`)
+    }
+    if (selectedView.raisesRuntimeRisk) {
+      confirmReasons.push(`替代 Runtime 风险更高（${originalRisk.label} → ${selectedView.runtime}）`)
+    }
+    const runtimeChange = {
+      from: originalRisk.label,
+      to: selectedView.runtime,
+      increased: selectedView.raisesRuntimeRisk,
     }
 
     const active = this.store.read.getActiveRunForTask(card.id)
@@ -549,13 +576,14 @@ export class OrchestrationScheduler {
     }
 
     if (confirmReasons.length > 0) {
-      return { ...base, status: 'needs_confirmation', reasons: confirmReasons }
+      return { ...base, status: 'needs_confirmation', reasons: confirmReasons, runtimeChange }
     }
     return {
       ...base,
       status: 'applied',
       toAgentId: selected.agentId,
       reasons: [`低风险交接（${String(payload.riskLevel)}），自动选择 ${selected.name}`, ...ranked[0]!.reasons],
+      runtimeChange,
     }
   }
 
@@ -576,6 +604,8 @@ export class OrchestrationScheduler {
         explicitAssignment: decision.explicitAssignment,
         requiresConfirmation: decision.status === 'needs_confirmation',
         originalError: decision.error,
+        originalAgent: decision.originalAgent,
+        runtimeChange: decision.runtimeChange,
         decidedAt: now(),
       },
     })
@@ -748,6 +778,56 @@ export class OrchestrationScheduler {
     return { taskId, agentId }
   }
 
+  /**
+   * Explicit human cancellation of a pending replacement proposal. The Task
+   * stays blocked and the Plan stays paused with a clear reason so the user can
+   * revise the plan instead of getting a fake success or a silent Agent swap.
+   */
+  declineReassignment(planId: string, taskId: string, note = ''): { taskId: string; status: 'declined' } {
+    const plan = this.getPlan(planId)
+    if (!plan.createdTaskIds.includes(taskId)) throw new AppError('NOT_FOUND', '任务不在该计划中')
+    const handoff = this.store.read
+      .listHandoffViews(plan.projectId)
+      .find((item) => item.status === 'accepted' && item.taskId === taskId)
+    if (!handoff) throw new AppError('NOT_FOUND', '该任务没有可取消的交接替代方案')
+    const payload = this.handoffPayload(handoff)
+    const reassignment = (payload.reassignment ?? {}) as Record<string, unknown>
+    if (reassignment.status !== 'needs_confirmation') {
+      throw new AppError('CONFLICT', '该交接没有待确认的替代方案')
+    }
+    const card = this.store.read.getTaskCard(taskId)
+    if (!card) throw new AppError('NOT_FOUND', '任务不存在')
+    const activeLease = this.store.read.getTaskLease(taskId)
+    if (this.store.read.getActiveRunForTask(taskId) || (activeLease && activeLease.expiresAt > now())) {
+      throw new AppError('CONFLICT', '任务仍有运行或租约，不能取消替代方案')
+    }
+    this.store.updateHandoffPayload(handoff.id, {
+      reassignment: {
+        ...reassignment,
+        status: 'declined',
+        declinedAt: now(),
+        declinedBy: 'user',
+        note: note.slice(0, 2000),
+      },
+    })
+    this.blockUnassignedTask(card, '用户取消了交接替代方案；请修订计划或手动处理该任务')
+    const current = this.getPlan(planId)
+    if (current.execution?.status === 'paused') {
+      this.saveExecution(current, {
+        ...current.execution,
+        error: `已取消替代方案：任务「${card.title}」保持阻塞，请修订计划或手动处理`,
+        updatedAt: now(),
+      })
+    }
+    this.store.appendEvent(plan.projectId, handoff.id, PROJECT_EVENT_TYPES.handoffReassignmentProposed, {
+      taskId,
+      status: 'declined',
+      actorName: '用户',
+      note,
+    })
+    return { taskId, status: 'declined' }
+  }
+
   private async enforcePlanDeadline(plan: PlanDraft): Promise<void> {
     const execution = plan.execution!
     const minutes = Math.round((execution.maxWallClockMs || 0) / 60_000)
@@ -858,7 +938,10 @@ export class OrchestrationScheduler {
           this.disarm(planId)
           return
         }
-        if (latest?.status === 'failed') {
+        // Only the automatic path (task parked in `blocked` by the failed Run)
+        // consumes the retry budget. A manual reconcile leaves the task `ready`
+        // on purpose and must be allowed to start a new Run.
+        if (latest?.status === 'failed' && card.status === 'blocked') {
           const retries = plan.execution?.retries ?? {}
           const used = retries[card.id] ?? 0
           const nextAt = plan.execution?.nextAttemptAt[card.id] ?? 0

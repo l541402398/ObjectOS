@@ -127,6 +127,8 @@ export interface Harness {
   runner: AgentRunner
   orchestration: OrchestrationService
   scheduler: OrchestrationScheduler
+  provider: ProviderManager
+  hub: RuntimeEventHub
   dataDir: string
   dbPath: string
   config: RuntimeConfig
@@ -153,16 +155,29 @@ export function makeConfig(dataDir: string, filePath: string, limits: Partial<Ru
 }
 
 export function setup(
-  fake: LlmProvider,
-  options: { limits?: Partial<RuntimeLimits>; filePath?: string; dataDir?: string; cleanup?: Array<() => void> } = {},
+  fake?: LlmProvider,
+  options: {
+    limits?: Partial<RuntimeLimits>
+    filePath?: string
+    dataDir?: string
+    cleanup?: Array<() => void>
+    /** Use a real ProviderManager config (for external CLI Harness tests). */
+    realProvider?: boolean
+    providerConfig?: Partial<RuntimeConfig['provider']>
+  } = {},
 ): Harness {
   const dataDir = options.dataDir ?? mkdtempSync(join(tmpdir(), 'projectos-r1-'))
   const dbPath = options.filePath ?? ':memory:'
   const config = makeConfig(dataDir, dbPath, options.limits ?? {})
+  if (options.providerConfig) {
+    config.provider = { ...config.provider, ...options.providerConfig }
+  }
   const store = new SqliteStore({ filePath: dbPath })
   const services = new CoreServices(store, workspace)
   const provider = new ProviderManager(config.provider)
-  ;(provider as unknown as { createProvider: () => LlmProvider }).createProvider = () => fake
+  if (!options.realProvider && fake) {
+    ;(provider as unknown as { createProvider: () => LlmProvider }).createProvider = () => fake
+  }
   const hub = new RuntimeEventHub({ sendEvent: () => undefined }, store, logger)
   const runner = new AgentRunner(config, store, services, provider, hub, logger)
   const orchestration = new OrchestrationService(store, services)
@@ -174,7 +189,7 @@ export function setup(
     store.close()
     for (const fn of cleanupList) fn()
   }
-  return { store, services, runner, orchestration, scheduler, dataDir, dbPath, config, close }
+  return { store, services, runner, orchestration, scheduler, provider, hub, dataDir, dbPath, config, close }
 }
 
 export async function createGitProject(

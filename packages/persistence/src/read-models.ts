@@ -790,7 +790,30 @@ export class ReadModels {
       approvals: this.listApprovalViews(null, runId),
       session: toSession(sessionRow),
       task,
+      fileChanges: this.listRunFileChanges(runId),
     }
+  }
+
+  listRunFileChanges(runId: string): Array<{
+    path: string
+    changeType: 'added' | 'modified' | 'deleted'
+    baselineHash: string | null
+    afterHash: string | null
+  }> {
+    return this.all<{
+      path: string
+      change_type: string
+      baseline_hash: string | null
+      after_hash: string | null
+    }>(
+      'SELECT path, change_type, baseline_hash, after_hash FROM run_file_changes WHERE run_id = ? ORDER BY path ASC',
+      runId,
+    ).map((row) => ({
+      path: row.path,
+      changeType: row.change_type as 'added' | 'modified' | 'deleted',
+      baselineHash: row.baseline_hash,
+      afterHash: row.after_hash,
+    }))
   }
 
   listTaskArtifactViews(taskId: string): Artifact[] {

@@ -228,6 +228,7 @@ export interface ProjectOSDesktopApi {
     resume: (planId: string) => Promise<Out<'orchestration.resume'>>
     cancel: (planId: string) => Promise<Out<'orchestration.cancel'>>
     reassign: (planId: string, taskId: string, agentId: string) => Promise<Out<'orchestration.reassign'>>
+    declineReassign: (planId: string, taskId: string, note?: string) => Promise<Out<'orchestration.declineReassign'>>
   }
   worktrees: {
     info: (planId: string) => Promise<Out<'worktree.info'>>

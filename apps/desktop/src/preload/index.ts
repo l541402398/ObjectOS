@@ -255,6 +255,7 @@ const api: ProjectOSDesktopApi = {
     resume: (planId) => call('orchestration.resume', { planId }),
     cancel: (planId) => call('orchestration.cancel', { planId }),
     reassign: (planId, taskId, agentId) => call('orchestration.reassign', { planId, taskId, agentId }),
+    declineReassign: (planId, taskId, note = '') => call('orchestration.declineReassign', { planId, taskId, note }),
   },
   worktrees: {
     info: (planId) => call('worktree.info', { planId }),
