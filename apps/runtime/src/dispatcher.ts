@@ -210,7 +210,7 @@ export class RuntimeDispatcher {
 
   private async discussPlan(planId: string, content: string): Promise<{ groupSessionId: string; queued: number }> {
     const plan = this.orchestration.getPlan(planId)
-    if (plan.status !== 'approved') throw new AppError('CONFLICT', '计划尚未批准，不能群聊')
+    if (plan.status === 'rejected') throw new AppError('CONFLICT', '已拒绝的计划不能群聊')
     const group = this.deps.store.read
       .listSessionSummaries(plan.projectId)
       .find((session) => session.title.startsWith('计划群聊 ·'))

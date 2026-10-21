@@ -132,6 +132,42 @@ export class OrchestrationService {
     }
   }
 
+  private ensurePlanCollaboration(plan: PlanDraft): void {
+    const agentIds = [...new Set(plan.tasks.map((task) => agentForPlanRole(task.role)).filter((id): id is string => Boolean(id)))]
+    if (agentIds.length === 0) return
+    const existing = this.services.sessions.list(plan.projectId)
+    for (const agentId of agentIds) {
+      const agent = this.store.read.getAgent(agentId)
+      const title = planSessionTitle(agent?.name ?? 'Agent', plan.revision)
+      if (existing.some((session) => session.agentId === agentId && session.title === title)) continue
+      const session = this.services.sessions.create(
+        { projectId: plan.projectId, agentId, title },
+        { kind: 'system', id: 'orchestrator', name: '编排器' },
+      )
+      this.store.appendMessage({
+        sessionId: session.id,
+        role: 'system',
+        content: `计划「${plan.goal}」已生成，正在等待批准。\n\n你会参与其中的任务讨论与执行；批准后可在编排工作台确认开始。`,
+        metadata: { kind: 'plan-draft', planId: plan.id, revision: plan.revision },
+      })
+    }
+    const groupTitle = planGroupTitle(plan.goal, plan.revision)
+    if (!existing.some((session) => session.title === groupTitle)) {
+      const lead = agentIds[0]!
+      const participants = agentIds.map((agentId) => this.store.read.getAgent(agentId)?.name ?? 'Agent').join('、')
+      const group = this.services.sessions.create(
+        { projectId: plan.projectId, agentId: lead, title: groupTitle },
+        { kind: 'system', id: 'orchestrator', name: '编排器' },
+      )
+      this.store.appendMessage({
+        sessionId: group.id,
+        role: 'system',
+        content: `计划群聊已建立（草案）。\n目标：${plan.goal}\n参与 Agent：${participants}\n\n批准后，用户和所有 Agent 的讨论都会进入本群聊。`,
+        metadata: { kind: 'plan-group', planId: plan.id, revision: plan.revision },
+      })
+    }
+  }
+
   generatePlan(projectId: string, goal: string): PlanDraft {
     if (!this.store.read.getProject(projectId)) throw new AppError('NOT_FOUND', '项目不存在')
     const snapshot = this.store.read.getLatestProjectSnapshot(projectId)
@@ -143,6 +179,7 @@ export class OrchestrationService {
     })
     validatePlanDraft(plan)
     this.store.createPlanRevision(plan)
+    this.ensurePlanCollaboration(plan)
     return plan
   }
 
@@ -170,6 +207,7 @@ export class OrchestrationService {
     }
     validatePlanDraft(next)
     this.store.updatePlanRevision(next)
+    this.ensurePlanCollaboration(next)
     return next
   }
 
@@ -198,6 +236,7 @@ export class OrchestrationService {
     }
     validatePlanDraft(next)
     this.store.createPlanRevision(next)
+    this.ensurePlanCollaboration(next)
     return next
   }
 
@@ -205,6 +244,7 @@ export class OrchestrationService {
     const plan = this.getPlan(planId)
     if (plan.status !== 'draft') throw new AppError('CONFLICT', '计划不是草稿状态')
     validatePlanDraft(plan)
+    this.ensurePlanCollaboration(plan)
     const ordered = topologicalPlanTasks(plan)
     const taskIdByKey = new Map<string, string>()
     const tasksByAgent = new Map<string, string[]>()
@@ -240,14 +280,16 @@ export class OrchestrationService {
 
       for (const [agentId, titles] of tasksByAgent) {
         const agent = this.store.read.getAgent(agentId)
-        const session = this.services.sessions.create(
-          {
-            projectId: plan.projectId,
-            agentId,
-            title: planSessionTitle(agent?.name ?? 'Agent', plan.revision),
-          },
-          { kind: 'system', id: 'orchestrator', name: '编排器' },
-        )
+        const sessionTitle = planSessionTitle(agent?.name ?? 'Agent', plan.revision)
+        const session = this.services.sessions.list(plan.projectId).find((item) => item.agentId === agentId && item.title === sessionTitle) ??
+          this.services.sessions.create(
+            {
+              projectId: plan.projectId,
+              agentId,
+              title: sessionTitle,
+            },
+            { kind: 'system', id: 'orchestrator', name: '编排器' },
+          )
         this.store.appendMessage({
           sessionId: session.id,
           role: 'system',
@@ -261,14 +303,16 @@ export class OrchestrationService {
         const participants = [...tasksByAgent.keys()]
           .map((agentId) => this.store.read.getAgent(agentId)?.name ?? 'Agent')
           .join('、')
-        const groupSession = this.services.sessions.create(
-          {
-            projectId: plan.projectId,
-            agentId: groupLead,
-            title: planGroupTitle(plan.goal, plan.revision),
-          },
-          { kind: 'system', id: 'orchestrator', name: '编排器' },
-        )
+        const groupTitle = planGroupTitle(plan.goal, plan.revision)
+        const groupSession = this.services.sessions.list(plan.projectId).find((item) => item.title === groupTitle) ??
+          this.services.sessions.create(
+            {
+              projectId: plan.projectId,
+              agentId: groupLead,
+              title: groupTitle,
+            },
+            { kind: 'system', id: 'orchestrator', name: '编排器' },
+          )
         this.store.appendMessage({
           sessionId: groupSession.id,
           role: 'system',

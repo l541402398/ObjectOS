@@ -14,6 +14,8 @@ import {
 } from 'antd'
 import {
   CheckCircleOutlined,
+  CloseOutlined,
+  DownOutlined,
   HistoryOutlined,
   SendOutlined,
   MessageOutlined,
@@ -22,7 +24,6 @@ import {
   SafetyCertificateOutlined,
   SettingOutlined,
   StopOutlined,
-  TeamOutlined,
   ThunderboltOutlined,
 } from '@ant-design/icons'
 import type { AgentView, MessageView, RunStatus, SessionSummary } from '@projectos/contracts'
@@ -81,7 +82,10 @@ function SessionRow({
     >
       <AgentAvatar name={session.agentName} accent={session.agentAccent} size={30} />
       <span className="po-session-row-main">
-        <span className="po-session-title">{session.title}</span>
+        <span className="po-session-title">
+          {session.title.startsWith('计划群聊') ? <em className="v17-group-badge">群聊</em> : null}
+          {session.title}
+        </span>
         <span className="po-session-sub">
           {session.agentRole} · {session.messageCount} 条消息
         </span>
@@ -121,9 +125,11 @@ export default function AgentWorkbenchPage() {
   const [groupMessages, setGroupMessages] = useState<MessageView[]>([])
   const [groupInput, setGroupInput] = useState('')
   const [groupBusy, setGroupBusy] = useState(false)
+  const [sessionMenuOpen, setSessionMenuOpen] = useState(false)
+  const [runPanelOpen, setRunPanelOpen] = useState(false)
 
   const sessionList = useMemo(() => sessions.data?.sessions ?? [], [sessions.data])
-  const latestPlan = plans.data?.plans.find((plan) => plan.status === 'approved') ?? null
+  const latestPlan = plans.data?.plans[0] ?? null
   const groupSessions = useMemo(() => sessionList.filter((session) => session.title.startsWith('计划协作')), [sessionList])
   const groupSession = useMemo(() => sessionList.find((session) => session.title.startsWith('计划群聊 ·')) ?? null, [sessionList])
   const selectedSession = sessionList.find((session) => session.id === selectedSessionId) ?? null
@@ -359,9 +365,6 @@ export default function AgentWorkbenchPage() {
             <Button icon={<ReloadOutlined />} onClick={() => void invalidateSession()} loading={sessions.isRefetching}>
               刷新
             </Button>
-            <Button icon={<TeamOutlined />} disabled={!latestPlan || !groupSession} onClick={() => setGroupOpen(true)}>
-              计划群聊
-            </Button>
             <Button
               icon={<SettingOutlined />}
               onClick={() =>
@@ -396,40 +399,32 @@ export default function AgentWorkbenchPage() {
         </div>
       ) : null}
 
-      <div className="po-agent-workspace">
-        <aside className="po-session-pane">
-          <div className="po-pane-head">
-            <div>
-              <div className="po-pane-title">会话</div>
-              <div className="po-pane-subtitle">{sessionList.length} 个持久化会话</div>
-            </div>
-            <Button type="text" size="small" icon={<PlusOutlined />} onClick={openCreate} aria-label="新建会话" />
+      <div className={`po-agent-workspace ${runPanelOpen ? 'is-run-open' : ''}`.trim()}>
+
+
+        <section className="po-chat-pane">
+          <div className="v17-session-switch">
+            <button type="button" onClick={() => setSessionMenuOpen((open) => !open)} aria-expanded={sessionMenuOpen}>
+              <MessageOutlined />
+              <span>会话</span>
+              <strong>{selectedSession?.title ?? '选择会话'}</strong>
+              <em>{sessionList.length}</em>
+              <DownOutlined className={sessionMenuOpen ? 'is-open' : ''} />
+            </button>
+            <Button size="small" type="primary" icon={<PlusOutlined />} onClick={openCreate}>新建</Button>
           </div>
-          <div className="po-session-list">
-            {sessions.isLoading ? (
-              <LoadingBlock rows={5} />
-            ) : sessionList.length === 0 ? (
-              <EmptyState
-                compact
-                icon={<MessageOutlined />}
-                title="还没有会话"
-                description="创建会话并选择一个 Agent。"
-                action={<Button size="small" type="primary" onClick={openCreate}>新建会话</Button>}
-              />
-            ) : (
-              sessionList.map((session) => (
+          {sessionMenuOpen ? (
+            <div className="v17-session-dropdown">
+              {sessionList.length === 0 ? <div className="v16-empty-inline">还没有会话</div> : sessionList.map((session) => (
                 <SessionRow
                   key={session.id}
                   session={session}
                   selected={session.id === selectedSessionId}
-                  onSelect={() => setSelectedSessionId(session.id)}
+                  onSelect={() => { if (session.title.startsWith('计划群聊')) { setGroupOpen(true); setSessionMenuOpen(false); return } setSelectedSessionId(session.id); setSessionMenuOpen(false) }}
                 />
-              ))
-            )}
-          </div>
-        </aside>
-
-        <section className="po-chat-pane">
+              ))}
+            </div>
+          ) : null}
           {selectedSession && agent ? (
             <>
               <div className="po-chat-head">
@@ -584,6 +579,7 @@ export default function AgentWorkbenchPage() {
           )}
         </section>
 
+        <button type="button" className="v17-run-bookmark" onClick={() => setRunPanelOpen((open) => !open)} aria-expanded={runPanelOpen}>{runPanelOpen ? '收起' : '运行检查器'}</button>
         <aside className="po-run-inspector">
           <div className="po-pane-head">
             <div>
@@ -591,6 +587,7 @@ export default function AgentWorkbenchPage() {
               <div className="po-pane-subtitle">{selectedRun ? runStatusLabel(selectedRun.status) : '尚无运行'}</div>
             </div>
             {selectedRun ? <StatusPill tone={toneForStatus(selectedRun.status)}>{runStatusLabel(selectedRun.status)}</StatusPill> : null}
+            <Button type="text" size="small" icon={<CloseOutlined />} aria-label="收起运行检查器" onClick={() => setRunPanelOpen(false)} />
           </div>
           <div className="po-run-inspector-scroll">
             {!selectedRun ? (
@@ -753,6 +750,7 @@ export default function AgentWorkbenchPage() {
     </div>
   )
 }
+
 
 
 

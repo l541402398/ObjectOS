@@ -1086,3 +1086,154 @@
 .ant-drawer .ant-drawer-content-wrapper { z-index: 1001 !important; }
 .ant-drawer .ant-drawer-mask { z-index: 1000 !important; }
 .ant-drawer .ant-drawer-content { position: relative; z-index: 1; }
+
+/* Agent workbench: one unified workspace, session dropdown + run inspector bookmark */
+.po-agent-workspace {
+  position: relative;
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.po-agent-workspace .po-chat-pane {
+  height: 100%;
+  min-height: 0;
+  position: relative;
+  border-radius: var(--apple-radius-panel);
+}
+.v17-session-switch {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--glass-content-border);
+}
+.v17-session-switch > button:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--glass-content-border);
+  border-radius: 12px;
+  background: rgba(255,255,255,.055);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 280ms var(--apple-ease), background 280ms var(--apple-ease);
+}
+.v17-session-switch > button:first-child:hover { border-color: rgba(120,180,255,.32); background: rgba(99,140,255,.08); }
+.v17-session-switch strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-text-primary); font-size: 12px; font-weight: 600; }
+.v17-session-switch em { flex: 0 0 auto; padding: 1px 6px; border-radius: 999px; background: rgba(99,140,255,.14); color: #9fc1ff; font-style: normal; font-size: 10px; }
+.v17-session-switch .anticon-down { flex: 0 0 auto; transition: transform 240ms var(--apple-ease); }
+.v17-session-switch .anticon-down.is-open { transform: rotate(180deg); }
+.v17-session-dropdown {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 57px;
+  z-index: 40;
+  max-height: 236px;
+  overflow: auto;
+  padding: 6px;
+  border: 1px solid var(--glass-elevated-border);
+  border-radius: 18px;
+  background: var(--glass-elevated-bg);
+  -webkit-backdrop-filter: blur(42px) saturate(180%);
+  backdrop-filter: blur(42px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 30px 80px -36px rgba(0,0,0,.75);
+  animation: v17-drop-in 280ms var(--apple-ease) both;
+}
+.v17-session-dropdown .po-session-row { border-radius: 12px; margin-bottom: 2px; padding: 6px 8px; gap: 7px; }
+.v17-session-dropdown .po-session-row .ant-avatar, .v17-session-dropdown .po-session-row > span:first-child { flex: 0 0 26px; }
+.v17-session-dropdown .po-session-title { font-size: 11px; }
+.v17-session-dropdown .po-session-sub, .v17-session-dropdown .po-session-time { font-size: 10px; line-height: 1.3; }
+.v17-run-bookmark {
+  position: absolute;
+  right: 0;
+  top: 104px;
+  z-index: 50;
+  width: 34px;
+  min-height: 118px;
+  padding: 12px 7px;
+  border: 1px solid var(--glass-elevated-border);
+  border-right: 0;
+  border-radius: 13px 0 0 13px;
+  background: var(--glass-elevated-bg);
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  backdrop-filter: blur(28px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), -14px 10px 40px -28px rgba(0,0,0,.6);
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1.25;
+  writing-mode: vertical-rl;
+  letter-spacing: .08em;
+  cursor: pointer;
+  transition: background 260ms var(--apple-ease), color 260ms var(--apple-ease);
+}
+.v17-run-bookmark:hover { background: rgba(99,140,255,.16); color: var(--color-text-primary); }
+.po-agent-workspace .po-run-inspector {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(370px, 92%);
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--glass-elevated-border);
+  border-radius: 20px;
+  background: var(--glass-elevated-bg);
+  -webkit-backdrop-filter: blur(42px) saturate(180%);
+  backdrop-filter: blur(42px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 30px 90px -36px rgba(0,0,0,.75);
+  transform: translateX(calc(100% + 18px));
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 380ms var(--apple-ease), opacity 300ms var(--apple-ease);
+}
+.po-agent-workspace.is-run-open .po-run-inspector { transform: none; opacity: 1; pointer-events: auto; }
+.po-agent-workspace .po-run-inspector .po-pane-head { padding: 13px 14px; border-bottom: 1px solid var(--glass-content-border); }
+.po-agent-workspace .po-run-inspector-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 12px 14px; }
+.po-agent-workspace .po-run-summary,
+.po-agent-workspace .po-run-inspector-content > .po-trace,
+.po-agent-workspace .po-run-approvals {
+  border: 1px solid var(--glass-content-border);
+  border-radius: 14px;
+  background: rgba(255,255,255,.035);
+  padding: 12px;
+}
+@keyframes v17-drop-in { from { opacity: 0; transform: translateY(-6px) scale(.995); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .v17-session-dropdown, .po-agent-workspace .po-run-inspector, .v17-session-switch .anticon-down { animation: none !important; transition: none !important; }
+}
+[data-theme='light'] .v17-session-switch > button:first-child { background: rgba(255,255,255,.9); border-color: rgba(40,70,120,.1); }
+[data-theme='light'] .v17-session-dropdown,
+[data-theme='light'] .po-agent-workspace .po-run-inspector,
+[data-theme='light'] .v17-run-bookmark { background: rgba(255,255,255,.92); border-color: rgba(255,255,255,.95); }
+[data-theme='light'] .po-agent-workspace .po-run-summary,
+[data-theme='light'] .po-agent-workspace .po-run-inspector-content > .po-trace,
+[data-theme='light'] .po-agent-workspace .po-run-approvals { background: rgba(240,246,255,.65); border-color: rgba(40,70,120,.08); }
+
+
+.po-provider-banner .ant-btn-primary {
+  background: linear-gradient(180deg, #3d9bff, #0a84ff 55%, #0868d8) !important;
+  border-color: rgba(140,200,255,.55) !important;
+  color: #fff !important;
+}
+
+.v17-group-badge {
+  display: inline-block;
+  margin-right: 5px;
+  padding: 0 5px;
+  border-radius: 5px;
+  background: rgba(120,160,255,.18);
+  color: #9fc1ff;
+  font-size: 12px;
+  font-style: normal;
+  line-height: 16px;
+  vertical-align: 1px;
+}
