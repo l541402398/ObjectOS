@@ -333,7 +333,8 @@ export class AgentStudioService {
     }
     const packageName = packages[adapterId]
     if (!packageName) throw new AppError('BAD_REQUEST', '该 Runtime 没有自动安装包，请手动安装')
-    const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+    const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+    const npm = (await resolveExecutable(npmCommand)) ?? npmCommand
     const command = [npm, 'install', '-g', packageName, '--no-fund', '--no-audit'].join(' ')
     const output = await new Promise<string>((resolve, reject) => {
       const child = crossSpawn(npm, ['install', '-g', packageName, '--no-fund', '--no-audit'], {

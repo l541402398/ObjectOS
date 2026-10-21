@@ -34,34 +34,75 @@ AppImage 从桌面启动时不会加载 shell 的 PATH。`codex` 可能安装在
 
 而旧检测只调用 `which codex`，依赖当前进程 PATH，因此失败。
 
-## 修复
+## 修复：Ubuntu 与 Windows 都覆盖
 
-新增 `resolveExecutable()`：
+新增 `resolveExecutable()`，不是只依赖 `which` / `where`。
 
-1. 检查显式绝对路径。
-2. 扫描当前 PATH。
-3. Windows 使用 `where.exe`。
-4. 扫描常见用户级 bin 目录。
-5. 扫描 nvm / fnm 的 Node 版本目录。
-6. Linux/macOS 最后通过登录 shell 执行：
+### Ubuntu / macOS
+
+1. 显式绝对路径。
+2. 当前 PATH。
+3. 常见用户目录：
+   - `~/.local/bin`
+   - `~/.npm-global/bin`
+   - `~/.npm/bin`
+   - `~/.volta/bin`
+   - `~/.bun/bin`
+   - `~/.cargo/bin`
+   - `~/.asdf/shims`
+   - `~/.local/share/pnpm`
+   - `~/Library/pnpm`（macOS）
+4. 系统目录：
+   - `/usr/local/bin`
+   - `/usr/bin`
+   - `/snap/bin`
+   - `/opt/homebrew/bin`（macOS）
+   - `/home/linuxbrew/.linuxbrew/bin`
+5. nvm / fnm 的 Node 版本目录。
+6. 登录 shell 兜底：
 
 ```bash
 bash -lc 'command -v -- "$1"' projectos-resolve codex
 ```
 
-这样即使 AppImage 没有继承 shell PATH，也能找到 Codex、Claude Code、Qwen、Gemini、OpenCode 等 CLI。
+### Windows
+
+1. 当前 PATH，并按 `PATHEXT` 尝试：
+   - `.COM`
+   - `.EXE`
+   - `.BAT`
+   - `.CMD`
+2. `where.exe`。
+3. 常见安装位置：
+   - `%APPDATA%\npm`（npm 全局，Codex / Claude / Qwen / Gemini）
+   - `%LOCALAPPDATA%\pnpm`
+   - `%LOCALAPPDATA%\Volta\bin`
+   - `%LOCALAPPDATA%\Microsoft\WindowsApps`
+   - `%USERPROFILE%\scoop\shims`
+   - `%ProgramData%\chocolatey\bin`
+   - `%USERPROFILE%\.local\bin`
+   - `%USERPROFILE%\.bun\bin`
+4. nvm-windows：
+   - `%NVM_HOME%`
+   - `%APPDATA%\nvm`
+5. fnm：
+   - `%APPDATA%\fnm\node-versions`
+6. DeepSeek Harness 仍保留 `%LOCALAPPDATA%\Programs\DeepSeek Harness\...` 专用回退。
+
+这样即使用户从桌面双击、没有终端 PATH，Windows 的 `codex.cmd` / `claude.cmd` 也能被找到。
 
 ## 验证
 
 ```text
 tests/executable-resolver.test.ts
-  ✓ finds a CLI in PATH
   ✓ finds a CLI in ~/.local/bin when desktop PATH does not contain it
+  ✓ finds Codex in the Windows npm global prefix without PATH
+  ✓ finds a Windows .cmd variant in PATH
   ✓ finds an absolute executable and rejects a missing one
   ✓ returns null when no candidate exists
 
 Test Files  25 passed
-Tests       117 passed
+Tests       118 passed
 ```
 
 ## 仍无法识别时

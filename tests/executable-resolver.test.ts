@@ -16,14 +16,6 @@ afterEach(() => {
 })
 
 describe('resolveExecutable', () => {
-  it('finds a CLI in PATH', async () => {
-    const dir = tempDir()
-    const file = join(dir, 'codex')
-    writeFileSync(file, '#!/bin/sh\n')
-    chmodSync(file, 0o755)
-    await expect(resolveExecutable('codex', { home: tempDir(), path: dir, shell: '/nonexistent' })).resolves.toBe(file)
-  })
-
   it('finds a CLI in ~/.local/bin when desktop PATH does not contain it', async () => {
     const home = tempDir()
     const bin = join(home, '.local', 'bin')
@@ -31,7 +23,38 @@ describe('resolveExecutable', () => {
     const file = join(bin, 'codex')
     writeFileSync(file, '#!/bin/sh\n')
     chmodSync(file, 0o755)
-    await expect(resolveExecutable('codex', { home, path: '', shell: '/nonexistent' })).resolves.toBe(file)
+    await expect(resolveExecutable('codex', { home, path: '', shell: '/nonexistent', platform: 'linux' })).resolves.toBe(file)
+  })
+
+  it('finds Codex in the Windows npm global prefix without PATH', async () => {
+    const home = tempDir()
+    const appData = join(home, 'AppData', 'Roaming')
+    const bin = join(appData, 'npm')
+    mkdirSync(bin, { recursive: true })
+    const file = join(bin, 'codex.cmd')
+    writeFileSync(file, '@echo off\n')
+    const env = {
+      APPDATA: appData,
+      LOCALAPPDATA: join(home, 'AppData', 'Local'),
+      USERPROFILE: home,
+      PATHEXT: '.EXE;.CMD',
+      PATH: '',
+    }
+    await expect(resolveExecutable('codex', { home, platform: 'win32', path: '', env })).resolves.toBe(file)
+  })
+
+  it('finds a Windows .cmd variant in PATH', async () => {
+    const home = tempDir()
+    const dir = join(home, 'tools')
+    mkdirSync(dir, { recursive: true })
+    const file = join(dir, 'codex.cmd')
+    writeFileSync(file, '@echo off\n')
+    await expect(resolveExecutable('codex', {
+      home,
+      platform: 'win32',
+      path: dir,
+      env: { PATHEXT: '.EXE;.CMD', PATH: dir },
+    })).resolves.toBe(file)
   })
 
   it('finds an absolute executable and rejects a missing one', async () => {
@@ -43,6 +66,6 @@ describe('resolveExecutable', () => {
   })
 
   it('returns null when no candidate exists', async () => {
-    await expect(resolveExecutable('does-not-exist-projectos', { home: tempDir(), path: '', shell: '/nonexistent' })).resolves.toBeNull()
+    await expect(resolveExecutable('does-not-exist-projectos', { home: tempDir(), path: '', shell: '/nonexistent', platform: 'linux' })).resolves.toBeNull()
   })
 })
