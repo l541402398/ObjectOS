@@ -97,8 +97,8 @@ describe('quality gate', () => {
     const gate = new QualityGateService()
     const passed = await gate.run(dir)
     expect(passed.passed).toBe(true)
-    expect(passed.checks.find((check) => check.status !== 'skipped')?.name).toBe('test')
-    expect(passed.checks.find((check) => check.name === 'lint')?.status).toBe('skipped')
+    expect(passed.checks.find((check) => check.status === 'passed')?.name).toBe('test')
+    expect(passed.checks.find((check) => check.name === 'lint')?.status).toBe('not_applicable')
     writeFileSync(
       join(dir, 'package.json'),
       JSON.stringify({ name: 'gate', scripts: { test: 'node -e "process.exit(7)"' } }),
@@ -130,7 +130,24 @@ describe('quality gate', () => {
     expect(report.outcome).toBe('skipped')
     expect(report.passed).toBe(false)
     expect(report.skipped).toBe(true)
-    expect(report.checks.every((check) => check.status === 'skipped')).toBe(true)
+    expect(report.missingRequired).toContain('test')
+    expect(report.checks.find((check) => check.name === 'test')?.status).toBe('skipped')
+    expect(report.checks.find((check) => check.name === 'lint')?.status).toBe('not_applicable')
+  })
+
+  it('enforces a project-specific required/optional quality policy', async () => {
+    const dir = root()
+    writeFileSync(
+      join(dir, 'package.json'),
+      JSON.stringify({ name: 'gate-policy', scripts: { test: 'node -e "process.exit(0)"' } }),
+    )
+    const report = await new QualityGateService().run(dir, {
+      policy: { required: ['typecheck'], optional: ['test'] },
+    })
+    expect(report.outcome).toBe('skipped')
+    expect(report.missingRequired).toEqual(['typecheck'])
+    expect(report.checks.find((check) => check.name === 'typecheck')?.status).toBe('skipped')
+    expect(report.checks.find((check) => check.name === 'test')?.status).toBe('passed')
   })
 })
 

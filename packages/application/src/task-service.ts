@@ -135,13 +135,12 @@ export class TaskService {
 
   move(input: MoveTaskInput, actor: ActionActor = USER_ACTOR): TaskCard {
     const task = this.getTask(input.taskId)
-    assertTaskTransition(task.status, input.to)
     const card = this.store.read.getTaskCard(task.id)
     if (!card) throw new AppError('NOT_FOUND', '任务不存在')
-    if ((input.to === 'ready' || input.to === 'running') && card.blockedBy.length > 0) {
-      throw new AppError('CONFLICT', '存在未完成的依赖任务，无法进入就绪/执行状态')
-    }
     if (input.to === 'done') {
+      if (task.status === 'done' || task.status === 'cancelled') {
+        throw new AppError('CONFLICT', '已完成或已取消的任务不能再次完成')
+      }
       const dependencies = card.dependencyIds
         .map((id) => this.store.read.getTask(id))
         .filter((dependency): dependency is Task => dependency !== null)
@@ -152,7 +151,12 @@ export class TaskService {
           details: decision,
         })
       }
-      return this.finishTask(task, input.expectedVersion, input.note, actor, decision)
+      const reviewTask = this.prepareDoneState(task, actor, input.note)
+      return this.finishTask(reviewTask, reviewTask.version, input.note, actor, decision)
+    }
+    assertTaskTransition(task.status, input.to)
+    if ((input.to === 'ready' || input.to === 'running') && card.blockedBy.length > 0) {
+      throw new AppError('CONFLICT', '存在未完成的依赖任务，无法进入就绪/执行状态')
     }
     return this.store.transaction(() => {
       const updated = this.store.moveTask(task.id, input.expectedVersion, input.to)
@@ -176,7 +180,9 @@ export class TaskService {
     actor: ActionActor = USER_ACTOR,
   ): TaskCard {
     const task = this.getTask(input.taskId)
-    assertTaskTransition(task.status, 'done')
+    if (task.status === 'done' || task.status === 'cancelled') {
+      throw new AppError('CONFLICT', '已完成或已取消的任务不能再次完成')
+    }
     const card = this.store.read.getTaskCard(task.id)
     if (!card) throw new AppError('NOT_FOUND', '任务不存在')
     const dependencies = card.dependencyIds
@@ -188,7 +194,37 @@ export class TaskService {
         details: input.decision,
       })
     }
-    return this.finishTask(task, input.expectedVersion, input.note, actor, input.decision)
+    const reviewTask = this.prepareDoneState(task, actor, input.note)
+    return this.finishTask(reviewTask, reviewTask.version, input.note, actor, input.decision)
+  }
+
+  /** Move through the legal state path to review; done is only legal from review. */
+  private prepareDoneState(task: Task, actor: ActionActor, note: string | undefined): Task {
+    let current = this.getTask(task.id)
+    if (current.status === 'review') return current
+    const path: Task['status'][] =
+      current.status === 'blocked' || current.status === 'backlog'
+        ? ['ready', 'running', 'review']
+        : current.status === 'ready'
+          ? ['running', 'review']
+          : current.status === 'running'
+            ? ['review']
+            : []
+    for (const to of path) {
+      current = this.store.moveTask(current.id, current.version, to)
+      this.store.appendEvent(current.projectId, current.id, PROJECT_EVENT_TYPES.taskMoved, {
+        taskTitle: current.title,
+        title: current.title,
+        status: to,
+        note: note ?? `完成前状态整理：${to}`,
+        actor,
+        actorName: actor.name,
+      })
+    }
+    if (current.status !== 'review') {
+      throw new AppError('CONFLICT', `任务当前状态 ${current.status} 不能进入完成`)
+    }
+    return current
   }
 
   private completionDecision(
@@ -237,9 +273,21 @@ export class TaskService {
         uri: null,
         contentHash: null,
         gitCommit: null,
+        metadata: {
+          acceptanceMode: actor.kind === 'user' ? 'human' : 'automatic',
+          actorKind: actor.kind,
+          actorId: actor.id,
+          taskId: task.id,
+          role: decision.role,
+          requirements: decision.requirements.map((item) => ({
+            id: item.id,
+            satisfied: item.satisfied,
+            evidence: item.evidence,
+          })),
+        },
         verifiedAt: timestamp,
         body: [
-          `由 ${actor.name} 于 ${new Date(timestamp).toLocaleString('zh-CN')} 确认验收。`,
+          `${actor.kind === 'user' ? '人工验收' : '自动验收'}：由 ${actor.name} 于 ${new Date(timestamp).toLocaleString('zh-CN')} 确认。`,
           '',
           '完成依据：',
           evidence || '- 人工验收确认',

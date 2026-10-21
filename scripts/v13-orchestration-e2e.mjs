@@ -135,6 +135,12 @@ try {
       kind: 'design',
       title: '架构设计',
       body: 'RBAC 架构与影响面分析',
+      metadata: {
+        artifactType: 'design',
+        scope: 'RBAC 权限模块',
+        decisions: ['角色-权限-资源模型'],
+        referencedFiles: ['apps/desktop/src'],
+      },
     })
     await window.projectos.artifacts.create({
       projectId,
@@ -149,6 +155,16 @@ try {
       kind: 'document',
       title: '审查报告',
       body: '审查通过，未发现阻塞项',
+      metadata: {
+        artifactType: 'review',
+        reviewedObjects: ['RBAC 实现'],
+        scope: 'RBAC 实现',
+        findings: ['未发现阻塞项'],
+        conclusion: '审查通过',
+        blockers: [],
+        relatedArtifactIds: [implementation],
+        changedFiles: [],
+      },
     })
   }, { projectId: project.project.id, taskIds: approved.taskIds })
   await page.evaluate(async (planId) => window.projectos.orchestration.start(planId, 2), plan.id)

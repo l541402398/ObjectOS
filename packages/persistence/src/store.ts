@@ -464,8 +464,8 @@ export class SqliteStore {
   createArtifact(artifact: Artifact): Artifact {
     return this.write(() => {
       this.run(
-        `INSERT INTO artifacts (id, project_id, task_id, run_id, kind, title, uri, content_hash, git_commit, verified_at, body, is_demo, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO artifacts (id, project_id, task_id, run_id, kind, title, uri, content_hash, git_commit, metadata_json, verified_at, body, is_demo, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         artifact.id,
         artifact.projectId,
         artifact.taskId,
@@ -475,6 +475,7 @@ export class SqliteStore {
         artifact.uri,
         artifact.contentHash,
         artifact.gitCommit,
+        JSON.stringify(artifact.metadata ?? {}),
         artifact.verifiedAt,
         artifact.body,
         artifact.isDemo ? 1 : 0,
@@ -1238,6 +1239,10 @@ export class SqliteStore {
     this.setAppSetting(`handoff_mode:${projectId}`, mode)
   }
 
+  setQualityPolicy(projectId: string, policy: { required: string[]; optional: string[] }): void {
+    this.setAppSetting(`quality_policy:${projectId}`, policy)
+  }
+
   /** Project scope for custom Agents; null means legacy/global. */
   setAgentScope(agentId: string, projectId: string | null): void {
     this.setAppSetting(`agent_scope:${agentId}`, projectId)
@@ -1276,6 +1281,8 @@ export class SqliteStore {
         },
       })
       const timestamp = now()
+      const priority =
+        input.envelope.type === 'task.delegate' ? 1 : input.envelope.type === 'agent.wake' ? 2 : 3
       const item: InboxItem = {
         id: newId('inb'),
         projectId: input.projectId,
@@ -1293,8 +1300,8 @@ export class SqliteStore {
       }
       this.run(
         `INSERT INTO agent_inbox (id, project_id, recipient_agent_id, recipient_session_id, message_id, idempotency_key,
-           envelope_json, status, attempts, error, created_at, delivered_at, accepted_at, completed_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'delivered', 1, NULL, ?, ?, NULL, NULL)`,
+           envelope_json, status, attempts, error, priority, next_attempt_at, created_at, delivered_at, accepted_at, completed_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'delivered', 1, NULL, ?, 0, ?, ?, NULL, NULL)`,
         item.id,
         item.projectId,
         item.recipientAgentId,
@@ -1302,6 +1309,7 @@ export class SqliteStore {
         item.messageId,
         input.envelope.idempotencyKey,
         JSON.stringify(input.envelope),
+        priority,
         timestamp,
         timestamp,
       )
@@ -1312,7 +1320,7 @@ export class SqliteStore {
   updateInboxStatus(
     id: string,
     status: InboxItem['status'],
-    patch: { error?: string | null; incrementAttempts?: boolean } = {},
+    patch: { error?: string | null; incrementAttempts?: boolean; nextAttemptAt?: number | null } = {},
   ): InboxItem {
     return this.write(() => {
       const timestamp = now()
@@ -1321,12 +1329,14 @@ export class SqliteStore {
       const completed = status === 'completed' ? timestamp : null
       this.run(
         `UPDATE agent_inbox SET status = ?, error = COALESCE(?, error),
-           attempts = attempts + ?, delivered_at = COALESCE(?, delivered_at),
+           attempts = attempts + ?, next_attempt_at = COALESCE(?, next_attempt_at),
+           delivered_at = COALESCE(?, delivered_at),
            accepted_at = COALESCE(?, accepted_at), completed_at = COALESCE(?, completed_at)
          WHERE id = ?`,
         status,
         patch.error ?? null,
         patch.incrementAttempts ? 1 : 0,
+        patch.nextAttemptAt ?? null,
         delivered,
         accepted,
         completed,
@@ -2208,6 +2218,7 @@ export function createArtifactRecord(input: {
   body?: string | null
   uri?: string | null
   verified?: boolean
+  metadata?: Record<string, unknown>
   isDemo?: boolean
 }): Artifact {
   const timestamp = now()
@@ -2221,6 +2232,7 @@ export function createArtifactRecord(input: {
     uri: input.uri ?? null,
     contentHash: null,
     gitCommit: null,
+    metadata: input.metadata ?? {},
     verifiedAt: input.verified ? timestamp : null,
     body: input.body ?? null,
     isDemo: input.isDemo ?? false,

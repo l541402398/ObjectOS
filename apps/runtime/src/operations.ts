@@ -258,14 +258,16 @@ export class OperationsService {
       const runId = this.persistCheck({
         projectId,
         checkId: check.name,
-        status: check.status,
+        status: check.status === 'not_applicable' ? 'skipped' : check.status,
         startedAt: now() - check.durationMs,
         sourceRevision: revision,
         result: {
           command: check.command || null,
           exitCode: check.exitCode,
           durationMs: check.durationMs,
-          ...(check.status === 'skipped' || check.status === 'error' ? { reason: excerpt(check.output, 500) } : {}),
+          ...(check.status === 'skipped' || check.status === 'not_applicable' || check.status === 'error'
+            ? { reason: excerpt(check.output, 500) }
+            : {}),
         },
       })
       if (check.status === 'failed' || check.status === 'error') {

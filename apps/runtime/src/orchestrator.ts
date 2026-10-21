@@ -9,7 +9,7 @@ import { join } from 'node:path'
 import { existsSync } from 'node:fs'
 import type { AgentRunner } from './agent-runner.js'
 import type { Logger } from './logger.js'
-import { QualityGateService, type QualityGateReport } from './quality-gate.js'
+import { QualityGateService, DEFAULT_QUALITY_POLICY, type QualityGateReport } from './quality-gate.js'
 import { planSessionTitle } from '@projectos/session-manager'
 
 const SYSTEM_ACTOR = { kind: 'system' as const, id: 'orchestrator', name: '编排器' }
@@ -30,6 +30,9 @@ function execution(status: PlanExecution['status'], concurrency: number, previou
     retries: previous?.retries ?? {},
     nextAttemptAt: previous?.nextAttemptAt ?? {},
     retryForRun: previous?.retryForRun ?? {},
+    maxEvidenceRetries: previous?.maxEvidenceRetries ?? 1,
+    evidenceRetries: previous?.evidenceRetries ?? {},
+    evidenceRetryForRun: previous?.evidenceRetryForRun ?? {},
     requireWorktree: previous?.requireWorktree ?? false,
   }
 }
@@ -472,7 +475,8 @@ export class OrchestrationScheduler {
         let report = this.qualityReports.get(card.id)
         if (role === 'developer' || role === 'tester') {
           if (!report) {
-            report = await this.qualityGate.run(workspaceRoot)
+            const policy = this.store.read.getQualityPolicy(plan.projectId) ?? DEFAULT_QUALITY_POLICY
+            report = await this.qualityGate.run(workspaceRoot, { policy })
             this.qualityReports.set(card.id, report)
             this.store.createArtifact(
               createArtifactRecord({
@@ -481,7 +485,9 @@ export class OrchestrationScheduler {
                 kind: 'test-report',
                 title: `质量门禁 · ${card.title}`,
                 body: [
-                  `结果：${report.outcome}${report.skipped ? '（未配置可执行检查脚本）' : ''}`,
+                  `结果：${report.outcome}${report.skipped ? '（必需检查未执行）' : ''}`,
+                  `必需：${report.required.join(', ') || '无'}；可选：${report.optional.join(', ') || '无'}`,
+                  ...(report.missingRequired.length ? [`缺失必需检查：${report.missingRequired.join(', ')}`] : []),
                   ...report.checks.map(
                     (check) =>
                       `## ${check.name} · ${check.status} · exit ${check.exitCode ?? '—'}\n$ ${check.command}\n${check.output.slice(-6000)}`,
@@ -549,6 +555,66 @@ export class OrchestrationScheduler {
           const missing = decision.requirements
             .filter((item) => !item.satisfied)
             .map((item) => `${item.label}：${item.missing.join('；')}`)
+          const execution = plan.execution!
+          const latestRun = runDetails[0]?.run ?? null
+          const used = execution.evidenceRetries?.[card.id] ?? 0
+          const max = execution.maxEvidenceRetries ?? 1
+          const retryFor = execution.evidenceRetryForRun?.[card.id]
+          if (
+            latestRun?.status === 'completed' &&
+            retryFor !== latestRun.id &&
+            used < max &&
+            card.assigneeAgentId
+          ) {
+            const assignee = this.store.read.getAgent(card.assigneeAgentId)
+            const sessionTitle = planSessionTitle(assignee?.name ?? 'Agent', plan.revision)
+            const session =
+              this.store.read
+                .listSessionSummaries(plan.projectId)
+                .find((item) => item.agentId === card.assigneeAgentId && item.title === sessionTitle) ??
+              this.services.sessions.create(
+                { projectId: plan.projectId, agentId: card.assigneeAgentId, title: sessionTitle },
+                SYSTEM_ACTOR,
+              )
+            try {
+              const result = await this.runner.startRun({
+                projectId: plan.projectId,
+                sessionId: session.id,
+                taskId: card.id,
+                workspaceRoot,
+                prompt: [
+                  `补证任务：${card.title}`,
+                  '上一次运行没有满足完成依据，不能直接标记完成。',
+                  `缺失项：${missing.join('；') || decision.reasons.join('；')}`,
+                  '请只补齐真实证据：创建结构化 Artifact、执行真实测试或提供实际文件；不得伪造，也不得仅用文本声明完成。',
+                ].join('\n\n'),
+              })
+              this.saveExecution(plan, {
+                ...execution,
+                status: 'running',
+                error: `任务「${card.title}」证据不足，已启动第 ${used + 1}/${max} 次补证`,
+                runIds: [...new Set([...execution.runIds, result.runId])],
+                evidenceRetries: { ...(execution.evidenceRetries ?? {}), [card.id]: used + 1 },
+                evidenceRetryForRun: {
+                  ...(execution.evidenceRetryForRun ?? {}),
+                  [card.id]: latestRun.id,
+                },
+                updatedAt: now(),
+              })
+              changed = true
+              continue
+            } catch (error) {
+              const message = error instanceof Error ? error.message : String(error)
+              this.saveExecution(plan, {
+                ...execution,
+                status: 'paused',
+                error: `任务「${card.title}」补证启动失败：${message}`,
+                updatedAt: now(),
+              })
+              this.disarm(planId)
+              return
+            }
+          }
           this.saveExecution(plan, {
             ...plan.execution!,
             status: 'paused',
@@ -637,6 +703,14 @@ export class OrchestrationScheduler {
         .filter((card): card is TaskCard => Boolean(card))
         .filter((card) => card.status === 'ready' && !this.store.read.getActiveRunForTask(card.id))
         .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt)
+      // Cross-plan/cross-project capacity: one active Run per Agent by default.
+      // The DB query is the shared source of truth, so a second scheduler cannot
+      // start the same Agent concurrently.
+      for (const card of ready) {
+        if (card.assigneeAgentId && this.store.read.countActiveRunsForAgent(card.assigneeAgentId) > 0) {
+          activeAgentIds.add(card.assigneeAgentId)
+        }
+      }
 
       const active = plan.createdTaskIds
         .map((taskId) => this.store.read.getTaskCard(taskId))
@@ -724,8 +798,20 @@ export class OrchestrationScheduler {
         }
       }
 
-      if (changed || runIds.length !== currentExecution.runIds.length || executionError !== currentExecution.error) {
-        this.saveExecution(plan, { ...currentExecution, status: 'running', error: executionError, runIds, updatedAt: now() })
+      const latestPlanForSave = this.getPlan(planId)
+      const latestExecutionForSave = latestPlanForSave.execution
+      if (
+        latestExecutionForSave &&
+        latestExecutionForSave.status === 'running' &&
+        (changed || runIds.length !== currentExecution.runIds.length || executionError !== currentExecution.error)
+      ) {
+        this.saveExecution(latestPlanForSave, {
+          ...latestExecutionForSave,
+          status: 'running',
+          error: executionError ?? latestExecutionForSave.error,
+          runIds: [...new Set([...latestExecutionForSave.runIds, ...runIds])],
+          updatedAt: now(),
+        })
       }
 
       // If nothing can make progress and tasks remain, fail the plan explicitly

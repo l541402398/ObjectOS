@@ -50,7 +50,7 @@ export const PlannedTaskSchema = z.object({
 })
 export type PlannedTask = z.infer<typeof PlannedTaskSchema>
 
-export const PlanStatusSchema = z.enum(['draft', 'approved', 'rejected'])
+export const PlanStatusSchema = z.enum(['draft', 'approved', 'rejected', 'superseded'])
 export const PlanGeneratorSchema = z.enum(['local-rules', 'provider'])
 
 export const PlanExecutionStatusSchema = z.enum(['running', 'paused', 'completed', 'failed', 'cancelled'])
@@ -71,6 +71,10 @@ export const PlanExecutionSchema = z.object({
   retries: z.record(z.string(), z.number().int().nonnegative()).default({}),
   nextAttemptAt: z.record(z.string(), TimestampSchema).default({}),
   retryForRun: z.record(z.string(), IdSchema).default({}),
+  /** Limited automatic evidence re-collection attempts per task. */
+  maxEvidenceRetries: z.number().int().min(0).max(3).default(1),
+  evidenceRetries: z.record(z.string(), z.number().int().nonnegative()).default({}),
+  evidenceRetryForRun: z.record(z.string(), IdSchema).default({}),
   requireWorktree: z.boolean().default(false),
 })
 export type PlanExecution = z.infer<typeof PlanExecutionSchema>
@@ -88,6 +92,8 @@ export const PlanDraftSchema = z.object({
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,
   approvedAt: TimestampSchema.nullable(),
+  /** Set when a newer revision supersedes this plan. */
+  supersededByPlanId: IdSchema.nullable().optional(),
   createdTaskIds: z.array(IdSchema).default([]),
   execution: PlanExecutionSchema.nullable().default(null),
 })

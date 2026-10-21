@@ -381,6 +381,7 @@ export const ApiSchemas = {
       title: z.string().trim().min(1).max(240),
       body: z.string().max(400_000).default(''),
       uri: z.string().max(2048).nullable().default(null),
+      metadata: z.record(z.string(), z.unknown()).optional(),
     }),
     output: z.object({ artifact: ArtifactSchema }),
   },
@@ -826,6 +827,24 @@ export const ApiSchemas = {
   'project.budget.get': {
     input: z.object({ projectId: IdSchema }),
     output: ProjectBudgetStatusSchema,
+  },
+  'project.qualityPolicy.get': {
+    input: z.object({ projectId: IdSchema }),
+    output: z.object({
+      required: z.array(z.string().max(80)).max(20),
+      optional: z.array(z.string().max(80)).max(20),
+    }),
+  },
+  'project.qualityPolicy.set': {
+    input: z.object({
+      projectId: IdSchema,
+      required: z.array(z.string().max(80)).max(20),
+      optional: z.array(z.string().max(80)).max(20),
+    }),
+    output: z.object({
+      required: z.array(z.string().max(80)).max(20),
+      optional: z.array(z.string().max(80)).max(20),
+    }),
   },
   'project.budget.set': {
     input: z.object({

@@ -202,6 +202,12 @@ describe('Agent teamwork relay', () => {
               title: '权限模块设计',
               kind: 'design',
               body: 'DESIGN-MARKER 权限模块采用 RBAC，接口边界为 /api/rbac。',
+              metadata: {
+                artifactType: 'design',
+                scope: '用户权限管理模块',
+                decisions: ['采用 RBAC', '接口边界 /api/rbac'],
+                referencedFiles: ['src/rbac.ts'],
+              },
             },
           },
         }
@@ -521,7 +527,21 @@ describe('Agent teamwork relay', () => {
         return {
           tool: {
             name: 'create_artifact',
-            args: { title: '审查报告', kind: 'document', body: 'REVIEW-MARKER 逐条核对验收标准，未发现阻塞项。' },
+            args: {
+              title: '审查报告',
+              kind: 'document',
+              body: 'REVIEW-MARKER 逐条核对验收标准，未发现阻塞项。',
+              metadata: {
+                artifactType: 'review',
+                reviewedObjects: ['src/rbac.ts'],
+                scope: '权限模块实现',
+                findings: ['未发现阻塞项'],
+                conclusion: '审查通过',
+                blockers: [],
+                relatedArtifactIds: [],
+                changedFiles: ['src/rbac.ts'],
+              },
+            },
           },
         }
       }
@@ -743,4 +763,25 @@ describe('Agent teamwork relay', () => {
     expect(String(payload.continuationError ?? '')).toMatch(/Runtime|不可用/)
     console.log(`[target-start-failure] plan=${final?.execution?.status} task=${store.read.getTask(task.id)?.status} runs=0 error=${String(payload.continuationError ?? '').slice(0, 60)}`)
   }, 60_000)
+
+  it('supersedes old tasks on revision without deleting history', async () => {
+    const provider = new FakeProvider(() => ({ text: 'no scheduler' }))
+    const { store, services, orchestration, dataDir } = setup(provider)
+    const project = await createGitProject(services, dataDir, 'relay-revision')
+    const approved = planWithTasks(orchestration, project.id, [
+      { key: 'a', title: '旧任务 A', description: 'A', role: 'architect', agentId: 'agt_architect', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: [], acceptanceCriteria: ['A'], expectedArtifacts: ['设计'], requiresApproval: false },
+      { key: 'b', title: '旧任务 B', description: 'B', role: 'developer', agentId: 'agt_engineer', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: [], acceptanceCriteria: ['B'], expectedArtifacts: ['代码 diff'], requiresApproval: false },
+    ])
+    const oldPlan = store.read.getPlanRevision(approved.plan.id)!
+    const revised = orchestration.revisePlan({ planId: approved.plan.id })
+    expect(revised.status).toBe('draft')
+    expect(revised.createdTaskIds).toHaveLength(0)
+    const superseded = store.read.getPlanRevision(approved.plan.id)!
+    expect(superseded.status).toBe('superseded')
+    expect(superseded.supersededByPlanId).toBe(revised.id)
+    const oldTasks = oldPlan.createdTaskIds.map((taskId) => store.read.getTask(taskId))
+    expect(oldTasks.every((task) => task?.status === 'cancelled')).toBe(true)
+    expect(store.read.listPlanRevisions(project.id).length).toBeGreaterThanOrEqual(2)
+    console.log(`[revision] old=${oldPlan.id} status=superseded by=${revised.id} oldTasks=${oldTasks.map((task) => task?.status).join(',')}`)
+  }, 30_000)
 })

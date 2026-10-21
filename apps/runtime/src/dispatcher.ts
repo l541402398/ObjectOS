@@ -903,6 +903,18 @@ export class RuntimeDispatcher {
       case 'run.reconcile': {
         const input = this.parse('run.reconcile', rawInput)
         const run = await runner.reconcileRun(input.runId, input.decision, input.note)
+        if (input.decision !== 'failed' && run.taskId) {
+          const plan = store.read
+            .listPlanRevisions(run.projectId)
+            .find((item) => item.createdTaskIds.includes(run.taskId!))
+          if (plan?.execution?.status === 'paused') {
+            try {
+              await this.scheduler.resume(plan.id)
+            } catch (error) {
+              this.deps.logger.warn({ err: error, planId: plan.id }, 'failed to resume plan after reconcile')
+            }
+          }
+        }
         return { runId: run.id, status: run.status, taskId: run.taskId }
       }
       case 'run.list': {
@@ -1115,6 +1127,25 @@ export class RuntimeDispatcher {
       case 'project.budget.set': {
         const input = this.parse('project.budget.set', rawInput)
         return this.orchestration.setBudget(input.projectId, input.softLimit, input.currency)
+      }
+      case 'project.qualityPolicy.get': {
+        const input = this.parse('project.qualityPolicy.get', rawInput)
+        services.projects.getProjectOrThrow(input.projectId)
+        return (
+          this.deps.store.read.getQualityPolicy(input.projectId) ?? {
+            required: ['test'],
+            optional: ['typecheck', 'lint', 'build'],
+          }
+        )
+      }
+      case 'project.qualityPolicy.set': {
+        const input = this.parse('project.qualityPolicy.set', rawInput)
+        services.projects.getProjectOrThrow(input.projectId)
+        this.deps.store.setQualityPolicy(input.projectId, {
+          required: input.required,
+          optional: input.optional,
+        })
+        return { required: input.required, optional: input.optional }
       }
       case 'plan.generate': {
         const input = this.parse('plan.generate', rawInput)

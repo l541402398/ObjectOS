@@ -1113,8 +1113,8 @@ export class ReadModels {
   listDeliverableInbox(before: number, maxAttempts: number, limit = 20): InboxItem[] {
     return this.all<InboxRow>(
       `SELECT * FROM agent_inbox
-       WHERE status = 'delivered' AND created_at <= ? AND attempts < ?
-       ORDER BY created_at ASC LIMIT ?`,
+       WHERE status = 'delivered' AND next_attempt_at <= ? AND attempts < ?
+       ORDER BY priority ASC, created_at ASC LIMIT ?`,
       before,
       maxAttempts,
       limit,
@@ -1191,6 +1191,19 @@ export class ReadModels {
 
   getHandoffMode(projectId: string): 'manual' | 'auto' {
     return this.getAppSetting(`handoff_mode:${projectId}`) === 'auto' ? 'auto' : 'manual'
+  }
+
+  getQualityPolicy(projectId: string): { required: string[]; optional: string[] } | null {
+    const value = this.getAppSetting(`quality_policy:${projectId}`)
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+    const record = value as Record<string, unknown>
+    const required = Array.isArray(record.required)
+      ? record.required.filter((item): item is string => typeof item === 'string')
+      : []
+    const optional = Array.isArray(record.optional)
+      ? record.optional.filter((item): item is string => typeof item === 'string')
+      : []
+    return { required, optional }
   }
 
   getAgentOwnerProjectId(agentId: string): string | null {
@@ -1798,6 +1811,16 @@ export class ReadModels {
       taskId,
     )
     return row ? toRun(row) : null
+  }
+
+  /** Cross-plan, cross-project active run count for one Agent. */
+  countActiveRunsForAgent(agentId: string): number {
+    return Number(
+      this.get<{ count: number }>(
+        `SELECT COUNT(*) AS count FROM agent_runs WHERE agent_id = ? AND status IN ${ACTIVE_RUN_STATUSES}`,
+        agentId,
+      )?.count ?? 0,
+    )
   }
 }
 

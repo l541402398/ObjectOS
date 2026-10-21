@@ -204,7 +204,18 @@ try {
     ])
     const approved = await page.evaluate(async (planId) => window.projectos.plans.approve(planId), plan.id)
     await seedArtifacts(page, project.id, [
-      { taskId: approved.taskIds[0], kind: 'design', title: '并行架构设计', body: '并行 DAG 架构设计' },
+      {
+        taskId: approved.taskIds[0],
+        kind: 'design',
+        title: '并行架构设计',
+        body: '并行 DAG 架构设计',
+        metadata: {
+          artifactType: 'design',
+          scope: '并行 DAG',
+          decisions: ['架构与实现可并行'],
+          referencedFiles: [],
+        },
+      },
       { taskId: approved.taskIds[1], kind: 'code', title: '并行实现代码', body: 'export const parallel = true\n' },
     ])
     await page.evaluate(async (planId) => window.projectos.orchestration.start(planId, 2, 0), plan.id)

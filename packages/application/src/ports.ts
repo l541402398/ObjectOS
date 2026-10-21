@@ -87,6 +87,7 @@ export interface ReadPort {
   getHandoffView(id: string): HandoffView | null
   listHandoffViews(projectId: string): HandoffView[]
   getHandoffMode(projectId: string): 'manual' | 'auto'
+  getQualityPolicy(projectId: string): { required: string[]; optional: string[] } | null
   isAgentVisibleToProject(projectId: string, agentId: string): boolean
 }
 
@@ -145,6 +146,7 @@ export interface CoreStore {
   ): Handoff
   updateHandoffPayload(id: string, patch: Record<string, unknown>): Handoff
   setHandoffMode(projectId: string, mode: 'manual' | 'auto'): void
+  setQualityPolicy(projectId: string, policy: { required: string[]; optional: string[] }): void
   appendEvent(projectId: string, aggregateId: string, eventType: string, payload: Record<string, unknown>): ProjectEvent
 }
 

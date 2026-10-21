@@ -193,6 +193,8 @@ const api: ProjectOSDesktopApi = {
     metrics: (projectId) => call('project.metrics', { projectId }),
     budget: (projectId) => call('project.budget.get', { projectId }),
     setBudget: (projectId, softLimit, currency = 'USD') => call('project.budget.set', { projectId, softLimit, currency }),
+    qualityPolicy: (projectId) => call('project.qualityPolicy.get', { projectId }),
+    setQualityPolicy: (projectId, policy) => call('project.qualityPolicy.set', { projectId, ...policy }),
   },
   plans: {
     generate: (projectId, goal) => call('plan.generate', { projectId, goal }),

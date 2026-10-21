@@ -199,7 +199,8 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
   },
   {
     name: 'create_artifact',
-    description: '记录一个交付物（设计、代码说明、测试报告、审查结论等）。必须描述真实产物，不得伪造结果。',
+    description:
+      '记录一个交付物（设计、代码说明、测试报告、审查结论等）。必须描述真实产物，不得伪造结果。设计产物 metadata: {artifactType:"design", scope, decisions, referencedFiles}；审查产物 metadata: {artifactType:"review", reviewedObjects, scope, findings, conclusion, blockers, relatedArtifactIds, changedFiles}。',
     parameters: object(
       {
         title: string('交付物标题'),
@@ -208,6 +209,7 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
         }),
         body: string('交付物正文或摘要'),
         uri: string('可选：关联文件路径或外部地址'),
+        metadata: { type: 'object', description: '结构化证据字段（设计/审查必需）', additionalProperties: true },
       },
       ['title', 'body'],
     ),

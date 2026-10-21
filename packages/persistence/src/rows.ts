@@ -407,6 +407,7 @@ export interface ArtifactRow {
   uri: string | null
   content_hash: string | null
   git_commit: string | null
+  metadata_json?: string
   verified_at: number | null
   body: string | null
   is_demo: number
@@ -702,6 +703,7 @@ export function toArtifact(row: ArtifactRow): Artifact {
     uri: row.uri,
     contentHash: row.content_hash,
     gitCommit: row.git_commit,
+    metadata: parseObject(row.metadata_json ?? '{}'),
     verifiedAt: row.verified_at === null ? null : Number(row.verified_at),
     body: row.body,
     isDemo: Boolean(row.is_demo),

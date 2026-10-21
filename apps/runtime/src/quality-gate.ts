@@ -6,24 +6,36 @@ export interface QualityCheck {
   name: string
   command: string
   /** `error`: the command could not run to completion (missing binary, timeout, abort). */
-  status: 'passed' | 'failed' | 'error' | 'skipped'
+  status: 'passed' | 'failed' | 'error' | 'skipped' | 'not_applicable'
   exitCode: number | null
   durationMs: number
   output: string
 }
 
-export type QualityGateOutcome = 'passed' | 'failed' | 'error' | 'skipped'
+export type QualityGateOutcome = 'passed' | 'failed' | 'error' | 'skipped' | 'not_applicable'
+
+export interface QualityPolicy {
+  required: string[]
+  optional: string[]
+}
+
+export const DEFAULT_QUALITY_POLICY: QualityPolicy = {
+  required: ['test'],
+  optional: ['typecheck', 'lint', 'build'],
+}
 
 export interface QualityGateReport {
   passed: boolean
   skipped: boolean
   outcome: QualityGateOutcome
+  required: string[]
+  optional: string[]
+  missingRequired: string[]
   checks: QualityCheck[]
   startedAt: number
   finishedAt: number
 }
 
-const SCRIPT_ORDER = ['typecheck', 'lint', 'test', 'build'] as const
 const SCRIPT_PATTERN = /^[a-zA-Z0-9:_-]+$/
 const KILL_GRACE_MS = 5_000
 
@@ -121,41 +133,74 @@ async function execute(
 }
 
 export class QualityGateService {
-  async run(rootPath: string, options: { signal?: AbortSignal; timeoutMs?: number } = {}): Promise<QualityGateReport> {
+  async run(
+    rootPath: string,
+    options: { signal?: AbortSignal; timeoutMs?: number; policy?: QualityPolicy } = {},
+  ): Promise<QualityGateReport> {
     const startedAt = Date.now()
     const timeoutMs = options.timeoutMs ?? 120_000
     const checks: QualityCheck[] = []
+    let required: string[]
+    let optional: string[]
     if (existsSync(join(rootPath, 'pom.xml'))) {
+      required = ['maven-test']
+      optional = []
       checks.push(await execute(rootPath, 'mvn -q -DskipTests=false test', 'maven-test', timeoutMs, options.signal))
     } else if (existsSync(join(rootPath, 'build.gradle')) || existsSync(join(rootPath, 'build.gradle.kts'))) {
+      required = ['gradle-test']
+      optional = []
       const wrapper = existsSync(join(rootPath, process.platform === 'win32' ? 'gradlew.bat' : 'gradlew'))
       const bin = wrapper ? (process.platform === 'win32' ? '.\\gradlew.bat' : './gradlew') : 'gradle'
       checks.push(await execute(rootPath, `${bin} test`, 'gradle-test', timeoutMs, options.signal))
     } else {
+      const policy = options.policy ?? DEFAULT_QUALITY_POLICY
+      required = [...new Set(policy.required)]
+      optional = [...new Set(policy.optional)].filter((name) => !required.includes(name))
       const scripts = readScripts(rootPath)
       const runner = packageManager(rootPath)
-      for (const name of SCRIPT_ORDER) {
-        if (!scripts) checks.push(skipped(name, '未找到 package.json'))
-        else if (typeof scripts[name] !== 'string' || !SCRIPT_PATTERN.test(name)) checks.push(skipped(name, `未配置 ${name} 脚本`))
-        else checks.push(await execute(rootPath, `${runner} ${name}`, name, timeoutMs, options.signal))
+      for (const name of [...required, ...optional]) {
+        if (!SCRIPT_PATTERN.test(name)) {
+          checks.push(skipped(name, `非法的检查脚本名：${name}`))
+          continue
+        }
+        const isRequired = required.includes(name)
+        if (!scripts) {
+          checks.push(isRequired ? skipped(name, '未找到 package.json，必需检查未执行') : notApplicable(name, '未找到 package.json'))
+          continue
+        }
+        if (typeof scripts[name] !== 'string') {
+          checks.push(isRequired ? skipped(name, `必需脚本未配置：${name}`) : notApplicable(name, `可选脚本未配置：${name}`))
+          continue
+        }
+        checks.push(await execute(rootPath, `${runner} ${name}`, name, timeoutMs, options.signal))
       }
     }
-    const executed = checks.filter((check) => check.status !== 'skipped')
+    const requiredChecks = checks.filter((check) => required.includes(check.name))
+    const missingRequired = requiredChecks.filter((check) => check.status === 'skipped').map((check) => check.name)
     const outcome: QualityGateOutcome =
-      executed.some((check) => check.status === 'error')
-        ? 'error'
-        : executed.some((check) => check.status === 'failed')
-          ? 'failed'
-          : executed.length === 0
-            ? 'skipped'
-            : 'passed'
+      requiredChecks.length === 0
+        ? 'not_applicable'
+        : requiredChecks.some((check) => check.status === 'error')
+          ? 'error'
+          : requiredChecks.some((check) => check.status === 'failed')
+            ? 'failed'
+            : requiredChecks.some((check) => check.status === 'skipped')
+              ? 'skipped'
+              : 'passed'
     return {
       passed: outcome === 'passed',
       skipped: outcome === 'skipped',
       outcome,
+      required,
+      optional,
+      missingRequired,
       checks,
       startedAt,
       finishedAt: Date.now(),
     }
   }
+}
+
+function notApplicable(name: string, reason: string): QualityCheck {
+  return { name, command: '', status: 'not_applicable', exitCode: null, durationMs: 0, output: reason }
 }

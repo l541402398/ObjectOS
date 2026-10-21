@@ -379,6 +379,7 @@ export class ProjectService {
       title: string
       body?: string
       uri?: string | null
+      metadata?: Record<string, unknown>
     },
     actor: ActionActor = USER_ACTOR,
   ): Artifact {
@@ -393,6 +394,7 @@ export class ProjectService {
       uri: input.uri ?? null,
       contentHash: null,
       gitCommit: null,
+      metadata: { ...(input.metadata ?? {}), createdBy: actor.kind },
       verifiedAt: null,
       body: input.body ?? null,
       isDemo: false,

@@ -163,6 +163,11 @@ export interface ProjectOSDesktopApi {
     metrics: (projectId: string) => Promise<Out<'project.metrics'>>
     budget: (projectId: string) => Promise<Out<'project.budget.get'>>
     setBudget: (projectId: string, softLimit: number, currency?: string) => Promise<Out<'project.budget.set'>>
+    qualityPolicy: (projectId: string) => Promise<Out<'project.qualityPolicy.get'>>
+    setQualityPolicy: (
+      projectId: string,
+      policy: { required: string[]; optional: string[] },
+    ) => Promise<Out<'project.qualityPolicy.set'>>
   }
   plans: {
     generate: (projectId: string, goal: string) => Promise<Out<'plan.generate'>>

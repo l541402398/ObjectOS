@@ -1664,6 +1664,10 @@ export class AgentRunner {
             title: requiredString(args, 'title'),
             body: typeof args.body === 'string' ? args.body : '',
             uri: typeof args.uri === 'string' ? args.uri : null,
+            metadata:
+              args.metadata && typeof args.metadata === 'object' && !Array.isArray(args.metadata)
+                ? (args.metadata as Record<string, unknown>)
+                : {},
           },
           actor,
         )
@@ -2301,9 +2305,11 @@ export class AgentRunner {
         const message = error instanceof Error ? error.message : String(error)
         try {
           const nextAttempt = item.attempts + 1
+          const delay = Math.min(5 * 60_000, 5_000 * 2 ** item.attempts)
           this.store.updateInboxStatus(item.id, nextAttempt >= 3 ? 'failed' : 'delivered', {
             error: message,
             incrementAttempts: true,
+            nextAttemptAt: now() + delay,
           })
         } catch (nested) {
           this.logger.warn({ err: nested, inboxId: item.id }, 'failed to record inbox retry')

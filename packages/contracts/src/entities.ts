@@ -239,6 +239,8 @@ export const ArtifactSchema = z.object({
   uri: z.string().max(2048).nullable(),
   contentHash: z.string().max(128).nullable(),
   gitCommit: z.string().max(80).nullable(),
+  /** Structured evidence metadata (design/review fields, source actor, etc.). */
+  metadata: JsonObjectSchema.optional(),
   verifiedAt: nullableTimestamp,
   body: z.string().max(400_000).nullable(),
   isDemo: z.boolean(),

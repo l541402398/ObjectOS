@@ -20,7 +20,7 @@ export interface CompletionToolOutcome {
 }
 
 export interface QualityGateEvidence {
-  outcome: 'passed' | 'failed' | 'error' | 'skipped'
+  outcome: 'passed' | 'failed' | 'error' | 'skipped' | 'not_applicable'
   passed: boolean
   skipped: boolean
   checks: Array<{ name: string; status: string; exitCode: number | null }>
@@ -60,6 +60,24 @@ function hasKind(artifacts: Artifact[], kinds: Artifact['kind'][]): Artifact[] {
 
 function matchesText(artifacts: Artifact[], pattern: RegExp): Artifact[] {
   return artifacts.filter((artifact) => pattern.test(artifactText(artifact)))
+}
+
+function metadataOf(artifact: Artifact): Record<string, unknown> {
+  return artifact.metadata && typeof artifact.metadata === 'object' && !Array.isArray(artifact.metadata)
+    ? (artifact.metadata as Record<string, unknown>)
+    : {}
+}
+
+function nonEmptyString(value: unknown): boolean {
+  return typeof value === 'string' && value.trim().length > 0
+}
+
+function nonEmptyArray(value: unknown): boolean {
+  return Array.isArray(value) && value.length > 0
+}
+
+function stringArrayField(value: unknown): boolean {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string')
 }
 
 function completedToolStatus(status: string): ToolOutcomeStatus {
@@ -140,12 +158,30 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
     verifiedTestArtifacts.length > 0 ||
     runTestsOk
 
-  const designArtifacts = [
-    ...hasKind(artifacts, ['design']),
-    ...matchesText(artifacts, /(adr|设计|架构|方案|实施|design|architecture)/i),
-  ]
+  const designArtifacts = artifacts.filter((artifact) => {
+    const metadata = metadataOf(artifact)
+    return (
+      metadata.artifactType === 'design' &&
+      nonEmptyString(metadata.scope) &&
+      (nonEmptyArray(metadata.decisions) || nonEmptyString(metadata.decisions)) &&
+      (stringArrayField(metadata.referencedFiles) || stringArrayField(metadata.references)) &&
+      (artifact.runId !== null || metadata.createdBy === 'user')
+    )
+  })
   const hasDesign = designArtifacts.length > 0
-  const reviewArtifacts = matchesText(artifacts, /(审查|评审|review|审计|检查报告)/i)
+  const reviewArtifacts = artifacts.filter((artifact) => {
+    const metadata = metadataOf(artifact)
+    return (
+      metadata.artifactType === 'review' &&
+      nonEmptyArray(metadata.reviewedObjects) &&
+      nonEmptyString(metadata.scope) &&
+      nonEmptyArray(metadata.findings) &&
+      nonEmptyString(metadata.conclusion) &&
+      stringArrayField(metadata.blockers) &&
+      (stringArrayField(metadata.relatedArtifactIds) || stringArrayField(metadata.changedFiles)) &&
+      (artifact.runId !== null || metadata.createdBy === 'user')
+    )
+  })
   const hasReview = reviewArtifacts.length > 0
   const hasArtifact = artifacts.length > 0
 

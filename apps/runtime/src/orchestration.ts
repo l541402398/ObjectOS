@@ -373,6 +373,11 @@ export class OrchestrationService {
     if (source.execution?.status === 'running') {
       throw new AppError('CONFLICT', '执行中的计划不能修订，请先暂停或取消')
     }
+    for (const taskId of source.createdTaskIds) {
+      if (this.store.read.getActiveRunForTask(taskId)) {
+        throw new AppError('CONFLICT', '计划仍有任务在运行，请先取消运行后再修订')
+      }
+    }
     const revision = this.store.read.getNextPlanRevision(source.projectId)
     const next: PlanDraft = this.assignPlanAgents({
       id: newId('pln'),
@@ -387,12 +392,42 @@ export class OrchestrationService {
       createdAt: now(),
       updatedAt: now(),
       approvedAt: null,
+      supersededByPlanId: null,
       createdTaskIds: [],
       execution: null,
     })
     validatePlanDraft(next)
     this.validatePlanAgents(next)
     this.store.createPlanRevision(next)
+    if (source.status === 'approved') {
+      this.store.updatePlanRevision({
+        ...source,
+        status: 'superseded',
+        supersededByPlanId: next.id,
+        updatedAt: now(),
+      })
+      for (const taskId of source.createdTaskIds) {
+        const task = this.store.read.getTask(taskId)
+        if (!task || task.status === 'done' || task.status === 'cancelled') continue
+        try {
+          this.services.tasks.move(
+            {
+              taskId,
+              expectedVersion: task.version,
+              to: 'cancelled',
+              note: `已被计划 r${revision} 替代（superseded）`,
+            },
+            { kind: 'system', id: 'orchestrator', name: '编排器' },
+          )
+        } catch (error) {
+          this.store.appendEvent(source.projectId, taskId, 'task.superseded', {
+            planId: source.id,
+            supersededByPlanId: next.id,
+            error: error instanceof Error ? error.message : String(error),
+          })
+        }
+      }
+    }
     this.ensurePlanCollaboration(next)
     return next
   }
