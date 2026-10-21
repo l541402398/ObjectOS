@@ -221,7 +221,7 @@ export default function CollaborationPage() {
   })
 
   const data = collaboration.data
-  const sessions = data?.sessions ?? []
+  const sessions = useMemo(() => data?.sessions ?? [], [data])
   const agents = data?.agents ?? []
   const inbox = data?.inbox ?? []
   const handoffs = useMemo(() => data?.handoffs ?? [], [data])

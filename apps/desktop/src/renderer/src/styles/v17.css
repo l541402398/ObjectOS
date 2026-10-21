@@ -1081,3 +1081,8 @@
 .v17-collab-group strong { display: block; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .v17-collab-group small { display: block; margin-top: 2px; font-size: 10px; color: var(--color-text-tertiary); }
 [data-theme='light'] .v17-collab-group { background: rgba(255,255,255,.9); border-color: rgba(40,70,120,.09); }
+
+/* Drawer stacking: mask must stay below the drawer panel */
+.ant-drawer .ant-drawer-content-wrapper { z-index: 1001 !important; }
+.ant-drawer .ant-drawer-mask { z-index: 1000 !important; }
+.ant-drawer .ant-drawer-content { position: relative; z-index: 1; }

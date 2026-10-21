@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import {
   App as AntApp,
   Button,
+  Drawer,
   Input,
   Modal,
   Popconfirm,
@@ -13,7 +14,6 @@ import {
 import {
   ApartmentOutlined,
   CheckCircleOutlined,
-  CloseOutlined,
   CompressOutlined,
   DeleteOutlined,
   FileSearchOutlined,
@@ -28,7 +28,6 @@ import {
   SaveOutlined,
   SettingOutlined,
   StopOutlined,
-  ThunderboltOutlined,
 } from '@ant-design/icons'
 import {
   Background,
@@ -300,6 +299,7 @@ export default function OrchestrationWorkspace() {
   const saveLayoutRef = useRef<() => void>(() => undefined)
   const [flowNodes, setFlowNodes] = useState<FlowNode[]>([])
   const [inspectorTab, setInspectorTab] = useState('overview')
+  const [detailTab, setDetailTab] = useState('node')
   const flowRef = useRef<ReactFlowInstance<FlowNode> | null>(null)
   const autoScan = useRef(false)
   const resolvedTheme = useResolvedTheme()
@@ -967,8 +967,7 @@ export default function OrchestrationWorkspace() {
           </div>
         ) : null}
 
-        <div className="po-orch-grid">
-          <section className="po-orch-canvas-card">
+        <section className="po-orch-canvas-card po-orch-canvas-full">
             <div className="po-orch-canvas-toolbar">
               <div className="po-orch-kind-filter">
                 <button type="button" className={kindFilter === 'all' ? 'is-active' : ''} onClick={() => setKindFilter('all')}>全部 {counts.agents + counts.tasks + 1}</button>
@@ -1010,6 +1009,7 @@ export default function OrchestrationWorkspace() {
                   const graph = graphQuery.data?.nodes.find((item) => item.id === node.id) ?? null
                   setSelected(graph)
                   setInspectorTab('overview')
+                  setDetailTab('node')
                 }}
                 onPaneClick={() => setSelected(null)}
                 proOptions={{ hideAttribution: true }}
@@ -1035,57 +1035,65 @@ export default function OrchestrationWorkspace() {
             </div>
           </section>
 
-          <aside className="po-orch-inspector">
-            <div className="po-orch-inspector-head">
-              <strong>Inspector</strong>
-              {selected ? <Button type="text" size="small" icon={<CloseOutlined />} onClick={() => setSelected(null)} /> : null}
-            </div>
-            {inspectorContent}
-          </aside>
-        </div>
 
-        <section className="po-orch-log">
-          <div className="po-orch-log-head">
-            <span>运行日志</span>
-            <span>{eventsQuery.data?.events.length ?? 0} 条项目事件</span>
-            <span className="po-grow" />
-            <button type="button" onClick={() => navigate(`/projects/${projectId}/runs`)}>运行审计 →</button>
-          </div>
-          <div className="po-orch-log-body">
-            {(eventsQuery.data?.events ?? []).slice(0, 8).map((event) => (
-              <div className="po-orch-log-row" key={event.id}>
-                <span>{formatRelative(event.createdAt)}</span>
-                <span className="po-flow-dot is-completed" />
-                <strong>{event.summary}</strong>
-                <em>{event.eventType}</em>
-              </div>
-            ))}
-            {!eventsQuery.data?.events.length ? <div className="po-inspector-empty">暂无运行事件</div> : null}
-          </div>
-        </section>
 
-        <section className="po-dep-flow">
-          <div className="po-dep-head">
-            <span><ThunderboltOutlined /> 依赖流</span>
-            <span>{dependencyChains.length} 条依赖</span>
-            <span className="po-grow" />
-            <Button size="small" type="text" onClick={() => navigate(`/projects/${projectId}/tasks`)}>任务看板</Button>
-          </div>
-          <div className="po-dep-body">
-            {dependencyChains.length ? dependencyChains.slice(0, 6).map((task) => {
-              const dependency = graphQuery.data?.edges.find((edge) => edge.kind === 'dependency' && edge.target === task.id)
-              const parent = dependency?.source.replace('task:', '')
-              return (
-                <div className="po-dep-chain" key={task.id}>
-                  <span className="po-dep-chip">{taskTitles.get(parent ?? '') ?? '前置任务'}</span>
-                  <span className="po-dep-arrow">→</span>
-                  <span className="po-dep-chip is-current">{task.label}</span>
-                  <span className={`po-flow-dot is-${task.status}`} />
-                </div>
-              )
-            }) : <span className="po-dep-empty">暂无任务依赖</span>}
-          </div>
-        </section>
+
+        <Drawer
+          open={Boolean(selected)}
+          onClose={() => setSelected(null)}
+          width={600}
+          title={selectedAgent ? selectedAgent.label : selectedTask ? selectedTask.label : '节点详情'}
+          className="po-orch-node-drawer"
+        >
+          {selected ? (
+            <Tabs
+              activeKey={detailTab}
+              onChange={setDetailTab}
+              items={[
+                { key: 'node', label: '节点', children: inspectorContent },
+                {
+                  key: 'logs',
+                  label: '运行日志',
+                  children: (
+                    <div className="po-orch-drawer-log">
+                      {(eventsQuery.data?.events ?? []).slice(0, 20).map((event) => (
+                        <div className="po-orch-log-row" key={event.id}>
+                          <span>{formatRelative(event.createdAt)}</span>
+                          <span className="po-flow-dot is-completed" />
+                          <strong>{event.summary}</strong>
+                          <em>{event.eventType}</em>
+                        </div>
+                      ))}
+                      {!eventsQuery.data?.events.length ? <div className="po-inspector-empty">暂无运行事件</div> : null}
+                      <Button size="small" onClick={() => navigate(`/projects/${projectId}/runs`)}>打开运行审计</Button>
+                    </div>
+                  ),
+                },
+                {
+                  key: 'dependencies',
+                  label: '依赖流',
+                  children: (
+                    <div className="po-orch-drawer-deps">
+                      {dependencyChains.length ? dependencyChains.map((task) => {
+                        const dependency = graphQuery.data?.edges.find((edge) => edge.kind === 'dependency' && edge.target === task.id)
+                        const parent = dependency?.source.replace('task:', '')
+                        return (
+                          <div className="po-dep-chain" key={task.id}>
+                            <span className="po-dep-chip">{taskTitles.get(parent ?? '') ?? '前置任务'}</span>
+                            <span className="po-dep-arrow">→</span>
+                            <span className="po-dep-chip is-current">{task.label}</span>
+                            <span className={`po-flow-dot is-${task.status}`} />
+                          </div>
+                        )
+                      }) : <span className="po-dep-empty">暂无任务依赖</span>}
+                      <Button size="small" onClick={() => navigate(`/projects/${projectId}/tasks`)}>打开任务看板</Button>
+                    </div>
+                  ),
+                },
+              ]}
+            />
+          ) : null}
+        </Drawer>
 
         <Modal
           title={draft?.status === 'approved' ? `计划 r${draft.revision}` : '生成计划'}
