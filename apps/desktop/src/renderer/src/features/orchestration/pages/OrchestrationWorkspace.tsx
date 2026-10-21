@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import {
   App as AntApp,
   Button,
-  Drawer,
   Input,
   Modal,
   Popconfirm,
@@ -14,6 +13,7 @@ import {
 import {
   ApartmentOutlined,
   CheckCircleOutlined,
+  CloseOutlined,
   CompressOutlined,
   DeleteOutlined,
   FileSearchOutlined,
@@ -696,6 +696,23 @@ export default function OrchestrationWorkspace() {
     return Boolean(raw)
   })
   const pendingApprovals = (approvalsQuery.data?.approvals ?? []).filter((approval) => approval.status === 'pending')
+  const drawerTitle = selectedAgent ? selectedAgent.label : selectedTask ? selectedTask.label : (project?.name ?? '节点详情')
+  const drawerSubtitle = selectedAgent
+    ? `${selectedAgent.subtitle} · ${STATUS_TEXT[selectedAgent.status]}`
+    : selectedTask
+      ? `${selectedTask.subtitle} · ${STATUS_TEXT[selectedTask.status]}`
+      : `总控节点 · ${counts.agents} Agents / ${counts.tasks} Tasks`
+  const drawerStatus = selected ? STATUS_TEXT[selected.status] : ''
+  const drawerTone = selected ? STATUS_TONE[selected.status] : 'neutral'
+
+  useEffect(() => {
+    if (!selected) return
+    const onKey = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') setSelected(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [selected])
 
   if (graphQuery.isLoading) {
     return (
@@ -1038,62 +1055,76 @@ export default function OrchestrationWorkspace() {
 
 
 
-        <Drawer
-          open={Boolean(selected)}
-          onClose={() => setSelected(null)}
-          width={600}
-          title={selectedAgent ? selectedAgent.label : selectedTask ? selectedTask.label : '节点详情'}
-          className="po-orch-node-drawer"
-        >
-          {selected ? (
-            <Tabs
-              activeKey={detailTab}
-              onChange={setDetailTab}
-              items={[
-                { key: 'node', label: '节点', children: inspectorContent },
-                {
-                  key: 'logs',
-                  label: '运行日志',
-                  children: (
-                    <div className="po-orch-drawer-log">
-                      {(eventsQuery.data?.events ?? []).slice(0, 20).map((event) => (
-                        <div className="po-orch-log-row" key={event.id}>
-                          <span>{formatRelative(event.createdAt)}</span>
-                          <span className="po-flow-dot is-completed" />
-                          <strong>{event.summary}</strong>
-                          <em>{event.eventType}</em>
-                        </div>
-                      ))}
-                      {!eventsQuery.data?.events.length ? <div className="po-inspector-empty">暂无运行事件</div> : null}
-                      <Button size="small" onClick={() => navigate(`/projects/${projectId}/runs`)}>打开运行审计</Button>
-                    </div>
-                  ),
-                },
-                {
-                  key: 'dependencies',
-                  label: '依赖流',
-                  children: (
-                    <div className="po-orch-drawer-deps">
-                      {dependencyChains.length ? dependencyChains.map((task) => {
-                        const dependency = graphQuery.data?.edges.find((edge) => edge.kind === 'dependency' && edge.target === task.id)
-                        const parent = dependency?.source.replace('task:', '')
-                        return (
-                          <div className="po-dep-chain" key={task.id}>
-                            <span className="po-dep-chip">{taskTitles.get(parent ?? '') ?? '前置任务'}</span>
-                            <span className="po-dep-arrow">→</span>
-                            <span className="po-dep-chip is-current">{task.label}</span>
-                            <span className={`po-flow-dot is-${task.status}`} />
+        {selected ? (
+          <div className="po-orch-drawer-layer">
+            <button type="button" tabIndex={-1} className="po-orch-drawer-backdrop" aria-label="关闭节点详情" onClick={() => setSelected(null)} />
+            <aside className="po-orch-drawer-panel" role="dialog" aria-modal="true" aria-label="节点详情">
+              <header className="po-orch-panel-head">
+                <div className="po-orch-panel-title">
+                  <span className={`po-orch-panel-icon is-${selected.kind}`}>
+                    {selectedAgent ? <RobotOutlined /> : selectedTask ? <CheckCircleOutlined /> : <ApartmentOutlined />}
+                  </span>
+                  <div>
+                    <span className="po-orch-panel-kicker">NODE INSPECTOR</span>
+                    <strong>{drawerTitle}</strong>
+                    <small>{drawerSubtitle}</small>
+                  </div>
+                </div>
+                <div className="po-orch-panel-head-actions">
+                  {drawerStatus ? <StatusPill tone={drawerTone}>{drawerStatus}</StatusPill> : null}
+                  <Button type="text" size="small" icon={<CloseOutlined />} onClick={() => setSelected(null)} aria-label="关闭" />
+                </div>
+              </header>
+              <Tabs
+                className="po-orch-panel-tabs"
+                activeKey={detailTab}
+                onChange={setDetailTab}
+                items={[
+                  { key: 'node', label: '节点', children: <div className="po-orch-panel-body">{inspectorContent}</div> },
+                  {
+                    key: 'logs',
+                    label: '运行日志',
+                    children: (
+                      <div className="po-orch-panel-body po-orch-drawer-log">
+                        {(eventsQuery.data?.events ?? []).slice(0, 20).map((event) => (
+                          <div className="po-orch-log-row" key={event.id}>
+                            <span>{formatRelative(event.createdAt)}</span>
+                            <span className="po-flow-dot is-completed" />
+                            <strong>{event.summary}</strong>
+                            <em>{event.eventType}</em>
                           </div>
-                        )
-                      }) : <span className="po-dep-empty">暂无任务依赖</span>}
-                      <Button size="small" onClick={() => navigate(`/projects/${projectId}/tasks`)}>打开任务看板</Button>
-                    </div>
-                  ),
-                },
-              ]}
-            />
-          ) : null}
-        </Drawer>
+                        ))}
+                        {!eventsQuery.data?.events.length ? <div className="po-inspector-empty">暂无运行事件</div> : null}
+                        <Button size="small" onClick={() => navigate(`/projects/${projectId}/runs`)}>打开运行审计</Button>
+                      </div>
+                    ),
+                  },
+                  {
+                    key: 'dependencies',
+                    label: '依赖流',
+                    children: (
+                      <div className="po-orch-panel-body po-orch-drawer-deps">
+                        {dependencyChains.length ? dependencyChains.map((task) => {
+                          const dependency = graphQuery.data?.edges.find((edge) => edge.kind === 'dependency' && edge.target === task.id)
+                          const parent = dependency?.source.replace('task:', '')
+                          return (
+                            <div className="po-dep-chain" key={task.id}>
+                              <span className="po-dep-chip">{taskTitles.get(parent ?? '') ?? '前置任务'}</span>
+                              <span className="po-dep-arrow">→</span>
+                              <span className="po-dep-chip is-current">{task.label}</span>
+                              <span className={`po-flow-dot is-${task.status}`} />
+                            </div>
+                          )
+                        }) : <span className="po-dep-empty">暂无任务依赖</span>}
+                        <Button size="small" onClick={() => navigate(`/projects/${projectId}/tasks`)}>打开任务看板</Button>
+                      </div>
+                    ),
+                  },
+                ]}
+              />
+            </aside>
+          </div>
+        ) : null}
 
         <Modal
           title={draft?.status === 'approved' ? `计划 r${draft.revision}` : '生成计划'}
@@ -1253,6 +1284,7 @@ export default function OrchestrationWorkspace() {
       </div>
   )
 }
+
 
 
 

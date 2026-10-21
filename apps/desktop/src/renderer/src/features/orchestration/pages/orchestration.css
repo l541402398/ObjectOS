@@ -1367,3 +1367,185 @@
 .po-orch-drawer-deps .po-dep-chain { width: 100%; }
 .po-orch-drawer-log .ant-btn,
 .po-orch-drawer-deps .ant-btn { align-self: flex-start; margin-top: 6px; }
+
+/* Node inspector: floating glass panel, not a full-height drawer */
+.po-orch-drawer-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  pointer-events: none;
+}
+.po-orch-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(4, 8, 18, 0.28);
+  -webkit-backdrop-filter: blur(3px) saturate(0.9);
+  backdrop-filter: blur(3px) saturate(0.9);
+  pointer-events: auto;
+  animation: po-orch-fade-in 280ms var(--apple-ease) both;
+}
+.po-orch-drawer-panel {
+  position: absolute;
+  top: 86px;
+  right: 22px;
+  bottom: 38px;
+  width: min(620px, calc(100vw - 44px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--glass-elevated-border);
+  border-radius: 24px;
+  background:
+    var(--glass-specular, radial-gradient(120% 80% at 18% -10%, rgba(255,255,255,.14), transparent 54%)),
+    var(--glass-elevated-bg, rgba(17,26,44,.72));
+  -webkit-backdrop-filter: blur(46px) saturate(180%);
+  backdrop-filter: blur(46px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 40px 110px -42px rgba(0,0,0,.85);
+  pointer-events: auto;
+  animation: po-orch-panel-in 420ms var(--apple-ease) both;
+}
+.po-orch-panel-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 18px 14px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  background: linear-gradient(135deg, rgba(80,130,255,.13), rgba(130,80,240,.07) 55%, transparent);
+}
+.po-orch-panel-title { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.po-orch-panel-icon {
+  width: 42px; height: 42px; flex: 0 0 42px; display: grid; place-items: center;
+  border-radius: 14px; color: #fff; font-size: 19px;
+  background: linear-gradient(150deg, #5aa7ff, #0a84ff 55%, #6f5cf6);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 10px 24px -12px rgba(10,132,255,.8);
+}
+.po-orch-panel-icon.is-task { background: linear-gradient(150deg, #63d9a0, #16a34a 55%, #0f766e); }
+.po-orch-panel-icon.is-orchestrator { background: linear-gradient(150deg, #b68cff, #7c4dff 55%, #4f46e5); }
+.po-orch-panel-title > div { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.po-orch-panel-kicker { font-size: 12px; letter-spacing: .14em; color: var(--orch-text-faint); }
+.po-orch-panel-title strong { font-size: 16px; letter-spacing: -.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.po-orch-panel-title small { font-size: 12px; color: var(--orch-text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.po-orch-panel-head-actions { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.po-orch-panel-head-actions .ant-btn { color: var(--orch-text-dim); }
+.po-orch-panel-tabs { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.po-orch-panel-tabs > .ant-tabs-nav { flex: 0 0 auto; margin: 0; padding: 0 20px; }
+.po-orch-panel-tabs > .ant-tabs-nav::before { border-color: rgba(255,255,255,.08); }
+.po-orch-panel-tabs > .ant-tabs-content-holder { flex: 1 1 auto; min-height: 0; display: flex; }
+.po-orch-panel-tabs > .ant-tabs-content-holder > .ant-tabs-content { flex: 1 1 auto; min-height: 0; }
+.po-orch-panel-tabs > .ant-tabs-content-holder .ant-tabs-tabpane { height: 100%; overflow: auto; }
+.po-orch-panel-body { padding: 14px 20px 20px; min-height: 0; }
+.po-orch-drawer-panel .po-inspector-identity { display: none; }
+.po-orch-drawer-panel .po-inspector-panel {
+  margin: 0 0 12px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 15px;
+  background: rgba(255,255,255,.035);
+}
+.po-orch-drawer-panel .po-inspector-panel:last-child { margin-bottom: 0; }
+.po-orch-drawer-panel .po-inspector-metrics { gap: 7px; }
+.po-orch-drawer-panel .po-inspector-metrics span {
+  padding: 9px 10px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 11px;
+  background: rgba(255,255,255,.045);
+}
+.po-orch-drawer-panel .po-inspector-task {
+  padding: 11px 12px;
+  border: 1px solid rgba(120,180,255,.2);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(70,120,240,.14), rgba(120,80,220,.08));
+}
+.po-orch-drawer-panel .po-inspector-kv { gap: 8px 12px; }
+.po-orch-drawer-panel .po-inspector-actions { justify-content: flex-end; }
+.po-orch-drawer-panel .po-orch-log-row {
+  padding: 9px 10px;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 11px;
+  background: rgba(255,255,255,.03);
+}
+.po-orch-drawer-panel .po-dep-chain {
+  padding: 9px 10px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 11px;
+  background: rgba(255,255,255,.035);
+}
+.po-orch-drawer-log, .po-orch-drawer-deps { display: flex; flex-direction: column; gap: 8px; }
+.po-orch-drawer-log .ant-btn, .po-orch-drawer-deps .ant-btn { align-self: flex-start; margin-top: 6px; }
+@keyframes po-orch-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes po-orch-panel-in { from { opacity: 0; transform: translateX(22px) scale(.99); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .po-orch-drawer-backdrop, .po-orch-drawer-panel { animation: none !important; }
+}
+@media (max-width: 900px) {
+  .po-orch-drawer-panel { top: 72px; right: 10px; bottom: 16px; width: calc(100vw - 20px); border-radius: 18px; }
+}
+
+/* richer node panel content */
+.po-orch-drawer-panel .po-orch-log-row {
+  display: grid;
+  grid-template-columns: 58px 12px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  padding: 9px 12px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
+.po-orch-drawer-panel .po-orch-log-row > span:first-child { color: var(--orch-text-faint); font-size: 12px; white-space: nowrap; }
+.po-orch-drawer-panel .po-orch-log-row strong { font-size: 12px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.po-orch-drawer-panel .po-orch-log-row em {
+  padding: 2px 7px;
+  border: 1px solid rgba(140,180,255,.14);
+  border-radius: 999px;
+  background: rgba(90,140,255,.08);
+  color: var(--orch-text-faint);
+  font-style: normal;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.po-orch-drawer-panel .po-inspector-label {
+  margin: 14px 0 7px;
+  color: var(--orch-text-faint);
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.po-orch-drawer-panel .po-inspector-kv {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 12px;
+  background: rgba(255,255,255,.025);
+}
+.po-orch-drawer-panel .po-inspector-kv > * {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.055);
+}
+.po-orch-drawer-panel .po-inspector-kv > *:nth-last-child(-n+2) { border-bottom: 0; }
+.po-orch-drawer-panel .po-inspector-kv > span:nth-child(odd) { color: var(--orch-text-faint); font-size: 12px; }
+.po-orch-drawer-panel .po-inspector-kv > span:nth-child(even),
+.po-orch-drawer-panel .po-inspector-kv > code { color: var(--orch-text); font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+.po-orch-drawer-panel .po-inspector-kv > code { font-family: var(--font-mono); color: #9fc1ff; }
+.po-orch-drawer-panel .po-inspector-actions { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 12px; }
+.po-orch-drawer-panel .po-inspector-actions .ant-btn { border-radius: 999px; }
+.po-orch-drawer-panel .po-inspector-task { display: flex; flex-direction: column; gap: 3px; }
+.po-orch-drawer-panel .po-inspector-task strong { font-size: 12px; }
+.po-orch-drawer-panel .po-inspector-task span { color: var(--orch-text-dim); font-size: 12px; }
+.po-orch-drawer-panel .po-inspector-task .ant-btn { align-self: flex-start; padding: 0; height: auto; }
+.po-orch-drawer-panel .po-inspector-metrics span { display: flex; align-items: baseline; gap: 5px; color: var(--orch-text-faint); font-size: 12px; }
+.po-orch-drawer-panel .po-inspector-metrics strong { color: var(--orch-text); font-size: 20px; letter-spacing: -.03em; }
+.po-orch-drawer-panel .po-inspector-approval {
+  padding: 10px 11px; border: 1px solid rgba(255,185,90,.2); border-radius: 11px;
+  background: rgba(255,185,90,.07);
+}
+[data-theme='light'] .po-orch-drawer-panel .po-orch-log-row { background: rgba(255,255,255,.75); border-color: rgba(40,70,120,.09); }
+[data-theme='light'] .po-orch-drawer-panel .po-inspector-panel { background: rgba(255,255,255,.62); border-color: rgba(40,70,120,.09); }
+[data-theme='light'] .po-orch-drawer-panel .po-inspector-kv { background: rgba(255,255,255,.6); border-color: rgba(40,70,120,.09); }
