@@ -113,7 +113,6 @@ export default function AgentWorkbenchPage() {
   const approvals = useApprovals(projectId)
   const runs = useRuns(projectId, 100)
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(searchParams.get('task'))
   const sessionDetail = useSessionDetail(selectedSessionId)
   const [createOpen, setCreateOpen] = useState(false)
   const [studioOpen, setStudioOpen] = useState(false)
@@ -148,8 +147,15 @@ export default function AgentWorkbenchPage() {
     return list.find((connection) => connection.isDefault) ?? list.find((connection) => connection.enabled) ?? null
   }, [connections.data])
   const providerReady = Boolean(providerInfo?.enabled && providerInfo.hasSecret && providerInfo.defaultModelId)
-  const effectiveTaskId = selectedTaskId
-  const selectedTask = (board.data?.tasks ?? []).find((task) => task.id === effectiveTaskId) ?? null
+  const currentAgentTask = useMemo(() => {
+    const agentId = selectedSession?.agentId
+    if (!agentId) return null
+    const assigned = (board.data?.tasks ?? []).filter(
+      (task) => task.assigneeAgentId === agentId && !['done', 'cancelled'].includes(task.status),
+    )
+    return assigned.find((task) => ['running', 'review'].includes(task.status)) ??
+      assigned.find((task) => ['ready', 'backlog'].includes(task.status)) ?? null
+  }, [board.data, selectedSession?.agentId])
 
   useEffect(() => {
     if (!sessionList.length) {
@@ -162,15 +168,11 @@ export default function AgentWorkbenchPage() {
   }, [sessionList, selectedSessionId])
 
   useEffect(() => {
-    const taskFromQuery = searchParams.get('task')
     const sessionFromQuery = searchParams.get('session')
-    if (taskFromQuery) {
-      setSelectedTaskId(taskFromQuery)
-    }
     if (sessionFromQuery) {
       setSelectedSessionId(sessionFromQuery)
     }
-    if (taskFromQuery || sessionFromQuery) {
+    if (sessionFromQuery) {
       const next = new URLSearchParams(searchParams)
       next.delete('task')
       next.delete('session')
@@ -232,11 +234,13 @@ export default function AgentWorkbenchPage() {
       window.projectos.sessions.sendMessage({
         sessionId: selectedSessionId!,
         content,
-        taskId: effectiveTaskId,
+        taskId: null,
         startRun: true,
       }),
     onSuccess: async (result) => {
       await invalidateSession()
+      await queryClient.invalidateQueries({ queryKey: ['task-board', projectId] })
+      await queryClient.invalidateQueries({ queryKey: ['collaboration', projectId] })
       if (result.warning) {
         message.warning(result.warning)
       }
@@ -411,7 +415,6 @@ export default function AgentWorkbenchPage() {
               <em>{sessionList.length}</em>
               <DownOutlined className={sessionMenuOpen ? 'is-open' : ''} />
             </button>
-            <Button size="small" type="primary" icon={<PlusOutlined />} onClick={openCreate}>新建</Button>
           </div>
           {sessionMenuOpen ? (
             <div className="v17-session-dropdown">
@@ -467,26 +470,15 @@ export default function AgentWorkbenchPage() {
               <div className="po-chat-context">
                 <div className="po-chat-context-item">
                   <span className="po-chat-context-label">当前任务</span>
-                  <Select
-                    size="small"
-                    allowClear
-                    showSearch
-                    placeholder="选择一个任务作为执行上下文"
-                    value={selectedTaskId}
-                    onChange={(value) => setSelectedTaskId(value ?? null)}
-                    options={(board.data?.tasks ?? [])
-                      .filter((task) => task.status !== 'cancelled')
-                      .map((task) => ({
-                        value: task.id,
-                        label: `${task.title} · ${taskStatusLabel(task.status)}`,
-                      }))}
-                    style={{ minWidth: 260, maxWidth: 420 }}
-                  />
-                  {selectedTask ? (
-                    <span className="po-chat-context-meta">
-                      {selectedTask.acceptanceCriteria.length} 条验收 · v{selectedTask.version}
+                  {currentAgentTask ? (
+                    <span className="po-chat-task-pill">
+                      {currentAgentTask.title}
+                      <em>{taskStatusLabel(currentAgentTask.status)}</em>
                     </span>
-                  ) : null}
+                  ) : (
+                    <span className="po-chat-idle">空闲</span>
+                  )}
+                  <span className="po-chat-context-hint">可直接对话，让 Agent 按需接取或交接任务</span>
                 </div>
                 <span className="po-grow" />
                 <span className="po-chat-context-meta">
@@ -750,6 +742,7 @@ export default function AgentWorkbenchPage() {
     </div>
   )
 }
+
 
 
 

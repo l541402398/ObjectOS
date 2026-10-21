@@ -1371,3 +1371,109 @@
 .v17-runtime-panel .po-settings-divider { display: none; }
 [data-theme='light'] .v17-runtime-healthbar { background: rgba(255,255,255,.86); border-color: rgba(40,70,120,.09); }
 @media (max-width: 760px) { .v17-runtime-healthbar .is-metrics { gap: 9px; } }
+
+/* Agent chat: glass surface, task context, unified messages */
+.po-agent-workspace .po-chat-pane {
+  background:
+    radial-gradient(900px 320px at 18% -12%, rgba(255,255,255,.16), transparent 58%),
+    linear-gradient(160deg, rgba(255,255,255,.105), rgba(255,255,255,.035));
+  -webkit-backdrop-filter: blur(36px) saturate(165%);
+  backdrop-filter: blur(36px) saturate(165%);
+  border: 1px solid var(--glass-content-border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 26px 70px -46px rgba(0,0,0,.55);
+}
+.po-agent-workspace .po-chat-head {
+  background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.025));
+  border-bottom-color: var(--glass-content-border);
+}
+.po-agent-workspace .po-chat-context {
+  background: rgba(255,255,255,.035);
+  border-bottom: 1px solid var(--glass-content-border);
+}
+.po-chat-idle { font-size: 10px; color: var(--color-text-tertiary); }
+.po-chat-handoff-hint {
+  padding: 2px 7px;
+  border: 1px solid rgba(255,190,90,.22);
+  border-radius: 999px;
+  background: rgba(255,190,90,.08);
+  color: #e2b25f;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.po-agent-workspace .po-composer {
+  padding: 10px 14px 12px;
+  border-top: 1px solid var(--glass-content-border);
+  border-radius: 0 0 20px 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.085));
+  -webkit-backdrop-filter: blur(30px) saturate(160%);
+  backdrop-filter: blur(30px) saturate(160%);
+}
+.po-agent-workspace .po-sender.ant-sender {
+  border: 1px solid var(--glass-content-border);
+  border-radius: 16px;
+  background: rgba(255,255,255,.075);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 12px 30px -28px rgba(0,0,0,.5);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+  padding: 8px 9px 5px;
+}
+.po-agent-workspace .po-sender.ant-sender:focus-within {
+  border-color: rgba(120,180,255,.5);
+  box-shadow: 0 0 0 3px rgba(90,150,255,.12), inset 0 1px 0 rgba(255,255,255,.2);
+}
+.po-composer-prompts .ant-prompts-list {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+.po-composer-prompts .ant-prompts-item {
+  width: auto !important;
+  max-width: 100%;
+  white-space: nowrap;
+  writing-mode: horizontal-tb !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,.055) !important;
+  border-color: var(--glass-content-border) !important;
+  color: var(--color-text-secondary);
+  font-size: 10px;
+  padding: 5px 10px;
+}
+.po-composer-prompts .ant-prompts-item:hover { background: rgba(99,140,255,.14) !important; border-color: rgba(120,180,255,.3) !important; color: var(--color-text-primary); }
+.po-composer-prompts .ant-prompts-label { white-space: nowrap; }
+[data-theme='light'] .po-agent-workspace .po-chat-pane {
+  background:
+    radial-gradient(900px 320px at 18% -12%, rgba(255,255,255,.9), transparent 60%),
+    linear-gradient(160deg, rgba(255,255,255,.8), rgba(245,250,255,.62));
+  border-color: rgba(255,255,255,.9);
+}
+[data-theme='light'] .po-agent-workspace .po-sender.ant-sender,
+[data-theme='light'] .po-composer-prompts .ant-prompts-item { background: rgba(255,255,255,.82) !important; border-color: rgba(40,70,120,.1) !important; }
+
+.po-chat-task-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 360px;
+  padding: 4px 10px;
+  border: 1px solid rgba(120,180,255,.22);
+  border-radius: 999px;
+  background: rgba(90,140,255,.08);
+  color: var(--color-text-primary);
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.po-chat-task-pill em {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.07);
+  color: var(--color-text-tertiary);
+  font-style: normal;
+  font-size: 9px;
+}
+.po-chat-context-hint { font-size: 10px; color: var(--color-text-tertiary); white-space: nowrap; }
+@media (max-width: 900px) { .po-chat-context-hint { display: none; } }
