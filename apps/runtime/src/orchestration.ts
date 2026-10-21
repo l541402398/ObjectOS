@@ -19,6 +19,7 @@ import {
 } from '@projectos/planning'
 import { scanProject } from '@projectos/project-analyzer'
 import { getGitStatus } from '@projectos/workspace'
+import { planSessionTitle } from '@projectos/session-manager'
 
 export class OrchestrationService {
   constructor(
@@ -200,6 +201,7 @@ export class OrchestrationService {
     validatePlanDraft(plan)
     const ordered = topologicalPlanTasks(plan)
     const taskIdByKey = new Map<string, string>()
+    const tasksByAgent = new Map<string, string[]>()
     const created = this.store.transaction(() => {
       const ids: string[] = []
       for (const planned of ordered) {
@@ -208,6 +210,7 @@ export class OrchestrationService {
           if (!id) throw new AppError('INTERNAL', `计划依赖顺序错误：${key}`)
           return id
         })
+        const assigneeAgentId = agentForPlanRole(planned.role)
         const task = this.services.tasks.create({
           projectId: plan.projectId,
           title: planned.title,
@@ -215,14 +218,38 @@ export class OrchestrationService {
           priority: 2,
           acceptanceCriteria: planned.acceptanceCriteria,
           labels: ['plan', planned.role],
-          assigneeAgentId: agentForPlanRole(planned.role),
+          assigneeAgentId,
           milestoneId: null,
           dependsOn,
           dueAt: null,
         })
         taskIdByKey.set(planned.key, task.id)
         ids.push(task.id)
+        if (assigneeAgentId) {
+          const list = tasksByAgent.get(assigneeAgentId) ?? []
+          list.push(planned.title)
+          tasksByAgent.set(assigneeAgentId, list)
+        }
       }
+
+      for (const [agentId, titles] of tasksByAgent) {
+        const agent = this.store.read.getAgent(agentId)
+        const session = this.services.sessions.create(
+          {
+            projectId: plan.projectId,
+            agentId,
+            title: planSessionTitle(agent?.name ?? 'Agent', plan.revision),
+          },
+          { kind: 'system', id: 'orchestrator', name: '编排器' },
+        )
+        this.store.appendMessage({
+          sessionId: session.id,
+          role: 'system',
+          content: `计划「${plan.goal}」已批准。\n\n分配给 ${agent?.name ?? '当前 Agent'} 的任务：\n${titles.map((title) => `- ${title}`).join('\n')}\n\n等待用户在编排工作台确认后开始执行。`,
+          metadata: { kind: 'plan-approved', planId: plan.id, revision: plan.revision },
+        })
+      }
+
       const approved: PlanDraft = {
         ...plan,
         status: 'approved',

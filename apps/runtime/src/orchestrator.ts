@@ -8,6 +8,7 @@ import { existsSync } from 'node:fs'
 import type { AgentRunner } from './agent-runner.js'
 import type { Logger } from './logger.js'
 import { QualityGateService, type QualityGateReport } from './quality-gate.js'
+import { planSessionTitle } from '@projectos/session-manager'
 
 const SYSTEM_ACTOR = { kind: 'system' as const, id: 'orchestrator', name: '编排器' }
 
@@ -428,14 +429,20 @@ export class OrchestrationScheduler {
           continue
         }
         try {
-          const session = this.services.sessions.create(
-            {
-              projectId: plan.projectId,
-              agentId: card.assigneeAgentId,
-              title: `编排 · ${card.title}`.slice(0, 240),
-            },
-            SYSTEM_ACTOR,
-          )
+          const assignee = this.store.read.getAgent(card.assigneeAgentId)
+          const sessionTitle = planSessionTitle(assignee?.name ?? 'Agent', plan.revision)
+          const session =
+            this.store.read
+              .listSessionSummaries(plan.projectId)
+              .find((item) => item.agentId === card.assigneeAgentId && item.title === sessionTitle) ??
+            this.services.sessions.create(
+              {
+                projectId: plan.projectId,
+                agentId: card.assigneeAgentId,
+                title: sessionTitle,
+              },
+              SYSTEM_ACTOR,
+            )
           const result = await this.runner.startRun({
             projectId: plan.projectId,
             sessionId: session.id,

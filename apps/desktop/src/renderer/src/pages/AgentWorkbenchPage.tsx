@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   App as AntApp,
   Button,
+  Drawer,
   Empty,
   Form,
   Input,
@@ -14,15 +15,17 @@ import {
 import {
   CheckCircleOutlined,
   HistoryOutlined,
+  SendOutlined,
   MessageOutlined,
   PlusOutlined,
   ReloadOutlined,
   SafetyCertificateOutlined,
   SettingOutlined,
   StopOutlined,
+  TeamOutlined,
   ThunderboltOutlined,
 } from '@ant-design/icons'
-import type { AgentView, RunStatus, SessionSummary } from '@projectos/contracts'
+import type { AgentView, MessageView, RunStatus, SessionSummary } from '@projectos/contracts'
 import {
   AgentAvatar,
   EmptyState,
@@ -40,6 +43,7 @@ import {
   useApprovals,
   useRunDetail,
   useRuns,
+  usePlans,
   useSessionDetail,
   useSessions,
   useTaskBoard,
@@ -97,6 +101,7 @@ export default function AgentWorkbenchPage() {
   const { message } = AntApp.useApp()
   const [searchParams, setSearchParams] = useSearchParams()
   const sessions = useSessions(projectId)
+  const plans = usePlans(projectId)
   const agents = useAgents(projectId)
   const board = useTaskBoard(projectId)
   const connections = useAIConnections()
@@ -112,8 +117,14 @@ export default function AgentWorkbenchPage() {
   const [streamingRunId, setStreamingRunId] = useState<string | null>(null)
   const [streamingText, setStreamingText] = useState('')
   const streamBuffer = useRef('')
+  const [groupOpen, setGroupOpen] = useState(false)
+  const [groupMessages, setGroupMessages] = useState<MessageView[]>([])
+  const [groupInput, setGroupInput] = useState('')
+  const [groupBusy, setGroupBusy] = useState(false)
 
   const sessionList = useMemo(() => sessions.data?.sessions ?? [], [sessions.data])
+  const latestPlan = plans.data?.plans.find((plan) => plan.status === 'approved') ?? null
+  const groupSessions = useMemo(() => sessionList.filter((session) => session.title.startsWith('计划协作')), [sessionList])
   const selectedSession = sessionList.find((session) => session.id === selectedSessionId) ?? null
   const selectedRun = useMemo(() => {
     const list = runs.data?.runs ?? []
@@ -294,6 +305,59 @@ export default function AgentWorkbenchPage() {
   const streaming = isStreaming || Boolean(active && selectedRun?.status === 'running')
   const displayedStream = streamingText || latestText
 
+  const loadGroup = async (): Promise<void> => {
+    const details = await Promise.all(groupSessions.map((session) => window.projectos.sessions.get(session.id, 120)))
+    const seenUsers = new Set<string>()
+    const merged = details
+      .flatMap((detail) => detail.messages)
+      .sort((a, b) => a.createdAt - b.createdAt || a.seq - b.seq)
+      .filter((message) => {
+        if (message.role === 'system') return false
+        if (message.role !== 'user') return true
+        const key = `${message.content}|${Math.floor(message.createdAt / 10_000)}`
+        if (seenUsers.has(key)) return false
+        seenUsers.add(key)
+        return true
+      })
+    setGroupMessages(merged)
+  }
+
+  useEffect(() => {
+    if (!groupOpen || groupSessions.length === 0) return
+    void loadGroup()
+    const timer = setInterval(() => void loadGroup(), 4_000)
+    return () => clearInterval(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupOpen, groupSessions.map((session) => session.id).join(',')])
+
+  const sendGroup = async (): Promise<void> => {
+    const content = groupInput.trim()
+    if (!content || groupSessions.length === 0) return
+    setGroupBusy(true)
+    try {
+      const sends = groupSessions.map((session) =>
+        window.projectos.sessions.sendMessage({ sessionId: session.id, content, startRun: true }),
+      )
+      setGroupInput('')
+      message.success(`已广播给 ${groupSessions.length} 个 Agent`)
+      await new Promise((resolve) => setTimeout(resolve, 350))
+      await loadGroup()
+      setGroupBusy(false)
+      void Promise.allSettled(sends).then(async (results) => {
+        const warning = results
+          .filter((result): result is PromiseFulfilledResult<Awaited<ReturnType<typeof window.projectos.sessions.sendMessage>>> => result.status === 'fulfilled')
+          .map((result) => result.value.warning)
+          .find(Boolean)
+        if (warning) message.warning(warning)
+        await invalidateSession()
+        await loadGroup()
+      })
+    } catch (error) {
+      setGroupBusy(false)
+      message.error(errorMessage(error))
+    }
+  }
+
   return (
     <div className="po-page po-agent-page">
       <PageHeader
@@ -303,6 +367,9 @@ export default function AgentWorkbenchPage() {
           <>
             <Button icon={<ReloadOutlined />} onClick={() => void invalidateSession()} loading={sessions.isRefetching}>
               刷新
+            </Button>
+            <Button icon={<TeamOutlined />} disabled={!latestPlan || groupSessions.length === 0} onClick={() => setGroupOpen(true)}>
+              计划群聊
             </Button>
             <Button
               icon={<SettingOutlined />}
@@ -646,6 +713,51 @@ export default function AgentWorkbenchPage() {
           </div>
         </Form>
       </Modal>
+      <Drawer
+        open={groupOpen}
+        onClose={() => setGroupOpen(false)}
+        width={620}
+        title="计划群聊"
+        className="v17-group-drawer"
+      >
+        {latestPlan ? (
+          <div className="v17-group-plan-context">
+            <strong>{latestPlan.goal}</strong>
+            <span>{groupSessions.length} 个 Agent · 消息会广播给全部参与者</span>
+          </div>
+        ) : null}
+        <div className="v17-group-participants">
+          {groupSessions.map((session) => (
+            <span key={session.id} className="v17-group-participant">
+              <i style={{ background: session.agentAccent }}>{session.agentName.slice(0, 1)}</i>
+              {session.agentName}
+            </span>
+          ))}
+        </div>
+        <div className="v17-group-timeline">
+          {groupMessages.length === 0 ? <div className="v16-empty-inline">计划群聊还没有消息。</div> : groupMessages.map((entry) => (
+            <div key={entry.id} className={`v17-group-message is-${entry.role}`}>
+              <div className="v17-group-message-meta">
+                <strong>{entry.role === 'user' ? '你' : entry.role === 'system' ? '系统' : entry.agentName ?? 'Agent'}</strong>
+                <span>{new Date(entry.createdAt).toLocaleTimeString()}</span>
+              </div>
+              <p>{entry.content}</p>
+            </div>
+          ))}
+        </div>
+        <div className="v17-group-composer">
+          <Input.TextArea
+            rows={3}
+            value={groupInput}
+            onChange={(event) => setGroupInput(event.target.value)}
+            placeholder="向计划中的所有 Agent 说明你的意见、约束或下一步…"
+          />
+          <Button type="primary" icon={<SendOutlined />} loading={groupBusy} onClick={() => void sendGroup()}>
+            发送给全部 Agent
+          </Button>
+        </div>
+      </Drawer>
+
       <AgentStudioModal open={studioOpen} onClose={() => setStudioOpen(false)} projectId={projectId} />
     </div>
   )

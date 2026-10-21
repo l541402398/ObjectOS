@@ -27,6 +27,10 @@ export function assertSessionActive(status: string): void {
   }
 }
 
+export function planSessionTitle(agentName: string, revision: number): string {
+  return `计划协作 · ${agentName} · r${revision}`.slice(0, 240)
+}
+
 export function sessionTitleForTask(taskTitle: string, agentName: string): string {
   const normalized = taskTitle.replace(/\s+/g, ' ').trim()
   return normalized.length > 0 ? `${agentName} · ${normalized.slice(0, 80)}` : `${agentName} 的工作会话`

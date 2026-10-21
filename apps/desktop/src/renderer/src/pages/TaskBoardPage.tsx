@@ -21,6 +21,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   FileTextOutlined,
+  PlayCircleOutlined,
   PlusOutlined,
   RobotOutlined,
   SearchOutlined,
@@ -47,9 +48,11 @@ import {
   toneForStatus,
 } from '@projectos/ui'
 import {
+  qk,
   useAgents,
   useApprovals,
   useProjectOverview,
+  usePlans,
   useTaskBoard,
   useTaskDetail,
 } from '../lib/queries'
@@ -169,6 +172,7 @@ export default function TaskBoardPage() {
   const { message } = AntApp.useApp()
   const [searchParams, setSearchParams] = useSearchParams()
   const board = useTaskBoard(projectId)
+  const plans = usePlans(projectId)
   const overview = useProjectOverview(projectId)
   const agents = useAgents(projectId)
   const approvals = useApprovals(projectId)
@@ -385,6 +389,24 @@ export default function TaskBoardPage() {
     </Form>
   )
 
+  const pendingPlan = plans.data?.plans.find((plan) => plan.status === 'approved' && !plan.execution) ?? null
+  const failedPlan = plans.data?.plans.find((plan) => plan.execution?.status === 'failed') ?? null
+  const startPlan = async (planId: string): Promise<void> => {
+    try {
+      await window.projectos.orchestration.start(planId, 2, 2)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: qk.plans(projectId) }),
+        queryClient.invalidateQueries({ queryKey: qk.board(projectId) }),
+        queryClient.invalidateQueries({ queryKey: qk.snapshot(projectId) }),
+        queryClient.invalidateQueries({ queryKey: qk.sessions(projectId) }),
+        queryClient.invalidateQueries({ queryKey: qk.bootstrap }),
+      ])
+      message.success('计划开始执行')
+    } catch (error) {
+      message.error(errorMessage(error))
+    }
+  }
+
   return (
     <div className="po-page po-page-wide po-tasks-page">
       <PageHeader
@@ -408,6 +430,30 @@ export default function TaskBoardPage() {
           </>
         }
       />
+
+      {pendingPlan ? (
+        <div className="v17-next-step-banner">
+          <div className="v17-next-step-icon"><CheckCircleOutlined /></div>
+          <div className="v17-next-step-copy">
+            <strong>计划已批准，任务已创建</strong>
+            <span>「{pendingPlan.goal}」的 {pendingPlan.createdTaskIds.length} 个任务正在等待你确认执行。</span>
+          </div>
+          <Button type="primary" icon={<PlayCircleOutlined />} onClick={() => void startPlan(pendingPlan.id)}>开始执行</Button>
+          <Button onClick={() => navigate(`/projects/${projectId}/orchestration`)}>查看编排</Button>
+        </div>
+      ) : null}
+
+      {failedPlan ? (
+        <div className="v17-next-step-banner is-error">
+          <div className="v17-next-step-icon"><StopOutlined /></div>
+          <div className="v17-next-step-copy">
+            <strong>计划执行失败</strong>
+            <span>{failedPlan.execution?.error ?? '请查看运行审计，修复后重新执行。'}</span>
+          </div>
+          <Button type="primary" onClick={() => void startPlan(failedPlan.id)}>重新执行</Button>
+          <Button onClick={() => navigate(`/projects/${projectId}/runs`)}>运行审计</Button>
+        </div>
+      ) : null}
 
       <div className="po-board-toolbar">
         <Input
@@ -740,5 +786,7 @@ export default function TaskBoardPage() {
     </div>
   )
 }
+
+
 
 

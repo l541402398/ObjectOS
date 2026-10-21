@@ -275,7 +275,7 @@ export default function OrchestrationWorkspace() {
   const { projectId = '' } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { message, modal } = AntApp.useApp()
+  const { message, modal, notification } = AntApp.useApp()
   const bootstrap = useBootstrap()
   const project = bootstrap.data?.projects.find((item) => item.id === projectId) ?? null
   const snapshotQuery = useProjectSnapshot(projectId)
@@ -410,6 +410,7 @@ export default function OrchestrationWorkspace() {
       queryClient.invalidateQueries({ queryKey: qk.graph(projectId) }),
       queryClient.invalidateQueries({ queryKey: qk.board(projectId) }),
       queryClient.invalidateQueries({ queryKey: qk.bootstrap }),
+      queryClient.invalidateQueries({ queryKey: qk.sessions(projectId) }),
     ])
   }
 
@@ -480,6 +481,43 @@ export default function OrchestrationWorkspace() {
     } : current)
   }
 
+  const startPlan = async (planId: string, forceBudget = false): Promise<void> => {
+    try {
+      const result = await window.projectos.orchestration.start(planId, 2, 2, forceBudget)
+      setDraft((current) => (current?.id === planId ? result : current))
+      await invalidate()
+      notification.destroy('plan-ready')
+      message.success('计划开始执行')
+    } catch (error) {
+      const text = errorMessage(error)
+      if (!forceBudget && text.includes('软预算')) {
+        modal.confirm({
+          title: '已超过软预算',
+          content: text,
+          okText: '继续执行',
+          cancelText: '取消',
+          onOk: () => startPlan(planId, true),
+        })
+        return
+      }
+      notification.error({
+        key: 'plan-start-error',
+        placement: 'bottomRight',
+        duration: 0,
+        message: '计划未能开始执行',
+        description: (
+          <div className="v17-plan-notification-body">
+            <p>{text}</p>
+            <div className="v17-plan-notification-actions">
+              <Button size="small" onClick={() => navigate(`/projects/${projectId}/runs`)}>打开运行审计</Button>
+              <Button size="small" onClick={() => notification.destroy('plan-start-error')}>关闭</Button>
+            </div>
+          </div>
+        ),
+      })
+    }
+  }
+
   const approve = async (): Promise<void> => {
     if (!draft) return
     try {
@@ -495,6 +533,23 @@ export default function OrchestrationWorkspace() {
       setPlanOpen(false)
       await invalidate()
       message.success(`计划已批准，创建 ${result.taskIds.length} 个任务`)
+      notification.success({
+        key: 'plan-ready',
+        placement: 'bottomRight',
+        duration: 0,
+        message: `计划已批准 · ${result.taskIds.length} 个任务`,
+        description: (
+          <div className="v17-plan-notification-body">
+            <p>任务已经创建，但不会自动执行。确认后才会启动 Agent。</p>
+            <div className="v17-plan-notification-actions">
+              <Button type="primary" size="small" icon={<PlayCircleOutlined />} onClick={() => void startPlan(result.plan.id)}>
+                开始执行
+              </Button>
+              <Button size="small" onClick={() => navigate(`/projects/${projectId}/tasks`)}>查看任务</Button>
+            </div>
+          </div>
+        ),
+      })
     } catch (error) {
       message.error(errorMessage(error))
     }
@@ -887,6 +942,30 @@ export default function OrchestrationWorkspace() {
           <span className="po-grow" />
           <span>任务 DAG 是唯一依赖真相</span>
         </div>
+
+        {latestPlan?.status === 'approved' && !latestPlan.execution ? (
+          <div className="v17-next-step-banner">
+            <div className="v17-next-step-icon"><CheckCircleOutlined /></div>
+            <div className="v17-next-step-copy">
+              <strong>计划已批准，等待你确认执行</strong>
+              <span>已创建 {latestPlan.createdTaskIds.length} 个任务，分配到 {latestPlan.tasks.length} 个计划节点；执行前不会启动 Agent。</span>
+            </div>
+            <Button type="primary" icon={<PlayCircleOutlined />} onClick={() => void startPlan(latestPlan.id)}>开始执行</Button>
+            <Button onClick={() => navigate(`/projects/${projectId}/tasks`)}>查看任务</Button>
+          </div>
+        ) : null}
+
+        {latestPlan?.execution?.status === 'failed' ? (
+          <div className="v17-next-step-banner is-error">
+            <div className="v17-next-step-icon"><StopOutlined /></div>
+            <div className="v17-next-step-copy">
+              <strong>计划执行失败</strong>
+              <span>{latestPlan.execution.error ?? '执行器返回了失败状态，请查看运行审计。'}</span>
+            </div>
+            <Button type="primary" onClick={() => void startPlan(latestPlan.id)}>重新执行</Button>
+            <Button onClick={() => navigate(`/projects/${projectId}/runs`)}>运行审计</Button>
+          </div>
+        ) : null}
 
         <div className="po-orch-grid">
           <section className="po-orch-canvas-card">
