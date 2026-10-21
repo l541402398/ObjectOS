@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs'
 import { WorktreeManager } from '@projectos/worktree'
 import type { SqliteStore } from '@projectos/persistence'
 import { RuntimeExecutionService } from './runtime-executor.js'
-import { AcpClient } from './acp-client.js'
+import { AcpClient, acpTextFromEvents } from './acp-client.js'
 
 export class RuntimeRunService {
   constructor(
@@ -35,8 +35,8 @@ export class RuntimeRunService {
     try {
       const session = await client.initialize(cwd)
       const result = await client.prompt(session.sessionId, prompt)
-      const output = JSON.stringify({ result, events: rawEvents }, null, 2)
-      this.store.appendMessage({ sessionId, role: 'assistant', content: output.slice(0, 80_000), runId, metadata: { runtimeProfileId: profile.id, protocol: 'acp', acpSessionId: session.sessionId, events: rawEvents.length } })
+      const output = acpTextFromEvents(rawEvents) || 'Runtime 执行完成（ACP 未返回文本内容）'
+      this.store.appendMessage({ sessionId, role: 'assistant', content: output.slice(0, 80_000), runId, metadata: { runtimeProfileId: profile.id, protocol: 'acp', acpSessionId: session.sessionId, events: rawEvents.length, result } })
       this.store.updateRun(runId, { status: 'completed', error: null, summary: output.slice(0, 20_000), finishedAt: now() })
       this.store.appendEvent(project.id, runId, 'run.completed', { agentId: agent.id, runtimeProfileId: profile.id, protocol: 'acp', events: rawEvents.length })
       return {

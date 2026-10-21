@@ -29,7 +29,7 @@ import {
 } from '@projectos/policy'
 import { getToolDefinition, toolCatalogForAgent } from '@projectos/tools'
 import { RuntimeExecutionService } from './runtime-executor.js'
-import { AcpClient } from './acp-client.js'
+import { AcpClient, acpTextFromEvent, acpTextFromResult } from './acp-client.js'
 import {
   getGitDiff,
   getGitStatus,
@@ -386,12 +386,24 @@ export class AgentRunner {
                 : false
           return allowed ? value.options?.[0]?.optionId ?? null : null
         })
+        const chunks: string[] = []
+        const offEvent = client.onEvent((message) => {
+          const text = acpTextFromEvent(message)
+          if (text) chunks.push(text)
+        })
         try {
           const session = await client.initialize(cwd)
           const result = await client.prompt(session.sessionId, prompt)
-          output = JSON.stringify(result, null, 2)
+          output = chunks.join('').trim() || acpTextFromResult(result) || 'Runtime 执行完成（ACP 未返回文本内容）'
           executionId = `acp-${state.runId}`
+          this.store.appendRunStep({
+            runId: state.runId,
+            kind: 'status',
+            title: 'ACP 执行完成',
+            payload: { result },
+          })
         } finally {
+          offEvent()
           client.dispose()
         }
       } else {

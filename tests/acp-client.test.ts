@@ -56,6 +56,8 @@ describe('acp client', () => {
     const executed = await runs.run({ agentId: agent.id, projectId: project.id, prompt: 'hello', cwd: project.rootPath })
     expect(executed.status).toBe('completed')
     expect(store.read.getRun(executed.runId)?.status).toBe('completed')
+    const assistant = store.read.getMessages(executed.sessionId).find((message) => message.role === 'assistant')
+    expect(assistant?.content).toBe('hello')
   })
 })
 

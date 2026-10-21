@@ -2,6 +2,41 @@ import { spawn, type ChildProcess } from 'node:child_process'
 import { createInterface } from 'node:readline'
 import { AppError } from '@projectos/contracts'
 
+
+function textFromContent(content: unknown): string {
+  if (!content) return ''
+  if (typeof content === 'string') return content
+  if (Array.isArray(content)) return content.map((item) => textFromContent(item)).join('')
+  if (typeof content === 'object') {
+    const value = content as { type?: string; text?: unknown; content?: unknown }
+    if (typeof value.text === 'string') return value.text
+    if (value.content) return textFromContent(value.content)
+  }
+  return ''
+}
+
+/** Extract only assistant-visible text from an ACP session/update notification. */
+export function acpTextFromEvent(message: unknown): string {
+  if (!message || typeof message !== 'object') return ''
+  const envelope = message as { method?: string; params?: { update?: { sessionUpdate?: string; content?: unknown } } }
+  if (envelope.method !== 'session/update') return ''
+  const update = envelope.params?.update
+  if (!update) return ''
+  if (update.sessionUpdate === 'agent_message_chunk' || update.sessionUpdate === 'agent_message') {
+    return textFromContent(update.content)
+  }
+  return ''
+}
+
+export function acpTextFromEvents(events: unknown[]): string {
+  return events.map((event) => acpTextFromEvent(event)).join('').trim()
+}
+
+export function acpTextFromResult(result: unknown): string {
+  if (!result || typeof result !== 'object') return ''
+  return textFromContent((result as { content?: unknown }).content).trim()
+}
+
 interface Pending { resolve: (value: unknown) => void; reject: (error: Error) => void; timer: NodeJS.Timeout }
 
 export class AcpClient {
