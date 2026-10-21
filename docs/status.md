@@ -32,7 +32,7 @@
 | Requirement / Milestone / Artifact / Decision 数据与页面 | 完成 | 总览创建/审批/接受，Artifact 展示 |
 | Workflow Stage Guard / Quality Gate | 完成 | 8 阶段 + gate 计算 + 推进拦截 |
 | Task DAG、版本并发、验收 | 完成 | 环检测、依赖完成门禁、验收 Artifact |
-| 知识条目 / ADR / 检索 | 部分 | 数据层 + Context 注入；无独立知识管理页；无 FTS 检索 |
+| 知识条目 / ADR / 检索 | 完成 | 数据层 + Context 注入 + 知识库页 + FTS5 检索 |
 
 ## M4 — 跨会话与多 Agent（本地完成）
 
@@ -40,7 +40,7 @@
 |---|---|---|
 | Agent Identity / Instance / Session | 完成 | 5 个内置角色 |
 | Durable Inbox / ACK / 重试 / 幂等 | 完成 | Idempotency key 去重；本地权威 |
-| Handoff / Task Lease fencing / Worktree | 部分 | Handoff、Lease 完成；Worktree 未自动化 |
+| Handoff / Task Lease fencing / Worktree | 完成（基础） | Handoff、Lease、计划级 Worktree、diff/merge 已自动化；外部 Runtime 写模式要求隔离 Worktree |
 | 重启恢复 / 外部 Driver 能力协商 | 部分 | 恢复完成；外部 Driver 未实现 |
 | OCS Adapter | 未实现 | 未核实 API，不伪造；仅保留接口 |
 | 多 Agent 实际协作 | 完成 | 消息唤醒运行 E2E 验证 |
@@ -63,9 +63,9 @@
 | 模型目录/发现/手动/默认模型 | 完成 | OpenAI-compatible `/models`；能力未知不猜测 |
 | 旧配置迁移 | 完成 | 幂等迁移为 Legacy 默认连接；Key 不入 SQLite |
 | 默认连接真实执行 | 完成 | 同步既有 ProviderManager；V1.2 E2E |
-| 设置弹层 | 完成 | AI 连接/模型/通用/运行时/外部 Agent/关于 |
-| 外部 Agent 检测 | 部分 | 只检测安装/版本；不执行、不探授权 |
-| 路由/用量费用/外部执行/原生 Anthropic | 未完成 | 见 `docs/v1.2/acceptance-report.md` |
+| 设置弹层 | 完成 | V1.7：概览/AI 连接/模型/运行时/工具/Skills/权限/安全/用量/OpenSpec/偏好/关于 |
+| 外部 Agent 检测与执行 | 完成（基础） | 检测安装/版本；执行记录 Run/ToolCall，task 级运行获取租约；内部工具审计仍有限制 |
+| 路由/用量费用/外部执行/原生 Anthropic | 部分 | 路由后端、用量、External Runner、Anthropic/Responses Provider 已实现；路由 UI 在 V1.7 被移除 |
 | 侧栏折叠修复/文案精简 | 完成 | 34 张截图验收 |
 
 ## V1.3 增量（核心子集）
@@ -79,7 +79,7 @@
 | 设置连接内联编辑 | 完成 | 不再叠加二层 Modal |
 | 自动 Orchestrator 调度/交接 | 完成（基础） | start/pause/resume/cancel/recover；按依赖自动启动 Run 并自动验收 |
 | Agent 路由/用量 | 完成 | 按 task/agent/project/global 路由；Run 结束记录 tokens |
-| Worktree/自动合并 | 未完成 | — |
+| Worktree/自动合并 | 完成（基础） | 计划级分支、diff artifact、干净主区合并；`tests/worktree.test.ts`、`tests/runtime-worktree.test.ts` |
 | 质量门禁 | 完成（基础） | developer/tester 后执行 typecheck/lint/test/build，失败阻止完成 |
 | 事件 seq 断线补齐/200 节点 | 部分 | 事件触发全量刷新，15s 兜底；未做 200 节点压测 |
 | 计划依赖可视化编辑 | 完成 | 计划弹层可编辑 dependsOn 并重新校验 |

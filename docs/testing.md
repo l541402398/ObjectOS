@@ -72,8 +72,8 @@ pnpm screenshots   # 构建后生成 1440x900 / 1024x768 的 Light/Dark 截图
 ```text
 pnpm lint      → 0 errors, 0 warnings
 pnpm typecheck → pass (strict, noEmit)
-pnpm test      → 17 files / 68 tests passed
-pnpm build     → runtime bundle ~1.4 MB; Electron out/main, out/preload, out/renderer
+pnpm test      → 27 files / 131 tests passed
+pnpm build     → runtime bundle + Electron out/main, out/preload, out/renderer
 e2e.mjs        → PASS (T-001)
 agent-e2e.mjs  → PASS (approval + write + resume + completed, 2 provider requests)
 command-e2e.mjs → PASS (approval + run_command exit 0 + stdout recorded)
@@ -92,7 +92,8 @@ V1.3 验收用例（T01–T18）见 [`docs/v1.3/acceptance-report.md`](v1.3/acce
 - 未使用真实第三方模型 API 做付费调用；E2E 使用本地 OpenAI-compatible fake server，验证了
   协议与循环，但生产模型的限流、上下文长度、供应商差异仍需实际配置验证。
 - 已生成未签名 Windows 便携包，并做打包冒烟；仍缺少 NSIS 安装器、代码签名、升级/回滚验证。
-- 外部 Agent 只验证检测，不验证任务执行/授权。
+- 外部 Agent 已有执行器、Run 级 ToolCall 与 task lease；写模式要求隔离 Worktree。
+  外部 CLI 内部工具调用仍无法逐工具观测，属于已知审计边界。
 - 路由、费用、Anthropic 原生协议未实现，见 V1.2 验收报告。
 - V1.3 仍未实现外部 Agent 执行、原生 Anthropic 协议、事件 seq 补齐、200 节点压测。
 - Electron 崩溃重启的 UI 状态恢复有事件驱动刷新，但没有专门的故障注入 E2E。

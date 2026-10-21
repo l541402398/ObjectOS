@@ -393,6 +393,10 @@ export const ApiSchemas = {
     input: AgentDefinitionUpsertSchema,
     output: AgentDefinitionSchema,
   },
+  'agentDefinition.setStatus': {
+    input: z.object({ id: IdSchema, status: z.enum(['active', 'disabled', 'archived']) }),
+    output: AgentDefinitionSchema,
+  },
   'agentDefinition.export': {
     input: z.object({ id: IdSchema }),
     output: z.object({ json: z.string(), filename: z.string() }),
@@ -777,7 +781,11 @@ export const ApiSchemas = {
     output: AutomationGrantSchema,
   },
   'operations.setMode': {
-    input: z.object({ projectId: IdSchema, mode: AutonomyModeSchema }),
+    input: z.object({
+      projectId: IdSchema,
+      mode: AutonomyModeSchema,
+      repairAgentId: IdSchema.nullable().optional(),
+    }),
     output: OperationsSnapshotSchema,
   },
   'project.budget.get': {

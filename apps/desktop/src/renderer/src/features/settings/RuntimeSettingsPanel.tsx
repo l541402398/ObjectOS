@@ -19,6 +19,11 @@ export function RuntimeSettingsPanel() {
   const [testResults, setTestResults] = useState<Record<string, { ok: boolean; text: string }>>({})
   const [testingId, setTestingId] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'available' | 'missing'>('all')
+  const [authProfile, setAuthProfile] = useState<RuntimeProfile | null>(null)
+  const [authMethod, setAuthMethod] = useState('')
+  const [editingProfile, setEditingProfile] = useState<RuntimeProfile | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editExecutable, setEditExecutable] = useState('')
   const [form] = Form.useForm()
 
   const detect = async (): Promise<void> => {
@@ -74,6 +79,41 @@ export function RuntimeSettingsPanel() {
       message.error(errorMessage(error))
     } finally {
       setTestingId(null)
+    }
+  }
+
+  const authenticateAcp = async (): Promise<void> => {
+    if (!authProfile || !authMethod.trim()) return
+    try {
+      const result = await window.projectos.runtimeProfiles.acpAuthenticate(authProfile.id, authMethod.trim())
+      message.success('认证成功：' + JSON.stringify(result.result))
+      setAuthProfile(null)
+      setAuthMethod('')
+    } catch (error) {
+      message.error(errorMessage(error))
+    }
+  }
+
+  const saveRuntimeEdit = async (): Promise<void> => {
+    if (!editingProfile || !editName.trim()) return
+    try {
+      await window.projectos.runtimeProfiles.upsert({
+        id: editingProfile.id,
+        name: editName.trim(),
+        protocol: editingProfile.protocol,
+        executable: editExecutable.trim() || null,
+        endpoint: editingProfile.endpoint,
+        args: editingProfile.args,
+        authRef: editingProfile.authRef,
+        modelRef: editingProfile.modelRef,
+        options: editingProfile.options,
+        capabilities: editingProfile.capabilities,
+      })
+      message.success('Runtime 已更新')
+      setEditingProfile(null)
+      await queryClient.invalidateQueries({ queryKey: ['runtime-profiles'] })
+    } catch (error) {
+      message.error(errorMessage(error))
     }
   }
 
@@ -222,13 +262,8 @@ export function RuntimeSettingsPanel() {
                   <Button
                     size="small"
                     onClick={() => {
-                      const method = window.prompt('认证方式 ID')
-                      if (method) {
-                        void window.projectos.runtimeProfiles
-                          .acpAuthenticate(profile.id, method)
-                          .then((result) => message.success('认证成功：' + JSON.stringify(result.result)))
-                          .catch((error) => message.error(errorMessage(error)))
-                      }
+                      setAuthProfile(profile)
+                      setAuthMethod('')
                     }}
                   >
                     认证
@@ -238,27 +273,9 @@ export function RuntimeSettingsPanel() {
                   <Button
                     size="small"
                     onClick={() => {
-                      const name = window.prompt('Runtime 名称', profile.name)
-                      if (!name) return
-                      const executablePath = window.prompt('可执行路径', profile.executable ?? '')
-                      void window.projectos.runtimeProfiles
-                        .upsert({
-                          id: profile.id,
-                          name,
-                          protocol: profile.protocol,
-                          executable: executablePath || null,
-                          endpoint: profile.endpoint,
-                          args: profile.args,
-                          authRef: profile.authRef,
-                          modelRef: profile.modelRef,
-                          options: profile.options,
-                          capabilities: profile.capabilities,
-                        })
-                        .then(() => {
-                          message.success('Runtime 已更新')
-                          void queryClient.invalidateQueries({ queryKey: ['runtime-profiles'] })
-                        })
-                        .catch((error) => message.error(errorMessage(error)))
+                      setEditingProfile(profile)
+                      setEditName(profile.name)
+                      setEditExecutable(profile.executable ?? '')
                     }}
                   >
                     编辑
@@ -314,6 +331,45 @@ export function RuntimeSettingsPanel() {
           <Form.Item name="protocol" label="协议" rules={[{ required: true }]}><Select options={[{ value: 'cli', label: 'CLI' }, { value: 'http', label: 'HTTP' }, { value: 'acp', label: 'ACP' }, { value: 'sdk', label: 'SDK' }]} /></Form.Item>
           <Form.Item name="executable" label="可执行路径"><Input placeholder="opencode" /></Form.Item>
           <Form.Item name="endpoint" label="Endpoint"><Input placeholder="http://127.0.0.1:4096" /></Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        open={Boolean(authProfile)}
+        title={`ACP 认证 · ${authProfile?.name ?? ''}`}
+        onCancel={() => setAuthProfile(null)}
+        onOk={() => void authenticateAcp()}
+        okText="认证"
+        okButtonProps={{ disabled: !authMethod.trim() }}
+        destroyOnHidden
+      >
+        <Form layout="vertical">
+          <Form.Item label="认证方式 ID" required>
+            <Input
+              value={authMethod}
+              onChange={(event) => setAuthMethod(event.target.value)}
+              placeholder="例如 oauth 或 API Key 方式"
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        open={Boolean(editingProfile)}
+        title={`编辑 Runtime · ${editingProfile?.name ?? ''}`}
+        onCancel={() => setEditingProfile(null)}
+        onOk={() => void saveRuntimeEdit()}
+        okText="保存"
+        okButtonProps={{ disabled: !editName.trim() }}
+        destroyOnHidden
+      >
+        <Form layout="vertical">
+          <Form.Item label="名称" required>
+            <Input value={editName} onChange={(event) => setEditName(event.target.value)} />
+          </Form.Item>
+          <Form.Item label="可执行路径">
+            <Input value={editExecutable} onChange={(event) => setEditExecutable(event.target.value)} placeholder="opencode" />
+          </Form.Item>
         </Form>
       </Modal>
     </div>

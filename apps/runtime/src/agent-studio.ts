@@ -111,6 +111,18 @@ export class AgentStudioService {
     return this.store.upsertAgentDefinition(agent)
   }
 
+  setStatus(id: string, status: 'active' | 'disabled' | 'archived'): AgentDefinition {
+    const existing = this.store.read.getAgentDefinition(id)
+    if (!existing) throw new AppError('NOT_FOUND', 'Agent 不存在')
+    const updated: AgentDefinition = {
+      ...existing,
+      status,
+      currentVersion: existing.currentVersion + 1,
+      updatedAt: now(),
+    }
+    return this.store.upsertAgentDefinition(updated)
+  }
+
   exportAgent(id: string): { json: string; filename: string } {
     const agent = this.store.read.getAgentDefinition(id)
     if (!agent) throw new AppError('NOT_FOUND', 'Agent 不存在')

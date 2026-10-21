@@ -127,6 +127,50 @@ export const AgentDefinitionUpsertSchema = z.object({
 })
 export type AgentDefinitionUpsert = z.infer<typeof AgentDefinitionUpsertSchema>
 
+export const RunSkillSnapshotSchema = z.object({
+  id: IdSchema,
+  name: z.string().max(120),
+  description: z.string().max(4000).default(''),
+  version: z.string().max(40),
+  source: z.string().max(80),
+  content: z.string().max(100_000),
+  enabled: z.boolean(),
+})
+export type RunSkillSnapshot = z.infer<typeof RunSkillSnapshotSchema>
+
+/**
+ * Frozen execution configuration. A Run must keep using this snapshot even when
+ * the AgentDefinition, Skills or RuntimeProfile are edited or archived later.
+ */
+export const RunSnapshotSchema = z.object({
+  runId: IdSchema,
+  agentId: IdSchema,
+  agentConfigVersion: z.number().int().nonnegative(),
+  agentName: z.string().max(120),
+  agentRole: z.string().max(120),
+  agentDescription: z.string().max(4000).default(''),
+  agentCapabilities: z.array(z.string().max(60)).default([]),
+  persona: AgentPersonaSchema,
+  skills: z.array(RunSkillSnapshotSchema).default([]),
+  permissions: z.object({
+    tools: z.array(z.string()).default([]),
+    files: z.boolean().default(false),
+    shell: z.boolean().default(false),
+    network: z.boolean().default(false),
+  }),
+  modelRef: z.string().max(200).nullable(),
+  runtimeProfileId: IdSchema.nullable(),
+  runtimeProfileName: z.string().max(120).nullable(),
+  runtimeProtocol: z.string().max(40).nullable(),
+  runtimeProfileVersion: z.string().max(120).nullable(),
+  connectionId: IdSchema.nullable(),
+  modelId: z.string().max(200).nullable(),
+  worktreeId: z.string().max(4000).nullable(),
+  workflowNodeId: z.string().max(200).nullable(),
+  createdAt: TimestampSchema,
+})
+export type RunSnapshot = z.infer<typeof RunSnapshotSchema>
+
 export const RuntimeRegistryEntrySchema = z.object({
   id: z.string(),
   name: z.string(),

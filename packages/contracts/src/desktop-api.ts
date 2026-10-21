@@ -173,6 +173,7 @@ export interface ProjectOSDesktopApi {
   agentDefinitions: {
     list: () => Promise<Out<'agentDefinition.list'>>
     upsert: (input: In<'agentDefinition.upsert'>) => Promise<Out<'agentDefinition.upsert'>>
+    setStatus: (id: string, status: 'active' | 'disabled' | 'archived') => Promise<Out<'agentDefinition.setStatus'>>
     delete: (id: string) => Promise<Out<'agentDefinition.delete'>>
     export: (id: string) => Promise<Out<'agentDefinition.export'>>
     import: (json: string) => Promise<Out<'agentDefinition.import'>>
@@ -203,7 +204,7 @@ export interface ProjectOSDesktopApi {
     propose: (projectId: string, findingIds: string[]) => Promise<Out<'operations.propose'>>
     reviewProposal: (proposalId: string, decision: 'approved' | 'rejected') => Promise<Out<'operations.reviewProposal'>>
     startRepair: (proposalId: string) => Promise<Out<'operations.startRepair'>>
-    setMode: (projectId: string, mode: 'observe' | 'propose' | 'approved-autofix') => Promise<Out<'operations.setMode'>>
+    setMode: (projectId: string, mode: 'observe' | 'propose' | 'approved-autofix', repairAgentId?: string | null) => Promise<Out<'operations.setMode'>>
     getTrigger: (projectId: string) => Promise<Out<'operations.getTrigger'>>
     insights: (projectId: string, runAudit?: boolean) => Promise<Out<'operations.insights'>>
     risk: (proposalId: string) => Promise<Out<'operations.risk'>>

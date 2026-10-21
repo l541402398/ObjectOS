@@ -11,7 +11,7 @@ import type { CoreServices } from '@projectos/application'
 import type { SqliteStore } from '@projectos/persistence'
 import { buildGraphSnapshot } from '@projectos/graph-projection'
 import {
-  agentForPlanRole,
+  agentForPlannedTask,
   criticalPathTasks,
   generateLocalPlan,
   topologicalPlanTasks,
@@ -132,8 +132,20 @@ export class OrchestrationService {
     }
   }
 
+  private validatePlanAgents(plan: PlanDraft): void {
+    for (const task of plan.tasks) {
+      const agentId = agentForPlannedTask(task)
+      const agent = this.store.read.getAgent(agentId)
+      if (!agent) throw new AppError('BAD_REQUEST', `计划节点「${task.title}」绑定的 Agent 不存在：${agentId}`)
+      const definition = this.store.read.getAgentDefinition(agentId)
+      if (definition && definition.status !== 'active') {
+        throw new AppError('CONFLICT', `计划节点「${task.title}」绑定的 Agent 当前不可用：${definition.status}`)
+      }
+    }
+  }
+
   private ensurePlanCollaboration(plan: PlanDraft): void {
-    const agentIds = [...new Set(plan.tasks.map((task) => agentForPlanRole(task.role)).filter((id): id is string => Boolean(id)))]
+    const agentIds = [...new Set(plan.tasks.map((task) => agentForPlannedTask(task)).filter((id): id is string => Boolean(id)))]
     if (agentIds.length === 0) return
     const existing = this.services.sessions.list(plan.projectId)
     for (const agentId of agentIds) {
@@ -178,6 +190,7 @@ export class OrchestrationService {
       snapshot,
     })
     validatePlanDraft(plan)
+    this.validatePlanAgents(plan)
     this.store.createPlanRevision(plan)
     this.ensurePlanCollaboration(plan)
     return plan
@@ -206,6 +219,7 @@ export class OrchestrationService {
       updatedAt: now(),
     }
     validatePlanDraft(next)
+    this.validatePlanAgents(next)
     this.store.updatePlanRevision(next)
     this.ensurePlanCollaboration(next)
     return next
@@ -235,6 +249,7 @@ export class OrchestrationService {
       execution: null,
     }
     validatePlanDraft(next)
+    this.validatePlanAgents(next)
     this.store.createPlanRevision(next)
     this.ensurePlanCollaboration(next)
     return next
@@ -244,6 +259,7 @@ export class OrchestrationService {
     const plan = this.getPlan(planId)
     if (plan.status !== 'draft') throw new AppError('CONFLICT', '计划不是草稿状态')
     validatePlanDraft(plan)
+    this.validatePlanAgents(plan)
     this.ensurePlanCollaboration(plan)
     const ordered = topologicalPlanTasks(plan)
     const taskIdByKey = new Map<string, string>()
@@ -256,7 +272,7 @@ export class OrchestrationService {
           if (!id) throw new AppError('INTERNAL', `计划依赖顺序错误：${key}`)
           return id
         })
-        const assigneeAgentId = agentForPlanRole(planned.role)
+        const assigneeAgentId = agentForPlannedTask(planned)
         const task = this.services.tasks.create({
           projectId: plan.projectId,
           title: planned.title,

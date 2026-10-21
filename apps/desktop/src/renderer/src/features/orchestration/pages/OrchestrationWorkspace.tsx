@@ -48,6 +48,7 @@ import type { ApprovalView, GraphNode, PlanDraft, PlannedTask, RunStep, Worktree
 import { ErrorState, LoadingBlock, StatusPill } from '@projectos/ui'
 import {
   qk,
+  useAgents,
   useApprovals,
   useBootstrap,
   useGraph,
@@ -55,6 +56,7 @@ import {
   useProjectEvents,
   useProjectSnapshot,
   useRunDetail,
+  useTaskDetail,
   useWorkspace,
 } from '../../../lib/queries'
 import { errorMessage } from '../../../lib/errors'
@@ -279,6 +281,7 @@ export default function OrchestrationWorkspace() {
   const project = bootstrap.data?.projects.find((item) => item.id === projectId) ?? null
   const snapshotQuery = useProjectSnapshot(projectId)
   const plansQuery = usePlans(projectId)
+  const agentsQuery = useAgents(projectId)
   const graphQuery = useGraph(projectId)
   const approvalsQuery = useApprovals(projectId)
   const eventsQuery = useProjectEvents(projectId, 20)
@@ -306,11 +309,19 @@ export default function OrchestrationWorkspace() {
 
   const snapshot = snapshotQuery.data?.snapshot ?? null
   const latestPlan = plansQuery.data?.plans[0] ?? null
+  const agentOptions = useMemo(
+    () => (agentsQuery.data?.agents ?? []).map((view) => ({
+      value: view.agent.id,
+      label: `${view.agent.name} · ${view.agent.role}`,
+    })),
+    [agentsQuery.data],
+  )
   const layout = useMemo(
     () => (graphQuery.data ? buildLayout(graphQuery.data, selected?.id ?? null) : { nodes: [], edges: [], agents: [], tasks: [] }),
     [graphQuery.data, selected?.id],
   )
   const selectedRun = useRunDetail(selected?.runId ?? null)
+  const selectedTaskDetail = useTaskDetail(selected?.kind === 'task' ? selected.taskId ?? null : null)
 
   useEffect(() => {
     setFlowNodes(layout.nodes)
@@ -638,6 +649,27 @@ export default function OrchestrationWorkspace() {
       message.error(errorMessage(error))
     }
   }
+  const assignSelectedTask = async (agentId: string | null): Promise<void> => {
+    const task = selectedTaskDetail.data?.task
+    if (!task) return
+    try {
+      await window.projectos.tasks.update({
+        taskId: task.id,
+        expectedVersion: task.version,
+        assigneeAgentId: agentId,
+      })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: qk.graph(projectId) }),
+        queryClient.invalidateQueries({ queryKey: qk.board(projectId) }),
+        queryClient.invalidateQueries({ queryKey: qk.task(task.id) }),
+        queryClient.invalidateQueries({ queryKey: qk.plans(projectId) }),
+      ])
+      message.success('执行 Agent 已更新')
+    } catch (error) {
+      message.error(errorMessage(error))
+    }
+  }
+
   const mergeWorktree = async (): Promise<void> => {
     if (!draft) return
     try {
@@ -871,7 +903,16 @@ export default function OrchestrationWorkspace() {
           <div className="po-inspector-panel">
             <div className="po-inspector-kv">
               <span>任务 ID</span><code>{selectedTask.taskId}</code>
-              <span>Agent</span><span>{selectedTask.agentId ?? '未分配'}</span>
+              <span>执行 Agent</span>
+              <Select
+                allowClear
+                size="small"
+                value={selectedTaskDetail.data?.task.assigneeAgentId ?? selectedTask.agentId ?? undefined}
+                placeholder="未分配"
+                options={agentOptions}
+                style={{ minWidth: 170 }}
+                onChange={(agentId) => void assignSelectedTask(agentId ?? null)}
+              />
               <span>运行</span><code>{selectedTask.runId ?? '—'}</code>
             </div>
             <div className="po-inspector-actions">
@@ -1152,6 +1193,16 @@ export default function OrchestrationWorkspace() {
                       <div className="po-plan-task-head">
                         <Input value={task.title} disabled={draft.status !== 'draft'} onChange={(event) => updateDraftTask(index, { title: event.target.value })} />
                         <Select value={task.role} disabled={draft.status !== 'draft'} options={Object.entries(ROLE_LABELS).map(([value, label]) => ({ value, label }))} onChange={(role) => updateDraftTask(index, { role: role as PlannedTask['role'] })} />
+                        <Select
+                          allowClear
+                          size="small"
+                          value={task.agentId ?? undefined}
+                          placeholder={`角色默认 · ${ROLE_LABELS[task.role]}`}
+                          disabled={draft.status !== 'draft'}
+                          style={{ minWidth: 170 }}
+                          options={agentOptions}
+                          onChange={(agentId) => updateDraftTask(index, { agentId: agentId ?? null })}
+                        />
                         {draft.status === 'draft' ? <Button type="text" danger size="small" icon={<DeleteOutlined />} aria-label="删除任务节点" onClick={() => removeDraftTask(task.key)} /> : null}
                       </div>
                       <div className="po-plan-task-deps">

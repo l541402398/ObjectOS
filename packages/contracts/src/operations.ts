@@ -138,6 +138,8 @@ export type AutomationRun = z.infer<typeof AutomationRunSchema>
 export const OperationsSnapshotSchema = z.object({
   projectId: IdSchema,
   mode: AutonomyModeSchema,
+  /** Optional explicit AgentAssignment for automatically started repairs. */
+  repairAgentId: IdSchema.nullable().default(null),
   checks: z.array(HealthCheckRunSchema),
   findings: z.array(FindingSchema),
   proposals: z.array(RepairProposalSchema),

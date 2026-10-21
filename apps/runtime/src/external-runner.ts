@@ -1,4 +1,5 @@
 import crossSpawn from 'cross-spawn'
+import { createHash } from 'node:crypto'
 import { AppError, newId, now, type ExternalAgentRunInput } from '@projectos/contracts'
 import { PROJECT_EVENT_TYPES } from '@projectos/domain'
 import type { CoreServices } from '@projectos/application'
@@ -7,6 +8,7 @@ import type { Logger } from './logger.js'
 import { listExternalAgents } from './external-agents.js'
 
 const SYSTEM_ACTOR = { kind: 'system' as const, id: 'external-agent', name: '外部 Agent' }
+const LEASE_TTL_MS = 30 * 60 * 1000
 
 interface ActiveExternalRun {
   child: ReturnType<typeof crossSpawn>
@@ -14,6 +16,8 @@ interface ActiveExternalRun {
   runId: string
   projectId: string
   taskId: string | null
+  toolCallId: string
+  lease: { token: number; expiresAt: number } | null
 }
 
 function claudeArgs(prompt: string, allowWrite: boolean): string[] {
@@ -87,57 +91,107 @@ export class ExternalAgentRunner {
     )
     const runId = newId('run')
     const timestamp = now()
-    this.store.transaction(() => {
-      this.store.createRun({
-        id: runId,
-        projectId: project.id,
-        taskId: input.taskId ?? null,
-        sessionId: session.id,
-        agentId: agent.agent.id,
-        attempt: input.taskId ? this.store.nextAttemptNo(input.taskId) : 1,
-        status: 'running',
-        error: null,
-        summary: null,
-        inputTokens: 0,
-        outputTokens: 0,
-        checkpointId: null,
-        startedAt: timestamp,
-        finishedAt: null,
-        createdAt: timestamp,
-      })
-      this.store.appendRunStep({
-        runId,
-        kind: 'context',
-        title: '外部 Agent 上下文',
-        payload: {
-          adapterId: input.adapterId,
-          executable: installation.executablePath,
-          workspaceRoot,
-          readOnly: !input.allowWrite,
-          planId: input.planId ?? null,
-        },
-      })
-      this.store.appendEvent(project.id, runId, PROJECT_EVENT_TYPES.runStarted, {
-        title: `外部 Agent · ${input.adapterId}`,
-        status: 'running',
-        runId,
-        sessionId: session.id,
-        taskId: input.taskId ?? null,
-        actorName: installation.name,
-      })
-    })
+    const task = input.taskId ? this.store.read.getTask(input.taskId) : null
     if (input.taskId) {
-      const task = this.store.read.getTask(input.taskId)
-      if (task && task.projectId === project.id && task.status === 'backlog') {
-        try {
-          this.services.tasks.move(
-            { taskId: task.id, expectedVersion: task.version, to: 'ready' },
-            SYSTEM_ACTOR,
-          )
-        } catch (error) {
-          this.logger.warn({ err: error, taskId: task.id }, 'failed to ready external task')
-        }
+      if (!task || task.projectId !== project.id) throw new AppError('NOT_FOUND', '任务不存在')
+      if (task.status === 'done' || task.status === 'cancelled') {
+        throw new AppError('CONFLICT', '已完成或已取消的任务不能启动外部 Agent')
       }
+      if (this.store.read.getActiveRunForTask(task.id)) {
+        throw new AppError('CONFLICT', '该任务已有运行中的 Agent')
+      }
+      if (task.status === 'running') throw new AppError('CONFLICT', '任务已经在运行，请先核对运行状态')
+      const card = this.store.read.getTaskCard(task.id)
+      if (!card) throw new AppError('NOT_FOUND', '任务不存在')
+      if (card.blockedBy.length > 0) throw new AppError('CONFLICT', '存在未完成的依赖任务，无法启动外部 Agent')
+    }
+    const lease = task ? this.store.acquireTaskLease(task.id, `run:${runId}`, LEASE_TTL_MS) : null
+    const attemptNo = task ? this.store.nextAttemptNo(task.id) : 1
+    let toolCallId = ''
+    try {
+      this.store.transaction(() => {
+        this.store.createRun({
+          id: runId,
+          projectId: project.id,
+          taskId: input.taskId ?? null,
+          sessionId: session.id,
+          agentId: agent.agent.id,
+          attempt: attemptNo,
+          status: 'running',
+          error: null,
+          summary: null,
+          inputTokens: 0,
+          outputTokens: 0,
+          checkpointId: null,
+          startedAt: timestamp,
+          finishedAt: null,
+          createdAt: timestamp,
+        })
+        const toolCall = this.store.createToolCall({
+          runId,
+          toolName: `external.${input.adapterId}`,
+          idempotencyKey: `${runId}:external`,
+          status: 'running',
+          argsHash: createHash('sha256').update(`${input.adapterId}:${input.prompt}`).digest('hex'),
+          args: {
+            adapterId: input.adapterId,
+            allowWrite: input.allowWrite,
+            planId: input.planId ?? null,
+            promptChars: input.prompt.length,
+            workspaceRoot,
+          },
+        })
+        toolCallId = toolCall.id
+        if (task) {
+          this.store.createAttempt({
+            id: newId('att'),
+            taskId: task.id,
+            attemptNo,
+            agentId: agent.agent.id,
+            runId,
+            status: 'running',
+          })
+          let current = task
+          if (current.status === 'backlog' || current.status === 'blocked') {
+            this.services.tasks.move(
+              { taskId: current.id, expectedVersion: current.version, to: 'ready' },
+              SYSTEM_ACTOR,
+            )
+            current = this.store.read.getTask(current.id) ?? current
+          }
+          if (current.status !== 'running') {
+            this.services.tasks.move(
+              { taskId: current.id, expectedVersion: current.version, to: 'running' },
+              SYSTEM_ACTOR,
+            )
+          }
+        }
+        this.store.appendRunStep({
+          runId,
+          kind: 'context',
+          title: '外部 Agent 上下文',
+          payload: {
+            adapterId: input.adapterId,
+            executable: installation.executablePath,
+            workspaceRoot,
+            readOnly: !input.allowWrite,
+            planId: input.planId ?? null,
+          },
+        })
+        this.store.appendEvent(project.id, runId, PROJECT_EVENT_TYPES.runStarted, {
+          title: `外部 Agent · ${input.adapterId}`,
+          status: 'running',
+          runId,
+          sessionId: session.id,
+          taskId: input.taskId ?? null,
+          actorName: installation.name,
+        })
+      })
+    } catch (error) {
+      if (lease && task) {
+        try { this.store.releaseTaskLease(task.id, `run:${runId}`, lease.token) } catch { /* ignore */ }
+      }
+      throw error
     }
 
     const args = externalCommand(input.adapterId, input.prompt, input.allowWrite)
@@ -147,7 +201,15 @@ export class ExternalAgentRunner {
       stdio: ['ignore', 'pipe', 'pipe'],
       env: { ...process.env },
     })
-    this.active.set(runId, { child, store: this.store, runId, projectId: project.id, taskId: input.taskId ?? null })
+    this.active.set(runId, {
+      child,
+      store: this.store,
+      runId,
+      projectId: project.id,
+      taskId: input.taskId ?? null,
+      toolCallId,
+      lease,
+    })
     let output = ''
     let outputStepId: string | null = null
     let stderr = ''
@@ -224,12 +286,17 @@ export class ExternalAgentRunner {
     }
     const run = this.store.read.getRun(runId)
     if (run && !['completed', 'failed', 'cancelled'].includes(run.status)) {
+      this.store.updateToolCall(active.toolCallId, { status: 'failed', error: '用户取消外部 Agent', finishedAt: now() })
       this.store.updateRun(runId, { status: 'cancelled', error: '用户取消', finishedAt: now() })
       this.store.appendRunStep({ runId, kind: 'status', title: '外部 Agent 已取消' })
       this.store.appendEvent(active.projectId, runId, PROJECT_EVENT_TYPES.runStatusChanged, {
         status: 'cancelled',
         runId,
       })
+      this.store.updateTaskAttemptStatus(runId, 'cancelled')
+      if (active.taskId && active.lease) {
+        try { this.store.releaseTaskLease(active.taskId, `run:${runId}`, active.lease.token) } catch { /* ignore */ }
+      }
     }
     this.active.delete(runId)
   }
@@ -239,12 +306,22 @@ export class ExternalAgentRunner {
     if (!active) return
     this.active.delete(runId)
     if (stepId) this.store.updateRunStep(stepId, { status: status === 'completed' ? 'completed' : 'failed', payload: { text: summary } })
+    this.store.updateToolCall(active.toolCallId, {
+      status: status === 'completed' ? 'completed' : 'failed',
+      result: { summary: summary.slice(0, 20_000) },
+      error: status === 'failed' ? summary : null,
+      finishedAt: now(),
+    })
     this.store.updateRun(runId, {
       status,
       summary,
       error: status === 'failed' ? summary : null,
       finishedAt: now(),
     })
+    this.store.updateTaskAttemptStatus(runId, status)
+    if (active.taskId && active.lease) {
+      try { this.store.releaseTaskLease(active.taskId, `run:${runId}`, active.lease.token) } catch { /* ignore */ }
+    }
     this.store.appendRunStep({
       runId,
       kind: 'status',
@@ -255,16 +332,17 @@ export class ExternalAgentRunner {
       runId,
       summary,
     })
-    if (status === 'completed' && active.taskId) {
+    if (active.taskId) {
       const task = this.store.read.getTask(active.taskId)
+      const target = status === 'completed' ? 'review' : 'blocked'
       if (task && task.status === 'running') {
         try {
           this.services.tasks.move(
-            { taskId: task.id, expectedVersion: task.version, to: 'review' },
+            { taskId: task.id, expectedVersion: task.version, to: target },
             SYSTEM_ACTOR,
           )
         } catch (error) {
-          this.logger.warn({ err: error, taskId: task.id }, 'failed to move external task to review')
+          this.logger.warn({ err: error, taskId: task.id, target }, 'failed to move external task after finish')
         }
       }
     }

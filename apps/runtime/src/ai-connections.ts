@@ -299,6 +299,7 @@ export class AIConnectionService {
     agentId: string
     agentRole: string
     taskId?: string | null
+    modelRef?: string | null
   }, activeByConnection: Record<string, number> = {}): { connectionId: string; modelId: string | null } | null {
     const connections = new Map(
       this.listViews()
@@ -322,7 +323,7 @@ export class AIConnectionService {
     for (const candidate of scored) {
       const connection = connections.get(candidate.binding.connectionId ?? '')
       if (!connection) continue
-      const modelId = candidate.binding.modelId ?? connection.defaultModelId
+      const modelId = input.modelRef ?? candidate.binding.modelId ?? connection.defaultModelId
       if (candidate.binding.requiredCapabilities.length > 0) {
         const model = modelId ? this.store.read.getAIModel(connection.id, modelId) : null
         if (
@@ -353,7 +354,7 @@ export class AIConnectionService {
     }
     const fallback = this.getDefault()
     if (!fallback || !fallback.enabled || (fallback.protocol !== 'openai-chat' && fallback.protocol !== 'anthropic-messages' && fallback.protocol !== 'openai-responses')) return null
-    return { connectionId: fallback.id, modelId: fallback.defaultModelId }
+    return { connectionId: fallback.id, modelId: input.modelRef ?? fallback.defaultModelId }
   }
 
   private check(

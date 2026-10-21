@@ -40,7 +40,7 @@ import type { Logger } from './logger.js'
 import type { ProviderManager } from './provider-manager.js'
 import { seedDemo } from './demo.js'
 import { OrchestrationScheduler } from './orchestrator.js'
-import { agentForPlanRole } from '@projectos/planning'
+import { agentForPlannedTask } from '@projectos/planning'
 
 const EVENT_CHECK_DEBOUNCE_MS = 60_000
 const REPAIR_MAX_RUN_MS = 60 * 60_000
@@ -175,6 +175,15 @@ export class RuntimeDispatcher {
     if (!proposal) throw new AppError('NOT_FOUND', '修复提案不存在')
     if (proposal.status !== 'approved') throw new AppError('CONFLICT', '提案尚未批准')
     if (proposal.planId) throw new AppError('CONFLICT', '提案已有修复计划')
+    const repairAgentId = this.deps.store.read.getAutomationRepairAgentId(proposal.projectId)
+    if (repairAgentId) {
+      const repairAgent = this.deps.store.read.getAgent(repairAgentId)
+      if (!repairAgent) throw new AppError('NOT_FOUND', '项目配置的修复 Agent 不存在')
+      const definition = this.deps.store.read.getAgentDefinition(repairAgentId)
+      if (definition && definition.status !== 'active') {
+        throw new AppError('CONFLICT', '项目配置的修复 Agent 当前不可用')
+      }
+    }
     const running = this.deps.store.read
       .listRunningAutomationRuns()
       .filter((run) => run.kind === 'repair' && run.projectId === proposal.projectId)
@@ -190,15 +199,23 @@ export class RuntimeDispatcher {
     })
     if (!claim) throw new AppError('CONFLICT', '该提案已启动过修复')
     const draft = this.orchestration.generatePlan(proposal.projectId, '修复健康检查问题：' + proposal.scope.join('；'))
-    this.orchestration.approvePlan(draft.id)
-    this.deps.store.setProposalPlan(proposal.id, draft.id)
-    this.deps.store.setAutomationRunPlan(claim.id, draft.id)
+    const planDraft = repairAgentId
+      ? this.orchestration.updatePlan({
+          planId: draft.id,
+          tasks: draft.tasks.map((task) =>
+            task.role === 'developer' ? { ...task, agentId: repairAgentId } : task,
+          ),
+        })
+      : draft
+    this.orchestration.approvePlan(planDraft.id)
+    this.deps.store.setProposalPlan(proposal.id, planDraft.id)
+    this.deps.store.setAutomationRunPlan(claim.id, planDraft.id)
     this.deps.store.updateProposalStatus(proposal.id, 'executing')
     this.deps.store.transitionProposalFindings(proposal.id, ['proposed', 'open', 'reopened'], 'in_progress')
     // Repairs always run in an isolated worktree and respect the project budget.
     let plan
     try {
-      plan = await this.scheduler.start(draft.id, 2, 2, false, true)
+      plan = await this.scheduler.start(planDraft.id, 2, 2, false, true)
     } catch (error) {
       this.deps.store.updateProposalStatus(proposal.id, 'failed')
       this.deps.store.transitionProposalFindings(proposal.id, ['in_progress'], 'open')
@@ -218,7 +235,7 @@ export class RuntimeDispatcher {
     if (this.deps.store.read.getActiveRunForSession(group.id)) {
       throw new AppError('CONFLICT', '计划群聊正在讨论中，请等待当前轮次完成')
     }
-    const agentIds = [...new Set(plan.tasks.map((task) => agentForPlanRole(task.role)).filter((id): id is string => Boolean(id)))]
+    const agentIds = [...new Set(plan.tasks.map((task) => agentForPlannedTask(task)).filter((id): id is string => Boolean(id)))]
     const agents = agentIds
       .map((id) => this.deps.store.read.getAgent(id))
       .filter((agent): agent is NonNullable<typeof agent> => Boolean(agent))
@@ -566,6 +583,10 @@ export class RuntimeDispatcher {
         const input = this.parse('agentDefinition.upsert', rawInput)
         return this.agentStudio.upsertAgent(input)
       }
+      case 'agentDefinition.setStatus': {
+        const input = this.parse('agentDefinition.setStatus', rawInput)
+        return this.agentStudio.setStatus(input.id, input.status)
+      }
       case 'agentDefinition.export': {
         const input = this.parse('agentDefinition.export', rawInput)
         return this.agentStudio.exportAgent(input.id)
@@ -692,18 +713,13 @@ export class RuntimeDispatcher {
       }
       case 'run.start': {
         const input = this.parse('run.start', rawInput)
-        const session = store.read.getSession(input.sessionId)
-        if (!session) throw new AppError('NOT_FOUND', '会话不存在')
-        const runAgent = store.read.getAgent(session.agentId)
-        const agentDefinition = runAgent ? store.read.getAgentDefinition(runAgent.id) : null
-        const runtimeProfile = agentDefinition
-          ? store.read.listRuntimeProfiles().find((profile) =>
-              profile.id === (agentDefinition.primaryRuntimeProfileId ?? agentDefinition.runtimeProfileIds[0]))
-          : null
-        const usesRuntime = Boolean(runtimeProfile && runtimeProfile.protocol !== 'native' && runtimeProfile.status === 'available')
-        if (!provider.isConfigured() && !usesRuntime) {
-          throw new AppError('PROVIDER_NOT_CONFIGURED', '尚未配置模型 Provider，请先在设置中配置 API Key')
-        }
+        // Validate session, task dependencies, Agent state, runtime availability and
+        // provider credentials before persisting a user message or creating a Run.
+        runner.assertRunnable({
+          projectId: input.projectId,
+          sessionId: input.sessionId,
+          taskId: input.taskId,
+        })
         const message = services.sessions.sendMessage({
           sessionId: input.sessionId,
           content: input.prompt,
@@ -914,7 +930,7 @@ export class RuntimeDispatcher {
       }
       case 'operations.setMode': {
         const input = this.parse('operations.setMode', rawInput)
-        return this.operations.setMode(input.projectId, input.mode)
+        return this.operations.setMode(input.projectId, input.mode, input.repairAgentId)
       }
       case 'project.budget.get': {
         const input = this.parse('project.budget.get', rawInput)

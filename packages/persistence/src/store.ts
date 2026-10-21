@@ -36,6 +36,7 @@ import {
   type ProjectStage,
   type Requirement,
   type Run,
+  type RunSnapshot,
   type RunStatus,
   type RunStep,
   type RunStepKind,
@@ -853,6 +854,21 @@ export class SqliteStore {
     })
   }
 
+  createRunSnapshot(snapshot: RunSnapshot): RunSnapshot {
+    this.write(() => {
+      this.run(
+        `INSERT INTO run_snapshots (run_id, agent_id, schema_version, snapshot_json, created_at)
+         VALUES (?, ?, 1, ?, ?)
+         ON CONFLICT(run_id) DO UPDATE SET snapshot_json = excluded.snapshot_json`,
+        snapshot.runId,
+        snapshot.agentId,
+        JSON.stringify(snapshot),
+        snapshot.createdAt,
+      )
+    })
+    return snapshot
+  }
+
   nextRunAttempt(taskId: string): number {
     const row = this.get<{ value: number | null }>(
       'SELECT MAX(attempt) AS value FROM agent_runs WHERE task_id = ?',
@@ -1110,6 +1126,21 @@ export class SqliteStore {
       const changed = this.run2(
         `UPDATE approvals SET status = ?, decision = ?, decided_at = ? WHERE id = ? AND status = 'pending'`,
         decision,
+        note,
+        now(),
+        id,
+      )
+      const row = this.get<ApprovalRow>('SELECT * FROM approvals WHERE id = ?', id)
+      if (!row) throw new AppError('NOT_FOUND', '授权请求不存在')
+      if (changed === 0) throw new AppError('CONFLICT', '该授权请求已被处理')
+      return toApproval(row)
+    })
+  }
+
+  expireApproval(id: string, note = '审批已过期'): Approval {
+    return this.write(() => {
+      const changed = this.run2(
+        `UPDATE approvals SET status = 'expired', decision = ?, decided_at = ? WHERE id = ? AND status = 'pending'`,
         note,
         now(),
         id,
@@ -1756,12 +1787,21 @@ export class SqliteStore {
     })
   }
 
-  setAutonomyMode(projectId: string, mode: string): void {
+  setAutonomyMode(projectId: string, mode: string, repairAgentId?: string | null): void {
     this.write(() => {
+      if (repairAgentId === undefined) {
+        this.run(
+          `INSERT INTO autonomy_settings (project_id, mode, updated_at) VALUES (?, ?, ?)
+           ON CONFLICT(project_id) DO UPDATE SET mode = excluded.mode, updated_at = excluded.updated_at`,
+          projectId, mode, now(),
+        )
+        return
+      }
       this.run(
-        `INSERT INTO autonomy_settings (project_id, mode, updated_at) VALUES (?, ?, ?)
-         ON CONFLICT(project_id) DO UPDATE SET mode = excluded.mode, updated_at = excluded.updated_at`,
-        projectId, mode, now(),
+        `INSERT INTO autonomy_settings (project_id, mode, repair_agent_id, updated_at) VALUES (?, ?, ?, ?)
+         ON CONFLICT(project_id) DO UPDATE SET mode = excluded.mode,
+           repair_agent_id = excluded.repair_agent_id, updated_at = excluded.updated_at`,
+        projectId, mode, repairAgentId, now(),
       )
     })
   }

@@ -166,6 +166,15 @@ describe('AI connection registry', () => {
         taskId: 'tsk_demo',
       }),
     ).toEqual({ connectionId: fallback.id, modelId: fallback.defaultModelId })
+    expect(
+      service.resolveForRun({
+        projectId: 'prj_demo',
+        agentId: 'agt_engineer',
+        agentRole: '开发工程师',
+        taskId: 'tsk_demo',
+        modelRef: 'agent-model-override',
+      }),
+    ).toEqual({ connectionId: fallback.id, modelId: 'agent-model-override' })
   })
 })
 

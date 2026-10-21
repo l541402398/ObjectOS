@@ -13,10 +13,10 @@ ProjectOS 把项目从构思、需求、架构、规划、实现、测试、发�
 
 已编译便携版，**无需安装 Node/Electron，双击即可运行**：
 
-[**下载 / 打开 ProjectOS-1.6.0-portable.exe**](release/ProjectOS-1.6.0-portable.exe) · 约 99 MB
+[**下载 / 打开 ProjectOS-1.7.0-win-x64-portable.exe**](release/ProjectOS-1.7.0-win-x64-portable.exe) · 约 93 MB
 
 ```powershell
-.\release\ProjectOS-1.6.0-portable.exe
+.\release\ProjectOS-1.7.0-win-x64-portable.exe
 ```
 
 - 未签名：SmartScreen 提示时选择“更多信息 → 仍要运行”。
@@ -226,7 +226,7 @@ Node Runtime（application / agent loop / tools）
 ```text
 pnpm lint       → 0 errors, 0 warnings
 pnpm typecheck  → pass
-pnpm test       → 17 files, 68 tests passed
+pnpm test       → 27 files, 131 tests passed
 pnpm build      → Runtime bundle + Electron main/preload/renderer built
 node scripts/e2e.mjs       → PASS（UI 创建项目，关闭重启后恢复）
 node scripts/agent-e2e.mjs → PASS（审批暂停、批准写文件、继续循环、Run completed）
@@ -235,7 +235,7 @@ node scripts/v12-e2e.mjs   → PASS（设置弹层、连接测试/模型发现�
 node scripts/v13-e2e.mjs   → PASS（扫描、计划批准、真实图、布局持久化、内联连接编辑）
 node scripts/v13-orchestration-e2e.mjs → PASS（4 任务自动编排完成、用量记录、重启恢复）
 node scripts/package-smoke.mjs → PASS（打包 EXE 创建项目、写 starter 文件、重启恢复）
-ProjectOS-1.6.0-portable.exe → 直接启动成功（无 node_modules，Runtime ready，SQLite/示例数据正常）
+ProjectOS-1.7.0-win-x64-portable.exe → 直接启动成功（无 node_modules，Runtime ready，SQLite/示例数据正常）
 ```
 
 完整测试矩阵与未覆盖项见 [docs/testing.md](docs/testing.md)。
@@ -262,7 +262,8 @@ ProjectOS-1.6.0-portable.exe → 直接启动成功（无 node_modules，Runtime
 
 - **不使用原生 SQLite addon**：使用 Node 24 内置 `node:sqlite`，避免 Electron ABI 重编译；
   代价是暂时没有 Drizzle ORM，仓储层用手写 SQL + 类型映射，见 ADR-0002。
-- **不接入未核实的外部 Agent API**：外部 Driver/OCS 只保留接口和文档，不伪造实现。
+- **外部 Agent 只通过已验证的执行器接入**：CLI/ACP 运行记录 Run、ToolCall 与租约；写模式要求隔离
+  Worktree，ACP 权限请求必须经过 ProjectOS Approval；OCS 仍只保留接口和文档，不伪造实现。
 - **UI 是交付物**：所有页面使用真实数据；示例项目明确标注“示例数据”。
 
 ## License

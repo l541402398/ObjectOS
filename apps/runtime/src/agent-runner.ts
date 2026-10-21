@@ -2,10 +2,17 @@ import { createHash } from 'node:crypto'
 import {
   AppError,
   TASK_STATUSES,
+  type Agent,
+  type AgentDefinition,
   type Approval,
   type Artifact,
+  type Project,
   type Run,
+  type RunSnapshot,
   type RunStatus,
+  type RuntimeProfile,
+  type Session,
+  type Skill,
   type Task,
   type TaskStatus,
   type ToolCall,
@@ -65,6 +72,33 @@ export interface StartRunResult {
   messageId: string
 }
 
+interface PendingAcpPermission {
+  resolve: (optionId: string | null) => void
+  state: ActiveRun
+  optionId: string | null
+  toolCallId: string
+}
+
+interface PendingRuntimeApproval {
+  resolve: (approved: boolean) => void
+  state: ActiveRun
+  toolCallId: string
+}
+
+interface ResolvedRunTarget {
+  project: Project
+  session: Session
+  agent: Agent
+  task: Task | null
+  definition: AgentDefinition | null
+  runtimeProfile: RuntimeProfile | null
+  useRuntime: boolean
+  routed: { connectionId: string; modelId: string | null } | null
+  provider: LlmProvider | null
+}
+
+const RUNNER_ACTOR = { kind: 'system' as const, id: 'agent-runner', name: 'Agent Runner' }
+
 interface ActiveRun {
   runId: string
   projectId: string
@@ -72,6 +106,7 @@ interface ActiveRun {
   agentId: string
   taskId: string | null
   workspaceRoot: string
+  snapshot: RunSnapshot
   provider: LlmProvider | null
   connectionId: string | null
   modelId: string | null
@@ -101,11 +136,15 @@ const MAX_AGENT_STEPS = (() => {
   return Math.max(8, Math.min(64, Math.trunc(configured)))
 })()
 
+const LEASE_TTL_MS = 30 * 60 * 1000
+
 export class AgentRunner {
   private readonly active = new Map<string, ActiveRun>()
   private readonly runtimeExecutor: RuntimeExecutionService
   private readonly sessionIndex = new Map<string, string>()
   private readonly activeConnections = new Map<string, number>()
+  private readonly pendingPermissions = new Map<string, PendingAcpPermission>()
+  private readonly pendingRuntimeApprovals = new Map<string, PendingRuntimeApproval>()
   private aiConnections: import('./ai-connections.js').AIConnectionService | null = null
 
   constructor(
@@ -131,7 +170,22 @@ export class AgentRunner {
     return this.sessionIndex.get(sessionId) ?? null
   }
 
-  async startRun(input: StartRunInput): Promise<StartRunResult> {
+  /** Preflight used before persisting a user message or creating a Run. */
+  assertRunnable(input: {
+    projectId: string
+    sessionId: string
+    taskId?: string | null
+    agentId?: string
+  }): void {
+    this.resolveRunTarget(input)
+  }
+
+  private resolveRunTarget(input: {
+    projectId: string
+    sessionId: string
+    taskId?: string | null
+    agentId?: string
+  }): ResolvedRunTarget {
     const project = this.store.read.getProject(input.projectId)
     if (!project) throw new AppError('NOT_FOUND', '项目不存在')
     const session = this.store.read.getSession(input.sessionId)
@@ -142,6 +196,7 @@ export class AgentRunner {
     }
     const agent = this.store.read.getAgent(input.agentId ?? session.agentId)
     if (!agent) throw new AppError('NOT_FOUND', 'Agent 不存在')
+
     let task: Task | null = null
     if (input.taskId) {
       task = this.store.read.getTask(input.taskId)
@@ -149,7 +204,67 @@ export class AgentRunner {
       if (task.status === 'done' || task.status === 'cancelled') {
         throw new AppError('CONFLICT', '已完成或已取消的任务不能重新启动 Agent 运行')
       }
+      const activeTaskRun = this.store.read.getActiveRunForTask(task.id)
+      if (activeTaskRun) {
+        throw new AppError('CONFLICT', '该任务已有运行中的 Agent，请等待完成或取消')
+      }
+      if (task.status === 'running') {
+        throw new AppError('CONFLICT', '任务已经在运行，请先核对运行状态')
+      }
+      const card = this.store.read.getTaskCard(task.id)
+      if (!card) throw new AppError('NOT_FOUND', '任务不存在')
+      if (card.blockedBy.length > 0) {
+        throw new AppError('CONFLICT', '存在未完成的依赖任务，无法启动 Agent 运行')
+      }
     }
+
+    const definition = this.store.read.getAgentDefinition(agent.id)
+    if (definition && definition.status !== 'active') {
+      throw new AppError('CONFLICT', `Agent 当前状态为 ${definition.status}，不能启动新的运行`)
+    }
+    const knownSkills = new Set(this.store.read.listSkills().map((skill) => skill.id))
+    const missingSkills = (definition?.skills ?? [])
+      .filter((binding) => binding.enabled && !knownSkills.has(binding.skillId))
+      .map((binding) => binding.skillId)
+    if (missingSkills.length > 0) {
+      throw new AppError('CONFLICT', `Agent 绑定的 Skill 不存在：${missingSkills.join(', ')}`)
+    }
+
+    const profiles = this.store.read.listRuntimeProfiles()
+    const profileId = definition
+      ? definition.primaryRuntimeProfileId ?? definition.runtimeProfileIds[0] ?? null
+      : null
+    const runtimeProfile = profileId ? profiles.find((profile) => profile.id === profileId) ?? null : null
+    if (definition && profileId && !runtimeProfile) {
+      throw new AppError('CONFLICT', `Agent 绑定的 Runtime 不存在：${profileId}`)
+    }
+    const useRuntime = Boolean(runtimeProfile && runtimeProfile.protocol !== 'native')
+    if (useRuntime && runtimeProfile!.status !== 'available') {
+      throw new AppError(
+        'CONFLICT',
+        `Agent 绑定的 Runtime「${runtimeProfile!.name}」当前不可用（${runtimeProfile!.status}），请先检测/认证或改绑可用 Runtime`,
+      )
+    }
+
+    const routed = useRuntime
+      ? null
+      : this.aiConnections?.resolveForRun(
+          {
+            projectId: project.id,
+            agentId: agent.id,
+            agentRole: agent.role,
+            taskId: task?.id ?? null,
+            modelRef: definition?.modelRef ?? null,
+          },
+          Object.fromEntries(this.activeConnections),
+        ) ?? null
+    const provider = useRuntime ? null : this.provider.createProvider(routed?.connectionId, routed?.modelId)
+    return { project, session, agent, task, definition, runtimeProfile, useRuntime, routed, provider }
+  }
+
+  async startRun(input: StartRunInput): Promise<StartRunResult> {
+    const target = this.resolveRunTarget(input)
+    const { project, session, agent, task, definition, runtimeProfile, useRuntime, provider, routed } = target
     if (!input.messageId) {
       const message = this.store.appendMessage({
         sessionId: session.id,
@@ -161,104 +276,106 @@ export class AgentRunner {
     }
     const promptMessage = this.store.getMessageById(input.messageId)
     if (!promptMessage) throw new AppError('NOT_FOUND', '触发消息不存在')
-    const definition = this.store.read.getAgentDefinition(agent.id)
-    const runtimeProfiles = this.store.read.listRuntimeProfiles()
-    const runtimeProfile = definition
-      ? runtimeProfiles.find((profile) => profile.id === (definition.primaryRuntimeProfileId ?? definition.runtimeProfileIds[0]))
-      : null
-    const runtimeReady = Boolean(definition && runtimeProfile && runtimeProfile.protocol !== 'native' && runtimeProfile.status === 'available')
-    const routed = runtimeReady ? null : this.aiConnections?.resolveForRun({
-      projectId: project.id,
-      agentId: agent.id,
-      agentRole: agent.role,
-      taskId: task?.id ?? null,
-    }, Object.fromEntries(this.activeConnections)) ?? null
-    const provider = runtimeReady ? null : this.provider.createProvider(routed?.connectionId, routed?.modelId)
     const timestamp = now()
     const runId = newId('run')
     const attemptNo = task ? this.store.nextAttemptNo(task.id) : 1
-    let createdRun: Run | null = null
-    this.store.transaction(() => {
-      const run: Run = {
-        id: runId,
-        projectId: project.id,
-        taskId: task?.id ?? null,
-        sessionId: session.id,
-        agentId: agent.id,
-        attempt: attemptNo,
-        status: 'running',
-        error: null,
-        summary: null,
-        inputTokens: 0,
-        outputTokens: 0,
-        checkpointId: null,
-        startedAt: timestamp,
-        finishedAt: null,
-        createdAt: timestamp,
-      }
-      this.store.createRun(run)
-      this.store.appendRunStep({
-        runId,
-        kind: 'status',
-        title: '运行开始',
-        payload: { status: 'running', sessionId: session.id, agentId: agent.id, taskId: task?.id ?? null },
-      })
-      this.store.appendRunStep({
-        runId,
-        kind: 'context',
-        title: '上下文快照',
-        payload: {
-          promptMessageId: input.messageId,
-          inboxId: input.inboxId ?? null,
-          workspaceRoot: input.workspaceRoot ?? project.rootPath,
-        },
-      })
-      if (task) {
-        this.store.createAttempt({
-          id: newId('att'),
-          taskId: task.id,
-          attemptNo,
-          agentId: agent.id,
-          runId,
-          status: 'running',
-        })
-        let current = task
-        if (current.assigneeAgentId !== agent.id) {
-          current = this.store.updateTask(current.id, current.version, { assigneeAgentId: agent.id })
-        }
-        if (current.status === 'blocked') {
-          current = this.store.moveTask(current.id, current.version, 'ready')
-        }
-        if (current.status === 'backlog') {
-          current = this.store.moveTask(current.id, current.version, 'ready')
-        }
-        if (current.status !== 'running') {
-          current = this.store.moveTask(current.id, current.version, 'running')
-        }
-      }
-      this.store.appendEvent(project.id, runId, PROJECT_EVENT_TYPES.runStarted, {
-        title: task?.title ?? session.title,
-        status: 'running',
-        runId,
-        sessionId: session.id,
-        taskId: task?.id ?? null,
-        actorName: agent.name,
-      })
-      createdRun = run
+    const snapshot = this.buildRunSnapshot({
+      runId,
+      agent,
+      definition,
+      runtimeProfile,
+      task,
+      routed,
+      createdAt: timestamp,
     })
-    if (!createdRun) throw new AppError('INTERNAL', '运行创建失败')
     let lease: { token: number; expiresAt: number } | null = null
     if (task) {
-      try {
-        lease = this.store.acquireTaskLease(task.id, `run:${runId}`, 30 * 60 * 1000)
-      } catch (error) {
-        this.store.updateRun(runId, {
-          status: 'failed',
-          error: error instanceof Error ? error.message : '无法获取任务租约',
-          finishedAt: now(),
+      // Acquire the lease before creating Run/Attempt or mutating the task. A failed
+      // lease acquisition must leave no half-created execution state behind.
+      lease = this.store.acquireTaskLease(task.id, `run:${runId}`, LEASE_TTL_MS)
+    }
+    let createdRun: Run | null = null
+    try {
+      this.store.transaction(() => {
+        const run: Run = {
+          id: runId,
+          projectId: project.id,
+          taskId: task?.id ?? null,
+          sessionId: session.id,
+          agentId: agent.id,
+          attempt: attemptNo,
+          status: 'running',
+          error: null,
+          summary: null,
+          inputTokens: 0,
+          outputTokens: 0,
+          checkpointId: null,
+          startedAt: timestamp,
+          finishedAt: null,
+          createdAt: timestamp,
+        }
+        this.store.createRun(run)
+        this.store.createRunSnapshot(snapshot)
+        this.store.appendRunStep({
+          runId,
+          kind: 'status',
+          title: '运行开始',
+          payload: { status: 'running', sessionId: session.id, agentId: agent.id, taskId: task?.id ?? null },
         })
-        throw error
-      }
+        this.store.appendRunStep({
+          runId,
+          kind: 'context',
+          title: '上下文快照',
+          payload: {
+            promptMessageId: input.messageId,
+            inboxId: input.inboxId ?? null,
+            workspaceRoot: input.workspaceRoot ?? project.rootPath,
+          },
+        })
+        if (task) {
+          this.store.createAttempt({
+            id: newId('att'),
+            taskId: task.id,
+            attemptNo,
+            agentId: agent.id,
+            runId,
+            status: 'running',
+          })
+          let current = task
+          if (current.assigneeAgentId !== agent.id) {
+            current = this.store.updateTask(current.id, current.version, { assigneeAgentId: agent.id })
+          }
+          if (current.status === 'blocked' || current.status === 'backlog') {
+            this.services.tasks.move(
+              { taskId: current.id, expectedVersion: current.version, to: 'ready' },
+              RUNNER_ACTOR,
+            )
+            current = this.store.read.getTask(current.id) ?? current
+          }
+          if (current.status !== 'running') {
+            this.services.tasks.move(
+              { taskId: current.id, expectedVersion: current.version, to: 'running' },
+              RUNNER_ACTOR,
+            )
+          }
+        }
+        this.store.appendEvent(project.id, runId, PROJECT_EVENT_TYPES.runStarted, {
+          title: task?.title ?? session.title,
+          status: 'running',
+          runId,
+          sessionId: session.id,
+          taskId: task?.id ?? null,
+          actorName: agent.name,
+        })
+        createdRun = run
+      })
+    } catch (error) {
+      if (lease && task) this.releaseRunLease(task.id, runId, lease)
+      throw error
+    }
+    if (!createdRun) {
+      if (lease && task) this.releaseRunLease(task.id, runId, lease)
+      throw new AppError('INTERNAL', '运行创建失败')
     }
     const state: ActiveRun = {
       runId,
@@ -267,6 +384,7 @@ export class AgentRunner {
       agentId: agent.id,
       taskId: task?.id ?? null,
       workspaceRoot: input.workspaceRoot ?? project.rootPath,
+      snapshot,
       provider,
       connectionId: routed?.connectionId ?? null,
       modelId: routed?.modelId ?? null,
@@ -297,10 +415,10 @@ export class AgentRunner {
     if (lease && task) {
       state.leaseTimer = setInterval(() => {
         try {
-          this.store.renewTaskLease(task.id, `run:${runId}`, lease!.token, 30 * 60 * 1000)
-          lease!.expiresAt = now() + 30 * 60 * 1000
+          this.store.renewTaskLease(task.id, `run:${runId}`, lease!.token, LEASE_TTL_MS)
+          lease!.expiresAt = now() + LEASE_TTL_MS
         } catch (error) {
-          this.logger.warn({ err: error, runId }, 'lost task lease')
+          this.handleLeaseLoss(state, error)
         }
       }, 120_000)
       state.leaseTimer.unref?.()
@@ -312,8 +430,8 @@ export class AgentRunner {
         this.logger.warn({ err: error, inboxId: input.inboxId }, 'failed to mark inbox accepted')
       }
     }
-    if (definition && runtimeProfile && runtimeReady) {
-      void this.executeViaRuntime(state, definition, runtimeProfile, state.promptOverride ?? promptMessage.content, project.rootPath).catch((error) => {
+    if (definition && runtimeProfile && useRuntime) {
+      void this.executeViaRuntime(state, runtimeProfile, state.promptOverride ?? promptMessage.content, project.rootPath).catch((error) => {
         this.logger.error({ err: error, runId }, 'runtime agent run crashed')
         void this.failRun(state, error instanceof Error ? error.message : String(error)).catch((nested) => {
           this.logger.error({ err: nested, runId }, 'failed to finalize runtime run')
@@ -331,32 +449,295 @@ export class AgentRunner {
     return { runId, messageId: promptMessage.id }
   }
 
+  private collectRunSkills(
+    definition: AgentDefinition | null,
+    task: Task | null,
+    agent: Agent,
+  ): Skill[] {
+    const selected = selectSkills({ task, agent }).map((entry) => ({
+      id: entry.skill.id,
+      name: entry.skill.name,
+      description: entry.skill.description,
+      version: '1.0.0',
+      source: 'builtin',
+      content: entry.skill.prompt,
+      schemaVersion: 1,
+      createdAt: 0,
+      updatedAt: 0,
+    }))
+    const byId = new Map(selected.map((skill) => [skill.id, skill]))
+    for (const binding of definition?.skills ?? []) {
+      if (!binding.enabled || byId.has(binding.skillId)) continue
+      const skill = this.store.read.listSkills().find((item) => item.id === binding.skillId)
+      if (skill) byId.set(skill.id, skill)
+    }
+    return [...byId.values()]
+  }
+
+  private buildRunSnapshot(input: {
+    runId: string
+    agent: Agent
+    definition: AgentDefinition | null
+    runtimeProfile: RuntimeProfile | null
+    task: Task | null
+    routed: { connectionId: string; modelId: string | null } | null
+    createdAt: number
+  }): RunSnapshot {
+    const { runId, agent, definition, runtimeProfile, task, routed, createdAt } = input
+    const persona = definition?.persona ?? {
+      role: agent.role,
+      background: '',
+      responsibilities: '',
+      principles: '',
+      style: '',
+      constraints: '',
+      systemPrompt: agent.systemPrompt,
+    }
+    const permissions = definition?.permissions ?? {
+      tools: [],
+      files: true,
+      shell: true,
+      network: true,
+    }
+    return {
+      runId,
+      agentId: agent.id,
+      agentConfigVersion: definition?.currentVersion ?? 0,
+      agentName: agent.name,
+      agentRole: agent.role,
+      agentDescription: agent.description,
+      agentCapabilities: agent.capabilities,
+      persona,
+      skills: this.collectRunSkills(definition, task, agent).map((skill) => ({
+        id: skill.id,
+        name: skill.name,
+        description: skill.description,
+        version: skill.version,
+        source: skill.source,
+        content: skill.content,
+        enabled: true,
+      })),
+      permissions,
+      modelRef: definition?.modelRef ?? null,
+      runtimeProfileId: runtimeProfile?.id ?? null,
+      runtimeProfileName: runtimeProfile?.name ?? null,
+      runtimeProtocol: runtimeProfile?.protocol ?? null,
+      runtimeProfileVersion: runtimeProfile?.version ?? null,
+      connectionId: routed?.connectionId ?? null,
+      modelId: routed?.modelId ?? null,
+      worktreeId: null,
+      workflowNodeId: null,
+      createdAt,
+    }
+  }
+
+  private isAcpPermission(request: Record<string, unknown> | null | undefined): boolean {
+    return request?.kind === 'acp-permission'
+  }
+
+  private isRuntimeApproval(request: Record<string, unknown> | null | undefined): boolean {
+    return request?.kind === 'runtime-execution'
+  }
+
+  private isEphemeralApproval(request: Record<string, unknown> | null | undefined): boolean {
+    return this.isAcpPermission(request) || this.isRuntimeApproval(request)
+  }
+
+  private resolvePendingPermissions(runId: string, optionId: string | null): void {
+    for (const [approvalId, pending] of this.pendingPermissions) {
+      if (pending.state.runId !== runId) continue
+      pending.resolve(optionId)
+      this.pendingPermissions.delete(approvalId)
+    }
+    for (const [approvalId, pending] of this.pendingRuntimeApprovals) {
+      if (pending.state.runId !== runId) continue
+      pending.resolve(false)
+      this.pendingRuntimeApprovals.delete(approvalId)
+    }
+  }
+
+  /**
+   * CLI runtimes may write to the workspace. Gate a run behind a real Approval
+   * before spawning the runtime; read-only ACP uses per-tool permission requests.
+   */
+  private requestRuntimeApproval(
+    state: ActiveRun,
+    profile: RuntimeProfile,
+    toolCall: ToolCall,
+  ): Promise<boolean> {
+    this.store.updateToolCall(toolCall.id, { status: 'waiting_approval' })
+    const approval = this.store.createApproval({
+      projectId: state.projectId,
+      runId: state.runId,
+      toolCallId: toolCall.id,
+      title: `授权运行 ${profile.name}`,
+      detail: `即将通过 CLI Runtime「${profile.name}」执行 Agent；批准后子进程可修改工作区。`,
+      request: {
+        kind: 'runtime-execution',
+        runtimeProfileId: profile.id,
+        protocol: profile.protocol,
+      },
+      expiresAt: now() + LEASE_TTL_MS,
+    })
+    this.transitionRun(state, 'waiting_approval')
+    state.pendingApprovalId = approval.id
+    this.store.appendRunStep({
+      runId: state.runId,
+      kind: 'approval',
+      title: `等待 Runtime 授权：${profile.name}`,
+      status: 'waiting',
+      payload: { approvalId: approval.id, toolCallId: toolCall.id, runtimeProfileId: profile.id },
+    })
+    this.store.appendEvent(state.projectId, state.runId, PROJECT_EVENT_TYPES.approvalRequested, {
+      approvalId: approval.id,
+      runId: state.runId,
+      sessionId: state.sessionId,
+      toolName: 'runtime.execute',
+      taskId: state.taskId,
+    })
+    return new Promise<boolean>((resolve) => {
+      this.pendingRuntimeApprovals.set(approval.id, { resolve, state, toolCallId: toolCall.id })
+    })
+  }
+
+  /**
+   * ACP delegates permission decisions to the client. Do not auto-approve from
+   * Agent grants: create a ProjectOS ToolCall + Approval and wait for a human.
+   */
+  private async requestAcpPermission(state: ActiveRun, params: unknown): Promise<string | null> {
+    const value = params as {
+      options?: Array<{ optionId?: string; kind?: string; name?: string }>
+      toolCall?: { kind?: string; title?: string; toolCallId?: string }
+    }
+    const kind = value.toolCall?.kind ?? 'unknown'
+    const options = value.options ?? []
+    const optionId =
+      options.find((option) => ['allow', 'allow_once', 'approve', 'approved'].includes((option.kind ?? '').toLowerCase()))?.optionId ??
+      options[0]?.optionId ??
+      null
+    const toolCall = this.store.createToolCall({
+      runId: state.runId,
+      toolName: 'acp.permission',
+      idempotencyKey: `${state.runId}:acp:${newId('tol')}`,
+      status: 'waiting_approval',
+      argsHash: hashArgs({ kind, options }),
+      args: { kind, title: value.toolCall?.title ?? null, options },
+    })
+    const approval = this.store.createApproval({
+      projectId: state.projectId,
+      runId: state.runId,
+      toolCallId: toolCall.id,
+      title: `ACP 授权：${kind}`,
+      detail: `ACP Runtime 请求执行 ${kind} 操作；批准前不会返回 allow。`,
+      request: {
+        kind: 'acp-permission',
+        toolKind: kind,
+        optionId,
+        options: options.map((option) => ({ optionId: option.optionId ?? null, kind: option.kind ?? null, name: option.name ?? null })),
+      },
+      expiresAt: now() + LEASE_TTL_MS,
+    })
+    this.transitionRun(state, 'waiting_approval')
+    state.pendingApprovalId = approval.id
+    this.store.appendRunStep({
+      runId: state.runId,
+      kind: 'approval',
+      title: `等待 ACP 授权：${kind}`,
+      status: 'waiting',
+      payload: { approvalId: approval.id, toolCallId: toolCall.id, toolKind: kind },
+    })
+    this.store.appendEvent(state.projectId, state.runId, PROJECT_EVENT_TYPES.approvalRequested, {
+      approvalId: approval.id,
+      runId: state.runId,
+      sessionId: state.sessionId,
+      toolName: 'acp.permission',
+      taskId: state.taskId,
+    })
+    return new Promise<string | null>((resolve) => {
+      this.pendingPermissions.set(approval.id, { resolve, state, optionId, toolCallId: toolCall.id })
+    })
+  }
+
+  private releaseRunLease(taskId: string, runId: string, lease: { token: number }): void {
+    try {
+      this.store.releaseTaskLease(taskId, `run:${runId}`, lease.token)
+    } catch (error) {
+      this.logger.warn({ err: error, runId }, 'failed to release task lease')
+    }
+  }
+
+  private releaseStoredLease(run: Run): void {
+    if (!run.taskId) return
+    const lease = this.store.read.getTaskLease(run.taskId)
+    if (lease && lease.holderId === `run:${run.id}`) {
+      this.releaseRunLease(run.taskId, run.id, { token: lease.fencingToken })
+    }
+  }
+
+  private assertRunLease(run: Run): void {
+    if (!run.taskId) return
+    const lease = this.store.read.getTaskLease(run.taskId)
+    if (!lease || lease.holderId !== `run:${run.id}` || lease.expiresAt <= now()) {
+      throw new AppError('CONFLICT', '任务租约已失效，旧执行者不能继续提交任务状态')
+    }
+  }
+
+  private assertLease(state: ActiveRun): void {
+    if (!state.taskId) return
+    if (!state.lease) {
+      throw new AppError('CONFLICT', '任务租约不存在或已失效，运行不能继续提交')
+    }
+    const lease = this.store.read.getTaskLease(state.taskId)
+    if (
+      !lease ||
+      lease.holderId !== `run:${state.runId}` ||
+      lease.fencingToken !== state.lease.token ||
+      lease.expiresAt <= now()
+    ) {
+      throw new AppError('CONFLICT', '任务租约已失效，旧执行者不能继续提交任务状态')
+    }
+  }
+
+  private handleLeaseLoss(state: ActiveRun, error: unknown): void {
+    if (state.leaseTimer) {
+      clearInterval(state.leaseTimer)
+      state.leaseTimer = null
+    }
+    const run = this.store.read.getRun(state.runId)
+    if (!run || ['completed', 'failed', 'cancelled'].includes(run.status)) return
+    state.abort.abort()
+    const message = error instanceof Error ? error.message : String(error)
+    this.logger.error({ err: error, runId: state.runId }, 'task lease lost; stopping run')
+    void this.failRun(state, `任务租约已失效，运行已停止：${message}`).catch((nested) => {
+      this.logger.error({ err: nested, runId: state.runId }, 'failed to finalize run after lease loss')
+    })
+  }
+
   private async executeViaRuntime(
     state: ActiveRun,
-    definition: NonNullable<ReturnType<SqliteStore['read']['getAgentDefinition']>>,
-    profile: NonNullable<ReturnType<SqliteStore['read']['listRuntimeProfiles']>[number]>,
+    profile: RuntimeProfile,
     userPrompt: string,
     cwd: string,
   ): Promise<void> {
-    if (profile.protocol !== 'acp' && !definition.permissions.shell) {
+    const snapshot = state.snapshot
+    if (profile.protocol !== 'acp' && !snapshot.permissions.shell) {
       throw new AppError('APPROVAL_REQUIRED', '该 Runtime 需要 Shell 权限，请先在 Agent 权限中启用 Shell')
     }
     const task = state.taskId ? this.store.read.getTask(state.taskId) : null
     const structured = [
-      `# Agent: ${definition.name}`,
-      `Role: ${definition.role}`,
-      definition.persona.background ? `Background: ${definition.persona.background}` : '',
-      definition.persona.responsibilities ? `Responsibilities: ${definition.persona.responsibilities}` : '',
-      definition.persona.principles ? `Principles: ${definition.persona.principles}` : '',
-      definition.persona.style ? `Style: ${definition.persona.style}` : '',
-      definition.persona.constraints ? `Constraints: ${definition.persona.constraints}` : '',
-      definition.persona.systemPrompt,
+      `# Agent: ${snapshot.agentName}`,
+      `Role: ${snapshot.agentRole}`,
+      snapshot.persona.background ? `Background: ${snapshot.persona.background}` : '',
+      snapshot.persona.responsibilities ? `Responsibilities: ${snapshot.persona.responsibilities}` : '',
+      snapshot.persona.principles ? `Principles: ${snapshot.persona.principles}` : '',
+      snapshot.persona.style ? `Style: ${snapshot.persona.style}` : '',
+      snapshot.persona.constraints ? `Constraints: ${snapshot.persona.constraints}` : '',
+      snapshot.persona.systemPrompt,
     ].filter(Boolean).join('\n')
-    const boundSkills = definition.skills
-      .filter((binding) => binding.enabled)
-      .map((binding) => this.store.read.listSkills().find((skill) => skill.id === binding.skillId))
-      .filter((skill): skill is NonNullable<typeof skill> => Boolean(skill))
-    const skillText = boundSkills.map((skill) => `# Skill: ${skill.name}\n${skill.content}`).join('\n\n')
+    const skillText = snapshot.skills
+      .filter((skill) => skill.enabled)
+      .map((skill) => `# Skill: ${skill.name}\n${skill.content}`)
+      .join('\n\n')
     const taskText = task
       ? `# Task\n${task.title}\n${task.description}\nAcceptance: ${task.acceptanceCriteria.join('; ')}`
       : ''
@@ -367,6 +748,14 @@ export class AgentRunner {
       title: `Runtime 执行：${profile.name}`,
       payload: { runtimeProfileId: profile.id, protocol: profile.protocol, cwd },
     })
+    const runtimeToolCall = this.store.createToolCall({
+      runId: state.runId,
+      toolName: profile.protocol === 'acp' ? 'runtime.acp' : 'runtime.execute',
+      idempotencyKey: `${state.runId}:runtime`,
+      status: 'running',
+      argsHash: hashArgs({ profileId: profile.id, protocol: profile.protocol, promptChars: prompt.length }),
+      args: { profileId: profile.id, protocol: profile.protocol, promptChars: prompt.length, cwd },
+    })
     try {
       let output: string
       let executionId: string
@@ -374,18 +763,7 @@ export class AgentRunner {
         if (!profile.executable) throw new AppError('BAD_REQUEST', 'ACP Runtime 未配置可执行路径')
         const client = new AcpClient(profile.executable, profile.args, cwd)
         state.runtimeCancel = () => client.dispose()
-        client.setPermissionHandler(async (params) => {
-          const value = params as { options?: Array<{ optionId?: string }>; toolCall?: { kind?: string } }
-          const kind = value.toolCall?.kind ?? ''
-          const allowed = kind.includes('shell') || kind.includes('execute')
-            ? definition.permissions.shell
-            : kind.includes('edit') || kind.includes('write') || kind.includes('read')
-              ? definition.permissions.files
-              : kind.includes('fetch') || kind.includes('network')
-                ? definition.permissions.network
-                : false
-          return allowed ? value.options?.[0]?.optionId ?? null : null
-        })
+        client.setPermissionHandler((params) => this.requestAcpPermission(state, params))
         const chunks: string[] = []
         const offEvent = client.onEvent((message) => {
           const text = acpTextFromEvent(message)
@@ -407,15 +785,28 @@ export class AgentRunner {
           client.dispose()
         }
       } else {
+        const approved = await this.requestRuntimeApproval(state, profile, runtimeToolCall)
+        if (!approved) {
+          throw new AppError('APPROVAL_REQUIRED', '用户拒绝了 CLI Runtime 执行')
+        }
         const result = await this.runtimeExecutor.execute(profile.id, prompt, cwd, (executionId) => {
           state.runtimeCancel = () => this.runtimeExecutor.cancel(executionId)
         })
         output = result.output
         executionId = result.executionId
-        if (state.abort.signal.aborted) return
+        if (state.abort.signal.aborted) {
+          this.store.updateToolCall(runtimeToolCall.id, { status: 'failed', error: '运行已取消', finishedAt: now() })
+          return
+        }
       if (result.status !== 'completed') throw new AppError('INTERNAL', output || `Runtime ${result.status}`)
       }
+      this.assertLease(state)
       const summary = output.trim().slice(0, 20_000) || 'Runtime 执行完成'
+      this.store.updateToolCall(runtimeToolCall.id, {
+        status: 'completed',
+        result: { summary: summary.slice(0, 20_000), executionId },
+        finishedAt: now(),
+      })
       this.store.appendMessage({ sessionId: state.sessionId, role: 'assistant', content: summary, runId: state.runId, metadata: { runtimeProfileId: profile.id, executionId } })
       this.transitionRun(state, 'completed', { summary, finishedAt: now() })
       this.tryMoveTask(state.taskId, 'review')
@@ -425,6 +816,11 @@ export class AgentRunner {
       this.store.updateTaskAttemptStatus(state.runId, 'completed')
       this.cleanup(state, 'completed')
     } catch (error) {
+      this.store.updateToolCall(runtimeToolCall.id, {
+        status: 'failed',
+        error: redactSecrets(error instanceof Error ? error.message : String(error)).slice(0, 8000),
+        finishedAt: now(),
+      })
       if (state.abort.signal.aborted) return
       throw error instanceof Error ? error : new Error(String(error))
     } finally {
@@ -446,21 +842,23 @@ export class AgentRunner {
     const artifacts = this.store.read.listArtifacts(project.id, task?.id ?? null)
     const knowledge = this.store.read.listKnowledge(project.id)
     const agentsFile = listProjectAgentsFile(project.rootPath)
-    const definition = this.store.read.getAgentDefinition(agent.id)
-    const autoSkills = selectSkills({ task, agent }).map((selection) => ({
-      id: selection.skill.id,
-      name: selection.skill.name,
-      description: selection.skill.description,
-      prompt: selection.skill.prompt,
-    }))
-    const boundSkills = definition
-      ? definition.skills
-          .filter((binding) => binding.enabled)
-          .map((binding) => this.store.read.listSkills().find((skill) => skill.id === binding.skillId))
-          .filter((skill): skill is NonNullable<typeof skill> => Boolean(skill))
-          .map((skill) => ({ id: skill.id, name: skill.name, description: skill.description, prompt: skill.content }))
-      : []
-    const skills = [...autoSkills, ...boundSkills.filter((bound) => !autoSkills.some((auto) => auto.id === bound.id))]
+    const snapshot = state.snapshot
+    const skills = snapshot.skills
+      .filter((skill) => skill.enabled)
+      .map((skill) => ({
+        id: skill.id,
+        name: skill.name,
+        description: skill.description,
+        prompt: skill.content,
+      }))
+    const contextAgent: Agent = {
+      ...agent,
+      name: snapshot.agentName,
+      role: snapshot.agentRole,
+      description: snapshot.agentDescription,
+      capabilities: snapshot.agentCapabilities as Agent['capabilities'],
+      systemPrompt: snapshot.persona.systemPrompt,
+    }
     const handoffs = this.store.read.listHandoffViews(project.id)
     const handoff = task
       ? handoffs.find((entry) => entry.taskId === task.id && entry.status === 'accepted')
@@ -468,7 +866,7 @@ export class AgentRunner {
     const context = buildContext({
       project,
       task,
-      agent,
+      agent: contextAgent,
       requirements,
       decisions,
       artifacts: task ? artifacts : artifacts.slice(0, 8),
@@ -477,10 +875,9 @@ export class AgentRunner {
       skills,
       handoffSummary: handoff?.summary ?? null,
     })
-    const tools = toolCatalogForAgent(agent.capabilities).filter((tool) => {
-      if (!definition) return true
-      if (tool.name === 'write_file') return definition.permissions.files
-      if (tool.name === 'run_command' || tool.name === 'run_tests') return definition.permissions.shell
+    const tools = toolCatalogForAgent(contextAgent.capabilities).filter((tool) => {
+      if (tool.name === 'write_file') return snapshot.permissions.files
+      if (tool.name === 'run_command' || tool.name === 'run_tests') return snapshot.permissions.shell
       return true
     })
     const toolPrompt = tools.map((tool) => `- ${tool.name}：${tool.description}`).join('\n')
@@ -607,6 +1004,7 @@ export class AgentRunner {
       return
     }
     if (result.status === 'completed') {
+      this.assertLease(state)
       const summary = (state.lastAssistantText || result.text || 'Agent 完成了本轮执行。').trim().slice(0, 20_000)
       this.transitionRun(state, 'verifying', { summary, inputTokens: state.inputTokens, outputTokens: state.outputTokens })
       this.store.appendRunStep({
@@ -659,6 +1057,12 @@ export class AgentRunner {
   }
 
   private async failRun(state: ActiveRun, message: string): Promise<void> {
+    if (!this.active.has(state.runId)) return
+    const current = this.store.read.getRun(state.runId)
+    if (!current || ['completed', 'failed', 'cancelled'].includes(current.status)) {
+      this.cleanup(state, 'failed')
+      return
+    }
     const error = redactSecrets(message).slice(0, 8000)
     this.store.appendRunStep({
       runId: state.runId,
@@ -689,6 +1093,7 @@ export class AgentRunner {
   }
 
   private cleanup(state: ActiveRun, status: RunStatus): void {
+    this.resolvePendingPermissions(state.runId, null)
     const price =
       state.connectionId && state.modelId
         ? this.store.read.getAIModelPrice(state.connectionId, state.modelId)
@@ -897,6 +1302,7 @@ export class AgentRunner {
   }
 
   private async executeTool(state: ActiveRun, invocation: ToolInvocation): Promise<ToolOutcome> {
+    this.assertLease(state)
     const definition = getToolDefinition(invocation.name)
     const project = this.store.read.getProject(state.projectId)
     if (!definition || !project) {
@@ -1216,15 +1622,62 @@ export class AgentRunner {
     const approval = this.store.getApprovalById(approvalId)
     if (!approval) throw new AppError('NOT_FOUND', '授权请求不存在')
     if (approval.status !== 'pending') throw new AppError('CONFLICT', '授权请求已被处理')
-    if (decision === 'approved' && !this.provider.isConfigured()) {
+    const run = this.store.read.getRun(approval.runId)
+    if (!run) throw new AppError('NOT_FOUND', '运行不存在')
+    const toolCall = approval.toolCallId
+      ? this.store.read.getToolCalls(run.id).find((call) => call.id === approval.toolCallId) ?? null
+      : null
+    const acpPermission = this.isAcpPermission(approval.request)
+    const runtimeApproval = this.isRuntimeApproval(approval.request)
+    if (approval.expiresAt && approval.expiresAt <= now()) {
+      if (acpPermission || runtimeApproval) this.resolvePendingPermissions(run.id, null)
+      const activeState = this.active.get(run.id)
+      const terminal = ['completed', 'failed', 'cancelled'].includes(run.status)
+      this.store.transaction(() => {
+        this.store.expireApproval(approvalId, '审批已过期，操作未执行')
+        if (toolCall) {
+          this.store.updateToolCall(toolCall.id, {
+            status: 'denied',
+            error: '审批已过期，操作未执行',
+            finishedAt: now(),
+          })
+        }
+        if (!terminal) {
+          this.store.updateRun(run.id, {
+            status: 'failed',
+            error: '审批已过期，操作未执行',
+            finishedAt: now(),
+          })
+          this.store.appendEvent(run.projectId, run.id, PROJECT_EVENT_TYPES.runStatusChanged, {
+            status: 'failed',
+            runId: run.id,
+            sessionId: run.sessionId,
+          })
+          this.store.updateTaskAttemptStatus(run.id, 'failed')
+        }
+        this.store.appendEvent(run.projectId, approvalId, PROJECT_EVENT_TYPES.approvalDecided, {
+          decision: 'expired',
+          runId: run.id,
+          sessionId: run.sessionId,
+        })
+      })
+      this.tryMoveTask(run.taskId, 'blocked', '审批已过期，运行未继续')
+      if (activeState) this.cleanup(activeState, 'failed')
+      else if (run.taskId) {
+        const lease = this.store.read.getTaskLease(run.taskId)
+        if (lease && lease.holderId === `run:${run.id}`) {
+          this.releaseRunLease(run.taskId, run.id, { token: lease.fencingToken })
+        }
+      }
+      throw new AppError('CONFLICT', '该授权请求已过期，操作未执行')
+    }
+    if (decision === 'approved' && !acpPermission && !runtimeApproval && !this.provider.isConfigured()) {
       throw new AppError(
         'PROVIDER_NOT_CONFIGURED',
         '模型 Provider 尚未配置，无法在批准后继续运行。请先配置模型，或拒绝该授权。',
       )
     }
-    const run = this.store.read.getRun(approval.runId)
-    if (!run) throw new AppError('NOT_FOUND', '运行不存在')
-    const toolCall = approval.toolCallId ? this.store.read.getToolCalls(run.id).find((call) => call.id === approval.toolCallId) : null
+    if (decision === 'approved') this.assertRunLease(run)
     if (decision === 'rejected' && !this.provider.isConfigured()) {
       const activeState = this.active.get(run.id)
       const decided = this.store.transaction(() => {
@@ -1278,6 +1731,12 @@ export class AgentRunner {
       })
       return decided
     })
+    if (acpPermission) {
+      return this.decideAcpPermission(approval, run, toolCall, decision, updated)
+    }
+    if (runtimeApproval) {
+      return this.decideRuntimeApproval(approval, run, toolCall, decision, updated)
+    }
     if (!toolCall) {
       await this.failRun(await this.requireState(run.id), '授权关联的工具调用不存在')
       return updated
@@ -1305,6 +1764,7 @@ export class AgentRunner {
       void this.execute(state).catch((error) => this.failRun(state, String(error)))
       return updated
     }
+    this.assertLease(state)
     state.pendingApprovalId = null
     this.transitionRun(state, 'running')
     this.store.updateToolCall(toolCall.id, { status: 'running', startedAt: now() })
@@ -1334,27 +1794,149 @@ export class AgentRunner {
     return updated
   }
 
+  private decideRuntimeApproval(
+    approval: Approval,
+    run: Run,
+    toolCall: ToolCall | null,
+    decision: 'approved' | 'rejected',
+    updated: Approval,
+  ): Approval {
+    const pending = this.pendingRuntimeApprovals.get(approval.id)
+    if (!pending) {
+      if (toolCall) {
+        this.store.updateToolCall(toolCall.id, {
+          status: 'denied',
+          error: 'Runtime 已退出，授权无法恢复',
+          finishedAt: now(),
+        })
+      }
+      if (!['completed', 'failed', 'cancelled'].includes(run.status)) {
+        this.store.updateRun(run.id, {
+          status: 'failed',
+          error: 'Runtime 已退出，授权无法恢复；请人工核对后重新运行',
+          finishedAt: now(),
+        })
+        this.store.appendEvent(run.projectId, run.id, PROJECT_EVENT_TYPES.runStatusChanged, {
+          status: 'failed',
+          runId: run.id,
+          sessionId: run.sessionId,
+        })
+        this.store.updateTaskAttemptStatus(run.id, 'failed')
+      }
+      this.tryMoveTask(run.taskId, 'blocked', 'Runtime 授权已失效')
+      const active = this.active.get(run.id)
+      if (active) this.cleanup(active, 'failed')
+      throw new AppError('CONFLICT', '该 Runtime 授权已随进程退出失效，未执行操作')
+    }
+    if (toolCall) {
+      this.store.updateToolCall(
+        toolCall.id,
+        decision === 'approved'
+          ? { status: 'running', finishedAt: null }
+          : { status: 'denied', error: '用户拒绝了 Runtime 执行', finishedAt: now() },
+      )
+    }
+    pending.state.pendingApprovalId = null
+    this.transitionRun(pending.state, 'running')
+    pending.resolve(decision === 'approved')
+    this.pendingRuntimeApprovals.delete(approval.id)
+    return updated
+  }
+
+  private decideAcpPermission(
+    approval: Approval,
+    run: Run,
+    toolCall: ToolCall | null,
+    decision: 'approved' | 'rejected',
+    updated: Approval,
+  ): Approval {
+    const pending = this.pendingPermissions.get(approval.id)
+    if (!pending) {
+      if (toolCall) {
+        this.store.updateToolCall(toolCall.id, {
+          status: 'denied',
+          error: 'ACP Runtime 已退出，授权无法恢复',
+          finishedAt: now(),
+        })
+      }
+      if (!['completed', 'failed', 'cancelled'].includes(run.status)) {
+        this.store.updateRun(run.id, {
+          status: 'failed',
+          error: 'ACP Runtime 已退出，授权无法恢复；请人工核对后重新运行',
+          finishedAt: now(),
+        })
+        this.store.appendEvent(run.projectId, run.id, PROJECT_EVENT_TYPES.runStatusChanged, {
+          status: 'failed',
+          runId: run.id,
+          sessionId: run.sessionId,
+        })
+        this.store.updateTaskAttemptStatus(run.id, 'failed')
+      }
+      this.tryMoveTask(run.taskId, 'blocked', 'ACP 授权已失效')
+      const active = this.active.get(run.id)
+      if (active) this.cleanup(active, 'failed')
+      throw new AppError('CONFLICT', '该 ACP 授权已随 Runtime 退出失效，未执行操作')
+    }
+    if (toolCall) {
+      this.store.updateToolCall(toolCall.id, decision === 'approved'
+        ? { status: 'completed', result: { approved: true, optionId: pending.optionId }, finishedAt: now() }
+        : { status: 'denied', error: '用户拒绝了 ACP 权限请求', finishedAt: now() })
+    }
+    pending.state.pendingApprovalId = null
+    this.transitionRun(pending.state, 'running')
+    pending.resolve(decision === 'approved' ? pending.optionId : null)
+    this.pendingPermissions.delete(approval.id)
+    return updated
+  }
+
   private async requireState(runId: string): Promise<ActiveRun> {
     const existing = this.active.get(runId)
     if (existing) return existing
     const run = this.store.read.getRun(runId)
     if (!run) throw new AppError('NOT_FOUND', '运行不存在')
     const agent = this.store.read.getAgent(run.agentId)
+    const definition = agent ? this.store.read.getAgentDefinition(agent.id) : null
     const routed = agent
       ? this.aiConnections?.resolveForRun({
           projectId: run.projectId,
           agentId: agent.id,
           agentRole: agent.role,
           taskId: run.taskId,
+          modelRef: definition?.modelRef ?? null,
         }, Object.fromEntries(this.activeConnections)) ?? null
       : null
     const provider = this.provider.createProvider(routed?.connectionId, routed?.modelId)
     const project = this.store.read.getProject(run.projectId)
+    const task = run.taskId ? this.store.read.getTask(run.taskId) : null
+    let snapshot = this.store.read.getRunSnapshot(runId)
+    if (!snapshot && agent) {
+      const profiles = this.store.read.listRuntimeProfiles()
+      const profileId = definition
+        ? definition.primaryRuntimeProfileId ?? definition.runtimeProfileIds[0] ?? null
+        : null
+      const runtimeProfile = profileId ? profiles.find((profile) => profile.id === profileId) ?? null : null
+      snapshot = this.buildRunSnapshot({
+        runId,
+        agent,
+        definition,
+        runtimeProfile,
+        task,
+        routed,
+        createdAt: run.createdAt,
+      })
+      this.store.createRunSnapshot(snapshot)
+    }
+    if (!snapshot) throw new AppError('NOT_FOUND', '运行快照不存在')
     const workspaceStep = this.store.read
       .getRunSteps(run.id)
       .find((step) => typeof step.payload.workspaceRoot === 'string')
     const workspaceRoot =
       (workspaceStep?.payload.workspaceRoot as string | undefined) ?? project?.rootPath ?? process.cwd()
+    const storedLease = run.taskId ? this.store.read.getTaskLease(run.taskId) : null
+    const lease =
+      storedLease && storedLease.holderId === `run:${runId}` && storedLease.expiresAt > now()
+        ? { token: storedLease.fencingToken, expiresAt: storedLease.expiresAt }
+        : null
     const state: ActiveRun = {
       runId,
       projectId: run.projectId,
@@ -1362,11 +1944,12 @@ export class AgentRunner {
       agentId: run.agentId,
       taskId: run.taskId,
       workspaceRoot,
+      snapshot,
       provider,
       connectionId: routed?.connectionId ?? null,
       modelId: routed?.modelId ?? null,
       abort: new AbortController(),
-      lease: null,
+      lease,
       attemptNo: run.attempt,
       inboxId: null,
       promptMessageId: this.findPromptMessageId(run),
@@ -1423,6 +2006,7 @@ export class AgentRunner {
     if (!run) throw new AppError('NOT_FOUND', '运行不存在')
     if (['completed', 'failed', 'cancelled'].includes(run.status)) return
     this.store.cancelPendingApprovals(runId, '用户取消了运行')
+    this.resolvePendingPermissions(runId, null)
     this.store.updateRun(runId, { status: 'cancelled', error: '用户取消了运行', finishedAt: now() })
     this.store.appendEvent(run.projectId, runId, PROJECT_EVENT_TYPES.runStatusChanged, {
       status: 'cancelled',
@@ -1486,7 +2070,35 @@ export class AgentRunner {
     const interrupted = this.store.read.listUnfinishedRuns(200)
     for (const run of interrupted) {
       if (run.status === 'waiting_approval') {
-        this.logger.info({ runId: run.id }, 'run is waiting for approval; keep it resumable')
+        const pendingEphemeralApproval = this.store.read
+          .listApprovalViews(null, run.id)
+          .some((approval) => approval.status === 'pending' && this.isEphemeralApproval(approval.request))
+        if (!pendingEphemeralApproval) {
+          this.logger.info({ runId: run.id }, 'run is waiting for approval; keep it resumable')
+          continue
+        }
+        // ACP/CLI approvals are held by a live child process; after a Runtime
+        // restart there is no pending resolver to release them.
+        try {
+          this.store.transaction(() => {
+            this.store.updateRun(run.id, {
+              status: 'needs_reconciliation',
+              error: 'Runtime 在授权期间退出，权限请求已失效；不会自动重试，请人工核对后重新运行。',
+              finishedAt: now(),
+            })
+            this.store.appendEvent(run.projectId, run.id, PROJECT_EVENT_TYPES.runStatusChanged, {
+              status: 'needs_reconciliation',
+              runId: run.id,
+              sessionId: run.sessionId,
+            })
+            this.store.cancelPendingApprovals(run.id, 'Runtime 重启，授权已失效')
+            this.store.updateTaskAttemptStatus(run.id, 'needs_reconciliation')
+            this.releaseStoredLease(run)
+          })
+          this.tryMoveTask(run.taskId, 'blocked', 'Runtime 重启，授权已失效')
+        } catch (error) {
+          this.logger.warn({ err: error, runId: run.id }, 'failed to reconcile ACP approval after restart')
+        }
         continue
       }
       try {
@@ -1503,6 +2115,7 @@ export class AgentRunner {
           })
           this.store.cancelPendingApprovals(run.id, 'Runtime 重启，未完成审批已失效')
           this.store.updateTaskAttemptStatus(run.id, 'needs_reconciliation')
+          this.releaseStoredLease(run)
         })
         this.tryMoveTask(run.taskId, 'blocked', 'Runtime 重启，执行状态待人工核对')
       } catch (error) {
@@ -1515,6 +2128,7 @@ export class AgentRunner {
     for (const state of this.active.values()) {
       state.abort.abort()
       if (state.leaseTimer) clearInterval(state.leaseTimer)
+      this.resolvePendingPermissions(state.runId, null)
     }
     this.active.clear()
     this.sessionIndex.clear()

@@ -48,6 +48,7 @@ import {
   type Requirement,
   type Run,
   type RunDetail,
+  type RunSnapshot,
   type RunSummary,
   type Session,
   type SessionDetail,
@@ -568,6 +569,16 @@ export class ReadModels {
     return row ? toRun(row) : null
   }
 
+  getRunSnapshot(runId: string): RunSnapshot | null {
+    const row = this.get<{ snapshot_json: string }>('SELECT snapshot_json FROM run_snapshots WHERE run_id = ?', runId)
+    if (!row) return null
+    try {
+      return JSON.parse(row.snapshot_json) as RunSnapshot
+    } catch {
+      return null
+    }
+  }
+
   getRunSummary(runId: string): RunSummary | null {
     const row = this.get<
       RunRow & {
@@ -773,6 +784,7 @@ export class ReadModels {
     const task = run.taskId ? this.getTask(run.taskId) : null
     return {
       run,
+      snapshot: this.getRunSnapshot(runId),
       steps: this.getRunSteps(runId),
       toolCalls: this.getToolCalls(runId),
       approvals: this.listApprovalViews(null, runId),
@@ -1462,6 +1474,14 @@ export class ReadModels {
   getAutonomyMode(projectId: string): AutonomyMode {
     const row = this.get<{ mode: string }>('SELECT mode FROM autonomy_settings WHERE project_id = ?', projectId)
     return (row?.mode as AutonomyMode | undefined) ?? 'observe'
+  }
+
+  getAutomationRepairAgentId(projectId: string): string | null {
+    const row = this.get<{ repair_agent_id: string | null }>(
+      'SELECT repair_agent_id FROM autonomy_settings WHERE project_id = ?',
+      projectId,
+    )
+    return row?.repair_agent_id ?? null
   }
 
   listDueAutomationTriggers(at: number): Array<{ projectId: string; intervalMinutes: number; nextRunAt: number | null }> {

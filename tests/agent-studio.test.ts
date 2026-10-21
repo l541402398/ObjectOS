@@ -37,6 +37,20 @@ describe('agent studio', () => {
     expect(imported.currentVersion).toBe(1)
   })
 
+  it('archives an agent without deleting its configuration history', () => {
+    const { studio } = setup()
+    const profiles = studio.ensureDefaultProfiles()
+    const created = studio.upsertAgent({
+      name: 'Archivable Agent', role: '审查员', description: '', category: 'quality', avatar: '', visibility: 'project',
+      persona, skillIds: [], runtimeProfileIds: [profiles[0]!.id], primaryRuntimeProfileId: profiles[0]!.id,
+      modelRef: null, permissions: { tools: [], files: false, shell: false, network: false },
+    })
+    const archived = studio.setStatus(created.id, 'archived')
+    expect(archived.status).toBe('archived')
+    expect(archived.currentVersion).toBe(created.currentVersion + 1)
+    expect(studio.listAgents().find((agent) => agent.id === created.id)?.status).toBe('archived')
+  })
+
   it('updates and deletes custom runtime profiles', () => {
     const { studio } = setup()
     const created = studio.upsertRuntime({ name: 'Custom', protocol: 'cli', executable: 'node', endpoint: null, args: [], authRef: null, modelRef: null, options: {}, capabilities: {} })

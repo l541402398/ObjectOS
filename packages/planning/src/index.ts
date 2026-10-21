@@ -12,6 +12,11 @@ export function agentForPlanRole(role: PlannedTask['role']): string {
   return ROLE_AGENT[role]
 }
 
+/** Explicit node assignment wins; otherwise keep the legacy role default. */
+export function agentForPlannedTask(task: Pick<PlannedTask, 'role' | 'agentId'>): string {
+  return task.agentId ?? agentForPlanRole(task.role)
+}
+
 export function generateLocalPlan(input: {
   projectId: string
   goal: string

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { App, Button, Form, Input, Modal, Select, Switch, Tag } from 'antd'
 import {
   CheckOutlined,
+  CopyOutlined,
   DeleteOutlined,
   EyeOutlined,
   ExportOutlined,
@@ -15,7 +16,7 @@ import {
 } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import type { AgentDefinition } from '@projectos/contracts'
-import { useAgentDefinitions, useRuntimeProfiles, useSkills } from '../lib/queries'
+import { useAgentDefinitions, useGraph, useRuntimeProfiles, useSkills } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
 
 interface AgentFormValues {
@@ -33,6 +34,7 @@ interface AgentFormValues {
   systemPrompt?: string
   runtimeProfileIds?: string[]
   primaryRuntimeProfileId?: string | null
+  modelRef?: string | null
   skillIds?: string[]
   files?: boolean
   shell?: boolean
@@ -130,6 +132,7 @@ function templateValues(template: AgentTemplate): Partial<AgentFormValues> {
     visibility: 'project',
     runtimeProfileIds: [],
     primaryRuntimeProfileId: null,
+    modelRef: null,
     skillIds: [],
     files: false,
     shell: false,
@@ -143,6 +146,7 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
   const agents = useAgentDefinitions()
   const skills = useSkills()
   const runtimes = useRuntimeProfiles()
+  const graph = useGraph(open ? projectId : null)
   const [form] = Form.useForm<AgentFormValues>()
   const values = Form.useWatch([], form) as AgentFormValues | undefined
   const importRef = useRef<HTMLInputElement>(null)
@@ -166,7 +170,7 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
         ? templateValues(template)
         : {
             name: '', role: '', description: '', category: 'general', avatar: '🤖', visibility: 'project',
-            runtimeProfileIds: [], primaryRuntimeProfileId: null, skillIds: [], files: false, shell: false, network: false,
+            runtimeProfileIds: [], primaryRuntimeProfileId: null, modelRef: null, skillIds: [], files: false, shell: false, network: false,
           },
     )
   }
@@ -211,6 +215,7 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
       systemPrompt: agent.persona.systemPrompt,
       runtimeProfileIds: agent.runtimeProfileIds,
       primaryRuntimeProfileId: agent.primaryRuntimeProfileId,
+      modelRef: agent.modelRef,
       skillIds: agent.skills.map((skill) => skill.skillId),
       files: agent.permissions.files,
       shell: agent.permissions.shell,
@@ -231,6 +236,13 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
 
   const selectedRuntime = runtimes.data?.profiles.find((item) => item.id === values?.primaryRuntimeProfileId)
   const selectedSkills = (skills.data?.skills ?? []).filter((skill) => (values?.skillIds ?? []).includes(skill.id))
+  const usedBy = useMemo(
+    () =>
+      (graph.data?.nodes ?? []).filter(
+        (node) => node.kind === 'task' && editing && node.agentId === editing.id,
+      ),
+    [graph.data, editing],
+  )
 
   const save = async (): Promise<void> => {
     const formValues = await form.validateFields()
@@ -256,7 +268,7 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
         skillIds: formValues.skillIds ?? [],
         runtimeProfileIds: formValues.primaryRuntimeProfileId ? [formValues.primaryRuntimeProfileId] : (formValues.runtimeProfileIds ?? []),
         primaryRuntimeProfileId: formValues.primaryRuntimeProfileId ?? null,
-        modelRef: editing?.modelRef ?? null,
+        modelRef: formValues.modelRef?.trim() || null,
         permissions: {
           tools: editing?.permissions.tools ?? [],
           files: Boolean(formValues.files),
@@ -272,6 +284,49 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
     } finally {
       setSaving(false)
     }
+  }
+
+  const duplicateAgent = async (agent: AgentDefinition): Promise<void> => {
+    try {
+      await window.projectos.agentDefinitions.upsert({
+        name: `${agent.name} 副本`.slice(0, 120),
+        role: agent.role,
+        description: agent.description,
+        category: agent.category,
+        avatar: agent.avatar,
+        visibility: agent.visibility,
+        persona: agent.persona,
+        skillIds: agent.skills.filter((skill) => skill.enabled).map((skill) => skill.skillId),
+        runtimeProfileIds: agent.runtimeProfileIds,
+        primaryRuntimeProfileId: agent.primaryRuntimeProfileId,
+        modelRef: agent.modelRef,
+        permissions: agent.permissions,
+      })
+      await queryClient.invalidateQueries({ queryKey: ['agent-definitions'] })
+      message.success('Agent 已复制')
+    } catch (error) {
+      message.error(errorMessage(error))
+    }
+  }
+
+  const changeAgentStatus = (agent: AgentDefinition, status: 'active' | 'archived'): void => {
+    modal.confirm({
+      title: status === 'archived' ? `归档 ${agent.name}？` : `启用 ${agent.name}？`,
+      content: status === 'archived'
+        ? '归档后不能启动新的运行，历史运行和快照保留。'
+        : '启用后可以再次被工作流和会话使用。',
+      okText: status === 'archived' ? '归档' : '启用',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          await window.projectos.agentDefinitions.setStatus(agent.id, status)
+          await queryClient.invalidateQueries({ queryKey: ['agent-definitions'] })
+          message.success(status === 'archived' ? 'Agent 已归档' : 'Agent 已启用')
+        } catch (error) {
+          message.error(errorMessage(error))
+        }
+      },
+    })
   }
 
   const exportAgent = async (): Promise<void> => {
@@ -361,6 +416,7 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
           <div className="v16-studio-head-actions">
             <Button icon={<ImportOutlined />} onClick={() => importRef.current?.click()}>导入</Button>
             {editing ? <Button icon={<ExportOutlined />} onClick={() => void exportAgent()}>导出</Button> : null}
+            {editing ? <Button icon={<CopyOutlined />} onClick={() => void duplicateAgent(editing)}>复制</Button> : null}
             {editing ? <Button icon={<EyeOutlined />} onClick={() => void preview(editing.id)}>提示词</Button> : null}
             {editing && editing.runtimeProfileIds.length ? (
               <Button icon={<ThunderboltOutlined />} onClick={() => { setRunOpen(true); setRunPrompt(''); setRunOutput(null) }}>运行测试</Button>
@@ -402,7 +458,7 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
                       onClick={() => edit(agent)}
                     >
                       <span className="v16-template-icon">{agent.avatar || agent.name.slice(0, 1)}</span>
-                      <span><strong>{agent.name}</strong><small>{agent.role} · v{agent.currentVersion}</small></span>
+                      <span><strong>{agent.name}</strong><small>{agent.role} · v{agent.currentVersion}{agent.status !== 'active' ? ` · ${agent.status}` : ''}</small></span>
                     </button>
                   ))}
                 </>
@@ -575,6 +631,13 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
                       <div><span>来源</span><strong>{selectedRuntime.source}</strong></div>
                     </div>
                   ) : null}
+                  <Form.Item
+                    name="modelRef"
+                    label="模型覆盖（可选）"
+                    extra="留空沿用当前默认模型；填写后作为该 Agent 的模型 ID。"
+                  >
+                    <Input placeholder="例如 deepseek-chat" />
+                  </Form.Item>
               </div>
 
               <div className="v16-advanced-tab" hidden={activeTab !== 4}>
@@ -590,8 +653,28 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
                     <span>未授权的工具调用会被拒绝。高风险操作仍需项目审批。</span>
                   </div>
                   {editing ? (
+                    <div className="v16-advanced-note">
+                      <SafetyCertificateOutlined />
+                      <span>
+                        工作流引用：
+                        {usedBy.length
+                          ? usedBy.slice(0, 6).map((node) => node.label).join('、')
+                          : '未被计划节点或任务引用'}
+                      </span>
+                    </div>
+                  ) : null}
+                  {editing ? (
                     <div className="v16-danger-row">
-                      <div><strong>删除 Agent</strong><span>已被引用的 Agent 不会被删除。</span></div>
+                      <div>
+                        <strong>{editing.status === 'archived' ? '启用 Agent' : '归档 Agent'}</strong>
+                        <span>{editing.status === 'archived' ? '恢复后可被新的工作流使用。' : '归档后不能启动新的运行，历史快照保留。'}</span>
+                      </div>
+                      <Button
+                        icon={editing.status === 'archived' ? <CheckOutlined /> : <SafetyCertificateOutlined />}
+                        onClick={() => changeAgentStatus(editing, editing.status === 'archived' ? 'active' : 'archived')}
+                      >
+                        {editing.status === 'archived' ? '启用' : '归档'}
+                      </Button>
                       <Button danger icon={<DeleteOutlined />} onClick={() => remove(editing)}>删除</Button>
                     </div>
                   ) : null}

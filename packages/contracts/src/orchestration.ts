@@ -37,6 +37,8 @@ export const PlannedTaskSchema = z.object({
   title: z.string().min(1).max(240),
   description: z.string().max(8000).default(''),
   role: PlanRoleSchema,
+  /** Explicit AgentAssignment; omitted means the role default is used. */
+  agentId: IdSchema.nullable().optional(),
   dependsOn: z.array(z.string().min(1).max(80)).default([]),
   acceptanceCriteria: z.array(z.string().max(2000)).default([]),
   expectedArtifacts: z.array(z.string().max(500)).default([]),

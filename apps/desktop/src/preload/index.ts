@@ -203,6 +203,7 @@ const api: ProjectOSDesktopApi = {
   agentDefinitions: {
     list: () => call('agentDefinition.list', {}),
     upsert: (input) => call('agentDefinition.upsert', input),
+    setStatus: (id, status) => call('agentDefinition.setStatus', { id, status }),
     delete: (id) => call('agentDefinition.delete', { id }),
     export: (id) => call('agentDefinition.export', { id }),
     import: (json) => call('agentDefinition.import', { json }),
@@ -233,7 +234,7 @@ const api: ProjectOSDesktopApi = {
     propose: (projectId, findingIds) => call('operations.propose', { projectId, findingIds }),
     reviewProposal: (proposalId, decision) => call('operations.reviewProposal', { proposalId, decision }),
     startRepair: (proposalId) => call('operations.startRepair', { proposalId }),
-    setMode: (projectId, mode) => call('operations.setMode', { projectId, mode }),
+    setMode: (projectId, mode, repairAgentId) => call('operations.setMode', { projectId, mode, ...(repairAgentId === undefined ? {} : { repairAgentId }) }),
     getTrigger: (projectId) => call('operations.getTrigger', { projectId }),
     insights: (projectId, runAudit = false) => call('operations.insights', { projectId, runAudit }),
     risk: (proposalId) => call('operations.risk', { proposalId }),

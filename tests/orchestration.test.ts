@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { AgentView, PlanDraft, TaskCard } from '@projectos/contracts'
-import { criticalPathTasks, generateLocalPlan, topologicalPlanTasks, validatePlanDraft } from '@projectos/planning'
+import { agentForPlannedTask, criticalPathTasks, generateLocalPlan, topologicalPlanTasks, validatePlanDraft } from '@projectos/planning'
 import { scanProject } from '@projectos/project-analyzer'
 import { buildGraphSnapshot } from '@projectos/graph-projection'
 import { QualityGateService } from '../apps/runtime/src/quality-gate.js'
@@ -75,6 +75,8 @@ describe('planning', () => {
       'review',
       'verification',
     ])
+    expect(agentForPlannedTask(plan.tasks[0]!)).toBe('agt_architect')
+    expect(agentForPlannedTask({ ...plan.tasks[0]!, agentId: 'agt_custom' })).toBe('agt_custom')
     const cyclic: PlanDraft = {
       ...plan,
       tasks: plan.tasks.map((task) =>

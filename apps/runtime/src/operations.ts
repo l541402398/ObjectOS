@@ -93,6 +93,7 @@ export class OperationsService {
     return {
       projectId,
       mode: this.store.read.getAutonomyMode(projectId),
+      repairAgentId: this.store.read.getAutomationRepairAgentId(projectId),
       checks: this.store.read.listHealthCheckRuns(projectId),
       findings: this.store.read.listFindings(projectId),
       proposals: this.store.read.listProposals(projectId),
@@ -477,9 +478,17 @@ export class OperationsService {
     return this.store.read.getProposal(proposalId)
   }
 
-  setMode(projectId: string, mode: AutonomyMode) {
+  setMode(projectId: string, mode: AutonomyMode, repairAgentId?: string | null) {
     if (!this.store.read.getProject(projectId)) throw new AppError('NOT_FOUND', '项目不存在')
-    this.store.setAutonomyMode(projectId, mode)
+    if (repairAgentId) {
+      const agent = this.store.read.getAgent(repairAgentId)
+      if (!agent) throw new AppError('NOT_FOUND', '指定的修复 Agent 不存在')
+      const definition = this.store.read.getAgentDefinition(repairAgentId)
+      if (definition && definition.status !== 'active') {
+        throw new AppError('CONFLICT', '指定的修复 Agent 当前不可用')
+      }
+    }
+    this.store.setAutonomyMode(projectId, mode, repairAgentId)
     return this.snapshot(projectId)
   }
 }

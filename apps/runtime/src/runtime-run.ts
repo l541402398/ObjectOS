@@ -1,4 +1,5 @@
 import { AppError, newId, now } from '@projectos/contracts'
+import { createHash } from 'node:crypto'
 import { join, isAbsolute, relative, resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 import { WorktreeManager } from '@projectos/worktree'
@@ -27,6 +28,14 @@ export class RuntimeRunService {
     this.store.createSession({ id: sessionId, projectId: project.id, agentId: agent.id, title: promptTitle(prompt), status: 'active', createdAt: timestamp, updatedAt: timestamp })
     this.store.appendMessage({ sessionId, role: 'user', content: prompt, runId, metadata: { runtimeProfileId: profile.id, protocol: 'acp' } })
     this.store.createRun({ id: runId, projectId: project.id, taskId: null, sessionId, agentId: agent.id, attempt: 1, status: 'running', error: null, summary: null, inputTokens: 0, outputTokens: 0, checkpointId: null, startedAt: timestamp, finishedAt: null, createdAt: timestamp })
+    const toolCall = this.store.createToolCall({
+      runId,
+      toolName: 'runtime.acp',
+      idempotencyKey: `${runId}:runtime.acp`,
+      status: 'running',
+      argsHash: createHash('sha256').update(`${profile.id}:${prompt}`).digest('hex'),
+      args: { profileId: profile.id, protocol: 'acp', promptChars: prompt.length, cwd },
+    })
     this.store.appendEvent(project.id, runId, 'run.started', { agentId: agent.id, runtimeProfileId: profile.id, protocol: 'acp' })
     const client = new AcpClient(profile.executable, profile.args, cwd)
     const rawEvents: unknown[] = []
@@ -37,6 +46,7 @@ export class RuntimeRunService {
       const result = await client.prompt(session.sessionId, prompt)
       const output = acpTextFromEvents(rawEvents) || 'Runtime 执行完成（ACP 未返回文本内容）'
       this.store.appendMessage({ sessionId, role: 'assistant', content: output.slice(0, 80_000), runId, metadata: { runtimeProfileId: profile.id, protocol: 'acp', acpSessionId: session.sessionId, events: rawEvents.length, result } })
+      this.store.updateToolCall(toolCall.id, { status: 'completed', result: { output: output.slice(0, 20_000) }, finishedAt: now() })
       this.store.updateRun(runId, { status: 'completed', error: null, summary: output.slice(0, 20_000), finishedAt: now() })
       this.store.appendEvent(project.id, runId, 'run.completed', { agentId: agent.id, runtimeProfileId: profile.id, protocol: 'acp', events: rawEvents.length })
       return {
@@ -46,6 +56,7 @@ export class RuntimeRunService {
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
+      this.store.updateToolCall(toolCall.id, { status: 'failed', error: message.slice(0, 8000), finishedAt: now() })
       this.store.appendMessage({ sessionId, role: 'assistant', content: message, runId, metadata: { runtimeProfileId: profile.id, protocol: 'acp', failed: true } })
       this.store.updateRun(runId, { status: 'failed', error: message.slice(0, 8000), summary: null, finishedAt: now() })
       this.store.appendEvent(project.id, runId, 'run.failed', { agentId: agent.id, runtimeProfileId: profile.id, protocol: 'acp', error: message.slice(0, 2000) })
@@ -92,6 +103,14 @@ export class RuntimeRunService {
       checkpointId: null, startedAt: timestamp, finishedAt: null, createdAt: timestamp,
     })
     this.store.appendEvent(input.projectId, runId, 'run.started', { agentId: agent.id, runtimeProfileId: profile.id, profile: profile.name })
+    const toolCall = this.store.createToolCall({
+      runId,
+      toolName: 'runtime.execute',
+      idempotencyKey: `${runId}:runtime.execute`,
+      status: 'running',
+      argsHash: createHash('sha256').update(`${profile.id}:${input.prompt}`).digest('hex'),
+      args: { profileId: profile.id, protocol: profile.protocol, promptChars: input.prompt.length, cwd },
+    })
     let workspaceRef: string | null = null
     let executionCwd = cwd
     if (profile.capabilities.worktree && existsSync(join(project.rootPath, '.git'))) {
@@ -100,10 +119,25 @@ export class RuntimeRunService {
       workspaceRef = worktree.path
       executionCwd = worktree.path
     }
-    const result = await this.executor.execute(profile.id, input.prompt, executionCwd)
+    let result: Awaited<ReturnType<RuntimeExecutionService['execute']>>
+    try {
+      result = await this.executor.execute(profile.id, input.prompt, executionCwd)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      this.store.updateToolCall(toolCall.id, { status: 'failed', error: message.slice(0, 8000), finishedAt: now() })
+      this.store.updateRun(runId, { status: 'failed', error: message.slice(0, 8000), finishedAt: now() })
+      this.store.appendEvent(input.projectId, runId, 'run.failed', { agentId: agent.id, runtimeProfileId: profile.id, error: message.slice(0, 2000) })
+      throw error
+    }
     result.output = redact(result.output)
     result.events = result.events.map((event) => ({ ...event, text: redact(event.text) }))
     const status = result.status === 'completed' ? 'completed' : 'failed'
+    this.store.updateToolCall(toolCall.id, {
+      status: status === 'completed' ? 'completed' : 'failed',
+      result: { output: result.output.slice(0, 20_000) },
+      error: status === 'completed' ? null : result.output.slice(-8000),
+      finishedAt: now(),
+    })
     this.store.appendMessage({
       sessionId, role: 'assistant', content: result.output.slice(0, 80_000), runId,
       metadata: { runtimeProfileId: profile.id, executionId: result.executionId, events: result.events.length },

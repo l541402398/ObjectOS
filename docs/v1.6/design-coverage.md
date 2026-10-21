@@ -19,13 +19,13 @@
 | 10 资源管理 | ✅ | ResourcesPage |
 | 11 模型目录 | ✅ | ModelCatalogPanel + 模型详情 Drawer |
 | 12 Runtime 管理 | ✅ | RuntimeSettingsPanel + 检测持久化 |
-| 13 Agent 路由 | ✅ | RoutingPanel |
+| 13 Agent 路由 | ◐ | V1.7 按 `settings-runtime-ux.md` 移除独立页；后端路由数据保留，当前无 UI |
 | 14 工具与插件 | ✅ | ToolsSettingsPanel + Runtime 详情 |
-| 15 外部 Agent | ✅ | ExternalAgentsPanel |
+| 15 外部 Agent | ◐ | V1.7 移除设置入口；Runtime Harness 统一管理，externalAgents API 仍保留 |
 | 16 AI 连接编辑器 | ✅ | 内联编辑器 + 高级折叠 |
-| 16 团队与权限 | ✅ | TeamSettingsPanel |
+| 16 团队与权限 | ◐ | V1.7 移除设置入口；本地单用户后端权限仍生效 |
 | 17 项目任务 | ✅ | 任务看板 |
-| 17 系统设置 | ✅ | SystemSettingsPanel |
+| 17 系统设置 | ◐ | 合并为“偏好设置”；旧 SystemSettingsPanel 不再挂载 |
 | 18 跨会话交接 | ✅ | CollaborationPage |
 | 19 自主运营 | ✅ | OperationsPage |
 | 20 审批中心 | ✅ | ApprovalsPage |

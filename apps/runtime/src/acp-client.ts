@@ -57,8 +57,17 @@ export class AcpClient {
   }
 
   private onLine(line: string): void {
-    let message: { id?: number; result?: unknown; error?: { message?: string } }
+    let message: { id?: number; method?: string; params?: unknown; result?: unknown; error?: { message?: string } }
     try { message = JSON.parse(line) as typeof message } catch { return }
+    if (typeof message.method === 'string') {
+      if (typeof message.id === 'number') {
+        // Incoming JSON-RPC request from the agent (for example session/request_permission).
+        void this.handleRequest(message.id, message.method, message.params)
+      } else {
+        for (const listener of this.listeners) listener(message)
+      }
+      return
+    }
     if (typeof message.id !== 'number') {
       for (const listener of this.listeners) listener(message)
       return
@@ -73,14 +82,19 @@ export class AcpClient {
 
   private async handleRequest(id: number, method: string, params: unknown): Promise<void> {
     if (method === 'session/request_permission') {
-      const optionId = this.permissionHandler ? await this.permissionHandler(params) : null
+      let optionId: string | null = null
+      try {
+        optionId = this.permissionHandler ? await this.permissionHandler(params) : null
+      } catch {
+        optionId = null
+      }
       this.child.stdin?.write(JSON.stringify({
         jsonrpc: '2.0',
         id,
         result: optionId
           ? { outcome: { outcome: 'selected', optionId } }
           : { outcome: { outcome: 'cancelled' } },
-      }) + '\\n')
+      }) + '\n')
       for (const listener of this.listeners) listener({ type: 'permission.requested', method, params, approved: Boolean(optionId) })
       return
     }
@@ -135,7 +149,9 @@ export class AcpClient {
   }
 
   async prompt(sessionId: string, text: string): Promise<unknown> {
-    return this.request('session/prompt', { sessionId, prompt: [{ type: 'text', text }] }, 300_000)
+    // Permission requests can wait for a human; keep the ACP turn alive longer
+    // than the default approval TTL instead of timing out while waiting.
+    return this.request('session/prompt', { sessionId, prompt: [{ type: 'text', text }] }, 35 * 60_000)
   }
 
   dispose(): void {

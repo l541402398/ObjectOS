@@ -21,6 +21,7 @@ import {
   ToolCallStatusSchema,
 } from './enums.js'
 import { IdSchema, JsonObjectSchema, TimestampSchema } from './common.js'
+import { RunSnapshotSchema } from './v15.js'
 
 const nullableTimestamp = TimestampSchema.nullable()
 
@@ -466,6 +467,7 @@ export type ApprovalView = z.infer<typeof ApprovalViewSchema>
 
 export const RunDetailSchema = z.object({
   run: RunSummarySchema,
+  snapshot: RunSnapshotSchema.nullable(),
   steps: z.array(RunStepSchema),
   toolCalls: z.array(ToolCallSchema),
   approvals: z.array(ApprovalViewSchema),

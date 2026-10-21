@@ -4,13 +4,14 @@ import { App, Button, Checkbox, Popconfirm, Select, Tag } from 'antd'
 import { PlayCircleOutlined, SafetyCertificateOutlined } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { EmptyState, ErrorState, LoadingBlock, StatusPill } from '@projectos/ui'
-import { useOperations } from '../lib/queries'
+import { useAgents, useOperations } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
 import { formatRelative } from '../lib/format'
 
 export default function OperationsPage() {
   const { projectId = '' } = useParams<{ projectId: string }>()
   const query = useOperations(projectId)
+  const agents = useAgents(projectId)
   const insights = useQuery({
     queryKey: ['operations-insights', projectId],
     queryFn: () => window.projectos.operations.insights(projectId),
@@ -144,6 +145,21 @@ export default function OperationsPage() {
             ]}
             onChange={(mode) => {
               void window.projectos.operations.setMode(projectId, mode as 'observe' | 'propose' | 'approved-autofix').then(refresh)
+            }}
+          />
+          <Select
+            allowClear
+            placeholder="修复 Agent · 角色默认"
+            value={data?.repairAgentId ?? undefined}
+            options={(agents.data?.agents ?? []).map((view) => ({
+              value: view.agent.id,
+              label: `${view.agent.name} · ${view.agent.role}`,
+            }))}
+            style={{ minWidth: 190 }}
+            onChange={(agentId) => {
+              void window.projectos.operations
+                .setMode(projectId, data?.mode ?? 'observe', agentId ?? null)
+                .then(refresh)
             }}
           />
           <Select

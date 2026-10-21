@@ -288,6 +288,29 @@ export default function RunsPage() {
                         { label: '耗时', value: formatDuration(selectedRun.startedAt, selectedRun.finishedAt) },
                         { label: 'Token', value: `${selectedRun.inputTokens} / ${selectedRun.outputTokens}` },
                         { label: '待授权', value: selectedRun.pendingApprovals },
+                        ...(runDetail.data.snapshot
+                          ? [
+                              {
+                                label: 'Agent 快照',
+                                value: `${runDetail.data.snapshot.agentName} · v${runDetail.data.snapshot.agentConfigVersion}`,
+                              },
+                              {
+                                label: 'Runtime 快照',
+                                value: runDetail.data.snapshot.runtimeProfileName ?? '内置 Provider',
+                              },
+                              {
+                                label: '权限快照',
+                                value:
+                                  [
+                                    runDetail.data.snapshot.permissions.files ? '文件' : '',
+                                    runDetail.data.snapshot.permissions.shell ? 'Shell' : '',
+                                    runDetail.data.snapshot.permissions.network ? '网络' : '',
+                                  ]
+                                    .filter(Boolean)
+                                    .join(' / ') || '无',
+                              },
+                            ]
+                          : []),
                       ]}
                     />
                     {selectedRun.error ? <ErrorState compact title="运行错误" message={selectedRun.error} /> : null}

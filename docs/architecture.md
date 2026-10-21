@@ -68,7 +68,7 @@ SQLite 表（迁移 v1）覆盖：
 - 项目与生命周期：`projects`, `project_stages`, `requirements`, `milestones`, `decisions`
 - 任务：`tasks`, `task_dependencies`, `task_attempts`, `task_leases`
 - Agent：`agents`, `agent_instances`, `sessions`, `messages`
-- 运行：`agent_runs`, `run_steps`, `checkpoints`, `tool_calls`, `approvals`
+- 运行：`agent_runs`, `run_snapshots`, `run_steps`, `checkpoints`, `tool_calls`, `approvals`
 - 协作：`agent_inbox`, `handoffs`, `outbox`
 - 交付与知识：`artifacts`, `knowledge_entries`
 - AI 连接（v2）：`ai_connection_profiles`, `ai_models`, `ai_connection_checks`,
@@ -82,6 +82,8 @@ SQLite 表（迁移 v1）覆盖：
 - JSON 字段在写入前经 Zod/类型化输入校验；密钥不写入 SQLite。
 - `project_events` 序号在 `BEGIN IMMEDIATE` 事务内分配；写事件同时写 Outbox。
 - 任务更新使用 `expected_version` 乐观并发；租约使用单调 `fencing_token`。
+- Run 创建时冻结 `run_snapshots`（Agent/Persona/Skills/Runtime/权限/模型），运行中不再读取
+  可变 AgentDefinition，见 ADR-0010。
 - `schema_migrations` 保存 checksum；版本不匹配时拒绝启动迁移。
 
 ## 4. 运行生命周期
@@ -150,7 +152,8 @@ Runtime: AIConnectionService
 - 默认连接由 Main 同步给既有 ProviderManager，Agent 循环保持单一入口。
 - 连接测试 L1/L2/L3 在 Runtime 发请求；错误由 `connection-diagnostics` 分类并落检查表。
 - 设置是全局 Modal，不改变路由；模型目录支持发现与手动录入。
-- 外部 Agent 仅做检测，未创建执行 Driver。
+- 外部 Agent 可执行，但以 run 级 ToolCall、Task Lease 和 Worktree 为审计边界；ACP 权限请求
+  必须经过 ProjectOS Approval。详见 ADR-0009。
 
 ## 8. V1.3 项目扫描、计划与图投影
 
@@ -166,7 +169,8 @@ Runtime OrchestrationService
 - 图布局不参与调度；任务 DAG 仍是唯一依赖真相。
 - 计划审批失败不会留下半套任务；图每秒轮询/事件刷新，不是模拟状态。
 - 设置弹层中的连接编辑是内容区子视图（`ConnectionEditor`），不是第二个 Modal。
-- 自动 Orchestrator 调度、Worktree、质量门禁报告尚未实现。
+- 自动 Orchestrator 调度、Worktree、质量门禁报告已实现基础版本；计划级并行、失败重试和
+  人工核对仍按 `docs/status.md` 的边界执行。
 
 ## 9. 安全与审计
 

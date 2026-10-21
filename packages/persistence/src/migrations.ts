@@ -694,6 +694,21 @@ CREATE TABLE agent_runtime_bindings (
 );
 `
 
+const V15 = `
+ALTER TABLE autonomy_settings ADD COLUMN repair_agent_id TEXT;
+`
+
+const V14 = `
+CREATE TABLE run_snapshots (
+  run_id TEXT PRIMARY KEY REFERENCES agent_runs(id) ON DELETE CASCADE,
+  agent_id TEXT NOT NULL REFERENCES agents(id),
+  schema_version INTEGER NOT NULL DEFAULT 1,
+  snapshot_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_run_snapshots_agent ON run_snapshots(agent_id);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -708,6 +723,8 @@ export const MIGRATIONS: Migration[] = [
   { version: 11, name: 'automation grants', sql: V11 },
   { version: 12, name: 'automation runs and audit events', sql: V12 },
   { version: 13, name: 'agent definitions skills and runtime profiles', sql: V13 },
+  { version: 14, name: 'frozen run configuration snapshots', sql: V14 },
+  { version: 15, name: 'autonomy repair agent assignment', sql: V15 },
 ]
 
 function checksum(sql: string): string {
