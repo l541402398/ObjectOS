@@ -153,6 +153,42 @@ function scoreCandidate(
   return { score, reasons }
 }
 
+export interface RankedAssignment {
+  candidate: AssignmentCandidate
+  score: number
+  reasons: string[]
+}
+
+/**
+ * Rank every *eligible* candidate. The Scheduler reuses this when it must
+ * propose a substitute after a Handoff receiver failed, so the replacement
+ * score is computed by exactly the same rules as the initial assignment.
+ */
+export function rankAssignmentCandidates(input: ResolveAssignmentInput): {
+  ranked: RankedAssignment[]
+  rejected: AssignmentRejection[]
+} {
+  const rejected: AssignmentRejection[] = []
+  const ranked: RankedAssignment[] = []
+  for (const candidate of input.candidates) {
+    const blockers = candidateBlockers(candidate)
+    if (blockers.length > 0) {
+      rejected.push({ agentId: candidate.agentId, name: candidate.name, reasons: blockers })
+      continue
+    }
+    const value = scoreCandidate(candidate, input)
+    ranked.push({ candidate, score: value.score, reasons: value.reasons })
+  }
+  ranked.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score
+    if (a.candidate.activeTaskCount !== b.candidate.activeTaskCount) {
+      return a.candidate.activeTaskCount - b.candidate.activeTaskCount
+    }
+    return a.candidate.agentId.localeCompare(b.candidate.agentId)
+  })
+  return { ranked, rejected }
+}
+
 export function resolveAgentAssignment(input: ResolveAssignmentInput): AgentAssignment {
   const explicitId = input.explicitAgentId?.trim() || null
   if (explicitId) {
@@ -189,19 +225,8 @@ export function resolveAgentAssignment(input: ResolveAssignmentInput): AgentAssi
     }
   }
 
-  const rejected: AssignmentRejection[] = []
-  const scored: Array<{ candidate: AssignmentCandidate; score: number; reasons: string[] }> = []
-  for (const candidate of input.candidates) {
-    const blockers = candidateBlockers(candidate)
-    if (blockers.length > 0) {
-      rejected.push({ agentId: candidate.agentId, name: candidate.name, reasons: blockers })
-      continue
-    }
-    const value = scoreCandidate(candidate, input)
-    scored.push({ candidate, ...value })
-  }
-
-  if (scored.length === 0) {
+  const { ranked, rejected } = rankAssignmentCandidates(input)
+  if (ranked.length === 0) {
     const reasons =
       rejected.length === 0
         ? ['没有可用的 Agent：项目中没有任何 Agent']
@@ -214,14 +239,7 @@ export function resolveAgentAssignment(input: ResolveAssignmentInput): AgentAssi
     return { agentId: null, blocked: true, reasons, rejected, score: 0 }
   }
 
-  scored.sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score
-    if (a.candidate.activeTaskCount !== b.candidate.activeTaskCount) {
-      return a.candidate.activeTaskCount - b.candidate.activeTaskCount
-    }
-    return a.candidate.agentId.localeCompare(b.candidate.agentId)
-  })
-  const selected = scored[0]!
+  const selected = ranked[0]!
   return {
     agentId: selected.candidate.agentId,
     blocked: false,

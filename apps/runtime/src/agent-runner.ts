@@ -24,6 +24,7 @@ import {
 import {
   PROJECT_EVENT_TYPES,
   assertRunTransition,
+  isTerminalRunStatus,
 } from '@projectos/domain'
 import { evaluateCompletion, type CoreServices } from '@projectos/application'
 import { runAgentLoop, type AgentLoopResult, type ToolInvocation, type ToolOutcome } from '@projectos/agent-runtime'
@@ -51,6 +52,7 @@ import {
 } from '@projectos/workspace'
 import { createArtifactRecord, type SqliteStore } from '@projectos/persistence'
 import type { RuntimeConfig } from './config.js'
+import { resolveLimits, type RuntimeLimits } from './limits.js'
 import type { ProviderManager } from './provider-manager.js'
 import type { RuntimeEventHub } from './events.js'
 import type { Logger } from './logger.js'
@@ -102,6 +104,15 @@ interface ResolvedRunTarget {
 
 const RUNNER_ACTOR = { kind: 'system' as const, id: 'agent-runner', name: 'Agent Runner' }
 
+interface ExecBudget {
+  maxWallClockMs: number
+  maxSteps: number
+  maxToolCalls: number
+  stepsUsed: number
+  toolCallsUsed: number
+  deadlineAt: number
+}
+
 interface ActiveRun {
   runId: string
   projectId: string
@@ -115,6 +126,8 @@ interface ActiveRun {
   modelId: string | null
   abort: AbortController
   lease: { token: number; expiresAt: number } | null
+  slot: { token: number; expiresAt: number } | null
+  budget: ExecBudget
   attemptNo: number
   inboxId: string | null
   promptMessageId: string
@@ -129,17 +142,13 @@ interface ActiveRun {
   lastTextFlushAt: number
   pendingApprovalId: string | null
   leaseTimer: NodeJS.Timeout | null
+  deadlineTimer: NodeJS.Timeout | null
   startedAt: number
   runtimeCancel: (() => void) | null
 }
 
-const MAX_AGENT_STEPS = (() => {
-  const configured = Number(process.env.PROJECTOS_MAX_AGENT_STEPS ?? 32)
-  if (!Number.isFinite(configured)) return 32
-  return Math.max(8, Math.min(64, Math.trunc(configured)))
-})()
-
-const LEASE_TTL_MS = 30 * 60 * 1000
+/** setTimeout overflows above 2^31-1 ms; clamp the deadline timer. */
+const MAX_TIMER_MS = 2_147_483_647
 
 export class AgentRunner {
   private readonly active = new Map<string, ActiveRun>()
@@ -148,6 +157,7 @@ export class AgentRunner {
   private readonly activeConnections = new Map<string, number>()
   private readonly pendingPermissions = new Map<string, PendingAcpPermission>()
   private readonly pendingRuntimeApprovals = new Map<string, PendingRuntimeApproval>()
+  private readonly limits: RuntimeLimits
   private aiConnections: import('./ai-connections.js').AIConnectionService | null = null
 
   constructor(
@@ -159,6 +169,12 @@ export class AgentRunner {
     private readonly logger: Logger,
   ) {
     this.runtimeExecutor = new RuntimeExecutionService(store, () => provider.rawConfig())
+    this.limits = resolveLimits(config.limits)
+  }
+
+  /** Effective hard limits, exposed for diagnostics and tests. */
+  getLimits(): RuntimeLimits {
+    return { ...this.limits }
   }
 
   setAIConnections(service: import('./ai-connections.js').AIConnectionService): void {
@@ -282,6 +298,15 @@ export class AgentRunner {
     const timestamp = now()
     const runId = newId('run')
     const attemptNo = task ? this.store.nextAttemptNo(task.id) : 1
+    const deadlineAt = timestamp + this.limits.runWallClockMs
+    const budget: ExecBudget = {
+      maxWallClockMs: this.limits.runWallClockMs,
+      maxSteps: this.limits.maxAgentSteps,
+      maxToolCalls: this.limits.maxToolCalls,
+      stepsUsed: 0,
+      toolCallsUsed: 0,
+      deadlineAt,
+    }
     const snapshot = this.buildRunSnapshot({
       runId,
       agent,
@@ -292,10 +317,25 @@ export class AgentRunner {
       createdAt: timestamp,
     })
     let lease: { token: number; expiresAt: number } | null = null
-    if (task) {
-      // Acquire the lease before creating Run/Attempt or mutating the task. A failed
-      // lease acquisition must leave no half-created execution state behind.
-      lease = this.store.acquireTaskLease(task.id, `run:${runId}`, LEASE_TTL_MS)
+    let slot: { token: number; expiresAt: number } | null = null
+    try {
+      // Global Agent capacity is acquired atomically before any Task lease,
+      // Run, Attempt or Session state is created.
+      slot = this.store.acquireAgentExecutionSlot(agent.id, runId, this.limits.agentSlotTtlMs)
+      if (task) {
+        // Acquire the lease before creating Run/Attempt or mutating the task. A failed
+        // lease acquisition must leave no half-created execution state behind.
+        lease = this.store.acquireTaskLease(task.id, `run:${runId}`, this.limits.taskLeaseTtlMs)
+      }
+    } catch (error) {
+      if (slot) {
+        try {
+          this.store.releaseAgentExecutionSlot(agent.id, runId, slot.token)
+        } catch {
+          // ignore cleanup failure; slot expires
+        }
+      }
+      throw error
     }
     let createdRun: Run | null = null
     try {
@@ -315,6 +355,14 @@ export class AgentRunner {
           checkpointId: null,
           startedAt: timestamp,
           finishedAt: null,
+          deadlineAt,
+          budget: {
+            maxWallClockMs: budget.maxWallClockMs,
+            maxSteps: budget.maxSteps,
+            maxToolCalls: budget.maxToolCalls,
+            stepsUsed: 0,
+            toolCallsUsed: 0,
+          },
           createdAt: timestamp,
         }
         this.store.createRun(run)
@@ -391,10 +439,24 @@ export class AgentRunner {
       })
     } catch (error) {
       if (lease && task) this.releaseRunLease(task.id, runId, lease)
+      if (slot) {
+        try {
+          this.store.releaseAgentExecutionSlot(agent.id, runId, slot.token)
+        } catch {
+          // ignore; slot expires
+        }
+      }
       throw error
     }
     if (!createdRun) {
       if (lease && task) this.releaseRunLease(task.id, runId, lease)
+      if (slot) {
+        try {
+          this.store.releaseAgentExecutionSlot(agent.id, runId, slot.token)
+        } catch {
+          // ignore; slot expires
+        }
+      }
       throw new AppError('INTERNAL', '运行创建失败')
     }
     const state: ActiveRun = {
@@ -410,6 +472,8 @@ export class AgentRunner {
       modelId: routed?.modelId ?? null,
       abort: new AbortController(),
       lease,
+      slot,
+      budget,
       attemptNo,
       inboxId: input.inboxId ?? null,
       promptMessageId: promptMessage.id,
@@ -424,6 +488,7 @@ export class AgentRunner {
       lastTextFlushAt: 0,
       pendingApprovalId: null,
       leaseTimer: null,
+      deadlineTimer: null,
       startedAt: timestamp,
       runtimeCancel: null,
     }
@@ -432,17 +497,26 @@ export class AgentRunner {
     if (state.connectionId) {
       this.activeConnections.set(state.connectionId, (this.activeConnections.get(state.connectionId) ?? 0) + 1)
     }
-    if (lease && task) {
+    if (lease || slot) {
+      // The Task lease and the global Agent capacity slot are renewed from one
+      // timer so a long Run can never lose capacity while it still holds tasks.
       state.leaseTimer = setInterval(() => {
         try {
-          this.store.renewTaskLease(task.id, `run:${runId}`, lease!.token, LEASE_TTL_MS)
-          lease!.expiresAt = now() + LEASE_TTL_MS
+          if (lease && task) {
+            this.store.renewTaskLease(task.id, `run:${runId}`, lease.token, this.limits.taskLeaseTtlMs)
+            lease.expiresAt = now() + this.limits.taskLeaseTtlMs
+          }
+          if (state.slot) {
+            this.store.renewAgentExecutionSlot(agent.id, runId, state.slot.token, this.limits.agentSlotTtlMs)
+            state.slot.expiresAt = now() + this.limits.agentSlotTtlMs
+          }
         } catch (error) {
           this.handleLeaseLoss(state, error)
         }
       }, 120_000)
       state.leaseTimer.unref?.()
     }
+    this.armDeadline(state);
     if (input.inboxId) {
       try {
         this.store.updateInboxStatus(input.inboxId, 'accepted')
@@ -484,7 +558,7 @@ export class AgentRunner {
     for (;;) {
       const run = this.store.read.getRun(runId)
       if (!run) throw new AppError('NOT_FOUND', '运行不存在')
-      if (['completed', 'failed', 'cancelled'].includes(run.status) || run.status === 'needs_reconciliation') {
+      if (isTerminalRunStatus(run.status) || run.status === 'needs_reconciliation') {
         return { run, timedOut: false }
       }
       if (Date.now() >= deadline) {
@@ -498,6 +572,148 @@ export class AgentRunner {
       }
       await new Promise<void>((resolve) => setTimeout(resolve, pollMs))
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Hard budgets (wall clock, steps, tool calls)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * (Re)arm the wall-clock deadline timer. The deadline is an absolute
+   * timestamp stored on the Run, so resuming after a restart keeps the
+   * remaining budget instead of granting a fresh one.
+   */
+  private armDeadline(state: ActiveRun): void {
+    if (state.deadlineTimer) {
+      clearTimeout(state.deadlineTimer)
+      state.deadlineTimer = null
+    }
+    if (!state.budget || state.budget.maxWallClockMs <= 0 || state.budget.deadlineAt <= 0) return
+    const remaining = state.budget.deadlineAt - Date.now()
+    const delay = Math.max(0, Math.min(MAX_TIMER_MS, remaining))
+    state.deadlineTimer = setTimeout(() => {
+      void this.enforceDeadline(state)
+    }, delay)
+    state.deadlineTimer.unref?.()
+  }
+
+  private async enforceDeadline(state: ActiveRun): Promise<void> {
+    const run = this.store.read.getRun(state.runId)
+    if (!run || isTerminalRunStatus(run.status)) return
+    const seconds = Math.round(state.budget.maxWallClockMs / 1000)
+    await this.terminateRun(state.runId, 'timed_out', 'wall_clock_timeout', `运行超出墙钟上限 ${seconds}s，已强制终止`)
+  }
+
+  private persistBudget(state: ActiveRun): void {
+    try {
+      this.store.updateRun(state.runId, {
+        deadlineAt: state.budget.deadlineAt,
+        budget: {
+          maxWallClockMs: state.budget.maxWallClockMs,
+          maxSteps: state.budget.maxSteps,
+          maxToolCalls: state.budget.maxToolCalls,
+          stepsUsed: state.budget.stepsUsed,
+          toolCallsUsed: state.budget.toolCallsUsed,
+        },
+      })
+    } catch (error) {
+      this.logger.warn({ err: error, runId: state.runId }, 'failed to persist run budget')
+    }
+  }
+
+  /**
+   * Hard terminal transition used by timeouts and budget exhaustion. It is
+   * deliberately idempotent: a late loop result must not overwrite the reason.
+   */
+  async terminateRun(
+    runId: string,
+    status: 'timed_out' | 'budget_exhausted',
+    reason: string,
+    message: string,
+  ): Promise<void> {
+    const run = this.store.read.getRun(runId)
+    if (!run || isTerminalRunStatus(run.status)) return
+    const state =
+      this.active.get(runId) ??
+      ({ runId, abort: new AbortController(), runtimeCancel: null } as unknown as ActiveRun)
+    const isActive = this.active.has(runId)
+    try {
+      state.abort.abort()
+    } catch {
+      // ignore
+    }
+    try {
+      state.runtimeCancel?.()
+    } catch {
+      // ignore
+    }
+    this.resolvePendingPermissions(runId, null)
+    this.store.cancelPendingApprovals(runId, message)
+    const error = redactSecrets(message).slice(0, 8000)
+    this.store.appendRunStep({
+      runId,
+      kind: 'budget',
+      title: status === 'timed_out' ? '墙钟超时终止' : '预算耗尽终止',
+      payload: {
+        reason,
+        status,
+        error,
+        budget: state.budget
+          ? {
+              maxWallClockMs: state.budget.maxWallClockMs,
+              maxSteps: state.budget.maxSteps,
+              maxToolCalls: state.budget.maxToolCalls,
+              stepsUsed: state.budget.stepsUsed,
+              toolCallsUsed: state.budget.toolCallsUsed,
+            }
+          : null,
+        at: now(),
+      },
+    })
+    if (isActive) {
+      try {
+        this.transitionRun(state, status, { error, finishedAt: now() })
+      } catch (transitionError) {
+        this.store.updateRun(runId, { status, error, finishedAt: now() })
+        this.logger.warn({ err: transitionError, runId }, 'budget transition bypassed state machine')
+      }
+    } else {
+      this.store.updateRun(runId, { status, error, finishedAt: now() })
+      this.store.appendEvent(run.projectId, runId, PROJECT_EVENT_TYPES.runStatusChanged, {
+        status,
+        reason,
+        runId,
+        sessionId: run.sessionId,
+      })
+    }
+    this.store.updateTaskAttemptStatus(runId, status === 'timed_out' ? 'timed_out' : 'budget_exhausted')
+    try {
+      this.tryMoveTask(run.taskId, 'blocked', message)
+    } catch (error) {
+      this.logger.warn({ err: error, runId }, 'failed to block task after budget termination')
+    }
+    if (isActive) {
+      if (state.inboxId) {
+        try {
+          this.store.updateInboxStatus(state.inboxId, 'failed', { error })
+        } catch {
+          // ignore
+        }
+      }
+      this.cleanup(state, status)
+    } else {
+      this.store.releaseAgentExecutionSlotForRun(runId)
+      this.releaseStoredLease(run)
+    }
+  }
+
+  /** Remaining assistant/tool rounds for this Run. */
+  private remainingSteps(state: ActiveRun): number {
+    return Math.max(0, state.budget.maxSteps - state.budget.stepsUsed)
+  }
+
+  private remainingToolCalls(state: ActiveRun): number {
+    return Math.max(0, state.budget.maxToolCalls - state.budget.toolCallsUsed)
   }
 
   private collectRunSkills(
@@ -628,7 +844,7 @@ export class AgentRunner {
         runtimeProfileId: profile.id,
         protocol: profile.protocol,
       },
-      expiresAt: now() + LEASE_TTL_MS,
+      expiresAt: now() + this.limits.taskLeaseTtlMs,
     })
     this.transitionRun(state, 'waiting_approval')
     state.pendingApprovalId = approval.id
@@ -686,7 +902,7 @@ export class AgentRunner {
         optionId,
         options: options.map((option) => ({ optionId: option.optionId ?? null, kind: option.kind ?? null, name: option.name ?? null })),
       },
-      expiresAt: now() + LEASE_TTL_MS,
+      expiresAt: now() + this.limits.taskLeaseTtlMs,
     })
     this.transitionRun(state, 'waiting_approval')
     state.pendingApprovalId = approval.id
@@ -755,7 +971,7 @@ export class AgentRunner {
       state.leaseTimer = null
     }
     const run = this.store.read.getRun(state.runId)
-    if (!run || ['completed', 'failed', 'cancelled'].includes(run.status)) return
+    if (!run || isTerminalRunStatus(run.status)) return
     state.abort.abort()
     const message = error instanceof Error ? error.message : String(error)
     this.logger.error({ err: error, runId: state.runId }, 'task lease lost; stopping run')
@@ -1038,15 +1254,40 @@ export class AgentRunner {
   private async execute(state: ActiveRun): Promise<void> {
     if (!state.provider) throw new AppError('INTERNAL', 'Agent 运行缺少 Provider')
     if (state.busy) return
+    const existing = this.store.read.getRun(state.runId)
+    if (!existing || isTerminalRunStatus(existing.status)) return
+    if (Date.now() >= state.budget.deadlineAt && state.budget.maxWallClockMs > 0) {
+      await this.terminateRun(state.runId, 'timed_out', 'wall_clock_timeout', '运行墙钟预算已耗尽，未再启动新的模型轮次')
+      return
+    }
+    if (this.remainingSteps(state) <= 0) {
+      await this.terminateRun(
+        state.runId,
+        'budget_exhausted',
+        'step_budget_exhausted',
+        `运行步骤预算已耗尽（上限 ${state.budget.maxSteps} 轮），未再启动新的模型轮次`,
+      )
+      return
+    }
+    if (this.remainingToolCalls(state) <= 0) {
+      await this.terminateRun(
+        state.runId,
+        'budget_exhausted',
+        'tool_budget_exhausted',
+        `工具调用预算已耗尽（上限 ${state.budget.maxToolCalls} 次），未再执行工具`,
+      )
+      return
+    }
     state.busy = true
     try {
-      const built = await this.buildMessages(state, this.store.read.getRun(state.runId)?.status === 'waiting_approval')
+      const built = await this.buildMessages(state, existing.status === 'waiting_approval')
+      if (state.abort.signal.aborted) return
       const result = await runAgentLoop({
         provider: state.provider,
         tools: built.tools,
         messages: built.messages,
         signal: state.abort.signal,
-        maxSteps: MAX_AGENT_STEPS,
+        maxSteps: this.remainingSteps(state),
         onTextDelta: (text) => this.onTextDelta(state, text),
         onAssistantTurn: (turn) => this.onAssistantTurn(state, turn),
         onToolResult: (invocation, outcome) => this.onToolResult(state, invocation, outcome),
@@ -1056,6 +1297,8 @@ export class AgentRunner {
         },
         executeTool: (invocation) => this.executeTool(state, invocation),
       })
+      state.budget.stepsUsed += Math.max(0, result.steps)
+      this.persistBudget(state)
       await this.applyLoopResult(state, result)
     } finally {
       state.busy = false
@@ -1063,6 +1306,8 @@ export class AgentRunner {
   }
 
   private async applyLoopResult(state: ActiveRun, result: AgentLoopResult): Promise<void> {
+    const current = this.store.read.getRun(state.runId)
+    if (!current || isTerminalRunStatus(current.status) || !this.active.has(state.runId)) return
     state.inputTokens = Math.max(state.inputTokens, result.inputTokens ?? 0)
     state.outputTokens = Math.max(state.outputTokens, result.outputTokens ?? 0)
     if (result.status === 'waiting_approval') {
@@ -1123,13 +1368,22 @@ export class AgentRunner {
       this.cleanup(state, 'cancelled')
       return
     }
+    if (result.status === 'failed' && /达到最大工具轮次/.test(result.error ?? '')) {
+      await this.terminateRun(
+        state.runId,
+        'budget_exhausted',
+        'step_budget_exhausted',
+        `运行步骤预算已耗尽（上限 ${state.budget.maxSteps} 轮）：${result.error ?? ''}`,
+      )
+      return
+    }
     await this.failRun(state, result.error ?? 'Agent 运行失败')
   }
 
   private async failRun(state: ActiveRun, message: string): Promise<void> {
     if (!this.active.has(state.runId)) return
     const current = this.store.read.getRun(state.runId)
-    if (!current || ['completed', 'failed', 'cancelled'].includes(current.status)) {
+    if (!current || isTerminalRunStatus(current.status)) {
       this.cleanup(state, 'failed')
       return
     }
@@ -1189,11 +1443,20 @@ export class AgentRunner {
       this.logger.warn({ err: error, runId: state.runId }, 'failed to record AI usage')
     }
     if (state.leaseTimer) clearInterval(state.leaseTimer)
+    if (state.deadlineTimer) clearTimeout(state.deadlineTimer)
+    state.deadlineTimer = null
     if (state.lease && state.taskId) {
       try {
         this.store.releaseTaskLease(state.taskId, `run:${state.runId}`, state.lease.token)
       } catch (error) {
         this.logger.warn({ err: error }, 'failed to release lease')
+      }
+    }
+    if (state.slot) {
+      try {
+        this.store.releaseAgentExecutionSlot(state.agentId, state.runId, state.slot.token)
+      } catch (error) {
+        this.logger.warn({ err: error, runId: state.runId }, 'failed to release agent execution slot')
       }
     }
     this.active.delete(state.runId)
@@ -1372,6 +1635,32 @@ export class AgentRunner {
   }
 
   private async executeTool(state: ActiveRun, invocation: ToolInvocation): Promise<ToolOutcome> {
+    // Hard budgets are checked before any side effect. A run that reached its
+    // wall clock, step or tool-call limit must not start another tool.
+    const currentRun = this.store.read.getRun(state.runId)
+    if (!currentRun || isTerminalRunStatus(currentRun.status)) {
+      return { status: 'failed', error: '运行已终止，不再执行工具' }
+    }
+    if (state.budget.maxWallClockMs > 0 && Date.now() >= state.budget.deadlineAt) {
+      await this.terminateRun(
+        state.runId,
+        'timed_out',
+        'wall_clock_timeout',
+        `运行超出墙钟上限 ${Math.round(state.budget.maxWallClockMs / 1000)}s，已停止执行工具`,
+      )
+      return { status: 'failed', error: '运行墙钟超时，工具未执行' }
+    }
+    if (this.remainingToolCalls(state) <= 0) {
+      await this.terminateRun(
+        state.runId,
+        'budget_exhausted',
+        'tool_budget_exhausted',
+        `工具调用预算已耗尽（上限 ${state.budget.maxToolCalls} 次），已停止执行工具`,
+      )
+      return { status: 'failed', error: '工具调用预算已耗尽，工具未执行' }
+    }
+    state.budget.toolCallsUsed += 1
+    this.persistBudget(state)
     this.assertLease(state)
     const definition = getToolDefinition(invocation.name)
     const project = this.store.read.getProject(state.projectId)
@@ -1792,7 +2081,7 @@ export class AgentRunner {
     if (approval.expiresAt && approval.expiresAt <= now()) {
       if (acpPermission || runtimeApproval) this.resolvePendingPermissions(run.id, null)
       const activeState = this.active.get(run.id)
-      const terminal = ['completed', 'failed', 'cancelled'].includes(run.status)
+      const terminal = isTerminalRunStatus(run.status)
       this.store.transaction(() => {
         this.store.expireApproval(approvalId, '审批已过期，操作未执行')
         if (toolCall) {
@@ -1925,6 +2214,36 @@ export class AgentRunner {
       return updated
     }
     this.assertLease(state)
+    // The Run may have spent its wall-clock budget while waiting for this
+    // approval. Re-check before executing the approved side effect.
+    if (state.budget.maxWallClockMs > 0 && Date.now() >= state.budget.deadlineAt) {
+      this.store.updateToolCall(toolCall.id, {
+        status: 'denied',
+        error: '运行已超出墙钟上限，工具未执行',
+        finishedAt: now(),
+      })
+      await this.terminateRun(
+        run.id,
+        'timed_out',
+        'wall_clock_timeout',
+        '审批等待期间运行超出墙钟上限，工具未执行',
+      )
+      return updated
+    }
+    if (this.remainingToolCalls(state) <= 0) {
+      this.store.updateToolCall(toolCall.id, {
+        status: 'denied',
+        error: '工具调用预算已耗尽，工具未执行',
+        finishedAt: now(),
+      })
+      await this.terminateRun(
+        run.id,
+        'budget_exhausted',
+        'tool_budget_exhausted',
+        '工具调用预算已耗尽，审批后的工具未执行',
+      )
+      return updated
+    }
     state.pendingApprovalId = null
     this.transitionRun(state, 'running')
     this.store.updateToolCall(toolCall.id, { status: 'running', startedAt: now() })
@@ -1970,7 +2289,7 @@ export class AgentRunner {
           finishedAt: now(),
         })
       }
-      if (!['completed', 'failed', 'cancelled'].includes(run.status)) {
+      if (!isTerminalRunStatus(run.status)) {
         this.store.updateRun(run.id, {
           status: 'failed',
           error: 'Runtime 已退出，授权无法恢复；请人工核对后重新运行',
@@ -2019,7 +2338,7 @@ export class AgentRunner {
           finishedAt: now(),
         })
       }
-      if (!['completed', 'failed', 'cancelled'].includes(run.status)) {
+      if (!isTerminalRunStatus(run.status)) {
         this.store.updateRun(run.id, {
           status: 'failed',
           error: 'ACP Runtime 已退出，授权无法恢复；请人工核对后重新运行',
@@ -2097,6 +2416,14 @@ export class AgentRunner {
       storedLease && storedLease.holderId === `run:${runId}` && storedLease.expiresAt > now()
         ? { token: storedLease.fencingToken, expiresAt: storedLease.expiresAt }
         : null
+    if (!agent) throw new AppError('NOT_FOUND', 'Agent 不存在')
+    let storedSlot = this.store.getAgentExecutionSlot(agent.id)
+    if (!storedSlot || storedSlot.runId !== runId || storedSlot.expiresAt <= now()) {
+      const acquired = this.store.acquireAgentExecutionSlot(agent.id, runId, this.limits.agentSlotTtlMs)
+      storedSlot = { runId, token: acquired.token, expiresAt: acquired.expiresAt }
+    }
+    const slot = { token: storedSlot.token, expiresAt: storedSlot.expiresAt }
+    const budget = this.budgetForRun(run)
     const state: ActiveRun = {
       runId,
       projectId: run.projectId,
@@ -2110,6 +2437,8 @@ export class AgentRunner {
       modelId: routed?.modelId ?? null,
       abort: new AbortController(),
       lease,
+      slot,
+      budget,
       attemptNo: run.attempt,
       inboxId: null,
       promptMessageId: this.findPromptMessageId(run),
@@ -2124,6 +2453,7 @@ export class AgentRunner {
       lastTextFlushAt: 0,
       pendingApprovalId: null,
       leaseTimer: null,
+      deadlineTimer: null,
       startedAt: run.startedAt ?? run.createdAt,
       runtimeCancel: null,
     }
@@ -2132,7 +2462,49 @@ export class AgentRunner {
     if (state.connectionId) {
       this.activeConnections.set(state.connectionId, (this.activeConnections.get(state.connectionId) ?? 0) + 1)
     }
+    this.armDeadline(state)
+    if (lease || slot) {
+      state.leaseTimer = setInterval(() => {
+        try {
+          if (lease && run.taskId) {
+            this.store.renewTaskLease(run.taskId, `run:${runId}`, lease.token, this.limits.taskLeaseTtlMs)
+            lease.expiresAt = now() + this.limits.taskLeaseTtlMs
+          }
+          if (state.slot) {
+            this.store.renewAgentExecutionSlot(agent.id, runId, state.slot.token, this.limits.agentSlotTtlMs)
+            state.slot.expiresAt = now() + this.limits.agentSlotTtlMs
+          }
+        } catch (error) {
+          this.handleLeaseLoss(state, error)
+        }
+      }, 120_000)
+      state.leaseTimer.unref?.()
+    }
     return state
+  }
+
+  /**
+   * Budget for a Run resumed after a restart. The persisted snapshot wins; for
+   * legacy rows the counters are reconstructed from the Run's own tool results
+   * so a restart cannot reset the budget silently.
+   */
+  private budgetForRun(run: Run): ExecBudget {
+    const persisted = run.budget
+    const startedAt = run.startedAt ?? run.createdAt
+    const toolResults = this.store.read
+      .getRunSteps(run.id)
+      .filter((step) => step.kind === 'tool_result').length
+    const finalTurns = this.store.read
+      .getRunSteps(run.id)
+      .filter((step) => step.kind === 'text' && step.payload.final === true).length
+    return {
+      maxWallClockMs: persisted?.maxWallClockMs ?? this.limits.runWallClockMs,
+      maxSteps: persisted?.maxSteps ?? this.limits.maxAgentSteps,
+      maxToolCalls: persisted?.maxToolCalls ?? this.limits.maxToolCalls,
+      stepsUsed: persisted?.stepsUsed ?? finalTurns,
+      toolCallsUsed: persisted?.toolCallsUsed ?? toolResults,
+      deadlineAt: run.deadlineAt ?? startedAt + (persisted?.maxWallClockMs ?? this.limits.runWallClockMs),
+    }
   }
 
   private findPromptMessageId(run: Run): string {
@@ -2164,7 +2536,7 @@ export class AgentRunner {
     }
     const run = this.store.read.getRun(runId)
     if (!run) throw new AppError('NOT_FOUND', '运行不存在')
-    if (['completed', 'failed', 'cancelled'].includes(run.status)) return
+    if (isTerminalRunStatus(run.status)) return
     this.store.cancelPendingApprovals(runId, '用户取消了运行')
     this.resolvePendingPermissions(runId, null)
     this.store.updateRun(runId, { status: 'cancelled', error: '用户取消了运行', finishedAt: now() })
@@ -2175,6 +2547,7 @@ export class AgentRunner {
     })
     this.tryMoveTask(run.taskId, 'ready')
     this.store.updateTaskAttemptStatus(runId, 'cancelled')
+    this.store.releaseAgentExecutionSlotForRun(runId)
   }
 
   /**
@@ -2246,6 +2619,7 @@ export class AgentRunner {
     })
     if (task) {
       this.releaseStoredLease(run)
+      this.store.releaseAgentExecutionSlotForRun(runId)
       this.moveTaskAfterReconcile(task.id, decision)
     }
     const updated = this.store.read.getRun(runId)
@@ -2318,7 +2692,8 @@ export class AgentRunner {
     }
   }
 
-  async resumeInbox(inboxId: string): Promise<{ runId: string | null; warning: string | null }> {    if (!this.provider.isConfigured()) {
+  async resumeInbox(inboxId: string): Promise<{ runId: string | null; warning: string | null }> {
+    if (!this.provider.isConfigured()) {
       return { runId: null, warning: '尚未配置模型 Provider，消息已持久化但无法唤醒 Agent' }
     }
     const item = this.store.read.getInbox(inboxId)
@@ -2405,6 +2780,7 @@ export class AgentRunner {
             this.releaseStoredLease(run)
           })
           this.tryMoveTask(run.taskId, 'blocked', 'Runtime 重启，授权已失效')
+          this.store.releaseAgentExecutionSlotForRun(run.id)
         } catch (error) {
           this.logger.warn({ err: error, runId: run.id }, 'failed to reconcile ACP approval after restart')
         }
@@ -2427,9 +2803,20 @@ export class AgentRunner {
           this.releaseStoredLease(run)
         })
         this.tryMoveTask(run.taskId, 'blocked', 'Runtime 重启，执行状态待人工核对')
+        this.store.releaseAgentExecutionSlotForRun(run.id)
       } catch (error) {
         this.logger.warn({ err: error, runId: run.id }, 'failed to reconcile interrupted run')
       }
+    }
+    // A crashed process can leave capacity slots behind; drop the ones whose Run
+    // is already terminal or gone so the Agent is not stalled for the whole TTL.
+    try {
+      const released = this.store.releaseDeadAgentExecutionSlots()
+      if (released.length > 0) {
+        this.logger.info({ agents: released }, 'released stale agent execution slots')
+      }
+    } catch (error) {
+      this.logger.warn({ err: error }, 'failed to release stale agent execution slots')
     }
   }
 
@@ -2437,6 +2824,7 @@ export class AgentRunner {
     for (const state of this.active.values()) {
       state.abort.abort()
       if (state.leaseTimer) clearInterval(state.leaseTimer)
+      if (state.deadlineTimer) clearTimeout(state.deadlineTimer)
       this.resolvePendingPermissions(state.runId, null)
     }
     this.active.clear()

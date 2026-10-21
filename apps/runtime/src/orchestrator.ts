@@ -1,4 +1,15 @@
-import { AppError, now, type HandoffView, type PlanDraft, type PlanExecution, type TaskCard, type WorktreeInfo } from '@projectos/contracts'
+import {
+  AppError,
+  now,
+  type AgentCapability,
+  type HandoffView,
+  type PlanDraft,
+  type PlanExecution,
+  type PlanRole,
+  type PlannedTask,
+  type TaskCard,
+  type WorktreeInfo,
+} from '@projectos/contracts'
 import { evaluateCompletion, type CoreServices } from '@projectos/application'
 import { PROJECT_EVENT_TYPES } from '@projectos/domain'
 import { getGitStatus } from '@projectos/workspace'
@@ -7,12 +18,37 @@ import type { SqliteStore } from '@projectos/persistence'
 import { WorktreeManager } from '@projectos/worktree'
 import { join } from 'node:path'
 import { existsSync } from 'node:fs'
+import {
+  rankAssignmentCandidates,
+  topologicalPlanTasks,
+  type AssignmentRejection,
+} from '@projectos/planning'
 import type { AgentRunner } from './agent-runner.js'
 import type { Logger } from './logger.js'
 import { QualityGateService, DEFAULT_QUALITY_POLICY, type QualityGateReport } from './quality-gate.js'
 import { planSessionTitle } from '@projectos/session-manager'
+import { buildAssignmentCandidates } from './assignment-candidates.js'
 
 const SYSTEM_ACTOR = { kind: 'system' as const, id: 'orchestrator', name: '编排器' }
+
+/** Ranked replacement candidate kept in the Handoff payload for user confirmation. */
+export interface ReassignmentCandidateView {
+  agentId: string
+  name: string
+  score: number
+  reasons: string[]
+}
+
+export interface ReassignmentDecision {
+  status: 'applied' | 'needs_confirmation' | 'none'
+  fromAgentId: string
+  toAgentId: string | null
+  candidates: ReassignmentCandidateView[]
+  rejected: AssignmentRejection[]
+  reasons: string[]
+  explicitAssignment: boolean
+  error: string
+}
 
 function execution(status: PlanExecution['status'], concurrency: number, previous?: PlanExecution | null): PlanExecution {
   return {
@@ -34,6 +70,9 @@ function execution(status: PlanExecution['status'], concurrency: number, previou
     evidenceRetries: previous?.evidenceRetries ?? {},
     evidenceRetryForRun: previous?.evidenceRetryForRun ?? {},
     requireWorktree: previous?.requireWorktree ?? false,
+    maxWallClockMs: previous?.maxWallClockMs ?? 0,
+    deadlineAt: previous?.deadlineAt ?? 0,
+    budgetExhausted: previous?.budgetExhausted ?? null,
   }
 }
 
@@ -104,8 +143,12 @@ export class OrchestrationScheduler {
     }
     if (!plan.createdTaskIds.length) throw new AppError('CONFLICT', '计划没有已创建的任务')
     if (plan.execution?.status === 'running') throw new AppError('CONFLICT', '计划已经在执行中')
+    const planWallClockMs = this.runner.getLimits().planWallClockMs
     const next = this.saveExecution(plan, {
       ...execution('running', concurrency, plan.execution),
+      maxWallClockMs: planWallClockMs,
+      deadlineAt: planWallClockMs > 0 ? now() + planWallClockMs : 0,
+      budgetExhausted: null,
       maxRetries: Math.max(0, Math.min(5, maxRetries)),
       requireWorktree: requireWorktree || Boolean(plan.execution?.requireWorktree),
     })
@@ -136,6 +179,9 @@ export class OrchestrationScheduler {
   resume(planId: string): PlanDraft {
     const plan = this.getPlan(planId)
     if (plan.execution?.status !== 'paused') throw new AppError('CONFLICT', '计划不在暂停状态')
+    if (plan.execution.deadlineAt > 0 && now() >= plan.execution.deadlineAt) {
+      throw new AppError('BUDGET_EXCEEDED', '计划总执行时间已超出上限，不能继续；请修订计划并重新开始')
+    }
     const next = this.saveExecution(plan, { ...plan.execution, status: 'running', error: null, updatedAt: now() })
     this.arm(planId)
     void this.tick(planId)
@@ -267,10 +313,23 @@ export class OrchestrationScheduler {
       const card = this.store.read.getTaskCard(handoff.taskId)
       if (!card || ['done', 'cancelled'].includes(card.status)) continue
       if (!this.store.read.isAgentVisibleToProject(plan.projectId, handoff.toAgentId)) {
-        this.store.updateHandoffPayload(handoff.id, {
-          schedulerPreparedAt: now(),
-          continuationError: '接收方 Agent 不在当前项目可见范围',
-        })
+        const hiddenCard = this.store.read.getTaskCard(handoff.taskId)
+        if (hiddenCard && !['done', 'cancelled'].includes(hiddenCard.status)) {
+          const decision = this.evaluateReassignment(
+            plan,
+            hiddenCard,
+            handoff,
+            '接收方 Agent 不在当前项目可见范围',
+            ['接收方 Agent 不在当前项目可见范围，替代必须人工确认'],
+          )
+          this.recordReassignment(plan, handoff, decision)
+          this.blockUnassignedTask(hiddenCard, `交接接收方不可见：${decision.reasons.join('；')}`)
+        } else {
+          this.store.updateHandoffPayload(handoff.id, {
+            schedulerPreparedAt: now(),
+            continuationError: '接收方 Agent 不在当前项目可见范围',
+          })
+        }
         continue
       }
       const activeRun = this.store.read.getActiveRunForTask(handoff.taskId)
@@ -357,8 +416,368 @@ export class OrchestrationScheduler {
     }
   }
 
-  private blockUnassignedTask(card: TaskCard, note: string): void {
+  /**
+   * Plan wall-clock deadline reached. Stop every in-flight Run with a distinct
+   * `timed_out` terminal state, mark the Plan failed with a budget reason, and
+   * never start another task — the audit records both decisions.
+   */
+  /**
+   * Map created Task ids back to their planned nodes. `approvePlan` creates
+   * tasks in topological order, so index parity is the durable mapping.
+   */
+  private plannedTaskFor(plan: PlanDraft, taskId: string): PlannedTask | null {
+    const index = plan.createdTaskIds.indexOf(taskId)
+    if (index < 0) return null
+    return topologicalPlanTasks(plan)[index] ?? null
+  }
+
+  private static readonly ROLE_SET = new Set<PlanRole>(['architect', 'developer', 'reviewer', 'tester', 'custom'])
+
+  private roleFor(card: TaskCard, planned: PlannedTask | null): PlanRole {
+    if (planned) return planned.role
+    const fromLabel = card.labels.find((label) => OrchestrationScheduler.ROLE_SET.has(label as PlanRole))
+    return (fromLabel as PlanRole | undefined) ?? 'custom'
+  }
+
+  private runtimeRisk(agentId: string): { rank: number; label: string } {
+    const definition = this.store.read.getAgentDefinition(agentId)
+    const profileId = definition?.primaryRuntimeProfileId ?? definition?.runtimeProfileIds[0] ?? null
+    if (!profileId) return { rank: 0, label: '内置 Provider' }
+    const profile = this.store.read.listRuntimeProfiles().find((item) => item.id === profileId)
+    if (!profile) return { rank: 3, label: `未知 Runtime ${profileId}` }
+    if (profile.protocol === 'acp') return { rank: 1, label: `ACP ${profile.name}` }
+    if (profile.protocol === 'native') return { rank: 0, label: `内置 ${profile.name}` }
+    return { rank: 2, label: `CLI ${profile.name}` }
+  }
+
+  /**
+   * Compute a safe substitute for a Handoff whose receiver failed to start.
+   *
+   * Hard rules (no silent substitution):
+   * - explicit user assignment, non-low handoff risk, permission expansion,
+   *   higher-risk Runtime, or unknown prior side effects all require confirmation;
+   * - a candidate is only eligible through project visibility, active status,
+   *   skills and Runtime availability (the shared assignment resolver);
+   * - no candidate means an explicit `blocked`, never a fake success.
+   */
+  private evaluateReassignment(
+    plan: PlanDraft,
+    card: TaskCard,
+    handoff: HandoffView,
+    error: string,
+    forcedConfirmationReasons: string[] = [],
+  ): ReassignmentDecision {
+    const planned = this.plannedTaskFor(plan, card.id)
+    const payload = this.handoffPayload(handoff)
+    // Unknown origin (legacy plan) is treated as explicit: never silently swap.
+    const explicitAssignment = planned
+      ? (planned.assignmentMode ?? (planned.agentId ? 'explicit' : 'auto')) === 'explicit'
+      : true
+    const role = this.roleFor(card, planned)
+    const candidates = buildAssignmentCandidates({
+      store: this.store,
+      projectId: plan.projectId,
+      listAgents: (projectId) => this.services.projects.listAgents(projectId),
+      listTasks: (projectId) => this.services.tasks.board(projectId).tasks,
+    }).filter((candidate) => candidate.agentId !== card.assigneeAgentId)
+    const { ranked, rejected } = rankAssignmentCandidates({
+      role,
+      title: card.title,
+      description: card.description,
+      candidates,
+    })
+    const top = ranked.slice(0, 3).map((entry) => ({
+      agentId: entry.candidate.agentId,
+      name: entry.candidate.name,
+      score: entry.score,
+      reasons: entry.reasons,
+    }))
+    const base: ReassignmentDecision = {
+      status: 'none',
+      fromAgentId: card.assigneeAgentId ?? handoff.toAgentId,
+      toAgentId: null,
+      candidates: top,
+      rejected,
+      reasons: [],
+      explicitAssignment,
+      error,
+    }
+    if (top.length === 0) {
+      return {
+        ...base,
+        reasons: [
+          '没有可用的替代 Agent',
+          ...rejected.slice(0, 4).map((item) => `${item.name}：${item.reasons.join('；')}`),
+        ],
+      }
+    }
+
+    const confirmReasons: string[] = [...forcedConfirmationReasons]
+    if (explicitAssignment) confirmReasons.push('用户显式指定了接收方 Agent，不能静默换人')
+    if (payload.riskLevel !== 'low') {
+      confirmReasons.push(`交接风险等级为 ${String(payload.riskLevel ?? '未知')}，不满足低风险自动替代条件`)
+    }
+    const original = candidates.find((candidate) => candidate.agentId === card.assigneeAgentId) ?? null
+    const selected = ranked[0]!.candidate
+    // The failed receiver may already be excluded from the eligible candidate
+    // list (disabled/Runtime down), so compare against the Agent entity itself.
+    const originalCapabilities =
+      original?.capabilities ?? this.store.read.getAgent(card.assigneeAgentId ?? '')?.capabilities ?? []
+    const extra = selected.capabilities.filter(
+      (capability: AgentCapability) => !originalCapabilities.includes(capability),
+    )
+    if (extra.length > 0) confirmReasons.push(`替代 Agent 权限更大（新增能力：${extra.join(', ')}）`)
+    const originalRisk = card.assigneeAgentId ? this.runtimeRisk(card.assigneeAgentId) : { rank: 0, label: '未知' }
+    const selectedRisk = this.runtimeRisk(selected.agentId)
+    if (selectedRisk.rank > originalRisk.rank) {
+      confirmReasons.push(`替代 Runtime 风险更高（${originalRisk.label} → ${selectedRisk.label}）`)
+    }
+
+    const active = this.store.read.getActiveRunForTask(card.id)
+    const lease = this.store.read.getTaskLease(card.id)
+    if (active) confirmReasons.push(`原 Run ${active.id} 仍处于 ${active.status}，无法判断先前执行的副作用`)
+    if (lease && lease.expiresAt > now()) {
+      const holder = lease.holderId.startsWith('run:')
+        ? this.store.read.getRun(lease.holderId.slice('run:'.length))
+        : null
+      const holderActive = holder && !['completed', 'failed', 'cancelled', 'timed_out', 'budget_exhausted', 'needs_reconciliation'].includes(holder.status)
+      if (holderActive || !holder) confirmReasons.push('原 Task Lease 未释放，不能直接换人')
+    }
+    const latest = this.store.read.getLatestRunForTask(card.id)
+    if (latest?.status === 'needs_reconciliation') {
+      confirmReasons.push('存在待人工核对的 Run，先前副作用未知')
+    }
+
+    if (confirmReasons.length > 0) {
+      return { ...base, status: 'needs_confirmation', reasons: confirmReasons }
+    }
+    return {
+      ...base,
+      status: 'applied',
+      toAgentId: selected.agentId,
+      reasons: [`低风险交接（${String(payload.riskLevel)}），自动选择 ${selected.name}`, ...ranked[0]!.reasons],
+    }
+  }
+
+  private recordReassignment(
+    plan: PlanDraft,
+    handoff: HandoffView,
+    decision: ReassignmentDecision,
+  ): void {
+    this.store.updateHandoffPayload(handoff.id, {
+      continuationError: decision.error,
+      reassignment: {
+        status: decision.status,
+        fromAgentId: decision.fromAgentId,
+        toAgentId: decision.toAgentId,
+        candidates: decision.candidates,
+        rejected: decision.rejected.slice(0, 5),
+        reasons: decision.reasons,
+        explicitAssignment: decision.explicitAssignment,
+        requiresConfirmation: decision.status === 'needs_confirmation',
+        originalError: decision.error,
+        decidedAt: now(),
+      },
+    })
+    this.store.appendEvent(plan.projectId, handoff.id, PROJECT_EVENT_TYPES.handoffReassignmentProposed, {
+      taskId: handoff.taskId,
+      taskTitle: handoff.taskTitle,
+      status: decision.status,
+      fromAgentId: decision.fromAgentId,
+      toAgentId: decision.toAgentId,
+      candidates: decision.candidates.map((candidate) => candidate.agentId),
+      reasons: decision.reasons,
+      error: decision.error,
+    })
+  }
+
+  /**
+   * Called when the receiver Run cannot start. Returns true when the Task was
+   * re-queued for another Agent (the normal scheduler loop starts it later).
+   */
+  private hasPendingReassignment(projectId: string, taskId: string): boolean {
+    return this.store.read
+      .listHandoffViews(projectId)
+      .some((handoff) => {
+        if (handoff.taskId !== taskId || handoff.status !== 'accepted') return false
+        const reassignment = this.handoffPayload(handoff).reassignment
+        return Boolean(
+          reassignment &&
+            typeof reassignment === 'object' &&
+            (reassignment as Record<string, unknown>).status === 'needs_confirmation',
+        )
+      })
+  }
+
+  private async handleReceiverStartFailure(
+    plan: PlanDraft,
+    card: TaskCard,
+    handoff: HandoffView,
+    error: string,
+  ): Promise<boolean> {    const decision = this.evaluateReassignment(plan, card, handoff, error)
+    this.recordReassignment(plan, handoff, decision)
+    if (decision.status !== 'applied' || !decision.toAgentId) {
+      const note =
+        decision.status === 'none'
+          ? `交接接收方启动失败且没有合法替代：${decision.reasons.join('；')}`
+          : `交接接收方启动失败，替代需要确认：${decision.reasons.join('；')}`
+      this.blockUnassignedTask(card, note)
+      return false
+    }
     try {
+      let latest = this.store.read.getTaskCard(card.id)
+      if (!latest) return false
+      if (latest.assigneeAgentId !== decision.toAgentId) {
+        latest = this.services.tasks.update(
+          { taskId: latest.id, expectedVersion: latest.version, assigneeAgentId: decision.toAgentId },
+          SYSTEM_ACTOR,
+        )
+      }
+      if (latest.status === 'review') {
+        latest = this.services.tasks.move(
+          { taskId: latest.id, expectedVersion: latest.version, to: 'blocked', note: '交接重新分配，等待调度器接手' },
+          SYSTEM_ACTOR,
+        )
+      }
+      if (latest.status !== 'ready') {
+        this.services.tasks.move(
+          { taskId: latest.id, expectedVersion: latest.version, to: 'ready', note: '交接重新分配，由调度器启动替代 Agent' },
+          SYSTEM_ACTOR,
+        )
+      }
+      const target = this.store.read.getAgent(decision.toAgentId)
+      if (handoff.toSessionId) {
+        this.store.appendMessage({
+          sessionId: handoff.toSessionId,
+          role: 'system',
+          content: `交接接收方 ${handoff.toAgentName} 启动失败（${error}），已重新分配给 ${target?.name ?? decision.toAgentId}，由调度器启动。`,
+          metadata: { kind: 'handoff-reassigned', handoffId: handoff.id, toAgentId: decision.toAgentId },
+        })
+      }
+      this.logger.info(
+        { handoffId: handoff.id, taskId: card.id, from: handoff.toAgentId, to: decision.toAgentId },
+        'handoff reassigned to a safe substitute',
+      )
+      return true
+    } catch (reassignError) {
+      this.logger.warn({ err: reassignError, handoffId: handoff.id }, 'failed to apply handoff reassignment')
+      this.blockUnassignedTask(card, `交接替代失败：${reassignError instanceof Error ? reassignError.message : String(reassignError)}`)
+      return false
+    }
+  }
+
+  /**
+   * Explicit human confirmation for a pending replacement proposal. The Task is
+   * only re-queued; the scheduler still owns starting the Run.
+   */
+  confirmReassignment(planId: string, taskId: string, agentId: string): { taskId: string; agentId: string } {
+    const plan = this.getPlan(planId)
+    const pausedForConfirmation = plan.execution?.status === 'paused'
+    if (plan.execution?.status !== 'running' && !pausedForConfirmation) {
+      throw new AppError('CONFLICT', '计划不在执行中')
+    }
+    if (!plan.createdTaskIds.includes(taskId)) throw new AppError('NOT_FOUND', '任务不在该计划中')
+    const handoff = this.store.read
+      .listHandoffViews(plan.projectId)
+      .find((item) => item.status === 'accepted' && item.taskId === taskId)
+    if (!handoff) throw new AppError('NOT_FOUND', '该任务没有可确认的交接')
+    const payload = this.handoffPayload(handoff)
+    const reassignment = (payload.reassignment ?? {}) as Record<string, unknown>
+    if (reassignment.status !== 'needs_confirmation') {
+      throw new AppError('CONFLICT', '该交接没有待确认的替代方案')
+    }
+    const candidates = Array.isArray(reassignment.candidates)
+      ? (reassignment.candidates as Array<{ agentId: string }>)
+      : []
+    if (!candidates.some((candidate) => candidate.agentId === agentId)) {
+      throw new AppError('BAD_REQUEST', '只能从已计算的合法候选中选择替代 Agent')
+    }
+    const card = this.store.read.getTaskCard(taskId)
+    if (!card) throw new AppError('NOT_FOUND', '任务不存在')
+    const activeLease = this.store.read.getTaskLease(taskId)
+    if (this.store.read.getActiveRunForTask(taskId) || (activeLease && activeLease.expiresAt > now())) {
+      throw new AppError('CONFLICT', '任务仍有运行或租约，不能换人')
+    }
+    let latest = card
+    if (latest.assigneeAgentId !== agentId) {
+      latest = this.services.tasks.update(
+        { taskId, expectedVersion: latest.version, assigneeAgentId: agentId },
+        SYSTEM_ACTOR,
+      )
+    }
+    if (latest.status === 'review') {
+      latest = this.services.tasks.move(
+        { taskId, expectedVersion: latest.version, to: 'blocked', note: '已确认替代 Agent' },
+        SYSTEM_ACTOR,
+      )
+    }
+    if (latest.status !== 'ready') {
+      this.services.tasks.move(
+        { taskId, expectedVersion: latest.version, to: 'ready', note: '已确认替代 Agent，等待调度器启动' },
+        SYSTEM_ACTOR,
+      )
+    }
+    this.store.updateHandoffPayload(handoff.id, {
+      reassignment: {
+        ...reassignment,
+        status: 'confirmed',
+        toAgentId: agentId,
+        confirmedAt: now(),
+        confirmedBy: 'user',
+      },
+    })
+    this.store.appendEvent(plan.projectId, handoff.id, PROJECT_EVENT_TYPES.handoffReassignmentProposed, {
+      taskId,
+      status: 'confirmed',
+      toAgentId: agentId,
+      actorName: '用户',
+    })
+    if (pausedForConfirmation) {
+      const current = this.getPlan(planId)
+      if (current.execution?.status === 'paused') {
+        this.saveExecution(current, {
+          ...current.execution,
+          status: 'running',
+          error: null,
+          updatedAt: now(),
+        })
+        this.arm(planId)
+        void this.tick(planId)
+      }
+    }
+    return { taskId, agentId }
+  }
+
+  private async enforcePlanDeadline(plan: PlanDraft): Promise<void> {
+    const execution = plan.execution!
+    const minutes = Math.round((execution.maxWallClockMs || 0) / 60_000)
+    const message = `计划总执行时间超出上限（${minutes} 分钟），已停止全部运行`
+    for (const taskId of plan.createdTaskIds) {
+      const active = this.store.read.getActiveRunForTask(taskId)
+      if (!active) continue
+      try {
+        await this.runner.terminateRun(active.id, 'timed_out', 'plan_wall_clock_timeout', message)
+      } catch (error) {
+        this.logger.warn({ err: error, runId: active.id }, 'failed to terminate run after plan deadline')
+      }
+    }
+    this.saveExecution(plan, {
+      ...execution,
+      status: 'failed',
+      error: message,
+      budgetExhausted: 'plan_wall_clock',
+      updatedAt: now(),
+    })
+    this.store.appendEvent(plan.projectId, plan.id, PROJECT_EVENT_TYPES.planStatusChanged, {
+      planId: plan.id,
+      status: 'failed',
+      reason: 'plan_wall_clock',
+      error: message,
+    })
+    this.disarm(plan.id)
+  }
+
+  private blockUnassignedTask(card: TaskCard, note: string): void {    try {
       const latest = this.store.read.getTaskCard(card.id)
       if (!latest || ['done', 'cancelled', 'blocked'].includes(latest.status)) return
       this.services.tasks.move(
@@ -406,6 +825,11 @@ export class OrchestrationScheduler {
       let plan = this.getPlan(planId)
       if (plan.execution?.status !== 'running') {
         this.disarm(planId)
+        return
+      }
+      // Hard Plan wall-clock budget: checked before any new task or tool can start.
+      if (plan.execution.deadlineAt > 0 && now() >= plan.execution.deadlineAt) {
+        await this.enforcePlanDeadline(plan)
         return
       }
       const cards = plan.createdTaskIds
@@ -773,6 +1197,12 @@ export class OrchestrationScheduler {
           changed = true
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error)
+          if (/执行容量已满/.test(message)) {
+            // Another plan/process owns this Agent's global slot. Keep the task
+            // ready and let a later tick retry; never fail the plan or block it.
+            this.logger.info({ taskId: card.id, agentId: card.assigneeAgentId }, 'agent capacity busy; task queued')
+            continue
+          }
           this.logger.warn({ err: error, taskId: card.id, agentId: card.assigneeAgentId }, 'orchestrated run failed to start')
           const handoff = this.store.read
             .listHandoffViews(plan.projectId)
@@ -791,8 +1221,16 @@ export class OrchestrationScheduler {
               this.logger.warn({ err: cancelError, runId: activeRun.id }, 'failed to cancel partially started run')
             }
           }
-          this.blockUnassignedTask(card, `启动失败：${message}`)
-          executionError = `任务「${card.title}」启动失败：${message}`
+          if (handoff) {
+            // Safe substitution: low-risk + no permission expansion may re-queue
+            // automatically; everything else is persisted as a proposal that a
+            // human must confirm. Starting still belongs to this scheduler.
+            const requeued = await this.handleReceiverStartFailure(plan, card, handoff, message)
+            if (!requeued) executionError = `任务「${card.title}」接收方启动失败：${message}`
+          } else {
+            this.blockUnassignedTask(card, `启动失败：${message}`)
+            executionError = `任务「${card.title}」启动失败：${message}`
+          }
           changed = true
           continue
         }
@@ -832,6 +1270,21 @@ export class OrchestrationScheduler {
         const failedRunId = latestExecution.retryForRun?.[card.id]
         return Boolean(failedRunId) && retryAt > 0 && retryAt > now()
       })
+      // A Handoff replacement proposal waiting for a human must pause the plan,
+      // not fail it: the plan can continue as soon as the user confirms.
+      const awaitingConfirmation = remaining.filter(
+        (card) => card.status === 'blocked' && this.hasPendingReassignment(latestPlan.projectId, card.id),
+      )
+      if (!hasRunning && !hasReady && !hasPromotable && !hasPendingRetry && awaitingConfirmation.length > 0) {
+        this.saveExecution(latestPlan, {
+          ...latestExecution,
+          status: 'paused',
+          error: `任务「${awaitingConfirmation.map((card) => card.title).join('、')}」等待人工确认替代 Agent`,
+          updatedAt: now(),
+        })
+        this.disarm(planId)
+        return
+      }
       if (!hasRunning && !hasReady && !hasPromotable && !hasPendingRetry) {
         const unresolved = remaining.filter((card) => !['done', 'cancelled'].includes(card.status))
         if (unresolved.length > 0) {

@@ -19,12 +19,11 @@ import {
   topologicalPlanTasks,
   validatePlanDraft,
   type AssignmentCandidate,
-  type AssignmentSkill,
 } from '@projectos/planning'
-import { BUILTIN_SKILLS } from '@projectos/skills'
 import { scanProject } from '@projectos/project-analyzer'
 import { getGitStatus } from '@projectos/workspace'
 import { planGroupTitle, planSessionTitle } from '@projectos/session-manager'
+import { buildAssignmentCandidates as buildCandidateSnapshot } from './assignment-candidates.js'
 
 export class OrchestrationService {
   constructor(
@@ -110,8 +109,16 @@ export class OrchestrationService {
     const agents = this.services.projects.listAgents(projectId)
     const plans = this.store.read.listPlanRevisions(projectId)
     const approved = plans.find((plan) => plan.status === 'approved')
-    const critical = approved
-      ? criticalPathTasks(approved).map((task) => ({ key: task.key, title: task.title }))
+    // After a revision supersedes the approved plan, the metrics must keep
+    // pointing at the last plan that actually owns Tasks instead of going empty.
+    const reference =
+      approved ??
+      [...plans]
+        .filter((plan) => plan.createdTaskIds.length > 0)
+        .sort((a, b) => b.revision - a.revision)[0] ??
+      null
+    const critical = reference
+      ? criticalPathTasks(reference).map((task) => ({ key: task.key, title: task.title }))
       : []
     const cutoff = now() - 7 * 24 * 60 * 60 * 1000
     const cycleTimes = done.map((task) => Math.max(0, task.updatedAt - task.createdAt))
@@ -133,93 +140,38 @@ export class OrchestrationService {
         completed: runs.filter((run) => run.agentId === view.agent.id && run.status === 'completed').length,
       })),
       criticalPath: critical,
-      planRevision: approved?.revision ?? null,
+      planRevision: reference?.revision ?? null,
+      planStatus: reference?.status ?? null,
     }
   }
 
   private buildAssignmentCandidates(plan: PlanDraft): AssignmentCandidate[] {
-    const views = this.services.projects.listAgents(plan.projectId)
-    const profiles = this.store.read.listRuntimeProfiles()
-    const storedSkills = this.store.read.listSkills()
-    const storedById = new Map(storedSkills.map((skill) => [skill.id, skill]))
-    const builtinById = new Map(BUILTIN_SKILLS.map((skill) => [skill.id, skill]))
-    const activeByAgent = new Map<string, number>()
-    for (const run of this.store.read.listRunSummaries(plan.projectId, 1000)) {
-      if (
-        ['created', 'queued', 'running', 'waiting_tool', 'waiting_approval', 'verifying', 'needs_reconciliation'].includes(
-          run.status,
-        )
-      ) {
-        activeByAgent.set(run.agentId, (activeByAgent.get(run.agentId) ?? 0) + 1)
-      }
-    }
-    for (const task of this.services.tasks.board(plan.projectId).tasks) {
-      if (task.status !== 'running' || !task.assigneeAgentId) continue
-      activeByAgent.set(task.assigneeAgentId, (activeByAgent.get(task.assigneeAgentId) ?? 0) + 1)
-    }
-
-    return views.map((view) => {
-      const agent = view.agent
-      const definition = this.store.read.getAgentDefinition(agent.id)
-      const skills: AssignmentSkill[] = []
-      const missingSkillIds: string[] = []
-      for (const binding of definition?.skills ?? []) {
-        if (!binding.enabled) continue
-        const stored = storedById.get(binding.skillId)
-        if (stored) {
-          skills.push({
-            id: stored.id,
-            name: stored.name,
-            description: stored.description,
-            capabilities: [],
-          })
-          continue
-        }
-        const builtin = builtinById.get(binding.skillId)
-        if (builtin) {
-          skills.push({
-            id: builtin.id,
-            name: builtin.name,
-            description: builtin.description,
-            capabilities: builtin.capabilities,
-          })
-          continue
-        }
-        missingSkillIds.push(binding.skillId)
-      }
-      const profileId = definition?.primaryRuntimeProfileId ?? definition?.runtimeProfileIds[0] ?? null
-      const profile = profileId ? profiles.find((item) => item.id === profileId) ?? null : null
-      const runtime = profileId
-        ? { id: profileId, name: profile?.name ?? profileId, status: profile?.status ?? 'unavailable' }
-        : null
-      return {
-        agentId: agent.id,
-        name: agent.name,
-        role: agent.role,
-        category: definition?.category ?? 'general',
-        capabilities: agent.capabilities,
-        status: definition?.status ?? 'active',
-        visibleToProject: this.store.read.isAgentVisibleToProject(plan.projectId, agent.id),
-        skills,
-        missingSkillIds,
-        runtime,
-        activeTaskCount: activeByAgent.get(agent.id) ?? 0,
-      }
+    return buildCandidateSnapshot({
+      store: this.store,
+      projectId: plan.projectId,
+      listAgents: (projectId) => this.services.projects.listAgents(projectId),
+      listTasks: (projectId) => this.services.tasks.board(projectId).tasks,
     })
   }
 
   /** Resolve unassigned nodes; explicit user choices are preserved. */
-  private assignPlanAgents(plan: PlanDraft): PlanDraft {
+  private assignPlanAgents(plan: PlanDraft, explicitKeys: Set<string> = new Set()): PlanDraft {
     if (plan.tasks.length === 0) return plan
     const candidates = this.buildAssignmentCandidates(plan)
     return {
       ...plan,
       tasks: plan.tasks.map((task) => {
+        // `assignmentMode` is persisted with the plan. A node the user assigned
+        // stays explicit forever; an auto-resolved node keeps its origin so the
+        // scheduler can safely swap a failed Handoff receiver later.
+        const mode: 'auto' | 'explicit' = explicitKeys.has(task.key)
+          ? 'explicit'
+          : task.assignmentMode ?? (task.agentId ? 'explicit' : 'auto')
         const assignment = resolveAgentAssignment({
           role: task.role,
           title: task.title,
           description: task.description,
-          explicitAgentId: task.agentId ?? null,
+          explicitAgentId: mode === 'explicit' ? task.agentId ?? null : null,
           defaultAgentId: agentForPlanRole(task.role),
           candidates,
         })
@@ -228,6 +180,7 @@ export class OrchestrationService {
           agentId: assignment.agentId,
           assignmentReasons: assignment.reasons,
           assignmentBlocked: assignment.blocked,
+          assignmentMode: mode,
         }
       }),
       updatedAt: now(),
@@ -352,14 +305,26 @@ export class OrchestrationService {
   updatePlan(input: PlanUpdateInput): PlanDraft {
     const plan = this.getPlan(input.planId)
     if (plan.status !== 'draft') throw new AppError('CONFLICT', '只有草稿计划可以编辑；已批准计划请创建新 revision')
-    const next: PlanDraft = this.assignPlanAgents({
-      ...plan,
-      goal: input.goal ?? plan.goal,
-      tasks: input.tasks ?? plan.tasks,
-      assumptions: input.assumptions ?? plan.assumptions,
-      risks: input.risks ?? plan.risks,
-      updatedAt: now(),
-    })
+    const tasks = input.tasks ?? plan.tasks
+    const previousByKey = new Map(plan.tasks.map((task) => [task.key, task]))
+    // A node whose Agent changed relative to the stored draft is a deliberate
+    // user choice: persist it as explicit so Handoff fallback never overrides it.
+    const explicitKeys = new Set<string>()
+    for (const task of tasks) {
+      const previousAgentId = previousByKey.get(task.key)?.agentId ?? null
+      if (task.agentId && task.agentId !== previousAgentId) explicitKeys.add(task.key)
+    }
+    const next: PlanDraft = this.assignPlanAgents(
+      {
+        ...plan,
+        goal: input.goal ?? plan.goal,
+        tasks,
+        assumptions: input.assumptions ?? plan.assumptions,
+        risks: input.risks ?? plan.risks,
+        updatedAt: now(),
+      },
+      explicitKeys,
+    )
     validatePlanDraft(next)
     this.validatePlanAgents(next)
     this.store.updatePlanRevision(next)

@@ -33,8 +33,8 @@ export function assertTaskTransition(from: TaskStatus, to: TaskStatus): void {
 }
 
 const RUN_TRANSITIONS: Record<RunStatus, readonly RunStatus[]> = {
-  created: ['queued', 'running', 'cancelled'],
-  queued: ['running', 'cancelled', 'failed'],
+  created: ['queued', 'running', 'cancelled', 'timed_out', 'budget_exhausted'],
+  queued: ['running', 'cancelled', 'failed', 'timed_out', 'budget_exhausted'],
   running: [
     'waiting_tool',
     'waiting_approval',
@@ -44,15 +44,19 @@ const RUN_TRANSITIONS: Record<RunStatus, readonly RunStatus[]> = {
     'cancelled',
     'suspended',
     'needs_reconciliation',
+    'timed_out',
+    'budget_exhausted',
   ],
-  waiting_tool: ['running', 'failed', 'cancelled', 'needs_reconciliation'],
-  waiting_approval: ['running', 'failed', 'cancelled'],
-  verifying: ['completed', 'failed', 'cancelled'],
-  suspended: ['running', 'failed', 'cancelled', 'queued'],
-  needs_reconciliation: ['running', 'completed', 'failed', 'cancelled'],
+  waiting_tool: ['running', 'failed', 'cancelled', 'needs_reconciliation', 'timed_out', 'budget_exhausted'],
+  waiting_approval: ['running', 'failed', 'cancelled', 'timed_out', 'budget_exhausted'],
+  verifying: ['completed', 'failed', 'cancelled', 'timed_out', 'budget_exhausted'],
+  suspended: ['running', 'failed', 'cancelled', 'queued', 'timed_out', 'budget_exhausted'],
+  needs_reconciliation: ['running', 'completed', 'failed', 'cancelled', 'timed_out', 'budget_exhausted'],
   completed: [],
   failed: [],
   cancelled: [],
+  timed_out: [],
+  budget_exhausted: [],
 }
 
 export function assertRunTransition(from: RunStatus, to: RunStatus): void {
@@ -66,7 +70,13 @@ export function isTerminalTaskStatus(status: TaskStatus): boolean {
 }
 
 export function isTerminalRunStatus(status: RunStatus): boolean {
-  return status === 'completed' || status === 'failed' || status === 'cancelled'
+  return (
+    status === 'completed' ||
+    status === 'failed' ||
+    status === 'cancelled' ||
+    status === 'timed_out' ||
+    status === 'budget_exhausted'
+  )
 }
 
 export interface TaskDependencyGraph {

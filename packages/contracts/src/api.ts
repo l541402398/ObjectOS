@@ -908,6 +908,10 @@ export const ApiSchemas = {
     input: z.object({ planId: IdSchema }),
     output: PlanDraftSchema,
   },
+  'orchestration.reassign': {
+    input: z.object({ planId: IdSchema, taskId: IdSchema, agentId: IdSchema }),
+    output: z.object({ taskId: IdSchema, agentId: IdSchema }),
+  },
   'worktree.info': {
     input: z.object({ planId: IdSchema }),
     output: WorktreeInfoSchema,

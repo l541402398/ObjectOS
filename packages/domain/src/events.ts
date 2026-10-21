@@ -41,6 +41,8 @@ export const PROJECT_EVENT_TYPES = {
   messageDelivered: 'message.delivered',
   messageAcknowledged: 'message.acknowledged',
   knowledgeCreated: 'knowledge.created',
+  planStatusChanged: 'plan.status.changed',
+  handoffReassignmentProposed: 'handoff.reassignment.proposed',
   custom: 'project.event',
 } as const
 

@@ -77,6 +77,13 @@ export const RUN_STATUSES = [
   'cancelled',
   'suspended',
   'needs_reconciliation',
+  /**
+   * Hard budget terminal states. They are distinct from `cancelled` (a user
+   * action) and `failed` (an execution error) so the audit trail says why the
+   * Run stopped: wall-clock deadline vs. step/tool-call budget exhaustion.
+   */
+  'timed_out',
+  'budget_exhausted',
 ] as const
 export const RunStatusSchema = z.enum(RUN_STATUSES)
 export type RunStatus = z.infer<typeof RunStatusSchema>
@@ -85,7 +92,23 @@ export const TERMINAL_RUN_STATUSES: readonly RunStatus[] = [
   'completed',
   'failed',
   'cancelled',
+  'timed_out',
+  'budget_exhausted',
 ]
+
+/** Terminal reasons recorded on budget/timeout terminations. */
+export const RUN_TERMINATION_REASONS = [
+  'wall_clock_timeout',
+  'plan_wall_clock_timeout',
+  'step_budget_exhausted',
+  'tool_budget_exhausted',
+  'lease_lost',
+  'runtime_restart',
+  'user_cancelled',
+] as const
+export const RunTerminationReasonSchema = z.enum(RUN_TERMINATION_REASONS)
+export type RunTerminationReason = z.infer<typeof RunTerminationReasonSchema>
+
 
 export const SESSION_STATUSES = ['active', 'idle', 'archived'] as const
 export const SessionStatusSchema = z.enum(SESSION_STATUSES)
@@ -181,6 +204,8 @@ export const RUN_STEP_KINDS = [
   'checkpoint',
   'usage',
   'error',
+  /** Hard budget/timeout enforcement decisions (limits, remaining budget). */
+  'budget',
 ] as const
 export const RunStepKindSchema = z.enum(RUN_STEP_KINDS)
 export type RunStepKind = z.infer<typeof RunStepKindSchema>

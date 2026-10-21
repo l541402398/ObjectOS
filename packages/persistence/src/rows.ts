@@ -353,6 +353,8 @@ export interface RunRow {
   checkpoint_id: string | null
   started_at: number | null
   finished_at: number | null
+  deadline_at?: number | null
+  budget_json?: string | null
   created_at: number
 }
 
@@ -626,6 +628,7 @@ export function toMessage(row: MessageRow): Message {
 }
 
 export function toRun(row: RunRow): Run {
+  const budget = row.budget_json ? parseObject(row.budget_json) : null
   return {
     id: row.id,
     projectId: row.project_id,
@@ -641,6 +644,8 @@ export function toRun(row: RunRow): Run {
     checkpointId: row.checkpoint_id,
     startedAt: row.started_at === null ? null : Number(row.started_at),
     finishedAt: row.finished_at === null ? null : Number(row.finished_at),
+    deadlineAt: row.deadline_at === null || row.deadline_at === undefined ? null : Number(row.deadline_at),
+    budget: budget && Object.keys(budget).length > 0 ? (budget as Run['budget']) : null,
     createdAt: Number(row.created_at),
   }
 }

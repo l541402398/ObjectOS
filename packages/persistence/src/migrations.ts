@@ -711,6 +711,22 @@ ALTER TABLE agent_inbox ADD COLUMN priority INTEGER NOT NULL DEFAULT 3;
 ALTER TABLE agent_inbox ADD COLUMN next_attempt_at INTEGER NOT NULL DEFAULT 0;
 `
 
+const V19 = `
+CREATE TABLE agent_execution_slots (
+  agent_id TEXT PRIMARY KEY REFERENCES agents(id) ON DELETE CASCADE,
+  run_id TEXT NOT NULL,
+  fencing_token INTEGER NOT NULL DEFAULT 1,
+  acquired_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL
+);
+CREATE INDEX idx_agent_execution_slots_expiry ON agent_execution_slots(expires_at);
+`
+
+const V20 = `
+ALTER TABLE agent_runs ADD COLUMN deadline_at INTEGER;
+ALTER TABLE agent_runs ADD COLUMN budget_json TEXT NOT NULL DEFAULT '{}';
+`
+
 const V14 = `
 CREATE TABLE run_snapshots (
   run_id TEXT PRIMARY KEY REFERENCES agent_runs(id) ON DELETE CASCADE,
@@ -741,6 +757,8 @@ export const MIGRATIONS: Migration[] = [
   { version: 16, name: 'task expected artifacts for completion evidence', sql: V16 },
   { version: 17, name: 'structured artifact metadata for design and review evidence', sql: V17 },
   { version: 18, name: 'inbox priority and retry backoff', sql: V18 },
+  { version: 19, name: 'atomic global agent execution slots', sql: V19 },
+  { version: 20, name: 'persisted run wall-clock deadline and budgets', sql: V20 },
 ]
 
 function checksum(sql: string): string {

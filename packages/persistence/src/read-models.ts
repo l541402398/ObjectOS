@@ -1373,7 +1373,8 @@ export class ReadModels {
 
   listUnfinishedRuns(limit = 100): Run[] {
     return this.all<RunRow>(
-      `SELECT * FROM agent_runs WHERE status NOT IN ('completed','failed','cancelled')
+      `SELECT * FROM agent_runs
+       WHERE status NOT IN ('completed','failed','cancelled','timed_out','budget_exhausted')
        ORDER BY created_at ASC LIMIT ?`,
       limit,
     ).map(toRun)

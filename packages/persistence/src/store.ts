@@ -704,6 +704,113 @@ export class SqliteStore {
     })
   }
 
+  /**
+   * Atomic global Agent capacity slot. The check and the upsert happen inside
+   * one SQLite write transaction, so two schedulers/processes cannot both win.
+   */
+  acquireAgentExecutionSlot(
+    agentId: string,
+    runId: string,
+    ttlMs: number,
+  ): { token: number; expiresAt: number } {
+    return this.write(() => {
+      const existing = this.get<{ run_id: string; fencing_token: number; expires_at: number }>(
+        'SELECT run_id, fencing_token, expires_at FROM agent_execution_slots WHERE agent_id = ?',
+        agentId,
+      )
+      const timestamp = now()
+      if (existing && existing.run_id !== runId && Number(existing.expires_at) > timestamp) {
+        throw new AppError('CONFLICT', 'Agent 执行容量已满，等待当前运行释放', {
+          details: { agentId, holderRunId: existing.run_id, expiresAt: existing.expires_at },
+        })
+      }
+      const token = Number(existing?.fencing_token ?? 0) + 1
+      const expiresAt = timestamp + ttlMs
+      this.run(
+        `INSERT INTO agent_execution_slots (agent_id, run_id, fencing_token, acquired_at, expires_at)
+         VALUES (?, ?, ?, ?, ?)
+         ON CONFLICT(agent_id) DO UPDATE SET run_id = excluded.run_id,
+           fencing_token = excluded.fencing_token, acquired_at = excluded.acquired_at, expires_at = excluded.expires_at`,
+        agentId,
+        runId,
+        token,
+        timestamp,
+        expiresAt,
+      )
+      return { token, expiresAt }
+    })
+  }
+
+  renewAgentExecutionSlot(agentId: string, runId: string, token: number, ttlMs: number): void {
+    this.write(() => {
+      const changed = this.run2(
+        'UPDATE agent_execution_slots SET expires_at = ? WHERE agent_id = ? AND run_id = ? AND fencing_token = ?',
+        now() + ttlMs,
+        agentId,
+        runId,
+        token,
+      )
+      if (changed === 0) throw new AppError('CONFLICT', 'Agent 执行容量租约已失效')
+    })
+  }
+
+  releaseAgentExecutionSlot(agentId: string, runId: string, token: number): void {
+    this.write(() => {
+      this.run(
+        'UPDATE agent_execution_slots SET expires_at = 0 WHERE agent_id = ? AND run_id = ? AND fencing_token = ?',
+        agentId,
+        runId,
+        token,
+      )
+    })
+  }
+
+  releaseAgentExecutionSlotForRun(runId: string): void {
+    this.write(() => {
+      this.run('UPDATE agent_execution_slots SET expires_at = 0 WHERE run_id = ?', runId)
+    })
+  }
+
+  /** The slot only counts while it is unexpired; released rows keep their token. */
+  getAgentExecutionSlot(agentId: string): { runId: string; token: number; expiresAt: number } | null {
+    const row = this.get<{ run_id: string; fencing_token: number; expires_at: number }>(
+      'SELECT run_id, fencing_token, expires_at FROM agent_execution_slots WHERE agent_id = ?',
+      agentId,
+    )
+    if (!row || Number(row.expires_at) <= now()) return null
+    return { runId: row.run_id, token: Number(row.fencing_token), expiresAt: Number(row.expires_at) }
+  }
+
+  listAgentExecutionSlots(): Array<{ agentId: string; runId: string; expiresAt: number }> {
+    return this.all<{ agent_id: string; run_id: string; expires_at: number }>(
+      'SELECT agent_id, run_id, expires_at FROM agent_execution_slots WHERE expires_at > 0',
+    ).map((row) => ({
+      agentId: row.agent_id,
+      runId: row.run_id,
+      expiresAt: Number(row.expires_at),
+    }))
+  }
+
+  /**
+   * Drop capacity slots whose owner Run is gone or already terminal. A crashed
+   * process leaves a slot row behind and the TTL alone (30 min) would stall the
+   * Agent long after the run is known to be over, so recovery clears them.
+   */
+  releaseDeadAgentExecutionSlots(): string[] {
+    return this.write(() => {
+      const rows = this.all<{ agent_id: string; run_id: string }>(
+        `SELECT s.agent_id, s.run_id FROM agent_execution_slots s
+         LEFT JOIN agent_runs r ON r.id = s.run_id
+         WHERE s.expires_at > 0
+           AND (r.id IS NULL OR r.status IN ('completed', 'failed', 'cancelled', 'timed_out', 'budget_exhausted', 'needs_reconciliation'))`,
+      )
+      for (const row of rows) {
+        this.run('UPDATE agent_execution_slots SET expires_at = 0 WHERE agent_id = ? AND run_id = ?', row.agent_id, row.run_id)
+      }
+      return rows.map((row) => row.agent_id)
+    })
+  }
+
   acquireTaskLease(taskId: string, holderId: string, ttlMs: number): { token: number; expiresAt: number } {
     return this.write(() => {
       const existing = this.get<{ fencing_token: number; expires_at: number; holder_id: string }>(
@@ -839,8 +946,8 @@ export class SqliteStore {
     return this.write(() => {
       this.run(
         `INSERT INTO agent_runs (id, project_id, task_id, session_id, agent_id, attempt, status, error, summary,
-           input_tokens, output_tokens, checkpoint_id, started_at, finished_at, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           input_tokens, output_tokens, checkpoint_id, started_at, finished_at, deadline_at, budget_json, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         run.id,
         run.projectId,
         run.taskId,
@@ -855,6 +962,8 @@ export class SqliteStore {
         run.checkpointId,
         run.startedAt,
         run.finishedAt,
+        run.deadlineAt ?? null,
+        JSON.stringify(run.budget ?? {}),
         run.createdAt,
       )
       return run
@@ -895,6 +1004,8 @@ export class SqliteStore {
       checkpointId?: string | null
       startedAt?: number | null
       finishedAt?: number | null
+      deadlineAt?: number | null
+      budget?: Run['budget']
     },
   ): Run {
     return this.write(() => {
@@ -909,12 +1020,17 @@ export class SqliteStore {
         ['checkpointId', 'checkpoint_id'],
         ['startedAt', 'started_at'],
         ['finishedAt', 'finished_at'],
+        ['deadlineAt', 'deadline_at'],
       ]
       for (const [key, column] of mapping) {
         if (patch[key] !== undefined) {
           sets.push(`${column} = ?`)
           params.push(patch[key] as SqlValue)
         }
+      }
+      if (patch.budget !== undefined) {
+        sets.push('budget_json = ?')
+        params.push(JSON.stringify(patch.budget ?? {}))
       }
       if (sets.length > 0) {
         params.push(runId)

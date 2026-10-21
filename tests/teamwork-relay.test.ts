@@ -754,14 +754,20 @@ describe('Agent teamwork relay', () => {
       if (final?.execution?.status === 'failed' || final?.execution?.status === 'paused') break
       await new Promise((resolve) => setTimeout(resolve, 200))
     }
-    expect(final?.execution?.status).toBe('failed')
+    // R1-D: a receiver failure with a legal candidate and an explicit user
+    // assignment pauses the plan for human confirmation; it never fakes a run.
+    expect(final?.execution?.status).toBe('paused')
+    expect(final?.execution?.error).toMatch(/等待人工确认替代 Agent/)
     const runs = store.read.listRunSummaries(project.id, 50).filter((run) => run.taskId === task.id)
     expect(runs).toHaveLength(0)
     expect(store.read.getTask(task.id)?.status).toBe('blocked')
     const stored = store.read.getHandoff(handoff.id)
     const payload = stored?.payload as Record<string, unknown>
     expect(String(payload.continuationError ?? '')).toMatch(/Runtime|不可用/)
-    console.log(`[target-start-failure] plan=${final?.execution?.status} task=${store.read.getTask(task.id)?.status} runs=0 error=${String(payload.continuationError ?? '').slice(0, 60)}`)
+    const reassignment = payload.reassignment as Record<string, unknown>
+    expect(reassignment.status).toBe('needs_confirmation')
+    expect(reassignment.requiresConfirmation).toBe(true)
+    console.log(`[target-start-failure] plan=${final?.execution?.status} task=${store.read.getTask(task.id)?.status} runs=0 reassignment=${String(reassignment.status)} error=${String(payload.continuationError ?? '').slice(0, 60)}`)
   }, 60_000)
 
   it('supersedes old tasks on revision without deleting history', async () => {

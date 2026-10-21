@@ -227,6 +227,7 @@ export interface ProjectOSDesktopApi {
     pause: (planId: string) => Promise<Out<'orchestration.pause'>>
     resume: (planId: string) => Promise<Out<'orchestration.resume'>>
     cancel: (planId: string) => Promise<Out<'orchestration.cancel'>>
+    reassign: (planId: string, taskId: string, agentId: string) => Promise<Out<'orchestration.reassign'>>
   }
   worktrees: {
     info: (planId: string) => Promise<Out<'worktree.info'>>

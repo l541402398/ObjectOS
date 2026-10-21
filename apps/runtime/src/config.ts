@@ -1,6 +1,7 @@
 import { homedir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { ProviderRuntimeConfigSchema, type ProviderRuntimeConfig } from '@projectos/contracts'
+import type { RuntimeLimits } from './limits.js'
 
 export interface RuntimeConfig {
   dataDir: string
@@ -9,6 +10,11 @@ export interface RuntimeConfig {
   runtimeVersion: string
   provider: ProviderRuntimeConfig
   seedDemo: boolean
+  /**
+   * Hard execution budgets. Omitted means "use environment defaults"; tests
+   * pass explicit small values instead of waiting for real long runs.
+   */
+  limits?: Partial<RuntimeLimits>
 }
 
 const DEFAULT_PROVIDER: ProviderRuntimeConfig = {

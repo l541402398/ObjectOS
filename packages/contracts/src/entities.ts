@@ -150,6 +150,19 @@ export const MessageSchema = z.object({
 })
 export type Message = z.infer<typeof MessageSchema>
 
+/**
+ * Persisted hard budgets for one Run. Limits are snapshotted at start time so a
+ * restart keeps the original budget instead of granting a fresh one.
+ */
+export const RunBudgetSchema = z.object({
+  maxWallClockMs: z.number().int().nonnegative(),
+  maxSteps: z.number().int().positive(),
+  maxToolCalls: z.number().int().positive(),
+  stepsUsed: z.number().int().nonnegative().default(0),
+  toolCallsUsed: z.number().int().nonnegative().default(0),
+})
+export type RunBudget = z.infer<typeof RunBudgetSchema>
+
 export const RunSchema = z.object({
   id: IdSchema,
   projectId: IdSchema,
@@ -165,6 +178,9 @@ export const RunSchema = z.object({
   checkpointId: IdSchema.nullable(),
   startedAt: nullableTimestamp,
   finishedAt: nullableTimestamp,
+  /** Absolute wall-clock deadline; survives Runtime restarts. */
+  deadlineAt: nullableTimestamp.optional(),
+  budget: RunBudgetSchema.nullable().optional(),
   createdAt: TimestampSchema,
 })
 export type Run = z.infer<typeof RunSchema>

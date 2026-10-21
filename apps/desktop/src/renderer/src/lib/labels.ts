@@ -12,6 +12,8 @@ export const RUN_STATUS_LABELS: Record<string, string> = {
   cancelled: '已取消',
   suspended: '已挂起',
   needs_reconciliation: '待核对',
+  timed_out: '超时终止',
+  budget_exhausted: '预算耗尽',
 }
 
 export const PRIORITY_LABELS: Record<number, string> = {

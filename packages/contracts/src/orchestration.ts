@@ -39,6 +39,12 @@ export const PlannedTaskSchema = z.object({
   role: PlanRoleSchema,
   /** Explicit AgentAssignment; omitted means the role default is used. */
   agentId: IdSchema.nullable().optional(),
+  /**
+   * How agentId was chosen. `auto` lets the resolver re-evaluate on later edits
+   * and allows a safe Handoff substitution; `explicit` came from the user and
+   * must never be silently replaced.
+   */
+  assignmentMode: z.enum(['auto', 'explicit']).optional(),
   /** Why this Agent was chosen; shown in the plan editor and kept in plan JSON. */
   assignmentReasons: z.array(z.string().max(500)).default([]),
   /** True when no usable Agent could be resolved; approval is blocked until fixed. */
@@ -76,6 +82,12 @@ export const PlanExecutionSchema = z.object({
   evidenceRetries: z.record(z.string(), z.number().int().nonnegative()).default({}),
   evidenceRetryForRun: z.record(z.string(), IdSchema).default({}),
   requireWorktree: z.boolean().default(false),
+  /** Hard Plan wall-clock budget in ms (snapshotted at start, survives restart). */
+  maxWallClockMs: z.number().int().nonnegative().default(0),
+  /** Absolute Plan deadline; 0 means the plan has no wall-clock limit. */
+  deadlineAt: TimestampSchema.default(0),
+  /** Set when execution stopped because a hard budget was exhausted. */
+  budgetExhausted: z.string().max(120).nullable().default(null),
 })
 export type PlanExecution = z.infer<typeof PlanExecutionSchema>
 
