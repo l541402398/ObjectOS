@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `51ca610` after Agent Studio SheetShell and Round 3 overlay slices
+Latest checkpoint: `8023df5` after Agent Studio, orchestration plan DialogShell, legacy overlay removal and 15-page inventory
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -319,3 +319,16 @@ Page inventory:
 `project-center`, `project-overview`, `task-board`, `orchestration`,
 `agent-workbench`, `collaboration`, `knowledge`, `operations`, `resources`,
 `approvals`, `project-settings`, `health`, `workspace`, `runs`, `notifications`.
+
+
+## Round 4 checkpoint — 2026-10-22
+
+Head: `8023df5`.
+
+- Agent Studio → SheetShell; run test → DialogShell.
+- Orchestration canvas optical skin.
+- Orchestration plan workbench → DialogShell; real approval pass.
+- All production renderer Modal/Drawer call sites removed.
+- Legacy PlanReviewWorkbench deleted after helper import extraction.
+- 15-page Electron inventory captured, 0 errors.
+- 265 unit tests, plan-review 10/10, v13 PASS.
