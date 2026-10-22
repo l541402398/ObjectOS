@@ -348,7 +348,7 @@ Head: `8023df5`.
 
 - New `scripts/next-ui-regression.mjs` captures five representative pages:
   Project Center, Task Board, Orchestration, Approvals, Runs.
-- Conditions: 1440 light, 1440 dark, 1100px, 125%; 32 captures across 8 pages.
+- Conditions: 1440 light, 1440 dark, 1100px, 125%; 60 captures across all 15 routed pages.
 - Result: 0 horizontal overflows, 0 page errors.
 - Evidence: `docs/next-ui/screens/regression/`.
 - Known capture issue: one Task Board tile can be painted blank in a full-page
@@ -383,7 +383,7 @@ Head: `8023df5`.
 
 - Regression routes extended from 5 to 8 pages: added Agent Workbench,
   Knowledge and Health.
-- Conditions: 1440 light, 1440 dark, 1100 and 125% — 32 captures.
+- Conditions: 1440 light, 1440 dark, 1100 and 125% — 60 captures (all 15 pages).
 - Result: 0 horizontal overflow, 0 page errors.
 - Agent Workbench keeps the run inspector as a reserved column at 1440 and a
   deliberate overlay below 1280.
@@ -409,3 +409,4 @@ Head: `8023df5`.
 - No data/mutation changes.
 - Screenshots refreshed in `docs/next-ui/screens/pages/health.png` and
   `notifications.png`.
+

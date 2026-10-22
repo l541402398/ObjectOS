@@ -50,6 +50,13 @@ try {
     ['agent-workbench', `#/projects/${projectId}/agents`],
     ['knowledge', `#/projects/${projectId}/knowledge`],
     ['health', `#/projects/${projectId}/health`],
+    ['project-overview', `#/projects/${projectId}`],
+    ['collaboration', `#/projects/${projectId}/collaboration`],
+    ['operations', `#/projects/${projectId}/operations`],
+    ['resources', `#/projects/${projectId}/resources`],
+    ['project-settings', `#/projects/${projectId}/project-settings`],
+    ['workspace', `#/projects/${projectId}/workspace`],
+    ['notifications', '#/notifications'],
   ]
 
   const prepare = async (name) => {
@@ -103,5 +110,6 @@ try {
 } finally {
   await app.close().catch(() => undefined)
 }
+
 
 
