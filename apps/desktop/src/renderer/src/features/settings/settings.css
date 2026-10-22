@@ -893,3 +893,9 @@
   overflow: auto;
   padding: 12px 10px;
 }
+
+/* Settings detail inspectors. */
+.pui-overlay-scroll.po-model-detail-scroll,
+.pui-overlay-scroll.po-skill-detail-scroll,
+.pui-overlay-scroll.po-runtime-detail-scroll { padding: 14px 18px 20px; }
+.pui-overlay-scroll.po-skill-detail-scroll .v16-skill-content { max-height: none; }

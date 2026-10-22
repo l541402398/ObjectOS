@@ -94,6 +94,10 @@ try {
   const secondRow = page.locator('tr').filter({ hasText: 'fake-second' })
   await secondRow.getByRole('button', { name: '设为默认模型' }).click()
   await page.waitForTimeout(1200)
+  if (await page.locator('[data-testid="settings-model-detail"]').count()) {
+    await page.getByTestId('settings-model-detail').getByRole('button', { name: '关闭模型详情' }).click()
+    await page.waitForTimeout(300)
+  }
   await page.locator('[data-testid="settings-dialog"] button[aria-label="关闭"]').click()
   await page.waitForTimeout(400)
 

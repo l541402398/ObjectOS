@@ -1,13 +1,16 @@
 import { useState } from 'react'
-import { App, Button, Form, Input, Modal, Select, Tag, Tooltip } from 'antd'
+import { App, Button, Form, Input, Select, Tag, Tooltip } from 'antd'
 import { PlusOutlined, ReloadOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ErrorState, KeyValueList, StatusPill } from '@projectos/ui'
 import type { RuntimeProfile } from '@projectos/contracts'
 import { AcpRegistryPanel } from './AcpRegistryPanel'
+import { useUiStore } from '../../stores/ui'
 import { errorMessage } from '../../lib/errors'
+import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '../../next-ui/overlay/overlay-shell'
 
 export function RuntimeSettingsPanel() {
+  const settingsOpen = useUiStore((state) => state.settingsOpen)
   const { message, modal } = App.useApp()
   const queryClient = useQueryClient()
   const preferences = useQuery({ queryKey: ['appPreferences'], queryFn: () => window.projectos.app.preferences() })
@@ -325,24 +328,25 @@ export function RuntimeSettingsPanel() {
         <Button onClick={() => preferences.data?.dataDir ? void window.projectos.app.revealPath(preferences.data.dataDir) : undefined}>打开目录</Button>
       </div>
 
-      <Modal open={open} title="自定义 Runtime" onCancel={() => setOpen(false)} onOk={() => void create()} okText="添加" destroyOnHidden>
+      <DialogShell open={open && settingsOpen} onOpenChange={(next) => { if (!next) setOpen(false) }} ariaLabel="自定义 Runtime" width={520}>
+        <OverlayHeader eyebrow="RUNTIME" title="自定义 Runtime" closeLabel="关闭自定义 Runtime" />
+        <OverlayScrollArea className="po-dialog-form-scroll">
         <Form form={form} layout="vertical" initialValues={{ protocol: 'cli' }}>
           <Form.Item name="name" label="名称" rules={[{ required: true }]}><Input /></Form.Item>
           <Form.Item name="protocol" label="协议" rules={[{ required: true }]}><Select options={[{ value: 'cli', label: 'CLI' }, { value: 'http', label: 'HTTP' }, { value: 'acp', label: 'ACP' }, { value: 'sdk', label: 'SDK' }]} /></Form.Item>
           <Form.Item name="executable" label="可执行路径"><Input placeholder="opencode" /></Form.Item>
           <Form.Item name="endpoint" label="Endpoint"><Input placeholder="http://127.0.0.1:4096" /></Form.Item>
         </Form>
-      </Modal>
+        </OverlayScrollArea>
+        <OverlayFooter>
+          <Button onClick={() => setOpen(false)}>取消</Button>
+          <Button type="primary" onClick={() => void create()}>添加</Button>
+        </OverlayFooter>
+      </DialogShell>
 
-      <Modal
-        open={Boolean(authProfile)}
-        title={`ACP 认证 · ${authProfile?.name ?? ''}`}
-        onCancel={() => setAuthProfile(null)}
-        onOk={() => void authenticateAcp()}
-        okText="认证"
-        okButtonProps={{ disabled: !authMethod.trim() }}
-        destroyOnHidden
-      >
+      <DialogShell open={Boolean(authProfile) && settingsOpen} onOpenChange={(next) => { if (!next) setAuthProfile(null) }} ariaLabel="ACP 认证" width={480}>
+        <OverlayHeader eyebrow="ACP AUTH" title={`ACP 认证 · ${authProfile?.name ?? ''}`} closeLabel="关闭 ACP 认证" />
+        <OverlayScrollArea className="po-dialog-form-scroll">
         <Form layout="vertical">
           <Form.Item label="认证方式 ID" required>
             <Input
@@ -352,17 +356,16 @@ export function RuntimeSettingsPanel() {
             />
           </Form.Item>
         </Form>
-      </Modal>
+        </OverlayScrollArea>
+        <OverlayFooter>
+          <Button onClick={() => setAuthProfile(null)}>取消</Button>
+          <Button type="primary" disabled={!authMethod.trim()} onClick={() => void authenticateAcp()}>认证</Button>
+        </OverlayFooter>
+      </DialogShell>
 
-      <Modal
-        open={Boolean(editingProfile)}
-        title={`编辑 Runtime · ${editingProfile?.name ?? ''}`}
-        onCancel={() => setEditingProfile(null)}
-        onOk={() => void saveRuntimeEdit()}
-        okText="保存"
-        okButtonProps={{ disabled: !editName.trim() }}
-        destroyOnHidden
-      >
+      <DialogShell open={Boolean(editingProfile) && settingsOpen} onOpenChange={(next) => { if (!next) setEditingProfile(null) }} ariaLabel="编辑 Runtime" width={480}>
+        <OverlayHeader eyebrow="RUNTIME" title={`编辑 Runtime · ${editingProfile?.name ?? ''}`} closeLabel="关闭编辑 Runtime" />
+        <OverlayScrollArea className="po-dialog-form-scroll">
         <Form layout="vertical">
           <Form.Item label="名称" required>
             <Input value={editName} onChange={(event) => setEditName(event.target.value)} />
@@ -371,15 +374,12 @@ export function RuntimeSettingsPanel() {
             <Input value={editExecutable} onChange={(event) => setEditExecutable(event.target.value)} placeholder="opencode" />
           </Form.Item>
         </Form>
-      </Modal>
+        </OverlayScrollArea>
+        <OverlayFooter>
+          <Button onClick={() => setEditingProfile(null)}>取消</Button>
+          <Button type="primary" disabled={!editName.trim()} onClick={() => void saveRuntimeEdit()}>保存</Button>
+        </OverlayFooter>
+      </DialogShell>
     </div>
   )
 }
-
-
-
-
-
-
-
-

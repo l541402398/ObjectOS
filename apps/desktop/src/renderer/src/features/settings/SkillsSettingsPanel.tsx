@@ -1,11 +1,13 @@
 import { useRef, useState } from 'react'
-import { App as AntApp, Button, Drawer, Tag } from 'antd'
+import { App as AntApp, Button, Tag } from 'antd'
 import { ImportOutlined, PlusOutlined } from '@ant-design/icons'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { EmptyState, LoadingBlock } from '@projectos/ui'
 import { useSkills } from '../../lib/queries'
 import { errorMessage } from '../../lib/errors'
 import type { Skill } from '@projectos/contracts'
+import { useUiStore } from '../../stores/ui'
+import { InspectorShell, OverlayHeader, OverlayScrollArea } from '../../next-ui/overlay/overlay-shell'
 
 function parseSkillFile(filename: string, raw: string): { name: string; description: string; version: string; content: string } {
   const front = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/)
@@ -27,6 +29,7 @@ function parseSkillFile(filename: string, raw: string): { name: string; descript
 }
 
 export function SkillsSettingsPanel() {
+  const settingsOpen = useUiStore((state) => state.settingsOpen)
   const { message } = AntApp.useApp()
   const queryClient = useQueryClient()
   const skills = useSkills()
@@ -67,7 +70,9 @@ export function SkillsSettingsPanel() {
       )}
       <div className="v16-inline-note">Skill 是流程知识与工作提示，不等于 Shell/文件/网络权限。</div>
       <input ref={inputRef} type="file" accept=".md,text/markdown" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) void onFile(file); event.target.value = '' }} />
-      <Drawer open={Boolean(detail)} onClose={() => setDetail(null)} width={560} title={detail?.name ?? 'Skill'}>
+      <InspectorShell open={Boolean(detail) && settingsOpen} onOpenChange={(open) => { if (!open) setDetail(null) }} ariaLabel="Skill 详情" width={560} testId="settings-skill-detail">
+        <OverlayHeader eyebrow="SKILL" title={detail?.name ?? 'Skill'} closeLabel="关闭 Skill 详情" meta={detail ? <Tag>{`v${detail.version}`}</Tag> : null} />
+        <OverlayScrollArea className="po-skill-detail-scroll">
         {detail ? (
           <div className="v16-model-detail">
             <div className="v16-card-title"><strong>{detail.name}</strong><Tag>{`v${detail.version}`}</Tag></div>
@@ -76,7 +81,8 @@ export function SkillsSettingsPanel() {
             <pre className="v16-skill-content">{detail.content}</pre>
           </div>
         ) : null}
-      </Drawer>
+        </OverlayScrollArea>
+      </InspectorShell>
     </div>
   )
 }

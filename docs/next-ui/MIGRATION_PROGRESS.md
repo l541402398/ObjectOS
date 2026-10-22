@@ -49,7 +49,7 @@ Status legend: `not-started`, `in-progress`, `migrated`, `blocked`, `not-applica
 | 14 | Project Settings `/project-settings` | `pages/ProjectSettingsPage.tsx` | project config, policy | forms | not-started |
 | 15 | Project Health `/health` | `pages/ProjectHealthPage.tsx` | health checks, repair | repair dialogs | not-started |
 | 16 | Runs `/runs` | `pages/RunsPage.tsx` | run list/detail, reconcile | run detail modal, reconcile modal | not-started |
-| 17 | Settings (global modal) | `features/settings/SettingsModal.tsx` + panels | AI connections, models, runtime, skills, tools | nested modals/drawers | in-progress — top-level DialogShell migrated; panels pending |
+| 17 | Settings (global modal) | `features/settings/SettingsModal.tsx` + panels | AI connections, models, runtime, skills, tools | shared DialogShell + InspectorShell | in-progress — overlays migrated; content composition polish pending |
 | 18 | Design Lab `#/design-lab` | `features/design-lab/` | prototype | Inspector, Agent, Approval | migrated baseline |
 
 ## Overlay migration inventory
@@ -63,10 +63,10 @@ tracks actual migration:
 - [x] Approval sample on `DialogShell`
 - [x] dirty-close guard, focus/Escape, light/dark, reduced-motion
 - [x] Settings top-level moved to DialogShell; v12 pass
-- [ ] Settings nested drawers/editors
+- [x] Settings nested drawers/editors
 - [x] formal `PlanReviewNext` task sheet → InspectorShell
-- [ ] settings detail drawers (Model/Skill/Runtime)
-- [ ] settings nested editors (model/Runtime/ACP)
+- [x] settings detail drawers (Model/Skill/Runtime)
+- [x] settings nested editors (model/Runtime/ACP)
 - [x] Task Board detail drawer and 3 modals
 - [ ] Runs detail/reconcile
 - [ ] Agent Studio + run-test modal
@@ -148,3 +148,13 @@ Known in this slice:
   `task-detail-inspector.png`, `task-create-dialog.png`.
 - Checks: plan-review UI 10/10; task-drawer UI 10/10; v12 PASS; v13 PASS;
   e2e PASS.
+
+
+## Slice 3 — Settings nested overlays
+
+- Model detail, Skill detail, Runtime detail → `InspectorShell`.
+- Custom Runtime, ACP auth, Runtime edit, Add Model → `DialogShell`.
+- Nested surfaces close when the Settings dialog closes via `settingsOpen`.
+- Model detail carries a stable test id; v12 closes it explicitly before closing
+  Settings (the non-modal inspector correctly sits above the settings dialog).
+- v12 PASS; v13 PASS; Design Lab 31/31.

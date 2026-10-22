@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { App as AntApp, Button, Drawer, Form, Input, InputNumber, Modal, Select, Table, Tag, type TableColumnsType } from 'antd'
+import { App as AntApp, Button, Form, Input, InputNumber, Select, Table, Tag, type TableColumnsType } from 'antd'
 import { DeleteOutlined, PlusOutlined, ReloadOutlined, StarOutlined, SyncOutlined } from '@ant-design/icons'
 import type { AIModel } from '@projectos/contracts'
 import { EmptyState, LoadingBlock, StatusPill } from '@projectos/ui'
@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { qk, useAIConnections, useAIModels } from '../../lib/queries'
 import { errorMessage } from '../../lib/errors'
 import { useUiStore } from '../../stores/ui'
+import { DialogShell, InspectorShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '../../next-ui/overlay/overlay-shell'
 
 interface ModelFormValues {
   modelId: string
@@ -28,6 +29,7 @@ export function ModelCatalogPanel() {
   const selectedConnectionId = useUiStore((state) => state.settingsConnectionId)
   const setSelectedConnectionId = useUiStore((state) => state.setSettingsConnectionId)
   const openSettings = useUiStore((state) => state.openSettings)
+  const settingsOpen = useUiStore((state) => state.settingsOpen)
   const [addOpen, setAddOpen] = useState(false)
   const [detail, setDetail] = useState<AIModel | null>(null)
   const [form] = Form.useForm<ModelFormValues>()
@@ -243,7 +245,9 @@ export function ModelCatalogPanel() {
         locale={{ emptyText: <EmptyState title="暂无模型" description="从服务同步，或手动添加模型 ID。" /> }}
       />
 
-      <Drawer open={Boolean(detail)} onClose={() => setDetail(null)} width={460} title="模型详情">
+      <InspectorShell open={Boolean(detail) && settingsOpen} onOpenChange={(open) => { if (!open) setDetail(null) }} ariaLabel="模型详情" width={460} testId="settings-model-detail">
+        <OverlayHeader eyebrow="MODEL" title={detail?.displayName ?? '模型详情'} closeLabel="关闭模型详情" meta={detail ? <span>{detail.source === 'discovered' ? '发现' : '手动'}</span> : null} />
+        <OverlayScrollArea className="po-model-detail-scroll">
         {detail ? (
           <div className="v16-model-detail">
             <div className="v16-card-title"><strong>{detail.displayName}</strong><Tag>{detail.source === 'discovered' ? '发现' : '手动'}</Tag></div>
@@ -257,18 +261,12 @@ export function ModelCatalogPanel() {
             <Button type="primary" disabled={connection.defaultModelId === detail.modelId} onClick={() => setDefaultModel.mutate(detail.modelId)}>设为默认模型</Button>
           </div>
         ) : null}
-      </Drawer>
+        </OverlayScrollArea>
+      </InspectorShell>
 
-      <Modal
-        title="手动添加模型"
-        open={addOpen}
-        onCancel={() => setAddOpen(false)}
-        onOk={() => void form.validateFields().then((values) => addModel.mutate(values))}
-        okText="添加"
-        cancelText="取消"
-        confirmLoading={addModel.isPending}
-        destroyOnHidden
-      >
+      <DialogShell open={addOpen && settingsOpen} onOpenChange={(open) => { if (!open) setAddOpen(false) }} ariaLabel="手动添加模型" width={520}>
+        <OverlayHeader eyebrow="MODEL CATALOG" title="手动添加模型" closeLabel="关闭添加模型" />
+        <OverlayScrollArea className="po-dialog-form-scroll">
         <Form form={form} layout="vertical" requiredMark={false} className="po-form">
           <Form.Item name="modelId" label="模型 ID" rules={[{ required: true, message: '请输入模型 ID' }]}>
             <Input placeholder="deepseek-chat" />
@@ -285,7 +283,12 @@ export function ModelCatalogPanel() {
             </Form.Item>
           </div>
         </Form>
-      </Modal>
+        </OverlayScrollArea>
+        <OverlayFooter>
+          <Button onClick={() => setAddOpen(false)}>取消</Button>
+          <Button type="primary" loading={addModel.isPending} onClick={() => void form.validateFields().then((values) => addModel.mutate(values))}>添加</Button>
+        </OverlayFooter>
+      </DialogShell>
     </div>
   )
 }

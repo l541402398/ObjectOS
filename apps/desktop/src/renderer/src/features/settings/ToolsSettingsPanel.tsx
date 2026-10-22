@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Button, Drawer, Tag } from 'antd'
+import { Button, Tag } from 'antd'
 import { ApiOutlined } from '@ant-design/icons'
 import { useRuntimeProfiles, useSkills } from '../../lib/queries'
 import { useUiStore } from '../../stores/ui'
+import { InspectorShell, OverlayHeader, OverlayScrollArea } from '../../next-ui/overlay/overlay-shell'
 
 export function ToolsSettingsPanel() {
   const runtimes = useRuntimeProfiles()
@@ -10,6 +11,7 @@ export function ToolsSettingsPanel() {
   const profiles = runtimes.data?.profiles ?? []
   const [detail, setDetail] = useState<(typeof profiles)[number] | null>(null)
   const openSettings = useUiStore((state) => state.openSettings)
+  const settingsOpen = useUiStore((state) => state.settingsOpen)
 
   return (
     <div className="po-settings-panel">
@@ -51,7 +53,9 @@ export function ToolsSettingsPanel() {
         </div>
       )}
 
-      <Drawer open={Boolean(detail)} onClose={() => setDetail(null)} width={460} title="Runtime 详情">
+      <InspectorShell open={Boolean(detail) && settingsOpen} onOpenChange={(open) => { if (!open) setDetail(null) }} ariaLabel="Runtime 详情" width={460} testId="settings-runtime-detail">
+        <OverlayHeader eyebrow="RUNTIME" title={detail?.name ?? 'Runtime 详情'} closeLabel="关闭 Runtime 详情" meta={detail ? <Tag>{detail.status}</Tag> : null} />
+        <OverlayScrollArea className="po-runtime-detail-scroll">
         {detail ? (
           <div className="v16-model-detail">
             <div className="v16-card-title"><strong>{detail.name}</strong><Tag>{detail.status}</Tag></div>
@@ -65,7 +69,8 @@ export function ToolsSettingsPanel() {
             <Button type="primary" onClick={() => openSettings('runtime')}>在 Runtime 管理中打开</Button>
           </div>
         ) : null}
-      </Drawer>
+        </OverlayScrollArea>
+      </InspectorShell>
 
       <div className="po-settings-section-title">MCP / 插件</div>
       <div className="v16-empty-inline">当前版本尚未注册 MCP Server 或插件。不会显示虚构的已安装状态。</div>
