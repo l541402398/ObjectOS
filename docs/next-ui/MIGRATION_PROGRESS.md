@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `ffafadf` after workspace wrap, motion walkthrough and full 15-page matrix
+Latest checkpoint: `945595e` after settings focus guard, workspace wrap and real Electron MP4
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -453,3 +453,17 @@ Head: `8023df5`.
   node inspector and Agent Workbench.
 - ffmpeg is used only as a temporary conversion tool under `test-results/tools`;
   no runtime or package dependency was added.
+
+
+## Round 10 checkpoint — 2026-10-22
+
+Head: `945595e`.
+
+- Settings non-modal focus guard verified: 40/40 Tab presses stayed inside the
+  dialog or its Ant portal.
+- Workspace compact layout + Monaco word wrap; 1100px long lines no longer clip.
+- Real Electron desktop capture recorded through `desktopCapturer` +
+  MediaRecorder and converted to H.264 MP4 (11.53s, 1440×900).
+- `pnpm lint` clean, `pnpm typecheck/build` pass, 265 tests pass, `v12-e2e` pass.
+- Remaining: final page-level composition for Knowledge/Resources/Project Center,
+  Task Board full-page capture artifact, human visual acceptance, stable merge.
