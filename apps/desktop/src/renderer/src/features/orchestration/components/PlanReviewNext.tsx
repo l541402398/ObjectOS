@@ -1,20 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode, type ReactElement } from 'react'
-import {
-  Background,
-  Controls,
-  Handle,
-  MarkerType,
-  Position,
-  ReactFlow,
-  type Edge,
-  type Node,
-  type NodeProps,
-} from '@xyflow/react'
-import '@xyflow/react/dist/style.css'
 import { AnimatePresence, motion } from 'motion/react'
 import { Group, Panel, Separator } from 'react-resizable-panels'
 import * as Tabs from '@radix-ui/react-tabs'
-import * as Tooltip from '@radix-ui/react-tooltip'
 import {
   AlertTriangle,
   ArrowRight,
@@ -27,6 +14,7 @@ import {
   Layers3,
   Pencil,
   Plus,
+  Sparkles,
   Trash2,
   UserRound,
   X,
@@ -44,7 +32,8 @@ import { Button } from '../../../next-ui/ui/button'
 import { Badge } from '../../../next-ui/ui/badge'
 import { ScrollArea } from '../../../next-ui/ui/scroll-area'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../../../next-ui/ui/dialog'
-import { TooltipContent, TooltipProvider, TooltipTrigger } from '../../../next-ui/ui/tooltip'
+import { StageJourney } from './StageJourney'
+import { TaskGraph } from './TaskGraph'
 
 type AgentOption = { value: string; label: string }
 
@@ -70,32 +59,6 @@ function useNarrow(): boolean {
   return narrow
 }
 
-type TaskFlowData = { task: PlannedTask; index: number; role: string; agent: string; risk: boolean; selected: boolean; related: boolean }
-
-function NextTaskNode({ data }: NodeProps<Node<TaskFlowData>>) {
-  return (
-    <div
-      className={cn(
-        'pui-dag-node w-[248px] rounded-[14px] px-3 py-2.5 text-left',
-        data.selected && 'is-selected', data.related && 'is-related', data.risk && 'is-risk',
-      )}
-    >
-      <Handle type="target" position={Position.Left} className="!size-2 !border-2 !border-[color-mix(in_srgb,var(--pui-accent)_45%,var(--pui-border))] !bg-[var(--pui-surface-strong)]" />
-      <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-[11px] font-medium tracking-[.06em] text-[var(--pui-ink-muted)]">TASK {String(data.index + 1).padStart(2, '0')} · {data.role}</span>
-        {data.risk ? <Badge tone="danger">需复核</Badge> : null}
-      </div>
-      <div className="mt-1.5 line-clamp-2 min-h-[34px] text-[12.5px] font-medium leading-[1.4] text-[var(--pui-ink)]" title={data.task.title}>{data.task.title}</div>
-      <div className="mt-2 flex items-center justify-between border-t border-[var(--pui-border)] pt-1.5 text-[11.5px] text-[var(--pui-ink-muted)]">
-        <span className="flex items-center gap-1.5 truncate"><i className="flex size-4 items-center justify-center rounded-full bg-[var(--pui-accent-soft)] text-[10px] font-semibold not-italic text-[var(--pui-accent)]">{data.agent.slice(0, 1)}</i>{data.agent}</span>
-        <span>{data.task.dependsOn.length ? `${data.task.dependsOn.length} 前置` : '起点'}</span>
-      </div>
-      <Handle type="source" position={Position.Right} className="!size-2 !border-2 !border-[color-mix(in_srgb,var(--pui-accent)_45%,var(--pui-border))] !bg-[var(--pui-surface-strong)]" />
-    </div>
-  )
-}
-
-const nodeTypes = { task: NextTaskNode }
 
 export function PlanReviewNext({
   draft,
@@ -157,60 +120,6 @@ export function PlanReviewNext({
     window.setTimeout(() => stageRefs.current[stage.id]?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30)
   }
 
-  const flow = useMemo(() => {
-    const level = new Map(stages.flatMap((stage) => stage.entries.map((entry) => [entry.task.key, entry.level] as const)))
-    const row = new Map<number, number>()
-    const positions = new Map<string, { x: number; y: number }>()
-    for (const task of draft.tasks) {
-      const l = level.get(task.key) ?? 0
-      const index = row.get(l) ?? 0
-      row.set(l, index + 1)
-      positions.set(task.key, { x: l * 326, y: index * 124 })
-    }
-    const related = new Set<string>()
-    if (selected) {
-      const up = (key: string): void => {
-        const task = draft.tasks.find((item) => item.key === key)
-        for (const dependency of task?.dependsOn ?? []) { related.add(dependency); up(dependency) }
-      }
-      const down = (key: string): void => {
-        for (const task of draft.tasks) if (task.dependsOn.includes(key) && !related.has(task.key)) { related.add(task.key); down(task.key) }
-      }
-      up(selected.key)
-      down(selected.key)
-    }
-    const nodes: Array<Node<TaskFlowData>> = draft.tasks.map((task, index) => ({
-      id: task.key,
-      type: 'task',
-      position: positions.get(task.key) ?? { x: 0, y: 0 },
-      data: {
-        task,
-        index,
-        role: roleLabels[task.role] ?? task.role,
-        agent: shortAgent(agentOptions.find((option) => option.value === task.agentId)?.label),
-        risk: task.assignmentBlocked || issues.some((issue) => issue.taskKey === task.key),
-        selected: selectedTaskKey === task.key,
-        related: related.has(task.key),
-      },
-    }))
-    const edges: Edge[] = []
-    for (const task of draft.tasks) {
-      for (const dependency of task.dependsOn) {
-        if (!draft.tasks.some((item) => item.key === dependency)) continue
-        const relatedEdge = !selected || dependency === selected.key || task.key === selected.key || (related.has(dependency) && related.has(task.key))
-        edges.push({
-          id: `${dependency}->${task.key}`,
-          source: dependency,
-          target: task.key,
-          type: 'smoothstep',
-          className: selected ? (relatedEdge ? 'pui-edge-related' : 'pui-edge-dimmed') : undefined,
-          markerEnd: { type: MarkerType.ArrowClosed, width: 14, height: 14, color: relatedEdge ? '#7f99bb' : '#aeb9c8' },
-          style: { stroke: relatedEdge ? 'rgba(103,132,172,.8)' : 'rgba(150,164,184,.34)', strokeWidth: relatedEdge ? 1.5 : 1 },
-        })
-      }
-    }
-    return { nodes, edges }
-  }, [agentOptions, draft.tasks, issues, roleLabels, selected, selectedTaskKey, stages])
 
   const setTask = (patch: Partial<PlannedTask>): void => {
     if (selectedIndex >= 0) onUpdateTask(selectedIndex, patch)
@@ -225,9 +134,10 @@ export function PlanReviewNext({
   }
 
   const summaryPath = stages.map((stage) => stage.title).join(' → ')
+  const activeStage = stages.find((stage) => stage.id === selectedStage) ?? stages[0]
 
   return (
-    <TooltipProvider>
+    <>
       <div className="pui-root relative isolate flex h-full min-h-0 flex-col gap-0 overflow-hidden rounded-[20px] text-[var(--pui-ink)]" data-testid="plan-review-workbench">
         <div className="pui-ambient" />
         <motion.div
@@ -298,56 +208,18 @@ export function PlanReviewNext({
             <Panel defaultSize={narrow ? '68%' : '76%'} minSize="45%" className="min-h-0">
               <div className="flex h-full min-h-0 flex-col gap-3">
                 <Tabs.Content value="route" className="min-h-0 outline-none">
-                  <div className="pui-scroll flex min-h-[104px] gap-0 overflow-x-auto pb-1 pt-0.5" data-testid="plan-stage-route">
-                    {stages.map((stage, index) => (
-                      <div key={stage.id} className="flex min-w-[190px] flex-1 items-center">
-                        <Tooltip.Root>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              aria-label={`${stage.title}，${stage.entries.length} 个任务`}
-                              onClick={() => selectStage(stage)}
-                              data-selected={selectedStage === stage.id}
-                              data-risk={stage.hasRisk}
-                              className="pui-stage-node po-stage-card group relative flex min-h-[98px] w-full flex-col items-start gap-1 rounded-[14px] p-3 text-left"
-                            >
-                              <span className="flex w-full items-center gap-2">
-                                <span className="flex size-7 items-center justify-center rounded-lg border border-[var(--pui-border)] bg-[var(--pui-accent-soft)] text-[var(--pui-accent)]">{roleIcon(stage.roles[0] ?? 'custom')}</span>
-                                <span className="ml-auto font-mono text-[11px] text-[var(--pui-ink-muted)]">{String(index + 1).padStart(2, '0')}</span>
-                                {stage.hasRisk ? <AlertTriangle size={13} className="text-[var(--pui-danger)]" /> : null}
-                              </span>
-                              <strong className="mt-1 text-[14px] font-semibold text-[var(--pui-ink)]">{stage.title}</strong>
-                              <span className="flex items-center gap-1.5 text-[11.5px] text-[var(--pui-ink-muted)]"><span>{stage.entries.length} 个任务</span><em className="rounded-full bg-[var(--pui-accent-soft)] px-1.5 py-px not-italic text-[var(--pui-accent)]">{stage.entries.length > 1 ? '并行' : roleLabels[stage.roles[0] ?? 'custom']}</em></span>
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent><div className="space-y-1">{stage.entries.map((entry) => <div key={entry.task.key}>{entry.task.title}</div>)}</div></TooltipContent>
-                        </Tooltip.Root>
-                        {index < stages.length - 1 ? <span className="pui-flow-link mx-0.5 shrink-0" aria-hidden="true" /> : null}
-                      </div>
-                    ))}
-                  </div>
+                  <StageJourney stages={stages} activeStage={selectedStage} onSelect={selectStage} roleLabels={roleLabels} />
+                  {activeStage ? (
+                    <div className="pui-focus-row">
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-[9px] bg-[var(--pui-accent-soft)] text-[var(--pui-accent)]"><Sparkles size={14} /></span>
+                      <div className="min-w-0 flex-1"><div className="truncate text-[12.5px] font-medium text-[var(--pui-ink)]">{activeStage.title} · {activeStage.entries.length} 个任务</div><div className="truncate text-[11px] text-[var(--pui-ink-muted)]">{activeStage.entries.map((entry) => entry.task.title).join(' / ')}</div></div>
+                      {activeStage.entries[0] ? <button type="button" className="flex shrink-0 items-center gap-1 text-[11.5px] font-medium text-[var(--pui-accent)]" onClick={() => openTask(activeStage.entries[0]!.task.key)}>查看任务<ChevronRight size={12} /></button> : null}
+                    </div>
+                  ) : null}
                 </Tabs.Content>
 
                 <Tabs.Content value="dag" className="min-h-0 outline-none">
-                  <div data-testid="plan-task-dag" className="h-[286px] overflow-hidden rounded-[13px] border border-[var(--pui-border)] bg-[color-mix(in_srgb,var(--pui-surface-muted)_78%,transparent)]">
-                    <ReactFlow
-                      nodes={flow.nodes}
-                      edges={flow.edges}
-                      nodeTypes={nodeTypes}
-                      fitView={false}
-                      defaultViewport={{ x: 12, y: 32, zoom: 0.78 }}
-                      minZoom={0.35}
-                      maxZoom={1.5}
-                      nodesDraggable={false}
-                      nodesConnectable={false}
-                      elementsSelectable
-                      onNodeClick={(_event, node) => openTask(node.id)}
-                      proOptions={{ hideAttribution: true }}
-                    >
-                      <Background gap={20} size={1} color="rgba(120,145,175,.15)" />
-                      <Controls showInteractive={false} />
-                    </ReactFlow>
-                  </div>
+                  <TaskGraph tasks={draft.tasks} stages={stages} activeStage={selectedStage} selectedTaskKey={selectedTaskKey} agentLabels={Object.fromEntries(agentOptions.map((option) => [option.value, option.label]))} onSelect={openTask} />
                 </Tabs.Content>
 
                 <div className="flex min-h-0 flex-1 flex-col">
@@ -368,9 +240,12 @@ export function PlanReviewNext({
                               const risk = entry.task.assignmentBlocked || issues.some((issue) => issue.taskKey === entry.task.key)
                               return (
                                 <button type="button" key={entry.task.key} data-testid={`plan-task-${entry.task.key}`} onClick={() => openTask(entry.task.key)} data-selected={selectedTaskKey === entry.task.key}
-                                  className="pui-ledger-row po-plan-compact-task flex h-[36px] w-full items-center gap-2 border-t border-[var(--pui-border)] px-3 text-left">
-                                  <span className="w-5 shrink-0 font-mono text-[11px] text-[var(--pui-ink-muted)]">{String(entry.index + 1).padStart(2, '0')}</span>
-                                  <span className="min-w-0 flex-1 truncate text-[12.5px]">{entry.task.title}</span>
+                                  className="pui-ledger-row po-plan-compact-task flex min-h-[48px] w-full items-center gap-2 border-t border-[var(--pui-border)] px-3 py-1.5 text-left">
+                                  <span className="w-5 shrink-0 self-start pt-0.5 font-mono text-[11px] text-[var(--pui-ink-muted)]">{String(entry.index + 1).padStart(2, '0')}</span>
+                                  <span className="min-w-0 flex-1">
+                                    <span className="block truncate text-[12.5px] font-medium leading-[1.4] text-[var(--pui-ink)]">{entry.task.title}</span>
+                                    <span className="mt-0.5 block truncate text-[11px] leading-[1.35] text-[var(--pui-ink-muted)]">{entry.task.description || '未填写任务描述'}</span>
+                                  </span>
                                   <span className="max-w-[110px] truncate text-[11.5px] text-[var(--pui-ink-muted)]">{shortAgent(agentOptions.find((option) => option.value === entry.task.agentId)?.label)}</span>
                                   {risk ? <Badge tone="danger">需复核</Badge> : entry.task.dependsOn.length ? <span className="text-[11px] text-[var(--pui-ink-muted)]">{entry.task.dependsOn.length} 前置</span> : null}
                                   <ChevronRight size={12} className="text-[var(--pui-ink-muted)] opacity-60" />
@@ -523,6 +398,6 @@ export function PlanReviewNext({
         </Dialog>
         </motion.div>
       </div>
-    </TooltipProvider>
+    </>
   )
 }

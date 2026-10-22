@@ -303,6 +303,8 @@
 
 .pui-dag-node {
   position: relative;
+  width: 188px;
+  min-height: 92px;
   border: 1px solid color-mix(in srgb, var(--pui-border) 82%, var(--pui-glass-edge));
   background:
     radial-gradient(100% 100% at 100% 0%, color-mix(in srgb, var(--pui-violet) 9%, transparent), transparent 52%),
@@ -336,3 +338,46 @@
 }
 
 .pui-kicker { padding-left: 2px; }
+
+/* ── Premium stage journey (SVG route + optical stops) ─────────────────── */
+.pui-route { position: relative; height: 158px; margin: 2px 0 0; overflow: hidden; }
+.pui-route-svg { position: absolute; inset: 0 0 auto; width: 100%; height: 132px; overflow: visible; pointer-events: none; }
+.pui-route-shadow { fill: none; stroke: color-mix(in srgb, var(--pui-ink-muted) 16%, transparent); stroke-width: 7; stroke-linecap: round; opacity: .7; }
+.pui-route-track { fill: none; stroke-width: 2; stroke-linecap: round; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--pui-accent) 28%, transparent)); }
+.pui-route-stops { position: absolute; inset: 0; display: grid; align-items: start; padding: 18px 12px 0; }
+.pui-stop { position: relative; display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 3px; border: 0; background: transparent; padding: 0; color: var(--pui-ink-secondary); text-align: center; }
+.pui-stop-count { position: absolute; right: calc(50% - 42px); top: -5px; z-index: 2; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: .08em; color: var(--pui-ink-muted); }
+.pui-stop-orb { position: relative; z-index: 1; display: grid; width: 62px; height: 62px; place-items: center; border-radius: 20px; border: 1px solid color-mix(in srgb, var(--pui-border) 64%, var(--pui-glass-edge)); background: radial-gradient(120% 120% at 20% 0%, color-mix(in srgb, var(--pui-accent) 18%, transparent), transparent 54%), linear-gradient(150deg, color-mix(in srgb, var(--pui-surface-strong) 86%, transparent), color-mix(in srgb, var(--pui-surface) 58%, transparent)); color: var(--pui-accent); box-shadow: inset 0 1px 0 var(--pui-glass-edge), 0 16px 30px -24px rgba(20, 45, 88, .6); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); transition: border-color 200ms var(--pui-ease), box-shadow 200ms var(--pui-ease), background 200ms var(--pui-ease); }
+.pui-stop:hover .pui-stop-orb { border-color: color-mix(in srgb, var(--pui-accent) 52%, var(--pui-border)); box-shadow: inset 0 1px 0 var(--pui-glass-edge), 0 20px 34px -24px rgba(20, 45, 88, .65); }
+.pui-stop.is-active .pui-stop-orb { border-color: color-mix(in srgb, var(--pui-accent) 62%, var(--pui-border)); background: radial-gradient(120% 120% at 20% 0%, color-mix(in srgb, var(--pui-accent) 30%, transparent), transparent 56%), linear-gradient(150deg, color-mix(in srgb, var(--pui-surface-strong) 90%, transparent), color-mix(in srgb, var(--pui-accent) 10%, var(--pui-surface))); box-shadow: var(--pui-focus-ring), inset 0 1px 0 var(--pui-glass-edge), 0 20px 38px -26px rgba(20, 45, 88, .6); }
+.pui-stop.is-risk .pui-stop-orb { border-color: color-mix(in srgb, var(--pui-danger) 48%, var(--pui-border)); }
+.pui-stop-risk { position: absolute; right: -2px; top: -2px; width: 9px; height: 9px; border-radius: 50%; background: var(--pui-danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pui-danger) 14%, transparent); }
+.pui-stop-title { margin-top: 4px; font-size: 13.5px; font-weight: 650; line-height: 1.3; color: var(--pui-ink); letter-spacing: -.01em; }
+.pui-stop-small { max-width: 150px; font-size: 10.5px; line-height: 1.35; color: var(--pui-ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pui-stop.is-active .pui-stop-title { color: var(--pui-accent); }
+.pui-dag-wrap { background: radial-gradient(70% 90% at 20% 0%, color-mix(in srgb, var(--pui-accent) 5%, transparent), transparent 70%), color-mix(in srgb, var(--pui-surface-muted) 60%, transparent); }
+.pui-dag-wrap .react-flow__node { cursor: pointer; }
+.pui-dag-wrap .react-flow__controls { border: 1px solid var(--pui-border); border-radius: 9px; overflow: hidden; box-shadow: 0 10px 24px -20px rgba(20, 45, 88, .5); }
+.pui-dag-wrap .react-flow__controls button { background: color-mix(in srgb, var(--pui-surface-strong) 86%, transparent); border-bottom-color: var(--pui-border); color: var(--pui-ink-secondary); }
+
+/* The legacy orchestration stylesheet still ships a .po-stage-card rule for
+   the previous workspace. The premium journey is not a card: neutralize it
+   only inside the new route. */
+.pui-root .pui-route button.po-stage-card.pui-stop {
+  min-height: 0;
+  width: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.pui-root .pui-route button.po-stage-card.pui-stop::before,
+.pui-root .pui-route button.po-stage-card.pui-stop::after { content: none; }
+.pui-root .pui-route button.po-stage-card.pui-stop:hover { transform: none; background: transparent; box-shadow: none; }
+
+
+
+.pui-focus-row { display: flex; align-items: center; gap: 9px; margin: 2px 2px 0; padding: 7px 10px; border: 1px solid var(--pui-border); border-radius: 11px; background: linear-gradient(120deg, color-mix(in srgb, var(--pui-accent) 6%, transparent), color-mix(in srgb, var(--pui-surface-strong) 58%, transparent)); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--pui-glass-edge) 50%, transparent); }

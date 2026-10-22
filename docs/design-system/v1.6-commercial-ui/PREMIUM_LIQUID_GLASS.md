@@ -1,4 +1,4 @@
-# ProjectOS Premium Liquid Glass — Stage Sample
+# ProjectOS Premium Liquid Glass — Stage Sample\n\n> Updated: the stage route was subsequently replaced by the SVG optical journey and the DAG by the ELK layout in `REFERENCE_ADAPTATION.md`. This file records the first sample only.
 
 ## Branch
 

@@ -391,8 +391,11 @@ export default function OrchestrationWorkspace() {
       const scale = typeof window !== 'undefined' && window.devicePixelRatio > 1 ? window.devicePixelRatio : 1
       const available = Math.max(520, (window.innerWidth - 80) / scale)
       setPlanModalWidth(Math.min(920, Math.floor(available)))
-      const visualWidth = window.visualViewport?.width ?? window.innerWidth
-      setReviewModalWidth(Math.max(720, Math.min(1480, visualWidth - 48)))
+      // clientWidth is the CSS layout viewport and tracks Electron zoom more
+      // reliably than visualViewport.width, which can remain at the pre-zoom
+      // width when webContents.setZoomFactor changes the device scale.
+      const layoutWidth = document.documentElement.clientWidth || window.innerWidth
+      setReviewModalWidth(Math.max(720, Math.min(1480, layoutWidth - 48)))
     }
     update()
     window.addEventListener('resize', update)

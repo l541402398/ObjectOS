@@ -72,8 +72,10 @@ try {
   await page.locator('[data-testid="plan-task-list"] .po-plan-compact-task').first().click()
   await page.waitForSelector('.po-plan-task-detail', { timeout: 10_000 })
   const titleInput = page.locator('.po-plan-task-detail input').first()
-  const newTitle = '审核台同步测试任务'
+  const newTitle = '在超长中文任务标题与窄窗口布局下验证计划审核工作区的截断、行高与可读性边界'
   await titleInput.fill(newTitle)
+  await page.waitForTimeout(250)
+  await page.screenshot({ path: join(shots, 'plan-review-long-zh.png') })
   await page.locator('[data-testid="task-detail-close"]').click()
   await page.waitForTimeout(300)
   const compactText = await page.locator('[data-testid="plan-task-list"]').innerText()
