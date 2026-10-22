@@ -167,7 +167,7 @@ function ModalShell({
             data-theme={theme}
             className={cn('pui-overlay-surface', variant === 'sheet' ? 'pui-overlay-sheet' : 'pui-overlay-dialog', skin === 'projectos' && 'pdl-root', !open && 'is-closing')}
             data-side={side}
-            style={{ zIndex: zIndex + 1, width: variant === 'dialog' ? `min(${width}px, calc(100vw - 32px))` : undefined }}
+            style={{ zIndex: zIndex + 1, width: variant === 'dialog' ? `min(${width}px, calc(100vw - 32px))` : `min(${width}px, calc(100vw - 28px))` }}
             initial={reduce ? false : { opacity: 0, x: variant === 'sheet' ? (side === 'right' ? 34 : -34) : 0, y: variant === 'dialog' ? 8 : 0, scale: variant === 'dialog' ? .985 : 1 }}
             animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
             transition={{ duration: reduce ? 0 : .24, ease: [0.22, 1, 0.36, 1] }}

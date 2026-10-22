@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { App, Button, Form, Input, Modal, Select, Switch, Tag } from 'antd'
+import { App, Button, Form, Input, Select, Switch, Tag } from 'antd'
 import {
   CheckOutlined,
+  CloseOutlined,
   CopyOutlined,
   DeleteOutlined,
   EyeOutlined,
@@ -18,6 +19,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import type { AgentDefinition } from '@projectos/contracts'
 import { useAgentDefinitions, useGraph, useRuntimeProfiles, useSkills } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
+import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea, SheetShell } from '../next-ui/overlay/overlay-shell'
 
 interface AgentFormValues {
   name: string
@@ -423,16 +425,7 @@ export function AgentStudioModal({
   }
 
   return (
-    <Modal
-      open={open}
-      onCancel={onClose}
-      footer={null}
-      width="min(1480px, 94vw)"
-      className="v16-agent-studio-modal"
-      zIndex={5000}
-      destroyOnHidden
-      closable
-    >
+    <SheetShell open={open} onOpenChange={(next) => { if (!next) onClose() }} ariaLabel="Agent Studio" width={1280} testId="agent-studio-sheet">
       <div className="v16-studio">
         <header className="v16-studio-head">
           <div>
@@ -447,6 +440,7 @@ export function AgentStudioModal({
             {editing && editing.runtimeProfileIds.length ? (
               <Button icon={<ThunderboltOutlined />} onClick={() => { setRunOpen(true); setRunPrompt(''); setRunOutput(null) }}>运行测试</Button>
             ) : null}
+            <button type="button" className="v16-studio-close" aria-label="关闭 Agent Studio" onClick={onClose}><CloseOutlined /></button>
           </div>
         </header>
 
@@ -767,13 +761,17 @@ export function AgentStudioModal({
         />
       </div>
 
-      <Modal open={runOpen} title={`运行 ${editing?.name ?? ''}`} onCancel={() => setRunOpen(false)} onOk={() => void runAgent()} okText="运行" confirmLoading={running} width={680} destroyOnHidden>
-        <Input.TextArea rows={3} value={runPrompt} onChange={(event) => setRunPrompt(event.target.value)} placeholder="输入测试任务" />
-        {runOutput ? <pre className="po-agent-preview">{runOutput}</pre> : null}
-      </Modal>
-    </Modal>
+      <DialogShell open={runOpen} onOpenChange={(next) => { if (!next) setRunOpen(false) }} ariaLabel={`运行 ${editing?.name ?? ''}`} width={680} testId="agent-studio-run">
+        <OverlayHeader eyebrow="AGENT TEST" title={`运行 ${editing?.name ?? ''}`} closeLabel="关闭运行测试" />
+        <OverlayScrollArea className="po-agent-run-scroll">
+          <Input.TextArea rows={3} value={runPrompt} onChange={(event) => setRunPrompt(event.target.value)} placeholder="输入测试任务" />
+          {runOutput ? <pre className="po-agent-preview">{runOutput}</pre> : null}
+        </OverlayScrollArea>
+        <OverlayFooter>
+          <Button onClick={() => setRunOpen(false)}>取消</Button>
+          <Button type="primary" loading={running} onClick={() => void runAgent()}>运行</Button>
+        </OverlayFooter>
+      </DialogShell>
+    </SheetShell>
   )
 }
-
-
-

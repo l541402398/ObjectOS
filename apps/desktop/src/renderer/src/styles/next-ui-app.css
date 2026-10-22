@@ -646,3 +646,27 @@
 
 .pui-overlay-scroll.po-diff-scroll { padding: 14px 18px; }
 .pui-overlay-scroll.po-diff-scroll .po-diff-view { max-height: none; }
+
+.pui-overlay-sheet .v16-studio { height: 100%; min-height: 0; }
+.v16-studio-close { display: inline-grid; width: 30px; height: 30px; place-items: center; border: 1px solid var(--nx-line); border-radius: 8px; color: var(--nx-muted); background: transparent; }
+.v16-studio-close:hover { color: var(--nx-ink); border-color: var(--nx-line-strong); }
+.pui-overlay-scroll.po-agent-run-scroll { padding: 14px 18px 8px; }
+.pui-overlay-scroll.po-agent-run-scroll .po-agent-preview { margin-top: 10px; max-height: 240px; overflow: auto; }
+
+/* Form controls inside portaled overlays (outside .po-shell). */
+.pui-overlay-surface .ant-input,
+.pui-overlay-surface .ant-input-affix-wrapper,
+.pui-overlay-surface .ant-select-selector,
+.pui-overlay-surface .ant-input-number,
+.pui-overlay-surface .ant-picker {
+  border-radius: 8px !important;
+  border-color: var(--nx-line) !important;
+  background: color-mix(in srgb, var(--nx-solid) 58%, transparent) !important;
+  box-shadow: none;
+}
+.pui-overlay-surface .ant-input:focus,
+.pui-overlay-surface .ant-input-affix-wrapper-focused,
+.pui-overlay-surface .ant-select-focused .ant-select-selector {
+  border-color: color-mix(in srgb, var(--nx-accent) 50%, var(--nx-line)) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--nx-accent) 9%, transparent) !important;
+}

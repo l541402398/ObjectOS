@@ -69,7 +69,7 @@ tracks actual migration:
 - [x] settings nested editors (model/Runtime/ACP)
 - [x] Task Board detail drawer and 3 modals
 - [ ] Runs detail/reconcile
-- [ ] Agent Studio + run-test modal
+- [x] Agent Studio + run-test modal
 - [ ] remaining project/collaboration overlays
 - [ ] legacy `PlanReviewWorkbench` removal
 
@@ -268,3 +268,14 @@ Remaining Ant surfaces:
 
 Remaining page-level composition work is unchanged and listed by the page matrix.
 
+
+
+## Slice 10 — Agent Studio Sheet + run test
+
+- Agent Studio main → `SheetShell` at 1280px; three-column template/editor/preview
+  layout is preserved and now actually receives its width (SheetShell previously
+  ignored the width prop for sheets).
+- Run test → nested `DialogShell`.
+- Real Agent creation E2E PASS (`v16-agent-studio-e2e`), including task run.
+- Evidence: `docs/next-ui/screens/agent-studio-sheet.png`.
+- This also fixed the shared `SheetShell` width bug for Run audit and group chat.
