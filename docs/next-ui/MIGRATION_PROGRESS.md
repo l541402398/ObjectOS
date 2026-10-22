@@ -441,3 +441,15 @@ Head: `8023df5`.
 - Verified with 40 consecutive Tab presses: 0 escapes, focus stayed in the
   Settings surface or its Ant portal.
 - `v12-e2e` still passes with Settings connection CRUD/test/restart.
+
+
+## Slice 24 — Real Electron MP4 walkthrough
+
+- `scripts/next-ui-record.mjs` uses Electron `desktopCapturer` +
+  `setDisplayMediaRequestHandler` + MediaRecorder to record the real window.
+- The 1440×900 VP9 WebM was converted to H.264:
+  `docs/next-ui/screens/projectos-next-ui-walkthrough.mp4` — 11.53s, 4.9 MB.
+- The recording covers Project Center, Task Board, task inspector, Orchestration,
+  node inspector and Agent Workbench.
+- ffmpeg is used only as a temporary conversion tool under `test-results/tools`;
+  no runtime or package dependency was added.
