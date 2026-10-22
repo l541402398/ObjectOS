@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `d8a1558` after orchestration column, Agent three-column and 8-page regression
+Latest checkpoint: pending after health/notifications information surfaces
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -399,3 +399,13 @@ Head: `8023df5`.
   520px section below the canvas, not an overlay.
 - Canvas toolbar wraps instead of collapsing labels.
 - Evidence: `docs/next-ui/screens/orchestration-inspector.png`.
+
+
+## Slice 20 — Health and Notifications
+
+- Health agent rows are compact bordered rows; metric/card grid uses the optical
+  surface tokens.
+- Notifications uses the same card material and row rhythm.
+- No data/mutation changes.
+- Screenshots refreshed in `docs/next-ui/screens/pages/health.png` and
+  `notifications.png`.
