@@ -4,9 +4,12 @@ import {
   now,
   type GraphLayout,
   type PlanDraft,
+  type PlanGeneration,
+  type PlannedTask,
   type PlanUpdateInput,
   type ProjectSnapshot,
 } from '@projectos/contracts'
+import { PROJECT_EVENT_TYPES } from '@projectos/domain'
 import type { CoreServices } from '@projectos/application'
 import type { SqliteStore } from '@projectos/persistence'
 import { buildGraphSnapshot } from '@projectos/graph-projection'
@@ -15,6 +18,7 @@ import {
   agentForPlannedTask,
   criticalPathTasks,
   generateLocalPlan,
+  mergeHardCapabilities,
   resolveAgentAssignment,
   topologicalPlanTasks,
   validatePlanDraft,
@@ -24,11 +28,24 @@ import { scanProject } from '@projectos/project-analyzer'
 import { getGitStatus } from '@projectos/workspace'
 import { planGroupTitle, planSessionTitle } from '@projectos/session-manager'
 import { buildAssignmentCandidates as buildCandidateSnapshot } from './assignment-candidates.js'
+import type { PlannerService } from './planner.js'
+
+const LOCAL_RULES_PROMPT_VERSION = 'local-rules-v1'
+
+export interface AiPlanGenerationInput {
+  projectId: string
+  goal: string
+  mode: 'ai' | 'local'
+  allowRuleFallback: boolean
+  maxTasks: number
+  allowOverBudget: boolean
+}
 
 export class OrchestrationService {
   constructor(
     private readonly store: SqliteStore,
     private readonly services: CoreServices,
+    private readonly planner: PlannerService | null = null,
   ) {}
 
   async scan(projectId: string): Promise<ProjectSnapshot> {
@@ -167,16 +184,20 @@ export class OrchestrationService {
         const mode: 'auto' | 'explicit' = explicitKeys.has(task.key)
           ? 'explicit'
           : task.assignmentMode ?? (task.agentId ? 'explicit' : 'auto')
+        const hardCapabilities = mergeHardCapabilities(task.role, task.hardCapabilities)
         const assignment = resolveAgentAssignment({
           role: task.role,
           title: task.title,
           description: task.description,
           explicitAgentId: mode === 'explicit' ? task.agentId ?? null : null,
           defaultAgentId: agentForPlanRole(task.role),
+          requiredCapabilities: task.requiredCapabilities,
+          hardCapabilities,
           candidates,
         })
         return {
           ...task,
+          hardCapabilities,
           agentId: assignment.agentId,
           assignmentReasons: assignment.reasons,
           assignmentBlocked: assignment.blocked,
@@ -191,13 +212,41 @@ export class OrchestrationService {
    * Revision reuse references. Only *completed* old tasks are linked; they are
    * never re-executed or silently treated as fresh evidence for the new task.
    */
-  private reuseReferences(source: PlanDraft): Map<string, { taskId: string; artifactIds: string[] }> {
+  private requirementText(values: readonly string[]): string {
+    // Formatting-only changes (one line vs several) do not change what must be
+    // verified. Any wording/order change still changes this signature.
+    return values.map((value) => value.trim()).join('；').replace(/\s+/g, ' ').trim()
+  }
+
+  private taskRequirementSignature(task: PlannedTask): string {
+    return JSON.stringify({
+      role: task.role,
+      acceptance: this.requirementText(task.acceptanceCriteria),
+      artifacts: this.requirementText(task.expectedArtifacts),
+      // Soft preferences may change without invalidating completed work; hard
+      // role/capability requirements are the safety boundary.
+      hard: [...(task.hardCapabilities ?? [])].sort(),
+    })
+  }
+
+  private reuseReferences(
+    source: PlanDraft,
+    nextTasks: PlannedTask[] = source.tasks,
+  ): Map<string, { taskId: string; artifactIds: string[] }> {
     const result = new Map<string, { taskId: string; artifactIds: string[] }>()
     if (source.createdTaskIds.length === 0) return result
     const ordered = topologicalPlanTasks(source)
+    const oldByKey = new Map(ordered.map((task) => [task.key, task]))
+    const newByKey = new Map(nextTasks.map((task) => [task.key, task]))
     source.createdTaskIds.forEach((taskId, index) => {
       const key = ordered[index]?.key
       if (!key) return
+      const oldPlanTask = oldByKey.get(key)
+      const newPlanTask = newByKey.get(key)
+      if (!oldPlanTask || !newPlanTask) return
+      // A same key/title alone is never enough: changing acceptance or expected
+      // artifacts requires new evidence and therefore a fresh execution.
+      if (this.taskRequirementSignature(oldPlanTask) !== this.taskRequirementSignature(newPlanTask)) return
       const task = this.store.read.getTask(taskId)
       if (!task || task.status !== 'done') return
       result.set(key, {
@@ -294,21 +343,163 @@ export class OrchestrationService {
     }
   }
 
+  /** Synchronous local-rules draft, kept as the deterministic fallback path. */
   generatePlan(projectId: string, goal: string): PlanDraft {
+    return this.persistLocalPlan(projectId, goal).plan
+  }
+
+  private persistLocalPlan(
+    projectId: string,
+    goal: string,
+    generation?: PlanGeneration | null,
+  ): { plan: PlanDraft } {
     if (!this.store.read.getProject(projectId)) throw new AppError('NOT_FOUND', '项目不存在')
     const snapshot = this.store.read.getLatestProjectSnapshot(projectId)
-    const plan = this.assignPlanAgents(
-      generateLocalPlan({
-        projectId,
-        goal,
-        revision: this.store.read.getNextPlanRevision(projectId),
-        snapshot,
-      }),
-    )
+    const startedAt = Date.now()
+    const local = generateLocalPlan({
+      projectId,
+      goal,
+      revision: this.store.read.getNextPlanRevision(projectId),
+      snapshot,
+    })
+    const plan: PlanDraft = {
+      ...this.assignPlanAgents(local),
+      generation:
+        generation ??
+        {
+          mode: 'local-rules',
+          promptVersion: LOCAL_RULES_PROMPT_VERSION,
+          connectionId: null,
+          connectionName: null,
+          model: null,
+          protocol: null,
+          attempts: 0,
+          durationMs: Math.max(0, Date.now() - startedAt),
+          maxTasks: local.tasks.length,
+          contextChars: 0,
+          estimatedInputTokens: null,
+          inputTokens: null,
+          outputTokens: null,
+          fallbackReason: null,
+          warnings: ['本地规则草稿使用固定任务模板，不代表模型理解或真实执行结果。'],
+          contextSources: [],
+        },
+    }
     validatePlanDraft(plan)
     this.validatePlanAgents(plan)
     this.store.createPlanRevision(plan)
     this.ensurePlanCollaboration(plan)
+    this.recordPlanGenerated(plan)
+    return { plan }
+  }
+
+  private recordPlanGenerated(plan: PlanDraft): void {
+    this.store.appendEvent(plan.projectId, plan.id, PROJECT_EVENT_TYPES.planGenerated, {
+      planId: plan.id,
+      revision: plan.revision,
+      goal: plan.goal,
+      generatedBy: plan.generatedBy,
+      mode: plan.generation?.mode ?? plan.generatedBy,
+      connectionId: plan.generation?.connectionId ?? null,
+      connectionName: plan.generation?.connectionName ?? null,
+      model: plan.generation?.model ?? null,
+      taskCount: plan.tasks.length,
+      attempts: plan.generation?.attempts ?? 0,
+      durationMs: plan.generation?.durationMs ?? 0,
+      fallbackReason: plan.generation?.fallbackReason ?? null,
+    })
+  }
+
+  /**
+   * Phase 2B-1 entry point. It builds exactly one validated draft; it never
+   * approves it, creates Tasks, starts the Scheduler or executes a tool.
+   */
+  async generateAIPlan(input: AiPlanGenerationInput): Promise<PlanDraft> {
+    if (!this.store.read.getProject(input.projectId)) throw new AppError('NOT_FOUND', '项目不存在')
+    const goal = input.goal.trim()
+    if (goal.length < 3) throw new AppError('BAD_REQUEST', '计划目标至少需要 3 个字符')
+
+    if (input.mode === 'local') {
+      return this.persistLocalPlan(input.projectId, goal).plan
+    }
+    if (!this.planner) {
+      throw new AppError(
+        'PROVIDER_NOT_CONFIGURED',
+        'AI Planner 尚未初始化，无法调用当前 AI 连接。请重启应用或在设置中重新保存连接。',
+      )
+    }
+
+    const revision = this.store.read.getNextPlanRevision(input.projectId)
+    const planId = newId('pln')
+    const requestId = newId('plr')
+    const startedAt = Date.now()
+    let generated: Awaited<ReturnType<PlannerService['generate']>>
+    try {
+      generated = await this.planner.generate({
+        projectId: input.projectId,
+        goal,
+        revision,
+        planId,
+        requestId,
+        maxTasks: input.maxTasks,
+        allowOverBudget: input.allowOverBudget,
+      })
+    } catch (error) {
+      if (!input.allowRuleFallback) throw error
+      const message = error instanceof Error ? error.message : String(error)
+      const errorDetails = error instanceof AppError && error.details && typeof error.details === 'object'
+        ? (error.details as Record<string, unknown>)
+        : null
+      const attempts = typeof errorDetails?.attempts === 'number' ? errorDetails.attempts : 1
+      const fallbackPlan = this.persistLocalPlan(input.projectId, goal, {
+        mode: 'local-rules',
+        promptVersion: LOCAL_RULES_PROMPT_VERSION,
+        connectionId: null,
+        connectionName: null,
+        model: null,
+        protocol: null,
+        attempts,
+        durationMs: Math.max(0, Date.now() - startedAt),
+        maxTasks: input.maxTasks,
+        contextChars: 0,
+        estimatedInputTokens: null,
+        inputTokens: null,
+        outputTokens: null,
+        fallbackReason: message.slice(0, 2000),
+        warnings: [
+          '模型规划失败，已明确回退到本地规则模板；来源标记为 local-rules，不冒充模型生成。',
+          '本地规则模板不会根据项目上下文调整任务数量。',
+        ],
+        contextSources: [],
+      }).plan
+      return fallbackPlan
+    }
+
+    const plan: PlanDraft = {
+      ...this.assignPlanAgents({
+        id: planId,
+        projectId: input.projectId,
+        revision,
+        status: 'draft',
+        goal,
+        tasks: generated.tasks,
+        assumptions: generated.assumptions,
+        risks: generated.risks,
+        generatedBy: 'provider',
+        generation: generated.generation,
+        createdAt: now(),
+        updatedAt: now(),
+        approvedAt: null,
+        createdTaskIds: [],
+        execution: null,
+      }),
+      updatedAt: now(),
+    }
+    validatePlanDraft(plan)
+    this.validatePlanAgents(plan)
+    this.store.createPlanRevision(plan)
+    this.ensurePlanCollaboration(plan)
+    this.recordPlanGenerated(plan)
     return plan
   }
 
@@ -353,6 +544,29 @@ export class OrchestrationService {
     return next
   }
 
+  /** Read-only assignment preview for a replan proposal; does not persist. */
+  previewAssignedTasks(projectId: string, goal: string, tasks: PlannedTask[]): PlannedTask[] {
+    if (!this.store.read.getProject(projectId)) throw new AppError('NOT_FOUND', '项目不存在')
+    const timestamp = now()
+    const plan: PlanDraft = {
+      id: 'preview',
+      projectId,
+      revision: 1,
+      status: 'draft',
+      goal,
+      tasks,
+      assumptions: [],
+      risks: [],
+      generatedBy: 'provider',
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      approvedAt: null,
+      createdTaskIds: [],
+      execution: null,
+    }
+    return this.assignPlanAgents(plan).tasks
+  }
+
   revisePlan(input: PlanUpdateInput): PlanDraft {
     const source = this.getPlan(input.planId)
     if (source.status === 'draft') return this.updatePlan(input)
@@ -375,6 +589,15 @@ export class OrchestrationService {
       assumptions: input.assumptions ?? source.assumptions,
       risks: input.risks ?? source.risks,
       generatedBy: source.generatedBy,
+      generation: source.generation
+        ? {
+            ...source.generation,
+            warnings: [
+              ...source.generation.warnings,
+              `本版本由 r${source.revision} 人工修订；任务与依赖可能已不同于模型原始输出。`,
+            ].slice(0, 30),
+          }
+        : undefined,
       createdAt: now(),
       updatedAt: now(),
       approvedAt: null,
@@ -382,7 +605,7 @@ export class OrchestrationService {
       createdTaskIds: [],
       execution: null,
     })
-    const reuse = this.reuseReferences(source)
+    const reuse = this.reuseReferences(source, assigned.tasks)
     const next: PlanDraft = {
       ...assigned,
       tasks: assigned.tasks.map((task) => {
@@ -396,6 +619,14 @@ export class OrchestrationService {
     this.validatePlanAgents(next)
     this.store.createPlanRevision(next)
     if (source.status === 'approved') {
+      const revokedGrants = this.store.revokeActivePlanExecutionGrants(source.id, `计划被 r${revision} 替代`, now())
+      if (revokedGrants > 0) {
+        this.store.appendEvent(source.projectId, source.id, PROJECT_EVENT_TYPES.planGrantInvalidated, {
+          reason: `计划被 r${revision} 替代`,
+          revision,
+          count: revokedGrants,
+        })
+      }
       this.store.updatePlanRevision({
         ...source,
         status: 'superseded',
@@ -445,6 +676,24 @@ export class OrchestrationService {
           if (!id) throw new AppError('INTERNAL', `计划依赖顺序错误：${key}`)
           return id
         })
+        // A validated reuse reference points at a completed Task with identical
+        // requirements. Reuse that Task instead of creating a duplicate node
+        // that would execute the same work again.
+        if (planned.reuseFromTaskId) {
+          const reused = this.store.read.getTask(planned.reuseFromTaskId)
+          if (reused && reused.status === 'done' && reused.projectId === plan.projectId) {
+            taskIdByKey.set(planned.key, reused.id)
+            ids.push(reused.id)
+            this.store.appendEvent(plan.projectId, plan.id, PROJECT_EVENT_TYPES.planTaskReused, {
+              planId: plan.id,
+              revision: plan.revision,
+              taskKey: planned.key,
+              reusedTaskId: reused.id,
+              artifactIds: planned.reuseArtifactIds ?? [],
+            })
+            continue
+          }
+        }
         const assigneeAgentId = planned.agentId ?? agentForPlannedTask(planned)
         const task = this.services.tasks.create({
           projectId: plan.projectId,

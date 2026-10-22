@@ -499,7 +499,9 @@ export function registerIpc(ctx: IpcContext): () => void {
         result = await handleMain(method, value)
       } else {
         const timeout =
-          method === 'agentDefinition.run' || method === 'runtime.execute' || method === 'runtime.acpPrompt' || method === 'runtime.install'
+          method === 'plan.generate'
+            ? 240_000
+            : method === 'agentDefinition.run' || method === 'runtime.execute' || method === 'runtime.acpPrompt' || method === 'runtime.install'
             ? 180_000
             : method === 'approval.decide'
             ? 180_000

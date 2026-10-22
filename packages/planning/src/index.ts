@@ -1,6 +1,10 @@
 import { newId, now, type PlanDraft, type PlannedTask, type ProjectSnapshot } from '@projectos/contracts'
+import { validatePlanDraft } from './validation.js'
 
 export * from './assignment.js'
+export * from './validation.js'
+export * from './planner-prompt.js'
+export * from './replan-prompt.js'
 
 const ROLE_AGENT: Record<PlannedTask['role'], string> = {
   architect: 'agt_architect',
@@ -103,35 +107,6 @@ export function generateLocalPlan(input: {
     createdTaskIds: [],
     execution: null,
   }
-}
-
-export function validatePlanDraft(plan: PlanDraft): void {
-  if (plan.tasks.length === 0) throw new Error('计划没有任务')
-  const keys = new Set<string>()
-  for (const task of plan.tasks) {
-    if (keys.has(task.key)) throw new Error(`任务 key 重复：${task.key}`)
-    keys.add(task.key)
-  }
-  for (const task of plan.tasks) {
-    for (const dependency of task.dependsOn) {
-      if (!keys.has(dependency)) throw new Error(`依赖不存在：${task.key} → ${dependency}`)
-      if (dependency === task.key) throw new Error(`任务不能依赖自身：${task.key}`)
-    }
-  }
-  const visiting = new Set<string>()
-  const visited = new Set<string>()
-  const byKey = new Map(plan.tasks.map((task) => [task.key, task]))
-  const visit = (key: string): void => {
-    if (visiting.has(key)) throw new Error(`计划存在环形依赖：${key}`)
-    if (visited.has(key)) return
-    visiting.add(key)
-    const task = byKey.get(key)
-    if (!task) throw new Error(`任务不存在：${key}`)
-    for (const dependency of task.dependsOn) visit(dependency)
-    visiting.delete(key)
-    visited.add(key)
-  }
-  for (const task of plan.tasks) visit(task.key)
 }
 
 export function topologicalPlanTasks(plan: PlanDraft): PlannedTask[] {

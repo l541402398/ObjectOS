@@ -167,7 +167,18 @@ try {
       },
     })
   }, { projectId: project.project.id, taskIds: approved.taskIds })
-  await page.evaluate(async (planId) => window.projectos.orchestration.start(planId, 2), plan.id)
+  const grant = await page.evaluate(async (planId) => window.projectos.plans.grant.issue({
+    planId,
+    actions: ['plan.start', 'workspace-write'],
+    allowedPaths: ['.'],
+    maxRuns: 1,
+    maxToolCalls: 100,
+    ttlHours: 1,
+    allowOverBudget: false,
+    note: 'V1.3 orchestration E2E',
+    confirm: true,
+  }), plan.id)
+  await page.evaluate(async ({ planId, grantId }) => window.projectos.orchestration.start(planId, 2, 2, false, grantId), { planId: plan.id, grantId: grant.id })
 
   let finalPlan = null
   const deadline = Date.now() + 60_000

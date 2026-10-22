@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { AgentCapabilitySchema } from './enums.js'
 import { IdSchema, TimestampSchema } from './common.js'
 
 export const ProjectFrameworkSchema = z.object({
@@ -52,6 +53,20 @@ export const PlannedTaskSchema = z.object({
   dependsOn: z.array(z.string().min(1).max(80)).default([]),
   acceptanceCriteria: z.array(z.string().max(2000)).default([]),
   expectedArtifacts: z.array(z.string().max(500)).default([]),
+  /**
+   * Capability *requirements* expressed by the Planner. They are advisory
+   * inputs to the existing AgentAssignmentResolver; they are never Agent IDs,
+   * Runtime IDs or model choices. Optional so older drafts stay readable.
+   */
+  requiredCapabilities: z.array(AgentCapabilitySchema).max(8).optional(),
+  /**
+   * Capabilities that are genuinely mandatory for this node. Missing one blocks
+   * approval/execution. Role-core capabilities are added by the scheduler-side
+   * resolver; the Planner can only add a small number of additional hard needs.
+   */
+  hardCapabilities: z.array(AgentCapabilitySchema).max(8).optional(),
+  /** Why this task and its dependencies exist; kept for reviewer explanation. */
+  rationale: z.string().max(2000).optional(),
   requiresApproval: z.boolean().default(true),
   /**
    * Revision reuse rule: a new node whose key matches a *completed* task in the
@@ -98,6 +113,63 @@ export const PlanExecutionSchema = z.object({
 })
 export type PlanExecution = z.infer<typeof PlanExecutionSchema>
 
+export const PlanContextSourceKindSchema = z.enum([
+  'project',
+  'snapshot',
+  'agent',
+  'task',
+  'plan',
+  'artifact',
+  'knowledge',
+  'decision',
+  'quality-policy',
+  'budget',
+  'file',
+  'run',
+  'tool-call',
+  'handoff',
+  'grant',
+])
+export type PlanContextSourceKind = z.infer<typeof PlanContextSourceKindSchema>
+
+/**
+ * One piece of context that was actually sent to (or considered for) the
+ * Planner. Only metadata is persisted; file bodies and prompts are not.
+ */
+export const PlanContextSourceSchema = z.object({
+  id: z.string().max(240),
+  kind: PlanContextSourceKindSchema,
+  title: z.string().max(240),
+  chars: z.number().int().nonnegative(),
+  truncated: z.boolean().default(false),
+})
+export type PlanContextSource = z.infer<typeof PlanContextSourceSchema>
+
+/**
+ * Honest provenance for a plan draft. `generatedBy` remains the single
+ * authoritative source flag; this record adds the model/connection, bounded
+ * attempt count and context accounting without ever storing a credential.
+ */
+export const PlanGenerationSchema = z.object({
+  mode: PlanGeneratorSchema,
+  promptVersion: z.string().max(80),
+  connectionId: IdSchema.nullable().default(null),
+  connectionName: z.string().max(240).nullable().default(null),
+  model: z.string().max(200).nullable().default(null),
+  protocol: z.string().max(40).nullable().default(null),
+  attempts: z.number().int().min(0).max(6).default(0),
+  durationMs: z.number().int().nonnegative().default(0),
+  maxTasks: z.number().int().positive().max(20).default(12),
+  contextChars: z.number().int().nonnegative().default(0),
+  estimatedInputTokens: z.number().int().nonnegative().nullable().default(null),
+  inputTokens: z.number().int().nonnegative().nullable().default(null),
+  outputTokens: z.number().int().nonnegative().nullable().default(null),
+  fallbackReason: z.string().max(2000).nullable().default(null),
+  warnings: z.array(z.string().max(1000)).max(30).default([]),
+  contextSources: z.array(PlanContextSourceSchema).max(80).default([]),
+})
+export type PlanGeneration = z.infer<typeof PlanGenerationSchema>
+
 export const PlanDraftSchema = z.object({
   id: IdSchema,
   projectId: IdSchema,
@@ -108,6 +180,8 @@ export const PlanDraftSchema = z.object({
   assumptions: z.array(z.string()),
   risks: z.array(z.string()),
   generatedBy: PlanGeneratorSchema,
+  /** Optional so plans written before model provenance was recorded still load. */
+  generation: PlanGenerationSchema.nullable().optional(),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,
   approvedAt: TimestampSchema.nullable(),

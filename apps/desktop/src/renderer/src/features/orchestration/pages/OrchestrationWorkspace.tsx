@@ -18,6 +18,8 @@ import {
   DeleteOutlined,
   FileSearchOutlined,
   FileTextOutlined,
+  InfoCircleOutlined,
+  LockOutlined,
   MessageOutlined,
   NodeIndexOutlined,
   PauseCircleOutlined,
@@ -25,14 +27,18 @@ import {
   PlusOutlined,
   ReloadOutlined,
   RobotOutlined,
+  SafetyCertificateOutlined,
   SaveOutlined,
   SettingOutlined,
   StopOutlined,
+  ThunderboltOutlined,
+  WarningOutlined,
 } from '@ant-design/icons'
 import {
   Background,
   Controls,
   Handle,
+  MarkerType,
   MiniMap,
   Position,
   ReactFlow,
@@ -44,8 +50,21 @@ import {
   type ReactFlowInstance,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import type { ApprovalView, GraphNode, PlanDraft, PlannedTask, RunStep, WorktreeInfo } from '@projectos/contracts'
+import type {
+  AgentDefinition,
+  ApprovalView,
+  GraphNode,
+  PlanDraft,
+  PlanExecutionGrantIssueInput,
+  PlannedTask,
+  RunStep,
+  WorktreeInfo,
+} from '@projectos/contracts'
 import { ErrorState, LoadingBlock, StatusPill } from '@projectos/ui'
+import { PlanGrantPanel } from '../components/PlanGrantPanel'
+import { AgentStudioModal } from '../../../components/AgentStudioModal'
+import { PlanReviewWorkbench, hasPlanBlockingIssues } from '../components/PlanReviewWorkbench'
+import { ReplanPanel } from '../components/ReplanPanel'
 import {
   qk,
   useAgents,
@@ -53,7 +72,10 @@ import {
   useBootstrap,
   useCollaboration,
   useGraph,
+  usePlanGrant,
   usePlans,
+  useReplanProposals,
+  useProjectBudget,
   useProjectEvents,
   useProjectSnapshot,
   useRunDetail,
@@ -284,14 +306,26 @@ function buildLayout(
   }
   const edges: Edge[] = snapshot.edges
     .filter((edge) => edge.kind === 'delegation')
-    .map((edge) => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      type: 'smoothstep',
-      className: `po-flow-edge is-${edge.kind}`,
-      style: { stroke: 'rgba(112, 140, 180, 0.42)', strokeWidth: 1.2 },
-    }))
+    .map((edge) => {
+      const related = !selectedId || edge.source === selectedId || edge.target === selectedId
+      return {
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        type: 'smoothstep',
+        className: `po-flow-edge is-${edge.kind}${related ? ' is-related' : ' is-dimmed'}`,
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 13,
+          height: 13,
+          color: related ? 'rgba(126, 154, 190, .82)' : 'rgba(126, 154, 190, .3)',
+        },
+        style: {
+          stroke: related ? 'rgba(126, 154, 190, .62)' : 'rgba(126, 154, 190, .25)',
+          strokeWidth: related ? 1.35 : 1,
+        },
+      }
+    })
   return { nodes, edges, agents, tasks }
 }
 
@@ -299,7 +333,7 @@ export default function OrchestrationWorkspace() {
   const { projectId = '' } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { message, modal, notification } = AntApp.useApp()
+  const { message, notification } = AntApp.useApp()
   const bootstrap = useBootstrap()
   const project = bootstrap.data?.projects.find((item) => item.id === projectId) ?? null
   const snapshotQuery = useProjectSnapshot(projectId)
@@ -314,6 +348,25 @@ export default function OrchestrationWorkspace() {
   const [planOpen, setPlanOpen] = useState(false)
   const [goal, setGoal] = useState('')
   const [draft, setDraft] = useState<PlanDraft | null>(null)
+  const [planMode, setPlanMode] = useState<'ai' | 'local'>('ai')
+  const [generating, setGenerating] = useState(false)
+  const [planElapsed, setPlanElapsed] = useState(0)
+  const [plannerError, setPlannerError] = useState<string | null>(null)
+  const [agentStudioOpen, setAgentStudioOpen] = useState(false)
+  const [customAgentTaskKey, setCustomAgentTaskKey] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!generating) {
+      setPlanElapsed(0)
+      return
+    }
+    const startedAt = Date.now()
+    setPlanElapsed(0)
+    const timer = window.setInterval(() => setPlanElapsed(Math.floor((Date.now() - startedAt) / 1000)), 250)
+    return () => window.clearInterval(timer)
+  }, [generating])
+  const [grantBusy, setGrantBusy] = useState(false)
+  const [replanBusy, setReplanBusy] = useState(false)
   const [savingLayout, setSavingLayout] = useState(false)
   const [worktreeInfo, setWorktreeInfo] = useState<WorktreeInfo | null>(null)
   const [diffOpen, setDiffOpen] = useState(false)
@@ -330,15 +383,41 @@ export default function OrchestrationWorkspace() {
   const flowRef = useRef<ReactFlowInstance<FlowNode> | null>(null)
   const autoScan = useRef(false)
   const resolvedTheme = useResolvedTheme()
+  const [planModalWidth, setPlanModalWidth] = useState(920)
+  useEffect(() => {
+    const update = (): void => {
+      const scale = typeof window !== 'undefined' && window.devicePixelRatio > 1 ? window.devicePixelRatio : 1
+      const available = Math.max(520, (window.innerWidth - 80) / scale)
+      setPlanModalWidth(Math.min(920, Math.floor(available)))
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
 
   const snapshot = snapshotQuery.data?.snapshot ?? null
   const latestPlan = plansQuery.data?.plans[0] ?? null
+  const budgetQuery = useProjectBudget(projectId)
+  const grantPlanId =
+    draft?.status === 'approved'
+      ? draft.id
+      : latestPlan?.status === 'approved'
+        ? latestPlan.id
+        : null
+  const grantQuery = usePlanGrant(grantPlanId)
+  const currentGrant = grantQuery.data ?? null
+  const latestGrant = latestPlan && grantPlanId === latestPlan.id ? currentGrant : null
+  const replanQuery = useReplanProposals(projectId, grantPlanId, Boolean(grantPlanId))
   const agentOptions = useMemo(
     () => (agentsQuery.data?.agents ?? []).map((view) => ({
       value: view.agent.id,
       label: `${view.agent.name} · ${view.agent.role}`,
     })),
     [agentsQuery.data],
+  )
+  const planAgentOptions = useMemo(
+    () => [...agentOptions, { value: '__custom__', label: '＋ 新建自定义 Agent' }],
+    [agentOptions],
   )
   const layout = useMemo(
     () => (graphQuery.data ? buildLayout(graphQuery.data, selected?.id ?? null) : { nodes: [], edges: [], agents: [], tasks: [] }),
@@ -457,17 +536,44 @@ export default function OrchestrationWorkspace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [snapshotQuery.isLoading, snapshotQuery.data])
 
-  const generate = async (): Promise<void> => {
+  const openPlanModal = (): void => {
+    setPlannerError(null)
+    if (latestPlan && ['draft', 'approved'].includes(latestPlan.status)) {
+      setDraft(latestPlan)
+      setGoal(latestPlan.goal)
+      setPlanMode(latestPlan.generatedBy === 'provider' ? 'ai' : 'local')
+    } else {
+      setDraft(null)
+      setGoal('')
+      setPlanMode('ai')
+    }
+    setPlanOpen(true)
+  }
+
+  const generate = async (mode: 'ai' | 'local' = planMode): Promise<void> => {
     if (goal.trim().length < 3) {
       message.warning('请输入目标')
       return
     }
+    setPlanMode(mode)
+    setGenerating(true)
+    setPlannerError(null)
     try {
-      const plan = await window.projectos.plans.generate(projectId, goal.trim())
+      const plan = await window.projectos.plans.generate(projectId, goal.trim(), {
+        mode,
+        allowRuleFallback: false,
+        maxTasks: 12,
+      })
       setDraft(plan)
-      message.success('已生成计划草稿')
+      await queryClient.invalidateQueries({ queryKey: qk.plans(projectId) })
+      message.success(mode === 'ai' ? 'AI 已生成计划草稿，请校验后批准' : '已生成本地规则草稿')
     } catch (error) {
-      message.error(errorMessage(error))
+      // AI failures are shown inline (with the explicit local-rule fallback);
+      // a toast on top of the modal would obscure the actionable error.
+      setPlannerError(errorMessage(error))
+      if (mode === 'local') message.error('生成计划失败')
+    } finally {
+      setGenerating(false)
     }
   }
 
@@ -477,6 +583,29 @@ export default function OrchestrationWorkspace() {
       const tasks = current.tasks.map((task, taskIndex) => (taskIndex === index ? { ...task, ...patch } : task))
       return { ...current, tasks }
     })
+  }
+
+  const openCustomAgent = (taskKey: string): void => {
+    setCustomAgentTaskKey(taskKey)
+    setAgentStudioOpen(true)
+  }
+
+  const attachCreatedAgent = (agent: AgentDefinition): void => {
+    if (!customAgentTaskKey) return
+    const index = draft?.tasks.findIndex((task) => task.key === customAgentTaskKey) ?? -1
+    if (index >= 0) {
+      updateDraftTask(index, {
+        role: 'custom',
+        agentId: agent.id,
+        // The new Agent owns the task's capability contract. Do not keep a
+        // previous role's hard capability (e.g. architect) on this node.
+        hardCapabilities: [],
+        requiredCapabilities: [],
+        assignmentBlocked: false,
+        assignmentReasons: [`手动指定：用户创建自定义 Agent ${agent.name}`],
+      })
+    }
+    setCustomAgentTaskKey(null)
   }
 
   const addDraftTask = (): void => {
@@ -508,25 +637,27 @@ export default function OrchestrationWorkspace() {
     } : current)
   }
 
-  const startPlan = async (planId: string, forceBudget = false): Promise<void> => {
+  const startPlan = async (
+    planId: string,
+    forceBudget = false,
+    grantId: string | null = null,
+  ): Promise<void> => {
     try {
-      const result = await window.projectos.orchestration.start(planId, 2, 2, forceBudget)
+      const result = await window.projectos.orchestration.start(
+        planId,
+        2,
+        2,
+        forceBudget,
+        grantId,
+        typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${planId}:${Date.now()}`,
+      )
       setDraft((current) => (current?.id === planId ? result : current))
       await invalidate()
+      await queryClient.invalidateQueries({ queryKey: qk.planGrant(planId) })
       notification.destroy('plan-ready')
       message.success('计划开始执行')
     } catch (error) {
       const text = errorMessage(error)
-      if (!forceBudget && text.includes('软预算')) {
-        modal.confirm({
-          title: '已超过软预算',
-          content: text,
-          okText: '继续执行',
-          cancelText: '取消',
-          onOk: () => startPlan(planId, true),
-        })
-        return
-      }
       notification.error({
         key: 'plan-start-error',
         placement: 'bottomRight',
@@ -545,6 +676,111 @@ export default function OrchestrationWorkspace() {
     }
   }
 
+  const issueGrant = async (input: PlanExecutionGrantIssueInput, start: boolean): Promise<void> => {
+    setGrantBusy(true)
+    try {
+      const grant = await window.projectos.plans.grant.issue(input)
+      await queryClient.invalidateQueries({ queryKey: qk.planGrant(input.planId) })
+      await invalidate()
+      if (start) {
+        const plan = await window.projectos.plans.get(input.planId)
+        if (plan.execution?.status === 'paused') {
+          const result = await window.projectos.orchestration.resume(input.planId)
+          setDraft(result)
+          await invalidate()
+          await queryClient.invalidateQueries({ queryKey: qk.planGrant(input.planId) })
+          message.success('已授权并继续执行')
+        } else {
+          await startPlan(input.planId, grant.allowOverBudget, grant.id)
+        }
+      } else {
+        message.success('已授予计划执行权限；尚未启动执行')
+      }
+    } catch (error) {
+      message.error(errorMessage(error))
+    } finally {
+      setGrantBusy(false)
+    }
+  }
+
+  const revokeGrant = async (grantId: string): Promise<void> => {
+    if (!draft) return
+    setGrantBusy(true)
+    try {
+      await window.projectos.plans.grant.revoke({ grantId, reason: '用户在计划面板撤销执行授权' })
+      const refreshed = await window.projectos.plans.get(draft.id)
+      setDraft(refreshed)
+      await queryClient.invalidateQueries({ queryKey: qk.planGrant(draft.id) })
+      await invalidate()
+      message.info('已撤销计划执行授权；活动 Run 已请求取消')
+    } catch (error) {
+      message.error(errorMessage(error))
+    } finally {
+      setGrantBusy(false)
+    }
+  }
+
+  const proposeReplan = async (
+    reason: string,
+    trigger: 'user_requested' | 'constraints_changed',
+  ): Promise<void> => {
+    if (!draft) return
+    setReplanBusy(true)
+    try {
+      const proposal = await window.projectos.plans.replan.propose({
+        planId: draft.id,
+        trigger,
+        reason,
+        allowOverBudget: false,
+      })
+      await queryClient.invalidateQueries({ queryKey: qk.replanProposals(draft.projectId, draft.id) })
+      if (proposal.status === 'failed') {
+        notification.error({
+          key: 'replan-failed',
+          placement: 'bottomRight',
+          message: '修订提案未生成',
+          description: proposal.error ?? '模型输出未通过校验，旧计划未被修改。',
+          duration: 0,
+        })
+      } else {
+        message.success('已生成修订提案；应用前不会修改计划或授权')
+      }
+    } catch (error) {
+      message.error(errorMessage(error))
+    } finally {
+      setReplanBusy(false)
+    }
+  }
+
+  const applyReplan = async (proposalId: string): Promise<void> => {
+    setReplanBusy(true)
+    try {
+      const result = await window.projectos.plans.replan.apply(proposalId)
+      setDraft(result.plan)
+      setPlanOpen(true)
+      await invalidate()
+      await queryClient.invalidateQueries({ queryKey: qk.planGrant(result.plan.id) })
+      message.success(`已应用为计划 r${result.plan.revision} 草稿；请重新批准并授权`)
+    } catch (error) {
+      message.error(errorMessage(error))
+    } finally {
+      setReplanBusy(false)
+    }
+  }
+
+  const rejectReplan = async (proposalId: string): Promise<void> => {
+    setReplanBusy(true)
+    try {
+      await window.projectos.plans.replan.reject(proposalId, '用户在计划面板拒绝修订')
+      await queryClient.invalidateQueries({ queryKey: qk.replanProposals(draft?.projectId ?? '', draft?.id ?? '') })
+      message.info('已拒绝修订提案；旧计划保持不变')
+    } catch (error) {
+      message.error(errorMessage(error))
+    } finally {
+      setReplanBusy(false)
+    }
+  }
+
   const approve = async (): Promise<void> => {
     if (!draft) return
     try {
@@ -557,26 +793,9 @@ export default function OrchestrationWorkspace() {
       })
       const result = await window.projectos.plans.approve(updated.id)
       setDraft(result.plan)
-      setPlanOpen(false)
       await invalidate()
-      message.success(`计划已批准，创建 ${result.taskIds.length} 个任务`)
-      notification.success({
-        key: 'plan-ready',
-        placement: 'bottomRight',
-        duration: 0,
-        message: `计划已批准 · ${result.taskIds.length} 个任务`,
-        description: (
-          <div className="v17-plan-notification-body">
-            <p>任务已经创建，但不会自动执行。确认后才会启动 Agent。</p>
-            <div className="v17-plan-notification-actions">
-              <Button type="primary" size="small" icon={<PlayCircleOutlined />} onClick={() => void startPlan(result.plan.id)}>
-                开始执行
-              </Button>
-              <Button size="small" onClick={() => navigate(`/projects/${projectId}/tasks`)}>查看任务</Button>
-            </div>
-          </div>
-        ),
-      })
+      await queryClient.invalidateQueries({ queryKey: qk.planGrant(result.plan.id) })
+      message.success(`计划已批准，创建 ${result.taskIds.length} 个任务；请设置执行授权`)
     } catch (error) {
       message.error(errorMessage(error))
     }
@@ -612,35 +831,21 @@ export default function OrchestrationWorkspace() {
     }
   }
 
-  const controlExecution = async (action: 'start' | 'pause' | 'resume' | 'cancel', forceBudget = false): Promise<void> => {
+  const controlExecution = async (action: 'pause' | 'resume' | 'cancel'): Promise<void> => {
     if (!draft) return
     try {
       const result =
-        action === 'start'
-          ? await window.projectos.orchestration.start(draft.id, 2, 2, forceBudget)
-          : action === 'pause'
-            ? await window.projectos.orchestration.pause(draft.id)
-            : action === 'resume'
-              ? await window.projectos.orchestration.resume(draft.id)
-              : await window.projectos.orchestration.cancel(draft.id)
+        action === 'pause'
+          ? await window.projectos.orchestration.pause(draft.id)
+          : action === 'resume'
+            ? await window.projectos.orchestration.resume(draft.id)
+            : await window.projectos.orchestration.cancel(draft.id)
       setDraft(result)
       await invalidate()
-      message.success(
-        action === 'start' ? '计划开始执行' : action === 'pause' ? '已暂停' : action === 'resume' ? '已继续' : '已取消',
-      )
+      await queryClient.invalidateQueries({ queryKey: qk.planGrant(draft.id) })
+      message.success(action === 'pause' ? '已暂停' : action === 'resume' ? '已继续' : '已取消')
     } catch (error) {
-      const text = errorMessage(error)
-      if (action === 'start' && !forceBudget && text.includes('软预算')) {
-        modal.confirm({
-          title: '已超过软预算',
-          content: text,
-          okText: '继续执行',
-          cancelText: '取消',
-          onOk: () => controlExecution('start', true),
-        })
-        return
-      }
-      message.error(text)
+      message.error(errorMessage(error))
     }
   }
 
@@ -767,6 +972,7 @@ export default function OrchestrationWorkspace() {
       blocked: nodes.filter((node) => node.status === 'blocked' || node.status === 'failed').length,
     }
   }, [graphQuery.data])
+
 
   const selectedAgent = selected?.kind === 'agent' ? selected : null
   const selectedTask = selected?.kind === 'task' ? selected : null
@@ -1132,7 +1338,7 @@ export default function OrchestrationWorkspace() {
           </button>
         )) : <div className="po-inspector-empty">暂无计划</div>}
         <div className="po-inspector-actions">
-          <Button size="small" icon={<PlusOutlined />} onClick={() => { setDraft(latestPlan?.status === 'draft' ? latestPlan : null); setGoal(latestPlan?.status === 'draft' ? latestPlan.goal : ''); setPlanOpen(true) }}>
+          <Button size="small" icon={<PlusOutlined />} onClick={openPlanModal}>
             生成计划
           </Button>
         </div>
@@ -1164,7 +1370,7 @@ export default function OrchestrationWorkspace() {
           <div className="po-orch-actions">
             <Button icon={<FileSearchOutlined />} onClick={() => void scan()} loading={snapshotQuery.isFetching}>扫描</Button>
             <Button icon={<SettingOutlined />} onClick={() => navigate(`/projects/${projectId}/agents`)}>Agent</Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => { setDraft(latestPlan?.status === 'draft' ? latestPlan : null); setGoal(latestPlan?.status === 'draft' ? latestPlan.goal : ''); setPlanOpen(true) }}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={openPlanModal}>
               生成计划
             </Button>
           </div>
@@ -1180,12 +1386,26 @@ export default function OrchestrationWorkspace() {
 
         {latestPlan?.status === 'approved' && !latestPlan.execution ? (
           <div className="v17-next-step-banner">
-            <div className="v17-next-step-icon"><CheckCircleOutlined /></div>
+            <div className="v17-next-step-icon">{latestGrant?.valid ? <SafetyCertificateOutlined /> : <CheckCircleOutlined />}</div>
             <div className="v17-next-step-copy">
-              <strong>计划已批准，等待你确认执行</strong>
-              <span>已创建 {latestPlan.createdTaskIds.length} 个任务，分配到 {latestPlan.tasks.length} 个计划节点；执行前不会启动 Agent。</span>
+              <strong>{latestGrant?.valid ? '计划已批准，已授予有限执行权限' : '计划已批准，但尚未授权执行'}</strong>
+              <span>
+                {latestGrant?.valid
+                  ? `已授权 ${latestGrant.allowedTaskIds.length} 个任务、${latestGrant.allowedAgentIds.length} 个 Agent；${latestGrant.actions.includes('workspace-write') ? `仅允许在 ${latestGrant.allowedPaths.join('、')} 写文件` : '写文件仍需逐次审批'}，进程/Git/外部 Runtime 仍需逐次审批。`
+                  : `已创建 ${latestPlan.createdTaskIds.length} 个任务。批准计划不会启动 Agent；请先设置授权范围、有效期与上限。`}
+              </span>
             </div>
-            <Button type="primary" icon={<PlayCircleOutlined />} onClick={() => void startPlan(latestPlan.id)}>开始执行</Button>
+            {latestGrant?.canStart ? (
+              <Button
+                type="primary"
+                icon={<PlayCircleOutlined />}
+                onClick={() => void startPlan(latestPlan.id, latestGrant.allowOverBudget, latestGrant.id)}
+              >
+                开始执行
+              </Button>
+            ) : (
+              <Button type="primary" icon={<LockOutlined />} onClick={openPlanModal}>设置执行授权</Button>
+            )}
             <Button onClick={() => navigate(`/projects/${projectId}/tasks`)}>查看任务</Button>
           </div>
         ) : null}
@@ -1197,7 +1417,11 @@ export default function OrchestrationWorkspace() {
               <strong>计划执行失败</strong>
               <span>{latestPlan.execution.error ?? '执行器返回了失败状态，请查看运行审计。'}</span>
             </div>
-            <Button type="primary" onClick={() => void startPlan(latestPlan.id)}>重新执行</Button>
+            {latestGrant?.canStart ? (
+              <Button type="primary" onClick={() => void startPlan(latestPlan.id, latestGrant.allowOverBudget, latestGrant.id)}>重新执行</Button>
+            ) : (
+              <Button type="primary" icon={<LockOutlined />} onClick={openPlanModal}>重新设置授权</Button>
+            )}
             <Button onClick={() => navigate(`/projects/${projectId}/runs`)}>运行审计</Button>
           </div>
         ) : null}
@@ -1345,101 +1569,168 @@ export default function OrchestrationWorkspace() {
         ) : null}
 
         <Modal
-          title={draft?.status === 'approved' ? `计划 r${draft.revision}` : '生成计划'}
+          title={draft ? (draft.status === 'draft' ? `计划草稿 · r${draft.revision}` : `计划 r${draft.revision}`) : '生成计划'}
           open={planOpen}
           onCancel={() => setPlanOpen(false)}
-          footer={null}
-          width={780}
+          footer={draft?.status === 'draft' ? (
+            <div className="po-plan-footer-actions">
+              {hasPlanBlockingIssues(draft) ? <span className="po-plan-footer-blocker">存在阻塞性问题：展开“需复核”查看并修复后再批准。</span> : null}
+              <Button onClick={() => void reject()}>拒绝</Button>
+              <Button
+                type="primary"
+                icon={<CheckCircleOutlined />}
+                disabled={hasPlanBlockingIssues(draft)}
+                onClick={() => void approve()}
+                data-testid="plan-approve"
+              >
+                批准并创建任务
+              </Button>
+            </div>
+          ) : null}
+          width={planModalWidth}
+          centered
           destroyOnHidden
-          className="po-plan-modal"
+          className={`po-plan-modal${draft ? ' is-review' : ''}${draft?.status === 'approved' ? ' is-approved' : ''}`}
         >
           <div className="po-plan-editor">
-            <label className="po-plan-label">目标</label>
+            <label className="po-plan-label">需求目标</label>
             <Input.TextArea
               rows={2}
               value={draft?.goal ?? goal}
               onChange={(event) => {
                 if (draft) setDraft({ ...draft, goal: event.target.value })
-                else setGoal(event.target.value)
+                else {
+                  setGoal(event.target.value)
+                  if (plannerError) setPlannerError(null)
+                }
               }}
-              placeholder="例如：增加 RBAC 权限管理"
+              placeholder="例如：增加角色分级的用户权限管理，覆盖数据、接口、前端与测试"
               disabled={draft?.status !== 'draft' && Boolean(draft)}
             />
             {!draft ? (
-              <Button type="primary" onClick={() => void generate()} disabled={goal.trim().length < 3}>生成草稿</Button>
-            ) : (
-              <>
-                <div className="po-plan-meta">
-                  <span>r{draft.revision}</span>
-                  <span>{draft.generatedBy === 'local-rules' ? '本地规则草案' : '模型生成'}</span>
-                  <span>{draft.tasks.length} 任务</span>
+              <div className="po-plan-planner">
+                <div className="po-plan-planner-head">
+                  <span className="po-plan-planner-icon"><ThunderboltOutlined /></span>
+                  <div className="po-plan-planner-copy">
+                    <strong>AI 智能 Planner</strong>
+                    <span>读取项目快照、相关文件摘要、Agent 能力与已有成果，生成可解释、可校验、可编辑的 DAG 草稿。</span>
+                  </div>
+                  <Tag color="blue">Phase 2B-1</Tag>
                 </div>
-                <div className="po-plan-task-list">
-                  {draft.tasks.map((task, index) => (
-                    <div className="po-plan-task" key={task.key}>
-                      <div className="po-plan-task-head">
-                        <Input value={task.title} disabled={draft.status !== 'draft'} onChange={(event) => updateDraftTask(index, { title: event.target.value })} />
-                        <Select value={task.role} disabled={draft.status !== 'draft'} options={Object.entries(ROLE_LABELS).map(([value, label]) => ({ value, label }))} onChange={(role) => updateDraftTask(index, { role: role as PlannedTask['role'] })} />
-                        <Select
-                          allowClear
-                          size="small"
-                          value={task.agentId ?? undefined}
-                          placeholder={`角色默认 · ${ROLE_LABELS[task.role]}`}
-                          disabled={draft.status !== 'draft'}
-                          style={{ minWidth: 170 }}
-                          options={agentOptions}
-                          onChange={(agentId) => updateDraftTask(index, {
-                            agentId: agentId ?? null,
-                            assignmentBlocked: false,
-                            assignmentReasons: agentId ? ['用户手动指定'] : [],
-                          })}
-                        />
-                        {draft.status === 'draft' ? <Button type="text" danger size="small" icon={<DeleteOutlined />} aria-label="删除任务节点" onClick={() => removeDraftTask(task.key)} /> : null}
-                      </div>
-                      {task.assignmentBlocked || (task.assignmentReasons?.length ?? 0) > 0 ? (
-                        <div className="po-plan-task-deps">
-                          {task.assignmentBlocked ? (
-                            <Tag color="error">待分配</Tag>
-                          ) : (task.assignmentReasons ?? []).some((reason) => reason.includes('显式指定') || reason.includes('手动')) ? (
-                            <Tag>手动指定</Tag>
-                          ) : (
-                            <Tag color="blue">自动分配</Tag>
-                          )}
-                          <span className="po-muted" title={(task.assignmentReasons ?? []).join('\n')}>
-                            {(task.assignmentReasons ?? []).slice(0, 3).join('；')}
-                          </span>
-                        </div>
-                      ) : null}
-                      <div className="po-plan-task-deps">
-                        {draft.status === 'draft' ? (
-                          <Select
-                            mode="multiple"
-                            size="small"
-                            value={task.dependsOn}
-                            placeholder="前置任务"
-                            style={{ minWidth: 190 }}
-                            options={draft.tasks
-                              .filter((item) => item.key !== task.key)
-                              .map((item) => ({ value: item.key, label: item.title }))}
-                            onChange={(dependsOn) => updateDraftTask(index, { dependsOn })}
-                          />
-                        ) : (
-                          task.dependsOn.length ? task.dependsOn.map((dep) => <Tag key={dep}>{dep}</Tag>) : <span>无前置</span>
-                        )}
-                        <span>{task.acceptanceCriteria.length} 条验收</span>
-                      </div>
+
+                <div className="po-plan-mode-switch" role="radiogroup" aria-label="计划生成方式">
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={planMode === 'ai'}
+                    className={planMode === 'ai' ? 'is-active' : ''}
+                    onClick={() => { setPlanMode('ai'); setPlannerError(null) }}
+                    disabled={generating}
+                  >
+                    <ThunderboltOutlined />
+                    <span><strong>AI 生成</strong><em>调用默认 AI 连接与模型</em></span>
+                  </button>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={planMode === 'local'}
+                    className={planMode === 'local' ? 'is-active' : ''}
+                    onClick={() => { setPlanMode('local'); setPlannerError(null) }}
+                    disabled={generating}
+                  >
+                    <FileTextOutlined />
+                    <span><strong>本地规则</strong><em>固定模板，不调用模型</em></span>
+                  </button>
+                </div>
+
+                <div className="po-plan-hint">
+                  <InfoCircleOutlined />
+                  <span>
+                    {planMode === 'ai'
+                      ? '只生成草稿：不会批准、创建执行任务、启动 Agent 或写入项目文件。模型可能需要 10–60 秒。'
+                      : '本地规则使用固定任务模板，来源会如实标记为 local-rules，不冒充模型生成。'}
+                  </span>
+                </div>
+
+                {generating ? (
+                  <div className="po-plan-progress" role="status" aria-live="polite" data-testid="plan-generate-progress">
+                    <span className="po-plan-progress-dots" aria-hidden="true"><i /><i /><i /></span>
+                    <div className="po-plan-progress-copy">
+                      <strong>
+                        {planElapsed < 8
+                          ? '正在读取项目快照与文件上下文'
+                          : planElapsed < 25
+                            ? '模型正在生成任务 DAG'
+                            : '模型正在整理依赖与验收标准'}
+                      </strong>
+                      <span>已等待 {planElapsed}s · 复杂计划通常需要 20–60 秒，请不要关闭窗口</span>
                     </div>
-                  ))}
-                </div>
-                {draft.status === 'draft' ? (
-                  <Button icon={<PlusOutlined />} onClick={addDraftTask} block>添加任务节点</Button>
-                ) : null}
-                {draft.assumptions.length || draft.risks.length ? (
-                  <div className="po-plan-notes">
-                    {draft.assumptions.map((item) => <span key={item}>假设：{item}</span>)}
-                    {draft.risks.map((item) => <span key={item}>风险：{item}</span>)}
+                    <span className="po-plan-progress-track" aria-hidden="true"><i /></span>
                   </div>
                 ) : null}
+
+                {plannerError ? (
+                  <div className="po-plan-error" data-testid="plan-generate-error" role="alert">
+                    <WarningOutlined />
+                    <div className="po-plan-error-copy">
+                      <strong>规划失败，未保存任何计划</strong>
+                      <span>{plannerError}</span>
+                    </div>
+                    {planMode === 'ai' ? (
+                      <Button size="small" onClick={() => void generate('local')} disabled={generating}>
+                        改用本地规则
+                      </Button>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                <div className="po-plan-actions">
+                  <Button
+                    type="primary"
+                    icon={planMode === 'ai' ? <ThunderboltOutlined /> : <FileTextOutlined />}
+                    loading={generating}
+                    disabled={goal.trim().length < 3 || generating}
+                    onClick={() => void generate(planMode)}
+                    data-testid="plan-generate"
+                  >
+                    {generating ? (planMode === 'ai' ? 'AI 正在规划…' : '正在生成…') : planMode === 'ai' ? 'AI 生成草稿' : '生成草稿'}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <PlanReviewWorkbench
+                  draft={draft}
+                  roleLabels={ROLE_LABELS}
+                  agentOptions={planAgentOptions}
+                  onUpdateTask={updateDraftTask}
+                  onAddTask={addDraftTask}
+                  onRemoveTask={removeDraftTask}
+                  onOpenCustomAgent={openCustomAgent}
+                />
+                {draft.status === 'approved' ? (
+                  <PlanGrantPanel
+                    plan={draft}
+                    grant={currentGrant}
+                    budget={budgetQuery.data ?? null}
+                    busy={grantBusy}
+                    onIssue={issueGrant}
+                    onRevoke={revokeGrant}
+                    onStart={(grantId) => startPlan(draft.id, currentGrant?.allowOverBudget ?? false, grantId)}
+                    onResume={() => controlExecution('resume')}
+                  />
+                ) : null}
+                {draft.status === 'approved' ? (
+                  <ReplanPanel
+                    plan={draft}
+                    proposals={replanQuery.data?.proposals ?? []}
+                    busy={replanBusy}
+                    onPropose={proposeReplan}
+                    onApply={applyReplan}
+                    onReject={rejectReplan}
+                  />
+                ) : null}
+
                 {draft.execution ? (
                   <div className="po-plan-execution">
                     <StatusPill
@@ -1460,18 +1751,11 @@ export default function OrchestrationWorkspace() {
                     {draft.execution.error ? <em>{draft.execution.error}</em> : null}
                   </div>
                 ) : null}
-                <div className="po-plan-actions">
-                  {draft.status === 'draft' ? <Button onClick={() => void reject()}>拒绝</Button> : <Button onClick={() => setPlanOpen(false)}>关闭</Button>}
-                  {draft.status === 'draft' ? <Button type="primary" icon={<CheckCircleOutlined />} onClick={() => void approve()}>批准并创建任务</Button> : null}
-                  {draft.status !== 'draft' ? <Button icon={<ReloadOutlined />} onClick={() => void revise()}>修订为新版本</Button> : null}
-                  {draft.status === 'approved' && !draft.execution ? (
-                    <Button type="primary" icon={<PlayCircleOutlined />} onClick={() => void controlExecution('start')}>开始执行</Button>
-                  ) : null}
+                {draft.status !== 'draft' ? <div className="po-plan-actions">
+                  <Button onClick={() => setPlanOpen(false)}>关闭</Button>
+                  <Button icon={<ReloadOutlined />} onClick={() => void revise()}>修订为新版本</Button>
                   {draft.execution?.status === 'running' ? (
                     <Button icon={<PauseCircleOutlined />} onClick={() => void controlExecution('pause')}>暂停</Button>
-                  ) : null}
-                  {draft.execution?.status === 'paused' ? (
-                    <Button type="primary" icon={<PlayCircleOutlined />} onClick={() => void controlExecution('resume')}>继续</Button>
                   ) : null}
                   {draft.execution && ['running', 'paused'].includes(draft.execution.status) ? (
                     <Button danger icon={<StopOutlined />} onClick={() => void controlExecution('cancel')}>取消</Button>
@@ -1500,7 +1784,7 @@ export default function OrchestrationWorkspace() {
                       </Popconfirm>
                     </>
                   ) : null}
-                </div>
+                </div> : null}
                 {draft.execution?.branch ? (
                   <div className="po-plan-branch">
                     <span>{draft.execution.branch}</span>
@@ -1527,6 +1811,16 @@ export default function OrchestrationWorkspace() {
           </div>
           <pre className="po-diff-view">{worktreeInfo?.diff || '暂无改动'}</pre>
         </Modal>
+
+        <AgentStudioModal
+          open={agentStudioOpen}
+          projectId={projectId}
+          onClose={() => {
+            setAgentStudioOpen(false)
+            setCustomAgentTaskKey(null)
+          }}
+          onCreated={attachCreatedAgent}
+        />
       </div>
   )
 }

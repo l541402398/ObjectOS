@@ -19,6 +19,8 @@ import {
   type AIUsageRecord,
   type GraphLayout,
   type PlanDraft,
+  type PlanExecutionGrant,
+  type ReplanProposal,
   type ProjectSnapshot,
   type Approval,
   type Artifact,
@@ -84,6 +86,40 @@ import {
   type TaskRow,
   type ToolCallRow,
 } from './rows.js'
+
+export interface PlannerUsageRecordInput {
+  id: string
+  requestId: string
+  projectId: string
+  planId: string | null
+  planRevision: number | null
+  attempt: number
+  connectionId: string | null
+  modelId: string | null
+  inputTokens: number | null
+  outputTokens: number | null
+  usageSource: 'provider' | 'estimate' | 'unknown'
+  estimatedCost: number | null
+  currency: string | null
+  pricingVersion: string | null
+  outcome: 'valid' | 'invalid' | 'error' | 'unknown'
+  createdAt: number
+}
+
+export interface PlanGrantStartReservation {
+  id: string
+  grantId: string
+  planId: string
+  planRevision: number
+  planFingerprint: string
+  idempotencyKey: string
+  status: 'reserved' | 'started' | 'failed'
+  reservedAt: number
+  startedAt: number | null
+  finishedAt: number | null
+  error: string | null
+  runIds: string[]
+}
 
 export interface SqliteStoreOptions {
   filePath: string
@@ -2332,6 +2368,348 @@ export class SqliteStore {
         plan.approvedAt,
         plan.updatedAt,
         plan.id,
+      )
+    })
+  }
+
+  createPlanExecutionGrant(grant: PlanExecutionGrant): void {
+    this.write(() => {
+      this.run(
+        `INSERT INTO plan_execution_grants
+         (id, project_id, plan_id, plan_revision, plan_fingerprint, actor_kind, actor_id, actor_name,
+          actions_json, allowed_paths_json, allowed_task_ids_json, allowed_agent_ids_json,
+          max_runs, used_runs, reserved_runs, max_tool_calls, used_tool_calls, allow_over_budget, note,
+          issued_at, expires_at, revoked_at, revoked_reason, last_used_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        grant.id,
+        grant.projectId,
+        grant.planId,
+        grant.planRevision,
+        grant.planFingerprint,
+        grant.actor.kind,
+        grant.actor.id,
+        grant.actor.name,
+        JSON.stringify(grant.actions),
+        JSON.stringify(grant.allowedPaths),
+        JSON.stringify(grant.allowedTaskIds),
+        JSON.stringify(grant.allowedAgentIds),
+        grant.maxRuns,
+        grant.usedRuns,
+        grant.reservedRuns,
+        grant.maxToolCalls,
+        grant.usedToolCalls,
+        grant.allowOverBudget ? 1 : 0,
+        grant.note,
+        grant.issuedAt,
+        grant.expiresAt,
+        grant.revokedAt,
+        grant.revokedReason,
+        grant.lastUsedAt,
+      )
+    })
+  }
+
+  revokePlanExecutionGrant(id: string, reason: string, at = now()): boolean {
+    return this.write(() => {
+      const result = this.db
+        .prepare(
+          `UPDATE plan_execution_grants
+           SET revoked_at = COALESCE(revoked_at, ?), revoked_reason = COALESCE(revoked_reason, ?)
+           WHERE id = ?`,
+        )
+        .run(at, reason.slice(0, 2000), id)
+      return Number(result.changes) > 0
+    })
+  }
+
+  revokeActivePlanExecutionGrants(planId: string, reason: string, at = now()): number {
+    return this.write(() => {
+      const result = this.db
+        .prepare(
+          `UPDATE plan_execution_grants
+           SET revoked_at = ?, revoked_reason = ?
+           WHERE plan_id = ? AND revoked_at IS NULL AND expires_at > ?`,
+        )
+        .run(at, reason.slice(0, 2000), planId, at)
+      return Number(result.changes)
+    })
+  }
+
+  updatePlanExecutionGrantAgentIds(id: string, agentIds: string[], at = now()): boolean {
+    return this.write(() => {
+      const result = this.db
+        .prepare('UPDATE plan_execution_grants SET allowed_agent_ids_json = ?, last_used_at = ? WHERE id = ? AND revoked_at IS NULL AND expires_at > ?')
+        .run(JSON.stringify([...new Set(agentIds)]), at, id, at)
+      return Number(result.changes) === 1
+    })
+  }
+
+  /** Atomic start reservation. A concurrent second start cannot consume the same run. */
+  consumePlanExecutionGrantStart(
+    id: string,
+    planId: string,
+    planRevision: number,
+    planFingerprint: string,
+    at = now(),
+  ): boolean {
+    return this.write(() => {
+      const result = this.db
+        .prepare(
+          `UPDATE plan_execution_grants
+           SET used_runs = used_runs + 1, last_used_at = ?
+           WHERE id = ? AND plan_id = ? AND plan_revision = ? AND plan_fingerprint = ?
+             AND revoked_at IS NULL AND expires_at > ? AND used_runs < max_runs`,
+        )
+        .run(at, id, planId, planRevision, planFingerprint, at)
+      return Number(result.changes) === 1
+    })
+  }
+
+  getPlanGrantStartReservation(id: string): PlanGrantStartReservation | null {
+    const row = this.db.prepare('SELECT * FROM plan_grant_start_reservations WHERE id = ?').get(id) as
+      | Record<string, unknown>
+      | undefined
+    return row ? this.toPlanGrantStartReservation(row) : null
+  }
+
+  findPlanGrantStartReservation(grantId: string, idempotencyKey: string): PlanGrantStartReservation | null {
+    const row = this.db
+      .prepare('SELECT * FROM plan_grant_start_reservations WHERE grant_id = ? AND idempotency_key = ?')
+      .get(grantId, idempotencyKey) as Record<string, unknown> | undefined
+    return row ? this.toPlanGrantStartReservation(row) : null
+  }
+
+  private toPlanGrantStartReservation(row: Record<string, unknown>): PlanGrantStartReservation {
+    return {
+      id: String(row.id),
+      grantId: String(row.grant_id),
+      planId: String(row.plan_id),
+      planRevision: Number(row.plan_revision),
+      planFingerprint: String(row.plan_fingerprint),
+      idempotencyKey: String(row.idempotency_key),
+      status: String(row.status) as PlanGrantStartReservation['status'],
+      reservedAt: Number(row.reserved_at),
+      startedAt: row.started_at === null ? null : Number(row.started_at),
+      finishedAt: row.finished_at === null ? null : Number(row.finished_at),
+      error: row.error === null ? null : String(row.error),
+      runIds: JSON.parse(String(row.run_ids_json ?? '[]')) as string[],
+    }
+  }
+
+  reservePlanExecutionGrantStart(input: {
+    grantId: string
+    planId: string
+    planRevision: number
+    planFingerprint: string
+    idempotencyKey: string
+    at?: number
+  }): { reservation: PlanGrantStartReservation; existing: boolean } | null {
+    return this.write(() => {
+      const existing = this.findPlanGrantStartReservation(input.grantId, input.idempotencyKey)
+      if (existing) return { reservation: existing, existing: true }
+      const at = input.at ?? now()
+      const updated = this.db
+        .prepare(
+          `UPDATE plan_execution_grants
+           SET reserved_runs = reserved_runs + 1, last_used_at = ?
+           WHERE id = ? AND plan_id = ? AND plan_revision = ? AND plan_fingerprint = ?
+             AND revoked_at IS NULL AND expires_at > ?
+             AND used_runs + reserved_runs < max_runs`,
+        )
+        .run(at, input.grantId, input.planId, input.planRevision, input.planFingerprint, at)
+      if (Number(updated.changes) !== 1) return null
+      const id = newId('pgs')
+      this.db
+        .prepare(
+          `INSERT INTO plan_grant_start_reservations
+           (id, grant_id, plan_id, plan_revision, plan_fingerprint, idempotency_key, status, reserved_at)
+           VALUES (?, ?, ?, ?, ?, ?, 'reserved', ?)`,
+        )
+        .run(id, input.grantId, input.planId, input.planRevision, input.planFingerprint, input.idempotencyKey, at)
+      const row = this.db.prepare('SELECT * FROM plan_grant_start_reservations WHERE id = ?').get(id) as Record<string, unknown>
+      return { reservation: this.toPlanGrantStartReservation(row), existing: false }
+    })
+  }
+
+  markPlanGrantStartSucceeded(reservationId: string, runIds: string[], at = now()): boolean {
+    return this.write(() => {
+      const row = this.db.prepare('SELECT * FROM plan_grant_start_reservations WHERE id = ?').get(reservationId) as
+        | Record<string, unknown>
+        | undefined
+      if (!row) return false
+      if (String(row.status) === 'started') return true
+      if (String(row.status) !== 'reserved') return false
+      this.db
+        .prepare(
+          `UPDATE plan_execution_grants
+           SET reserved_runs = MAX(0, reserved_runs - 1), used_runs = used_runs + 1, last_used_at = ?
+           WHERE id = ?`,
+        )
+        .run(at, String(row.grant_id))
+      this.db
+        .prepare(
+          `UPDATE plan_grant_start_reservations
+           SET status = 'started', started_at = ?, finished_at = ?, run_ids_json = ?
+           WHERE id = ? AND status = 'reserved'`,
+        )
+        .run(at, at, JSON.stringify([...new Set(runIds)]), reservationId)
+      return true
+    })
+  }
+
+  markPlanGrantStartFailed(reservationId: string, error: string, at = now()): boolean {
+    return this.write(() => {
+      const row = this.db.prepare('SELECT * FROM plan_grant_start_reservations WHERE id = ?').get(reservationId) as
+        | Record<string, unknown>
+        | undefined
+      if (!row) return false
+      if (String(row.status) !== 'reserved') return String(row.status) === 'failed'
+      this.db
+        .prepare(
+          `UPDATE plan_execution_grants
+           SET reserved_runs = MAX(0, reserved_runs - 1)
+           WHERE id = ?`,
+        )
+        .run(String(row.grant_id))
+      this.db
+        .prepare(
+          `UPDATE plan_grant_start_reservations
+           SET status = 'failed', finished_at = ?, error = ?
+           WHERE id = ? AND status = 'reserved'`,
+        )
+        .run(at, error.slice(0, 4000), reservationId)
+      return true
+    })
+  }
+
+  listStalePlanGrantStartReservations(before: number): PlanGrantStartReservation[] {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM plan_grant_start_reservations WHERE status = 'reserved' AND reserved_at <= ? ORDER BY reserved_at ASC`,
+      )
+      .all(before) as Record<string, unknown>[]
+    return rows.map((row) => this.toPlanGrantStartReservation(row))
+  }
+
+  createReplanProposal(proposal: ReplanProposal): void {
+    this.write(() => {
+      this.run(
+        `INSERT INTO plan_replan_proposals
+         (id, project_id, plan_id, source_revision, source_fingerprint, source_run_count, trigger, status, reason, decided_reason,
+          context_chars, context_json, proposed_tasks_json, proposed_assumptions_json, proposed_risks_json,
+          diff_json, grant_impact_json, generation_json, error, requested_by, requested_at,
+          decided_at, applied_plan_id, model_calls, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        proposal.id,
+        proposal.projectId,
+        proposal.planId,
+        proposal.sourceRevision,
+        proposal.sourceFingerprint,
+        proposal.sourceRunCount,
+        proposal.trigger,
+        proposal.status,
+        proposal.reason,
+        proposal.decidedReason,
+        proposal.contextChars,
+        JSON.stringify(proposal.contextSources),
+        JSON.stringify(proposal.proposedTasks),
+        JSON.stringify(proposal.proposedAssumptions),
+        JSON.stringify(proposal.proposedRisks),
+        JSON.stringify(proposal.diff),
+        JSON.stringify(proposal.grantImpact),
+        proposal.generation ? JSON.stringify(proposal.generation) : null,
+        proposal.error,
+        proposal.requestedBy,
+        proposal.requestedAt,
+        proposal.decidedAt,
+        proposal.appliedPlanId,
+        proposal.modelCalls,
+        proposal.createdAt,
+        proposal.updatedAt,
+      )
+    })
+  }
+
+  updateReplanProposal(proposal: ReplanProposal): void {
+    this.write(() => {
+      this.run(
+        `UPDATE plan_replan_proposals
+         SET status = ?, decided_reason = ?, error = ?, decided_at = ?, applied_plan_id = ?,
+             model_calls = ?, updated_at = ?
+         WHERE id = ?`,
+        proposal.status,
+        proposal.decidedReason,
+        proposal.error,
+        proposal.decidedAt,
+        proposal.appliedPlanId,
+        proposal.modelCalls,
+        proposal.updatedAt,
+        proposal.id,
+      )
+    })
+  }
+
+  /** Atomically claim a proposed revision so two processes cannot apply it twice. */
+  claimReplanProposal(proposalId: string, at = now()): boolean {
+    return this.write(() => {
+      const result = this.db
+        .prepare("UPDATE plan_replan_proposals SET status = 'applying', updated_at = ? WHERE id = ? AND status = 'proposed'")
+        .run(at, proposalId)
+      return Number(result.changes) === 1
+    })
+  }
+
+  /** Best-effort recovery for a process that crashed between claim and revision creation. */
+  recoverApplyingReplanProposals(): number {
+    return this.write(() => {
+      const result = this.db
+        .prepare(
+          "UPDATE plan_replan_proposals SET status = 'proposed', updated_at = ? WHERE status = 'applying' AND applied_plan_id IS NULL",
+        )
+        .run(now())
+      return Number(result.changes)
+    })
+  }
+
+  /** Atomic tool-call reservation; failed reservation must not reach the side effect. */
+  consumePlanExecutionGrantToolCall(id: string, at = now()): boolean {
+    return this.write(() => {
+      const result = this.db
+        .prepare(
+          `UPDATE plan_execution_grants
+           SET used_tool_calls = used_tool_calls + 1, last_used_at = ?
+           WHERE id = ? AND revoked_at IS NULL AND expires_at > ? AND used_tool_calls < max_tool_calls`,
+        )
+        .run(at, id, at)
+      return Number(result.changes) === 1
+    })
+  }
+
+  recordPlannerUsage(input: PlannerUsageRecordInput): void {
+    this.write(() => {
+      this.run(
+        `INSERT INTO planner_usage_records
+         (id, request_id, project_id, plan_id, plan_revision, attempt, connection_id, model_id,
+          input_tokens, output_tokens, usage_source, estimated_cost, currency, pricing_version,
+          outcome, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(request_id, attempt) DO NOTHING`,
+        input.id,
+        input.requestId,
+        input.projectId,
+        input.planId,
+        input.planRevision,
+        input.attempt,
+        input.connectionId,
+        input.modelId,
+        input.inputTokens,
+        input.outputTokens,
+        input.usageSource,
+        input.estimatedCost,
+        input.currency,
+        input.pricingVersion,
+        input.outcome,
+        input.createdAt,
       )
     })
   }

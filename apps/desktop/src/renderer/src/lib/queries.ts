@@ -26,6 +26,8 @@ export const qk = {
   externalAgents: ['externalAgents'] as const,
   snapshot: (projectId: string) => ['snapshot', projectId] as const,
   plans: (projectId: string) => ['plans', projectId] as const,
+  planGrant: (planId: string) => ['plan-grant', planId] as const,
+  replanProposals: (projectId: string, planId: string) => ['replan-proposals', projectId, planId] as const,
   graph: (projectId: string) => ['graph', projectId] as const,
 }
 
@@ -282,6 +284,28 @@ export function usePlans(projectId: string | null | undefined) {
     queryKey: qk.plans(projectId ?? ''),
     queryFn: () => window.projectos.plans.list(projectId!),
     enabled: Boolean(projectId),
+  })
+}
+
+export function usePlanGrant(planId: string | null | undefined, enabled = true) {
+  return useQuery({
+    queryKey: qk.planGrant(planId ?? ''),
+    queryFn: () => window.projectos.plans.grant.get(planId!),
+    enabled: Boolean(planId) && enabled,
+    refetchInterval: 10_000,
+  })
+}
+
+export function useReplanProposals(
+  projectId: string | null | undefined,
+  planId: string | null | undefined,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: qk.replanProposals(projectId ?? '', planId ?? ''),
+    queryFn: () => window.projectos.plans.replan.list(projectId!, planId!),
+    enabled: Boolean(projectId) && Boolean(planId) && enabled,
+    refetchInterval: 10_000,
   })
 }
 

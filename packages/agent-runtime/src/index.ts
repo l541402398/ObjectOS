@@ -47,6 +47,58 @@ export interface AgentLoopOptions {
   executeTool: (invocation: ToolInvocation) => Promise<ToolOutcome>
 }
 
+/**
+ * OpenAI-compatible providers reject a request when an assistant message with
+ * tool_calls is not immediately followed by one tool message per call id. The
+ * persisted run transcript can contain a missing result after a pause, crash,
+ * denial, or a killed tool. Repair it with an explicit, non-fake failure result
+ * instead of dropping the call or pretending it succeeded.
+ */
+export function repairToolCallTranscript(messages: ChatMessage[]): ChatMessage[] {
+  const repaired: ChatMessage[] = []
+  for (let index = 0; index < messages.length; index += 1) {
+    const message = messages[index]!
+    if (message.role === 'assistant' && message.toolCalls?.length) {
+      repaired.push(message)
+      const expected = message.toolCalls.map((call) => call.id)
+      const following: ChatMessage[] = []
+      let cursor = index + 1
+      while (cursor < messages.length && messages[cursor]?.role === 'tool') {
+        following.push(messages[cursor]!)
+        cursor += 1
+      }
+      const byCallId = new Map<string, ChatMessage>()
+      for (const toolMessage of following) {
+        if (toolMessage.role === 'tool' && toolMessage.toolCallId && expected.includes(toolMessage.toolCallId)) {
+          byCallId.set(toolMessage.toolCallId, toolMessage)
+        }
+      }
+      for (const call of message.toolCalls) {
+        repaired.push(
+          byCallId.get(call.id) ?? {
+            role: 'tool',
+            toolCallId: call.id,
+            content: JSON.stringify({
+              ok: false,
+              error: 'tool result missing from persisted transcript; the tool was not executed',
+              missingToolResult: true,
+            }),
+          },
+        )
+      }
+      index = cursor - 1
+      continue
+    }
+    if (message.role === 'tool') {
+      // Orphan results are dropped; they cannot be paired with a preceding
+      // assistant tool_calls message.
+      continue
+    }
+    repaired.push(message)
+  }
+  return repaired
+}
+
 function parseArguments(raw: string): Record<string, unknown> {
   if (!raw.trim()) return {}
   try {
@@ -74,7 +126,7 @@ function toolResultContent(outcome: ToolOutcome): string {
 }
 
 export async function runAgentLoop(options: AgentLoopOptions): Promise<AgentLoopResult> {
-  const messages = options.messages.map((message) => ({ ...message }))
+  let messages = repairToolCallTranscript(options.messages.map((message) => ({ ...message })))
   const maxSteps = options.maxSteps ?? 8
   let lastText = ''
   let inputTokens = 0
@@ -86,6 +138,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<AgentLoop
     }
     let content = ''
     const toolCalls: ToolCallRequest[] = []
+    messages = repairToolCallTranscript(messages)
     try {
       for await (const event of options.provider.stream(
         {

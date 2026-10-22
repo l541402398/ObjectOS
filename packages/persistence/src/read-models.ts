@@ -20,6 +20,8 @@ import {
   type AgentBackendBinding,
   type GraphLayout,
   type PlanDraft,
+  type PlanExecutionGrant,
+  type ReplanProposal,
   type ProjectSnapshot,
   type ActivityItem,
   type Agent,
@@ -72,8 +74,10 @@ import {
   toAIModelPrice,
   toAgentBackendBinding,
   toGraphLayout,
+  toPlanExecutionGrant,
   toPlanRevision,
   toProjectSnapshot,
+  toReplanProposal,
   toAgent,
   toApproval,
   toArtifact,
@@ -104,7 +108,9 @@ import {
   type AutomationRunRow,
   automationRunFromRow,
   type GraphLayoutRow,
+  type PlanExecutionGrantRow,
   type PlanRevisionRow,
+  type ReplanProposalRow,
   type ProjectSnapshotRow,
   type AgentRow,
   type ApprovalRow,
@@ -1670,8 +1676,8 @@ export class ReadModels {
   }
 
   summarizeAIUsage(projectId?: string): AIUsageSummary {
-    const where = projectId ? 'WHERE r.project_id = ?' : ''
-    const params = projectId ? [projectId] : []
+    const runWhere = projectId ? 'WHERE r.project_id = ?' : ''
+    const runParams = projectId ? [projectId] : []
     const rows = this.all<{
       connection_id: string | null
       model_id: string | null
@@ -1679,15 +1685,17 @@ export class ReadModels {
       input_tokens: number | null
       output_tokens: number | null
       estimated_cost: number | null
+      unpriced_calls: number
     }>(
       `SELECT u.connection_id, u.model_id, COUNT(DISTINCT u.run_id) AS runs,
               SUM(u.input_tokens) AS input_tokens, SUM(u.output_tokens) AS output_tokens,
-              SUM(u.estimated_cost) AS estimated_cost
+              SUM(u.estimated_cost) AS estimated_cost,
+              SUM(CASE WHEN u.estimated_cost IS NULL THEN 1 ELSE 0 END) AS unpriced_calls
        FROM ai_usage_records u JOIN agent_runs r ON r.id = u.run_id
-       ${where}
+       ${runWhere}
        GROUP BY u.connection_id, u.model_id
        ORDER BY runs DESC`,
-      ...params,
+      ...runParams,
     )
     const byConnection = rows.map((row) => ({
       connectionId: row.connection_id,
@@ -1696,13 +1704,60 @@ export class ReadModels {
       inputTokens: Number(row.input_tokens ?? 0),
       outputTokens: Number(row.output_tokens ?? 0),
       estimatedCost: Number(row.estimated_cost ?? 0),
+      unpricedCalls: Number(row.unpriced_calls ?? 0),
     }))
+
+    const plannerWhere = projectId ? 'WHERE project_id = ?' : ''
+    const plannerRows = this.all<{
+      connection_id: string | null
+      model_id: string | null
+      calls: number
+      input_tokens: number | null
+      output_tokens: number | null
+      estimated_cost: number | null
+      unpriced_calls: number
+    }>(
+      `SELECT connection_id, model_id, COUNT(*) AS calls,
+              SUM(input_tokens) AS input_tokens, SUM(output_tokens) AS output_tokens,
+              SUM(estimated_cost) AS estimated_cost,
+              SUM(CASE WHEN estimated_cost IS NULL THEN 1 ELSE 0 END) AS unpriced_calls
+       FROM planner_usage_records
+       ${plannerWhere}
+       GROUP BY connection_id, model_id
+       ORDER BY calls DESC`,
+      ...(projectId ? [projectId] : []),
+    )
+    const plannerByConnection = plannerRows.map((row) => ({
+      connectionId: row.connection_id,
+      modelId: row.model_id,
+      calls: Number(row.calls),
+      inputTokens: Number(row.input_tokens ?? 0),
+      outputTokens: Number(row.output_tokens ?? 0),
+      estimatedCost: Number(row.estimated_cost ?? 0),
+      unpricedCalls: Number(row.unpriced_calls ?? 0),
+    }))
+    const planner = {
+      calls: plannerByConnection.reduce((sum, row) => sum + row.calls, 0),
+      inputTokens: plannerByConnection.reduce((sum, row) => sum + row.inputTokens, 0),
+      outputTokens: plannerByConnection.reduce((sum, row) => sum + row.outputTokens, 0),
+      estimatedCost: plannerByConnection.reduce((sum, row) => sum + row.estimatedCost, 0),
+      unpricedCalls: plannerByConnection.reduce((sum, row) => sum + row.unpricedCalls, 0),
+      byConnection: plannerByConnection,
+    }
+    const unpricedCalls =
+      byConnection.reduce((sum, row) => sum + row.unpricedCalls, 0) + planner.unpricedCalls
     return {
       runs: byConnection.reduce((sum, row) => sum + row.runs, 0),
-      inputTokens: byConnection.reduce((sum, row) => sum + row.inputTokens, 0),
-      outputTokens: byConnection.reduce((sum, row) => sum + row.outputTokens, 0),
-      estimatedCost: byConnection.reduce((sum, row) => sum + row.estimatedCost, 0),
+      inputTokens:
+        byConnection.reduce((sum, row) => sum + row.inputTokens, 0) + planner.inputTokens,
+      outputTokens:
+        byConnection.reduce((sum, row) => sum + row.outputTokens, 0) + planner.outputTokens,
+      estimatedCost:
+        byConnection.reduce((sum, row) => sum + row.estimatedCost, 0) + planner.estimatedCost,
       byConnection,
+      planner,
+      costUnknown: unpricedCalls > 0,
+      unpricedCalls,
     }
   }
 
@@ -1792,6 +1847,61 @@ export class ReadModels {
   getPlanRevision(id: string): PlanDraft | null {
     const row = this.get<PlanRevisionRow>('SELECT * FROM plan_revisions WHERE id = ?', id)
     return row ? toPlanRevision(row) : null
+  }
+
+  getPlanExecutionGrant(id: string): PlanExecutionGrant | null {
+    const row = this.get<PlanExecutionGrantRow>('SELECT * FROM plan_execution_grants WHERE id = ?', id)
+    return row ? toPlanExecutionGrant(row) : null
+  }
+
+  listPlanExecutionGrants(planId: string): PlanExecutionGrant[] {
+    return this.all<PlanExecutionGrantRow>(
+      'SELECT * FROM plan_execution_grants WHERE plan_id = ? ORDER BY issued_at DESC',
+      planId,
+    ).map(toPlanExecutionGrant)
+  }
+
+  getLatestPlanExecutionGrant(planId: string): PlanExecutionGrant | null {
+    const row = this.get<PlanExecutionGrantRow>(
+      'SELECT * FROM plan_execution_grants WHERE plan_id = ? ORDER BY issued_at DESC LIMIT 1',
+      planId,
+    )
+    return row ? toPlanExecutionGrant(row) : null
+  }
+
+  getReplanProposal(id: string): ReplanProposal | null {
+    const row = this.get<ReplanProposalRow>('SELECT * FROM plan_replan_proposals WHERE id = ?', id)
+    return row ? toReplanProposal(row) : null
+  }
+
+  listReplanProposals(projectId: string, planId: string | null = null): ReplanProposal[] {
+    const rows = planId
+      ? this.all<ReplanProposalRow>(
+          'SELECT * FROM plan_replan_proposals WHERE project_id = ? AND plan_id = ? ORDER BY requested_at DESC',
+          projectId,
+          planId,
+        )
+      : this.all<ReplanProposalRow>(
+          'SELECT * FROM plan_replan_proposals WHERE project_id = ? ORDER BY requested_at DESC',
+          projectId,
+        )
+    return rows.map(toReplanProposal)
+  }
+
+  getActiveReplanProposal(planId: string): ReplanProposal | null {
+    const row = this.get<ReplanProposalRow>(
+      "SELECT * FROM plan_replan_proposals WHERE plan_id = ? AND status = 'proposed' ORDER BY requested_at DESC LIMIT 1",
+      planId,
+    )
+    return row ? toReplanProposal(row) : null
+  }
+
+  countReplanProposals(planId: string): number {
+    const row = this.get<{ count: number }>(
+      'SELECT COUNT(*) AS count FROM plan_replan_proposals WHERE plan_id = ?',
+      planId,
+    )
+    return Number(row?.count ?? 0)
   }
 
   getNextPlanRevision(projectId: string): number {

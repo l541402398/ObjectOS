@@ -140,7 +140,17 @@ function templateValues(template: AgentTemplate): Partial<AgentFormValues> {
   }
 }
 
-export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; onClose: () => void; projectId: string }) {
+export function AgentStudioModal({
+  open,
+  onClose,
+  projectId,
+  onCreated,
+}: {
+  open: boolean
+  onClose: () => void
+  projectId: string
+  onCreated?: (agent: AgentDefinition) => void
+}) {
   const { message, modal } = App.useApp()
   const queryClient = useQueryClient()
   const agents = useAgentDefinitions()
@@ -248,7 +258,7 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
     const formValues = await form.validateFields()
     setSaving(true)
     try {
-      await window.projectos.agentDefinitions.upsert({
+      const saved = await window.projectos.agentDefinitions.upsert({
         id: editing?.id,
         name: formValues.name,
         role: formValues.role,
@@ -284,8 +294,15 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
               : projectId
             : null,
       })
-      await queryClient.invalidateQueries({ queryKey: ['agent-definitions'] })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['agent-definitions'] }),
+        // The orchestration plan editor reads project-scoped Agent views, not
+        // the raw definition list. Refresh both so a newly created Agent shows
+        // its name immediately instead of a raw agt_… id.
+        queryClient.invalidateQueries({ queryKey: ['agents'] }),
+      ])
       message.success(editing ? 'Agent 已更新' : 'Agent 已创建')
+      if (!editing) onCreated?.(saved)
       onClose()
     } catch (error) {
       message.error(errorMessage(error))
@@ -412,6 +429,7 @@ export function AgentStudioModal({ open, onClose, projectId }: { open: boolean; 
       footer={null}
       width="min(1480px, 94vw)"
       className="v16-agent-studio-modal"
+      zIndex={3000}
       destroyOnHidden
       closable
     >

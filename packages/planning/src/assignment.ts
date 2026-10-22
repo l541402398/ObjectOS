@@ -51,6 +51,18 @@ export interface ResolveAssignmentInput {
   explicitAgentId?: string | null
   /** Legacy role default; kept only as a tie-breaker for compatibility. */
   defaultAgentId?: string | null
+  /**
+   * Capability requirements from the Planner. They are preferences, not Agent
+   * IDs: an Agent without a declared capability can still be selected when it
+   * is the only viable candidate, and the reason is recorded.
+   */
+  requiredCapabilities?: AgentCapability[]
+  /**
+   * Capabilities that really must be present. Missing any one rejects the
+   * candidate (and eventually blocks the node). Role-core capabilities are
+   * merged by callers via `mergeHardCapabilities`.
+   */
+  hardCapabilities?: AgentCapability[]
   candidates: AssignmentCandidate[]
 }
 
@@ -60,6 +72,27 @@ const ROLE_CAPABILITY: Record<PlanRole, AgentCapability> = {
   reviewer: 'review',
   tester: 'test',
   custom: 'coordinate',
+}
+
+const ROLE_HARD_CAPABILITIES: Record<PlanRole, AgentCapability[]> = {
+  architect: ['architect'],
+  developer: ['implement'],
+  reviewer: ['review'],
+  tester: ['test'],
+  /** `custom` is intentionally broad; it must not be mechanically blocked. */
+  custom: [],
+}
+
+/** Core capabilities that are genuinely mandatory for a planned role. */
+export function hardCapabilitiesForPlanRole(role: PlanRole): AgentCapability[] {
+  return [...ROLE_HARD_CAPABILITIES[role]]
+}
+
+export function mergeHardCapabilities(
+  role: PlanRole,
+  explicit?: readonly AgentCapability[] | null,
+): AgentCapability[] {
+  return [...new Set([...hardCapabilitiesForPlanRole(role), ...(explicit ?? [])])].slice(0, 4)
 }
 
 const ROLE_CATEGORY: Record<PlanRole, string> = {
@@ -78,12 +111,19 @@ const ROLE_KEYWORDS: Record<PlanRole, string[]> = {
   custom: ['产品', '规划', '通用', '协调', 'product', 'plan', 'general', 'coordinate'],
 }
 
-function candidateBlockers(candidate: AssignmentCandidate): string[] {
+function candidateBlockers(
+  candidate: AssignmentCandidate,
+  hardCapabilities: readonly AgentCapability[] = [],
+): string[] {
   const blockers: string[] = []
   if (candidate.status !== 'active') blockers.push(`Agent 状态为 ${candidate.status}`)
   if (!candidate.visibleToProject) blockers.push('不在当前项目可见范围（仅可显式指定项目内/全局 Agent）')
   if (candidate.missingSkillIds.length > 0) {
     blockers.push(`缺少 Skill：${candidate.missingSkillIds.slice(0, 3).join(', ')}`)
+  }
+  const missingHard = hardCapabilities.filter((capability) => !candidate.capabilities.includes(capability))
+  if (missingHard.length > 0) {
+    blockers.push(`缺少硬性能力：${missingHard.join(', ')}`)
   }
   if (candidate.runtime && candidate.runtime.status !== 'available') {
     blockers.push(`Runtime「${candidate.runtime.name}」不可用（${candidate.runtime.status}）`)
@@ -113,6 +153,16 @@ function scoreCandidate(
   if (candidate.category === category) {
     score += 8
     reasons.push(`分类匹配：${category}`)
+  }
+  if (input.requiredCapabilities && input.requiredCapabilities.length > 0) {
+    const matched = input.requiredCapabilities.filter((capability) => candidate.capabilities.includes(capability))
+    if (matched.length > 0) {
+      score += Math.min(18, matched.length * 6)
+      reasons.push(`任务能力匹配：${matched.join(' / ')}`)
+    } else {
+      score -= 4
+      reasons.push(`未声明任务能力：${input.requiredCapabilities.join(' / ')}`)
+    }
   }
   if (roleKeywords.some((keyword) => candidate.role.toLowerCase().includes(keyword.toLowerCase()))) {
     score += 6
@@ -171,7 +221,7 @@ export function rankAssignmentCandidates(input: ResolveAssignmentInput): {
   const rejected: AssignmentRejection[] = []
   const ranked: RankedAssignment[] = []
   for (const candidate of input.candidates) {
-    const blockers = candidateBlockers(candidate)
+    const blockers = candidateBlockers(candidate, input.hardCapabilities ?? [])
     if (blockers.length > 0) {
       rejected.push({ agentId: candidate.agentId, name: candidate.name, reasons: blockers })
       continue
@@ -202,7 +252,7 @@ export function resolveAgentAssignment(input: ResolveAssignmentInput): AgentAssi
         score: 0,
       }
     }
-    const blockers = candidateBlockers(candidate)
+    const blockers = candidateBlockers(candidate, input.hardCapabilities ?? [])
     if (blockers.length > 0) {
       return {
         agentId: explicitId,

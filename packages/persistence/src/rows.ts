@@ -15,6 +15,17 @@ import type {
   AIBackendKind,
   GraphLayout,
   PlanDraft,
+  PlanExecutionGrant,
+  PlanGrantAction,
+  PlanGrantActor,
+  PlanGeneration,
+  PlanContextSource,
+  PlannedTask,
+  ReplanGrantImpact,
+  ReplanProposal,
+  ReplanStatus,
+  ReplanTrigger,
+  RevisionDiff,
   ProjectSnapshot,
   Approval,
   Artifact,
@@ -131,6 +142,96 @@ export interface AIUsageRow {
   usage_source: string
   estimated_cost: number | null
   currency: string | null
+  created_at: number
+}
+
+export interface PlanExecutionGrantRow {
+  id: string
+  project_id: string
+  plan_id: string
+  plan_revision: number
+  plan_fingerprint: string
+  actor_kind: string
+  actor_id: string
+  actor_name: string
+  actions_json: string
+  allowed_paths_json: string
+  allowed_task_ids_json: string
+  allowed_agent_ids_json: string
+  max_runs: number
+  used_runs: number
+  reserved_runs: number
+  max_tool_calls: number
+  used_tool_calls: number
+  allow_over_budget: number
+  note: string
+  issued_at: number
+  expires_at: number
+  revoked_at: number | null
+  revoked_reason: string | null
+  last_used_at: number | null
+}
+
+export interface PlanGrantStartReservationRow {
+  id: string
+  grant_id: string
+  plan_id: string
+  plan_revision: number
+  plan_fingerprint: string
+  idempotency_key: string
+  status: string
+  reserved_at: number
+  started_at: number | null
+  finished_at: number | null
+  error: string | null
+  run_ids_json: string
+}
+
+export interface ReplanProposalRow {
+  id: string
+  project_id: string
+  plan_id: string
+  source_revision: number
+  source_fingerprint: string
+  source_run_count: number
+  trigger: string
+  status: string
+  reason: string
+  decided_reason: string | null
+  context_chars: number
+  context_json: string
+  proposed_tasks_json: string
+  proposed_assumptions_json: string
+  proposed_risks_json: string
+  diff_json: string
+  grant_impact_json: string
+  generation_json: string | null
+  error: string | null
+  requested_by: string
+  requested_at: number
+  decided_at: number | null
+  applied_plan_id: string | null
+  model_calls: number
+  created_at: number
+  updated_at: number
+}
+
+export interface PlannerUsageRow {
+  id: string
+  request_id: string
+  project_id: string
+  plan_id: string | null
+  plan_revision: number | null
+  attempt: number
+  connection_id: string | null
+  model_id: string | null
+  input_tokens: number | null
+  output_tokens: number | null
+  usage_source: string
+  estimated_cost: number | null
+  currency: string | null
+  pricing_version: string | null
+  outcome: string
   created_at: number
 }
 
@@ -897,6 +998,73 @@ export function toPlanRevision(row: PlanRevisionRow): PlanDraft {
       assignmentReasons: task.assignmentReasons ?? [],
       assignmentBlocked: task.assignmentBlocked ?? false,
     })),
+  }
+}
+
+export function toPlanExecutionGrant(row: PlanExecutionGrantRow): PlanExecutionGrant {
+  const actor: PlanGrantActor = {
+    kind: row.actor_kind === 'system' ? 'system' : 'user',
+    id: row.actor_id,
+    name: row.actor_name,
+  }
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    planId: row.plan_id,
+    planRevision: Number(row.plan_revision),
+    planFingerprint: row.plan_fingerprint,
+    actor,
+    actions: (JSON.parse(row.actions_json) as PlanGrantAction[]).filter(
+      (action) => action === 'plan.start' || action === 'workspace-write',
+    ),
+    allowedPaths: JSON.parse(row.allowed_paths_json) as string[],
+    allowedTaskIds: JSON.parse(row.allowed_task_ids_json) as string[],
+    allowedAgentIds: JSON.parse(row.allowed_agent_ids_json) as string[],
+    maxRuns: Number(row.max_runs),
+    usedRuns: Number(row.used_runs),
+    reservedRuns: Number(row.reserved_runs ?? 0),
+    maxToolCalls: Number(row.max_tool_calls),
+    usedToolCalls: Number(row.used_tool_calls),
+    allowOverBudget: Boolean(row.allow_over_budget),
+    note: row.note,
+    issuedAt: Number(row.issued_at),
+    expiresAt: Number(row.expires_at),
+    revokedAt: row.revoked_at === null ? null : Number(row.revoked_at),
+    revokedReason: row.revoked_reason,
+    lastUsedAt: row.last_used_at === null ? null : Number(row.last_used_at),
+  }
+}
+
+export function toReplanProposal(row: ReplanProposalRow): ReplanProposal {
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    planId: row.plan_id,
+    sourceRevision: Number(row.source_revision),
+    sourceFingerprint: row.source_fingerprint ?? '',
+    sourceRunCount: Number(row.source_run_count ?? 0),
+    trigger: row.trigger as ReplanTrigger,
+    status: row.status as ReplanStatus,
+    reason: row.reason,
+    contextChars: Number(row.context_chars),
+    contextSources: JSON.parse(row.context_json) as PlanContextSource[],
+    proposedTasks: JSON.parse(row.proposed_tasks_json) as PlannedTask[],
+    proposedAssumptions: JSON.parse(row.proposed_assumptions_json) as string[],
+    proposedRisks: JSON.parse(row.proposed_risks_json) as string[],
+    diff: JSON.parse(row.diff_json) as RevisionDiff,
+    grantImpact: JSON.parse(row.grant_impact_json) as ReplanGrantImpact,
+    generation: row.generation_json
+      ? (JSON.parse(row.generation_json) as PlanGeneration)
+      : null,
+    error: row.error,
+    requestedBy: row.requested_by,
+    requestedAt: Number(row.requested_at),
+    decidedAt: row.decided_at === null ? null : Number(row.decided_at),
+    decidedReason: row.decided_reason,
+    appliedPlanId: row.applied_plan_id,
+    modelCalls: Number(row.model_calls),
+    createdAt: Number(row.created_at),
+    updatedAt: Number(row.updated_at),
   }
 }
 

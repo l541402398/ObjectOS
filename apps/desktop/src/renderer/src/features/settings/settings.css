@@ -845,6 +845,28 @@
   background: rgba(120,140,170,.34);
   box-shadow: inset 0 1px 2px rgba(0,0,0,.12);
 }
+.po-setting-row > .po-setting-number {
+  display: inline-flex;
+  flex: 0 0 210px;
+  flex-direction: row;
+  align-items: center;
+  width: 210px;
+}
+.po-setting-number .ant-input-number { flex: 1; min-width: 0; }
+.po-general-settings-note {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--glass-content-border);
+  border-radius: 13px;
+  color: var(--color-text-secondary);
+  background: rgba(10, 132, 255, .06);
+  font-size: 12px;
+  line-height: 1.65;
+}
+[data-theme='light'] .po-general-settings-note { background: rgba(10, 132, 255, .05); border-color: rgba(40,70,120,.09); }
+.po-general-settings-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+.po-general-settings-actions .ant-btn { border-radius: 10px; }
+
 .v17-preferences-group .ant-switch.ant-switch-checked {
   background: linear-gradient(180deg, #4ca6ff, #0a84ff);
 }

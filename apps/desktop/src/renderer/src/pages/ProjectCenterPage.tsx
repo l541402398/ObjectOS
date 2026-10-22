@@ -262,7 +262,7 @@ export default function ProjectCenterPage() {
                     <div className="v16-bar-track">
                       <div className="v16-bar-fill" style={{ height: `${Math.max(10, project.stats.progress * 100)}%` }} />
                     </div>
-                    <span title={project.name}>{project.name.slice(0, 4)}</span>
+                    <span title={project.name}>{project.name}</span>
                   </div>
                 ))}
                 {projects.length === 0 ? <EmptyState compact title="暂无项目" /> : null}

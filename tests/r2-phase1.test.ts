@@ -73,7 +73,7 @@ function profile(harness: ReturnType<typeof setup>, name: string, protocol: 'cli
 }
 
 describe('R2 Phase 1: missing R1 verification', () => {
-  it('migrates a V18 database to V21 without losing existing data', () => {
+  it('migrates a V18 database to V24 without losing existing data', () => {
     const dataDir = mkdtempSync(join(tmpdir(), 'projectos-r2-migrate-'))
     cleanups.push(() => rmSync(dataDir, { recursive: true, force: true }))
     const dbPath = join(dataDir, 'legacy-v18.db')
@@ -121,10 +121,14 @@ describe('R2 Phase 1: missing R1 verification', () => {
       ).map((row) => Number(row.version))
       expect(versions).toContain(19)
       expect(versions).toContain(20)
+      expect(versions).toContain(21)
+      expect(versions).toContain(22)
+      expect(versions).toContain(23)
+      expect(versions).toContain(24)
       const maxVersion = store.db
         .prepare('SELECT MAX(version) AS version FROM schema_migrations')
         .get() as { version: number }
-      expect(Number(maxVersion.version)).toBe(21)
+      expect(Number(maxVersion.version)).toBe(24)
       const runColumns = (store.db.prepare('PRAGMA table_info(agent_runs)').all() as Array<{ name: string }>).map(
         (column) => column.name,
       )
@@ -134,10 +138,30 @@ describe('R2 Phase 1: missing R1 verification', () => {
         .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'agent_execution_slots'")
         .get() as { name?: string } | undefined
       expect(slotTable?.name).toBe('agent_execution_slots')
+      const grantTable = store.db
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'plan_execution_grants'")
+        .get() as { name?: string } | undefined
+      expect(grantTable?.name).toBe('plan_execution_grants')
+      const plannerUsageTable = store.db
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'planner_usage_records'")
+        .get() as { name?: string } | undefined
+      expect(plannerUsageTable?.name).toBe('planner_usage_records')
+      const grantColumns = (
+        store.db.prepare('PRAGMA table_info(plan_execution_grants)').all() as Array<{ name: string }>
+      ).map((column) => column.name)
+      expect(grantColumns).toContain('reserved_runs')
+      const reservationTable = store.db
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'plan_grant_start_reservations'")
+        .get() as { name?: string } | undefined
+      expect(reservationTable?.name).toBe('plan_grant_start_reservations')
+      const replanTable = store.db
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'plan_replan_proposals'")
+        .get() as { name?: string } | undefined
+      expect(replanTable?.name).toBe('plan_replan_proposals')
       const project = store.read.getProject('prj_legacy_r2')
       expect(project?.name).toBe('Legacy V18 Project')
       expect(project?.version).toBe(3)
-      console.log(`[r2-migrate] v18 -> v21 versions=${versions.slice(-4).join(',')} project=${project?.name} preserved`)
+      console.log(`[r2-migrate] v18 -> v24 versions=${versions.slice(-5).join(',')} project=${project?.name} preserved`)
     } finally {
       store.close()
     }

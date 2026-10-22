@@ -16,6 +16,7 @@ import {
   type ProjectEvent,
   type RuntimeEvent,
 } from '@projectos/contracts'
+import { PROJECT_EVENT_TYPES } from '@projectos/domain'
 import type { CoreServices } from '@projectos/application'
 import type { SqliteStore } from '@projectos/persistence'
 import {
@@ -33,6 +34,12 @@ import { AgentStudioService } from './agent-studio.js'
 import { RuntimeExecutionService } from './runtime-executor.js'
 import { RuntimeRunService } from './runtime-run.js'
 import { OrchestrationService } from './orchestration.js'
+import { PlannerService } from './planner.js'
+import { AiPlannerModelSource } from './planner-provider.js'
+import { PlannerUsageService } from './planner-usage.js'
+import { PlanGrantService } from './plan-grant.js'
+import { ReplanService } from './replan-service.js'
+import { RuntimeSettingsService } from './runtime-settings.js'
 import type { AgentRunner } from './agent-runner.js'
 import type { RuntimeConfig } from './config.js'
 import type { RuntimeEventHub } from './events.js'
@@ -61,7 +68,11 @@ export interface DispatcherDeps {
 
 export class RuntimeDispatcher {
   private readonly aiConnections: AIConnectionService
+  private readonly planGrants: PlanGrantService
+  private readonly runtimeSettings: RuntimeSettingsService
+  private readonly plannerUsage: PlannerUsageService
   private readonly orchestration: OrchestrationService
+  private readonly replans: ReplanService
   private readonly scheduler: OrchestrationScheduler
   private readonly externalRunner: ExternalAgentRunner
   private readonly operations: OperationsService
@@ -75,8 +86,21 @@ export class RuntimeDispatcher {
 
   constructor(private readonly deps: DispatcherDeps) {
     this.aiConnections = new AIConnectionService(deps.store)
+    this.planGrants = new PlanGrantService(deps.store, deps.logger)
+    this.runtimeSettings = new RuntimeSettingsService(deps.store, (limits) => deps.runner.setLimits(limits))
+    this.runtimeSettings.apply()
+    this.plannerUsage = new PlannerUsageService(deps.store)
     deps.runner.setAIConnections(this.aiConnections)
-    this.orchestration = new OrchestrationService(deps.store, deps.services)
+    deps.runner.setPlanGrants(this.planGrants)
+    const planner = new PlannerService({
+      store: deps.store,
+      modelSource: new AiPlannerModelSource(deps.provider, this.aiConnections),
+      logger: deps.logger,
+      onAttemptUsage: (usage) => this.plannerUsage.record(usage),
+      runtimeSettings: () => this.runtimeSettings.get(),
+    })
+    this.orchestration = new OrchestrationService(deps.store, deps.services, planner)
+    this.replans = new ReplanService(deps.store, this.orchestration, planner, this.planGrants, deps.logger)
     this.externalRunner = new ExternalAgentRunner(deps.store, deps.services, deps.logger)
     this.operations = new OperationsService(deps.store, deps.services)
     this.agentStudio = new AgentStudioService(deps.store)
@@ -93,11 +117,32 @@ export class RuntimeDispatcher {
       deps.runner,
       deps.logger,
       deps.config.dataDir,
+      undefined,
+      undefined,
+      (plan) => {
+        this.planGrants.assertExecutionActive(plan)
+      },
+      (planId, taskId, agentId) => {
+        this.planGrants.amendAgentForConfirmedReassignment(planId, taskId, agentId)
+      },
+      (planId, trigger, reason) => {
+        void this.replans
+          .propose({ planId, trigger, reason, requestedBy: 'system:scheduler' })
+          .catch((error) => {
+            this.deps.logger.warn({ err: error, planId, trigger }, 'automatic replan proposal failed')
+          })
+      },
     )
   }
 
   recoverOrchestrations(): void {
     this.operations.recoverRuns()
+    const recovered = this.planGrants.recoverStartReservations()
+    if (recovered.started > 0 || recovered.released > 0) {
+      this.deps.logger.info(recovered, 'recovered stale plan grant start reservations')
+    }
+    const recoveredReplans = this.replans.recover()
+    if (recoveredReplans > 0) this.deps.logger.info({ count: recoveredReplans }, 'recovered applying replan proposals')
     this.scheduler.recover()
   }
 
@@ -213,7 +258,7 @@ export class RuntimeDispatcher {
           ),
         })
       : draft
-    this.orchestration.approvePlan(planDraft.id)
+    const approvedPlan = this.orchestration.approvePlan(planDraft.id).plan
     this.deps.store.setProposalPlan(proposal.id, planDraft.id)
     this.deps.store.setAutomationRunPlan(claim.id, planDraft.id)
     this.deps.store.updateProposalStatus(proposal.id, 'executing')
@@ -221,7 +266,23 @@ export class RuntimeDispatcher {
     // Repairs always run in an isolated worktree and respect the project budget.
     let plan
     try {
-      plan = await this.scheduler.start(planDraft.id, 2, 2, false, true)
+      // The existing automation grant/proposal approval is the user's
+      // authorization for this repair. Materialize it as a normal plan grant so
+      // the scheduler and ToolHandler follow the same audited path.
+      const grant = this.planGrants.issueForAutomationRepair(approvedPlan, claim.id)
+      const reservation = this.planGrants.reserveStart(approvedPlan, grant, `repair:${claim.id}`)
+      if (!reservation) throw new AppError('APPROVAL_REQUIRED', '自动化修复授权启动配额不可用')
+      try {
+        plan = await this.scheduler.start(approvedPlan.id, 2, 2, false, true)
+        this.planGrants.markStartSucceeded(reservation.reservation.id, plan)
+      } catch (error) {
+        this.planGrants.settleStartFailure(
+          reservation.reservation.id,
+          approvedPlan.id,
+          error instanceof Error ? error.message : String(error),
+        )
+        throw error
+      }
     } catch (error) {
       this.deps.store.updateProposalStatus(proposal.id, 'failed')
       this.deps.store.transitionProposalFindings(proposal.id, ['in_progress'], 'open')
@@ -508,6 +569,13 @@ export class RuntimeDispatcher {
       case 'aiUsage.summary': {
         const input = this.parse('aiUsage.summary', rawInput)
         return this.aiConnections.usageSummary(input.projectId)
+      }
+      case 'runtime.settings.get': {
+        return this.runtimeSettings.get()
+      }
+      case 'runtime.settings.update': {
+        const input = this.parse('runtime.settings.update', rawInput)
+        return this.runtimeSettings.update(input)
       }
       case 'runtime.shutdown': {
         // Let the response frame flush before closing the transport and store.
@@ -1166,7 +1234,14 @@ export class RuntimeDispatcher {
       }
       case 'plan.generate': {
         const input = this.parse('plan.generate', rawInput)
-        return this.orchestration.generatePlan(input.projectId, input.goal)
+        return this.orchestration.generateAIPlan({
+          projectId: input.projectId,
+          goal: input.goal,
+          mode: input.mode,
+          allowRuleFallback: input.allowRuleFallback,
+          maxTasks: input.maxTasks,
+          allowOverBudget: input.allowOverBudget,
+        })
       }
       case 'plan.list': {
         const input = this.parse('plan.list', rawInput)
@@ -1196,9 +1271,110 @@ export class RuntimeDispatcher {
         const input = this.parse('plan.discuss', rawInput)
         return this.discussPlan(input.planId, input.content)
       }
+      case 'plan.grant.get': {
+        const input = this.parse('plan.grant.get', rawInput)
+        return this.planGrants.get(input.planId)
+      }
+      case 'plan.grant.issue': {
+        const input = this.parse('plan.grant.issue', rawInput)
+        return this.planGrants.issue(input)
+      }
+      case 'plan.grant.revoke': {
+        const input = this.parse('plan.grant.revoke', rawInput)
+        const revoked = this.planGrants.revoke(input.grantId, input.reason)
+        const plan = this.orchestration.getPlan(revoked.planId)
+        if (plan.execution && ['running', 'paused'].includes(plan.execution.status)) {
+          try {
+            await this.scheduler.cancel(plan.id)
+          } catch (error) {
+            this.deps.logger.warn({ err: error, planId: plan.id }, 'failed to stop plan after grant revocation')
+          }
+        }
+        return this.planGrants.getById(revoked.id)
+      }
+      case 'plan.replan.propose': {
+        const input = this.parse('plan.replan.propose', rawInput)
+        return this.replans.propose({
+          planId: input.planId,
+          trigger: input.trigger,
+          reason: input.reason,
+          allowOverBudget: input.allowOverBudget,
+        })
+      }
+      case 'plan.replan.list': {
+        const input = this.parse('plan.replan.list', rawInput)
+        return { proposals: this.replans.list(input.projectId, input.planId) }
+      }
+      case 'plan.replan.get': {
+        const input = this.parse('plan.replan.get', rawInput)
+        return this.replans.get(input.proposalId)
+      }
+      case 'plan.replan.apply': {
+        const input = this.parse('plan.replan.apply', rawInput)
+        return this.replans.apply(input.proposalId)
+      }
+      case 'plan.replan.reject': {
+        const input = this.parse('plan.replan.reject', rawInput)
+        return this.replans.reject(input.proposalId, input.reason)
+      }
       case 'orchestration.start': {
         const input = this.parse('orchestration.start', rawInput)
-        return this.scheduler.start(input.planId, input.concurrency, input.maxRetries, input.allowOverBudget)
+        const plan = this.orchestration.getPlan(input.planId)
+        const startKey = input.startRequestId?.trim() || `start:${plan.id}:r${plan.revision}:${newId('pgs')}`
+        const candidateGrant = input.grantId
+          ? this.planGrants.getById(input.grantId)
+          : this.planGrants.get(plan.id)
+        const existing = candidateGrant ? this.planGrants.findStartReservation(candidateGrant.id, startKey) : null
+        if (existing?.status === 'started') return plan
+        if (existing?.status === 'reserved') {
+          throw new AppError('CONFLICT', '同一启动请求正在执行，请等待当前启动完成，不能重复占用授权')
+        }
+        if (existing?.status === 'failed') {
+          throw new AppError('CONFLICT', '该启动请求上次失败，授权预留已释放；请使用新的启动请求重试')
+        }
+        const grant = this.planGrants.assertStartAllowed(plan, input.grantId)
+        const budget = this.deps.store.read.getProjectBudget(plan.projectId)
+        const spent = budget ? this.deps.store.read.summarizeAIUsage(plan.projectId).estimatedCost : 0
+        if (budget && budget.softLimit > 0 && spent > budget.softLimit && input.allowOverBudget && !grant.allowOverBudget) {
+          throw new AppError(
+            'APPROVAL_REQUIRED',
+            `项目 AI 软预算已超出（${spent.toFixed(4)} / ${budget.softLimit} ${budget.currency}）。本次超预算执行未在该计划授权中显式允许，请重新授权并记录风险说明。`,
+          )
+        }
+        const reserved = this.planGrants.reserveStart(plan, grant, startKey)
+        if (!reserved) throw new AppError('INTERNAL', '计划启动预留失败')
+        try {
+          const started = await this.scheduler.start(
+            input.planId,
+            input.concurrency,
+            input.maxRetries,
+            input.allowOverBudget,
+          )
+          this.planGrants.markStartSucceeded(reserved.reservation.id, started)
+          const overBudget =
+            Boolean(budget && budget.softLimit > 0 && spent > budget.softLimit) &&
+            input.allowOverBudget &&
+            grant.allowOverBudget
+          this.deps.store.appendEvent(plan.projectId, plan.id, PROJECT_EVENT_TYPES.planGrantStarted, {
+            grantId: grant.id,
+            planId: plan.id,
+            revision: plan.revision,
+            allowOverBudget: overBudget,
+            spent,
+            softLimit: budget?.softLimit ?? null,
+            startRequestId: startKey,
+            reservationId: reserved.reservation.id,
+          })
+          return started
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
+          const settled = this.planGrants.settleStartFailure(reserved.reservation.id, plan.id, message)
+          this.deps.logger.warn(
+            { err: error, planId: plan.id, grantId: grant.id, reservationId: reserved.reservation.id, settled },
+            'plan start failed; grant reservation settled',
+          )
+          throw error
+        }
       }
       case 'orchestration.pause': {
         const input = this.parse('orchestration.pause', rawInput)
@@ -1206,6 +1382,8 @@ export class RuntimeDispatcher {
       }
       case 'orchestration.resume': {
         const input = this.parse('orchestration.resume', rawInput)
+        const plan = this.orchestration.getPlan(input.planId)
+        this.planGrants.assertExecutionActive(plan)
         return this.scheduler.resume(input.planId)
       }
       case 'orchestration.cancel': {

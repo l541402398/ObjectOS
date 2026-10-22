@@ -33,12 +33,22 @@ function broadcast(channel: string, payload: unknown): void {
 
 function createWindow(): BrowserWindow {
   const isMac = process.platform === 'darwin'
+  const windowIcon = isMac
+    ? undefined
+    : process.platform === 'win32'
+      ? app.isPackaged
+        ? join(process.resourcesPath, 'icon.ico')
+        : join(__dirname, '../../resources/icon.ico')
+      : app.isPackaged
+        ? join(process.resourcesPath, 'icon.png')
+        : join(__dirname, '../../resources/icon.png')
   const window = new BrowserWindow({
     width: Math.max(1024, Math.min(rendererWidth, 2560)),
     height: Math.max(700, Math.min(rendererHeight, 1600)),
     minWidth: 1024,
     minHeight: 700,
     show: false,
+    icon: windowIcon,
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#0A0C11' : '#F4F5F7',
     title: 'ProjectOS',
     frame: isMac,
@@ -55,7 +65,15 @@ function createWindow(): BrowserWindow {
       devTools: isDev || process.env.PROJECTOS_ENABLE_DEVTOOLS === '1',
     },
   })
+  if (windowIcon && process.platform !== 'darwin') window.setIcon(windowIcon)
   window.setMenuBarVisibility(false)
+  window.webContents.on('before-input-event', (event, input) => {
+    if ((input.control || input.meta) && input.key.toLowerCase() === 'q') {
+      event.preventDefault()
+      quitting = true
+      app.quit()
+    }
+  })
   hardenWebContents(window.webContents, isDev, process.env.ELECTRON_RENDERER_URL)
   window.once('ready-to-show', () => window.show())
   window.on('close', (event) => {
@@ -98,25 +116,43 @@ function createTray(): void {
   const image = nativeImage.createFromPath(iconPath)
   tray = new Tray(image.isEmpty() ? nativeImage.createEmpty() : image)
   tray.setToolTip('ProjectOS')
-  tray.setContextMenu(
-    Menu.buildFromTemplate([
-      { label: '显示 ProjectOS', click: showMainWindow },
-      { type: 'separator' },
-      {
-        label: '退出 ProjectOS',
-        click: () => {
-          quitting = true
-          app.quit()
-        },
+  const menu = Menu.buildFromTemplate([
+    { label: '显示 ProjectOS', click: showMainWindow },
+    { type: 'separator' },
+    {
+      label: '退出 ProjectOS',
+      click: () => {
+        quitting = true
+        app.quit()
       },
-    ]),
-  )
+    },
+  ])
+  tray.setContextMenu(menu)
+  // Windows 11's hidden-icon flyout does not always dispatch setContextMenu on
+  // the first right click; explicitly pop the same menu as a fallback.
+  if (process.platform === 'win32') {
+    tray.on('right-click', () => tray?.popUpContextMenu(menu))
+  }
   tray.on('click', showMainWindow)
   tray.on('double-click', showMainWindow)
 }
 
 async function bootstrap(): Promise<void> {
   await app.whenReady()
+  if (process.platform === 'win32') {
+    // The taskbar jump list is an OS-level escape hatch even when the tray
+    // flyout is hidden or a window is hidden to tray.
+    app.setUserTasks([
+      {
+        program: process.execPath,
+        arguments: '--quit',
+        iconPath: process.execPath,
+        iconIndex: 0,
+        title: '退出 ProjectOS',
+        description: '退出当前 ProjectOS 实例',
+      },
+    ])
+  }
   dataDir = resolve(process.env.PROJECTOS_DATA_DIR ?? join(app.getPath('userData'), 'data'))
   mkdirSync(dataDir, { recursive: true })
   logger = createMainLogger(dataDir)
@@ -158,17 +194,21 @@ async function bootstrap(): Promise<void> {
   supervisor.start()
 }
 
+const quitRequested = process.argv.includes('--quit')
 const gotLock = app.requestSingleInstanceLock()
 if (!gotLock) {
-  void app.whenReady().then(() => {
-    dialog.showErrorBox(
-      'ProjectOS 已在运行',
-      'ProjectOS 已经在后台运行。请从系统托盘打开，或先在托盘中退出旧实例后再启动。',
-    )
-    app.quit()
-  })
+  // The primary instance receives the original argv via second-instance and
+  // handles --quit there.
+  app.quit()
+} else if (quitRequested) {
+  app.quit()
 } else {
-  app.on('second-instance', () => {
+  app.on('second-instance', (_event, argv) => {
+    if (argv.includes('--quit')) {
+      quitting = true
+      app.quit()
+      return
+    }
     showMainWindow()
   })
 

@@ -8,6 +8,7 @@ export type SettingsSection =
   | 'ai-connections'
   | 'models'
   | 'runtime'
+  | 'general'
   | 'tools'
   | 'permissions'
   | 'data-security'

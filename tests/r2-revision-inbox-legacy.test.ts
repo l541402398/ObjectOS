@@ -61,6 +61,9 @@ describe('R2 P0-08A: revision supersede and reuse rule', () => {
     expect(reused.reuseFromTaskId).toBe(doneTaskId)
     expect(reused.reuseArtifactIds ?? []).toContain(acceptance!.id)
     expect(revised.tasks.find((task) => task.key === 'b')?.reuseFromTaskId ?? null).toBeNull()
+    const revisedApproved = orchestration.approvePlan(revised.id)
+    expect(revisedApproved.taskIds[0]).toBe(doneTaskId)
+    expect(revisedApproved.taskIds[1]).not.toBe(unfinishedTaskId)
 
     const oldPlan = store.read.getPlanRevision(approved.plan.id)!
     expect(oldPlan.status).toBe('superseded')
@@ -69,7 +72,6 @@ describe('R2 P0-08A: revision supersede and reuse rule', () => {
     expect(store.read.getTask(unfinishedTaskId)?.status).toBe('cancelled')
     expect(store.read.listArtifacts(project.id, doneTaskId).find((item) => item.id === acceptance!.id)?.body).toBeTruthy()
 
-    orchestration.approvePlan(revised.id)
     expect(store.read.listRunSummaries(project.id, 50).length).toBe(runsBefore)
     expect(store.read.getTask(doneTaskId)?.status).toBe('done')
     console.log(

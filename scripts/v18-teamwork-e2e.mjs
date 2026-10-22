@@ -88,6 +88,20 @@ async function updatePlan(page, plan, tasks) {
   return page.evaluate(async ({ planId, tasks }) => window.projectos.plans.update({ planId, tasks }), { planId: plan.id, tasks })
 }
 
+async function issueGrant(page, planId) {
+  return page.evaluate(async (id) => window.projectos.plans.grant.issue({
+    planId: id,
+    actions: ['plan.start', 'workspace-write'],
+    allowedPaths: ['.'],
+    maxRuns: 1,
+    maxToolCalls: 100,
+    ttlHours: 1,
+    allowOverBudget: false,
+    note: 'V1.8 teamwork scheduler E2E',
+    confirm: true,
+  }), planId)
+}
+
 async function seedArtifacts(page, projectId, items) {
   await page.evaluate(async ({ projectId, items }) => {
     for (const item of items) {
@@ -180,7 +194,8 @@ try {
       title: `同 Agent 代码 ${index + 1}`,
       body: `export const sameAgent${index + 1} = true\n`,
     })))
-    await page.evaluate(async (planId) => window.projectos.orchestration.start(planId, 2, 0), plan.id)
+    const grant = await issueGrant(page, plan.id)
+    await page.evaluate(async ({ planId, grantId }) => window.projectos.orchestration.start(planId, 2, 0, false, grantId), { planId: plan.id, grantId: grant.id })
     const final = await waitForPlan(page, project.id, plan.id)
     const board = await page.evaluate(async (projectId) => window.projectos.tasks.board(projectId), project.id)
     const planTasks = board.tasks.filter((task) => approved.taskIds.includes(task.id))
@@ -218,7 +233,8 @@ try {
       },
       { taskId: approved.taskIds[1], kind: 'code', title: '并行实现代码', body: 'export const parallel = true\n' },
     ])
-    await page.evaluate(async (planId) => window.projectos.orchestration.start(planId, 2, 0), plan.id)
+    const grant = await issueGrant(page, plan.id)
+    await page.evaluate(async ({ planId, grantId }) => window.projectos.orchestration.start(planId, 2, 0, false, grantId), { planId: plan.id, grantId: grant.id })
     const final = await waitForPlan(page, project.id, plan.id)
     const runs = await page.evaluate(async (projectId) => window.projectos.runs.list(projectId, 50), project.id)
     const planRuns = runs.runs.filter((run) => approved.taskIds.includes(run.taskId))

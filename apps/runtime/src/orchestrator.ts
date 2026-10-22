@@ -7,6 +7,7 @@ import {
   type PlanExecution,
   type PlanRole,
   type PlannedTask,
+  type ReplanTrigger,
   type TaskCard,
   type WorktreeInfo,
 } from '@projectos/contracts'
@@ -19,6 +20,7 @@ import { WorktreeManager } from '@projectos/worktree'
 import { join } from 'node:path'
 import { existsSync } from 'node:fs'
 import {
+  mergeHardCapabilities,
   rankAssignmentCandidates,
   topologicalPlanTasks,
   type AssignmentRejection,
@@ -28,6 +30,7 @@ import type { Logger } from './logger.js'
 import { QualityGateService, DEFAULT_QUALITY_POLICY, type QualityGateReport } from './quality-gate.js'
 import { planSessionTitle } from '@projectos/session-manager'
 import { buildAssignmentCandidates } from './assignment-candidates.js'
+import { classifyExecutionFailure } from './failure-classifier.js'
 
 const SYSTEM_ACTOR = { kind: 'system' as const, id: 'orchestrator', name: '编排器' }
 
@@ -118,7 +121,47 @@ export class OrchestrationScheduler {
     private readonly dataDir: string,
     private readonly qualityGate = new QualityGateService(),
     private readonly worktrees = new WorktreeManager(),
+    /**
+     * Trusted backend guard. Production wires this to PlanGrantService; direct
+     * scheduler unit tests omit it. It is never derived from renderer state.
+     */
+    private readonly planGrantGuard?: (plan: PlanDraft) => void,
+    /** Trusted, user-confirmed Handoff substitution only. */
+    private readonly onAgentReassigned?: (planId: string, taskId: string, agentId: string) => void,
+    /** Automatic trigger only. It creates a proposal; it never applies it. */
+    private readonly onReplanNeeded?: (planId: string, trigger: ReplanTrigger, reason: string) => void,
   ) {}
+
+  private notifyReplan(plan: PlanDraft, trigger: ReplanTrigger, reason: string): void {
+    const classification = classifyExecutionFailure(reason)
+    try {
+      this.store.appendEvent(plan.projectId, plan.id, PROJECT_EVENT_TYPES.planExecutionFailureClassified, {
+        planId: plan.id,
+        revision: plan.revision,
+        trigger,
+        failureClass: classification.class,
+        action: classification.action,
+        replan: classification.replan,
+        reason: classification.reason,
+        error: reason.slice(0, 2000),
+      })
+    } catch (error) {
+      this.logger.warn({ err: error, planId: plan.id }, 'failed to persist failure classification')
+    }
+    if (!classification.replan) {
+      this.logger.info(
+        { planId: plan.id, trigger, failureClass: classification.class, action: classification.action },
+        'execution failure is technical/recoverable; replan proposal suppressed',
+      )
+      return
+    }
+    if (!this.onReplanNeeded) return
+    try {
+      this.onReplanNeeded(plan.id, trigger, reason.slice(0, 3000))
+    } catch (error) {
+      this.logger.warn({ err: error, planId: plan.id, trigger }, 'failed to request replan proposal')
+    }
+  }
 
   private getPlan(planId: string): PlanDraft {
     const plan = this.store.read.getPlanRevision(planId)
@@ -141,6 +184,7 @@ export class OrchestrationScheduler {
   ): Promise<PlanDraft> {
     const plan = this.getPlan(planId)
     if (plan.status !== 'approved') throw new AppError('CONFLICT', '计划尚未批准，不能开始执行')
+    this.planGrantGuard?.(plan)
     const budget = this.store.read.getProjectBudget(plan.projectId)
     if (budget && budget.softLimit > 0 && !allowOverBudget) {
       const spent = this.store.read.summarizeAIUsage(plan.projectId).estimatedCost
@@ -186,6 +230,7 @@ export class OrchestrationScheduler {
   resume(planId: string): PlanDraft {
     const plan = this.getPlan(planId)
     if (plan.execution?.status !== 'paused') throw new AppError('CONFLICT', '计划不在暂停状态')
+    this.planGrantGuard?.(plan)
     if (plan.execution.deadlineAt > 0 && now() >= plan.execution.deadlineAt) {
       throw new AppError('BUDGET_EXCEEDED', '计划总执行时间已超出上限，不能继续；请修订计划并重新开始')
     }
@@ -491,6 +536,8 @@ export class OrchestrationScheduler {
       role,
       title: card.title,
       description: card.description,
+      requiredCapabilities: planned?.requiredCapabilities,
+      hardCapabilities: mergeHardCapabilities(role, planned?.hardCapabilities),
       candidates,
     })
     const originalAgent = card.assigneeAgentId ? this.store.read.getAgent(card.assigneeAgentId) : null
@@ -734,6 +781,9 @@ export class OrchestrationScheduler {
         { taskId, expectedVersion: latest.version, assigneeAgentId: agentId },
         SYSTEM_ACTOR,
       )
+      // The user explicitly confirmed this substitute. Extend the scoped plan
+      // grant by exactly this Agent; automatic reassignment never calls this.
+      this.onAgentReassigned?.(planId, taskId, agentId)
     }
     if (latest.status === 'review') {
       latest = this.services.tasks.move(
@@ -907,6 +957,26 @@ export class OrchestrationScheduler {
         this.disarm(planId)
         return
       }
+      // A revoked/expired/revision-mismatched grant must stop new Task/Run starts.
+      if (this.planGrantGuard) {
+        try {
+          this.planGrantGuard(plan)
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : String(error)
+          this.saveExecution(plan, { ...plan.execution, status: 'paused', error: reason, updatedAt: now() })
+          this.disarm(planId)
+          this.store.appendEvent(plan.projectId, plan.id, PROJECT_EVENT_TYPES.planGrantInvalidated, {
+            planId: plan.id,
+            revision: plan.revision,
+            reason,
+          })
+          if (/Agent|Runtime|不可用|没有分配/i.test(reason)) {
+            this.notifyReplan(plan, 'agent_unavailable', reason)
+          }
+          this.logger.warn({ planId, reason }, 'plan execution grant no longer valid; paused')
+          return
+        }
+      }
       // Hard Plan wall-clock budget: checked before any new task or tool can start.
       if (plan.execution.deadlineAt > 0 && now() >= plan.execution.deadlineAt) {
         await this.enforcePlanDeadline(plan)
@@ -953,6 +1023,7 @@ export class OrchestrationScheduler {
             if (used >= (plan.execution?.maxRetries ?? 2)) {
               const next = { ...plan.execution!, status: 'failed' as const, error: latest.error ?? '任务执行失败（重试已用尽）', updatedAt: now() }
               this.saveExecution(plan, next)
+              this.notifyReplan(plan, 'retry_exhausted', next.error ?? '任务执行失败（重试已用尽）')
               this.disarm(planId)
               return
             }
@@ -1013,12 +1084,14 @@ export class OrchestrationScheduler {
             } catch (error) {
               this.logger.warn({ err: error, taskId: card.id }, 'failed to block task after quality gate')
             }
+            const qualityError = `质量门禁未通过：${report.checks.filter((check) => check.status === 'failed' || check.status === 'error').map((check) => check.name).join(', ')}`
             this.saveExecution(plan, {
               ...plan.execution!,
               status: 'failed',
-              error: `质量门禁未通过：${report.checks.filter((check) => check.status === 'failed' || check.status === 'error').map((check) => check.name).join(', ')}`,
+              error: qualityError,
               updatedAt: now(),
             })
+            this.notifyReplan(plan, 'quality_gate_failed', qualityError)
             this.disarm(planId)
             return
           }
@@ -1122,12 +1195,14 @@ export class OrchestrationScheduler {
               return
             }
           }
+          const evidenceError = `任务「${card.title}」缺少有效完成依据：${missing.join('；') || decision.reasons.join('；')}`
           this.saveExecution(plan, {
             ...plan.execution!,
             status: 'paused',
-            error: `任务「${card.title}」缺少有效完成依据：${missing.join('；') || decision.reasons.join('；')}`,
+            error: evidenceError,
             updatedAt: now(),
           })
+          this.notifyReplan(plan, 'evidence_exhausted', evidenceError)
           this.disarm(planId)
           return
         }
@@ -1225,14 +1300,26 @@ export class OrchestrationScheduler {
         .filter((card) => card.status === 'running').length
       const slots = Math.max(0, currentExecution.concurrency - active)
       const runIds = [...currentExecution.runIds]
+      let executionError = currentExecution.error
+      for (const card of ready) {
+        if (card.assigneeAgentId) continue
+        this.blockUnassignedTask(card, '计划任务没有 assigneeAgentId，无法自动启动')
+        executionError = `任务「${card.title}」没有 assigneeAgentId`
+        this.notifyReplan(plan, 'agent_unavailable', executionError)
+        changed = true
+      }
       // One run per Agent per tick. Ready tasks for an Agent that already has a
       // running task stay queued instead of colliding on the Agent's Session.
-      const startable = selectStartableTasks({ ready, activeAgentIds, slots })
-      let executionError = currentExecution.error
+      const startable = selectStartableTasks({
+        ready: ready.filter((card) => Boolean(card.assigneeAgentId)),
+        activeAgentIds,
+        slots,
+      })
       for (const card of startable) {
         if (!card.assigneeAgentId) {
           this.blockUnassignedTask(card, '计划任务没有 assigneeAgentId，无法自动启动')
           executionError = `任务「${card.title}」没有 assigneeAgentId`
+          this.notifyReplan(plan, 'agent_unavailable', executionError)
           changed = true
           continue
         }
@@ -1371,14 +1458,20 @@ export class OrchestrationScheduler {
       if (!hasRunning && !hasReady && !hasPromotable && !hasPendingRetry) {
         const unresolved = remaining.filter((card) => !['done', 'cancelled'].includes(card.status))
         if (unresolved.length > 0) {
+          const failureReason =
+            latestExecution.error ??
+            `没有可继续执行的任务：${unresolved.map((card) => `${card.title}（${card.status}）`).join('；')}`
           this.saveExecution(latestPlan, {
             ...latestExecution,
             status: 'failed',
-            error:
-              latestExecution.error ??
-              `没有可继续执行的任务：${unresolved.map((card) => `${card.title}（${card.status}）`).join('；')}`,
+            error: failureReason,
             updatedAt: now(),
           })
+          this.notifyReplan(
+            latestPlan,
+            /Agent|Runtime|不可用|disabled/i.test(failureReason) ? 'agent_unavailable' : 'retry_exhausted',
+            failureReason,
+          )
           this.disarm(planId)
           return
         }

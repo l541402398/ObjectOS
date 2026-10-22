@@ -203,7 +203,7 @@ const api: ProjectOSDesktopApi = {
     setQualityPolicy: (projectId, policy) => call('project.qualityPolicy.set', { projectId, ...policy }),
   },
   plans: {
-    generate: (projectId, goal) => call('plan.generate', { projectId, goal }),
+    generate: (projectId, goal, options = {}) => call('plan.generate', { projectId, goal, ...options }),
     list: (projectId) => call('plan.list', { projectId }),
     get: (planId) => call('plan.get', { planId }),
     update: (input) => call('plan.update', input),
@@ -211,6 +211,18 @@ const api: ProjectOSDesktopApi = {
     approve: (planId) => call('plan.approve', { planId }),
     reject: (planId) => call('plan.reject', { planId }),
     discuss: (planId, content) => call('plan.discuss', { planId, content }),
+    grant: {
+      get: (planId) => call('plan.grant.get', { planId }),
+      issue: (input) => call('plan.grant.issue', input),
+      revoke: (input) => call('plan.grant.revoke', input),
+    },
+    replan: {
+      propose: (input) => call('plan.replan.propose', input),
+      list: (projectId, planId = null) => call('plan.replan.list', { projectId, planId }),
+      get: (proposalId) => call('plan.replan.get', { proposalId }),
+      apply: (proposalId) => call('plan.replan.apply', { proposalId }),
+      reject: (proposalId, reason = '用户拒绝修订提案') => call('plan.replan.reject', { proposalId, reason }),
+    },
   },
   agentDefinitions: {
     list: () => call('agentDefinition.list', {}),
@@ -256,7 +268,7 @@ const api: ProjectOSDesktopApi = {
     setTrigger: (projectId, intervalMinutes, enabled) => call('operations.setTrigger', { projectId, intervalMinutes, enabled }),
   },
   orchestration: {
-    start: (planId, concurrency = 2, maxRetries = 2, allowOverBudget = false) => call('orchestration.start', { planId, concurrency, maxRetries, allowOverBudget }),
+    start: (planId, concurrency = 2, maxRetries = 2, allowOverBudget = false, grantId = null, startRequestId = null) => call('orchestration.start', { planId, concurrency, maxRetries, allowOverBudget, grantId, startRequestId }),
     pause: (planId) => call('orchestration.pause', { planId }),
     resume: (planId) => call('orchestration.resume', { planId }),
     cancel: (planId) => call('orchestration.cancel', { planId }),
@@ -281,6 +293,10 @@ const api: ProjectOSDesktopApi = {
   runtime: {
     health: () => call('runtime.health'),
     status: () => call('app.runtimeStatus'),
+    settings: {
+      get: () => call('runtime.settings.get', {}),
+      update: (input) => call('runtime.settings.update', input),
+    },
     onEvent,
     onStatus,
   },

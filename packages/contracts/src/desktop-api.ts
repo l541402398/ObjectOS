@@ -178,7 +178,16 @@ export interface ProjectOSDesktopApi {
     ) => Promise<Out<'project.qualityPolicy.set'>>
   }
   plans: {
-    generate: (projectId: string, goal: string) => Promise<Out<'plan.generate'>>
+    generate: (
+      projectId: string,
+      goal: string,
+      options?: {
+        mode?: 'ai' | 'local'
+        allowRuleFallback?: boolean
+        maxTasks?: number
+        allowOverBudget?: boolean
+      },
+    ) => Promise<Out<'plan.generate'>>
     list: (projectId: string) => Promise<Out<'plan.list'>>
     get: (planId: string) => Promise<Out<'plan.get'>>
     update: (input: In<'plan.update'>) => Promise<Out<'plan.update'>>
@@ -186,6 +195,18 @@ export interface ProjectOSDesktopApi {
     approve: (planId: string) => Promise<Out<'plan.approve'>>
     reject: (planId: string) => Promise<Out<'plan.reject'>>
     discuss: (planId: string, content: string) => Promise<Out<'plan.discuss'>>
+    grant: {
+      get: (planId: string) => Promise<Out<'plan.grant.get'>>
+      issue: (input: In<'plan.grant.issue'>) => Promise<Out<'plan.grant.issue'>>
+      revoke: (input: In<'plan.grant.revoke'>) => Promise<Out<'plan.grant.revoke'>>
+    }
+    replan: {
+      propose: (input: In<'plan.replan.propose'>) => Promise<Out<'plan.replan.propose'>>
+      list: (projectId: string, planId?: string | null) => Promise<Out<'plan.replan.list'>>
+      get: (proposalId: string) => Promise<Out<'plan.replan.get'>>
+      apply: (proposalId: string) => Promise<Out<'plan.replan.apply'>>
+      reject: (proposalId: string, reason?: string) => Promise<Out<'plan.replan.reject'>>
+    }
   }
   agentDefinitions: {
     list: () => Promise<Out<'agentDefinition.list'>>
@@ -231,7 +252,14 @@ export interface ProjectOSDesktopApi {
     setTrigger: (projectId: string, intervalMinutes: number, enabled: boolean) => Promise<Out<'operations.setTrigger'>>
   }
   orchestration: {
-    start: (planId: string, concurrency?: number, maxRetries?: number, allowOverBudget?: boolean) => Promise<Out<'orchestration.start'>>
+    start: (
+      planId: string,
+      concurrency?: number,
+      maxRetries?: number,
+      allowOverBudget?: boolean,
+      grantId?: string | null,
+      startRequestId?: string | null,
+    ) => Promise<Out<'orchestration.start'>>
     pause: (planId: string) => Promise<Out<'orchestration.pause'>>
     resume: (planId: string) => Promise<Out<'orchestration.resume'>>
     cancel: (planId: string) => Promise<Out<'orchestration.cancel'>>
@@ -259,6 +287,10 @@ export interface ProjectOSDesktopApi {
   runtime: {
     health: () => Promise<Out<'runtime.health'>>
     status: () => Promise<RuntimeStatus>
+    settings: {
+      get: () => Promise<Out<'runtime.settings.get'>>
+      update: (input: In<'runtime.settings.update'>) => Promise<Out<'runtime.settings.update'>>
+    }
     onEvent: (handler: (event: RuntimeEventEnvelope) => void) => Unsubscribe
     onStatus: (handler: (status: RuntimeStatus) => void) => Unsubscribe
   }

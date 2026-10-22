@@ -43,7 +43,7 @@ async function close(app) {
 
 try {
   let { app, page } = await launch()
-  await page.waitForSelector('.po-empty-title, .po-project-card', { timeout: 30_000 })
+  await page.waitForSelector('.po-empty-title, .v16-project-visual', { timeout: 30_000 })
   await page.getByRole('button', { name: /新建项目/ }).first().click()
   await page.getByLabel('项目名称').fill('E2E Local Project')
   await page.getByLabel('项目描述').fill('Created by the automated restart-recovery test')
@@ -59,10 +59,10 @@ try {
   await close(app)
 
   ;({ app, page } = await launch())
-  await page.waitForSelector('.po-project-card', { timeout: 30_000 })
-  const cardText = await page.locator('.po-project-card').first().innerText()
+  await page.waitForSelector('.v16-project-visual', { timeout: 30_000 })
+  const cardText = await page.locator('.v16-project-visual').first().innerText()
   if (!cardText.includes('E2E Local Project')) throw new Error('project did not survive restart')
-  await page.locator('.po-project-card').first().click()
+  await page.locator('.v16-project-visual').first().click()
   await page.waitForFunction(
     () => document.querySelector('.po-page-title')?.textContent?.includes('E2E Local Project'),
     null,

@@ -149,7 +149,23 @@ describe('R2 P0-06: reconcile resumes the plan', () => {
     const project = await createGitProject(services, dataDir, 'r2-reconcile-resume')
     const service = new OrchestrationService(store, services)
     const planned = planWithTasks(service, project.id, [task('developer')])
-    await dispatcher.dispatch('orchestration.start', { planId: planned.plan.id, concurrency: 1, maxRetries: 0 })
+    const grant = (await dispatcher.dispatch('plan.grant.issue', {
+      planId: planned.plan.id,
+      actions: ['plan.start'],
+      allowedPaths: [],
+      maxRuns: 1,
+      maxToolCalls: 40,
+      ttlHours: 24,
+      allowOverBudget: false,
+      note: '',
+      confirm: true,
+    })) as { id: string }
+    await dispatcher.dispatch('orchestration.start', {
+      planId: planned.plan.id,
+      concurrency: 1,
+      maxRetries: 0,
+      grantId: grant.id,
+    })
     await waitFor(
       () => store.read.getLatestRunForTask(planned.taskIds[0]!)?.status === 'running',
       15_000,

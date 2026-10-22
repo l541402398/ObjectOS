@@ -11,6 +11,7 @@ import {
   Input,
   Modal,
   Select,
+  Tabs,
   Tooltip,
   Alert,
   Checkbox,
@@ -20,11 +21,14 @@ import {
   ArrowRightOutlined,
   BranchesOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
   DeleteOutlined,
   EditOutlined,
   FileTextOutlined,
+  HistoryOutlined,
+  InfoCircleOutlined,
+  LinkOutlined,
   PlayCircleOutlined,
+  SafetyCertificateOutlined,
   PlusOutlined,
   RobotOutlined,
   SearchOutlined,
@@ -68,6 +72,16 @@ import {
   taskStatusLabel,
 } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
+
+function descriptionBlocks(description: string): string[] {
+  return description
+    .replace(/\r\n/g, '\n')
+    .replace(/\s+(?=\d+[)）、]\s)/g, '\n')
+    .replace(/\s+(?=[-•]\s)/g, '\n')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+}
 
 interface TaskFormValues {
   title: string
@@ -196,6 +210,14 @@ export default function TaskBoardPage() {
   const agents = useAgents(projectId)
   const approvals = useApprovals(projectId)
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerWidth, setDrawerWidth] = useState(700)
+  useEffect(() => {
+    const update = (): void => setDrawerWidth(window.innerWidth < 1250 ? 560 : 700)
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
   const taskDetail = useTaskDetail(selectedTaskId)
   const [query, setQuery] = useState('')
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
@@ -395,7 +417,10 @@ export default function TaskBoardPage() {
     label: milestone.title,
   }))
 
-  const openTask = (task: TaskCard): void => setSelectedTaskId(task.id)
+  const openTask = (task: TaskCard): void => {
+    setSelectedTaskId(task.id)
+    setDrawerOpen(true)
+  }
 
   const openEdit = (task: TaskCard): void => {
     setEditingTask(task)
@@ -533,6 +558,41 @@ export default function TaskBoardPage() {
         : acceptanceApproval.status === 'approved'
           ? '确认完成'
           : '已拒绝，无法完成'
+
+  const drawerActions = taskDetail.data ? (
+    <div className="po-drawer-actions">
+      <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(taskDetail.data!.task)}>
+        编辑
+      </Button>
+      <Dropdown
+        trigger={['click']}
+        menu={{
+          items: TASK_STATUSES.filter((status) => status !== taskDetail.data!.task.status).map((status) => ({
+            key: status,
+            label: taskStatusLabel(status),
+          })),
+          onClick: ({ key }) => {
+            const task = taskDetail.data!.task
+            if (key === 'done') {
+              void openAcceptance(task)
+              return
+            }
+            moveTask.mutate({ task, to: key as TaskStatus })
+          },
+        }}
+      >
+        <Button size="small">变更状态</Button>
+      </Dropdown>
+      <Button
+        size="small"
+        type="primary"
+        icon={<RobotOutlined />}
+        onClick={() => navigate(`/projects/${projectId}/agents?task=${selectedTaskId}`)}
+      >
+        交给 Agent
+      </Button>
+    </div>
+  ) : null
 
   return (
     <div className="po-page po-page-wide po-tasks-page">
@@ -824,48 +884,30 @@ export default function TaskBoardPage() {
       </Modal>
 
       <Drawer
-        open={Boolean(selectedTaskId)}
-        onClose={() => setSelectedTaskId(null)}
-        width={620}
-        title={taskDetail.data ? taskDetail.data.task.title : '任务详情'}
-        destroyOnHidden
-        className="po-task-drawer"
-        extra={
-          taskDetail.data ? (
-            <div className="po-drawer-actions">
-              <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(taskDetail.data!.task)}>
-                编辑
-              </Button>
-              <Dropdown
-                trigger={['click']}
-                menu={{
-                  items: TASK_STATUSES.filter((status) => status !== taskDetail.data!.task.status).map((status) => ({
-                    key: status,
-                    label: taskStatusLabel(status),
-                  })),
-                  onClick: ({ key }) => {
-                    const task = taskDetail.data!.task
-                    if (key === 'done') {
-                      void openAcceptance(task)
-                      return
-                    }
-                    moveTask.mutate({ task, to: key as TaskStatus })
-                  },
-                }}
-              >
-                <Button size="small">变更状态</Button>
-              </Dropdown>
-              <Button
-                size="small"
-                type="primary"
-                icon={<RobotOutlined />}
-                onClick={() => navigate(`/projects/${projectId}/agents?task=${selectedTaskId}`)}
-              >
-                交给 Agent
-              </Button>
-            </div>
-          ) : null
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        afterOpenChange={(open) => {
+          if (!open) setSelectedTaskId(null)
+        }}
+        width={drawerWidth}
+        title={
+          <div className="po-task-drawer-heading">
+            <span className="po-task-drawer-kicker">任务详情</span>
+            <strong>{taskDetail.data?.task.title ?? '加载中…'}</strong>
+            {taskDetail.data ? (
+              <div className="po-task-drawer-meta">
+                <StatusPill tone={toneForStatus(taskDetail.data.task.status)}>{taskStatusLabel(taskDetail.data.task.status)}</StatusPill>
+                <StatusPill tone={taskDetail.data.task.priority === 1 ? 'danger' : 'neutral'} dot={false}>
+                  {priorityLabel(taskDetail.data.task.priority)}优先级
+                </StatusPill>
+                <span>v{taskDetail.data.task.version}</span>
+                {taskDetail.data.task.assigneeName ? <span>指派给 {taskDetail.data.task.assigneeName}</span> : <span>未指派</span>}
+              </div>
+            ) : null}
+          </div>
         }
+        destroyOnHidden
+        classNames={{ root: 'po-task-drawer' }}
       >
         {taskDetail.isLoading ? (
           <LoadingBlock rows={8} />
@@ -873,156 +915,251 @@ export default function TaskBoardPage() {
           <ErrorState message={taskDetail.error ? errorMessage(taskDetail.error) : '任务不存在'} onRetry={() => void taskDetail.refetch()} />
         ) : (
           <div className="po-task-detail">
-            <div className="po-task-detail-top">
-              <StatusPill tone={toneForStatus(taskDetail.data.task.status)}>
-                {taskStatusLabel(taskDetail.data.task.status)}
-              </StatusPill>
-              <StatusPill tone={taskDetail.data.task.priority === 1 ? 'danger' : 'neutral'} dot={false}>
-                {priorityLabel(taskDetail.data.task.priority)}优先级
-              </StatusPill>
-              {taskDetail.data.task.dueAt ? (
-                <span className="po-caption po-muted">
-                  <ClockCircleOutlined /> 截止 {formatDate(taskDetail.data.task.dueAt)}
-                </span>
-              ) : null}
-              <span className="po-grow" />
-              <span className="po-caption po-muted">v{taskDetail.data.task.version}</span>
-            </div>
-            <div className="po-task-description">{taskDetail.data.task.description || '未填写任务描述。'}</div>
+            <div className="po-task-drawer-toolbar">{drawerActions}</div>
+            <Tabs
+              className="po-task-tabs"
+              defaultActiveKey="overview"
+              items={[
+                {
+                  key: 'overview',
+                  label: <span className="po-task-tab-label"><InfoCircleOutlined />概览</span>,
+                  children: (
+                    <div className="po-task-tab-panel">
+                      <section className="po-detail-block">
+                        <div className="po-detail-block-head">
+                          <div>
+                            <strong>任务说明</strong>
+                            <span>Agent 执行时使用的上下文与当前指派</span>
+                          </div>
+                          {taskDetail.data.task.assigneeName ? (
+                            <AgentAvatar name={taskDetail.data.task.assigneeName} size={30} />
+                          ) : (
+                            <span className="po-unassigned"><UserOutlined /></span>
+                          )}
+                        </div>
+                        <div className="po-description-lines">
+                          {descriptionBlocks(taskDetail.data.task.description).map((line, index) => (
+                            <p key={`${index}-${line.slice(0, 12)}`}>{line}</p>
+                          ))}
+                          {taskDetail.data.task.description ? null : <p className="po-muted">未填写任务描述。</p>}
+                        </div>
+                      </section>
 
-            <div className="po-task-assignee-row">
-              <span>指派 Agent</span>
-              <Select
-                size="small"
-                allowClear
-                showSearch
-                placeholder="选择 Agent"
-                value={taskDetail.data.task.assigneeAgentId ?? undefined}
-                options={agentOptions}
-                style={{ width: 260 }}
-                loading={updateTask.isPending}
-                onChange={(value: string | undefined) =>
-                  updateTask.mutate({
-                    taskId: taskDetail.data!.task.id,
-                    expectedVersion: taskDetail.data!.task.version,
-                    assigneeAgentId: value ?? null,
-                  })
-                }
-              />
-              {taskDetail.data.task.assigneeName ? <span className="po-caption po-muted">当前：{taskDetail.data.task.assigneeName}</span> : null}
-            </div>
-
-            <SectionCard title="验收标准" subtitle="完成任务的必要条件" className="po-drawer-section">
-              {taskDetail.data.task.acceptanceCriteria.length === 0 ? (
-                <EmptyState compact title="缺少验收标准" description="补充验收标准后才能标记完成。" />
-              ) : (
-                <ul className="po-check-list">
-                  {taskDetail.data.task.acceptanceCriteria.map((criterion) => (
-                    <li key={criterion}>
-                      <CheckCircleOutlined /> {criterion}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </SectionCard>
-
-            <SectionCard
-              title="依赖关系"
-              subtitle="依赖未完成时无法进入就绪/执行"
-              className="po-drawer-section"
-              extra={
-                <Select
-                  size="small"
-                  showSearch
-                  placeholder="添加依赖"
-                  value={undefined}
-                  options={taskOptions}
-                  style={{ width: 180 }}
-                  onChange={(value: string) => addDependency.mutate({ taskId: taskDetail.data!.task.id, dependsOnId: value })}
-                />
-              }
-            >
-              {taskDetail.data.dependencies.length === 0 ? (
-                <span className="po-caption po-muted">没有前置依赖。</span>
-              ) : (
-                <div className="po-dependency-list">
-                  {taskDetail.data.dependencies.map((dependency) => (
-                    <div className="po-dependency" key={dependency.id}>
-                      <StatusPill tone={toneForStatus(dependency.status)}>{taskStatusLabel(dependency.status)}</StatusPill>
-                      <span>{dependency.title}</span>
-                      <button
-                        type="button"
-                        className="po-icon-button is-small"
-                        onClick={() => removeDependency.mutate({ taskId: taskDetail.data!.task.id, dependsOnId: dependency.id })}
-                        aria-label="移除依赖"
-                      >
-                        <DeleteOutlined />
-                      </button>
+                      <section className="po-detail-block">
+                        <div className="po-detail-block-head">
+                          <div>
+                            <strong>执行信息</strong>
+                            <span>状态、优先级、时间与当前负责人</span>
+                          </div>
+                        </div>
+                        <div className="po-task-fact-grid">
+                          <div><span>当前状态</span><strong>{taskStatusLabel(taskDetail.data.task.status)}</strong></div>
+                          <div><span>优先级</span><strong>{priorityLabel(taskDetail.data.task.priority)}</strong></div>
+                          <div><span>负责人</span><strong>{taskDetail.data.task.assigneeName ?? '未指派'}</strong></div>
+                          <div><span>截止时间</span><strong>{taskDetail.data.task.dueAt ? formatDate(taskDetail.data.task.dueAt) : '未设置'}</strong></div>
+                        </div>
+                        <div className="po-task-assignee-row is-bottom">
+                          <span>调整指派</span>
+                          <Select
+                            size="small"
+                            allowClear
+                            showSearch
+                            placeholder="选择 Agent"
+                            value={taskDetail.data.task.assigneeAgentId ?? undefined}
+                            options={agentOptions}
+                            style={{ width: 250 }}
+                            loading={updateTask.isPending}
+                            onChange={(value: string | undefined) =>
+                              updateTask.mutate({
+                                taskId: taskDetail.data!.task.id,
+                                expectedVersion: taskDetail.data!.task.version,
+                                assigneeAgentId: value ?? null,
+                              })
+                            }
+                          />
+                        </div>
+                      </section>
                     </div>
-                  ))}
-                </div>
-              )}
-            </SectionCard>
+                  ),
+                },
+                {
+                  key: 'acceptance',
+                  label: (
+                    <span className="po-task-tab-label">
+                      <SafetyCertificateOutlined />验收与依赖
+                      <span className="po-task-tab-count">{taskDetail.data.task.acceptanceCriteria.length + taskDetail.data.dependencies.length}</span>
+                    </span>
+                  ),
+                  children: (
+                    <div className="po-task-tab-panel">
+                      <section className="po-detail-block">
+                        <div className="po-detail-block-head">
+                          <div>
+                            <strong>验收标准</strong>
+                            <span>完成任务的必要证据；不满足时不能自动完成</span>
+                          </div>
+                        </div>
+                        {taskDetail.data.task.acceptanceCriteria.length === 0 ? (
+                          <EmptyState compact title="缺少验收标准" description="补充验收标准后才能标记完成。" />
+                        ) : (
+                          <ol className="po-criteria-list">
+                            {taskDetail.data.task.acceptanceCriteria.map((criterion, index) => (
+                              <li key={criterion}>
+                                <span className="po-criteria-index">{String(index + 1).padStart(2, '0')}</span>
+                                <CheckCircleOutlined />
+                                <span>{criterion}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        )}
+                      </section>
 
-            <SectionCard title="运行记录" className="po-drawer-section">
-              {taskDetail.data.runs.length === 0 ? (
-                <EmptyState compact title="还没有运行" description="在 Agent 工作台将会话关联到该任务后开始执行。" />
-              ) : (
-                <div className="po-run-list">
-                  {taskDetail.data.runs.map((run) => (
-                    <button
-                      type="button"
-                      className="po-run-row"
-                      key={run.id}
-                      onClick={() => navigate(`/projects/${projectId}/runs?run=${run.id}`)}
-                    >
-                      <StatusPill tone={toneForStatus(run.status)}>{runStatusLabel(run.status)}</StatusPill>
-                      <span className="po-run-row-main">
-                        <strong>{run.agentName}</strong>
-                        <span>{formatDateTime(run.startedAt)}</span>
-                      </span>
-                      {run.pendingApprovals > 0 ? <StatusPill tone="warning">{run.pendingApprovals} 待授权</StatusPill> : null}
-                      <ArrowRightOutlined />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </SectionCard>
-
-            <SectionCard title="交付物" className="po-drawer-section">
-              {taskDetail.data.artifacts.length === 0 ? (
-                <span className="po-caption po-muted">尚无交付物。</span>
-              ) : (
-                <div className="po-artifact-list">
-                  {taskDetail.data.artifacts.map((artifact) => (
-                    <div className="po-artifact-row" key={artifact.id}>
-                      <FileTextOutlined />
-                      <div>
-                        <strong>{artifact.title}</strong>
-                        <span className="po-caption po-muted">
-                          {ARTIFACT_LABELS[artifact.kind]}
-                          {artifact.verifiedAt ? ' · 已验证' : ' · 未验证'}
-                        </span>
-                      </div>
+                      <section className="po-detail-block">
+                        <div className="po-detail-block-head">
+                          <div>
+                            <strong>依赖关系</strong>
+                            <span>依赖未完成时无法进入就绪/执行</span>
+                          </div>
+                          <Select
+                            size="small"
+                            showSearch
+                            placeholder="添加依赖"
+                            value={undefined}
+                            options={taskOptions}
+                            style={{ width: 180 }}
+                            onChange={(value: string) => addDependency.mutate({ taskId: taskDetail.data!.task.id, dependsOnId: value })}
+                          />
+                        </div>
+                        {taskDetail.data.dependencies.length === 0 ? (
+                          <div className="po-drawer-empty-line">没有前置依赖，任务可直接进入就绪。</div>
+                        ) : (
+                          <div className="po-dependency-list">
+                            {taskDetail.data.dependencies.map((dependency) => (
+                              <div className="po-dependency" key={dependency.id}>
+                                <StatusPill tone={toneForStatus(dependency.status)}>{taskStatusLabel(dependency.status)}</StatusPill>
+                                <span>{dependency.title}</span>
+                                <button
+                                  type="button"
+                                  className="po-icon-button is-small"
+                                  onClick={() => removeDependency.mutate({ taskId: taskDetail.data!.task.id, dependsOnId: dependency.id })}
+                                  aria-label="移除依赖"
+                                >
+                                  <DeleteOutlined />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </section>
                     </div>
-                  ))}
-                </div>
-              )}
-            </SectionCard>
+                  ),
+                },
+                {
+                  key: 'execution',
+                  label: (
+                    <span className="po-task-tab-label">
+                      <HistoryOutlined />运行与交付
+                      <span className="po-task-tab-count">{taskDetail.data.runs.length + taskDetail.data.artifacts.length}</span>
+                    </span>
+                  ),
+                  children: (
+                    <div className="po-task-tab-panel">
+                      <section className="po-detail-block">
+                        <div className="po-detail-block-head">
+                          <div>
+                            <strong>运行记录</strong>
+                            <span>每次真实 Run 的 Agent、状态与时间线</span>
+                          </div>
+                        </div>
+                        {taskDetail.data.runs.length === 0 ? (
+                          <div className="po-drawer-empty-line">还没有运行。关联 Agent 会话后，真实执行记录会显示在这里。</div>
+                        ) : (
+                          <div className="po-run-list">
+                            {taskDetail.data.runs.map((run) => (
+                              <button
+                                type="button"
+                                className="po-run-row"
+                                key={run.id}
+                                onClick={() => navigate(`/projects/${projectId}/runs?run=${run.id}`)}
+                              >
+                                <StatusPill tone={toneForStatus(run.status)}>{runStatusLabel(run.status)}</StatusPill>
+                                <span className="po-run-row-main">
+                                  <strong>{run.agentName}</strong>
+                                  <span>{formatDateTime(run.startedAt)}</span>
+                                </span>
+                                {run.pendingApprovals > 0 ? <StatusPill tone="warning">{run.pendingApprovals} 待授权</StatusPill> : null}
+                                <ArrowRightOutlined />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </section>
 
-            {taskDetail.data.approvals.length > 0 ? (
-              <SectionCard title="相关授权" className="po-drawer-section">
-                <div className="po-approval-list">
-                  {taskDetail.data.approvals.map((approval) => (
-                    <div className="po-approval-line" key={approval.id}>
-                      <span>{approval.title}</span>
-                      <StatusPill tone={toneForStatus(approval.status)}>{approval.status}</StatusPill>
-                      <span className="po-caption po-muted">{formatRelative(approval.requestedAt)}</span>
+                      <section className="po-detail-block">
+                        <div className="po-detail-block-head">
+                          <div>
+                            <strong>交付物</strong>
+                            <span>真实 Artifact；未验证产物不等同于完成证据</span>
+                          </div>
+                        </div>
+                        {taskDetail.data.artifacts.length === 0 ? (
+                          <div className="po-drawer-empty-line">尚无交付物。</div>
+                        ) : (
+                          <div className="po-artifact-list">
+                            {taskDetail.data.artifacts.map((artifact) => (
+                              <div className="po-artifact-row" key={artifact.id}>
+                                <FileTextOutlined />
+                                <div>
+                                  <strong>{artifact.title}</strong>
+                                  <span className="po-caption po-muted">
+                                    {ARTIFACT_LABELS[artifact.kind]}
+                                    {artifact.verifiedAt ? ' · 已验证' : ' · 未验证'}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </section>
                     </div>
-                  ))}
-                </div>
-              </SectionCard>
-            ) : null}
+                  ),
+                },
+                {
+                  key: 'approvals',
+                  label: (
+                    <span className="po-task-tab-label">
+                      <LinkOutlined />授权
+                      <span className="po-task-tab-count">{taskDetail.data.approvals.length}</span>
+                    </span>
+                  ),
+                  children: (
+                    <div className="po-task-tab-panel">
+                      <section className="po-detail-block">
+                        <div className="po-detail-block-head">
+                          <div>
+                            <strong>相关授权</strong>
+                            <span>该任务运行期间产生的逐次审批记录</span>
+                          </div>
+                        </div>
+                        {taskDetail.data.approvals.length === 0 ? (
+                          <div className="po-drawer-empty-line">没有待处理或已记录的授权。</div>
+                        ) : (
+                          <div className="po-approval-list">
+                            {taskDetail.data.approvals.map((approval) => (
+                              <div className="po-approval-line" key={approval.id}>
+                                <span>{approval.title}</span>
+                                <StatusPill tone={toneForStatus(approval.status)}>{approval.status}</StatusPill>
+                                <span className="po-caption po-muted">{formatRelative(approval.requestedAt)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </section>
+                    </div>
+                  ),
+                },
+              ]}
+            />
           </div>
         )}
       </Drawer>

@@ -48,6 +48,16 @@ import {
 import { AgentDefinitionSchema, AgentDefinitionUpsertSchema, RuntimeProfileSchema, RuntimeProfileUpsertSchema, RuntimeDetectionSchema, RuntimeRegistryEntrySchema, SkillSchema } from './v15.js'
 import { OperationsSnapshotSchema, RepairProposalSchema, AutonomyModeSchema, AutomationTriggerSchema, AutomationGrantSchema, RiskDecisionSchema, OperationsInsightsSchema } from './operations.js'
 import {
+  PlanExecutionGrantIssueInputSchema,
+  PlanExecutionGrantRevokeInputSchema,
+  PlanExecutionGrantViewSchema,
+} from './plan-grant.js'
+import {
+  ReplanProposalViewSchema,
+  ReplanProposeInputSchema,
+} from './plan-replan.js'
+import { RuntimeSettingsSchema, RuntimeSettingsUpdateSchema } from './runtime-settings.js'
+import {
   ActivityItemSchema,
   AgentViewSchema,
   ApprovalViewSchema,
@@ -719,6 +729,14 @@ export const ApiSchemas = {
     input: empty,
     output: ProviderTestResultSchema,
   },
+  'runtime.settings.get': {
+    input: empty,
+    output: RuntimeSettingsSchema,
+  },
+  'runtime.settings.update': {
+    input: RuntimeSettingsUpdateSchema,
+    output: RuntimeSettingsSchema,
+  },
   'aiConnections.list': {
     input: empty,
     output: AIConnectionListSchema,
@@ -902,7 +920,16 @@ export const ApiSchemas = {
     output: ProjectBudgetStatusSchema,
   },
   'plan.generate': {
-    input: z.object({ projectId: IdSchema, goal: z.string().trim().min(3).max(8000) }),
+    // `mode` defaults to local for backward compatibility with existing callers
+    // and fixtures. The product UI explicitly asks for AI with mode: 'ai'.
+    input: z.object({
+      projectId: IdSchema,
+      goal: z.string().trim().min(3).max(8000),
+      mode: z.enum(['ai', 'local']).default('local'),
+      allowRuleFallback: z.boolean().default(false),
+      maxTasks: z.number().int().min(1).max(20).default(12),
+      allowOverBudget: z.boolean().default(false),
+    }),
     output: PlanDraftSchema,
   },
   'plan.list': {
@@ -929,6 +956,38 @@ export const ApiSchemas = {
     input: z.object({ planId: IdSchema }),
     output: PlanDraftSchema,
   },
+  'plan.grant.get': {
+    input: z.object({ planId: IdSchema }),
+    output: PlanExecutionGrantViewSchema.nullable(),
+  },
+  'plan.grant.issue': {
+    input: PlanExecutionGrantIssueInputSchema,
+    output: PlanExecutionGrantViewSchema,
+  },
+  'plan.grant.revoke': {
+    input: PlanExecutionGrantRevokeInputSchema,
+    output: PlanExecutionGrantViewSchema,
+  },
+  'plan.replan.propose': {
+    input: ReplanProposeInputSchema,
+    output: ReplanProposalViewSchema,
+  },
+  'plan.replan.list': {
+    input: z.object({ projectId: IdSchema, planId: IdSchema.nullable().default(null) }),
+    output: z.object({ proposals: z.array(ReplanProposalViewSchema) }),
+  },
+  'plan.replan.get': {
+    input: z.object({ proposalId: IdSchema }),
+    output: ReplanProposalViewSchema,
+  },
+  'plan.replan.apply': {
+    input: z.object({ proposalId: IdSchema }),
+    output: z.object({ proposal: ReplanProposalViewSchema, plan: PlanDraftSchema }),
+  },
+  'plan.replan.reject': {
+    input: z.object({ proposalId: IdSchema, reason: z.string().trim().max(4000).default('用户拒绝修订提案') }),
+    output: ReplanProposalViewSchema,
+  },
   'plan.discuss': {
     input: z.object({ planId: IdSchema, content: z.string().trim().min(1).max(20_000) }),
     // The discussion runs in the background; the final per-agent success/failure counts
@@ -940,7 +999,16 @@ export const ApiSchemas = {
     }),
   },
   'orchestration.start': {
-    input: z.object({ planId: IdSchema, concurrency: z.number().int().min(1).max(8).default(2), maxRetries: z.number().int().min(0).max(5).default(2), allowOverBudget: z.boolean().default(false) }),
+    input: z.object({
+      planId: IdSchema,
+      concurrency: z.number().int().min(1).max(8).default(2),
+      maxRetries: z.number().int().min(0).max(5).default(2),
+      allowOverBudget: z.boolean().default(false),
+      /** Optional explicit grant; omitted means the active grant for this plan. */
+      grantId: IdSchema.nullable().default(null),
+      /** Idempotency key for retry/reservation recovery. */
+      startRequestId: z.string().max(120).nullable().default(null),
+    }),
     output: PlanDraftSchema,
   },
   'orchestration.pause': {

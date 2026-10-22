@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { IdSchema, TimestampSchema } from './common.js'
+import { PlannerUsageSummarySchema } from './plan-grant.js'
 
 export const AIBackendKindSchema = z.enum(['native-llm', 'external-agent'])
 export type AIBackendKind = z.infer<typeof AIBackendKindSchema>
@@ -311,7 +312,16 @@ export const AIUsageSummarySchema = z.object({
     inputTokens: z.number().int().nonnegative(),
     outputTokens: z.number().int().nonnegative(),
     estimatedCost: z.number().nonnegative(),
+    /** Calls whose provider returned no price: cost cannot be presented as zero. */
+    unpricedCalls: z.number().int().nonnegative().default(0),
   })),
+  /**
+   * Planner calls are not Run-based. They are reported separately while still
+   * contributing real token/cost values to the project totals above.
+   */
+  planner: PlannerUsageSummarySchema,
+  costUnknown: z.boolean(),
+  unpricedCalls: z.number().int().nonnegative(),
 })
 export type AIUsageSummary = z.infer<typeof AIUsageSummarySchema>
 

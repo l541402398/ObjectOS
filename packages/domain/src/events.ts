@@ -41,7 +41,20 @@ export const PROJECT_EVENT_TYPES = {
   messageDelivered: 'message.delivered',
   messageAcknowledged: 'message.acknowledged',
   knowledgeCreated: 'knowledge.created',
+  planGenerated: 'plan.generated',
   planStatusChanged: 'plan.status.changed',
+  planGrantIssued: 'plan.grant.issued',
+  planGrantRevoked: 'plan.grant.revoked',
+  planGrantStarted: 'plan.grant.started',
+  planGrantConsumed: 'plan.grant.consumed',
+  planGrantInvalidated: 'plan.grant.invalidated',
+  planGrantAmended: 'plan.grant.amended',
+  planTaskReused: 'plan.task.reused',
+  replanProposed: 'plan.replan.proposed',
+  replanApplied: 'plan.replan.applied',
+  replanRejected: 'plan.replan.rejected',
+  replanFailed: 'plan.replan.failed',
+  planExecutionFailureClassified: 'plan.execution.failure_classified',
   handoffReassignmentProposed: 'handoff.reassignment.proposed',
   custom: 'project.event',
 } as const
@@ -167,6 +180,76 @@ export function summarizeProjectEvent(event: Pick<ProjectEvent, 'eventType' | 'p
       return { summary: `跨会话消息已确认`, tone: 'success', actorName }
     case PROJECT_EVENT_TYPES.knowledgeCreated:
       return { summary: `新增知识「${title ?? ''}」`, tone: 'neutral', actorName }
+    case PROJECT_EVENT_TYPES.planGenerated:
+      return {
+        summary: `生成计划草案 r${String(payload.revision ?? '')}（${payload.generatedBy === 'provider' ? 'AI 模型' : '本地规则'}）`,
+        tone: 'accent',
+        actorName,
+      }
+    case PROJECT_EVENT_TYPES.planGrantIssued:
+      return {
+        summary: `授予计划执行权限（${Array.isArray(payload.actions) ? payload.actions.join(' / ') : 'plan.start'}）`,
+        tone: 'warning',
+        actorName,
+      }
+    case PROJECT_EVENT_TYPES.planGrantRevoked:
+      return { summary: '撤销计划执行权限', tone: 'danger', actorName }
+    case PROJECT_EVENT_TYPES.planGrantStarted:
+      return {
+        summary: `按计划执行权限启动 r${String(payload.revision ?? '')}`,
+        tone: 'accent',
+        actorName,
+      }
+    case PROJECT_EVENT_TYPES.planGrantConsumed:
+      return {
+        summary: `计划授权写入：${String(payload.path ?? payload.toolName ?? 'workspace-write')}`,
+        tone: 'neutral',
+        actorName,
+      }
+    case PROJECT_EVENT_TYPES.planGrantInvalidated:
+      return {
+        summary: `计划执行权限失效，已暂停：${String(payload.reason ?? '需重新授权')}`,
+        tone: 'warning',
+        actorName,
+      }
+    case PROJECT_EVENT_TYPES.planGrantAmended:
+      return {
+        summary: `用户确认替代 Agent 后扩展计划授权的 Agent 范围（${String(payload.agentId ?? '')}）`,
+        tone: 'warning',
+        actorName,
+      }
+    case PROJECT_EVENT_TYPES.planTaskReused:
+      return {
+        summary: `修订计划复用已完成任务：${String(payload.taskKey ?? '')}`,
+        tone: 'success',
+        actorName,
+      }
+    case PROJECT_EVENT_TYPES.replanProposed:
+      return {
+        summary: `提出动态重规划：${String(payload.reason ?? payload.trigger ?? '')}`.slice(0, 180),
+        tone: 'warning',
+        actorName,
+      }
+    case PROJECT_EVENT_TYPES.replanApplied:
+      return {
+        summary: `重规划已应用，新计划 r${String(payload.revision ?? '?')}`,
+        tone: 'accent',
+        actorName,
+      }
+    case PROJECT_EVENT_TYPES.replanRejected:
+      return { summary: '用户拒绝了动态重规划提案', tone: 'neutral', actorName }
+    case PROJECT_EVENT_TYPES.replanFailed:
+      return {
+        summary: `动态重规划失败：${String(payload.error ?? '未通过校验')}`.slice(0, 180),
+        tone: 'danger',
+        actorName,
+      }
+    case PROJECT_EVENT_TYPES.planExecutionFailureClassified:
+      return {
+        summary: `执行失败分类：${String(payload.failureClass ?? 'unknown')}（${payload.replan ? '可重规划' : '不重规划'}）`,
+        tone: payload.replan ? 'warning' : 'neutral',
+        actorName,
+      }
     default:
       return { summary: event.eventType, tone: 'neutral', actorName }
   }

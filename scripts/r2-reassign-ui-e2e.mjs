@@ -170,7 +170,18 @@ async function createProposal(page, name) {
     { handoffId: handoff.handoff.id, sessionId: receiverSession.session.id },
   )
   await page.evaluate(async (id) => window.projectos.agentDefinitions.setStatus(id, 'disabled'), receiver.id)
-  await page.evaluate(async (planId) => window.projectos.orchestration.start(planId, 1, 0), approved.plan.id)
+  const grant = await page.evaluate(async (planId) => window.projectos.plans.grant.issue({
+    planId,
+    actions: ['plan.start', 'workspace-write'],
+    allowedPaths: ['.'],
+    maxRuns: 1,
+    maxToolCalls: 100,
+    ttlHours: 1,
+    allowOverBudget: false,
+    note: 'R2 reassign UI E2E',
+    confirm: true,
+  }), approved.plan.id)
+  await page.evaluate(async ({ planId, grantId }) => window.projectos.orchestration.start(planId, 1, 0, false, grantId), { planId: approved.plan.id, grantId: grant.id })
 
   const deadline = Date.now() + 40_000
   while (Date.now() < deadline) {

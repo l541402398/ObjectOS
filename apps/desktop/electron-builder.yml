@@ -23,6 +23,10 @@ extraResources:
     to: runtime/index.mjs
   - from: resources/tray.png
     to: tray.png
+  - from: resources/icon.ico
+    to: icon.ico
+  - from: resources/icon.png
+    to: icon.png
 
 win:
   icon: resources/icon.ico

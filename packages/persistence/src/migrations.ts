@@ -740,6 +740,113 @@ CREATE TABLE run_file_changes (
 CREATE INDEX idx_run_file_changes_path ON run_file_changes(path);
 `
 
+const V22 = `
+CREATE TABLE plan_execution_grants (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  plan_id TEXT NOT NULL REFERENCES plan_revisions(id) ON DELETE CASCADE,
+  plan_revision INTEGER NOT NULL,
+  plan_fingerprint TEXT NOT NULL,
+  actor_kind TEXT NOT NULL DEFAULT 'user',
+  actor_id TEXT NOT NULL,
+  actor_name TEXT NOT NULL,
+  actions_json TEXT NOT NULL DEFAULT '[]',
+  allowed_paths_json TEXT NOT NULL DEFAULT '[]',
+  allowed_task_ids_json TEXT NOT NULL DEFAULT '[]',
+  allowed_agent_ids_json TEXT NOT NULL DEFAULT '[]',
+  max_runs INTEGER NOT NULL DEFAULT 1,
+  used_runs INTEGER NOT NULL DEFAULT 0,
+  max_tool_calls INTEGER NOT NULL DEFAULT 40,
+  used_tool_calls INTEGER NOT NULL DEFAULT 0,
+  allow_over_budget INTEGER NOT NULL DEFAULT 0,
+  note TEXT NOT NULL DEFAULT '',
+  issued_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL,
+  revoked_at INTEGER,
+  revoked_reason TEXT,
+  last_used_at INTEGER
+);
+CREATE INDEX idx_plan_grants_plan ON plan_execution_grants(plan_id, issued_at DESC);
+CREATE INDEX idx_plan_grants_project ON plan_execution_grants(project_id, issued_at DESC);
+
+CREATE TABLE planner_usage_records (
+  id TEXT PRIMARY KEY,
+  request_id TEXT NOT NULL,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  plan_id TEXT,
+  plan_revision INTEGER,
+  attempt INTEGER NOT NULL,
+  connection_id TEXT,
+  model_id TEXT,
+  input_tokens INTEGER,
+  output_tokens INTEGER,
+  usage_source TEXT NOT NULL DEFAULT 'unknown',
+  estimated_cost REAL,
+  currency TEXT,
+  pricing_version TEXT,
+  outcome TEXT NOT NULL DEFAULT 'unknown',
+  created_at INTEGER NOT NULL,
+  UNIQUE (request_id, attempt)
+);
+CREATE INDEX idx_planner_usage_project ON planner_usage_records(project_id, created_at DESC);
+CREATE INDEX idx_planner_usage_plan ON planner_usage_records(plan_id, created_at DESC);
+`
+
+const V24 = `
+ALTER TABLE plan_replan_proposals ADD COLUMN source_fingerprint TEXT NOT NULL DEFAULT '';
+ALTER TABLE plan_replan_proposals ADD COLUMN source_run_count INTEGER NOT NULL DEFAULT 0;
+`
+
+const V23 = `
+ALTER TABLE plan_execution_grants ADD COLUMN reserved_runs INTEGER NOT NULL DEFAULT 0;
+
+CREATE TABLE plan_grant_start_reservations (
+  id TEXT PRIMARY KEY,
+  grant_id TEXT NOT NULL REFERENCES plan_execution_grants(id) ON DELETE CASCADE,
+  plan_id TEXT NOT NULL,
+  plan_revision INTEGER NOT NULL,
+  plan_fingerprint TEXT NOT NULL,
+  idempotency_key TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'reserved',
+  reserved_at INTEGER NOT NULL,
+  started_at INTEGER,
+  finished_at INTEGER,
+  error TEXT,
+  run_ids_json TEXT NOT NULL DEFAULT '[]',
+  UNIQUE (grant_id, idempotency_key)
+);
+CREATE INDEX idx_plan_grant_reservations_status ON plan_grant_start_reservations(status, reserved_at);
+
+CREATE TABLE plan_replan_proposals (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  plan_id TEXT NOT NULL REFERENCES plan_revisions(id) ON DELETE CASCADE,
+  source_revision INTEGER NOT NULL,
+  trigger TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'proposed',
+  reason TEXT NOT NULL DEFAULT '',
+  decided_reason TEXT,
+  context_chars INTEGER NOT NULL DEFAULT 0,
+  context_json TEXT NOT NULL DEFAULT '[]',
+  proposed_tasks_json TEXT NOT NULL DEFAULT '[]',
+  proposed_assumptions_json TEXT NOT NULL DEFAULT '[]',
+  proposed_risks_json TEXT NOT NULL DEFAULT '[]',
+  diff_json TEXT NOT NULL DEFAULT '{}',
+  grant_impact_json TEXT NOT NULL DEFAULT '{}',
+  generation_json TEXT,
+  error TEXT,
+  requested_by TEXT NOT NULL DEFAULT 'local-user',
+  requested_at INTEGER NOT NULL,
+  decided_at INTEGER,
+  applied_plan_id TEXT REFERENCES plan_revisions(id),
+  model_calls INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_replan_proposals_plan ON plan_replan_proposals(plan_id, requested_at DESC);
+CREATE INDEX idx_replan_proposals_status ON plan_replan_proposals(status, requested_at DESC);
+`
+
 const V14 = `
 CREATE TABLE run_snapshots (
   run_id TEXT PRIMARY KEY REFERENCES agent_runs(id) ON DELETE CASCADE,
@@ -773,6 +880,9 @@ export const MIGRATIONS: Migration[] = [
   { version: 19, name: 'atomic global agent execution slots', sql: V19 },
   { version: 20, name: 'persisted run wall-clock deadline and budgets', sql: V20 },
   { version: 21, name: 'per-run attributed file changes', sql: V21 },
+  { version: 22, name: 'plan execution grants and planner usage', sql: V22 },
+  { version: 23, name: 'grant start reservations and replan proposals', sql: V23 },
+  { version: 24, name: 'replan proposal source state', sql: V24 },
 ]
 
 function checksum(sql: string): string {

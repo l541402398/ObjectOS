@@ -4,17 +4,19 @@ import {
   AppstoreOutlined,
   InfoCircleOutlined,
   SettingOutlined,
+  SlidersOutlined,
   HddOutlined,
   ToolOutlined,
   SafetyCertificateOutlined,
 } from '@ant-design/icons'
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { useUiStore, type SettingsSection } from '../../stores/ui'
 import { AIConnectionsPanel } from './AIConnectionsPanel'
 import { SettingsOverviewPanel } from './SettingsOverviewPanel'
 import { ModelCatalogPanel } from './ModelCatalogPanel'
 import { PreferencesSettingsPanel } from './PreferencesSettingsPanel'
 import { RuntimeSettingsPanel } from './RuntimeSettingsPanel'
+import { GeneralSettingsPanel } from './GeneralSettingsPanel'
 import { AboutSettingsPanel } from './AboutSettingsPanel'
 import { ToolsSettingsPanel } from './ToolsSettingsPanel'
 import { DataSecuritySettingsPanel, OpenSpecSettingsPanel, PermissionsSettingsPanel } from './AdvancedSettingsPanels'
@@ -27,6 +29,7 @@ const SECTIONS: Array<{ key: SettingsSection; label: string; icon: ReactNode }> 
   { key: 'ai-connections', label: 'AI 连接', icon: <ApiOutlined /> },
   { key: 'models', label: '模型目录', icon: <AppstoreOutlined /> },
   { key: 'runtime', label: '运行时', icon: <HddOutlined /> },
+  { key: 'general', label: '通用与限制', icon: <SlidersOutlined /> },
   { key: 'tools', label: '工具与插件', icon: <ToolOutlined /> },
   { key: 'skills', label: 'Skills 管理', icon: <AppstoreOutlined /> },
   { key: 'permissions', label: '工具权限', icon: <SafetyCertificateOutlined /> },
@@ -61,6 +64,8 @@ function renderSection(section: SettingsSection): ReactNode {
       return <PreferencesSettingsPanel />
     case 'runtime':
       return <RuntimeSettingsPanel />
+    case 'general':
+      return <GeneralSettingsPanel />
     case 'about':
       return <AboutSettingsPanel />
     default:
@@ -73,6 +78,11 @@ export function SettingsModal() {
   const section = useUiStore((state) => state.settingsSection)
   const setSection = useUiStore((state) => state.setSettingsSection)
   const close = useUiStore((state) => state.closeSettings)
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    contentRef.current?.scrollTo({ top: 0 })
+  }, [section])
 
   return (
     <Modal
@@ -107,7 +117,7 @@ export function SettingsModal() {
               </button>
             ))}
           </nav>
-          <div className="po-settings-content" key={section}>{renderSection(section)}</div>
+          <div className="po-settings-content" key={section} ref={contentRef}>{renderSection(section)}</div>
         </div>
       </div>
     </Modal>

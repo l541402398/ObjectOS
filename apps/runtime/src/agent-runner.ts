@@ -27,7 +27,13 @@ import {
   isTerminalRunStatus,
 } from '@projectos/domain'
 import { evaluateCompletion, type CoreServices } from '@projectos/application'
-import { runAgentLoop, type AgentLoopResult, type ToolInvocation, type ToolOutcome } from '@projectos/agent-runtime'
+import {
+  repairToolCallTranscript,
+  runAgentLoop,
+  type AgentLoopResult,
+  type ToolInvocation,
+  type ToolOutcome,
+} from '@projectos/agent-runtime'
 import { buildContext } from '@projectos/context-engine'
 import type { ChatMessage, LlmProvider, LlmToolDefinition, ToolCallRequest } from '@projectos/provider-interfaces'
 import { formatSessionHistory } from '@projectos/session-manager'
@@ -160,8 +166,9 @@ export class AgentRunner {
   private readonly activeConnections = new Map<string, number>()
   private readonly pendingPermissions = new Map<string, PendingAcpPermission>()
   private readonly pendingRuntimeApprovals = new Map<string, PendingRuntimeApproval>()
-  private readonly limits: RuntimeLimits
+  private limits: RuntimeLimits
   private aiConnections: import('./ai-connections.js').AIConnectionService | null = null
+  private planGrants: import('./plan-grant.js').PlanGrantService | null = null
 
   constructor(
     private readonly config: RuntimeConfig,
@@ -180,8 +187,20 @@ export class AgentRunner {
     return { ...this.limits }
   }
 
+  /**
+   * Apply settings to new Runs/Plans. Existing Runs keep their persisted budget
+   * snapshots and are never retroactively widened.
+   */
+  setLimits(partial: Partial<RuntimeLimits>): void {
+    this.limits = resolveLimits({ ...this.limits, ...partial })
+  }
+
   setAIConnections(service: import('./ai-connections.js').AIConnectionService): void {
     this.aiConnections = service
+  }
+
+  setPlanGrants(service: import('./plan-grant.js').PlanGrantService): void {
+    this.planGrants = service
   }
 
   isSessionBusy(sessionId: string): boolean {
@@ -1285,7 +1304,7 @@ export class AgentRunner {
     if (resume || run.status === 'waiting_approval' || hasPersistedTurns) {
       messages.push(...this.reconstructTranscript(run.id))
     }
-    return { messages, tools, system }
+    return { messages: repairToolCallTranscript(messages), tools, system }
   }
 
   private reconstructTranscript(runId: string): ChatMessage[] {
@@ -1764,6 +1783,28 @@ export class AgentRunner {
     } catch (error) {
       return { status: 'failed', error: error instanceof Error ? error.message : '工具调用记录失败' }
     }
+    // Policy remains authoritative. A plan grant can only narrow the
+    // require_approval path for scoped write_file calls; it never overrides deny,
+    // process, Git-write or external Runtime approvals.
+    const grantDecision =
+      policy.decision === 'require_approval' && this.planGrants
+        ? this.planGrants.authorizeToolCall({
+            projectId: state.projectId,
+            workspaceRoot: state.workspaceRoot,
+            taskId: state.taskId,
+            runId: state.runId,
+            agentId: state.agentId,
+            toolName: invocation.name,
+            toolCallId: toolCall.id,
+            args: invocation.args,
+          })
+        : null
+    const effectiveDecision =
+      grantDecision?.decision === 'allow'
+        ? 'plan-grant'
+        : grantDecision?.decision === 'deny'
+          ? 'deny'
+          : policy.decision
     this.store.appendRunStep({
       runId: state.runId,
       kind: 'tool_request',
@@ -1774,25 +1815,29 @@ export class AgentRunner {
         name: invocation.name,
         args: redactObject(invocation.args),
         risk: policy.risk,
-        policy: policy.decision,
+        policy: effectiveDecision,
+        grantId: grantDecision?.grantId ?? null,
+        grantReason: grantDecision?.reason ?? null,
       },
     })
-    if (policy.decision === 'deny') {
-      this.store.updateToolCall(toolCall.id, { status: 'denied', error: policy.reason })
+    if (policy.decision === 'deny' || grantDecision?.decision === 'deny') {
+      const reason = grantDecision?.reason ?? policy.reason
+      this.store.updateToolCall(toolCall.id, { status: 'denied', error: reason })
       this.store.appendRunStep({
         runId: state.runId,
         kind: 'tool_result',
         title: `工具被拒绝：${invocation.name}`,
-        payload: { callId: invocation.callId, name: invocation.name, ok: false, content: JSON.stringify({ error: policy.reason }) },
+        payload: { callId: invocation.callId, name: invocation.name, ok: false, content: JSON.stringify({ error: reason }) },
       })
       this.store.appendEvent(state.projectId, state.runId, PROJECT_EVENT_TYPES.toolFailed, {
         runId: state.runId,
         toolName: invocation.name,
-        error: policy.reason,
+        error: reason,
+        grantId: grantDecision?.grantId ?? null,
       })
-      return { status: 'denied', error: policy.reason }
+      return { status: 'denied', error: reason }
     }
-    if (policy.decision === 'require_approval') {
+    if (policy.decision === 'require_approval' && grantDecision?.decision !== 'allow') {
       this.store.updateToolCall(toolCall.id, { status: 'waiting_approval' })
       const approval = this.store.createApproval({
         projectId: state.projectId,
@@ -1805,6 +1850,8 @@ export class AgentRunner {
           args: redactObject(invocation.args),
           risk: policy.risk,
           reason: policy.reason,
+          grantId: grantDecision?.grantId ?? null,
+          grantReason: grantDecision?.reason ?? null,
         },
         expiresAt: now() + 30 * 60 * 1000,
       })
@@ -1823,6 +1870,7 @@ export class AgentRunner {
         sessionId: state.sessionId,
         toolName: invocation.name,
         taskId: state.taskId,
+        grantId: grantDecision?.grantId ?? null,
       })
       return { status: 'paused', approvalId: approval.id }
     }

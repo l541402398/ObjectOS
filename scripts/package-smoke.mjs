@@ -13,6 +13,7 @@ if (!existsSync(exe) || !existsSync(runtime)) {
 }
 
 const dataDir = mkdtempSync(join(tmpdir(), 'projectos-package-'))
+const userDataDir = mkdtempSync(join(tmpdir(), 'projectos-package-user-'))
 const workspaceDir = join(dataDir, 'created-project')
 const env = { ...process.env, PROJECTOS_DATA_DIR: dataDir }
 delete env.ELECTRON_RUN_AS_NODE
@@ -20,7 +21,7 @@ delete env.ELECTRON_RUN_AS_NODE
 let app = null
 let passed = false
 try {
-  app = await electron.launch({ executablePath: exe, args: [], env, timeout: 60_000 })
+  app = await electron.launch({ executablePath: exe, args: [`--user-data-dir=${userDataDir}`], env, timeout: 60_000 })
   let page = await app.firstWindow()
   const errors = []
   page.on('console', (message) => {
@@ -43,7 +44,7 @@ try {
   await app.close()
   app = null
 
-  app = await electron.launch({ executablePath: exe, args: [], env, timeout: 60_000 })
+  app = await electron.launch({ executablePath: exe, args: [`--user-data-dir=${userDataDir}`], env, timeout: 60_000 })
   page = await app.firstWindow()
   await page.waitForSelector('.v16-project-visual', { timeout: 60_000 })
   const card = await page.locator('.v16-project-visual').first().innerText()
@@ -61,6 +62,7 @@ try {
   if (passed) {
     try {
       rmSync(dataDir, { recursive: true, force: true })
+      rmSync(userDataDir, { recursive: true, force: true })
     } catch {
       // best-effort temp cleanup on Windows
     }
