@@ -572,3 +572,16 @@
   width: calc(100% - 2px) !important;
   flex: 0 0 calc(100% - 2px) !important;
 }
+
+/* Formal plan DAG: selected dependency path is solid and restrained, never the
+   legacy dashed "demo" line. Unrelated paths recede. */
+.pui-dag-wrap .pui-edge-related path {
+  stroke-dasharray: none !important;
+  animation: none !important;
+  stroke: #6f86e8 !important;
+  stroke-width: 1.9 !important;
+  filter: drop-shadow(0 0 3px rgba(111, 134, 232, .28));
+}
+.pui-dag-wrap .pui-edge-dimmed path {
+  opacity: .32;
+}

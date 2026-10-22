@@ -15,7 +15,7 @@ Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.
 
 | ID | Issue | Evidence | Status |
 |---|---|---|---|
-| P1-1 | Formal Task Inspector duplicate (`PlanReviewNext`) still uses a private Radix sheet. | `OVERLAY_AUDIT.md` #6 | Open — migrate to InspectorShell after baseline. |
+| P1-1 | Formal Task Inspector duplicate (`PlanReviewNext`) migrated to shared `InspectorShell`. | `OVERLAY_AUDIT.md` #6, `PlanReviewNext.tsx` | **Closed.** |
 | P1-2 | Settings has nested Ant modals and three duplicate detail drawers. | audit #7–#14 | Open. |
 | P1-3 | Task Board Drawer + three Modals remain Ant; nested overlay risk. | audit #15–#18 | Open. |
 | P1-4 | `AppLayout` is Ant-based (`@projectos/ui`, Ant dropdown/tooltip/badge); page migration must preserve bootstrap/navigation/command shortcuts. | `components/AppLayout.tsx` | Open. |

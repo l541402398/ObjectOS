@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `28fc994` optical shell + Settings DialogShell
+Latest checkpoint: `28fc994` optical shell + Settings DialogShell; formal plan task sheet migrated (checkpoint pending)
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -38,7 +38,7 @@ Status legend: `not-started`, `in-progress`, `migrated`, `blocked`, `not-applica
 | 3 | Notifications `/notifications` | `pages/NotificationsPage.tsx` | notifications queries | none / row actions | not-started |
 | 4 | Project Overview `/projects/:id` | `pages/ProjectOverviewPage.tsx` | overview, lifecycle mutations | create item, advance stage | not-started |
 | 5 | Task Board `/projects/:id/tasks` | `pages/TaskBoardPage.tsx` | board, task CRUD, acceptance | create/edit/acceptance modal, detail drawer | in-progress — glass board skin; overlays pending |
-| 6 | Orchestration / plan review `/orchestration` | `features/orchestration/pages/OrchestrationWorkspace.tsx`, `PlanReviewNext.tsx` | plan generate/validate/approve/reject, real DAG | plan modal, worktree diff, Radix task sheet | not-started |
+| 6 | Orchestration / plan review `/orchestration` | `OrchestrationWorkspace.tsx`, `PlanReviewNext.tsx` | plan generate/validate/approve/reject, real DAG | plan modal, worktree diff, formal task InspectorShell | in-progress — task sheet migrated, graph/composition pending |
 | 7 | Agent Workbench `/agents` | `pages/AgentWorkbenchPage.tsx` | sessions, approvals, agent execution | new session modal, group drawer | not-started |
 | 8 | Teamwork / Collaboration `/collaboration` | `pages/CollaborationPage.tsx` | inbox, handoff, cross-session messages | send message modal | not-started |
 | 9 | Workspace `/workspace` | `pages/WorkspacePage.tsx` | files, editor, preview, git | file/preview panels | not-started |
@@ -64,7 +64,7 @@ tracks actual migration:
 - [x] dirty-close guard, focus/Escape, light/dark, reduced-motion
 - [x] Settings top-level moved to DialogShell; v12 pass
 - [ ] Settings nested drawers/editors
-- [ ] formal `PlanReviewNext` task sheet
+- [x] formal `PlanReviewNext` task sheet → InspectorShell
 - [ ] settings detail drawers (Model/Skill/Runtime)
 - [ ] settings nested editors (model/Runtime/ACP)
 - [ ] Task Board detail drawer and 3 modals
@@ -130,4 +130,3 @@ Known in this slice:
 - A full-page Electron capture can leave one board tile stale until hovered;
   element capture is correct. The evidence shot uses a hover-forced repaint.
 - Project Center and Task Board page-specific IA still need a real migration.
-

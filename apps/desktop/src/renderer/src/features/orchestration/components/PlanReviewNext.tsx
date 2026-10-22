@@ -31,7 +31,7 @@ import { cn } from '../../../next-ui/cn'
 import { Button } from '../../../next-ui/ui/button'
 import { Badge } from '../../../next-ui/ui/badge'
 import { ScrollArea } from '../../../next-ui/ui/scroll-area'
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../../../next-ui/ui/dialog'
+import { InspectorShell, OverlayHeader, OverlayScrollArea } from '../../../next-ui/overlay/overlay-shell'
 import { StageJourney } from './StageJourney'
 import { TaskGraph } from './TaskGraph'
 
@@ -294,17 +294,24 @@ export function PlanReviewNext({
           </Group>
         </Tabs.Root>
 
-        <Dialog open={Boolean(selected)} onOpenChange={(open) => { if (!open) setSelectedTaskKey(null) }}>
-          <AnimatePresence>
-            {selected ? (
-              <DialogContent side="right" className="po-plan-task-detail pui-detail-sheet">
-                <div className="flex h-full flex-col">
-                  <div className="flex shrink-0 items-start gap-3 border-b border-[var(--pui-border)] px-5 py-4 pr-12">
-                    <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-[var(--pui-accent-soft)] text-[var(--pui-accent)]">{roleIcon(selected.role)}</div>
-                    <div className="min-w-0"><DialogTitle className="text-[14px] font-semibold leading-snug">{selectedIndex + 1}. {selected.title}</DialogTitle><DialogDescription className="mt-1 text-[11.5px] text-[var(--pui-ink-muted)]">{roleLabels[selected.role]} · {selected.key}</DialogDescription></div>
-                  </div>
-                  <ScrollArea className="min-h-0 flex-1">
-                                        <div className="flex flex-col px-5 py-1">
+        <InspectorShell
+          open={Boolean(selected)}
+          onOpenChange={(open) => { if (!open) setSelectedTaskKey(null) }}
+          ariaLabel="计划任务检查器"
+          width={540}
+          className="pui-root"
+          testId="plan-task-inspector"
+        >
+          {selected ? (
+            <>
+              <OverlayHeader
+                eyebrow={`${selectedIndex + 1} · ${roleLabels[selected.role]}`}
+                title={selected.title}
+                closeLabel="关闭任务检查器"
+                meta={<><span>{selected.key}</span><span>{selected.requiresApproval ? '执行前审批' : '无需审批'}</span><span>{draft.status === 'draft' ? '草稿可编辑' : '已批准只读'}</span></>}
+              />
+              <OverlayScrollArea className="pui-plan-inspector-scroll">
+                <div className="flex flex-col px-5 py-1">
                       <section className="pui-detail-section">
                         <div className="pui-detail-label">任务名称</div>
                         <input className="pui-detail-input -ml-2 w-[calc(100%+16px)] text-[13.5px] font-medium" value={selected.title} disabled={draft.status !== 'draft'} onChange={(event) => setTask({ title: event.target.value })} />
@@ -390,12 +397,10 @@ export function PlanReviewNext({
                       {selected.rationale ? <div className="po-plan-task-rationale rounded-lg border border-[var(--pui-border)] bg-[var(--pui-surface-muted)] p-2.5 text-[11.5px] leading-relaxed text-[var(--pui-ink-secondary)]">{selected.rationale}</div> : null}
                       {selected.assignmentBlocked ? <div className="rounded-lg border border-[color-mix(in_srgb,var(--pui-danger)_30%,var(--pui-border))] bg-[var(--pui-danger-soft)] p-2.5 text-[11.5px] text-[var(--pui-danger)]">{selected.assignmentReasons.join('；') || '该任务暂时无法分配 Agent'}</div> : null}
                     </div>
-                  </ScrollArea>
-                </div>
-              </DialogContent>
-            ) : null}
-          </AnimatePresence>
-        </Dialog>
+              </OverlayScrollArea>
+            </>
+          ) : null}
+        </InspectorShell>
         </motion.div>
       </div>
     </>

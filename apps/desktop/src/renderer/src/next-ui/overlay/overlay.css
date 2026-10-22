@@ -113,3 +113,26 @@
 
 .pui-overlay-opaque { position: absolute; inset: 0; z-index: 0; background: var(--pui-ov-solid); pointer-events: none; }
 .pui-overlay-content { position: relative; z-index: 1; display: flex; width: 100%; height: 100%; min-height: 0; flex-direction: column; }
+
+/* Formal plan task inspector now lives in the shared non-modal InspectorShell. */
+.pui-overlay-inspector.pui-root {
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
+  width: min(540px, calc(100vw - 24px));
+  background: var(--pui-surface-strong);
+  border-color: var(--pui-border);
+  color: var(--pui-ink);
+}
+.pui-overlay-inspector.pui-root .pui-overlay-header {
+  border-bottom-color: var(--pui-border);
+}
+.pui-overlay-inspector.pui-root .pui-overlay-title {
+  color: var(--pui-ink);
+}
+.pui-overlay-inspector.pui-root .pui-plan-inspector-scroll {
+  padding: 0;
+}
+.pui-plan-inspector-scroll .pui-detail-section {
+  border-bottom-color: var(--pui-border);
+}
