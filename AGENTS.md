@@ -5,7 +5,7 @@ ProjectOS is a local-first, AI-native project lifecycle workspace. The implement
 
 ## Required UI source of truth
 
-Before changing any ProjectOS renderer UI, read `docs/design/PROJECTOS_UI_CONTRACT.md`, `docs/design/DESIGN.md` (tokens and materials), `docs/design/DESIGN_CHANGELOG.md`, the current Design Lab implementation and `docs/design/baselines/` images. The selected product aesthetic is the approved Premium Liquid Glass Design Lab, not an invitation to restyle it freely. Preserve its semantic components, tokens and motion system.
+Before changing any ProjectOS renderer UI, read `docs/design/PROJECTOS_UI_CONTRACT.md`, `docs/design/DESIGN.md` (tokens and materials), `docs/design/DESIGN_CHANGELOG.md`, `docs/design/OVERLAY_SYSTEM.md`, `docs/design/OVERLAY_AUDIT.md`, the current Design Lab implementation and `docs/design/baselines/` images. The selected product aesthetic is the approved Premium Liquid Glass Design Lab, not an invitation to restyle it freely. Preserve its semantic components, tokens and motion system.
 
 Apply all five outstanding Design Lab fixes in `PROJECTOS_UI_CONTRACT.md` before major page migration. Any deviation requires a documented rationale and new screenshots. Do not create filler or explanatory text. Do not change backend behavior during design migration.
 

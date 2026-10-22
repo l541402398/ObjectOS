@@ -15,7 +15,9 @@ import './styles/app.css'
 import './styles/v16.css'
 import './styles/v17.css'
 import './styles/next-ui.css'
+import './next-ui/overlay/overlay.css'
 import { router } from './router'
+import { OverlayRoot } from './next-ui/overlay/overlay-context'
 import { useResolvedTheme, useUiEffects } from './stores/ui'
 
 const queryClient = new QueryClient({
@@ -71,7 +73,7 @@ function Root() {
       <ConfigProvider theme={themeConfig} locale={zhCN}>
         <XProvider>
           <AntApp message={{ maxCount: 3, duration: 2.6 }} notification={{ maxCount: 4 }}>
-            <RouterProvider router={router} />
+            <OverlayRoot><RouterProvider router={router} /></OverlayRoot>
           </AntApp>
         </XProvider>
       </ConfigProvider>
@@ -99,5 +101,3 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </AppErrorBoundary>
   </React.StrictMode>,
 )
-
-

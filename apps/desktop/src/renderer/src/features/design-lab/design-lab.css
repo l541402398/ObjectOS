@@ -538,3 +538,50 @@
 .pdl-panel-head h2 { font-size: 16px; }
 .pdl-task-row { min-height: 48px; padding-top: 2px; padding-bottom: 2px; }
 .pdl-stage-group-head { height: 20px; }
+
+.pdl-agent-facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.pdl-agent-facts span { display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; border: 1px solid var(--pdl-line); border-radius: 7px; color: var(--pdl-ink-2); font-size: 12px; }
+.pdl-agent-permissions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.pdl-agent-permissions button, .pdl-agent-permissions span { padding: 5px 8px; border: 1px solid var(--pdl-line); border-radius: 7px; color: var(--pdl-muted); font-size: 12px; }
+.pdl-agent-permissions .is-on { border-color: color-mix(in srgb, var(--pdl-ok) 28%, var(--pdl-line)); color: var(--pdl-ok); background: color-mix(in srgb, var(--pdl-ok) 7%, transparent); }
+.pdl-agent-selects { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.pdl-agent-selects .pdl-field-label { display: flex; flex-direction: column; gap: 5px; }
+.pdl-agent-selects select { height: 31px; padding: 0 8px; border: 1px solid var(--pdl-line); border-radius: 8px; color: var(--pdl-ink-2); background: var(--pdl-surface-2); font-size: 12px; }
+.pdl-popover-list { display: flex; flex-direction: column; gap: 2px; }
+.pdl-popover-list button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 7px; border-radius: 6px; color: var(--pdl-ink-2); font-size: 12px; text-align: left; }
+.pdl-popover-list button:hover, .pdl-popover-list button.is-active { color: var(--pdl-accent); background: var(--pdl-accent-soft); }
+
+.pdl-approval-section { padding: 14px 0; border-bottom: 1px solid var(--pdl-line); }
+.pdl-approval-impact { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 9px; }
+.pdl-approval-impact div { display: flex; flex-direction: column; gap: 2px; padding: 9px 10px; border: 1px solid var(--pdl-line); border-radius: 9px; background: color-mix(in srgb, var(--pdl-solid) 60%, transparent); }
+.pdl-approval-impact strong { color: var(--pdl-ink); font-size: 20px; font-variant-numeric: tabular-nums; font-weight: 640; line-height: 1.1; }
+.pdl-approval-impact span { color: var(--pdl-muted); font-size: 11.5px; }
+.pdl-approval-risk { margin: 12px 0; padding: 10px 11px; border: 1px solid color-mix(in srgb, var(--pdl-warn) 24%, var(--pdl-line)); border-radius: 10px; background: var(--pdl-warn-soft); }
+.pdl-approval-risk-head { display: flex; align-items: center; gap: 5px; color: var(--pdl-warn); font-size: 12px; font-weight: 620; }
+.pdl-approval-risk-row { display: flex; gap: 7px; margin-top: 6px; color: var(--pdl-ink-2); font-size: 12px; line-height: 1.5; }
+.pdl-approval-risk-row > span { flex: 0 0 auto; color: var(--pdl-warn); font-family: ui-monospace, monospace; font-size: 10.5px; }
+.pdl-approval-risk-row p { margin: 0; }
+.pdl-approval-note { display: flex; align-items: flex-start; gap: 5px; margin: 0 0 12px; color: var(--pdl-muted); font-size: 11.5px; line-height: 1.5; }
+.pdl-approval-note svg { flex: 0 0 auto; margin-top: 1px; color: var(--pdl-ok); }
+
+/* Editable inspector fields need a visible field boundary, not bare text. */
+.pdl-inspector-edit .pdl-title-input,
+.pdl-inspector-edit .pdl-detail-input,
+.pdl-inspector-edit .pdl-desc-input {
+  padding: 6px 8px;
+  border: 1px solid var(--pdl-line);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--pdl-solid) 64%, transparent);
+}
+.pdl-inspector-edit .pdl-title-input:focus,
+.pdl-inspector-edit .pdl-detail-input:focus,
+.pdl-inspector-edit .pdl-desc-input:focus {
+  border-color: color-mix(in srgb, var(--pdl-accent) 45%, var(--pdl-line));
+  background: var(--pdl-solid);
+}
+.pdl-detail-input { display: block; width: 100%; margin-top: 5px; color: var(--pdl-ink-2); font-size: 13px; line-height: 1.5; }
+
+/* Chromium/Electron composites a fixed non-modal inspector above a large
+   backdrop-filter surface unpredictably. Drop only the workspace blur while an
+   overlay is open; the inspector itself owns an opaque focused surface. */
+.pdl-root.is-overlay-open .pdl-workspace { backdrop-filter: none; -webkit-backdrop-filter: none; }

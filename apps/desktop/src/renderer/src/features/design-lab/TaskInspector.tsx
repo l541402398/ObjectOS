@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { useEffect, useState, type ReactElement, type ReactNode } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import { Check, CheckCircle2, ChevronDown, GitBranch, Layers3, Pencil, Plus, Trash2, X } from 'lucide-react'
+import { InspectorShell, OverlayHeader, OverlayScrollArea } from '../../next-ui/overlay/overlay-shell'
 import type { LabTask } from './data'
 
 function FieldLabel({ children }: { children: ReactNode }): ReactElement {
@@ -16,46 +17,24 @@ function Status({ task }: { task: LabTask }): ReactElement {
 export function TaskInspector({
   task,
   tasks,
+  theme,
   onPatch,
   onDelete,
   onClose,
 }: {
   task: LabTask
   tasks: LabTask[]
+  theme: 'light' | 'dark'
   onPatch: (id: string, patch: Partial<LabTask>) => void
   onDelete: (id: string) => void
   onClose: () => void
 }): ReactElement {
-  const reduce = useReducedMotion()
-  const closeRef = useRef<HTMLButtonElement>(null)
-  const panelRef = useRef<HTMLElement>(null)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<LabTask>(task)
   const [menu, setMenu] = useState<'agent' | 'deps' | 'artifacts' | null>(null)
 
   useEffect(() => setDraft(task), [task])
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null
-    const shell = document.querySelector('.pdl-shell') as HTMLElement | null
-    shell?.setAttribute('inert', '')
-    closeRef.current?.focus()
-    const onKey = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') { if (editing) setEditing(false); else onClose(); return }
-      if (event.key !== 'Tab' || !panelRef.current) return
-      const focusable = [...panelRef.current.querySelectorAll<HTMLElement>('button, input, textarea, [tabindex]:not([tabindex="-1"])')].filter((node) => !node.hasAttribute('disabled'))
-      if (focusable.length === 0) return
-      const first = focusable[0]!
-      const last = focusable[focusable.length - 1]!
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      shell?.removeAttribute('inert')
-      previous?.focus()
-    }
-  }, [editing, onClose])
+  const dirty = editing && JSON.stringify(draft) !== JSON.stringify(task)
 
   const patchDraft = (patch: Partial<LabTask>): void => setDraft((current) => ({ ...current, ...patch }))
   const beginEdit = (): void => { setDraft(task); setEditing(true) }
@@ -70,45 +49,33 @@ export function TaskInspector({
   const dependencies = task.dependsOn.map((id) => tasks.find((item) => item.id === id)).filter((item): item is LabTask => Boolean(item))
 
   return (
-    <motion.div className="pdl-inspector-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduce ? 0 : 0.2 }} onMouseDown={() => { if (editing) cancelEdit(); else onClose() }}>
-      <motion.aside
-        ref={panelRef}
-        className="pdl-inspector"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="pdl-inspector-title"
-        onMouseDown={(event) => event.stopPropagation()}
-        initial={reduce ? false : { x: 40, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={reduce ? {} : { x: 30, opacity: 0 }}
-        transition={{ type: 'spring', stiffness: 360, damping: 36 }}
-        data-testid="design-lab-inspector"
-      >
-        <div className="pdl-inspector-head">
-          <div className="pdl-inspector-identity">
-            <span className="pdl-eyebrow">{task.code} · TASK INSPECTOR</span>
-            <h2 id="pdl-inspector-title">{task.title}</h2>
-            <div className="pdl-inspector-meta">
-              <Status task={task} />
-              <span><Layers3 size={12} />{task.role}</span>
-              <span><i className="pdl-avatar">{task.agent.slice(0, 1)}</i>{task.agent}</span>
-              <span>{task.requiresApproval ? '执行前审批' : '无需审批'}</span>
-            </div>
-          </div>
-          <div className="pdl-inspector-head-actions">
-            {editing ? (
-              <>
-                <button type="button" className="pdl-quiet pdl-small" onClick={cancelEdit}>取消</button>
-                <button type="button" className="pdl-primary pdl-small" disabled={!draft.title.trim()} onClick={saveEdit}><Check size={13} />保存</button>
-              </>
-            ) : (
-              <button type="button" className="pdl-quiet pdl-small" onClick={beginEdit}><Pencil size={13} />编辑</button>
-            )}
-            <button ref={closeRef} type="button" className="pdl-icon-button" onClick={onClose} aria-label="关闭任务检查器"><X size={17} /></button>
-          </div>
-        </div>
+    <InspectorShell
+      open
+      onOpenChange={(next) => { if (!next) onClose() }}
+      dirty={dirty}
+      onDiscard={() => { setDraft(task); setEditing(false); setMenu(null) }}
+      ariaLabel="任务检查器"
+      width={480}
+      theme={theme}
+      skin="projectos"
+      testId="design-lab-inspector"
+    >
+        <OverlayHeader
+          eyebrow={`${task.code} · TASK INSPECTOR`}
+          title={editing ? draft.title : task.title}
+          closeLabel="关闭任务检查器"
+          meta={<><Status task={task} /><span><Layers3 size={12} />{task.role}</span><span><i className="pdl-avatar">{task.agent.slice(0, 1)}</i>{task.agent}</span><span>{task.requiresApproval ? '执行前审批' : '无需审批'}</span></>}
+          actions={editing ? (
+            <>
+              <button type="button" className="pdl-quiet pdl-small" onClick={cancelEdit}>取消</button>
+              <button type="button" className="pdl-primary pdl-small" disabled={!draft.title.trim()} onClick={saveEdit}><Check size={13} />保存</button>
+            </>
+          ) : (
+            <button type="button" className="pdl-quiet pdl-small" onClick={beginEdit}><Pencil size={13} />编辑</button>
+          )}
+        />
 
-        <div className="pdl-inspector-scroll">
+        <OverlayScrollArea className="pdl-inspector-scroll">
           {!editing ? (
             <div className="pdl-inspector-view">
               <section className="pdl-inspector-section">
@@ -236,9 +203,7 @@ export function TaskInspector({
               </section>
             </div>
           )}
-        </div>
-
-      </motion.aside>
-    </motion.div>
+        </OverlayScrollArea>
+    </InspectorShell>
   )
 }

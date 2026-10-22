@@ -104,3 +104,31 @@ skill catalog; this session verified both after installation.
 
 
 
+
+## 2026-10-22 — Overlay system, audit and three samples
+
+- Added `docs/design/OVERLAY_AUDIT.md`: 27 renderer surfaces audited by path, purpose,
+  library, nesting, clipping/scroll, typography and migration status.
+- Added `docs/design/OVERLAY_SYSTEM.md` and the shared primitives under
+  `apps/desktop/src/renderer/src/next-ui/overlay/`:
+  `OverlayRoot`, `InspectorShell`, `DialogShell`, `SheetShell`, `PopoverShell`,
+  `OverlayHeader`, `OverlayFooter`, `OverlayScrollArea`, `InspectorSection`.
+- `OverlayRoot` wraps the router in `main.tsx`; z-index base is 6000 with a
+  registered layer per surface.
+- Task Inspector refactored onto `InspectorShell`; it is still the same accepted
+  inspector, not a second implementation.
+- Added Agent config sample (`AgentInspector`) and approval/delete-style
+  confirmation sample (`ApprovalDialog`).
+- Unsaved changes close guard, focus restore, Escape, single backdrop and
+  220ms close presence verified in Electron.
+- Agent sample calls the real `agentDefinitions.list()` read path when opened and
+  falls back to the local sample. Saving remains local-only and is labelled.
+- Approval sample is local-only; formal plan approval is not called.
+- E2E extended to 31/31 checks. Formal pages are not migrated yet.
+
+
+- Fixed Electron/Chromium ghosting under the non-modal Inspector: while an overlay is
+  open the Lab drops only the workspace `backdrop-filter` (`.pdl-root.is-overlay-open`)
+  and keeps the inspector surface opaque. Verified with 1200ms Electron captures.
+
+
