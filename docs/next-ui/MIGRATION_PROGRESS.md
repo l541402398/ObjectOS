@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `d837656` after Project Center hero, plan inspector, Task Board, Settings, Runs, Collaboration and Agent overlays
+Latest checkpoint: `139acee` after Command Palette/Worktree Diff and all prior Round 2 overlay slices
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -241,3 +241,29 @@ Project Center lower half is not final.
 - Remaining orchestration Ant surface: the plan generation/review modal; it is
   tightly coupled to its existing `.po-plan-modal` styles and will be migrated
   together with the orchestration page composition, not by a blind wrapper swap.
+
+
+## Round 2 checkpoint — 2026-10-22
+
+Current head: `139acee`.
+
+Additional overlays migrated this round:
+
+- Command Palette → `DialogShell`
+- Worktree Diff → `SheetShell`
+- Project Center create/import → `DialogShell`
+- Project Overview lifecycle create/advance → `DialogShell`
+- Collaboration composer → `DialogShell`
+- Agent session → `DialogShell`; plan group chat → `SheetShell`
+- Run audit → `SheetShell`; reconcile → `DialogShell`
+- Settings nested detail/editors → `InspectorShell` / `DialogShell`
+
+Remaining Ant surfaces:
+
+- Agent Studio main surface + run-test modal
+- Orchestration plan generation/review modal (tightly coupled to
+  `.po-plan-modal`; migrate with page composition)
+- Legacy `PlanReviewWorkbench` helper still provides `hasPlanBlockingIssues`
+  and cannot be deleted until that helper is extracted.
+
+Remaining page-level composition work is unchanged and listed by the page matrix.
