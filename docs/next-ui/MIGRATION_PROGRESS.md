@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `28fc994` optical shell + Settings DialogShell; formal plan task sheet migrated (checkpoint pending)
+Latest checkpoint: `d837656` after Project Center hero, plan inspector, Task Board, Settings, Runs, Collaboration and Agent overlays
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -205,3 +205,29 @@ Known in this slice:
 - Plan group chat → `SheetShell`; transcript, participants, team progress and
   composer retained.
 - Agent Studio itself is still the separate Ant surface; not claimed migrated.
+
+
+## Round checkpoint — 2026-10-22
+
+Current head: `d837656`.
+
+Completed this round:
+
+- protected baseline + worktree isolation
+- full unit/build baseline and functional baseline
+- global optical shell and compact rail
+- Settings top-level + all nested editors/details
+- Project Center hero + create/import
+- Project Overview lifecycle dialogs
+- Task Board create/edit/acceptance + task InspectorShell
+- formal plan task InspectorShell + solid selected DAG edges
+- Runs SheetShell + reconcile DialogShell
+- Collaboration composer DialogShell
+- Agent session DialogShell + group SheetShell
+- 265 unit tests, 31/31 Design Lab, v12/v13/e2e/plan/task/runs checks
+
+Remaining overlays: Agent Studio + run test, Orchestration plan generator
+and worktree diff, Command Palette, legacy PlanReviewWorkbench. Page
+composition for Orchestration, Agent Workbench, Runs, Knowledge, Operations,
+Resources, Approvals, Workspace, Health, Project Settings, Notifications,
+Project Center lower half is not final.
