@@ -91,8 +91,9 @@ and a scoped `.pui-root` base reset. This prevents Tailwind from resetting Ant p
 
 - `pnpm lint` — PASS
 - `pnpm typecheck` — PASS
-- `pnpm test` — 265 passed / 3 skipped (before the final Next UI selector tweaks; run again before merge)
+- `pnpm test` — 265 passed / 3 skipped (final Next UI branch)
 - `pnpm build` — PASS
+- `pnpm package:dir` + `pnpm test:package` — PASS (independent packaged EXE smoke)
 - `scripts/plan-review-ui-e2e.mjs` — 10 checks PASS (light/dark/narrow/DAG/sheet/approval)
 - `scripts/r2b1-planner-ui-e2e.mjs` — 10 checks PASS
 - `scripts/custom-agent-from-plan-ui-e2e.mjs` — 3 checks PASS
