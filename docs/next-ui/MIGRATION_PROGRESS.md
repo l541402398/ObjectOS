@@ -480,3 +480,13 @@ Head: `945595e`.
 - Plan review E2E remains 10/10 (stages=4, tasks=4, dag=4).
 - Evidence: `docs/next-ui/screens/plan-workbench.png`.
 
+
+## Slice 26 — Stage anchor alignment
+
+- Stage stops are now `justify-self: center` inside equal grid cells.
+- SVG route points use the same cell centers and the same ±7/−11px orb
+  transforms, so the curve passes through each icon anchor instead of offsetting
+  left and below.
+- Removed the leftover compositor hint on task tiles after DOM measurement showed
+  the reported “blank card” was a short card over a same-coloured column, not
+  missing content.

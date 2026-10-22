@@ -768,9 +768,6 @@
 @media (max-width: 1100px) { .po-operations-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 760px) { .po-operations-grid { grid-template-columns: 1fr; } }
 
-/* Force each draggable tile onto its own compositor layer. Chromium otherwise
-   occasionally leaves one board tile as an unpainted block in long captures. */
-.po-task-tile { transform: translateZ(0); will-change: transform; }
 
 /* Node inspector is a floating workspace panel, not a modal: canvas remains
    interactive and there is no dimming backdrop. */

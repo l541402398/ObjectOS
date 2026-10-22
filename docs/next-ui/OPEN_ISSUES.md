@@ -31,7 +31,7 @@ Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.
 | P2-2 | `SheetShell` is implemented but not yet exercised by a real page. | `docs/design/OVERLAY_SYSTEM.md` | Open. |
 | P2-3 | Liquid Glass React SVG filter / forced Aurora are not production-safe. | Design Lab perf evidence | Accepted limitation; static fallback. |
 | P2-4 | 125% Electron capture can crop the right edge while DOM width is correct. | prior Design Lab evidence | Known; document per screenshot. |
-| P2-7 | A Task Board tile can appear blank in a full-page Electron capture until repainted; DOM text and element screenshots are correct. | `docs/next-ui/screens/regression/*task-board.png` | Open capture evidence defect. |
+| P2-7 | Task Board full-page capture can look like an empty card; DOM measurement shows the card is shorter than its column, with all text present. | `docs/next-ui/screens/pages/task-board.png` | **Closed as misdiagnosis**; no missing content. |
 | P2-8 | Workspace code editor long lines clipped at 1100px. | `docs/next-ui/screens/pages/workspace-1100.png` | **Resolved** with Monaco word wrap + compact file pane; token contrast still under review. |
 | P2-5 | Agent Lab save and approval Lab are local-only. | `OVERLAY_SYSTEM.md` | Open — formal pages must use real mutations. |
 | P2-6 | Settings uses `DialogShell modal={false}` so Ant Select/Dropdown portals do not fight the Radix focus scope. | `SettingsModal.tsx`, `DialogShell` | **Resolved behaviourally**: non-modal focus guard contains Tab focus (40/40 tabs) while allowing Ant portals. Radix modal remains false. |
@@ -50,4 +50,5 @@ Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.
 - [x] Overlay primitives and three samples implemented (31/31 Design Lab checks).
 - [x] Dirty-close guard, focus/Escape, backdrop z-index and Electron ghost workaround.
 - [x] Baseline lint/typecheck/unit/build pass (265 tests).
+
 
