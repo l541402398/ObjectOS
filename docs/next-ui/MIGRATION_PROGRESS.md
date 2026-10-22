@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `8023df5` after Agent Studio, orchestration plan DialogShell, legacy overlay removal and 15-page inventory
+Latest checkpoint: `69c8963` after approvals/operations composition; regression evidence pending commit
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -342,3 +342,15 @@ Head: `8023df5`.
   cards; labels localized (`发现`), no giant placeholder height.
 - Screenshots refreshed in `docs/next-ui/screens/pages/approvals.png` and
   `operations.png`.
+
+
+## Slice 15 — Cross-size/theme regression
+
+- New `scripts/next-ui-regression.mjs` captures five representative pages:
+  Project Center, Task Board, Orchestration, Approvals, Runs.
+- Conditions: 1440 light, 1440 dark, 1100px, 125%; 20 captures.
+- Result: 0 horizontal overflows, 0 page errors.
+- Evidence: `docs/next-ui/screens/regression/`.
+- Known capture issue: one Task Board tile can be painted blank in a full-page
+  Electron capture until the tile is individually repainted; DOM text is present
+  and element capture is correct. Tracked as a P2 visual-evidence defect.
