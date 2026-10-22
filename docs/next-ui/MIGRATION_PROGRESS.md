@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: pending after contract fix 2 (icon-only stage route)
+Latest checkpoint: `f666dd0` after icon-only stage journey and curve-anchor alignment
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -490,3 +490,17 @@ Head: `945595e`.
 - Removed the leftover compositor hint on task tiles after DOM measurement showed
   the reported “blank card” was a short card over a same-coloured column, not
   missing content.
+
+
+## Round 11 checkpoint — 2026-10-22
+
+Head: `f666dd0`.
+
+- Contract fix 2 closed: stage journey is icon-only; selected summary carries title,
+  task count and task titles; hover/focus tooltip remains.
+- Stage anchors now share equal grid-cell centers and the SVG curve uses the same
+  centers + vertical transforms; icons sit on their route endpoints.
+- Real Electron MP4 walkthrough: 11.53s, 1440×900, H.264.
+- Settings non-modal focus guard: 40/40 Tab presses contained.
+- Full 15-page matrix: 60 captures, 0 document overflow, 0 page errors.
+- `pnpm lint/typecheck/build` pass; 265 tests pass; `v12`, `v13`, plan-review 10/10.

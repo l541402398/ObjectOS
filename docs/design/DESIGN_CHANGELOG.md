@@ -151,3 +151,13 @@ skill catalog; this session verified both after installation.
   0 horizontal document overflows, 0 page errors.
 - Motion walkthrough: 8 real frames in
   `docs/next-ui/screens/projectos-next-ui-tour.gif`; raw MP4 still open.
+
+## 2026-10-22 — Stage journey follows contract fix 2
+
+- Stage route displays only the four designed icons (Layers/Code/Eye/Flask) on
+  the shared curve; stage names, descriptions and repeated task counts moved to
+  the selected-stage summary.
+- Each icon keeps an aria-label and native hover/focus tooltip.
+- Stops are centered in equal grid cells and route anchors use the same centers,
+  fixing the left/bottom drift in the earlier implementation.
+- Plan review screenshot: `docs/next-ui/screens/plan-workbench.png`.
