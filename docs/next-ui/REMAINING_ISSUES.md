@@ -37,7 +37,7 @@
 | R-12 | P2 | 交互测试 | Task Board 拖拽改状态没有独立 E2E；当前覆盖创建/编辑/详情 | 拖拽回归只能靠人工 | 增加 drag/drop E2E 和失败回滚断言 |
 | R-13 | P2 | 打包测试 | `test:package` 只验证打包 EXE 创建项目/重启恢复，不覆盖全部页面 | 打包后 UI 回归仍是抽样 | 保留 package smoke；发布前用打包 EXE 跑关键路由 |
 | R-14 | P2 | 打包 | NSIS setup 构建失败：`allowOnlyOneInstallerInstance.nsh` 无法打开，疑似 Windows 长路径问题 | 本次只产出 portable EXE；无 setup.exe | 缩短 node_modules 路径/使用短路径构建机，或升级 electron-builder 修复模板路径 |
-| R-15 | P2 | 签名 | electron-builder 调用了 `signtool.exe`，但没有验证实际证书身份/时间戳 | 无法确认安装包签名可信度，可能出现 SmartScreen 提示 | 用企业证书签名并验证 `signtool verify /pa` |
+| R-15 | P2 | 签名 | `Get-AuthenticodeSignature` 确认 portable 与 `win-unpacked/ProjectOS.exe` 均为 **NotSigned**；electron-builder 日志里的 signtool 调用不代表已签名 | Windows SmartScreen 可能提示未知发布者 | 配置有效代码签名证书和时间戳，验证 `signtool verify /pa` |
 | R-16 | P2 | 跨平台 | 本次只构建 Windows x64；ia32、arm64、Linux、macOS 未构建/未测试 | 其他平台不可直接交付 | 明确首发平台；其他平台单独出包 |
 | R-17 | P3 | 旧样式 | 旧 `.po-*`、`v16.css`、`v17.css` 与 Ant 兼容样式仍然共存 | 选择器优先级和维护成本偏高 | 逐页确认无引用后清理，不要一次性删除 |
 | R-18 | P3 | 图标 | 仍有 Ant Design outlined 图标与 Lucide 混用 | 图标线宽/圆角不完全一致 | 逐页替换为 Lucide，保留 Ant 控件必需图标 |
@@ -188,7 +188,7 @@ electron-builder/NSIS 路径后重打。
 
 ### R-15 签名
 
-构建日志显示 electron-builder 调用 `signtool.exe`，但没有验证：
+`Get-AuthenticodeSignature` 结果：`NotSigned`。构建日志虽然出现 `signtool.exe`，但没有有效签名。尚未验证：
 
 - 是否有有效代码签名证书；
 - 是否带可信时间戳；
@@ -270,3 +270,4 @@ and recovers after restart.
 - `docs/next-ui/screens/regression/`
 - `docs/next-ui/screens/projectos-next-ui-walkthrough.mp4`
 - `release/win-x64/BUILD_INFO.txt`
+

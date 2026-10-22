@@ -1,7 +1,10 @@
 # ProjectOS Next UI — Open Issues
 
 Last updated: 2026-10-22  
-Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.`n`nFor the complete post-migration residual list, package status and verification gaps, see`n[`REMAINING_ISSUES.md`](REMAINING_ISSUES.md).
+Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.
+
+For the complete post-migration residual list, package status and verification gaps, see
+[`REMAINING_ISSUES.md`](REMAINING_ISSUES.md).
 
 ## P0 — protection / data
 
