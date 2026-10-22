@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `ecf3946` after DAG/type fixes, packaged smoke and full 60-capture matrix
+Latest checkpoint: `f6fabd1` — engineering delivery complete; owner visual approval pending
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -14,7 +14,7 @@ editing UI.
 
 **Phase 5 — delivery for visual acceptance.** Baseline is protected at `e58fbd2`.
 All routed pages use the global optical shell; all Modal/Drawer business call sites
-are migrated; page-level composition and human visual approval remain.
+are migrated. Engineering delivery is complete; owner visual approval and stable merge remain external gates.
 
 Baseline checks completed:
 
@@ -532,3 +532,27 @@ Head: `f666dd0`.
 
 
 
+
+
+## Delivery status — 2026-10-22
+
+Engineering delivery is complete on `feature/projectos-next-ui-full-migration`.
+No merge to stable was performed.
+
+Delivered:
+
+- 15 routed pages + global Settings; all business Modal/Drawer call sites on the
+  shared Overlay/Inspector system.
+- Design Lab contract fixes 1–5 applied; baseline preserved at `e58fbd2`.
+- 60-capture matrix at 1440 light/dark, 1100 and 125%; 0 document overflow,
+  0 page errors.
+- Real Electron MP4: 16.91s, 1440×900, H.264.
+- Packaged EXE smoke, base E2E, Agent E2E, v12, v13, Design Lab 31/31,
+  plan-review 10/10, 265 unit tests, lint/typecheck/build all pass.
+
+External gates, not hidden blockers:
+
+1. Owner visual approval of the final 60-image matrix and MP4.
+2. Stable merge — intentionally not performed.
+3. Optional post-approval polish: remaining 9–11px chart micro-labels, legacy
+   Ant shell primitives, Lucide icon cleanup.
