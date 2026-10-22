@@ -483,7 +483,7 @@ export default function AppLayout() {
               <span>
                 {currentProject
                   ? `${stageLabel(currentProject.currentStage)} · ${Math.round(currentProject.stats.progress * 100)}%`
-                  : `${projects.length} 个本地项目 · 项目中心`}
+                  : `${projects.length} 个本地项目`}
               </span>
             </span>
             <DownOutlined className="po-project-button-arrow" />

@@ -164,6 +164,30 @@ export default function ProjectCenterPage() {
         <ErrorState message={errorMessage(bootstrap.error)} onRetry={() => void bootstrap.refetch()} />
       ) : null}
 
+      {recentProject ? (
+        <section className="nx-center-hero">
+          <div className="nx-hero-copy">
+            <span className="nx-hero-kicker">继续工作</span>
+            <h2>{recentProject.name}</h2>
+            <p>{recentProject.description ? truncate(recentProject.description, 120) : '尚未填写项目描述'}</p>
+            <div className="nx-hero-meta">
+              <StatusPill tone={toneForStatus(recentProject.status)}>{stageLabel(recentProject.currentStage)}</StatusPill>
+              <span>{recentProject.stats.tasksDone}/{recentProject.stats.tasksTotal} 任务完成</span>
+              <span>{workingAgents.length} 个 Agent 运行中</span>
+              <span>最近活动 {formatRelative(recentProject.lastActivityAt)}</span>
+            </div>
+          </div>
+          <div className="nx-hero-side">
+            <div className="nx-hero-progress">
+              <strong>{Math.round(recentProject.stats.progress * 100)}%</strong>
+              <span>生命周期进度</span>
+              <ProgressBar value={recentProject.stats.progress} height={5} />
+            </div>
+            <Button type="primary" icon={<ArrowRightOutlined />} onClick={() => navigate(`/projects/${recentProject.id}`)}>打开工作台</Button>
+          </div>
+        </section>
+      ) : null}
+
       <div className="v16-stat-grid">
         <div className="v16-stat-card is-teal">
           <div className="v16-stat-icon"><FolderAddOutlined /></div>

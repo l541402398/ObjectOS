@@ -158,3 +158,15 @@ Known in this slice:
 - Model detail carries a stable test id; v12 closes it explicitly before closing
   Settings (the non-modal inspector correctly sits above the settings dialog).
 - v12 PASS; v13 PASS; Design Lab 31/31.
+
+## Slice 4 — Project Center composition
+
+- Added a real current-project hero (recent project, stage, completion, active
+  Agents, last activity, progress, open action) above the metric grid.
+- Removed the redundant “· 项目中心” suffix in the project switcher so it no
+  longer truncates at 1440.
+- Hero is pure data from `bootstrap`/`useProjectOverview`; no invented project or
+  fake metrics.
+- Evidence: `docs/next-ui/screens/project-center-1440.png`.
+- Real task creation through the migrated DialogShell was exercised with a
+  temporary project (title + acceptance criterion → task appears on the board).
