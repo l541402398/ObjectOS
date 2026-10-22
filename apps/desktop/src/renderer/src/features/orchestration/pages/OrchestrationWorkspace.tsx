@@ -63,6 +63,7 @@ import type {
 import { ErrorState, LoadingBlock, StatusPill } from '@projectos/ui'
 import { PlanGrantPanel } from '../components/PlanGrantPanel'
 import { AgentStudioModal } from '../../../components/AgentStudioModal'
+import { OverlayFooter, OverlayHeader, OverlayScrollArea, SheetShell } from '../../../next-ui/overlay/overlay-shell'
 import { hasPlanBlockingIssues } from '../components/PlanReviewWorkbench'
 import { PlanReviewNext } from '../components/PlanReviewNext'
 import { ReplanPanel } from '../components/ReplanPanel'
@@ -1809,20 +1810,19 @@ export default function OrchestrationWorkspace() {
           </div>
         </Modal>
 
-        <Modal
-          title={worktreeInfo?.branch ? `Worktree · ${worktreeInfo.branch}` : 'Worktree Diff'}
-          open={diffOpen}
-          onCancel={() => setDiffOpen(false)}
-          footer={<Button onClick={() => setDiffOpen(false)}>关闭</Button>}
-          width={900}
-          className="po-plan-modal"
-        >
-          <div className="po-diff-meta">
-            <code>{worktreeInfo?.workspaceRef ?? '—'}</code>
-            <span>{worktreeInfo?.diffArtifactId ? 'Diff artifact 已生成' : 'Diff 实时读取'}</span>
-          </div>
-          <pre className="po-diff-view">{worktreeInfo?.diff || '暂无改动'}</pre>
-        </Modal>
+        <SheetShell open={diffOpen} onOpenChange={(open) => { if (!open) setDiffOpen(false) }} ariaLabel="Worktree Diff" width={900} testId="worktree-diff-sheet">
+          <OverlayHeader eyebrow="WORKTREE" title={worktreeInfo?.branch ? `Worktree · ${worktreeInfo.branch}` : 'Worktree Diff'} closeLabel="关闭 Worktree Diff" />
+          <OverlayScrollArea className="po-diff-scroll">
+            <div className="po-diff-meta">
+              <code>{worktreeInfo?.workspaceRef ?? '—'}</code>
+              <span>{worktreeInfo?.diffArtifactId ? 'Diff artifact 已生成' : 'Diff 实时读取'}</span>
+            </div>
+            <pre className="po-diff-view">{worktreeInfo?.diff || '暂无改动'}</pre>
+          </OverlayScrollArea>
+          <OverlayFooter>
+            <Button onClick={() => setDiffOpen(false)}>关闭</Button>
+          </OverlayFooter>
+        </SheetShell>
 
         <AgentStudioModal
           open={agentStudioOpen}

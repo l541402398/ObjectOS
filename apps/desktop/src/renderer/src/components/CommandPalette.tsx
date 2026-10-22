@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Modal } from 'antd'
 import { MacCommandOutlined, SearchOutlined } from '@ant-design/icons'
+import { DialogShell } from '../next-ui/overlay/overlay-shell'
 
 export interface PaletteCommand {
   id: string
@@ -52,17 +52,7 @@ export function CommandPalette({
   }
 
   return (
-    <Modal
-      open={open}
-      onCancel={onClose}
-      footer={null}
-      closable={false}
-      width={640}
-      centered
-      destroyOnHidden
-      className="po-command-modal"
-      styles={{ body: { padding: 0 } }}
-    >
+    <DialogShell open={open} onOpenChange={(next) => { if (!next) onClose() }} ariaLabel="命令面板" width={640}>
       <div className="po-command">
         <div className="po-command-input">
           <SearchOutlined />
@@ -121,6 +111,6 @@ export function CommandPalette({
           <span><kbd>Esc</kbd> 关闭</span>
         </div>
       </div>
-    </Modal>
+    </DialogShell>
   )
 }

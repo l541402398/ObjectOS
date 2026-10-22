@@ -38,7 +38,7 @@ Status legend: `not-started`, `in-progress`, `migrated`, `blocked`, `not-applica
 | 3 | Notifications `/notifications` | `pages/NotificationsPage.tsx` | notifications queries | none / row actions | not-started |
 | 4 | Project Overview `/projects/:id` | `pages/ProjectOverviewPage.tsx` | overview, lifecycle mutations | shared DialogShell create/advance | in-progress — overlays migrated, page composition pending |
 | 5 | Task Board `/projects/:id/tasks` | `pages/TaskBoardPage.tsx` | board, task CRUD, acceptance | shared DialogShell editors + InspectorShell detail | in-progress — overlays migrated; board IA still legacy |
-| 6 | Orchestration / plan review `/orchestration` | `OrchestrationWorkspace.tsx`, `PlanReviewNext.tsx` | plan generate/validate/approve/reject, real DAG | plan modal, worktree diff, formal task InspectorShell | in-progress — task sheet migrated, graph/composition pending |
+| 6 | Orchestration / plan review `/orchestration` | `OrchestrationWorkspace.tsx`, `PlanReviewNext.tsx` | plan generate/validate/approve/reject, real DAG | plan modal, worktree SheetShell, formal task InspectorShell | in-progress — task sheet + diff migrated; plan workspace/graph pending |
 | 7 | Agent Workbench `/agents` | `pages/AgentWorkbenchPage.tsx` | sessions, approvals, agent execution | DialogShell session, SheetShell group chat | in-progress — overlays migrated; three-column composition pending |
 | 8 | Teamwork / Collaboration `/collaboration` | `pages/CollaborationPage.tsx` | inbox, handoff, cross-session messages | shared DialogShell send message | in-progress — overlay migrated; page composition pending |
 | 9 | Workspace `/workspace` | `pages/WorkspacePage.tsx` | files, editor, preview, git | file/preview panels | not-started |
@@ -231,3 +231,13 @@ and worktree diff, Command Palette, legacy PlanReviewWorkbench. Page
 composition for Orchestration, Agent Workbench, Runs, Knowledge, Operations,
 Resources, Approvals, Workspace, Health, Project Settings, Notifications,
 Project Center lower half is not final.
+
+
+## Slice 9 — Command Palette + Worktree Diff
+
+- Command Palette moved to `DialogShell`; keyboard selection/execution retained.
+- Worktree Diff moved to `SheetShell`; real workspace diff/artifact metadata
+  retained.
+- Remaining orchestration Ant surface: the plan generation/review modal; it is
+  tightly coupled to its existing `.po-plan-modal` styles and will be migrated
+  together with the orchestration page composition, not by a blind wrapper swap.

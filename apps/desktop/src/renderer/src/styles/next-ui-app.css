@@ -641,3 +641,8 @@
 
 .pui-overlay-scroll.po-group-scroll { padding: 14px 18px 0; }
 .pui-overlay-sheet .v17-group-composer { position: sticky; bottom: 0; background: color-mix(in srgb, var(--nx-solid) 88%, transparent); }
+
+.pui-overlay-dialog .po-command { width: 100%; max-height: min(560px, calc(100vh - 120px)); }
+
+.pui-overlay-scroll.po-diff-scroll { padding: 14px 18px; }
+.pui-overlay-scroll.po-diff-scroll .po-diff-view { max-height: none; }
