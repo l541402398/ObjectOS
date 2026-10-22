@@ -65,7 +65,7 @@ try {
   const drawerFields = await page.locator('.po-plan-task-detail label').allInnerTexts()
   await page.waitForTimeout(500)
   await page.screenshot({ path: join(shots, 'plan-review-task-detail.png') })
-  await page.locator('.po-plan-task-drawer .ant-drawer-close').click()
+  await page.locator('[data-testid="task-detail-close"]').click()
   await page.waitForSelector('.po-plan-task-detail', { state: 'hidden', timeout: 10_000 })
 
   await page.getByRole('tab', { name: '阶段路线' }).click()
@@ -74,7 +74,7 @@ try {
   const titleInput = page.locator('.po-plan-task-detail input').first()
   const newTitle = '审核台同步测试任务'
   await titleInput.fill(newTitle)
-  await page.locator('.po-plan-task-drawer .ant-drawer-close').click()
+  await page.locator('[data-testid="task-detail-close"]').click()
   await page.waitForTimeout(300)
   const compactText = await page.locator('[data-testid="plan-task-list"]').innerText()
 

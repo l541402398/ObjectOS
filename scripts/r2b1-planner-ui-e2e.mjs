@@ -207,13 +207,12 @@ try {
   await page.waitForSelector('.po-plan-task-detail', { timeout: 10_000 })
   const detailText = await page.locator('.po-plan-task-detail').innerText()
   check('AI planner: rationale and capability requirements are visible in task detail', detailText.includes('能力需求') && (await page.locator('.po-plan-task-rationale').count()) >= 1, detailText.slice(0, 200))
-  const firstAcceptance = page.locator('.po-plan-task-detail label').filter({ hasText: '验收标准' }).locator('input')
+  const firstAcceptance = page.locator('.po-plan-task-detail label').filter({ hasText: '验收标准' }).locator('textarea')
   await firstAcceptance.fill('人工复核样式对比')
-  await firstAcceptance.press('Enter')
   await page.waitForTimeout(300)
-  const editedAcceptance = await page.locator('.po-plan-task-detail').innerText()
-  check('AI planner: real keyboard edit updates the draft criterion', editedAcceptance.includes('人工复核样式对比'), editedAcceptance.slice(0, 200))
-  await page.locator('.po-plan-task-drawer .ant-drawer-close').click()
+  const editedAcceptance = await firstAcceptance.inputValue()
+  check('AI planner: real keyboard edit updates the draft criterion', editedAcceptance.includes('人工复核样式对比'), editedAcceptance)
+  await page.locator('[data-testid="task-detail-close"]').click()
   await page.waitForTimeout(250)
   check('AI planner: no task/run is created before approval', (await page.evaluate(async (projectId) => {
     const [board, plans] = await Promise.all([

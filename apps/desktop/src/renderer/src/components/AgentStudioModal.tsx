@@ -429,7 +429,7 @@ export function AgentStudioModal({
       footer={null}
       width="min(1480px, 94vw)"
       className="v16-agent-studio-modal"
-      zIndex={3000}
+      zIndex={5000}
       destroyOnHidden
       closable
     >

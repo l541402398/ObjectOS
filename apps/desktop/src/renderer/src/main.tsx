@@ -14,6 +14,7 @@ import './styles/global.css'
 import './styles/app.css'
 import './styles/v16.css'
 import './styles/v17.css'
+import './styles/next-ui.css'
 import { router } from './router'
 import { useResolvedTheme, useUiEffects } from './stores/ui'
 

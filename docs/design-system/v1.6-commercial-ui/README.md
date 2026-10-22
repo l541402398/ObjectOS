@@ -1,97 +1,108 @@
-# ProjectOS V1.6 Commercial UI Redesign
+# ProjectOS Next UI — Stage 1–3 Delivery
 
-## Workspace / branch
+## Branch / worktree
 
-- Branch: `feature/v1.6-commercial-ui-redesign`
+- Base branch: `feature/v1.6-commercial-ui-redesign` at `4aa03e1`
+- Next UI branch: `feature/v1.6-next-ui`
 - Worktree: `C:\Users\Administrator\Desktop\workplace\ProjectOS-commercial-ui`
-- Base: `98cd5a3` (`feature/v1.6-ux`, already pushed)
-- This branch is not merged into `feature/v1.6-ux`.
+- Not merged into `feature/v1.6-ux` or the base redesign branch.
 
-The original working tree was audited before creating the worktree. The only uncommitted files there were temporary prompt packages / `.tmp-*` files; no source changes were pending. All changes in this branch are confined to the worktree.
+The worktree was created from a clean baseline. The original checkout was audited and its only uncommitted items were temporary prompt packages, which were not copied or committed.
 
-## Audit
+## Stage status
 
-The front end currently has two React Flow surfaces:
+| Stage | Status |
+|---|---|
+| Stage 0 — baseline/audit | Complete |
+| Stage 1 — new UI foundation | Complete for the plan-review slice |
+| Stage 2 — two runnable directions | Partial: old Ant workspace (baseline) and Next workspace are both runnable; no separate third prototype |
+| Stage 3 — plan review rewrite | Complete for this slice |
+| Stage 4 — graph migration | Not started beyond the Next task-node graph |
+| Stage 5 — other pages | Not started |
+| Stage 6 — remove Ant | Not started |
 
-1. **Orchestration workspace** — orchestrator, Agent and task cards with delegation edges.
-2. **Plan review DAG** — task nodes and dependency edges inside the plan review modal.
+## Installed dependencies
 
-Both use `@xyflow/react` 12.12.0. There is no X6, ELK.js, dagre or second graph engine. Ant Design 6 is the component base; V1.6 already has `--plan-*` / `--orch-*` tokens and CSS glass surfaces.
+| Package | License | Use |
+|---|---|---|
+| `tailwindcss` 4 + `@tailwindcss/vite` | MIT | utility styling and theme variables |
+| `@radix-ui/react-dialog` | MIT | task detail sheet |
+| `@radix-ui/react-tabs` | MIT | stage/DAG switch |
+| `@radix-ui/react-tooltip` | MIT | stage hover summaries |
+| `@radix-ui/react-scroll-area` | MIT | task/risk scrolling |
+| `@radix-ui/react-slot` | MIT | shadcn-style button composition |
+| `class-variance-authority`, `clsx`, `tailwind-merge` | MIT | local shadcn-style primitives |
+| `lucide-react` | ISC | icon system |
+| `motion` | MIT | risk expand/collapse and sheet transitions |
+| `react-resizable-panels` | MIT | resizable review main/aside workspace |
 
-No new UI dependency was introduced: React Flow, Ant Design, existing icons and CSS variables remain. License position is unchanged: Ant Design MIT, React Flow MIT, Electron MIT.
+No second graph engine was added. `@xyflow/react` remains the graph engine (MIT). `elkjs` was evaluated but removed because the current topological layout is sufficient and an unused dependency would add risk. Ant Design remains only on the pages not yet migrated; it is not used by the Next plan-review component.
 
-## Baseline screenshots
+## Tailwind / Ant coexistence
 
-- `baseline-plan-review.png` — old plan review: 920px modal, stacked cards, duplicate goal, small task area.
-- `baseline-agent-canvas.png` — existing orchestration canvas before this branch's stage/task node work.
+Tailwind v4 preflight is **not imported**. The new Net UI uses:
 
-## Final screenshots
+```css
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+```
 
-- `plan-review-light.png` — dedicated wide review workspace.
-- `plan-review-dark.png` — dark theme.
-- `plan-review-narrow-1100.png` — narrow window (1100px), task list placed before review aside.
-- `plan-review-dag.png` — task dependency mode.
-- `plan-review-task-detail.png` — task detail Drawer over the workspace.
-- `plan-review-risks.png` — expanded real risk list.
+and a scoped `.pui-root` base reset. This prevents Tailwind from resetting Ant pages that remain online during the staged migration. The Next shell is being rendered inside the existing Ant modal for Stage 3; the content, tabs, tooltip, task sheet and resizable layout are new Next components.
 
-## What changed
+## New source layout
 
-### Plan review is a workspace, not a form stack
+- `apps/desktop/src/renderer/src/next-ui/ui/button.tsx` — shadcn-style button
+- `.../badge.tsx`
+- `.../tabs.tsx`
+- `.../tooltip.tsx`
+- `.../dialog.tsx`
+- `.../scroll-area.tsx`
+- `.../cn.ts`
+- `apps/desktop/src/renderer/src/styles/next-ui.css` — tokens, scoped reset, glass, typography, motion fallback
+- `apps/desktop/src/renderer/src/features/orchestration/components/PlanReviewNext.tsx` — Next plan review workspace
+- `apps/desktop/electron.vite.config.ts` — Tailwind Vite plugin
+- `apps/desktop/src/renderer/src/main.tsx` — Next UI stylesheet
 
-- Plan modal is now `min(1480px, 100vw - 48px)` wide and `min(880px, 100vh - 56px)` tall, centered; not edge-to-edge.
-- The duplicate goal textarea was removed for an existing draft. The goal appears once as an editable workspace title.
-- Summary is one line: stage path · task count · review count.
-- Generation metadata is collapsed under “生成详情”.
-- Main region: stage route + task stream.
-- Right rail: real review status and risk list.
-- Approval/rejection stay in a fixed modal footer.
-- At ≤1120px the review becomes one column and the task list precedes the review rail.
+## Plan review changes
 
-### Stage nodes
+- Goal appears once, editable inline; no duplicate textarea.
+- Summary: stage path · task count · review count.
+- Resizable main/aside workspace; no card-stack modal.
+- Radix Tabs switch between stage route and DAG.
+- Stage cards use role icons, task counts, risk markers and hover summaries.
+- Task rows are compact; task detail opens a Radix Dialog sheet.
+- Task detail preserves all editable fields: title, description, role, Agent/custom Agent, dependencies, acceptance, artifacts, capabilities, approval and delete.
+- Risk rail shows blocking vs advisory; non-blocking risks do not disable approval.
+- Fixed footer approval/rejection remains the existing business action.
+- Generation details are collapsed.
+- Next DAG node uses custom TaskNode with Agent, title, risk and dependency count; edges use real `dependsOn`, arrows, path highlighting.
+- Motion: risk expand, sheet transition; reduced-motion is respected.
 
-Stages are derived from real `dependsOn` longest-path levels, not hardcoded. Each card now has:
+## Screenshots
 
-- role icon (architect/developer/reviewer/tester/custom);
-- index, title, task count and role/parallel marker;
-- risk marker only when a task in the stage is blocking.
+- Baseline: `baseline-plan-review.png`, `baseline-agent-canvas.png`
+- Next light: `next-plan-review-light.png`
+- Next dark: `next-plan-review-dark.png`
+- Next DAG: `next-plan-review-dag.png`
+- Next task sheet: `next-plan-review-detail.png`
+- Next narrow window: `next-plan-review-narrow.png`
 
-### Task DAG
-
-- 252px TaskNode with kicker, two-line title, Agent initials/name and dependency count;
-- real `dependsOn` edges only; missing dependencies are not drawn; cycles are reported as blocking;
-- arrow markers and smoothstep paths;
-- selecting a task highlights real upstream/downstream nodes, dims unrelated edges;
-- default readable viewport (0.78) with controls for zoom/pan/fit;
-- no fake progress/status on draft tasks.
-
-### Task detail
-
-Drawer preserves all editable fields: title, description, role, Agent/custom Agent, dependencies, acceptance criteria, expected artifacts, capabilities, approval requirement, delete task. Drawer is above the review modal and does not cover the fixed approval bar.
-
-### Token additions
-
-In `orchestration.css`:
-
-- `--graph-node-width: 252px`
-- `--graph-node-radius: 14px`
-- `--graph-node-pad: 12px 13px 10px`
-
-Existing `--plan-*` and `--orch-*` surfaces remain the source of color/contrast.
-
-## Verification
+## Verification actually run
 
 - `pnpm lint` — PASS
 - `pnpm typecheck` — PASS
-- `pnpm test` — **265 passed / 3 skipped**
-- `plan-review-ui-e2e` — **10 checks PASS**
+- `pnpm test` — 265 passed / 3 skipped (before the final Next UI selector tweaks; run again before merge)
 - `pnpm build` — PASS
-- Light, dark, narrow (1100px) screenshots captured from the running Electron app.
+- `scripts/plan-review-ui-e2e.mjs` — 10 checks PASS (light/dark/narrow/DAG/sheet/approval)
+- `scripts/r2b1-planner-ui-e2e.mjs` — 10 checks PASS
+- `scripts/custom-agent-from-plan-ui-e2e.mjs` — 3 checks PASS
 
-## Limitations / not completed
+## Known gaps / defects
 
-1. Only the plan review workspace and its graph were migrated in this pass. Task board, settings, run audit and Agent workbench still use the existing V1.6 layout.
-2. No second standalone visual prototype was built. The baseline (card-stack modal) and the new workspace are the comparison; a second runnable design direction is still open.
-3. 9 / 30 / 80 node stress screenshots were not produced. Plan validation imposes a 20-task maximum; no fake data was inserted into production pages.
-4. 125% display scaling was exercised, but the Electron screenshot at `webContents.setZoomFactor(1.25)` clips the workspace at the capture boundary; the 1100px narrow screenshot is the reliable responsive evidence.
-5. No Motion dependency was added; transitions use CSS and respect `prefers-reduced-motion`. Page-level motion across all routes is not migrated.
-6. No new component library migration (shadcn/Radix/Tailwind) was performed. Adding a second theme system alongside Ant would create the exact theme conflict the brief forbids.
+1. Only the plan-review page is migrated to Next UI. Task board, settings, run audit, agents, and remaining pages still use the existing Ant/V1.6 front end.
+2. The Ant modal shell and footer still wrap the Next plan-review content; Stage 6 removal of Ant is not done.
+3. 125% display scaling screenshot is clipped at the Electron capture boundary; the 1100px narrow screenshot is the reliable responsive evidence.
+4. 9 / 30 / 80 node stress states were not produced. Plan validation currently caps plans at 20 tasks; no fake production data was inserted.
+5. A second independent visual prototype (beyond old Ant workspace vs Next workspace) is not implemented.
+6. Graph migration for V1.3 orchestration and other visual pages is not done; only the plan-review DAG uses the Next component.
+7. No page-level route transition system yet; Motion is used in local panels/sheets.

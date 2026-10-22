@@ -31,8 +31,7 @@ try {
   await page.waitForSelector('[data-testid="plan-task-list"] .po-plan-compact-task', { timeout: 20_000 })
   await page.locator('[data-testid="plan-task-list"] .po-plan-compact-task').first().click()
   await page.waitForSelector('.po-plan-task-detail', { timeout: 10_000 })
-  await page.locator('.po-plan-task-detail .ant-select').first().click()
-  await page.locator('.ant-select-dropdown:visible .ant-select-item-option').filter({ hasText: '自定义' }).click()
+  await page.locator('.po-plan-task-detail select').first().selectOption('custom')
   await page.waitForTimeout(800)
   const studio = page.locator('.v16-agent-studio-modal')
   console.log('studio count=' + await studio.count() + ' visible=' + await studio.isVisible().catch(() => false))
@@ -49,8 +48,9 @@ try {
   await page.waitForTimeout(1200)
   const agents = await page.evaluate(async () => (await window.projectos.agentDefinitions.list()).agents)
   console.log('agents=' + JSON.stringify(agents.map((agent) => agent.name)))
-  console.log('task selects=' + JSON.stringify(await page.locator('.po-plan-task-detail .ant-select').allInnerTexts()))
-  const agentSelectText = await page.locator('.po-plan-task-detail .ant-select').nth(1).innerText()
+  await page.locator('[data-testid="plan-task-list"] .po-plan-compact-task').first().click()
+  await page.waitForSelector('.po-plan-task-detail', { timeout: 10_000 })
+  const agentSelectText = await page.locator('.po-plan-task-detail select').nth(1).locator('option:checked').innerText()
   await page.screenshot({ path: join(shots, 'custom-agent-assigned.png') })
   const checks = [
     ['selecting custom opens the Agent Studio', text.includes('Agent Studio') || text.includes('创建 Agent')],

@@ -1,0 +1,162 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/*
+ * ProjectOS Next UI tokens.
+ * Tailwind preflight is intentionally not imported: the existing Ant pages
+ * remain online during the staged migration and must not be reset globally.
+ */
+.pui-root {
+  --pui-bg: #eef3fa;
+  --pui-surface: rgba(255, 255, 255, 0.72);
+  --pui-surface-strong: rgba(255, 255, 255, 0.94);
+  --pui-surface-muted: rgba(246, 249, 253, 0.68);
+  --pui-border: rgba(35, 62, 105, 0.14);
+  --pui-border-strong: rgba(35, 62, 105, 0.24);
+  --pui-ink: #142138;
+  --pui-ink-secondary: #4d5f79;
+  --pui-ink-muted: #7a889c;
+  --pui-accent: #2f6fe4;
+  --pui-accent-soft: rgba(47, 111, 228, 0.1);
+  --pui-danger: #b84250;
+  --pui-danger-soft: rgba(184, 66, 80, 0.09);
+  --pui-success: #277f5b;
+  --pui-warning: #9a641c;
+  --pui-shadow: 0 18px 50px -34px rgba(24, 49, 88, 0.45);
+  --pui-radius: 14px;
+  --pui-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  color: var(--pui-ink);
+  font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+:root[data-theme='dark'] .pui-root,
+.pui-root[data-theme='dark'] {
+  --pui-bg: #0b111b;
+  --pui-surface: rgba(22, 31, 46, 0.76);
+  --pui-surface-strong: rgba(28, 39, 57, 0.96);
+  --pui-surface-muted: rgba(17, 25, 38, 0.72);
+  --pui-border: rgba(138, 164, 204, 0.17);
+  --pui-border-strong: rgba(138, 164, 204, 0.3);
+  --pui-ink: #eef4ff;
+  --pui-ink-secondary: #a6b4c8;
+  --pui-ink-muted: #7f8fa6;
+  --pui-accent: #7aaeff;
+  --pui-accent-soft: rgba(122, 174, 255, 0.12);
+  --pui-danger: #ee7f89;
+  --pui-danger-soft: rgba(238, 127, 137, 0.1);
+  --pui-success: #66c79c;
+  --pui-warning: #e0b06a;
+  --pui-shadow: 0 22px 60px -30px rgba(0, 0, 0, 0.72);
+}
+
+@layer base {
+  .pui-root *,
+  .pui-root *::before,
+  .pui-root *::after {
+    box-sizing: border-box;
+  }
+
+  .pui-root button,
+  .pui-root input,
+  .pui-root textarea,
+  .pui-root select {
+    margin: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .pui-root button {
+    cursor: pointer;
+  }
+
+  .pui-root button:focus,
+  .pui-root input:focus,
+  .pui-root textarea:focus,
+  .pui-root select:focus {
+    outline: none;
+  }
+
+  .pui-root button:focus-visible,
+  .pui-root [role='tab']:focus-visible,
+  .pui-root input:focus-visible,
+  .pui-root textarea:focus-visible,
+  .pui-root select:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--pui-accent) 68%, transparent);
+    outline-offset: 2px;
+  }
+}
+
+.pui-glass {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--pui-surface-strong) 78%, transparent), var(--pui-surface));
+  border: 1px solid var(--pui-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.36), var(--pui-shadow);
+  -webkit-backdrop-filter: blur(20px) saturate(1.1);
+  backdrop-filter: blur(20px) saturate(1.1);
+}
+
+:root[data-theme='dark'] .pui-glass {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055), var(--pui-shadow);
+}
+
+.pui-control {
+  height: 32px;
+  border: 1px solid var(--pui-border);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--pui-surface-strong) 88%, transparent);
+  color: var(--pui-ink);
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 160ms var(--pui-ease), box-shadow 160ms var(--pui-ease), background 160ms var(--pui-ease);
+}
+
+.pui-control:hover { border-color: var(--pui-border-strong); }
+.pui-control:focus-visible { border-color: color-mix(in srgb, var(--pui-accent) 58%, var(--pui-border)); box-shadow: 0 0 0 3px var(--pui-accent-soft); }
+
+.pui-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--pui-ink-muted) 35%, transparent) transparent;
+}
+.pui-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.pui-scroll::-webkit-scrollbar-thumb { border: 2px solid transparent; border-radius: 999px; background: color-mix(in srgb, var(--pui-ink-muted) 35%, transparent); background-clip: padding-box; }
+
+.pui-kicker {
+  color: var(--pui-accent);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pui-metric-value {
+  color: var(--pui-ink);
+  font-size: 21px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.pui-muted { color: var(--pui-ink-muted); }
+.pui-secondary { color: var(--pui-ink-secondary); }
+
+.pui-motion-fade { animation: pui-fade 220ms var(--pui-ease) both; }
+.pui-motion-rise { animation: pui-rise 260ms var(--pui-ease) both; }
+
+@keyframes pui-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pui-rise { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pui-root *,
+  .pui-root *::before,
+  .pui-root *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

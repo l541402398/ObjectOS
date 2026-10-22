@@ -63,7 +63,8 @@ import type {
 import { ErrorState, LoadingBlock, StatusPill } from '@projectos/ui'
 import { PlanGrantPanel } from '../components/PlanGrantPanel'
 import { AgentStudioModal } from '../../../components/AgentStudioModal'
-import { PlanReviewWorkbench, hasPlanBlockingIssues } from '../components/PlanReviewWorkbench'
+import { hasPlanBlockingIssues } from '../components/PlanReviewWorkbench'
+import { PlanReviewNext } from '../components/PlanReviewNext'
 import { ReplanPanel } from '../components/ReplanPanel'
 import {
   qk,
@@ -1706,7 +1707,7 @@ export default function OrchestrationWorkspace() {
               </div>
             ) : (
               <>
-                <PlanReviewWorkbench
+                <PlanReviewNext
                   draft={draft}
                   roleLabels={ROLE_LABELS}
                   agentOptions={planAgentOptions}
@@ -1832,9 +1833,3 @@ export default function OrchestrationWorkspace() {
       </div>
   )
 }
-
-
-
-
-
-
