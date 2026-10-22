@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: orchestration inspector now reserves a content column (pending commit)
+Latest checkpoint: `d8a1558` after orchestration column, Agent three-column and 8-page regression
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -387,3 +387,4 @@ Head: `8023df5`.
 - Result: 0 horizontal overflow, 0 page errors.
 - Agent Workbench keeps the run inspector as a reserved column at 1440 and a
   deliberate overlay below 1280.
+
