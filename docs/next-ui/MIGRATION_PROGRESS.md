@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: pending after workspace wrap and Electron motion walkthrough
+Latest checkpoint: `ffafadf` after workspace wrap, motion walkthrough and full 15-page matrix
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -431,3 +431,4 @@ Head: `8023df5`.
   `docs/next-ui/screens/projectos-next-ui-tour.gif` (9.6s, 2.4 MB).
 - This is a motion evidence asset built from actual frames, not a substitute for
   a raw MP4 screen recording; MP4 capture remains open.
+
