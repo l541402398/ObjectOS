@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { App as AntApp, Button, Form, Input, Modal, Switch, Tooltip } from 'antd'
+import { App as AntApp, Button, Form, Input, Switch, Tooltip } from 'antd'
 import {
   ArrowRightOutlined,
   AuditOutlined,
@@ -28,6 +28,7 @@ import { useBootstrap, useProjectOverview } from '../lib/queries'
 import { formatRelative, truncate } from '../lib/format'
 import { stageLabel } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
+import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '../next-ui/overlay/overlay-shell'
 
 interface CreateFormValues {
   name: string
@@ -410,17 +411,9 @@ export default function ProjectCenterPage() {
         </aside>
       </div>
 
-      <Modal
-        title={importMode ? '导入现有项目' : '新建本地项目'}
-        open={createOpen}
-        onCancel={() => setCreateOpen(false)}
-        onOk={() => void submit()}
-        okText={importMode ? '导入项目' : '创建项目'}
-        cancelText="取消"
-        confirmLoading={createProject.isPending}
-        destroyOnHidden
-        width={560}
-      >
+      <DialogShell open={createOpen} onOpenChange={(open) => { if (!open) setCreateOpen(false) }} ariaLabel={importMode ? '导入现有项目' : '新建本地项目'} width={560}>
+        <OverlayHeader eyebrow="PROJECT" title={importMode ? '导入现有项目' : '新建本地项目'} closeLabel={importMode ? '关闭导入项目' : '关闭新建项目'} />
+        <OverlayScrollArea className="po-dialog-form-scroll">
         <Form
           form={form}
           layout="vertical"
@@ -476,7 +469,12 @@ export default function ProjectCenterPage() {
           ) : <div className="v16-inline-note">导入不会复制或移动现有文件，也不会初始化 Git。</div>}
           {createProject.error ? <ErrorState compact message={errorMessage(createProject.error)} /> : null}
         </Form>
-      </Modal>
+        </OverlayScrollArea>
+        <OverlayFooter>
+          <Button onClick={() => setCreateOpen(false)}>取消</Button>
+          <Button type="primary" loading={createProject.isPending} onClick={() => void submit()}>{importMode ? '导入项目' : '创建项目'}</Button>
+        </OverlayFooter>
+      </DialogShell>
     </div>
   )
 }

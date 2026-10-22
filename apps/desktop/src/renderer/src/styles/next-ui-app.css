@@ -632,3 +632,5 @@
   .nx-hero-side { flex-direction: row; align-items: center; justify-content: space-between; }
   .nx-hero-side .ant-btn { flex: 0 0 auto; }
 }
+
+.pui-overlay-scroll.po-advance-scroll { padding: 14px 18px 8px; }

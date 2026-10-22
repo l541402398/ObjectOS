@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { App as AntApp, Button, DatePicker, Form, Input, InputNumber, Modal, Select, Tooltip } from 'antd'
+import { App as AntApp, Button, DatePicker, Form, Input, InputNumber, Select, Tooltip } from 'antd'
 import type { Dayjs } from 'dayjs'
 import {
   ArrowRightOutlined,
@@ -40,6 +40,7 @@ import {
   stageLabel,
 } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
+import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '../next-ui/overlay/overlay-shell'
 
 function StageRail({ stages, currentStage, gates }: { stages: ProjectStage[]; currentStage: string; gates: LifecycleGate[] }) {  const gateMap = new Map(gates.map((gate) => [gate.stage, gate]))
   return (
@@ -677,17 +678,9 @@ export default function ProjectOverviewPage() {
         </aside>
       </div>
 
-      <Modal
-        title={createKind ? `新增${LIFECYCLE_LABELS[createKind]}` : '新增'}
-        open={Boolean(createKind)}
-        onCancel={() => setCreateKind(null)}
-        onOk={() => void submitLifecycle()}
-        okText="创建"
-        cancelText="取消"
-        confirmLoading={createLifecycle.isPending}
-        width={560}
-        destroyOnHidden
-      >
+      <DialogShell open={Boolean(createKind)} onOpenChange={(open) => { if (!open) setCreateKind(null) }} ariaLabel="新增生命周期条目" width={560}>
+        <OverlayHeader eyebrow="LIFECYCLE" title={createKind ? `新增${LIFECYCLE_LABELS[createKind]}` : '新增'} closeLabel="关闭新增条目" />
+        <OverlayScrollArea className="po-dialog-form-scroll">
         <Form form={lifecycleForm} layout="vertical" requiredMark={false} className="po-form">
           <Form.Item
             name="title"
@@ -734,19 +727,16 @@ export default function ProjectOverviewPage() {
             </>
           ) : null}
         </Form>
-      </Modal>
+        </OverlayScrollArea>
+        <OverlayFooter>
+          <Button onClick={() => setCreateKind(null)}>取消</Button>
+          <Button type="primary" loading={createLifecycle.isPending} onClick={() => void submitLifecycle()}>创建</Button>
+        </OverlayFooter>
+      </DialogShell>
 
-      <Modal
-        title={next ? `推进到「${stageLabel(next.stage)}」` : '已到达最后阶段'}
-        open={advanceOpen}
-        onCancel={() => setAdvanceOpen(false)}
-        onOk={() => advance.mutate()}
-        okText="确认推进"
-        cancelText="取消"
-        confirmLoading={advance.isPending}
-        okButtonProps={{ disabled: !canAdvance }}
-        width={560}
-      >
+      <DialogShell open={advanceOpen} onOpenChange={(open) => { if (!open) setAdvanceOpen(false) }} ariaLabel="推进项目阶段" width={560}>
+        <OverlayHeader eyebrow="STAGE GATE" title={next ? `推进到「${stageLabel(next.stage)}」` : '已到达最后阶段'} closeLabel="关闭阶段推进" />
+        <OverlayScrollArea className="po-advance-scroll">
         {next ? (
           <div className="po-advance-modal">
             <p className="po-muted">阶段门禁会根据当前需求、决策、里程碑、任务与交付物实时计算。</p>
@@ -772,9 +762,12 @@ export default function ProjectOverviewPage() {
         ) : (
           <p className="po-muted">项目已经处于最后维护阶段。</p>
         )}
-      </Modal>
+        </OverlayScrollArea>
+        <OverlayFooter>
+          <Button onClick={() => setAdvanceOpen(false)}>取消</Button>
+          <Button type="primary" loading={advance.isPending} disabled={!canAdvance} onClick={() => advance.mutate()}>确认推进</Button>
+        </OverlayFooter>
+      </DialogShell>
     </div>
   )
 }
-
-

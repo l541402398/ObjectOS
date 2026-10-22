@@ -34,9 +34,9 @@ Status legend: `not-started`, `in-progress`, `migrated`, `blocked`, `not-applica
 | # | Surface / route | Source | Real business path | Overlay surfaces | Status |
 |---:|---|---|---|---|---|
 | 1 | App shell / navigation | `components/AppLayout.tsx` | bootstrap, runtime status, project select, command palette | settings, command palette | in-progress — global glass skin, collapsed rail fixed |
-| 2 | Project Center `/` | `pages/ProjectCenterPage.tsx` | `projects.list`, create/import/delete | create/import modal | in-progress — global skin; page composition pending |
+| 2 | Project Center `/` | `pages/ProjectCenterPage.tsx` | `projects.list`, create/import/delete | shared DialogShell create/import | in-progress — hero migrated; lower-page IA polish pending |
 | 3 | Notifications `/notifications` | `pages/NotificationsPage.tsx` | notifications queries | none / row actions | not-started |
-| 4 | Project Overview `/projects/:id` | `pages/ProjectOverviewPage.tsx` | overview, lifecycle mutations | create item, advance stage | not-started |
+| 4 | Project Overview `/projects/:id` | `pages/ProjectOverviewPage.tsx` | overview, lifecycle mutations | shared DialogShell create/advance | in-progress — overlays migrated, page composition pending |
 | 5 | Task Board `/projects/:id/tasks` | `pages/TaskBoardPage.tsx` | board, task CRUD, acceptance | shared DialogShell editors + InspectorShell detail | in-progress — overlays migrated; board IA still legacy |
 | 6 | Orchestration / plan review `/orchestration` | `OrchestrationWorkspace.tsx`, `PlanReviewNext.tsx` | plan generate/validate/approve/reject, real DAG | plan modal, worktree diff, formal task InspectorShell | in-progress — task sheet migrated, graph/composition pending |
 | 7 | Agent Workbench `/agents` | `pages/AgentWorkbenchPage.tsx` | sessions, approvals, agent execution | new session modal, group drawer | not-started |
@@ -170,3 +170,13 @@ Known in this slice:
 - Evidence: `docs/next-ui/screens/project-center-1440.png`.
 - Real task creation through the migrated DialogShell was exercised with a
   temporary project (title + acceptance criterion → task appears on the board).
+
+
+## Slice 5 — Project Center create/import + Overview gates
+
+- Project Center create/import moved from Ant Modal to `DialogShell`; e2e
+  project creation still passes.
+- Project Overview lifecycle create and stage advance moved to `DialogShell`;
+  real lifecycle mutations retained.
+- Project Center now has a real current-project hero above the metric grid.
+- Evidence: `docs/next-ui/screens/project-center-1440.png`.
