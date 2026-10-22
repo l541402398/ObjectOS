@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: pending after health/notifications information surfaces
+Latest checkpoint: `b6353ed` after true orchestration grid, Agent three-column, health/notifications and full 15-page matrix
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -409,4 +409,5 @@ Head: `8023df5`.
 - No data/mutation changes.
 - Screenshots refreshed in `docs/next-ui/screens/pages/health.png` and
   `notifications.png`.
+
 
