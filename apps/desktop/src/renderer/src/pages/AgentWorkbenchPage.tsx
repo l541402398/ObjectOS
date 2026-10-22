@@ -4,11 +4,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   App as AntApp,
   Button,
-  Drawer,
   Empty,
   Form,
   Input,
-  Modal,
   Select,
   Tooltip,
 } from 'antd'
@@ -53,6 +51,7 @@ import { formatDateTime, formatRelative } from '../lib/format'
 import { runStatusLabel, taskStatusLabel } from '../lib/labels'
 import { AgentStudioModal } from '../components/AgentStudioModal'
 import { errorMessage } from '../lib/errors'
+import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea, SheetShell } from '../next-ui/overlay/overlay-shell'
 import { useUiStore } from '../stores/ui'
 
 const ACTIVE_STATUSES: RunStatus[] = [
@@ -680,17 +679,9 @@ export default function AgentWorkbenchPage() {
         </aside>
       </div>
 
-      <Modal
-        title="新建 Agent 会话"
-        open={createOpen}
-        onCancel={() => setCreateOpen(false)}
-        onOk={() => void submitCreate()}
-        okText="创建会话"
-        cancelText="取消"
-        confirmLoading={createSession.isPending}
-        destroyOnHidden
-        width={520}
-      >
+      <DialogShell open={createOpen} onOpenChange={(open) => { if (!open) setCreateOpen(false) }} ariaLabel="新建 Agent 会话" width={520}>
+        <OverlayHeader eyebrow="AGENT SESSION" title="新建 Agent 会话" closeLabel="关闭新建会话" />
+        <OverlayScrollArea className="po-dialog-form-scroll">
         <Form form={createForm} layout="vertical" requiredMark={false} className="po-form">
           <Form.Item name="agentId" label="选择 Agent" rules={[{ required: true, message: '请选择 Agent' }]}>
             <Select
@@ -707,14 +698,15 @@ export default function AgentWorkbenchPage() {
             每个会话有独立的上下文与运行状态；跨会话消息可在「跨会话中心」发送。
           </div>
         </Form>
-      </Modal>
-      <Drawer
-        open={groupOpen}
-        onClose={() => setGroupOpen(false)}
-        width={620}
-        title="计划群聊"
-        className="v17-group-drawer"
-      >
+        </OverlayScrollArea>
+        <OverlayFooter>
+          <Button onClick={() => setCreateOpen(false)}>取消</Button>
+          <Button type="primary" loading={createSession.isPending} onClick={() => void submitCreate()}>创建会话</Button>
+        </OverlayFooter>
+      </DialogShell>
+      <SheetShell open={groupOpen} onOpenChange={(open) => { if (!open) setGroupOpen(false) }} ariaLabel="计划群聊" width={620}>
+        <OverlayHeader eyebrow="TEAMWORK" title="计划群聊" closeLabel="关闭计划群聊" />
+        <OverlayScrollArea className="po-group-scroll">
         {latestPlan ? (
           <div className="v17-group-plan-context">
             <strong>{latestPlan.goal}</strong>
@@ -770,16 +762,10 @@ export default function AgentWorkbenchPage() {
             发起群聊讨论
           </Button>
         </div>
-      </Drawer>
+        </OverlayScrollArea>
+      </SheetShell>
 
       <AgentStudioModal open={studioOpen} onClose={() => setStudioOpen(false)} projectId={projectId} />
     </div>
   )
 }
-
-
-
-
-
-
-

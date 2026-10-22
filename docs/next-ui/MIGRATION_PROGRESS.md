@@ -39,7 +39,7 @@ Status legend: `not-started`, `in-progress`, `migrated`, `blocked`, `not-applica
 | 4 | Project Overview `/projects/:id` | `pages/ProjectOverviewPage.tsx` | overview, lifecycle mutations | shared DialogShell create/advance | in-progress — overlays migrated, page composition pending |
 | 5 | Task Board `/projects/:id/tasks` | `pages/TaskBoardPage.tsx` | board, task CRUD, acceptance | shared DialogShell editors + InspectorShell detail | in-progress — overlays migrated; board IA still legacy |
 | 6 | Orchestration / plan review `/orchestration` | `OrchestrationWorkspace.tsx`, `PlanReviewNext.tsx` | plan generate/validate/approve/reject, real DAG | plan modal, worktree diff, formal task InspectorShell | in-progress — task sheet migrated, graph/composition pending |
-| 7 | Agent Workbench `/agents` | `pages/AgentWorkbenchPage.tsx` | sessions, approvals, agent execution | new session modal, group drawer | not-started |
+| 7 | Agent Workbench `/agents` | `pages/AgentWorkbenchPage.tsx` | sessions, approvals, agent execution | DialogShell session, SheetShell group chat | in-progress — overlays migrated; three-column composition pending |
 | 8 | Teamwork / Collaboration `/collaboration` | `pages/CollaborationPage.tsx` | inbox, handoff, cross-session messages | shared DialogShell send message | in-progress — overlay migrated; page composition pending |
 | 9 | Workspace `/workspace` | `pages/WorkspacePage.tsx` | files, editor, preview, git | file/preview panels | not-started |
 | 10 | Knowledge `/knowledge` | `pages/KnowledgePage.tsx` | knowledge search/entries | detail/actions | not-started |
@@ -197,3 +197,11 @@ Known in this slice:
   records are preserved and no side effect is retried automatically.
 - `v17-run-audit-modal-e2e.mjs` PASS.
 - Evidence: `docs/next-ui/screens/run-detail-sheet.png`.
+
+
+## Slice 8 — Agent Workbench overlays
+
+- New Agent session → `DialogShell`.
+- Plan group chat → `SheetShell`; transcript, participants, team progress and
+  composer retained.
+- Agent Studio itself is still the separate Ant surface; not claimed migrated.
