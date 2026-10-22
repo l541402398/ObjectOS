@@ -64,6 +64,15 @@ try {
   await page.waitForTimeout(1_600)
   await navigate(`#/projects/${projectId}/agents`)
   await page.waitForTimeout(1_600)
+  await navigate(`#/projects/${projectId}/orchestration`)
+  await page.getByRole('button', { name: '生成计划' }).click()
+  await page.waitForSelector('[data-testid="plan-workbench-dialog"] textarea', { timeout: 10_000 })
+  await page.locator('[data-testid="plan-workbench-dialog"] textarea').fill('演示计划路线与任务依赖')
+  await page.getByRole('radio', { name: /本地规则/ }).click()
+  await page.waitForTimeout(500)
+  await page.locator('[data-testid="plan-generate"]').click()
+  await page.waitForSelector('[data-testid="plan-review-workbench"]', { timeout: 20_000 })
+  await page.waitForTimeout(2_200)
 
   const base64 = await page.evaluate(async () => {
     const state = window.__nextUiRecording

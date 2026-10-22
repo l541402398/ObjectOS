@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `ca18a4a` after DAG/type fixes and packaged smoke
+Latest checkpoint: `ecf3946` after DAG/type fixes, packaged smoke and full 60-capture matrix
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -12,9 +12,9 @@ editing UI.
 
 ## Current stage
 
-**Phase 2 — global shell + Settings slice.** Baseline is protected at `e58fbd2`; slice checkpoint `28fc994`.
-The global Premium Liquid Glass app skin and the Settings DialogShell migration
-are in progress; page-specific composition migration follows.
+**Phase 5 — delivery for visual acceptance.** Baseline is protected at `e58fbd2`.
+All routed pages use the global optical shell; all Modal/Drawer business call sites
+are migrated; page-level composition and human visual approval remain.
 
 Baseline checks completed:
 
@@ -33,23 +33,23 @@ Status legend: `not-started`, `in-progress`, `migrated`, `blocked`, `not-applica
 
 | # | Surface / route | Source | Real business path | Overlay surfaces | Status |
 |---:|---|---|---|---|---|
-| 1 | App shell / navigation | `components/AppLayout.tsx` | bootstrap, runtime status, project select, command palette | settings, command palette | in-progress — global glass skin, collapsed rail fixed |
-| 2 | Project Center `/` | `pages/ProjectCenterPage.tsx` | `projects.list`, create/import/delete | shared DialogShell create/import | in-progress — hero migrated; lower-page IA polish pending |
-| 3 | Notifications `/notifications` | `pages/NotificationsPage.tsx` | notifications queries | none / row actions | in-progress (global skin) |
-| 4 | Project Overview `/projects/:id` | `pages/ProjectOverviewPage.tsx` | overview, lifecycle mutations | shared DialogShell create/advance | in-progress — overlays migrated, page composition pending |
-| 5 | Task Board `/projects/:id/tasks` | `pages/TaskBoardPage.tsx` | board, task CRUD, acceptance | shared DialogShell editors + InspectorShell detail | in-progress — overlays migrated; board IA still legacy |
-| 6 | Orchestration / plan review `/orchestration` | `OrchestrationWorkspace.tsx`, `PlanReviewNext.tsx` | plan generate/validate/approve/reject, real DAG | plan modal, worktree SheetShell, formal task InspectorShell | in-progress — task sheet + diff migrated; plan workspace/graph pending |
-| 7 | Agent Workbench `/agents` | `pages/AgentWorkbenchPage.tsx` | sessions, approvals, agent execution | DialogShell session, SheetShell group chat | in-progress — overlays migrated; three-column composition pending |
-| 8 | Teamwork / Collaboration `/collaboration` | `pages/CollaborationPage.tsx` | inbox, handoff, cross-session messages | shared DialogShell send message | in-progress — overlay migrated; page composition pending |
-| 9 | Workspace `/workspace` | `pages/WorkspacePage.tsx` | files, editor, preview, git | file/preview panels | in-progress (global skin) |
-| 10 | Knowledge `/knowledge` | `pages/KnowledgePage.tsx` | knowledge search/entries | detail/actions | in-progress (global skin) |
-| 11 | Operations `/operations` | `pages/OperationsPage.tsx` | operations snapshot, repair proposals | proposal detail | in-progress — compact operational cards, localized findings |
-| 12 | Resources `/resources` | `pages/ResourcesPage.tsx` | resource inventory | row actions | in-progress (global skin) |
-| 13 | Approvals `/approvals` | `pages/ApprovalsPage.tsx` | approval decisions | approval detail | in-progress — full-width decision surface |
-| 14 | Project Settings `/project-settings` | `pages/ProjectSettingsPage.tsx` | project config, policy | forms | in-progress (global skin) |
-| 15 | Project Health `/health` | `pages/ProjectHealthPage.tsx` | health checks, repair | repair dialogs | in-progress (global skin) |
-| 16 | Runs `/runs` | `pages/RunsPage.tsx` | run list/detail, reconcile | SheetShell detail, DialogShell reconcile | in-progress — overlays migrated; page composition pending |
-| 17 | Settings (global modal) | `features/settings/SettingsModal.tsx` + panels | AI connections, models, runtime, skills, tools | shared DialogShell + InspectorShell | in-progress — overlays migrated; content composition polish pending |
+| 1 | App shell / navigation | `components/AppLayout.tsx` | bootstrap, runtime status, project select, command palette | settings, command palette | migrated — global glass skin, collapsed rail fixed |
+| 2 | Project Center `/` | `pages/ProjectCenterPage.tsx` | `projects.list`, create/import/delete | shared DialogShell create/import | migrated — hero migrated; lower-page IA polish pending |
+| 3 | Notifications `/notifications` | `pages/NotificationsPage.tsx` | notifications queries | none / row actions | migrated (global skin) |
+| 4 | Project Overview `/projects/:id` | `pages/ProjectOverviewPage.tsx` | overview, lifecycle mutations | shared DialogShell create/advance | migrated — overlays migrated, page composition pending |
+| 5 | Task Board `/projects/:id/tasks` | `pages/TaskBoardPage.tsx` | board, task CRUD, acceptance | shared DialogShell editors + InspectorShell detail | migrated — overlays migrated; board IA still legacy |
+| 6 | Orchestration / plan review `/orchestration` | `OrchestrationWorkspace.tsx`, `PlanReviewNext.tsx` | plan generate/validate/approve/reject, real DAG | Dialog plan workspace, worktree SheetShell, InspectorShell | migrated — true canvas/inspector grid, icon route, DAG cards; final canvas polish |
+| 7 | Agent Workbench `/agents` | `pages/AgentWorkbenchPage.tsx` | sessions, approvals, agent execution | DialogShell session, SheetShell group chat | migrated — three-column/reserved inspector; final empty states |
+| 8 | Teamwork / Collaboration `/collaboration` | `pages/CollaborationPage.tsx` | inbox, handoff, cross-session messages | shared DialogShell send message | migrated — overlay migrated; page composition pending |
+| 9 | Workspace `/workspace` | `pages/WorkspacePage.tsx` | files, editor, preview, git | file/preview panels | migrated — compact panes + Monaco wrap; contrast polish |
+| 10 | Knowledge `/knowledge` | `pages/KnowledgePage.tsx` | knowledge search/entries | detail/actions | migrated (global skin) |
+| 11 | Operations `/operations` | `pages/OperationsPage.tsx` | operations snapshot, repair proposals | proposal detail | migrated — compact operational cards, localized findings |
+| 12 | Resources `/resources` | `pages/ResourcesPage.tsx` | resource inventory | row actions | migrated (global skin) |
+| 13 | Approvals `/approvals` | `pages/ApprovalsPage.tsx` | approval decisions | approval detail | migrated — full-width decision surface |
+| 14 | Project Settings `/project-settings` | `pages/ProjectSettingsPage.tsx` | project config, policy | forms | migrated (global skin) |
+| 15 | Project Health `/health` | `pages/ProjectHealthPage.tsx` | health checks, repair | repair dialogs | migrated (global skin) |
+| 16 | Runs `/runs` | `pages/RunsPage.tsx` | run list/detail, reconcile | SheetShell detail, DialogShell reconcile | migrated — overlays migrated; page composition pending |
+| 17 | Settings (global modal) | `features/settings/SettingsModal.tsx` + panels | AI connections, models, runtime, skills, tools | shared DialogShell + InspectorShell | migrated — focus guard verified 40/40; Radix modal still off |
 | 18 | Design Lab `#/design-lab` | `features/design-lab/` | prototype | Inspector, Agent, Approval | migrated baseline |
 
 ## Overlay migration inventory
@@ -68,10 +68,10 @@ tracks actual migration:
 - [x] settings detail drawers (Model/Skill/Runtime)
 - [x] settings nested editors (model/Runtime/ACP)
 - [x] Task Board detail drawer and 3 modals
-- [ ] Runs detail/reconcile
+- [x] Runs detail/reconcile
 - [x] Agent Studio + run-test modal
-- [ ] remaining project/collaboration overlays
-- [ ] legacy `PlanReviewWorkbench` removal
+- [x] remaining project/collaboration overlays
+- [x] legacy `PlanReviewWorkbench` removal
 
 ## Known baseline facts
 
@@ -87,12 +87,10 @@ tracks actual migration:
 
 ## Next steps
 
-1. Finish functional baseline job, record exits.
-2. If clean, commit baseline docs (`bac...` checkpoint).
-3. Migrate `AppLayout` + Project Center as the first visual slice while preserving
-   real queries/navigation and `CommandPalette` behavior.
-4. Then `ProjectOverview` + `TaskBoard`, then formal `PlanReviewNext`/overlays.
-5. Update this file and `OPEN_ISSUES.md` after every checkpoint; never rely on
+1. Final Knowledge / Resources / Project Center composition.
+2. Human visual acceptance of the 15-page matrix and MP4 walkthrough.
+3. Keep the branch isolated; do not merge to stable until the owner approves.
+4. Update this file and `OPEN_ISSUES.md` after every checkpoint; never rely on
    chat memory.
 
 
@@ -448,7 +446,7 @@ Head: `8023df5`.
 - `scripts/next-ui-record.mjs` uses Electron `desktopCapturer` +
   `setDisplayMediaRequestHandler` + MediaRecorder to record the real window.
 - The 1440×900 VP9 WebM was converted to H.264:
-  `docs/next-ui/screens/projectos-next-ui-walkthrough.mp4` — 11.53s, 4.9 MB.
+  `docs/next-ui/screens/projectos-next-ui-walkthrough.mp4` — 16.91s, 6.8 MB.
 - The recording covers Project Center, Task Board, task inspector, Orchestration,
   node inspector and Agent Workbench.
 - ffmpeg is used only as a temporary conversion tool under `test-results/tools`;
@@ -529,4 +527,7 @@ Head: `f666dd0`.
 - Base desktop E2E PASS; Agent approval/write/resume E2E PASS; Design Lab 31/31.
 - Remaining: human visual acceptance, final Knowledge/Resources/Project Center
   composition, and the `modal={false}` Settings compromise.
+
+
+
 
