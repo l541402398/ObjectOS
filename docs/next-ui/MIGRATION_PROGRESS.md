@@ -448,7 +448,7 @@ Head: `8023df5`.
 - The 1440×900 VP9 WebM was converted to H.264:
   `docs/next-ui/screens/projectos-next-ui-walkthrough.mp4` — 16.91s, 6.8 MB.
 - The recording covers Project Center, Task Board, task inspector, Orchestration,
-  node inspector and Agent Workbench.
+  node inspector, Agent Workbench and the final icon-only Plan Review route.
 - ffmpeg is used only as a temporary conversion tool under `test-results/tools`;
   no runtime or package dependency was added.
 
@@ -461,7 +461,7 @@ Head: `945595e`.
   dialog or its Ant portal.
 - Workspace compact layout + Monaco word wrap; 1100px long lines no longer clip.
 - Real Electron desktop capture recorded through `desktopCapturer` +
-  MediaRecorder and converted to H.264 MP4 (11.53s, 1440×900).
+  MediaRecorder and converted to H.264 MP4 (16.91s, 1440×900).
 - `pnpm lint` clean, `pnpm typecheck/build` pass, 265 tests pass, `v12-e2e` pass.
 - Remaining: final page-level composition for Knowledge/Resources/Project Center,
   Task Board full-page capture artifact, human visual acceptance, stable merge.
@@ -498,7 +498,7 @@ Head: `f666dd0`.
   task count and task titles; hover/focus tooltip remains.
 - Stage anchors now share equal grid-cell centers and the SVG curve uses the same
   centers + vertical transforms; icons sit on their route endpoints.
-- Real Electron MP4 walkthrough: 11.53s, 1440×900, H.264.
+- Real Electron MP4 walkthrough: 16.91s, 1440×900, H.264.
 - Settings non-modal focus guard: 40/40 Tab presses contained.
 - Full 15-page matrix: 60 captures, 0 document overflow, 0 page errors.
 - `pnpm lint/typecheck/build` pass; 265 tests pass; `v12`, `v13`, plan-review 10/10.
@@ -527,6 +527,7 @@ Head: `f666dd0`.
 - Base desktop E2E PASS; Agent approval/write/resume E2E PASS; Design Lab 31/31.
 - Remaining: human visual acceptance, final Knowledge/Resources/Project Center
   composition, and the `modal={false}` Settings compromise.
+
 
 
 
