@@ -388,3 +388,14 @@ Head: `8023df5`.
 - Agent Workbench keeps the run inspector as a reserved column at 1440 and a
   deliberate overlay below 1280.
 
+
+
+## Slice 19 — True orchestration grid
+
+- Canvas and node inspector now share `.po-orch-main` CSS Grid:
+  `minmax(0,1fr) 390px` at desktop when a node is selected.
+- Inspector is a normal grid child with no fixed positioning or backdrop.
+- At <1280px the grid collapses to one column and the inspector becomes a
+  520px section below the canvas, not an overlay.
+- Canvas toolbar wraps instead of collapsing labels.
+- Evidence: `docs/next-ui/screens/orchestration-inspector.png`.

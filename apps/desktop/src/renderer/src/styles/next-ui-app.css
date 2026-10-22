@@ -807,3 +807,39 @@
 .po-orch-canvas-toolbar > span,
 .po-orch-kind-filter button { white-space: nowrap; }
 .po-orch-kind-filter { flex-wrap: wrap; }
+
+/* True two-column orchestration workspace: canvas and inspector share the page
+   grid so the graph never sits underneath the inspector. */
+.po-orch-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.po-orchestration-page.is-inspector-open .po-orch-main { grid-template-columns: minmax(0, 1fr) 390px; }
+.po-orchestration-page.is-inspector-open .po-orch-canvas-card { margin-right: 0; }
+.po-orch-main .po-orch-canvas-card { min-height: 540px; }
+.po-orch-main .po-orch-drawer-layer.is-nonmodal {
+  position: static;
+  display: block;
+  height: 100%;
+  min-height: 0;
+  pointer-events: auto;
+}
+.po-orch-main .po-orch-drawer-layer.is-nonmodal .po-orch-drawer-panel {
+  position: static;
+  width: auto;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  border: 1px solid rgba(255, 255, 255, .74);
+  border-radius: 16px;
+  background: var(--nx-solid);
+  box-shadow: var(--nx-shadow);
+}
+:root[data-theme='dark'] .po-orch-main .po-orch-drawer-layer.is-nonmodal .po-orch-drawer-panel { border-color: var(--nx-line-strong); }
+@media (max-width: 1279px) {
+  .po-orchestration-page.is-inspector-open .po-orch-main { grid-template-columns: minmax(0, 1fr); }
+  .po-orch-main .po-orch-drawer-layer.is-nonmodal .po-orch-drawer-panel { height: 520px; }
+}

@@ -1438,6 +1438,7 @@ export default function OrchestrationWorkspace() {
           </div>
         ) : null}
 
+        <div className="po-orch-main">
         <section className="po-orch-canvas-card po-orch-canvas-full">
             <div className="po-orch-canvas-toolbar">
               <div className="po-orch-kind-filter">
@@ -1578,6 +1579,7 @@ export default function OrchestrationWorkspace() {
             </aside>
           </div>
         ) : null}
+        </div>
 
         <DialogShell
           open={planOpen}
