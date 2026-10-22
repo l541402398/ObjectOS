@@ -280,3 +280,12 @@ Remaining page-level composition work is unchanged and listed by the page matrix
 - Evidence: `docs/next-ui/screens/agent-studio-sheet.png`.
 - This also fixed the shared `SheetShell` width bug for Run audit and group chat.
 
+
+## Slice 11 — Orchestration canvas skin
+
+- Header, metric cells, canvas frame, node surfaces and edges now use the
+  Premium Liquid Glass tokens instead of flat white cards.
+- Real graph topology, ELK-like layout, inspector and bottom dependency rail are
+  untouched.
+- This is a visual layer only; the orchestration plan modal and full canvas-first
+  re-composition are still open.
