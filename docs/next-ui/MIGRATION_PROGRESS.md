@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: pending after orchestration non-modal inspector and Agent Workbench reserved run column
+Latest checkpoint: `2268dbd` after orchestration non-modal inspector and Agent Workbench reserved run column
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -366,3 +366,4 @@ Head: `8023df5`.
 - Evidence: `docs/next-ui/screens/orchestration-inspector.png`,
   `agent-workbench.png`.
 - `v16-agent-studio-e2e` PASS; plan-review/v13 PASS; build/typecheck PASS.
+
