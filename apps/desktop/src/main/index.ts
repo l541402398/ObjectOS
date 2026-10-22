@@ -12,6 +12,7 @@ const isDev = !app.isPackaged
 const isDevServer = Boolean(process.env.ELECTRON_RENDERER_URL)
 const rendererWidth = Number(process.env.PROJECTOS_WINDOW_WIDTH ?? 1440)
 const rendererHeight = Number(process.env.PROJECTOS_WINDOW_HEIGHT ?? 900)
+const startRoute = process.env.PROJECTOS_START_ROUTE?.replace(/^#?\/?/, '') ?? ''
 
 app.setName('ProjectOS')
 app.setAppUserModelId('ai.projectos.desktop')
@@ -85,9 +86,9 @@ function createWindow(): BrowserWindow {
     if (mainWindow === window) mainWindow = null
   })
   if (isDev && process.env.ELECTRON_RENDERER_URL) {
-    void window.loadURL(process.env.ELECTRON_RENDERER_URL)
+    void window.loadURL(`${process.env.ELECTRON_RENDERER_URL}${startRoute ? `#/${startRoute}` : ''}`)
   } else {
-    void window.loadFile(join(__dirname, '../renderer/index.html'))
+    void window.loadFile(join(__dirname, '../renderer/index.html'), startRoute ? { hash: startRoute } : undefined)
   }
   window.webContents.on('did-finish-load', () => {
     if (supervisor) broadcast('projectos:runtime-status', supervisor.getStatus())

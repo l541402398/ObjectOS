@@ -18,6 +18,7 @@ import NotificationsPage from './pages/NotificationsPage'
 
 const WorkspacePage = lazy(() => import('./pages/WorkspacePage'))
 const OrchestrationPage = lazy(() => import('./features/orchestration/pages/OrchestrationWorkspace'))
+const DesignLabPage = lazy(() => import('./features/design-lab/DesignLabPage'))
 
 function LazyPage({ children }: { children: ReactNode }) {
   return (
@@ -42,6 +43,7 @@ function NotFoundPage() {
 }
 
 export const router = createHashRouter([
+  { path: 'design-lab', element: <LazyPage><DesignLabPage /></LazyPage> },
   {
     path: '/',
     element: <AppLayout />,
@@ -73,5 +75,3 @@ export const router = createHashRouter([
   },
   { path: '*', element: <Navigate to="/" replace /> },
 ])
-
-

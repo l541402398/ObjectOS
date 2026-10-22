@@ -17,6 +17,7 @@
     "predev": "pnpm build:runtime",
     "dev": "cross-env ELECTRON_RUN_AS_NODE= concurrently -k -n runtime,desktop -c blue,magenta \"tsup --config tooling/tsup.runtime.config.ts --watch\" \"pnpm --filter @projectos/desktop dev\"",
     "dev:desktop": "cross-env ELECTRON_RUN_AS_NODE= pnpm --filter @projectos/desktop dev",
+    "dev:design-lab": "cross-env PROJECTOS_START_ROUTE=design-lab pnpm dev",
     "dev:runtime": "tsup --config tooling/tsup.runtime.config.ts --watch",
     "build": "pnpm build:runtime && pnpm build:desktop",
     "build:runtime": "tsup --config tooling/tsup.runtime.config.ts",
