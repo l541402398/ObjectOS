@@ -24,8 +24,8 @@ try {
   await page.evaluate((id) => { location.hash = `#/projects/${id}/orchestration` }, project.id)
   await page.waitForSelector('.po-orchestration-page', { timeout: 20_000 })
   await page.getByRole('button', { name: '生成计划' }).click()
-  await page.waitForSelector('.po-plan-modal textarea', { timeout: 10_000 })
-  await page.locator('.po-plan-modal textarea').fill('实现设置页运行限制，并为计划审核增加路线图')
+  await page.waitForSelector('[data-testid="plan-workbench-dialog"] textarea', { timeout: 10_000 })
+  await page.locator('[data-testid="plan-workbench-dialog"] textarea').fill('实现设置页运行限制，并为计划审核增加路线图')
   await page.getByRole('radio', { name: /本地规则/ }).click()
   await page.waitForTimeout(700)
   await page.locator('[data-testid="plan-generate"]').click()
@@ -90,9 +90,9 @@ try {
   let approvedHeight = 0
   if (await page.locator('.po-plan-row').count()) {
     await page.locator('.po-plan-row').first().click()
-    await page.waitForSelector('.po-plan-modal .ant-modal-content', { timeout: 10_000 })
+    await page.waitForSelector('.pui-overlay-dialog', { timeout: 10_000 })
     await page.waitForTimeout(400)
-    approvedHeight = await page.locator('.po-plan-modal .ant-modal-content').evaluate((element) => element.getBoundingClientRect().height)
+    approvedHeight = await page.locator('.pui-overlay-dialog').evaluate((element) => element.getBoundingClientRect().height)
   }
   await page.screenshot({ path: join(shots, 'plan-review-final.png') })
 

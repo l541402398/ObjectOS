@@ -719,3 +719,10 @@
 .po-flow-agent-task { border: 1px solid var(--nx-line); border-radius: 7px; background: color-mix(in srgb, var(--nx-solid) 42%, transparent); color: var(--nx-ink-2); }
 .po-orch-canvas .react-flow__edge-path { stroke: rgba(108, 131, 170, .58); stroke-width: 1.35; }
 .po-orch-canvas .react-flow__edge.selected .react-flow__edge-path { stroke: #6f86e8; stroke-width: 1.8; }
+
+/* Plan generation / review is the last large Ant surface; it now uses the shared
+   modal shell while PlanReviewNext keeps its own internal workspace layout. */
+.po-plan-dialog-close { position: absolute; top: 14px; right: 14px; z-index: 8; }
+.pui-overlay-dialog .po-plan-dialog-scroll { padding: 0 18px 4px; }
+.pui-overlay-dialog .po-plan-editor { min-height: min(640px, 72vh); }
+.pui-overlay-dialog .po-plan-footer-actions { width: 100%; }

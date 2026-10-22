@@ -16,6 +16,7 @@ Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.
 | ID | Issue | Evidence | Status |
 |---|---|---|---|
 | P1-1 | Formal Task Inspector duplicate (`PlanReviewNext`) migrated to shared `InspectorShell`. | `OVERLAY_AUDIT.md` #6, `PlanReviewNext.tsx` | **Closed.** |
+| P1-7 | Last Ant Modal/Drawer removed from renderer; legacy `PlanReviewWorkbench` deleted after extracting its helper import. | `PlanReviewWorkbench.tsx` deletion | **Closed.** |
 | P1-2 | Settings nested modals/drawers migrated to DialogShell/InspectorShell; v12 passes. Content-level duplicate detail styling remains. | audit #7–#14 | **Overlay migration closed; polish open.** |
 | P1-3 | Task Board Drawer + create/edit/acceptance migrated to InspectorShell / DialogShell; page composition still legacy. | audit #15–#18 | **Overlay migration closed; page IA open.** |
 | P1-4 | `AppLayout` is Ant-based (`@projectos/ui`, Ant dropdown/tooltip/badge); page migration must preserve bootstrap/navigation/command shortcuts. | `components/AppLayout.tsx` | Open. |

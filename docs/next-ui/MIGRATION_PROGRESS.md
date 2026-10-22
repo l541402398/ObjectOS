@@ -289,3 +289,16 @@ Remaining page-level composition work is unchanged and listed by the page matrix
   untouched.
 - This is a visual layer only; the orchestration plan modal and full canvas-first
   re-composition are still open.
+
+
+## Slice 12 — Plan workbench Dialog + legacy removal
+
+- Orchestration plan generation/review is now a `DialogShell` with the internal
+  `PlanReviewNext` workspace, a real close action and an OverlayScrollArea.
+- The last Ant `Modal`/`Drawer` in the renderer has been removed:
+  `PlanReviewWorkbench.tsx` was only used for a re-export of
+  `hasPlanBlockingIssues`; the import now points directly to
+  `plan-review-logic.ts` and the legacy file is deleted.
+- No `<Modal>` or `<Drawer>` remains in production renderer source.
+- Evidence: `docs/next-ui/screens/plan-workbench.png`.
+- `plan-review-ui-e2e` 10/10, `v13-e2e` PASS.

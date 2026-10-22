@@ -63,8 +63,8 @@ import type {
 import { ErrorState, LoadingBlock, StatusPill } from '@projectos/ui'
 import { PlanGrantPanel } from '../components/PlanGrantPanel'
 import { AgentStudioModal } from '../../../components/AgentStudioModal'
-import { OverlayFooter, OverlayHeader, OverlayScrollArea, SheetShell } from '../../../next-ui/overlay/overlay-shell'
-import { hasPlanBlockingIssues } from '../components/PlanReviewWorkbench'
+import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea, SheetShell } from '../../../next-ui/overlay/overlay-shell'
+import { hasPlanBlockingIssues } from '../components/plan-review-logic'
 import { PlanReviewNext } from '../components/PlanReviewNext'
 import { ReplanPanel } from '../components/ReplanPanel'
 import {
@@ -1580,30 +1580,15 @@ export default function OrchestrationWorkspace() {
           </div>
         ) : null}
 
-        <Modal
-          title={draft ? null : '生成计划'}
+        <DialogShell
           open={planOpen}
-          onCancel={() => setPlanOpen(false)}
-          footer={draft?.status === 'draft' ? (
-            <div className="po-plan-footer-actions">
-              {hasPlanBlockingIssues(draft) ? <span className="po-plan-footer-blocker">存在阻塞性问题：展开“需复核”查看并修复后再批准。</span> : null}
-              <Button onClick={() => void reject()}>拒绝</Button>
-              <Button
-                type="primary"
-                icon={<CheckCircleOutlined />}
-                disabled={hasPlanBlockingIssues(draft)}
-                onClick={() => void approve()}
-                data-testid="plan-approve"
-              >
-                批准并创建任务
-              </Button>
-            </div>
-          ) : null}
+          onOpenChange={(open) => { if (!open) setPlanOpen(false) }}
+          ariaLabel={draft ? '计划审核' : '生成计划'}
           width={draft ? reviewModalWidth : planModalWidth}
-          centered
-          destroyOnHidden
-          className={`po-plan-modal${draft ? ' is-review is-workspace' : ''}${draft?.status === 'approved' ? ' is-approved' : ''}`}
+          testId="plan-workbench-dialog"
         >
+          <button type="button" className="pui-overlay-close po-plan-dialog-close" aria-label="关闭计划工作区" onClick={() => setPlanOpen(false)}><CloseOutlined /></button>
+          <OverlayScrollArea className="po-plan-dialog-scroll">
           <div className="po-plan-editor">
             {!draft ? (
               <>
@@ -1808,7 +1793,17 @@ export default function OrchestrationWorkspace() {
               </>
             )}
           </div>
-        </Modal>
+          </OverlayScrollArea>
+          {draft?.status === 'draft' ? (
+            <OverlayFooter>
+              <div className="po-plan-footer-actions">
+                {hasPlanBlockingIssues(draft) ? <span className="po-plan-footer-blocker">存在阻塞性问题：展开“需复核”查看并修复后再批准。</span> : null}
+                <Button onClick={() => void reject()}>拒绝</Button>
+                <Button type="primary" icon={<CheckCircleOutlined />} disabled={hasPlanBlockingIssues(draft)} onClick={() => void approve()} data-testid="plan-approve">批准并创建任务</Button>
+              </div>
+            </OverlayFooter>
+          ) : null}
+        </DialogShell>
 
         <SheetShell open={diffOpen} onOpenChange={(open) => { if (!open) setDiffOpen(false) }} ariaLabel="Worktree Diff" width={900} testId="worktree-diff-sheet">
           <OverlayHeader eyebrow="WORKTREE" title={worktreeInfo?.branch ? `Worktree · ${worktreeInfo.branch}` : 'Worktree Diff'} closeLabel="关闭 Worktree Diff" />
