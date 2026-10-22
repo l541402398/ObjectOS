@@ -898,3 +898,22 @@
 .pui-stop-count, .pui-stop-title, .pui-stop-small { display: none; }
 
 .pui-route .pui-stop { justify-self: center; }
+
+/* Contract fix 3: no body copy below 12px. Dense secondary metadata stays
+   >=11px; task descriptions and stat/activity labels are readable body text. */
+.po-task-tile-desc { font-size: 12.5px; }
+.v16-stat-label, .v16-stat-hint { font-size: 12px; }
+.v16-activity-line strong { font-size: 12px; }
+.v16-activity-line span { font-size: 11px; }
+.v16-project-meta { font-size: 12px; }
+
+/* DAG nodes were inheriting a flat rectangle because the accepted design token
+   recipe omitted radius/padding. Keep the same glass recipe, restore the node
+   silhouette and give the 200px card real inset rhythm. */
+.pui-dag-node {
+  width: 204px;
+  min-height: 108px;
+  padding: 11px 12px;
+  border-radius: 13px;
+  overflow: hidden;
+}

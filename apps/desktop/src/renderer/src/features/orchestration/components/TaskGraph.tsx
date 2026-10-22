@@ -86,7 +86,7 @@ export function TaskGraph({
         'elk.edgeRouting': 'ORTHOGONAL',
         'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
       },
-      children: tasks.map((task) => ({ id: task.key, width: 188, height: 92 })),
+      children: tasks.map((task) => ({ id: task.key, width: 204, height: 108 })),
       edges: tasks.flatMap((task) => task.dependsOn.filter((dependency) => tasks.some((item) => item.key === dependency)).map((dependency) => ({
         id: `${dependency}->${task.key}`,
         sources: [dependency],
@@ -185,5 +185,3 @@ export function TaskGraph({
     </div>
   )
 }
-
-

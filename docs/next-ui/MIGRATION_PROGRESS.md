@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `f666dd0` after icon-only stage journey and curve-anchor alignment
+Latest checkpoint: pending after DAG node silhouette and body-type floor
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -504,3 +504,13 @@ Head: `f666dd0`.
 - Settings non-modal focus guard: 40/40 Tab presses contained.
 - Full 15-page matrix: 60 captures, 0 document overflow, 0 page errors.
 - `pnpm lint/typecheck/build` pass; 265 tests pass; `v12`, `v13`, plan-review 10/10.
+
+
+## Slice 27 — DAG silhouette + typography floor
+
+- Contract fix 4: DAG edges remain solid (no dash animation), selected paths use a
+  single blue highlight; the task nodes now have the intended 13px radius,
+  11–12px inset padding and 204×108 layout bounds instead of flat white boxes.
+- Contract fix 3: task descriptions are 12.5px, stat/activity/project metadata is
+  12px; 9–11px remains only for chart micro-labels and dense non-body metadata.
+- Evidence: `docs/next-ui/screens/plan-dag.png`.
