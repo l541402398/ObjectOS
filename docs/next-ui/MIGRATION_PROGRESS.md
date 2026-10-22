@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `69c8963` after approvals/operations composition; regression evidence pending commit
+Latest checkpoint: pending after orchestration non-modal inspector and Agent Workbench reserved run column
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -354,3 +354,15 @@ Head: `8023df5`.
 - Known capture issue: one Task Board tile can be painted blank in a full-page
   Electron capture until the tile is individually repainted; DOM text is present
   and element capture is correct. Tracked as a P2 visual-evidence defect.
+
+
+## Slice 16 — Canvas inspector + Agent three-column
+
+- Orchestration node inspector is now a floating **non-modal** workspace panel:
+  no backdrop, no aria-modal, canvas remains interactive; panel starts below the
+  project header and keeps its Tabs/logs/dependency content.
+- Agent Workbench opens the run inspector by default at >=1280px and reserves a
+  384px right column, so the chat/composer is not covered.
+- Evidence: `docs/next-ui/screens/orchestration-inspector.png`,
+  `agent-workbench.png`.
+- `v16-agent-studio-e2e` PASS; plan-review/v13 PASS; build/typecheck PASS.

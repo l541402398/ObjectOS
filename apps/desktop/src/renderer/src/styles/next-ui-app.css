@@ -772,3 +772,27 @@
 /* Force each draggable tile onto its own compositor layer. Chromium otherwise
    occasionally leaves one board tile as an unpainted block in long captures. */
 .po-task-tile { transform: translateZ(0); will-change: transform; }
+
+/* Node inspector is a floating workspace panel, not a modal: canvas remains
+   interactive and there is no dimming backdrop. */
+.po-orch-drawer-layer.is-nonmodal { pointer-events: none; background: none; }
+.po-orch-drawer-layer.is-nonmodal .po-orch-drawer-panel {
+  pointer-events: auto;
+  top: 210px;
+  right: 16px;
+  bottom: 18px;
+  width: min(390px, calc(100vw - 32px));
+  border: 1px solid rgba(255, 255, 255, .74);
+  border-radius: 16px;
+  background: var(--nx-solid);
+  box-shadow: var(--nx-shadow);
+}
+:root[data-theme='dark'] .po-orch-drawer-layer.is-nonmodal .po-orch-drawer-panel { border-color: var(--nx-line-strong); }
+
+
+/* Run inspector is a reserved right column at desktop widths, not a panel that
+   covers the last chat message. Below 1280 it remains a deliberate overlay. */
+@media (min-width: 1280px) {
+  .po-agent-workspace.is-run-open .po-chat-pane { margin-right: 384px; }
+  .po-agent-workspace.is-run-open .v17-run-bookmark { display: none; }
+}

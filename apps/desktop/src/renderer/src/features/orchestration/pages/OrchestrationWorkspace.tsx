@@ -1510,9 +1510,8 @@ export default function OrchestrationWorkspace() {
 
 
         {selected ? (
-          <div className="po-orch-drawer-layer">
-            <button type="button" tabIndex={-1} className="po-orch-drawer-backdrop" aria-label="关闭节点详情" onClick={() => setSelected(null)} />
-            <aside className="po-orch-drawer-panel" role="dialog" aria-modal="true" aria-label="节点详情">
+          <div className="po-orch-drawer-layer is-nonmodal">
+            <aside className="po-orch-drawer-panel" role="complementary" aria-label="节点详情">
               <header className="po-orch-panel-head">
                 <div className="po-orch-panel-title">
                   <span className={`po-orch-panel-icon is-${selected.kind}`}>

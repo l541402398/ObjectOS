@@ -130,7 +130,7 @@ export default function AgentWorkbenchPage() {
   const [groupInput, setGroupInput] = useState('')
   const [groupBusy, setGroupBusy] = useState(false)
   const [sessionMenuOpen, setSessionMenuOpen] = useState(false)
-  const [runPanelOpen, setRunPanelOpen] = useState(false)
+  const [runPanelOpen, setRunPanelOpen] = useState(() => window.innerWidth >= 1280)
 
   const sessionList = useMemo(() => sessions.data?.sessions ?? [], [sessions.data])
   const latestPlan = plans.data?.plans[0] ?? null
