@@ -43,9 +43,9 @@ Status legend: `not-started`, `in-progress`, `migrated`, `blocked`, `not-applica
 | 8 | Teamwork / Collaboration `/collaboration` | `pages/CollaborationPage.tsx` | inbox, handoff, cross-session messages | shared DialogShell send message | in-progress — overlay migrated; page composition pending |
 | 9 | Workspace `/workspace` | `pages/WorkspacePage.tsx` | files, editor, preview, git | file/preview panels | in-progress (global skin) |
 | 10 | Knowledge `/knowledge` | `pages/KnowledgePage.tsx` | knowledge search/entries | detail/actions | in-progress (global skin) |
-| 11 | Operations `/operations` | `pages/OperationsPage.tsx` | operations snapshot, repair proposals | proposal detail | in-progress (global skin) |
+| 11 | Operations `/operations` | `pages/OperationsPage.tsx` | operations snapshot, repair proposals | proposal detail | in-progress — compact operational cards, localized findings |
 | 12 | Resources `/resources` | `pages/ResourcesPage.tsx` | resource inventory | row actions | in-progress (global skin) |
-| 13 | Approvals `/approvals` | `pages/ApprovalsPage.tsx` | approval decisions | approval detail | in-progress (global skin) |
+| 13 | Approvals `/approvals` | `pages/ApprovalsPage.tsx` | approval decisions | approval detail | in-progress — full-width decision surface |
 | 14 | Project Settings `/project-settings` | `pages/ProjectSettingsPage.tsx` | project config, policy | forms | in-progress (global skin) |
 | 15 | Project Health `/health` | `pages/ProjectHealthPage.tsx` | health checks, repair | repair dialogs | in-progress (global skin) |
 | 16 | Runs `/runs` | `pages/RunsPage.tsx` | run list/detail, reconcile | SheetShell detail, DialogShell reconcile | in-progress — overlays migrated; page composition pending |
@@ -332,3 +332,13 @@ Head: `8023df5`.
 - Legacy PlanReviewWorkbench deleted after helper import extraction.
 - 15-page Electron inventory captured, 0 errors.
 - 265 unit tests, plan-review 10/10, v13 PASS.
+
+
+## Slice 14 — Information-page composition
+
+- Approvals: request decision surface is full-width, status labels localized, raw
+  detail is an inset evidence block rather than a flat grey paragraph box.
+- Operations: three equal empty columns reduced to content-sized operational
+  cards; labels localized (`发现`), no giant placeholder height.
+- Screenshots refreshed in `docs/next-ui/screens/pages/approvals.png` and
+  `operations.png`.

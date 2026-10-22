@@ -216,7 +216,7 @@ export default function OperationsPage() {
 
         <section className="po-operations-card">
           <div className="po-operations-card-head">
-            <strong>Findings</strong>
+            <strong>发现</strong>
             <Button size="small" disabled={!selected.length} loading={busy === 'propose'} onClick={() => void propose()}>
               生成提案 ({selected.length})
             </Button>
@@ -232,7 +232,7 @@ export default function OperationsPage() {
               <Tag>{finding.status}</Tag>
             </div>
           ))}
-          {!data?.findings.length ? <EmptyState compact title="没有 Finding" /> : null}
+          {!data?.findings.length ? <EmptyState compact title="没有待处理问题" /> : null}
         </section>
 
         <section className="po-operations-card">
@@ -298,7 +298,3 @@ export default function OperationsPage() {
     </div>
   )
 }
-
-
-
-

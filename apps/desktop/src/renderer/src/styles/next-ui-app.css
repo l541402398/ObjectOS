@@ -726,3 +726,45 @@
 .pui-overlay-dialog .po-plan-dialog-scroll { padding: 0 18px 4px; }
 .pui-overlay-dialog .po-plan-editor { min-height: min(640px, 72vh); }
 .pui-overlay-dialog .po-plan-footer-actions { width: 100%; }
+
+/* Approval center: one review surface per request, full-width decision card. */
+.v16-approvals-page .v16-approval-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+.v16-approvals-page .v16-approval-card {
+  width: 100%;
+  max-width: 100%;
+  padding: 16px 18px;
+  border: 1px solid rgba(255, 255, 255, .78);
+  border-radius: 15px;
+  background: linear-gradient(150deg, rgba(251, 253, 255, .86), rgba(242, 248, 255, .64));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 16px 38px -34px rgba(18, 38, 73, .42);
+}
+:root[data-theme='dark'] .v16-approvals-page .v16-approval-card {
+  border-color: var(--nx-line);
+  background: linear-gradient(150deg, rgba(25, 38, 64, .86), rgba(12, 21, 38, .72));
+}
+.v16-approvals-page .v16-approval-detail {
+  max-height: 180px;
+  margin: 10px 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--nx-line);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--nx-solid) 38%, transparent);
+  color: var(--nx-ink-2);
+  font-size: 11.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.v16-approvals-page .v16-approval-card footer { padding-top: 10px; border-top: 1px solid var(--nx-line); }
+
+/* Operational surfaces size to content; empty states must not reserve a fake
+   dashboard-height card. */
+.po-operations-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 1fr); }
+.po-operations-card { min-height: 0; padding: 14px 15px; border: 1px solid rgba(255,255,255,.76); border-radius: 15px; background: linear-gradient(150deg, rgba(251,253,255,.82), rgba(241,247,255,.58)); box-shadow: inset 0 1px 0 rgba(255,255,255,.86), 0 16px 36px -34px rgba(18,38,73,.42); }
+:root[data-theme='dark'] .po-operations-card { border-color: var(--nx-line); background: linear-gradient(150deg, rgba(25,38,64,.84), rgba(12,21,38,.7)); }
+.po-operations-card-head { padding-bottom: 9px; border-bottom: 1px solid var(--nx-line); }
+.po-operations-card-head strong { color: var(--nx-ink); font-size: 12.5px; }
+@media (max-width: 1100px) { .po-operations-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 760px) { .po-operations-grid { grid-template-columns: 1fr; } }
