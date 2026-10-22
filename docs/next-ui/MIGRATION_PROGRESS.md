@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `e58fbd2` baseline; current slice pending commit
+Latest checkpoint: `28fc994` optical shell + Settings DialogShell
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -12,7 +12,7 @@ editing UI.
 
 ## Current stage
 
-**Phase 2 — global shell + Settings slice.** Baseline is protected at `e58fbd2`.
+**Phase 2 — global shell + Settings slice.** Baseline is protected at `e58fbd2`; slice checkpoint `28fc994`.
 The global Premium Liquid Glass app skin and the Settings DialogShell migration
 are in progress; page-specific composition migration follows.
 
@@ -130,3 +130,4 @@ Known in this slice:
 - A full-page Electron capture can leave one board tile stale until hovered;
   element capture is correct. The evidence shot uses a hover-forced repaint.
 - Project Center and Task Board page-specific IA still need a real migration.
+
