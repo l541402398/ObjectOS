@@ -37,7 +37,7 @@ Status legend: `not-started`, `in-progress`, `migrated`, `blocked`, `not-applica
 | 2 | Project Center `/` | `pages/ProjectCenterPage.tsx` | `projects.list`, create/import/delete | create/import modal | in-progress — global skin; page composition pending |
 | 3 | Notifications `/notifications` | `pages/NotificationsPage.tsx` | notifications queries | none / row actions | not-started |
 | 4 | Project Overview `/projects/:id` | `pages/ProjectOverviewPage.tsx` | overview, lifecycle mutations | create item, advance stage | not-started |
-| 5 | Task Board `/projects/:id/tasks` | `pages/TaskBoardPage.tsx` | board, task CRUD, acceptance | create/edit/acceptance modal, detail drawer | in-progress — glass board skin; overlays pending |
+| 5 | Task Board `/projects/:id/tasks` | `pages/TaskBoardPage.tsx` | board, task CRUD, acceptance | shared DialogShell editors + InspectorShell detail | in-progress — overlays migrated; board IA still legacy |
 | 6 | Orchestration / plan review `/orchestration` | `OrchestrationWorkspace.tsx`, `PlanReviewNext.tsx` | plan generate/validate/approve/reject, real DAG | plan modal, worktree diff, formal task InspectorShell | in-progress — task sheet migrated, graph/composition pending |
 | 7 | Agent Workbench `/agents` | `pages/AgentWorkbenchPage.tsx` | sessions, approvals, agent execution | new session modal, group drawer | not-started |
 | 8 | Teamwork / Collaboration `/collaboration` | `pages/CollaborationPage.tsx` | inbox, handoff, cross-session messages | send message modal | not-started |
@@ -67,7 +67,7 @@ tracks actual migration:
 - [x] formal `PlanReviewNext` task sheet → InspectorShell
 - [ ] settings detail drawers (Model/Skill/Runtime)
 - [ ] settings nested editors (model/Runtime/ACP)
-- [ ] Task Board detail drawer and 3 modals
+- [x] Task Board detail drawer and 3 modals
 - [ ] Runs detail/reconcile
 - [ ] Agent Studio + run-test modal
 - [ ] remaining project/collaboration overlays
@@ -130,3 +130,21 @@ Known in this slice:
 - A full-page Electron capture can leave one board tile stale until hovered;
   element capture is correct. The evidence shot uses a hover-forced repaint.
 - Project Center and Task Board page-specific IA still need a real migration.
+
+## Slice 2 — formal plan inspector + Task Board overlays
+
+- `PlanReviewNext` task sheet now uses `InspectorShell`; the private Radix
+  `po-plan-task-detail` sheet is gone. Real plan mutations, approval flow and
+  compact ledger remain.
+- Selected plan DAG paths are solid gradient-blue; the legacy dashed / flowing
+  edge rule is overridden.
+- Task Board create/edit/acceptance use `DialogShell`.
+- Task Board detail drawer uses `InspectorShell`; selected task clearing is
+  delayed 320ms so the closing surface never flashes “任务不存在”.
+- Task Board tests updated to the accessible shared-surface contract; the
+  outside-click assertion was changed to the intentional non-modal behavior
+  (close via header, workspace stays available).
+- Evidence: `docs/next-ui/screens/plan-task-inspector.png`,
+  `task-detail-inspector.png`, `task-create-dialog.png`.
+- Checks: plan-review UI 10/10; task-drawer UI 10/10; v12 PASS; v13 PASS;
+  e2e PASS.

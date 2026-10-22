@@ -5,11 +5,9 @@ import {
   App as AntApp,
   Button,
   DatePicker,
-  Drawer,
   Dropdown,
   Form,
   Input,
-  Modal,
   Select,
   Tabs,
   Tooltip,
@@ -72,6 +70,7 @@ import {
   taskStatusLabel,
 } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
+import { DialogShell, InspectorShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '../next-ui/overlay/overlay-shell'
 
 function descriptionBlocks(description: string): string[] {
   return description
@@ -749,61 +748,27 @@ export default function TaskBoardPage() {
         </>
       )}
 
-      <Modal
-        title="新建任务"
-        open={createOpen}
-        onCancel={() => setCreateOpen(false)}
-        onOk={() => void submitCreate()}
-        okText="创建任务"
-        cancelText="取消"
-        confirmLoading={createTask.isPending}
-        width={620}
-        destroyOnHidden
-      >
-        {formBody(createForm, 'create')}
-      </Modal>
+      <DialogShell open={createOpen} onOpenChange={(open) => { if (!open) setCreateOpen(false) }} ariaLabel="新建任务" width={620}>
+        <OverlayHeader eyebrow="TASK BOARD" title="新建任务" closeLabel="关闭新建任务" />
+        <OverlayScrollArea className="po-dialog-form-scroll">{formBody(createForm, 'create')}</OverlayScrollArea>
+        <OverlayFooter>
+          <Button onClick={() => setCreateOpen(false)}>取消</Button>
+          <Button type="primary" loading={createTask.isPending} onClick={() => void submitCreate()}>创建任务</Button>
+        </OverlayFooter>
+      </DialogShell>
 
-      <Modal
-        title="编辑任务"
-        open={Boolean(editingTask)}
-        onCancel={() => setEditingTask(null)}
-        onOk={() => void submitEdit()}
-        okText="保存"
-        cancelText="取消"
-        confirmLoading={updateTask.isPending}
-        width={620}
-        destroyOnHidden
-      >
-        {formBody(editForm, 'edit')}
-      </Modal>
+      <DialogShell open={Boolean(editingTask)} onOpenChange={(open) => { if (!open) setEditingTask(null) }} ariaLabel="编辑任务" width={620}>
+        <OverlayHeader eyebrow="TASK BOARD" title="编辑任务" closeLabel="关闭编辑任务" />
+        <OverlayScrollArea className="po-dialog-form-scroll">{formBody(editForm, 'edit')}</OverlayScrollArea>
+        <OverlayFooter>
+          <Button onClick={() => setEditingTask(null)}>取消</Button>
+          <Button type="primary" loading={updateTask.isPending} onClick={() => void submitEdit()}>保存</Button>
+        </OverlayFooter>
+      </DialogShell>
 
-      <Modal
-        title={acceptanceTask ? `完成验收 · ${acceptanceTask.title}` : '完成验收'}
-        open={Boolean(acceptanceTask)}
-        onCancel={() => setAcceptanceTask(null)}
-        footer={[
-          <Button key="cancel" onClick={() => setAcceptanceTask(null)}>
-            取消
-          </Button>,
-          acceptancePolicy?.requiresApproval && acceptanceApproval?.status === 'pending' ? (
-            <Button key="reject" danger loading={acceptanceBusy} onClick={() => void rejectAcceptance()}>
-              拒绝审批
-            </Button>
-          ) : null,
-          <Button
-            key="confirm"
-            type="primary"
-            loading={acceptanceBusy}
-            disabled={!acceptanceReady}
-            onClick={() => void submitAcceptance()}
-          >
-            {acceptancePrimaryLabel}
-          </Button>,
-        ]}
-        width={560}
-        destroyOnHidden
-        className="po-acceptance-modal"
-      >
+      <DialogShell open={Boolean(acceptanceTask)} onOpenChange={(open) => { if (!open) setAcceptanceTask(null) }} ariaLabel="完成验收" width={560}>
+        <OverlayHeader eyebrow="ACCEPTANCE" title={acceptanceTask ? `完成验收 · ${acceptanceTask.title}` : '完成验收'} closeLabel="关闭验收" />
+        <OverlayScrollArea className="po-acceptance-scroll">
         {!acceptancePolicy ? (
           <LoadingBlock rows={3} label="正在评估任务风险" />
         ) : (
@@ -881,34 +846,30 @@ export default function TaskBoardPage() {
             ) : null}
           </div>
         )}
-      </Modal>
+        </OverlayScrollArea>
+        <OverlayFooter>
+          <Button onClick={() => setAcceptanceTask(null)}>取消</Button>
+          {acceptancePolicy?.requiresApproval && acceptanceApproval?.status === 'pending' ? (
+            <Button danger loading={acceptanceBusy} onClick={() => void rejectAcceptance()}>拒绝审批</Button>
+          ) : null}
+          <Button type="primary" loading={acceptanceBusy} disabled={!acceptanceReady} onClick={() => void submitAcceptance()}>{acceptancePrimaryLabel}</Button>
+        </OverlayFooter>
+      </DialogShell>
 
-      <Drawer
+      <InspectorShell
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        afterOpenChange={(open) => {
-          if (!open) setSelectedTaskId(null)
-        }}
+        onOpenChange={(open) => { setDrawerOpen(open); if (!open) window.setTimeout(() => setSelectedTaskId(null), 320) }}
+        ariaLabel="任务详情"
         width={drawerWidth}
-        title={
-          <div className="po-task-drawer-heading">
-            <span className="po-task-drawer-kicker">任务详情</span>
-            <strong>{taskDetail.data?.task.title ?? '加载中…'}</strong>
-            {taskDetail.data ? (
-              <div className="po-task-drawer-meta">
-                <StatusPill tone={toneForStatus(taskDetail.data.task.status)}>{taskStatusLabel(taskDetail.data.task.status)}</StatusPill>
-                <StatusPill tone={taskDetail.data.task.priority === 1 ? 'danger' : 'neutral'} dot={false}>
-                  {priorityLabel(taskDetail.data.task.priority)}优先级
-                </StatusPill>
-                <span>v{taskDetail.data.task.version}</span>
-                {taskDetail.data.task.assigneeName ? <span>指派给 {taskDetail.data.task.assigneeName}</span> : <span>未指派</span>}
-              </div>
-            ) : null}
-          </div>
-        }
-        destroyOnHidden
-        classNames={{ root: 'po-task-drawer' }}
+        testId="task-detail-inspector"
       >
+        <OverlayHeader
+          eyebrow="任务详情"
+          title={taskDetail.data?.task.title ?? '加载中…'}
+          closeLabel="关闭任务详情"
+          meta={taskDetail.data ? <><StatusPill tone={toneForStatus(taskDetail.data.task.status)}>{taskStatusLabel(taskDetail.data.task.status)}</StatusPill><StatusPill tone={taskDetail.data.task.priority === 1 ? 'danger' : 'neutral'} dot={false}>{priorityLabel(taskDetail.data.task.priority)}优先级</StatusPill><span>v{taskDetail.data.task.version}</span>{taskDetail.data.task.assigneeName ? <span>指派给 {taskDetail.data.task.assigneeName}</span> : <span>未指派</span>}</> : null}
+        />
+        <OverlayScrollArea className="po-task-detail-scroll">
         {taskDetail.isLoading ? (
           <LoadingBlock rows={8} />
         ) : taskDetail.isError || !taskDetail.data ? (
@@ -1162,11 +1123,8 @@ export default function TaskBoardPage() {
             />
           </div>
         )}
-      </Drawer>
+        </OverlayScrollArea>
+      </InspectorShell>
     </div>
   )
 }
-
-
-
-

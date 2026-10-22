@@ -17,7 +17,7 @@ Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.
 |---|---|---|---|
 | P1-1 | Formal Task Inspector duplicate (`PlanReviewNext`) migrated to shared `InspectorShell`. | `OVERLAY_AUDIT.md` #6, `PlanReviewNext.tsx` | **Closed.** |
 | P1-2 | Settings has nested Ant modals and three duplicate detail drawers. | audit #7–#14 | Open. |
-| P1-3 | Task Board Drawer + three Modals remain Ant; nested overlay risk. | audit #15–#18 | Open. |
+| P1-3 | Task Board Drawer + create/edit/acceptance migrated to InspectorShell / DialogShell; page composition still legacy. | audit #15–#18 | **Overlay migration closed; page IA open.** |
 | P1-4 | `AppLayout` is Ant-based (`@projectos/ui`, Ant dropdown/tooltip/badge); page migration must preserve bootstrap/navigation/command shortcuts. | `components/AppLayout.tsx` | Open. |
 | P1-5 | Formal task/agent actions use real preload APIs; prototypes must not be mistaken for migrated business flows. | `PlanReviewNext`, `TaskBoardPage`, `AgentWorkbenchPage` | Open — every migrated page needs a real-flow test. |
 | P1-6 | Settings top-level migrated to `DialogShell`; v12 passes after updating the legacy close selector. | `SettingsModal.tsx`, `v12-e2e` | **Closed.** |

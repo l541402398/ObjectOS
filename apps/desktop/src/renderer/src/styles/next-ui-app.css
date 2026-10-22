@@ -585,3 +585,12 @@
 .pui-dag-wrap .pui-edge-dimmed path {
   opacity: .32;
 }
+
+/* Task Board dialogs and detail inspector use the shared overlay shells. */
+.pui-overlay-scroll.po-dialog-form-scroll,
+.pui-overlay-scroll.po-acceptance-scroll { padding: 0 18px; }
+.pui-overlay-scroll.po-dialog-form-scroll .ant-form,
+.pui-overlay-scroll.po-acceptance-scroll .po-acceptance { padding-top: 14px; padding-bottom: 8px; }
+.pui-overlay-scroll.po-task-detail-scroll { padding: 0; }
+.pui-overlay-scroll.po-task-detail-scroll .po-task-detail { padding: 12px 16px 18px; }
+.pui-overlay-inspector .po-task-drawer-toolbar { margin: 0 0 10px; }
