@@ -513,4 +513,5 @@ Head: `f666dd0`.
   11–12px inset padding and 204×108 layout bounds instead of flat white boxes.
 - Contract fix 3: task descriptions are 12.5px, stat/activity/project metadata is
   12px; 9–11px remains only for chart micro-labels and dense non-body metadata.
-- Evidence: `docs/next-ui/screens/plan-dag.png`.
+- Evidence: `docs/next-ui/screens/plan-dag.png`.`n- Full 60-capture matrix regenerated after the type floor: 0 overflows, 0 page`n  errors.
+
