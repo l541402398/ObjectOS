@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: pending after DAG node silhouette and body-type floor
+Latest checkpoint: `ca18a4a` after DAG/type fixes and packaged smoke
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -513,5 +513,20 @@ Head: `f666dd0`.
   11–12px inset padding and 204×108 layout bounds instead of flat white boxes.
 - Contract fix 3: task descriptions are 12.5px, stat/activity/project metadata is
   12px; 9–11px remains only for chart micro-labels and dense non-body metadata.
-- Evidence: `docs/next-ui/screens/plan-dag.png`.`n- Full 60-capture matrix regenerated after the type floor: 0 overflows, 0 page`n  errors.
+- Evidence: `docs/next-ui/screens/plan-dag.png`.
+- Full 60-capture matrix regenerated after the type floor: 0 overflows, 0 page errors.
+
+
+## Round 12 checkpoint — 2026-10-22
+
+- Contract fix 3: task descriptions 12.5px; stat/activity metadata 12px; chart
+  micro-labels remain 9–11px only where they are not body copy.
+- Contract fix 4: DAG nodes restored to 204×108 glass cards with 13px radius and
+  inset padding; edges remain solid, selected path is a single blue treatment.
+- Full matrix regenerated after the type floor: 60 captures, 0 overflows, 0 page
+  errors.
+- Packaged EXE smoke PASS (`release/win-unpacked/ProjectOS.exe`).
+- Base desktop E2E PASS; Agent approval/write/resume E2E PASS; Design Lab 31/31.
+- Remaining: human visual acceptance, final Knowledge/Resources/Project Center
+  composition, and the `modal={false}` Settings compromise.
 
