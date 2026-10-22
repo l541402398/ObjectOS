@@ -476,6 +476,7 @@ Head: `945595e`.
   are removed.
 - Each icon keeps `aria-label` and a native hover/focus tooltip with title + task
   count; selected stage detail remains in the separate summary below the route.
-- The route height is reduced from 158px to 112px.
+- The route height is reduced from 158px to 112px.`n- Stops are centered in equal grid cells and the SVG route points use the same`n  cell centers / vertical transforms, so each icon sits on its curve endpoint.
 - Plan review E2E remains 10/10 (stages=4, tasks=4, dag=4).
 - Evidence: `docs/next-ui/screens/plan-workbench.png`.
+

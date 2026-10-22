@@ -899,3 +899,5 @@
 .pui-route-stops { padding-top: 14px; }
 .pui-stop { gap: 0; }
 .pui-stop-count, .pui-stop-title, .pui-stop-small { display: none; }
+
+.pui-route .pui-stop { justify-self: center; }

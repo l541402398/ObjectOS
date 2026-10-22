@@ -17,8 +17,8 @@ function iconFor(role: PlanRole | undefined) {
 function routePoints(count: number): Array<{ x: number; y: number }> {
   if (count <= 1) return [{ x: 500, y: 66 }]
   return Array.from({ length: count }, (_, index) => ({
-    x: 74 + (index * 852) / (count - 1),
-    y: 72 + (index % 2 === 0 ? 8 : -30),
+    x: ((index + 0.5) * 1000) / count,
+    y: index % 2 === 0 ? 52 : 34,
   }))
 }
 
@@ -95,3 +95,4 @@ export function StageJourney({
     </div>
   )
 }
+
