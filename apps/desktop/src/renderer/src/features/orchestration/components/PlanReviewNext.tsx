@@ -76,9 +76,8 @@ function NextTaskNode({ data }: NodeProps<Node<TaskFlowData>>) {
   return (
     <div
       className={cn(
-        'w-[248px] rounded-[13px] border bg-[linear-gradient(180deg,var(--pui-surface-strong),var(--pui-surface))] px-3 py-2.5 text-left shadow-[0_12px_28px_-24px_rgba(20,45,85,.55)] transition-[border-color,box-shadow,transform] duration-200',
-        data.selected ? 'border-[var(--pui-accent)] shadow-[0_0_0_3px_var(--pui-accent-soft),0_16px_30px_-24px_rgba(20,45,85,.6)]' : data.related ? 'border-[color-mix(in_srgb,var(--pui-accent)_40%,var(--pui-border))]' : 'border-[var(--pui-border)]',
-        data.risk && 'border-[color-mix(in_srgb,var(--pui-danger)_45%,var(--pui-border))]',
+        'pui-dag-node w-[248px] rounded-[14px] px-3 py-2.5 text-left',
+        data.selected && 'is-selected', data.related && 'is-related', data.risk && 'is-risk',
       )}
     >
       <Handle type="target" position={Position.Left} className="!size-2 !border-2 !border-[color-mix(in_srgb,var(--pui-accent)_45%,var(--pui-border))] !bg-[var(--pui-surface-strong)]" />
@@ -136,6 +135,7 @@ export function PlanReviewNext({
   const stageRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const selected = draft.tasks.find((task) => task.key === selectedTaskKey) ?? null
   const selectedIndex = selected ? draft.tasks.findIndex((task) => task.key === selected.key) : -1
+  const selectedAgentLabel = agentOptions.find((option) => option.value === selected?.agentId)?.label ?? '角色默认'
 
   useEffect(() => setGoalDraft(draft.goal), [draft.goal])
 
@@ -203,7 +203,7 @@ export function PlanReviewNext({
           source: dependency,
           target: task.key,
           type: 'smoothstep',
-          className: relatedEdge ? 'pui-edge-related' : 'pui-edge-dimmed',
+          className: selected ? (relatedEdge ? 'pui-edge-related' : 'pui-edge-dimmed') : undefined,
           markerEnd: { type: MarkerType.ArrowClosed, width: 14, height: 14, color: relatedEdge ? '#7f99bb' : '#aeb9c8' },
           style: { stroke: relatedEdge ? 'rgba(103,132,172,.8)' : 'rgba(150,164,184,.34)', strokeWidth: relatedEdge ? 1.5 : 1 },
         })
@@ -228,8 +228,15 @@ export function PlanReviewNext({
 
   return (
     <TooltipProvider>
-      <div className="pui-root flex h-full min-h-0 flex-col gap-0 text-[var(--pui-ink)]" data-testid="plan-review-workbench">
-        <header className="po-plan-review-overview flex shrink-0 items-start justify-between gap-6 border-b border-[var(--pui-border)] px-1 pb-3 pt-1">
+      <div className="pui-root relative isolate flex h-full min-h-0 flex-col gap-0 overflow-hidden rounded-[20px] text-[var(--pui-ink)]" data-testid="plan-review-workbench">
+        <div className="pui-ambient" />
+        <motion.div
+          initial={{ opacity: 0, y: 7 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="relative z-[1] flex h-full min-h-0 flex-col"
+        >
+        <header className="po-plan-review-overview relative flex shrink-0 items-start justify-between gap-6 border-b border-[var(--pui-border)] pb-3 pl-8 pr-1 pt-1">
           <div className="min-w-0">
             <div className="pui-kicker">Plan review · R{draft.revision}</div>
             {editingGoal ? (
@@ -300,11 +307,9 @@ export function PlanReviewNext({
                               type="button"
                               aria-label={`${stage.title}，${stage.entries.length} 个任务`}
                               onClick={() => selectStage(stage)}
-                              className={cn(
-                                'po-stage-card group relative flex min-h-[98px] w-full flex-col items-start gap-1 rounded-[13px] border bg-[color-mix(in_srgb,var(--pui-surface-strong)_76%,transparent)] p-3 text-left transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:bg-[var(--pui-surface-strong)]',
-                                selectedStage === stage.id ? 'border-[color-mix(in_srgb,var(--pui-accent)_62%,var(--pui-border))] shadow-[0_0_0_3px_var(--pui-accent-soft)]' : 'border-[var(--pui-border)]',
-                                stage.hasRisk && 'border-[color-mix(in_srgb,var(--pui-danger)_42%,var(--pui-border))]',
-                              )}
+                              data-selected={selectedStage === stage.id}
+                              data-risk={stage.hasRisk}
+                              className="pui-stage-node po-stage-card group relative flex min-h-[98px] w-full flex-col items-start gap-1 rounded-[14px] p-3 text-left"
                             >
                               <span className="flex w-full items-center gap-2">
                                 <span className="flex size-7 items-center justify-center rounded-lg border border-[var(--pui-border)] bg-[var(--pui-accent-soft)] text-[var(--pui-accent)]">{roleIcon(stage.roles[0] ?? 'custom')}</span>
@@ -317,7 +322,7 @@ export function PlanReviewNext({
                           </TooltipTrigger>
                           <TooltipContent><div className="space-y-1">{stage.entries.map((entry) => <div key={entry.task.key}>{entry.task.title}</div>)}</div></TooltipContent>
                         </Tooltip.Root>
-                        {index < stages.length - 1 ? <ChevronRight size={14} className="mx-0.5 shrink-0 text-[var(--pui-ink-muted)] opacity-50" /> : null}
+                        {index < stages.length - 1 ? <span className="pui-flow-link mx-0.5 shrink-0" aria-hidden="true" /> : null}
                       </div>
                     ))}
                   </div>
@@ -351,18 +356,19 @@ export function PlanReviewNext({
                     {draft.status === 'draft' ? <Button size="sm" variant="ghost" onClick={onAddTask}><Plus size={13} />添加任务</Button> : null}
                   </div>
                   <ScrollArea className="min-h-0 flex-1">
-                    <div className="flex flex-col gap-1.5 pr-1" data-testid="plan-task-list">
+                    <div className="pui-ledger flex flex-col" data-testid="plan-task-list">
                       {stages.map((stage) => {
                         const isCollapsed = collapsed.has(stage.id)
                         return (
-                          <div key={stage.id} ref={(node) => { stageRefs.current[stage.id] = node }} className={cn('overflow-hidden rounded-[11px] border bg-[color-mix(in_srgb,var(--pui-surface-strong)_55%,transparent)]', selectedStage === stage.id ? 'border-[color-mix(in_srgb,var(--pui-accent)_38%,var(--pui-border))]' : 'border-[var(--pui-border)]')}>
+                          <div key={stage.id} ref={(node) => { stageRefs.current[stage.id] = node }} className="border-t border-[var(--pui-border)] first:border-t-0">
                             <button type="button" className="flex h-8 w-full items-center gap-2 bg-[color-mix(in_srgb,var(--pui-ink-muted)_4%,transparent)] px-2.5 text-left" onClick={() => { setSelectedStage(stage.id); setCollapsed((current) => { const next = new Set(current); if (next.has(stage.id)) next.delete(stage.id); else next.add(stage.id); return next }) }} aria-expanded={!isCollapsed}>
                               {isCollapsed ? <ChevronRight size={13} /> : <ChevronDown size={13} />}<strong className="text-[12.5px] font-medium">{stage.title}</strong><span className="text-[11.5px] text-[var(--pui-ink-muted)]">{stage.entries.length} 个任务</span>
                             </button>
                             {isCollapsed ? null : stage.entries.map((entry) => {
                               const risk = entry.task.assignmentBlocked || issues.some((issue) => issue.taskKey === entry.task.key)
                               return (
-                                <button type="button" key={entry.task.key} data-testid={`plan-task-${entry.task.key}`} onClick={() => openTask(entry.task.key)} className={cn('po-plan-compact-task flex h-[36px] w-full items-center gap-2 border-t border-[var(--pui-border)] px-3 text-left transition-colors hover:bg-[var(--pui-accent-soft)]', selectedTaskKey === entry.task.key && 'bg-[var(--pui-accent-soft)]')}>
+                                <button type="button" key={entry.task.key} data-testid={`plan-task-${entry.task.key}`} onClick={() => openTask(entry.task.key)} data-selected={selectedTaskKey === entry.task.key}
+                                  className="pui-ledger-row po-plan-compact-task flex h-[36px] w-full items-center gap-2 border-t border-[var(--pui-border)] px-3 text-left">
                                   <span className="w-5 shrink-0 font-mono text-[11px] text-[var(--pui-ink-muted)]">{String(entry.index + 1).padStart(2, '0')}</span>
                                   <span className="min-w-0 flex-1 truncate text-[12.5px]">{entry.task.title}</span>
                                   <span className="max-w-[110px] truncate text-[11.5px] text-[var(--pui-ink-muted)]">{shortAgent(agentOptions.find((option) => option.value === entry.task.agentId)?.label)}</span>
@@ -384,12 +390,12 @@ export function PlanReviewNext({
             </Separator>
             <Panel defaultSize={narrow ? '32%' : '24%'} minSize="18%" className="min-h-0">
               <aside className="pui-scroll flex h-full min-h-0 flex-col gap-2 overflow-auto pl-1">
-                <div className="rounded-[13px] border border-[var(--pui-border)] bg-[color-mix(in_srgb,var(--pui-surface-strong)_72%,transparent)] p-3">
+                <div className="pui-risk-panel rounded-[15px] p-3">
                   <div className="flex items-center justify-between gap-2"><span className="text-[11.5px] text-[var(--pui-ink-muted)]">审批状态</span><strong className={cn('text-[12px] font-semibold', blocking ? 'text-[var(--pui-danger)]' : 'text-[var(--pui-success)]')}>{blocking ? '待修复' : risks.length ? '可批准 · 有提醒' : '可批准'}</strong></div>
                   <div className="mt-2 grid grid-cols-3 gap-2 text-[11px] text-[var(--pui-ink-muted)]"><span>阻塞 {blocking}</span><span>任务 {draft.tasks.length}</span><span>阶段 {stages.length}</span></div>
                   <p className="mt-2 text-[11.5px] leading-relaxed text-[var(--pui-ink-muted)]">批准只创建任务与依赖，不会启动 Agent；执行需单独授权。</p>
                 </div>
-                <div className="overflow-hidden rounded-[13px] border border-[var(--pui-border)]">
+                <div className="pui-risk-panel overflow-hidden rounded-[15px]">
                   <button type="button" className="po-plan-risk-summary flex w-full items-center gap-2 px-3 py-2.5 text-left" onClick={() => setRiskOpen((open) => !open)} aria-expanded={riskOpen}>
                     <AlertTriangle size={14} className={risks.length ? 'text-[var(--pui-warning)]' : 'text-[var(--pui-ink-muted)]'} />
                     <span className="flex-1 text-[12px]">{risks.length ? `${risks.length} 项需复核` : '无待处理项'}</span><ChevronDown size={12} className={cn('transition-transform', riskOpen && 'rotate-180')} />
@@ -416,28 +422,96 @@ export function PlanReviewNext({
         <Dialog open={Boolean(selected)} onOpenChange={(open) => { if (!open) setSelectedTaskKey(null) }}>
           <AnimatePresence>
             {selected ? (
-              <DialogContent side="right" className="po-plan-task-detail">
+              <DialogContent side="right" className="po-plan-task-detail pui-detail-sheet">
                 <div className="flex h-full flex-col">
                   <div className="flex shrink-0 items-start gap-3 border-b border-[var(--pui-border)] px-5 py-4 pr-12">
                     <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-[var(--pui-accent-soft)] text-[var(--pui-accent)]">{roleIcon(selected.role)}</div>
                     <div className="min-w-0"><DialogTitle className="text-[14px] font-semibold leading-snug">{selectedIndex + 1}. {selected.title}</DialogTitle><DialogDescription className="mt-1 text-[11.5px] text-[var(--pui-ink-muted)]">{roleLabels[selected.role]} · {selected.key}</DialogDescription></div>
                   </div>
                   <ScrollArea className="min-h-0 flex-1">
-                    <div className="pui-scroll flex flex-col gap-3 px-5 py-4">
-                      <label className="flex flex-col gap-1.5 text-[11.5px] text-[var(--pui-ink-muted)]">任务名称<input className="pui-control px-2.5" value={selected.title} disabled={draft.status !== 'draft'} onChange={(event) => setTask({ title: event.target.value })} /></label>
-                      <label className="flex flex-col gap-1.5 text-[11.5px] text-[var(--pui-ink-muted)]">任务描述<textarea className="pui-control min-h-[72px] resize-y px-2.5 py-2 leading-relaxed" value={selected.description} disabled={draft.status !== 'draft'} onChange={(event) => setTask({ description: event.target.value })} /></label>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <label className="flex flex-col gap-1.5 text-[11.5px] text-[var(--pui-ink-muted)]">任务类型<select className="pui-control px-2" value={selected.role} disabled={draft.status !== 'draft'} onChange={(event) => { if (event.target.value === 'custom') { createAgentFor(selected.key); return } setTask({ role: event.target.value as PlanRole }) }}>{Object.entries(roleLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-                        <label className="flex flex-col gap-1.5 text-[11.5px] text-[var(--pui-ink-muted)]">Agent<select className="pui-control px-2" value={selected.agentId ?? ''} disabled={draft.status !== 'draft'} onChange={(event) => { if (event.target.value === '__custom__') { createAgentFor(selected.key); return } setTask({ agentId: event.target.value || null, assignmentBlocked: false, assignmentReasons: event.target.value ? ['用户手动指定'] : [] }) }}><option value="">角色默认</option>{agentOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
-                      </div>
-                      <label className="flex flex-col gap-1.5 text-[11.5px] text-[var(--pui-ink-muted)]">前置依赖<select multiple className="pui-control min-h-[64px] px-2 py-1.5" value={selected.dependsOn} disabled={draft.status !== 'draft'} onChange={(event) => setTask({ dependsOn: [...event.target.selectedOptions].map((option) => option.value) })}>{draft.tasks.filter((task) => task.key !== selected.key).map((task) => <option key={task.key} value={task.key}>{task.title}</option>)}</select></label>
-                      <label className="flex flex-col gap-1.5 text-[11.5px] text-[var(--pui-ink-muted)]">验收标准<textarea className="pui-control min-h-[64px] resize-y px-2.5 py-2 leading-relaxed" value={selected.acceptanceCriteria.join('\n')} disabled={draft.status !== 'draft'} onChange={(event) => setTask({ acceptanceCriteria: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} /></label>
-                      <label className="flex flex-col gap-1.5 text-[11.5px] text-[var(--pui-ink-muted)]">预期交付物<textarea className="pui-control min-h-[56px] resize-y px-2.5 py-2 leading-relaxed" value={selected.expectedArtifacts.join('\n')} disabled={draft.status !== 'draft'} onChange={(event) => setTask({ expectedArtifacts: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} /></label>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <label className="flex flex-col gap-1.5 text-[11.5px] text-[var(--pui-ink-muted)]">能力需求<select multiple className="pui-control min-h-[66px] px-2 py-1.5" value={selected.requiredCapabilities ?? []} disabled={draft.status !== 'draft'} onChange={(event) => setTask({ requiredCapabilities: [...event.target.selectedOptions].map((option) => option.value) as AgentCapability[] })}>{AGENT_CAPABILITIES.map((capability) => <option key={capability} value={capability}>{capability}</option>)}</select></label>
-                        <label className="flex flex-col gap-1.5 text-[11.5px] text-[var(--pui-ink-muted)]">硬性能力<select multiple className="pui-control min-h-[66px] px-2 py-1.5" value={selected.hardCapabilities ?? []} disabled={draft.status !== 'draft'} onChange={(event) => setTask({ hardCapabilities: [...event.target.selectedOptions].map((option) => option.value) as AgentCapability[] })}>{AGENT_CAPABILITIES.map((capability) => <option key={capability} value={capability}>{capability}</option>)}</select></label>
-                      </div>
-                      <div className="flex items-center justify-between gap-2 text-[11.5px] text-[var(--pui-ink-secondary)]"><label className="flex items-center gap-2"><input type="checkbox" checked={selected.requiresApproval} disabled={draft.status !== 'draft'} onChange={(event) => setTask({ requiresApproval: event.target.checked })} />执行前人工审批</label>{draft.status === 'draft' ? <Button size="sm" variant="danger" onClick={() => { onRemoveTask(selected.key); setSelectedTaskKey(null) }}><Trash2 size={13} />删除任务</Button> : null}</div>
+                                        <div className="flex flex-col px-5 py-1">
+                      <section className="pui-detail-section">
+                        <div className="pui-detail-label">任务名称</div>
+                        <input className="pui-detail-input -ml-2 w-[calc(100%+16px)] text-[13.5px] font-medium" value={selected.title} disabled={draft.status !== 'draft'} onChange={(event) => setTask({ title: event.target.value })} />
+                        <div className="pui-detail-label mt-3">任务描述</div>
+                        <textarea className="pui-detail-input -ml-2 min-h-[58px] w-[calc(100%+16px)] resize-y" value={selected.description} disabled={draft.status !== 'draft'} onChange={(event) => setTask({ description: event.target.value })} />
+                      </section>
+
+                      <section className="pui-detail-section">
+                        <div className="pui-detail-label">角色</div>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {(Object.entries(roleLabels) as Array<[PlanRole, string]>).map(([role, label]) => (
+                            <button key={role} type="button" className="pui-role-option" data-active={selected.role === role} disabled={draft.status !== 'draft'} onClick={() => { if (role === 'custom') { createAgentFor(selected.key); return } setTask({ role }) }}>
+                              {roleIcon(role)}{label}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="pui-detail-label mt-4">Agent</div>
+                        <details className="relative mt-1.5">
+                          <summary className="pui-control flex cursor-pointer list-none items-center justify-between px-2.5">
+                            <span className="flex min-w-0 items-center gap-2"><i className="flex size-5 items-center justify-center rounded-full bg-[var(--pui-accent-soft)] text-[10px] font-semibold not-italic text-[var(--pui-accent)]">{selectedAgentLabel.slice(0, 1)}</i><span className="truncate">{selectedAgentLabel}</span></span><ChevronDown size={13} className="shrink-0 text-[var(--pui-ink-muted)]" />
+                          </summary>
+                          <div className="pui-agent-list">
+                            <button type="button" className="pui-agent-option" data-active={!selected.agentId} onClick={(event) => { setTask({ agentId: null, assignmentBlocked: false, assignmentReasons: [] }); event.currentTarget.closest('details')?.removeAttribute('open') }}><UserRound size={13} />角色默认</button>
+                            {agentOptions.map((option) => (
+                              <button key={option.value} type="button" className="pui-agent-option" data-active={selected.agentId === option.value} onClick={(event) => { if (option.value === '__custom__') { createAgentFor(selected.key); return } setTask({ agentId: option.value, assignmentBlocked: false, assignmentReasons: ['用户手动指定'] }); event.currentTarget.closest('details')?.removeAttribute('open') }}><span className="flex size-5 items-center justify-center rounded-full bg-[var(--pui-surface)] text-[10px]">{option.label.slice(0, 1)}</span>{option.label}</button>
+                            ))}
+                          </div>
+                        </details>
+                      </section>
+
+                      <section className="pui-detail-section">
+                        <div className="flex items-center justify-between"><div className="pui-detail-label">前置依赖</div><span className="text-[11px] text-[var(--pui-ink-muted)]">{selected.dependsOn.length ? `${selected.dependsOn.length} 项` : '无'}</span></div>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {selected.dependsOn.map((dependency) => <span className="pui-chip" key={dependency}>{draft.tasks.find((task) => task.key === dependency)?.title ?? dependency}<button type="button" aria-label="移除依赖" onClick={() => setTask({ dependsOn: selected.dependsOn.filter((key) => key !== dependency) })}><X size={11} /></button></span>)}
+                          <details className="relative">
+                            <summary className="pui-chip pui-chip-add cursor-pointer list-none"><Plus size={11} />添加</summary>
+                            <div className="pui-agent-list max-h-48 overflow-auto">
+                              {draft.tasks.filter((task) => task.key !== selected.key && !selected.dependsOn.includes(task.key)).map((task) => <button type="button" key={task.key} className="pui-agent-option" onClick={(event) => { setTask({ dependsOn: [...selected.dependsOn, task.key] }); event.currentTarget.closest('details')?.removeAttribute('open') }}>{task.title}</button>)}
+                            </div>
+                          </details>
+                        </div>
+                      </section>
+
+                      <section className="pui-detail-section">
+                        <div className="flex items-center justify-between"><div className="pui-detail-label">验收标准</div><span className="text-[11px] text-[var(--pui-ink-muted)]">{selected.acceptanceCriteria.length} 条</span></div>
+                        <div className="mt-2 flex flex-col gap-1.5">
+                          {selected.acceptanceCriteria.map((criterion, index) => (
+                            <div className="flex items-start gap-1" key={`${index}-${criterion.slice(0, 12)}`}>
+                              <span className="mt-2.5 size-1.5 shrink-0 rounded-full bg-[var(--pui-accent)]" />
+                              <input className="pui-detail-input flex-1" value={criterion} disabled={draft.status !== 'draft'} onChange={(event) => setTask({ acceptanceCriteria: selected.acceptanceCriteria.map((item, itemIndex) => itemIndex === index ? event.target.value : item) })} onBlur={() => setTask({ acceptanceCriteria: selected.acceptanceCriteria.filter((item) => item.trim()) })} />
+                              <button type="button" className="mt-1 inline-flex size-6 items-center justify-center rounded-md text-[var(--pui-ink-muted)] hover:bg-[var(--pui-danger-soft)] hover:text-[var(--pui-danger)]" aria-label="删除验收标准" onClick={() => setTask({ acceptanceCriteria: selected.acceptanceCriteria.filter((_, itemIndex) => itemIndex !== index) })}><X size={12} /></button>
+                            </div>
+                          ))}
+                          <button type="button" className="pui-chip pui-chip-add w-fit" onClick={() => setTask({ acceptanceCriteria: [...selected.acceptanceCriteria, ''] })}><Plus size={11} />添加验收标准</button>
+                        </div>
+                      </section>
+
+                      <section className="pui-detail-section">
+                        <div className="flex items-center justify-between"><div className="pui-detail-label">预期交付物</div><span className="text-[11px] text-[var(--pui-ink-muted)]">{selected.expectedArtifacts.length} 个</span></div>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {selected.expectedArtifacts.map((artifact, index) => <span className="pui-chip" key={`${artifact}-${index}`}>{artifact}<button type="button" aria-label="移除交付物" onClick={() => setTask({ expectedArtifacts: selected.expectedArtifacts.filter((_, itemIndex) => itemIndex !== index) })}><X size={11} /></button></span>)}
+                          <details className="relative">
+                            <summary className="pui-chip pui-chip-add cursor-pointer list-none"><Plus size={11} />添加</summary>
+                            <div className="pui-agent-list">
+                              <input placeholder="输入后回车" className="pui-control mb-1 w-full px-2" onKeyDown={(event) => { if (event.key === 'Enter' && event.currentTarget.value.trim()) { setTask({ expectedArtifacts: [...selected.expectedArtifacts, event.currentTarget.value.trim()] }); event.currentTarget.value = '' } }} />
+                            </div>
+                          </details>
+                        </div>
+                      </section>
+
+                      <section className="pui-detail-section">
+                        <div className="pui-detail-label">能力需求</div>
+                        <div className="mt-2 grid grid-cols-2 gap-3">
+                          <div><div className="mb-1.5 text-[11px] text-[var(--pui-ink-muted)]">需求</div><div className="flex flex-wrap gap-1">{AGENT_CAPABILITIES.map((capability) => <button type="button" key={capability} className="pui-chip" data-active={(selected.requiredCapabilities ?? []).includes(capability)} onClick={() => { const current = selected.requiredCapabilities ?? []; setTask({ requiredCapabilities: current.includes(capability) ? current.filter((item) => item !== capability) : [...current, capability] as AgentCapability[] }) }}>{capability}</button>)}</div></div>
+                          <div><div className="mb-1.5 text-[11px] text-[var(--pui-ink-muted)]">硬性</div><div className="flex flex-wrap gap-1">{AGENT_CAPABILITIES.map((capability) => <button type="button" key={capability} className="pui-chip" data-active={(selected.hardCapabilities ?? []).includes(capability)} onClick={() => { const current = selected.hardCapabilities ?? []; setTask({ hardCapabilities: current.includes(capability) ? current.filter((item) => item !== capability) : [...current, capability] as AgentCapability[] }) }}>{capability}</button>)}</div></div>
+                        </div>
+                      </section>
+
+                      <section className="pui-detail-section flex items-center justify-between gap-2 border-b-0">
+                        <button type="button" className="flex items-center gap-2 text-[12px] text-[var(--pui-ink-secondary)]" disabled={draft.status !== 'draft'} onClick={() => setTask({ requiresApproval: !selected.requiresApproval })}><span className={cn('relative h-[18px] w-[32px] rounded-full border transition-colors', selected.requiresApproval ? 'border-[var(--pui-accent)] bg-[var(--pui-accent)]' : 'border-[var(--pui-border)] bg-[var(--pui-surface)]')}><span className={cn('absolute top-[2px] size-3 rounded-full bg-white shadow-sm transition-transform', selected.requiresApproval ? 'translate-x-[15px]' : 'translate-x-[2px]')} /></span>执行前人工审批</button>
+                        {draft.status === 'draft' ? <Button size="sm" variant="danger" onClick={() => { onRemoveTask(selected.key); setSelectedTaskKey(null) }}><Trash2 size={13} />删除任务</Button> : null}
+                      </section>
                       {selected.rationale ? <div className="po-plan-task-rationale rounded-lg border border-[var(--pui-border)] bg-[var(--pui-surface-muted)] p-2.5 text-[11.5px] leading-relaxed text-[var(--pui-ink-secondary)]">{selected.rationale}</div> : null}
                       {selected.assignmentBlocked ? <div className="rounded-lg border border-[color-mix(in_srgb,var(--pui-danger)_30%,var(--pui-border))] bg-[var(--pui-danger-soft)] p-2.5 text-[11.5px] text-[var(--pui-danger)]">{selected.assignmentReasons.join('；') || '该任务暂时无法分配 Agent'}</div> : null}
                     </div>
@@ -447,13 +521,8 @@ export function PlanReviewNext({
             ) : null}
           </AnimatePresence>
         </Dialog>
+        </motion.div>
       </div>
     </TooltipProvider>
   )
 }
-
-
-
-
-
-

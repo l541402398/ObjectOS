@@ -207,7 +207,7 @@ try {
   await page.waitForSelector('.po-plan-task-detail', { timeout: 10_000 })
   const detailText = await page.locator('.po-plan-task-detail').innerText()
   check('AI planner: rationale and capability requirements are visible in task detail', detailText.includes('能力需求') && (await page.locator('.po-plan-task-rationale').count()) >= 1, detailText.slice(0, 200))
-  const firstAcceptance = page.locator('.po-plan-task-detail label').filter({ hasText: '验收标准' }).locator('textarea')
+  const firstAcceptance = page.locator('.po-plan-task-detail section').filter({ hasText: '验收标准' }).locator('input').first()
   await firstAcceptance.fill('人工复核样式对比')
   await page.waitForTimeout(300)
   const editedAcceptance = await firstAcceptance.inputValue()

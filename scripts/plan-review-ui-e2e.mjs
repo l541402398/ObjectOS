@@ -26,8 +26,8 @@ try {
   await page.getByRole('button', { name: '生成计划' }).click()
   await page.waitForSelector('.po-plan-modal textarea', { timeout: 10_000 })
   await page.locator('.po-plan-modal textarea').fill('实现设置页运行限制，并为计划审核增加路线图')
-  await page.locator('.po-plan-mode-switch button').filter({ hasText: '本地规则' }).click()
-  await page.waitForTimeout(300)
+  await page.getByRole('radio', { name: /本地规则/ }).click()
+  await page.waitForTimeout(700)
   await page.locator('[data-testid="plan-generate"]').click()
   await page.waitForSelector('[data-testid="plan-review-workbench"]', { timeout: 20_000 })
   await page.waitForTimeout(600)
@@ -62,7 +62,7 @@ try {
   await page.screenshot({ path: join(shots, 'plan-review-dag.png') })
   await page.locator('[data-testid="plan-task-dag"] .react-flow__node').first().click()
   await page.waitForSelector('.po-plan-task-detail', { timeout: 10_000 })
-  const drawerFields = await page.locator('.po-plan-task-detail label').allInnerTexts()
+  const drawerText = await page.locator('.po-plan-task-detail').innerText()
   await page.waitForTimeout(500)
   await page.screenshot({ path: join(shots, 'plan-review-task-detail.png') })
   await page.locator('[data-testid="task-detail-close"]').click()
@@ -101,7 +101,7 @@ try {
     ['risk summary expands real review items', riskRows >= 1],
     ['DAG renders real task nodes', dagNodes >= 1],
     ['DAG renders real dependency edges when present', dagEdges >= 0],
-    ['task detail keeps editable fields', drawerFields.some((text) => text.includes('任务名称')) && drawerFields.some((text) => text.includes('验收标准'))],
+    ['task detail keeps editable fields', drawerText.includes('任务名称') && drawerText.includes('验收标准') && drawerText.includes('能力')],
     ['editing title refreshes compact list', compactText.includes(newTitle)],
     ['approval creates real tasks', !approveEnabled || tasks.length > 0],
     ['approved plan modal stays bounded, not edge-to-edge', approvedHeight === 0 || approvedHeight <= 780],
@@ -116,4 +116,3 @@ try {
 } finally {
   if (app) await app.close().catch(() => undefined)
 }
-
