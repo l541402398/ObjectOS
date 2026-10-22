@@ -3,6 +3,32 @@
 ProjectOS is a local-first, AI-native project lifecycle workspace. The implementation baseline is
 `ProjectOS_AI开发实施设计说明书_v1.1.md`; approved ADRs live in `docs/adr/`.
 
+## Required UI source of truth
+
+Before changing any ProjectOS renderer UI, read `docs/design/PROJECTOS_UI_CONTRACT.md`, `docs/design/DESIGN.md` (tokens and materials), `docs/design/DESIGN_CHANGELOG.md`, the current Design Lab implementation and `docs/design/baselines/` images. The selected product aesthetic is the approved Premium Liquid Glass Design Lab, not an invitation to restyle it freely. Preserve its semantic components, tokens and motion system.
+
+Apply all five outstanding Design Lab fixes in `PROJECTOS_UI_CONTRACT.md` before major page migration. Any deviation requires a documented rationale and new screenshots. Do not create filler or explanatory text. Do not change backend behavior during design migration.
+
+For every UI task: (1) inspect relevant source/tokens, (2) check design contract and loaded skills, (3) implement, (4) run visual/a11y/function tests, (5) produce comparison screenshots and report unverified items. Green unit tests never imply visual acceptance. The executing DSH harness loads this root `AGENTS.md`; configured skills are listed by the runtime and must be loaded with the skill tool when applicable.
+
+### Mandatory UI design/implementation sources
+
+Every agent doing design or renderer UI must **actually consult and, where exposed as a skill, load with the `skill` tool**:
+
+| Source | Required use |
+|---|---|
+| **UI UX Pro Max** skill | load `ui-ux-pro-max`; query typography, color, layout, accessibility and motion guidance. Reject database results that conflict with the frozen Premium Liquid Glass direction, with a documented reason. |
+| **Vercel Agent Skills** | load `vercel-composition-patterns` and `vercel-react-best-practices`; use composition and React performance rules. |
+| **Impeccable** skill | load `impeccable`; run context/audit/detect where available. Do not invent PRODUCT.md context. |
+| **Sim Studio** (`simstudioai/sim`) | inspect the actual workflow editor/canvas/menu source before changing graph composition; study, do not copy brand assets. Apache-2.0. |
+| **Liquid Glass React** (`rdev/liquid-glass-react`) | inspect the installed package and test its actual Electron effect before using it; record compatibility and performance evidence. MIT. |
+| **React Bits** (`DavidHDev/react-bits`) | inspect the selected effect source (currently Aurora); preserve attribution and license (MIT + Commons Clause). |
+| **Motion** (`motion.dev`) | use Motion for React for choreography; honor reduced-motion and interruptibility. |
+
+Do not claim a source was used without a file, command, screenshot, or test that
+proves it. Record results in `docs/design/DESIGN_CHANGELOG.md`; unavailable
+sources/features are listed as limitations, not silently skipped.
+
 ## Before changing code
 
 1. Read the design document, relevant ADRs, and the task being implemented.

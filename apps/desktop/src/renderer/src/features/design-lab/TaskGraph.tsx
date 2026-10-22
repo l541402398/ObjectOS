@@ -14,6 +14,7 @@ import {
   type ReactFlowInstance,
 } from '@xyflow/react'
 import { motion } from 'motion/react'
+import { PremiumDependencyEdge, type PremiumEdgeData } from './PremiumDependencyEdge'
 import type { LabTask } from './data'
 
 type NodeData = { task: LabTask; active: boolean; related: boolean }
@@ -43,6 +44,8 @@ function LabTaskNode({ data }: NodeProps<GraphNode>) {
 }
 
 const nodeTypes = { 'pdl-task': LabTaskNode }
+const edgeTypes = { premiumDependency: PremiumDependencyEdge }
+type PremiumEdge = Edge<PremiumEdgeData, 'premiumDependency'>
 
 export function LabTaskGraph({
   tasks,
@@ -54,7 +57,7 @@ export function LabTaskGraph({
   onSelect: (id: string) => void
 }): ReactElement {
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({})
-  const [instance, setInstance] = useState<ReactFlowInstance<GraphNode, Edge> | null>(null)
+  const [instance, setInstance] = useState<ReactFlowInstance<GraphNode, PremiumEdge> | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -69,7 +72,7 @@ export function LabTaskGraph({
         'elk.edgeRouting': 'ORTHOGONAL',
         'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
       },
-      children: tasks.map((task) => ({ id: task.id, width: 154, height: 66 })),
+      children: tasks.map((task) => ({ id: task.id, width: 168, height: 72 })),
       edges: tasks.flatMap((task) => task.dependsOn.map((parent) => ({
         id: `${parent}->${task.id}`,
         sources: [parent],
@@ -119,16 +122,17 @@ export function LabTaskGraph({
     data: { task, active: selectedId === task.id, related: related.has(task.id) },
   })), [positions, related, selectedId, tasks])
 
-  const edges = useMemo<Edge[]>(() => tasks.flatMap((task) => task.dependsOn.map((parent) => {
+  const edges = useMemo<PremiumEdge[]>(() => tasks.flatMap((task) => task.dependsOn.map((parent) => {
     const highlighted = selectedId !== null && (related.has(parent) || related.has(task.id) || parent === selectedId || task.id === selectedId)
+    const focused = parent === selectedId || task.id === selectedId
     return {
       id: `${parent}->${task.id}`,
       source: parent,
       target: task.id,
-      type: 'smoothstep',
-      className: selectedId ? (highlighted ? 'pdl-edge is-active' : 'pdl-edge is-muted') : 'pdl-edge',
-      markerEnd: { type: MarkerType.ArrowClosed, width: 13, height: 13, color: highlighted ? '#9eb9ea' : '#aeb9c8' },
-      style: { stroke: highlighted ? 'rgba(112, 143, 199, .9)' : 'rgba(150, 164, 184, .34)', strokeWidth: highlighted ? 1.8 : 1 },
+      type: 'premiumDependency',
+      data: { highlighted, focused },
+      className: selectedId && !highlighted ? 'is-muted' : undefined,
+      markerEnd: { type: MarkerType.ArrowClosed, width: 12, height: 12, color: highlighted ? '#8fa8eb' : 'var(--pdl-muted)' },
     }
   })), [related, selectedId, tasks])
 
@@ -138,6 +142,7 @@ export function LabTaskGraph({
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onInit={(flow) => setInstance(flow)}
         onNodeClick={(_event, node) => onSelect(node.id)}
         fitView
@@ -161,4 +166,3 @@ export function LabTaskGraph({
     </div>
   )
 }
-

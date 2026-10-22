@@ -1,4 +1,4 @@
-# ProjectOS Premium Liquid Glass — Design Lab
+# ProjectOS Premium Liquid Glass — Design Lab\n\n> Post-acceptance status: the five mandatory fixes are tracked in\n> `docs/design/DESIGN_CHANGELOG.md`. The stage route is now icon-only, the\n> inspector is read-first, and DAG edges use `PremiumDependencyEdge`. Screenshots\n> in this folder are the original accepted baseline; post-fix captures are in\n> `docs/design/baselines/`.
 
 ## Start
 
@@ -41,9 +41,10 @@ C:\Users\Administrator\.dsh\skills\
   ui-ux-pro-max\
   vercel-composition-patterns\
   vercel-react-best-practices\
+  impeccable\
 ```
 
-The runtime catalog changed after installation and the three skills were loaded
+The runtime catalog changed after installation and the four skills were loaded
 with the `skill` tool in this session. They are therefore active, not merely
 vendored documentation.
 
@@ -76,6 +77,16 @@ Follow-up searches used:
 Those returned the Glassmorphism material profile (blur 10–20px, translucent
 light, edge reflection, z-depth) and the focus/keyboard checks applied to the
 inspector.
+
+Impeccable:
+
+- Installed under `C:\Users\Administrator\.dsh\skills\impeccable` (engine
+  `0.1.16`).
+- `impeccable context` reported `NO_PRODUCT_MD` and
+  `SCOPED_EXISTING_ALLOWED`; this is a refinement of the approved incumbent lab,
+  so no replacement visual world was created.
+- `impeccable detect --json` on the final changed UI files returned `[]`.
+- Craft-floor was read before edits; typography and contrast checks applied.
 
 Vercel Skills used:
 
@@ -178,13 +189,14 @@ static optical fallback below 42 fps. `?aurora=on` forces the shader;
 
 - Family: `SF Pro Display`, `Inter`, `PingFang SC`, `Microsoft YaHei`,
   system-ui.
-- Display: 25px / 1.25 / 660.
-- Section: 13px / 1.3 / 650.
-- Body: 11.5–12px / 1.45–1.6.
-- Label: 10–10.5px / 620, +0.03em.
+- Display: 26px / 1.24 / 660.
+- Section: 16px / 1.3 / 650.
+- Body: 14px / 1.55 / 450.
+- Secondary: 12.5px / 1.4 / 450.
+- Label: 12px / 620, +0.03em.
 - Numeric: tabular, 18–32px, tight tracking.
-- No body text below 10px; task titles and inspector fields have been raised
-  from the first pass to avoid “shrink to fit”.
+- No body text below 12px. The five-fix pass raised body copy and removed the
+  earlier 10–11px text floor.
 
 ### Spacing / shapes
 
@@ -246,7 +258,7 @@ optical effects degrade to static fields.
 - `pnpm build` — PASS
 - `pnpm package:dir` — PASS
 - `pnpm test:package` — PASS
-- `scripts/design-lab-e2e.mjs` — 15/15 checks PASS
+- `scripts/design-lab-e2e.mjs` — 24/24 checks PASS after the five fixes
 - `scripts/design-lab-perf.mjs` — forced Aurora 8fps, library probe 7fps
 - Interaction recording: `design-lab-demo.webm` (20.1s, 1280×800 VP9)
 
@@ -281,6 +293,3 @@ optical effects degrade to static fields.
 6. Only the Design Lab was built. No formal ProjectOS page was replaced.
 7. Visual acceptance is the user's decision; test metrics are not presented as
    visual acceptance.
-
-
-

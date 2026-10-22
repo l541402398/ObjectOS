@@ -166,8 +166,8 @@ export default function DesignLabPage(): ReactElement {
           <div className="pdl-viewbar-row">
             <OpticalGlass className="pdl-viewbar-glass" radius={18}>
               <div className="pdl-viewbar" role="tablist" aria-label="计划视图">
-                <button type="button" role="tab" aria-selected={view === 'route'} className={view === 'route' ? 'is-active' : ''} onClick={() => setView('route')}><Layers3 size={14} />阶段路线</button>
-                <button type="button" role="tab" aria-selected={view === 'dag'} className={view === 'dag' ? 'is-active' : ''} onClick={() => setView('dag')}><GitBranch size={14} />任务依赖</button>
+                <button type="button" role="tab" aria-selected={view === 'route'} className={view === 'route' ? 'is-active' : ''} onClick={() => { setView('route'); setSelectedId(null) }}><Layers3 size={14} />阶段路线</button>
+                <button type="button" role="tab" aria-selected={view === 'dag'} className={view === 'dag' ? 'is-active' : ''} onClick={() => { setView('dag'); setSelectedId(null) }}><GitBranch size={14} />任务依赖</button>
               </div>
             </OpticalGlass>
             <div className="pdl-view-context"><span>{view === 'route' ? `${stageLabel} · ${activeTasks.length} 项工作` : '真实依赖结构 · ELK 自动布局'}</span><button type="button" onClick={() => setToast('原型交互：视图已重置')}>重置视图</button></div>
@@ -252,7 +252,7 @@ export default function DesignLabPage(): ReactElement {
       </div>
 
       <AnimatePresence>
-        {selected && inspectorOpen ? <TaskInspector task={selected} tasks={tasks} onPatch={patchTask} onClose={() => setInspectorOpen(false)} /> : null}
+        {selected && inspectorOpen ? <TaskInspector task={selected} tasks={tasks} onPatch={patchTask} onDelete={(id) => { setTasks((current) => current.filter((task) => task.id !== id)); setSelectedId(null); setInspectorOpen(false) }} onClose={() => setInspectorOpen(false)} /> : null}
       </AnimatePresence>
       {glassLab ? (
         <div className="pdl-glass-probe">
