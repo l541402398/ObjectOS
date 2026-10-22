@@ -891,3 +891,11 @@
 }
 
 
+
+/* Contract fix 2: stage route shows designed icons only. Stage title, task count
+   and role detail live in the selected-stage summary below the route. */
+.pui-route { height: 112px; }
+.pui-route-svg { height: 132px; }
+.pui-route-stops { padding-top: 14px; }
+.pui-stop { gap: 0; }
+.pui-stop-count, .pui-stop-title, .pui-stop-small { display: none; }

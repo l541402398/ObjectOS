@@ -35,12 +35,10 @@ export function StageJourney({
   stages,
   activeStage,
   onSelect,
-  roleLabels,
 }: {
   stages: Stage[]
   activeStage: string
   onSelect: (stage: Stage) => void
-  roleLabels: Record<PlanRole, string>
 }): ReactElement {
   const reduce = useReducedMotion()
   const gradientId = `pui-route-${useId().replace(/:/g, '')}`
@@ -79,9 +77,9 @@ export function StageJourney({
               onClick={() => onSelect(stage)}
               aria-pressed={selected}
               aria-label={`${stage.title}，${stage.entries.length} 个任务`}
+              title={`${stage.title} · ${stage.entries.length} 个任务`}
               style={{ transform: `translateY(${index % 2 === 0 ? 7 : -11}px)` }}
             >
-              <span className="pui-stop-count">0{index + 1}</span>
               <motion.span
                 className="pui-stop-orb"
                 whileHover={reduce ? undefined : { y: -4, scale: 1.035 }}
@@ -90,8 +88,6 @@ export function StageJourney({
                 <Icon size={25} strokeWidth={1.55} />
                 {stage.hasRisk ? <i className="pui-stop-risk" /> : null}
               </motion.span>
-              <span className="pui-stop-title">{stage.title}</span>
-              <span className="pui-stop-small">{stage.entries.length} 个任务 · {stage.entries.length > 1 ? '并行' : roleLabels[stage.roles[0] ?? 'custom']}</span>
             </button>
           )
         })}
@@ -99,4 +95,3 @@ export function StageJourney({
     </div>
   )
 }
-

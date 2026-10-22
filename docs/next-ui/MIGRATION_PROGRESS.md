@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `945595e` after settings focus guard, workspace wrap and real Electron MP4
+Latest checkpoint: pending after contract fix 2 (icon-only stage route)
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -467,3 +467,15 @@ Head: `945595e`.
 - `pnpm lint` clean, `pnpm typecheck/build` pass, 265 tests pass, `v12-e2e` pass.
 - Remaining: final page-level composition for Knowledge/Resources/Project Center,
   Task Board full-page capture artifact, human visual acceptance, stable merge.
+
+
+## Slice 25 — Contract fix 2: icon-only stage journey
+
+- `StageJourney` now renders only the four designed stage icons on the shared
+  curve. Always-visible stage names, per-stage descriptions and repeated counts
+  are removed.
+- Each icon keeps `aria-label` and a native hover/focus tooltip with title + task
+  count; selected stage detail remains in the separate summary below the route.
+- The route height is reduced from 158px to 112px.
+- Plan review E2E remains 10/10 (stages=4, tasks=4, dag=4).
+- Evidence: `docs/next-ui/screens/plan-workbench.png`.
