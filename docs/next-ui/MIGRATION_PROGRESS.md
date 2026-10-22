@@ -429,8 +429,8 @@ Head: `8023df5`.
   Agent Workbench → Knowledge → Settings.
 - Eight real 1440×900 frames assembled into
   `docs/next-ui/screens/projectos-next-ui-tour.gif` (9.6s, 2.4 MB).
-- This is a motion evidence asset built from actual frames, not a substitute for
-  a raw MP4 screen recording; MP4 capture remains open.
+- A real desktop-capture MP4 was added in Slice 24; the GIF remains as a
+  lightweight preview.
 
 
 ## Slice 23 — Settings keyboard containment
