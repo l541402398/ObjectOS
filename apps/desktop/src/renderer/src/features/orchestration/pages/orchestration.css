@@ -2756,3 +2756,82 @@
   .po-flow-task:hover,
   .po-flow-orchestrator:hover { transform: none; }
 }
+
+/* Plan audit workspace: one canvas, stage rail and task stream on the left,
+   review state on the right; no stack of identical white cards. */
+.po-plan-review {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 286px;
+  grid-template-areas:
+    "overview overview"
+    "map risks"
+    "tasks risks";
+  align-items: start;
+  gap: 14px 16px;
+}
+.po-plan-review-overview { grid-area: overview; padding: 0 0 12px; border: 0; border-bottom: 1px solid var(--plan-border); border-radius: 0; background: transparent; box-shadow: none; }
+.po-plan-review-map { grid-area: map; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.po-plan-review-tasks { grid-area: tasks; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.po-plan-review-risks { grid-area: risks; position: sticky; top: 0; padding: 0; border: 1px solid var(--plan-border); border-radius: 14px; background: color-mix(in srgb, var(--plan-surface-strong) 72%, transparent); box-shadow: inset 0 1px 0 rgba(255,255,255,.3); overflow: hidden; }
+.po-plan-review-title { min-width: 0; }
+.po-plan-goal-title { display: flex; align-items: flex-start; gap: 6px; }
+.po-plan-goal-title h2 { display: -webkit-box; max-width: 100%; margin: 2px 0 3px; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: var(--plan-text); font-size: 21px; font-weight: 640; letter-spacing: -.015em; line-height: 1.32; }
+.po-plan-goal-title .ant-btn { flex: 0 0 auto; margin-top: 2px; color: var(--plan-muted); opacity: .6; }
+.po-plan-goal-title:hover .ant-btn { opacity: 1; }
+.po-plan-goal-editor { display: flex; flex-direction: column; gap: 6px; margin-top: 3px; }
+.po-plan-goal-editor > div { display: flex; justify-content: flex-end; gap: 6px; }
+.po-plan-review-overview p { max-width: none; }
+.po-plan-review-overview-foot { justify-content: flex-end; margin-top: 8px; padding-top: 7px; border-top: 0; }
+.po-plan-review-map-head { margin-bottom: 8px; }
+.po-stage-route { min-height: 84px; padding-bottom: 2px; }
+.po-stage-card { min-height: 78px; border-radius: 12px; background: color-mix(in srgb, var(--plan-surface-strong) 76%, transparent); box-shadow: none; }
+.po-stage-card:hover { background: var(--plan-surface-strong); }
+.po-plan-review-tasks { padding-top: 2px; }
+.po-plan-review-section-head { margin-bottom: 6px; }
+.po-plan-review-risks .po-plan-risk-summary { padding: 11px 12px; }
+.po-plan-risk-list { padding: 0 8px 8px; }
+.po-plan-review-tasks .po-plan-stage-group { background: color-mix(in srgb, var(--plan-surface-strong) 58%, transparent); }
+.po-plan-review-tasks .po-plan-compact-task { background: transparent; }
+.po-plan-review-tasks .po-plan-compact-task:hover,
+.po-plan-review-tasks .po-plan-compact-task.is-selected { background: color-mix(in srgb, var(--plan-accent) 6%, transparent); }
+@media (max-width: 1120px) {
+  .po-plan-review { grid-template-columns: minmax(0, 1fr); grid-template-areas: "overview" "map" "tasks" "risks"; }
+  .po-plan-review-risks { position: static; }
+}
+
+/* Dedicated plan-review workspace: wide, bounded, no duplicate goal field. */
+.po-plan-modal.is-workspace .ant-modal-content {
+  height: min(880px, calc(100vh - 56px)) !important;
+  max-height: min(880px, calc(100vh - 56px));
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px;
+  overflow: hidden;
+}
+.po-plan-modal.is-workspace .ant-modal-header { flex: 0 0 auto; min-height: 28px; margin: 0; padding: 12px 22px 0; background: transparent; }
+.po-plan-modal.is-workspace .ant-modal-body { flex: 1 1 auto; min-height: 0; max-height: none; overflow-y: auto; padding: 4px 22px 0; }
+.po-plan-modal.is-workspace .ant-modal-footer { flex: 0 0 auto; margin: 0; padding: 10px 22px 14px; border-top: 1px solid var(--plan-border); }
+.po-plan-modal.is-workspace .ant-modal-close { top: 10px; right: 16px; }
+.po-plan-modal.is-workspace .po-plan-editor { min-height: 0; }
+
+/* Stage nodes: identity, count and risk at a glance. */
+.po-stage-card { min-height: 104px; justify-content: flex-start; gap: 4px; padding: 11px 12px 10px; border-radius: 14px; }
+.po-stage-card-top { display: flex; width: 100%; align-items: center; gap: 7px; }
+.po-stage-icon { display: inline-flex; width: 26px; height: 26px; align-items: center; justify-content: center; border: 1px solid color-mix(in srgb, var(--plan-accent) 20%, var(--plan-border)); border-radius: 8px; background: color-mix(in srgb, var(--plan-accent) 7%, transparent); color: var(--plan-accent); font-size: 13px; }
+.po-stage-card-top .po-stage-index { margin-left: auto; color: var(--plan-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.po-stage-card strong { margin-top: 5px; font-size: 14px; font-weight: 590; letter-spacing: -.005em; }
+.po-stage-meta { display: flex; width: 100%; align-items: center; gap: 7px; margin-top: 1px; color: var(--plan-muted) !important; font-size: 12px !important; }
+.po-stage-meta em { display: inline-flex; padding: 1px 6px; border-radius: 999px; background: color-mix(in srgb, var(--plan-accent) 6%, transparent); color: color-mix(in srgb, var(--plan-accent) 70%, var(--plan-muted)); font-size: 12px; font-style: normal; }
+.po-stage-card.is-risk .po-stage-icon { border-color: rgba(191,61,75,.24); background: rgba(191,61,75,.06); color: var(--plan-danger); }
+.po-stage-connector { flex-basis: 26px; color: color-mix(in srgb, var(--plan-muted) 55%, transparent); }
+
+.po-review-aside-status { display: flex; flex-direction: column; gap: 6px; padding: 11px 12px 12px; border-top: 1px solid var(--plan-border); }
+.po-review-aside-status > div { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--plan-muted); font-size: 12px; }
+.po-review-aside-status strong { font-size: 12px; font-weight: 620; }
+.po-review-aside-status strong.is-blocking { color: var(--plan-danger); }
+.po-review-aside-status strong.is-ready { color: var(--plan-success, #2f8f62); }
+.po-review-aside-status em { color: var(--plan-text); font-style: normal; font-variant-numeric: tabular-nums; }
+.po-review-aside-status p { margin: 3px 0 0; color: var(--plan-muted); font-size: 12px; line-height: 1.5; }
+
+.po-plan-modal.is-workspace .ant-modal { width: min(1480px, calc(100vw - 48px)) !important; max-width: calc(100vw - 32px) !important; }
+.po-plan-modal.is-workspace .ant-modal-content { min-width: 0; }

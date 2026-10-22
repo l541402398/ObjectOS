@@ -35,6 +35,20 @@ try {
   const stageCount = await page.locator('[data-testid="plan-stage-route"] .po-stage-card').count()
   const compactCount = await page.locator('[data-testid="plan-task-list"] .po-plan-compact-task').count()
   await page.screenshot({ path: join(shots, 'plan-review-overview.png') })
+  await page.evaluate(() => { document.documentElement.dataset.theme = 'dark' })
+  await page.waitForTimeout(250)
+  await page.screenshot({ path: join(shots, 'plan-review-dark.png') })
+  await page.evaluate(() => { document.documentElement.dataset.theme = 'light' })
+  await app.evaluate(({ BrowserWindow }) => { BrowserWindow.getAllWindows()[0]?.webContents.setZoomFactor(1.25) })
+  await page.evaluate(() => window.dispatchEvent(new Event('resize')))
+  await page.waitForTimeout(500)
+  await page.screenshot({ path: join(shots, 'plan-review-125.png') })
+  await app.evaluate(({ BrowserWindow }) => { BrowserWindow.getAllWindows()[0]?.webContents.setZoomFactor(1) })
+  await app.evaluate(({ BrowserWindow }) => { BrowserWindow.getAllWindows()[0]?.setSize(1100, 800) })
+  await page.waitForTimeout(350)
+  await page.screenshot({ path: join(shots, 'plan-review-1100.png') })
+  await app.evaluate(({ BrowserWindow }) => { BrowserWindow.getAllWindows()[0]?.setSize(1440, 900) })
+  await page.waitForTimeout(350)
   await page.locator('.po-plan-risk-summary').click()
   await page.waitForSelector('[data-testid="plan-risk-list"]', { timeout: 10_000 })
   const riskRows = await page.locator('[data-testid="plan-risk-list"] > *').count()
@@ -81,7 +95,7 @@ try {
   await page.screenshot({ path: join(shots, 'plan-review-final.png') })
 
   const checks = [
-    ['overview shows goal, stages, risk count and version', overview.includes('目标') && overview.includes('阶段') && overview.includes('r1')],
+    ['overview shows goal, stages, risk count and version', overview.includes('实现设置页') && overview.includes('阶段') && overview.includes('R1') && overview.includes('版本')],
     ['stage route is derived and clickable', stageCount >= 1],
     ['task rows are compact by default', compactCount >= 1],
     ['risk summary expands real review items', riskRows >= 1],

@@ -384,15 +384,22 @@ export default function OrchestrationWorkspace() {
   const autoScan = useRef(false)
   const resolvedTheme = useResolvedTheme()
   const [planModalWidth, setPlanModalWidth] = useState(920)
+  const [reviewModalWidth, setReviewModalWidth] = useState(1200)
   useEffect(() => {
     const update = (): void => {
       const scale = typeof window !== 'undefined' && window.devicePixelRatio > 1 ? window.devicePixelRatio : 1
       const available = Math.max(520, (window.innerWidth - 80) / scale)
       setPlanModalWidth(Math.min(920, Math.floor(available)))
+      const visualWidth = window.visualViewport?.width ?? window.innerWidth
+      setReviewModalWidth(Math.max(720, Math.min(1480, visualWidth - 48)))
     }
     update()
     window.addEventListener('resize', update)
-    return () => window.removeEventListener('resize', update)
+    window.visualViewport?.addEventListener('resize', update)
+    return () => {
+      window.removeEventListener('resize', update)
+      window.visualViewport?.removeEventListener('resize', update)
+    }
   }, [])
 
   const snapshot = snapshotQuery.data?.snapshot ?? null
@@ -1569,7 +1576,7 @@ export default function OrchestrationWorkspace() {
         ) : null}
 
         <Modal
-          title={draft ? (draft.status === 'draft' ? `计划草稿 · r${draft.revision}` : `计划 r${draft.revision}`) : '生成计划'}
+          title={draft ? null : '生成计划'}
           open={planOpen}
           onCancel={() => setPlanOpen(false)}
           footer={draft?.status === 'draft' ? (
@@ -1587,26 +1594,26 @@ export default function OrchestrationWorkspace() {
               </Button>
             </div>
           ) : null}
-          width={planModalWidth}
+          width={draft ? reviewModalWidth : planModalWidth}
           centered
           destroyOnHidden
-          className={`po-plan-modal${draft ? ' is-review' : ''}${draft?.status === 'approved' ? ' is-approved' : ''}`}
+          className={`po-plan-modal${draft ? ' is-review is-workspace' : ''}${draft?.status === 'approved' ? ' is-approved' : ''}`}
         >
           <div className="po-plan-editor">
-            <label className="po-plan-label">需求目标</label>
-            <Input.TextArea
-              rows={2}
-              value={draft?.goal ?? goal}
-              onChange={(event) => {
-                if (draft) setDraft({ ...draft, goal: event.target.value })
-                else {
-                  setGoal(event.target.value)
-                  if (plannerError) setPlannerError(null)
-                }
-              }}
-              placeholder="例如：增加角色分级的用户权限管理，覆盖数据、接口、前端与测试"
-              disabled={draft?.status !== 'draft' && Boolean(draft)}
-            />
+            {!draft ? (
+              <>
+                <label className="po-plan-label">需求目标</label>
+                <Input.TextArea
+                  rows={2}
+                  value={goal}
+                  onChange={(event) => {
+                    setGoal(event.target.value)
+                    if (plannerError) setPlannerError(null)
+                  }}
+                  placeholder="例如：增加角色分级的用户权限管理，覆盖数据、接口、前端与测试"
+                />
+              </>
+            ) : null}
             {!draft ? (
               <div className="po-plan-planner">
                 <div className="po-plan-planner-head">
@@ -1704,6 +1711,7 @@ export default function OrchestrationWorkspace() {
                   roleLabels={ROLE_LABELS}
                   agentOptions={planAgentOptions}
                   onUpdateTask={updateDraftTask}
+                  onUpdateGoal={(goal) => setDraft((current) => (current ? { ...current, goal } : current))}
                   onAddTask={addDraftTask}
                   onRemoveTask={removeDraftTask}
                   onOpenCustomAgent={openCustomAgent}

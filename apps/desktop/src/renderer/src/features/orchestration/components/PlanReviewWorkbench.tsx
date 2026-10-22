@@ -12,12 +12,19 @@ import {
 import {
   ApartmentOutlined,
   ApartmentOutlined as DagIcon,
+  CheckOutlined,
+  CloseOutlined,
+  CodeOutlined,
   DeleteOutlined,
   DownOutlined,
+  EditOutlined,
+  ExperimentOutlined,
+  EyeOutlined,
   InfoCircleOutlined,
   NodeIndexOutlined,
   PlusOutlined,
   RightOutlined,
+  UserOutlined,
   WarningOutlined,
 } from '@ant-design/icons'
 import {
@@ -50,11 +57,17 @@ function shortAgentLabel(label: string | undefined): string {
   return label.split(' · ')[0] ?? label
 }
 
+function stageIcon(role: PlanRole | undefined) {
+  if (role === 'architect') return <ApartmentOutlined />
+  if (role === 'developer') return <CodeOutlined />
+  if (role === 'reviewer') return <EyeOutlined />
+  if (role === 'tester') return <ExperimentOutlined />
+  return <UserOutlined />
+}
+
 function summarize(draft: PlanDraft, stages: Stage[], risks: number): string {
-  const goal = draft.goal.replace(/\s+/g, ' ').trim()
-  const shortened = goal.length > 76 ? `${goal.slice(0, 76)}…` : goal
   const path = stages.map((stage) => stage.title).join(' → ')
-  return `目标：${shortened}。路径：${path || '单个任务'}。将创建 ${draft.tasks.length} 个任务；${risks ? `${risks} 项需复核。` : '当前没有阻塞性问题。'}`
+  return `${path || '单个任务'} · ${draft.tasks.length} 个任务 · ${risks ? `${risks} 项需复核` : '没有阻塞性问题'}`
 }
 
 type PlanFlowNodeData = {
@@ -95,6 +108,7 @@ export function PlanReviewWorkbench({
   roleLabels,
   agentOptions,
   onUpdateTask,
+  onUpdateGoal,
   onAddTask,
   onRemoveTask,
   onOpenCustomAgent,
@@ -103,6 +117,7 @@ export function PlanReviewWorkbench({
   roleLabels: Record<PlanRole, string>
   agentOptions: AgentOption[]
   onUpdateTask: (index: number, patch: Partial<PlannedTask>) => void
+  onUpdateGoal: (goal: string) => void
   onAddTask: () => void
   onRemoveTask: (taskKey: string) => void
   onOpenCustomAgent: (taskKey: string) => void
@@ -118,6 +133,9 @@ export function PlanReviewWorkbench({
   ]
   const [view, setView] = useState<'route' | 'dag'>('route')
   const [riskOpen, setRiskOpen] = useState(false)
+  const [editingGoal, setEditingGoal] = useState(false)
+  const [goalDraft, setGoalDraft] = useState(draft.goal)
+  useEffect(() => { setGoalDraft(draft.goal) }, [draft.goal])
   const [selectedStage, setSelectedStage] = useState<string | null>(stages[0]?.id ?? null)
   const [selectedTaskKey, setSelectedTaskKey] = useState<string | null>(null)
   const [collapsedStages, setCollapsedStages] = useState<Set<string>>(new Set())
@@ -254,9 +272,37 @@ export function PlanReviewWorkbench({
     <div className="po-plan-review" data-testid="plan-review-workbench">
       <section className="po-plan-review-overview">
         <div className="po-plan-review-overview-head">
-          <div>
-            <span className="po-plan-eyebrow">计划审核台 · r{draft.revision}</span>
-            <h2>{draft.goal.length > 74 ? `${draft.goal.slice(0, 74)}…` : draft.goal}</h2>
+          <div className="po-plan-review-title">
+            <span className="po-plan-eyebrow">PLAN REVIEW · R{draft.revision}</span>
+            {editingGoal ? (
+              <div className="po-plan-goal-editor">
+                <Input.TextArea
+                  autoSize={{ minRows: 2, maxRows: 4 }}
+                  value={goalDraft}
+                  onChange={(event) => setGoalDraft(event.target.value)}
+                  aria-label="计划目标"
+                />
+                <div>
+                  <Button size="small" type="text" icon={<CloseOutlined />} onClick={() => { setGoalDraft(draft.goal); setEditingGoal(false) }}>取消</Button>
+                  <Button
+                    size="small"
+                    type="primary"
+                    icon={<CheckOutlined />}
+                    disabled={!goalDraft.trim()}
+                    onClick={() => { onUpdateGoal(goalDraft.trim()); setEditingGoal(false) }}
+                  >
+                    保存目标
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="po-plan-goal-title">
+                <h2 title={draft.goal}>{draft.goal}</h2>
+                {draft.status === 'draft' ? (
+                  <Button type="text" size="small" icon={<EditOutlined />} aria-label="编辑计划目标" onClick={() => { setGoalDraft(draft.goal); setEditingGoal(true) }} />
+                ) : null}
+              </div>
+            )}
             <p>{summarize(draft, stages, reviewRisks.length)}</p>
           </div>
           <div className="po-plan-review-metrics" aria-label="计划概览指标">
@@ -267,7 +313,6 @@ export function PlanReviewWorkbench({
           </div>
         </div>
         <div className="po-plan-review-overview-foot">
-          <span><InfoCircleOutlined /> 执行思路由计划目标、阶段和依赖结构归纳，不替代任务详情。</span>
           <details className="po-plan-generation-details">
             <summary>生成详情 <DownOutlined /></summary>
             <div>
@@ -308,15 +353,18 @@ export function PlanReviewWorkbench({
                     type="button"
                     className={`po-stage-card${selectedStage === stage.id ? ' is-selected' : ''}${stage.hasRisk ? ' is-risk' : ''}`}
                     onClick={() => selectStage(stage)}
+                    aria-label={`${stage.title}，${stage.entries.length} 个任务`}
                   >
-                    <span className="po-stage-index">{String(index + 1).padStart(2, '0')}</span>
+                    <span className="po-stage-card-top">
+                      <span className="po-stage-icon">{stageIcon(stage.roles[0])}</span>
+                      <span className="po-stage-index">{String(index + 1).padStart(2, '0')}</span>
+                      {stage.hasRisk ? <WarningOutlined className="po-stage-risk" /> : null}
+                    </span>
                     <strong>{stage.title}</strong>
-                    <span>{stage.entries.length} 个任务{stage.entries.length > 1 ? ' · 并行' : ''}</span>
-                    <em>
-                      {stage.entries.slice(0, 3).map((entry) => entry.task.title).join(' / ')}
-                      {stage.entries.length > 3 ? ' …' : ''}
-                    </em>
-                    {stage.hasRisk ? <WarningOutlined className="po-stage-risk" /> : null}
+                    <span className="po-stage-meta">
+                      <span>{stage.entries.length} 个任务</span>
+                      <em>{stage.entries.length > 1 ? '并行' : `${stage.roles.map((role) => roleLabels[role]).join(' / ')}`}</em>
+                    </span>
                   </button>
                 </Tooltip>
                 {index < stages.length - 1 ? <span className="po-stage-connector" aria-hidden="true"><RightOutlined /></span> : null}
@@ -355,6 +403,12 @@ export function PlanReviewWorkbench({
           {blockingCount ? <Tag color="error">{blockingCount} 项阻塞</Tag> : null}
           <em>{riskOpen ? '收起' : '点击查看'}</em>
         </button>
+        <div className="po-review-aside-status">
+          <div><span>审批状态</span><strong className={blockingCount ? 'is-blocking' : 'is-ready'}>{blockingCount ? '待修复' : reviewRisks.length ? '可批准 · 有提醒' : '可批准'}</strong></div>
+          <div><span>阻塞项</span><em>{blockingCount}</em></div>
+          <div><span>任务 / 阶段</span><em>{draft.tasks.length} / {stages.length}</em></div>
+          <p>批准只创建任务与依赖，不会启动 Agent；执行需单独授权。</p>
+        </div>
         {riskOpen ? (
           <div className="po-plan-risk-list" data-testid="plan-risk-list">
             {reviewRisks.length ? reviewRisks.map((risk) => (
