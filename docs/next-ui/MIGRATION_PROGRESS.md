@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: pending after workspace responsive/editor wrap
+Latest checkpoint: pending after workspace wrap and Electron motion walkthrough
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -420,3 +420,14 @@ Head: `8023df5`.
 - Monaco `wordWrap` is now `on`, so long Markdown/source lines wrap instead of
   being clipped behind a horizontal scrollbar.
 - Evidence: `docs/next-ui/screens/pages/workspace-1100.png`.
+
+
+## Slice 22 — Electron motion walkthrough
+
+- `scripts/next-ui-tour.mjs` drives one real Electron session through:
+  Project Center → Task Board → task inspector → Orchestration → node inspector →
+  Agent Workbench → Knowledge → Settings.
+- Eight real 1440×900 frames assembled into
+  `docs/next-ui/screens/projectos-next-ui-tour.gif` (9.6s, 2.4 MB).
+- This is a motion evidence asset built from actual frames, not a substitute for
+  a raw MP4 screen recording; MP4 capture remains open.
