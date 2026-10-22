@@ -35,19 +35,19 @@ Status legend: `not-started`, `in-progress`, `migrated`, `blocked`, `not-applica
 |---:|---|---|---|---|---|
 | 1 | App shell / navigation | `components/AppLayout.tsx` | bootstrap, runtime status, project select, command palette | settings, command palette | in-progress — global glass skin, collapsed rail fixed |
 | 2 | Project Center `/` | `pages/ProjectCenterPage.tsx` | `projects.list`, create/import/delete | shared DialogShell create/import | in-progress — hero migrated; lower-page IA polish pending |
-| 3 | Notifications `/notifications` | `pages/NotificationsPage.tsx` | notifications queries | none / row actions | not-started |
+| 3 | Notifications `/notifications` | `pages/NotificationsPage.tsx` | notifications queries | none / row actions | in-progress (global skin) |
 | 4 | Project Overview `/projects/:id` | `pages/ProjectOverviewPage.tsx` | overview, lifecycle mutations | shared DialogShell create/advance | in-progress — overlays migrated, page composition pending |
 | 5 | Task Board `/projects/:id/tasks` | `pages/TaskBoardPage.tsx` | board, task CRUD, acceptance | shared DialogShell editors + InspectorShell detail | in-progress — overlays migrated; board IA still legacy |
 | 6 | Orchestration / plan review `/orchestration` | `OrchestrationWorkspace.tsx`, `PlanReviewNext.tsx` | plan generate/validate/approve/reject, real DAG | plan modal, worktree SheetShell, formal task InspectorShell | in-progress — task sheet + diff migrated; plan workspace/graph pending |
 | 7 | Agent Workbench `/agents` | `pages/AgentWorkbenchPage.tsx` | sessions, approvals, agent execution | DialogShell session, SheetShell group chat | in-progress — overlays migrated; three-column composition pending |
 | 8 | Teamwork / Collaboration `/collaboration` | `pages/CollaborationPage.tsx` | inbox, handoff, cross-session messages | shared DialogShell send message | in-progress — overlay migrated; page composition pending |
-| 9 | Workspace `/workspace` | `pages/WorkspacePage.tsx` | files, editor, preview, git | file/preview panels | not-started |
-| 10 | Knowledge `/knowledge` | `pages/KnowledgePage.tsx` | knowledge search/entries | detail/actions | not-started |
-| 11 | Operations `/operations` | `pages/OperationsPage.tsx` | operations snapshot, repair proposals | proposal detail | not-started |
-| 12 | Resources `/resources` | `pages/ResourcesPage.tsx` | resource inventory | row actions | not-started |
-| 13 | Approvals `/approvals` | `pages/ApprovalsPage.tsx` | approval decisions | approval detail | not-started |
-| 14 | Project Settings `/project-settings` | `pages/ProjectSettingsPage.tsx` | project config, policy | forms | not-started |
-| 15 | Project Health `/health` | `pages/ProjectHealthPage.tsx` | health checks, repair | repair dialogs | not-started |
+| 9 | Workspace `/workspace` | `pages/WorkspacePage.tsx` | files, editor, preview, git | file/preview panels | in-progress (global skin) |
+| 10 | Knowledge `/knowledge` | `pages/KnowledgePage.tsx` | knowledge search/entries | detail/actions | in-progress (global skin) |
+| 11 | Operations `/operations` | `pages/OperationsPage.tsx` | operations snapshot, repair proposals | proposal detail | in-progress (global skin) |
+| 12 | Resources `/resources` | `pages/ResourcesPage.tsx` | resource inventory | row actions | in-progress (global skin) |
+| 13 | Approvals `/approvals` | `pages/ApprovalsPage.tsx` | approval decisions | approval detail | in-progress (global skin) |
+| 14 | Project Settings `/project-settings` | `pages/ProjectSettingsPage.tsx` | project config, policy | forms | in-progress (global skin) |
+| 15 | Project Health `/health` | `pages/ProjectHealthPage.tsx` | health checks, repair | repair dialogs | in-progress (global skin) |
 | 16 | Runs `/runs` | `pages/RunsPage.tsx` | run list/detail, reconcile | SheetShell detail, DialogShell reconcile | in-progress — overlays migrated; page composition pending |
 | 17 | Settings (global modal) | `features/settings/SettingsModal.tsx` + panels | AI connections, models, runtime, skills, tools | shared DialogShell + InspectorShell | in-progress — overlays migrated; content composition polish pending |
 | 18 | Design Lab `#/design-lab` | `features/design-lab/` | prototype | Inspector, Agent, Approval | migrated baseline |
@@ -302,3 +302,20 @@ Remaining page-level composition work is unchanged and listed by the page matrix
 - No `<Modal>` or `<Drawer>` remains in production renderer source.
 - Evidence: `docs/next-ui/screens/plan-workbench.png`.
 - `plan-review-ui-e2e` 10/10, `v13-e2e` PASS.
+
+
+## Slice 13 — All page inventory + full overlay removal
+
+- Every existing route captured through one real Electron session:
+  `docs/next-ui/screens/pages/` — 15 pages, 0 renderer errors.
+- All production renderer `<Modal>`/`<Drawer>` call sites are gone. The only
+  remaining `ModalShell` strings are the shared primitives themselves.
+- Orchestration plan modal migrated to `DialogShell`; real plan approval passed.
+- Legacy `PlanReviewWorkbench` deleted after extracting its re-exported helper.
+- Remaining work is page-level composition, not a remaining Ant overlay.
+
+Page inventory:
+
+`project-center`, `project-overview`, `task-board`, `orchestration`,
+`agent-workbench`, `collaboration`, `knowledge`, `operations`, `resources`,
+`approvals`, `project-settings`, `health`, `workspace`, `runs`, `notifications`.
