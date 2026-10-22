@@ -796,3 +796,14 @@
   .po-agent-workspace.is-run-open .po-chat-pane { margin-right: 384px; }
   .po-agent-workspace.is-run-open .v17-run-bookmark { display: none; }
 }
+
+@media (min-width: 1280px) {
+  .po-orchestration-page.is-inspector-open .po-orch-canvas-card {
+    margin-right: 406px;
+  }
+}
+
+.po-orch-canvas-toolbar { flex-wrap: wrap; row-gap: 6px; height: auto; min-height: 42px; }
+.po-orch-canvas-toolbar > span,
+.po-orch-kind-filter button { white-space: nowrap; }
+.po-orch-kind-filter { flex-wrap: wrap; }

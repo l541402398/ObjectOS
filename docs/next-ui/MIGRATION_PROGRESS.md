@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `2268dbd` after orchestration non-modal inspector and Agent Workbench reserved run column
+Latest checkpoint: orchestration inspector now reserves a content column (pending commit)
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -367,3 +367,13 @@ Head: `8023df5`.
   `agent-workbench.png`.
 - `v16-agent-studio-e2e` PASS; plan-review/v13 PASS; build/typecheck PASS.
 
+
+
+## Slice 17 — Orchestration content column
+
+- When a node is selected, the canvas card reserves a 406px right column for the
+  non-modal inspector instead of letting the panel cover graph nodes.
+- Canvas toolbar wraps at the narrower width instead of breaking labels into
+  vertical characters.
+- Graph topology, controls, minimap and inspector data stay unchanged.
+- Evidence: `docs/next-ui/screens/orchestration-inspector.png`.

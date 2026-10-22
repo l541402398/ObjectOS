@@ -1359,7 +1359,7 @@ export default function OrchestrationWorkspace() {
   })()
 
   return (
-    <div className="po-page po-page-wide po-orchestration-page">
+    <div className={`po-page po-page-wide po-orchestration-page${selected ? ' is-inspector-open' : ''}`}>
         <header className="po-orch-header">
           <div className="po-orch-identity">
             <div className="po-orch-kicker"><NodeIndexOutlined /> 编排工作台</div>
