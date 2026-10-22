@@ -46,6 +46,8 @@
     "test:r2-package-migration": "node scripts/r2-package-migration.mjs",
     "test:r2-package-features": "node scripts/r2-package-features.mjs",
     "test:r2": "pnpm test -- tests/r2-phase1.test.ts tests/r2-quality-evidence-reconcile.test.ts tests/r2-revision-inbox-legacy.test.ts tests/r2-file-attribution.test.ts && pnpm test:r2-ui",
+    "test:r21-ui": "node scripts/r21-ui-regression.mjs",
+    "test:r21": "pnpm test -- tests/r2-human-acceptance.test.ts && pnpm test:r21-ui",
     "package:win:x64": "pnpm build && pnpm --filter @projectos/desktop package:win:x64 && node scripts/collect-win-artifacts.mjs",
     "package:win:ia32": "pnpm build && pnpm --filter @projectos/desktop package:win:ia32 && node scripts/collect-win-artifacts.mjs"
   },

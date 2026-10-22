@@ -2,6 +2,7 @@ import type {
   Agent,
   AgentDefinition,
   AgentView,
+  Approval,
   ApprovalView,
   Artifact,
   CollaborationSnapshot,
@@ -110,6 +111,17 @@ export interface CoreStore {
   createDecision(decision: Decision): Decision
   setDecisionStatus(id: string, status: Decision['status']): Decision
   createArtifact(artifact: Artifact): Artifact
+  createApproval(input: {
+    projectId: string
+    runId: string
+    toolCallId: string | null
+    title: string
+    detail?: string
+    request?: Record<string, unknown>
+    expiresAt?: number | null
+  }): Approval
+  decideApproval(id: string, decision: 'approved' | 'rejected', note?: string): Approval
+  getApprovalById(id: string): Approval | null
   createKnowledge(entry: {
     id: string
     projectId: string

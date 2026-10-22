@@ -285,7 +285,7 @@ describe('Agent update_task_status(done) evidence gate', () => {
     const project = await createProject(services, dataDir, 'done-human-vs-agent')
     const task = await readyTask(services, project.id, { title: '人工验收', role: 'developer' })
     const completed = services.tasks.move(
-      { taskId: task.id, expectedVersion: task.version, to: 'done', note: '人工确认已核对' },
+      { taskId: task.id, expectedVersion: task.version, to: 'done', note: '人工确认已核对代码与验收要求' },
       USER_ACTOR,
     )
     expect(completed.status).toBe('done')

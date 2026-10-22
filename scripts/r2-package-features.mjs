@@ -21,6 +21,9 @@ const runtimeChecks = {
   'run.reconcile handler': runtime.includes('"run.reconcile"'),
   'orchestration.reassign': runtime.includes('"orchestration.reassign"'),
   'orchestration.declineReassign': runtime.includes('"orchestration.declineReassign"'),
+  'P0-04 task.acceptancePolicy': runtime.includes('"task.acceptancePolicy"'),
+  'P0-04 task.requestAcceptance': runtime.includes('"task.requestAcceptance"'),
+  'P0-04 task.confirmAcceptance': runtime.includes('"task.confirmAcceptance"'),
 }
 
 const entries = asar.listPackage(archive)

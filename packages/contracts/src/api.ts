@@ -126,11 +126,38 @@ export const UpdateTaskInputSchema = z.object({
 })
 export type UpdateTaskInput = z.infer<typeof UpdateTaskInputSchema>
 
+export const HumanAcceptanceRequestSchema = z.object({
+  reason: z.string().trim().min(8).max(2000),
+  override: z.boolean().default(false),
+  confirmHighRisk: z.boolean().default(false),
+})
+export type HumanAcceptanceRequest = z.infer<typeof HumanAcceptanceRequestSchema>
+
+export const AcceptanceEvidenceSchema = z.object({
+  runs: z.number().int().nonnegative(),
+  verifiedArtifacts: z.number().int().nonnegative(),
+  successfulTools: z.array(z.string()),
+  attributedFiles: z.number().int().nonnegative(),
+})
+
+export const HumanAcceptancePolicySchema = z.object({
+  riskLevel: z.enum(['normal', 'high', 'critical']),
+  reasons: z.array(z.string()),
+  evidence: AcceptanceEvidenceSchema,
+  requiresExtraEvidence: z.boolean(),
+  hasExtraEvidence: z.boolean(),
+  requiresApproval: z.boolean(),
+  canAcceptDirectly: z.boolean(),
+  unsatisfiedRequirements: z.array(z.string()),
+})
+
 export const MoveTaskInputSchema = z.object({
   taskId: IdSchema,
   to: TaskStatusSchema,
   expectedVersion: z.number().int().nonnegative(),
   note: z.string().max(2000).optional(),
+  /** Risk-tiered human acceptance; required for high/critical risk tasks. */
+  acceptance: HumanAcceptanceRequestSchema.optional(),
 })
 export type MoveTaskInput = z.infer<typeof MoveTaskInputSchema>
 
@@ -322,6 +349,26 @@ export const ApiSchemas = {
   },
   'task.move': {
     input: MoveTaskInputSchema,
+    output: z.object({ task: TaskCardSchema }),
+  },
+  'task.acceptancePolicy': {
+    input: z.object({ taskId: IdSchema }),
+    output: HumanAcceptancePolicySchema,
+  },
+  'task.requestAcceptance': {
+    input: z.object({ taskId: IdSchema, reason: z.string().trim().min(8).max(2000) }),
+    output: z.object({ approvalId: IdSchema, policy: HumanAcceptancePolicySchema }),
+  },
+  'task.decideAcceptance': {
+    input: z.object({
+      approvalId: IdSchema,
+      decision: z.enum(['approved', 'rejected']),
+      note: z.string().max(2000).default(''),
+    }),
+    output: z.object({ approvalId: IdSchema, status: z.string() }),
+  },
+  'task.confirmAcceptance': {
+    input: z.object({ taskId: IdSchema, approvalId: IdSchema, note: z.string().max(2000).default('') }),
     output: z.object({ task: TaskCardSchema }),
   },
   'task.addDependency': {

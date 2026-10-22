@@ -1796,6 +1796,7 @@ button.v16-tool-card:hover { border-color: rgba(100,150,255,.4); background: rgb
 /* V1.6 settings visual hierarchy */
 .po-settings-panel-head {
   position: relative;
+  isolation: isolate;
   overflow: hidden;
   padding: 18px 20px;
   margin-bottom: 14px;
@@ -1814,6 +1815,8 @@ button.v16-tool-card:hover { border-color: rgba(100,150,255,.4); background: rgb
   height: 180px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(77,141,255,.18), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 .po-settings-panel-head h2 { font-size: 22px; letter-spacing: -0.025em; }
 .po-settings-panel-head p { font-size: 12px; }
@@ -1857,5 +1860,10 @@ button.v16-tool-card:hover { border-color: rgba(100,150,255,.4); background: rgb
   border-radius: 3px;
   background: linear-gradient(180deg, #4d8dff, #a855f7);
   box-shadow: 0 0 14px rgba(90,130,255,.55);
+  pointer-events: none;
+  z-index: 0;
 }
+.po-settings-panel-head > * { position: relative; z-index: 1; }
 .po-settings-panel-head h2 { font-size: 24px; }
+
+.po-settings-panel-head > * { position: relative; z-index: 1; }

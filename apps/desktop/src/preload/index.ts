@@ -76,6 +76,12 @@ const api: ProjectOSDesktopApi = {
     create: (input) => call('task.create', input),
     update: (input) => call('task.update', input),
     move: (input) => call('task.move', input),
+    acceptancePolicy: (taskId) => call('task.acceptancePolicy', { taskId }),
+    requestAcceptance: (taskId, reason) => call('task.requestAcceptance', { taskId, reason }),
+    decideAcceptance: (approvalId, decision, note = '') =>
+      call('task.decideAcceptance', { approvalId, decision, note }),
+    confirmAcceptance: (taskId, approvalId, note = '') =>
+      call('task.confirmAcceptance', { taskId, approvalId, note }),
     addDependency: (taskId, dependsOnId) => call('task.addDependency', { taskId, dependsOnId }),
     removeDependency: (taskId, dependsOnId) => call('task.removeDependency', { taskId, dependsOnId }),
   },

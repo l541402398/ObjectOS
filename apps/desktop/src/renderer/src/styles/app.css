@@ -4029,3 +4029,11 @@
 .po-agent-permissions .ant-form-item { margin-bottom: 8px; }
 
 
+
+/* Risk-tiered human acceptance (R2.1 P0-04) */
+.po-acceptance { display: flex; flex-direction: column; gap: 10px; }
+.po-acceptance-head { display: flex; align-items: center; gap: 8px; font-size: var(--text-small); color: var(--text-secondary, #5b6472); }
+.po-acceptance-reasons { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; font-size: var(--text-small); color: var(--text-secondary, #5b6472); }
+.po-acceptance-evidence { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 10px; border-radius: 10px; background: var(--glass-panel-bg, rgba(120, 140, 170, 0.08)); font-size: var(--text-micro); color: var(--text-secondary, #5b6472); }
+.po-acceptance-checks { display: flex; flex-direction: column; gap: 6px; font-size: var(--text-small); }
+.po-acceptance-approval { font-size: var(--text-small); color: var(--text-secondary, #5b6472); }

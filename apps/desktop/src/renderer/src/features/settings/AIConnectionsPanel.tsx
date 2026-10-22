@@ -442,7 +442,15 @@ function ConnectionEditor({
   onSave: () => void
 }) {
   return (
-    <div className="po-settings-panel po-ai-editor">
+    <div
+      className="po-settings-panel po-ai-editor"
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape') return
+        event.preventDefault()
+        event.stopPropagation()
+        onCancel()
+      }}
+    >
       <div className="po-ai-editor-top">
         <Button type="text" size="small" icon={<ArrowLeftOutlined />} onClick={onCancel}>
           AI 连接

@@ -46,6 +46,14 @@ export interface ProjectOSDesktopApi {
     create: (input: In<'task.create'>) => Promise<Out<'task.create'>>
     update: (input: In<'task.update'>) => Promise<Out<'task.update'>>
     move: (input: In<'task.move'>) => Promise<Out<'task.move'>>
+    acceptancePolicy: (taskId: string) => Promise<Out<'task.acceptancePolicy'>>
+    requestAcceptance: (taskId: string, reason: string) => Promise<Out<'task.requestAcceptance'>>
+    decideAcceptance: (
+      approvalId: string,
+      decision: 'approved' | 'rejected',
+      note?: string,
+    ) => Promise<Out<'task.decideAcceptance'>>
+    confirmAcceptance: (taskId: string, approvalId: string, note?: string) => Promise<Out<'task.confirmAcceptance'>>
     addDependency: (taskId: string, dependsOnId: string) => Promise<Out<'task.addDependency'>>
     removeDependency: (taskId: string, dependsOnId: string) => Promise<Out<'task.removeDependency'>>
   }

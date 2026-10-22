@@ -12,6 +12,9 @@ import {
   Modal,
   Select,
   Tooltip,
+  Alert,
+  Checkbox,
+  Tag,
 } from 'antd'
 import {
   ArrowRightOutlined,
@@ -76,6 +79,22 @@ interface TaskFormValues {
   labels: string
   dependsOn: string[]
   dueAt?: Dayjs
+}
+
+interface AcceptancePolicyView {
+  riskLevel: 'normal' | 'high' | 'critical'
+  reasons: string[]
+  evidence: {
+    runs: number
+    verifiedArtifacts: number
+    successfulTools: string[]
+    attributedFiles: number
+  }
+  requiresExtraEvidence: boolean
+  hasExtraEvidence: boolean
+  requiresApproval: boolean
+  canAcceptDirectly: boolean
+  unsatisfiedRequirements: string[]
 }
 
 const PRIORITY_COLORS: Record<number, string> = { 1: '#D22D23', 2: '#E0A23C', 3: '#4C8DFF', 4: '#89919E' }
@@ -185,6 +204,13 @@ export default function TaskBoardPage() {
   const [dropTarget, setDropTarget] = useState<TaskStatus | null>(null)
   const [createOpen, setCreateOpen] = useState(searchParams.get('new') === '1')
   const [editingTask, setEditingTask] = useState<TaskCard | null>(null)
+  const [acceptanceTask, setAcceptanceTask] = useState<TaskCard | null>(null)
+  const [acceptancePolicy, setAcceptancePolicy] = useState<AcceptancePolicyView | null>(null)
+  const [acceptanceReason, setAcceptanceReason] = useState('')
+  const [acceptanceConfirm, setAcceptanceConfirm] = useState(false)
+  const [acceptanceOverride, setAcceptanceOverride] = useState(false)
+  const [acceptanceApproval, setAcceptanceApproval] = useState<{ id: string; status: string } | null>(null)
+  const [acceptanceBusy, setAcceptanceBusy] = useState(false)
   const [createForm] = Form.useForm<TaskFormValues>()
   const [editForm] = Form.useForm<TaskFormValues>()
 
@@ -215,6 +241,88 @@ export default function TaskBoardPage() {
     },
     onError: (error) => message.error(errorMessage(error)),
   })
+
+  const openAcceptance = async (task: TaskCard): Promise<void> => {
+    setAcceptanceTask(task)
+    setAcceptancePolicy(null)
+    setAcceptanceReason('')
+    setAcceptanceConfirm(false)
+    setAcceptanceOverride(false)
+    setAcceptanceApproval(null)
+    try {
+      const policy = await window.projectos.tasks.acceptancePolicy(task.id)
+      setAcceptancePolicy(policy as AcceptancePolicyView)
+    } catch (error) {
+      message.error(errorMessage(error))
+    }
+  }
+
+  const finishAcceptance = async (): Promise<void> => {
+    await invalidate()
+    setAcceptanceTask(null)
+    setAcceptancePolicy(null)
+    setAcceptanceApproval(null)
+    message.success('任务已完成并通过验收')
+  }
+
+  const submitAcceptance = async (): Promise<void> => {
+    if (!acceptanceTask || !acceptancePolicy) return
+    setAcceptanceBusy(true)
+    try {
+      if (acceptancePolicy.requiresApproval) {
+        if (!acceptanceApproval) {
+          const result = await window.projectos.tasks.requestAcceptance(acceptanceTask.id, acceptanceReason)
+          setAcceptanceApproval({ id: result.approvalId, status: 'pending' })
+          message.info('已提交独立验收审批，请在弹窗内批准或拒绝')
+        } else if (acceptanceApproval.status === 'pending') {
+          await window.projectos.tasks.decideAcceptance(acceptanceApproval.id, 'approved', acceptanceReason)
+          setAcceptanceApproval({ id: acceptanceApproval.id, status: 'approved' })
+          message.success('验收审批已通过，请再次点击确认完成')
+        } else {
+          await window.projectos.tasks.confirmAcceptance(
+            acceptanceTask.id,
+            acceptanceApproval.id,
+            acceptanceReason,
+          )
+          await finishAcceptance()
+        }
+        return
+      }
+      await window.projectos.tasks.move({
+        taskId: acceptanceTask.id,
+        to: 'done',
+        expectedVersion: acceptanceTask.version,
+        acceptance: {
+          reason: acceptanceReason,
+          confirmHighRisk: acceptanceConfirm,
+          override: acceptanceOverride,
+        },
+      })
+      await finishAcceptance()
+    } catch (error) {
+      message.error(errorMessage(error))
+    } finally {
+      setAcceptanceBusy(false)
+    }
+  }
+
+  const rejectAcceptance = async (): Promise<void> => {
+    if (!acceptanceApproval) return
+    setAcceptanceBusy(true)
+    try {
+      await window.projectos.tasks.decideAcceptance(
+        acceptanceApproval.id,
+        'rejected',
+        acceptanceReason || '验收证据不足',
+      )
+      setAcceptanceApproval({ id: acceptanceApproval.id, status: 'rejected' })
+      message.info('验收审批已拒绝，任务保持未完成')
+    } catch (error) {
+      message.error(errorMessage(error))
+    } finally {
+      setAcceptanceBusy(false)
+    }
+  }
 
   const createTask = useMutation({
     mutationFn: (input: CreateTaskInput) => window.projectos.tasks.create(input),
@@ -407,6 +515,25 @@ export default function TaskBoardPage() {
     }
   }
 
+  const acceptanceMinReason = acceptancePolicy?.riskLevel === 'normal' ? 4 : 8
+  const acceptanceNeedsOverride = Boolean(acceptancePolicy && acceptancePolicy.unsatisfiedRequirements.length > 0)
+  const acceptanceReady =
+    Boolean(acceptancePolicy) &&
+    acceptanceReason.trim().length >= acceptanceMinReason &&
+    (acceptancePolicy!.riskLevel !== 'high' || acceptanceConfirm) &&
+    (!acceptanceNeedsOverride || acceptanceOverride) &&
+    (!acceptancePolicy!.requiresExtraEvidence || acceptancePolicy!.hasExtraEvidence) &&
+    acceptanceApproval?.status !== 'rejected'
+  const acceptancePrimaryLabel = !acceptancePolicy?.requiresApproval
+    ? '确认完成'
+    : !acceptanceApproval
+      ? '申请验收审批'
+      : acceptanceApproval.status === 'pending'
+        ? '批准验收'
+        : acceptanceApproval.status === 'approved'
+          ? '确认完成'
+          : '已拒绝，无法完成'
+
   return (
     <div className="po-page po-page-wide po-tasks-page">
       <PageHeader
@@ -511,6 +638,10 @@ export default function TaskBoardPage() {
                     const task = tasks.find((entry) => entry.id === taskId)
                     setDraggingId(null)
                     if (!task || task.status === column.status) return
+                    if (column.status === 'done') {
+                      void openAcceptance(task)
+                      return
+                    }
                     moveTask.mutate({ task, to: column.status })
                   }}
                 >
@@ -586,6 +717,112 @@ export default function TaskBoardPage() {
         {formBody(editForm, 'edit')}
       </Modal>
 
+      <Modal
+        title={acceptanceTask ? `完成验收 · ${acceptanceTask.title}` : '完成验收'}
+        open={Boolean(acceptanceTask)}
+        onCancel={() => setAcceptanceTask(null)}
+        footer={[
+          <Button key="cancel" onClick={() => setAcceptanceTask(null)}>
+            取消
+          </Button>,
+          acceptancePolicy?.requiresApproval && acceptanceApproval?.status === 'pending' ? (
+            <Button key="reject" danger loading={acceptanceBusy} onClick={() => void rejectAcceptance()}>
+              拒绝审批
+            </Button>
+          ) : null,
+          <Button
+            key="confirm"
+            type="primary"
+            loading={acceptanceBusy}
+            disabled={!acceptanceReady}
+            onClick={() => void submitAcceptance()}
+          >
+            {acceptancePrimaryLabel}
+          </Button>,
+        ]}
+        width={560}
+        destroyOnHidden
+        className="po-acceptance-modal"
+      >
+        {!acceptancePolicy ? (
+          <LoadingBlock rows={3} label="正在评估任务风险" />
+        ) : (
+          <div className="po-acceptance">
+            <div className="po-acceptance-head">
+              <Tag color={acceptancePolicy.riskLevel === 'critical' ? 'red' : acceptancePolicy.riskLevel === 'high' ? 'orange' : 'green'}>
+                {acceptancePolicy.riskLevel === 'critical'
+                  ? '关键风险'
+                  : acceptancePolicy.riskLevel === 'high'
+                    ? '高风险'
+                    : '常规'}
+              </Tag>
+              <span>{acceptancePolicy.requiresApproval ? '需要独立验收审批' : '由项目所有者确认'}</span>
+            </div>
+            <ul className="po-acceptance-reasons">
+              {(acceptancePolicy.reasons.length > 0 ? acceptancePolicy.reasons : ['无写入、进程或敏感路径，按常规验收']).map(
+                (reason) => (
+                  <li key={reason}>{reason}</li>
+                ),
+              )}
+            </ul>
+            <div className="po-acceptance-evidence">
+              <span>运行 {acceptancePolicy.evidence.runs}</span>
+              <span>已验证 Artifact {acceptancePolicy.evidence.verifiedArtifacts}</span>
+              <span>工具 {acceptancePolicy.evidence.successfulTools.join('、') || '无'}</span>
+              <span>文件归属 {acceptancePolicy.evidence.attributedFiles}</span>
+            </div>
+            {acceptancePolicy.requiresExtraEvidence && !acceptancePolicy.hasExtraEvidence ? (
+              <Alert
+                type="warning"
+                showIcon
+                message="缺少额外证据"
+                description="高风险/关键风险验收必须存在已验证 Artifact、真实工具结果或文件归属；请先完成真实执行。"
+              />
+            ) : null}
+            {acceptancePolicy.unsatisfiedRequirements.length > 0 ? (
+              <Alert
+                type="info"
+                showIcon
+                message="以下自动验收要求未满足，确认后将记录为人工覆盖"
+                description={acceptancePolicy.unsatisfiedRequirements.join('；')}
+              />
+            ) : null}
+            <Input.TextArea
+              rows={4}
+              value={acceptanceReason}
+              onChange={(event) => setAcceptanceReason(event.target.value)}
+              placeholder={`填写验收理由（至少 ${acceptanceMinReason} 字），将写入验收记录与审计事件`}
+              maxLength={2000}
+              showCount
+            />
+            <div className="po-acceptance-checks">
+              {acceptancePolicy.riskLevel === 'high' ? (
+                <Checkbox checked={acceptanceConfirm} onChange={(event) => setAcceptanceConfirm(event.target.checked)}>
+                  我已核对风险依据与证据，确认高风险验收
+                </Checkbox>
+              ) : null}
+              {acceptanceNeedsOverride ? (
+                <Checkbox checked={acceptanceOverride} onChange={(event) => setAcceptanceOverride(event.target.checked)}>
+                  我确认覆盖未满足的自动验收要求
+                </Checkbox>
+              ) : null}
+            </div>
+            {acceptancePolicy.requiresApproval ? (
+              <div className="po-acceptance-approval">
+                审批状态：
+                {!acceptanceApproval
+                  ? '尚未申请'
+                  : acceptanceApproval.status === 'pending'
+                    ? '待批准（批准后可确认完成）'
+                    : acceptanceApproval.status === 'approved'
+                      ? '已批准（可确认完成）'
+                      : '已拒绝'}
+              </div>
+            ) : null}
+          </div>
+        )}
+      </Modal>
+
       <Drawer
         open={Boolean(selectedTaskId)}
         onClose={() => setSelectedTaskId(null)}
@@ -606,8 +843,14 @@ export default function TaskBoardPage() {
                     key: status,
                     label: taskStatusLabel(status),
                   })),
-                  onClick: ({ key }) =>
-                    moveTask.mutate({ task: taskDetail.data!.task, to: key as TaskStatus }),
+                  onClick: ({ key }) => {
+                    const task = taskDetail.data!.task
+                    if (key === 'done') {
+                      void openAcceptance(task)
+                      return
+                    }
+                    moveTask.mutate({ task, to: key as TaskStatus })
+                  },
                 }}
               >
                 <Button size="small">变更状态</Button>

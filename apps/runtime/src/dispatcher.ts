@@ -675,6 +675,23 @@ export class RuntimeDispatcher {
         const input = this.parse('task.move', rawInput)
         return { task: services.tasks.move(input) }
       }
+      case 'task.acceptancePolicy': {
+        const input = this.parse('task.acceptancePolicy', rawInput)
+        return services.tasks.acceptancePolicy(input.taskId)
+      }
+      case 'task.requestAcceptance': {
+        const input = this.parse('task.requestAcceptance', rawInput)
+        return services.tasks.requestAcceptance(input)
+      }
+      case 'task.decideAcceptance': {
+        const input = this.parse('task.decideAcceptance', rawInput)
+        const approval = services.tasks.decideAcceptance(input)
+        return { approvalId: approval.id, status: approval.status }
+      }
+      case 'task.confirmAcceptance': {
+        const input = this.parse('task.confirmAcceptance', rawInput)
+        return { task: services.tasks.confirmAcceptance(input) }
+      }
       case 'task.addDependency': {
         const input = this.parse('task.addDependency', rawInput)
         return { task: services.tasks.addDependency(input.taskId, input.dependsOnId) }

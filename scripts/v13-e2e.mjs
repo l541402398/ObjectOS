@@ -37,6 +37,12 @@ const errors = []
 async function launch() {
   const next = await electron.launch({ executablePath: appPath, args: ['.'], cwd: desktopDir, env, timeout: 60_000 })
   const page = await next.firstWindow()
+  await next.evaluate(({ BrowserWindow }) => {
+    const win = BrowserWindow.getAllWindows()[0]
+    win.show()
+    win.focus()
+    win.moveTop()
+  })
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text())
   })
@@ -140,10 +146,9 @@ try {
   await page.waitForSelector('.po-settings-dialog')
   const addConnection = page.getByRole('button', { name: '新增连接' }).first()
   await addConnection.scrollIntoViewIfNeeded()
-  // The glass settings header paints above its own primary action in Electron
-  // hit-testing (reported for P1-09). Trigger the real DOM click, then assert the
-  // real inline editor opens so functionality is still covered.
-  await addConnection.evaluate((element) => element.click())
+  // Real mouse click (no DOM click workaround): the decorative glass glow no
+  // longer intercepts the primary action.
+  await addConnection.click()
   await page.waitForSelector('.po-ai-editor', { timeout: 10_000 })
   const nestedModals = await page.locator('.ant-modal .ant-modal').count()
   if (nestedModals !== 0) throw new Error('connection editor still renders as a nested modal')

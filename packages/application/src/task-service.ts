@@ -2,8 +2,11 @@ import {
   AppError,
   newId,
   now,
+  type Approval,
+  type Artifact,
   type CreateTaskInput,
   type MoveTaskInput,
+  type RunDetail,
   type Task,
   type TaskCard,
   type TaskDetail,
@@ -16,8 +19,23 @@ import {
   wouldCreateCycle,
 } from '@projectos/domain'
 import { evaluateCompletion, type CompletionDecision } from './completion-evidence.js'
+import {
+  acceptanceAuditMetadata,
+  evaluateHumanAcceptance,
+  type HumanAcceptancePolicy,
+} from './acceptance-policy.js'
 import type { ActionActor, CoreStore } from './ports.js'
 import { USER_ACTOR } from './ports.js'
+
+const HUMAN_ACCEPTANCE_REASON_MIN = 8
+
+interface HumanAcceptanceAudit {
+  policy: HumanAcceptancePolicy
+  reason: string
+  approvalId: string | null
+  override: boolean
+}
+
 
 export class TaskService {
   constructor(private readonly store: CoreStore) {}
@@ -141,11 +159,75 @@ export class TaskService {
       if (task.status === 'done' || task.status === 'cancelled') {
         throw new AppError('CONFLICT', '已完成或已取消的任务不能再次完成')
       }
+      if (input.acceptance && actor.kind !== 'user') {
+        throw new AppError('FORBIDDEN', '只有项目所有者可以提交人工验收')
+      }
       const dependencies = card.dependencyIds
         .map((id) => this.store.read.getTask(id))
         .filter((dependency): dependency is Task => dependency !== null)
       assertTaskCanComplete({ task, dependencies })
-      const decision = this.completionDecision(task, card, actor, input.note ?? null)
+      const project = this.getProject(task.projectId)
+      const artifacts = this.taskArtifacts(task)
+      const runs = this.taskRuns(task)
+      if (actor.kind === 'user') {
+        this.assertLocalOwner(actor)
+        const automatic = this.completionDecision(task, card, 'system', null, artifacts, runs, project.rootPath)
+        const policy = evaluateHumanAcceptance({ task: card, artifacts, runs, automatic })
+        const acceptance = input.acceptance
+        const reason = (acceptance?.reason ?? input.note ?? '').trim()
+        if (policy.requiresApproval) {
+          throw new AppError('APPROVAL_REQUIRED', '关键风险任务必须走独立的验收审批，不能直接点击完成', {
+            details: { taskId: task.id, policy },
+          })
+        }
+        if (!acceptance && policy.riskLevel !== 'normal') {
+          throw new AppError('CONFLICT', '该任务为高风险，必须显式确认并填写验收理由', {
+            details: { taskId: task.id, policy },
+          })
+        }
+        const override = policy.unsatisfiedRequirements.length > 0
+        const effectiveReason =
+          policy.riskLevel === 'normal' && reason.length < HUMAN_ACCEPTANCE_REASON_MIN
+            ? override
+              ? '人工确认完成（常规验收，覆盖自动验收要求）'
+              : '人工确认完成（常规验收）'
+            : reason
+        const minimum = HUMAN_ACCEPTANCE_REASON_MIN
+        if (policy.riskLevel !== 'normal' && effectiveReason.length < minimum) {
+          throw new AppError('CONFLICT', `人工验收理由至少需要 ${minimum} 个字符`, {
+            details: { taskId: task.id, policy },
+          })
+        }
+        if (policy.riskLevel === 'high' && !acceptance?.confirmHighRisk) {
+          throw new AppError('CONFLICT', '高风险验收需要显式安全确认（confirmHighRisk）', {
+            details: { taskId: task.id, policy },
+          })
+        }
+        if (policy.requiresExtraEvidence && !policy.hasExtraEvidence) {
+          throw new AppError('CONFLICT', '高风险验收必须提供额外的持久化证据（已验证 Artifact、真实工具结果或文件归属）', {
+            details: { taskId: task.id, policy },
+          })
+        }
+        if (override && policy.riskLevel !== 'normal' && !acceptance?.override) {
+          throw new AppError('CONFLICT', '覆盖未满足的自动验收要求必须显式声明 override', {
+            details: { taskId: task.id, policy },
+          })
+        }
+        if (override && policy.riskLevel === 'normal' && effectiveReason.length < HUMAN_ACCEPTANCE_REASON_MIN) {
+          throw new AppError('CONFLICT', '覆盖自动验收要求需要更完整的验收理由', {
+            details: { taskId: task.id, policy },
+          })
+        }
+        const decision = this.humanDecision(automatic, effectiveReason, override)
+        const reviewTask = this.prepareDoneState(task, actor, effectiveReason)
+        return this.finishTask(reviewTask, reviewTask.version, effectiveReason, actor, decision, {
+          policy,
+          reason: effectiveReason,
+          approvalId: null,
+          override,
+        })
+      }
+      const decision = this.completionDecision(task, card, actor.kind, input.note ?? null, artifacts, runs, project.rootPath)
       if (!decision.ok) {
         throw new AppError('CONFLICT', `任务缺少有效完成依据：${decision.reasons.join('；')}`, {
           details: decision,
@@ -227,27 +309,218 @@ export class TaskService {
     return current
   }
 
-  private completionDecision(
-    task: Task,
-    card: TaskCard,
-    actor: ActionActor,
-    note: string | null,
-  ): CompletionDecision {
-    const project = this.getProject(task.projectId)
-    const artifacts = this.store.read.listArtifacts(task.projectId, task.id)
-    const runs = this.store.read
+  private taskArtifacts(task: Task): Artifact[] {
+    return this.store.read.listArtifacts(task.projectId, task.id)
+  }
+
+  private taskRuns(task: Task): RunDetail[] {
+    return this.store.read
       .listRunSummaries(task.projectId, 100)
       .filter((run) => run.taskId === task.id)
       .slice(0, 5)
       .map((run) => this.store.read.getRunDetail(run.id))
       .filter((detail): detail is NonNullable<typeof detail> => Boolean(detail))
+  }
+
+  private completionDecision(
+    task: Task,
+    card: TaskCard,
+    actorKind: ActionActor['kind'],
+    note: string | null,
+    artifacts: Artifact[],
+    runs: RunDetail[],
+    workspaceRoot: string,
+  ): CompletionDecision {
     return evaluateCompletion({
       task: card,
       artifacts,
       runs,
-      workspaceRoot: project.rootPath,
-      actorKind: actor.kind,
+      workspaceRoot,
+      actorKind,
       humanNote: note,
+    })
+  }
+
+  private assertLocalOwner(actor: ActionActor): void {
+    if (actor.kind !== 'user' || actor.id !== USER_ACTOR.id) {
+      throw new AppError('FORBIDDEN', '只有本机项目所有者（local-user）可以执行人工验收', {
+        details: { actorKind: actor.kind, actorId: actor.id },
+      })
+    }
+  }
+
+  private humanDecision(automatic: CompletionDecision, reason: string, override: boolean): CompletionDecision {
+    const overridden = automatic.requirements.filter((requirement) => !requirement.satisfied)
+    return {
+      ok: true,
+      role: automatic.role,
+      requirements: [
+        { id: 'human', label: '人工验收确认', satisfied: true, evidence: [`理由：${reason}`], missing: [] },
+        ...automatic.requirements.map((requirement) => ({
+          ...requirement,
+          ...(requirement.satisfied ? {} : { overridden: true }),
+        })),
+      ] as CompletionDecision['requirements'],
+      toolOutcomes: automatic.toolOutcomes,
+      reasons: [
+        ...automatic.reasons,
+        ...(override ? [`人工覆盖未满足项：${overridden.map((item) => item.label).join('；')}`] : []),
+      ],
+    }
+  }
+
+  acceptancePolicy(taskId: string): HumanAcceptancePolicy {
+    const task = this.getTask(taskId)
+    const card = this.store.read.getTaskCard(task.id)
+    if (!card) throw new AppError('NOT_FOUND', '任务不存在')
+    const project = this.getProject(task.projectId)
+    const artifacts = this.taskArtifacts(task)
+    const runs = this.taskRuns(task)
+    const automatic = this.completionDecision(task, card, 'system', null, artifacts, runs, project.rootPath)
+    return evaluateHumanAcceptance({ task: card, artifacts, runs, automatic })
+  }
+
+  /**
+   * Critical-risk tasks need a separate, explicit acceptance approval. This uses
+   * the existing Approval store/entity; the project owner is the only approver.
+   */
+  requestAcceptance(input: { taskId: string; reason: string }, actor: ActionActor = USER_ACTOR): {
+    approvalId: string
+    policy: HumanAcceptancePolicy
+  } {
+    this.assertLocalOwner(actor)
+    const task = this.getTask(input.taskId)
+    if (task.status === 'done' || task.status === 'cancelled') {
+      throw new AppError('CONFLICT', '已完成或已取消的任务不能申请验收')
+    }
+    const policy = this.acceptancePolicy(task.id)
+    if (!policy.requiresApproval) {
+      throw new AppError('CONFLICT', '该任务风险等级不需要独立验收审批')
+    }
+    if (!policy.hasExtraEvidence) {
+      throw new AppError('CONFLICT', '关键风险任务缺少可核验的额外证据，不能申请验收', {
+        details: { policy },
+      })
+    }
+    const reason = input.reason.trim()
+    if (reason.length < HUMAN_ACCEPTANCE_REASON_MIN) {
+      throw new AppError('CONFLICT', `验收理由至少需要 ${HUMAN_ACCEPTANCE_REASON_MIN} 个字符`)
+    }
+    const pending = this.store.read
+      .listApprovalViews(task.projectId)
+      .find(
+        (approval) =>
+          approval.status === 'pending' &&
+          approval.request?.kind === 'task-acceptance' &&
+          approval.request?.taskId === task.id,
+      )
+    if (pending) return { approvalId: pending.id, policy }
+    const latestRun = this.store.read
+      .listRunSummaries(task.projectId, 100)
+      .filter((run) => run.taskId === task.id)
+      .sort((a, b) => (b.startedAt ?? 0) - (a.startedAt ?? 0))[0]
+    if (!latestRun) {
+      throw new AppError('CONFLICT', '关键风险验收需要至少一次真实运行作为副作用依据')
+    }
+    const approval = this.store.createApproval({
+      projectId: task.projectId,
+      runId: latestRun.id,
+      toolCallId: null,
+      title: `高风险任务验收 · ${task.title}`,
+      detail: `风险：${policy.reasons.join('；')}\n理由：${reason}`,
+      request: {
+        kind: 'task-acceptance',
+        taskId: task.id,
+        taskVersion: task.version,
+        riskLevel: policy.riskLevel,
+        riskReasons: policy.reasons,
+        evidence: policy.evidence,
+        unsatisfiedRequirements: policy.unsatisfiedRequirements,
+        reason,
+        override: true,
+      },
+      expiresAt: now() + 24 * 60 * 60 * 1000,
+    })
+    this.store.appendEvent(task.projectId, approval.id, PROJECT_EVENT_TYPES.approvalRequested, {
+      approvalId: approval.id,
+      taskId: task.id,
+      title: approval.title,
+      riskLevel: policy.riskLevel,
+      actor,
+      actorName: actor.name,
+    })
+    return { approvalId: approval.id, policy }
+  }
+
+  decideAcceptance(
+    input: { approvalId: string; decision: 'approved' | 'rejected'; note?: string },
+    actor: ActionActor = USER_ACTOR,
+  ): Approval {
+    this.assertLocalOwner(actor)
+    const approval = this.store.getApprovalById(input.approvalId)
+    if (!approval) throw new AppError('NOT_FOUND', '验收审批不存在')
+    if (approval.request?.kind !== 'task-acceptance') {
+      throw new AppError('BAD_REQUEST', '该审批不是任务验收审批')
+    }
+    if (approval.status !== 'pending') {
+      throw new AppError('CONFLICT', '该验收审批已被处理')
+    }
+    if (approval.expiresAt && approval.expiresAt <= now()) {
+      this.store.decideApproval(approval.id, 'rejected', '验收审批已过期')
+      throw new AppError('CONFLICT', '该验收审批已过期')
+    }
+    const updated = this.store.decideApproval(approval.id, input.decision, input.note ?? '')
+    this.store.appendEvent(approval.projectId, approval.id, PROJECT_EVENT_TYPES.approvalDecided, {
+      approvalId: approval.id,
+      decision: input.decision,
+      taskId: approval.request?.taskId ?? null,
+      note: input.note ?? '',
+      actor,
+      actorName: actor.name,
+    })
+    return updated
+  }
+
+  confirmAcceptance(
+    input: { taskId: string; approvalId: string; note?: string },
+    actor: ActionActor = USER_ACTOR,
+  ): TaskCard {
+    this.assertLocalOwner(actor)
+    const task = this.getTask(input.taskId)
+    if (task.status === 'done' || task.status === 'cancelled') {
+      throw new AppError('CONFLICT', '已完成或已取消的任务不能再次完成')
+    }
+    const approval = this.store.getApprovalById(input.approvalId)
+    if (!approval) throw new AppError('NOT_FOUND', '验收审批不存在')
+    if (approval.request?.kind !== 'task-acceptance' || approval.request?.taskId !== task.id) {
+      throw new AppError('CONFLICT', '验收审批与任务不匹配')
+    }
+    if (approval.status === 'rejected' || approval.status === 'expired' || approval.status === 'cancelled') {
+      throw new AppError('CONFLICT', '验收审批未通过，不能完成任务')
+    }
+    if (approval.status !== 'approved') {
+      throw new AppError('APPROVAL_REQUIRED', '验收审批尚未批准')
+    }
+    const card = this.store.read.getTaskCard(task.id)
+    if (!card) throw new AppError('NOT_FOUND', '任务不存在')
+    const project = this.getProject(task.projectId)
+    const artifacts = this.taskArtifacts(task)
+    const runs = this.taskRuns(task)
+    const automatic = this.completionDecision(task, card, 'system', null, artifacts, runs, project.rootPath)
+    const policy = evaluateHumanAcceptance({ task: card, artifacts, runs, automatic })
+    if (!policy.requiresApproval) {
+      throw new AppError('CONFLICT', '任务风险已变化，不再需要验收审批')
+    }
+    const requestReason = typeof approval.request.reason === 'string' ? approval.request.reason : ''
+    const reason = [requestReason, input.note ?? ''].filter(Boolean).join('；').trim()
+    const override = policy.unsatisfiedRequirements.length > 0
+    const decision = this.humanDecision(automatic, reason, override)
+    const reviewTask = this.prepareDoneState(task, actor, reason)
+    return this.finishTask(reviewTask, reviewTask.version, reason, actor, decision, {
+      policy,
+      reason,
+      approvalId: approval.id,
+      override,
     })
   }
 
@@ -257,6 +530,7 @@ export class TaskService {
     note: string | undefined,
     actor: ActionActor,
     decision: CompletionDecision,
+    audit?: HumanAcceptanceAudit,
   ): TaskCard {
     const timestamp = now()
     return this.store.transaction(() => {
@@ -284,11 +558,34 @@ export class TaskService {
             satisfied: item.satisfied,
             evidence: item.evidence,
           })),
+          ...(audit
+            ? acceptanceAuditMetadata({
+                policy: audit.policy,
+                reason: audit.reason,
+                actor,
+                decidedAt: timestamp,
+                approvalId: audit.approvalId,
+                override: audit.override,
+              })
+            : {}),
         },
         verifiedAt: timestamp,
         body: [
           `${actor.kind === 'user' ? '人工验收' : '自动验收'}：由 ${actor.name} 于 ${new Date(timestamp).toLocaleString('zh-CN')} 确认。`,
           '',
+          ...(audit
+            ? [
+                `风险等级：${audit.policy.riskLevel}`,
+                `风险依据：${audit.policy.reasons.join('；') || '无写入/进程/敏感路径'} `,
+                `验收理由：${audit.reason}`,
+                `额外证据：已验证 Artifact ${audit.policy.evidence.verifiedArtifacts} 个；工具 ${audit.policy.evidence.successfulTools.join(', ') || '无'}；文件归属 ${audit.policy.evidence.attributedFiles} 个`,
+                ...(audit.override
+                  ? [`覆盖的自动要求：${audit.policy.unsatisfiedRequirements.join('；') || '无'}`]
+                  : []),
+                ...(audit.approvalId ? [`验收审批：${audit.approvalId}`] : []),
+                '',
+              ]
+            : []),
           '完成依据：',
           evidence || '- 人工验收确认',
           ...decision.toolOutcomes

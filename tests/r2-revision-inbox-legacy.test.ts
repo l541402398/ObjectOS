@@ -27,7 +27,7 @@ function planTask(key: string, title: string, role = 'custom', agentId = 'agt_en
 
 function move(harness: ReturnType<typeof setup>, taskId: string, to: 'ready' | 'running' | 'review' | 'done') {
   const task = harness.store.read.getTask(taskId)!
-  return harness.services.tasks.move({ taskId, expectedVersion: task.version, to, note: 'r2 test' }, USER)
+  return harness.services.tasks.move({ taskId, expectedVersion: task.version, to, note: '人工完成并核对验收记录' }, USER)
 }
 
 describe('R2 P0-08A: revision supersede and reuse rule', () => {
