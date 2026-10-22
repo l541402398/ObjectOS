@@ -40,7 +40,7 @@ Status legend: `not-started`, `in-progress`, `migrated`, `blocked`, `not-applica
 | 5 | Task Board `/projects/:id/tasks` | `pages/TaskBoardPage.tsx` | board, task CRUD, acceptance | shared DialogShell editors + InspectorShell detail | in-progress — overlays migrated; board IA still legacy |
 | 6 | Orchestration / plan review `/orchestration` | `OrchestrationWorkspace.tsx`, `PlanReviewNext.tsx` | plan generate/validate/approve/reject, real DAG | plan modal, worktree diff, formal task InspectorShell | in-progress — task sheet migrated, graph/composition pending |
 | 7 | Agent Workbench `/agents` | `pages/AgentWorkbenchPage.tsx` | sessions, approvals, agent execution | new session modal, group drawer | not-started |
-| 8 | Teamwork / Collaboration `/collaboration` | `pages/CollaborationPage.tsx` | inbox, handoff, cross-session messages | send message modal | not-started |
+| 8 | Teamwork / Collaboration `/collaboration` | `pages/CollaborationPage.tsx` | inbox, handoff, cross-session messages | shared DialogShell send message | in-progress — overlay migrated; page composition pending |
 | 9 | Workspace `/workspace` | `pages/WorkspacePage.tsx` | files, editor, preview, git | file/preview panels | not-started |
 | 10 | Knowledge `/knowledge` | `pages/KnowledgePage.tsx` | knowledge search/entries | detail/actions | not-started |
 | 11 | Operations `/operations` | `pages/OperationsPage.tsx` | operations snapshot, repair proposals | proposal detail | not-started |
@@ -180,3 +180,10 @@ Known in this slice:
   real lifecycle mutations retained.
 - Project Center now has a real current-project hero above the metric grid.
 - Evidence: `docs/next-ui/screens/project-center-1440.png`.
+
+
+## Slice 6 — Collaboration send dialog
+
+- Cross-session message composer moved to `DialogShell`.
+- Real send mutation, wake switch and delivery semantics retained.
+- `v17-collaboration-link-e2e.mjs` PASS.

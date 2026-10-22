@@ -6,7 +6,6 @@ import {
   Button,
   Form,
   Input,
-  Modal,
   Select,
   Switch,
 } from 'antd'
@@ -36,6 +35,7 @@ import { useBootstrap, useCollaboration } from '../lib/queries'
 import { formatRelative, truncate } from '../lib/format'
 import { DELIVERY_LABELS, HANDOFF_LABELS } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
+import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '../next-ui/overlay/overlay-shell'
 
 const TYPE_LABELS: Record<string, string> = {
   'agent.message': '消息',
@@ -516,17 +516,9 @@ export default function CollaborationPage() {
         </aside>
       </div>
 
-      <Modal
-        title="发送跨会话消息"
-        open={sendOpen}
-        onCancel={() => setSendOpen(false)}
-        onOk={() => void submitSend()}
-        okText="发送消息"
-        cancelText="取消"
-        confirmLoading={send.isPending}
-        width={560}
-        destroyOnHidden
-      >
+      <DialogShell open={sendOpen} onOpenChange={(open) => { if (!open) setSendOpen(false) }} ariaLabel="发送跨会话消息" width={560}>
+        <OverlayHeader eyebrow="TEAMWORK" title="发送跨会话消息" closeLabel="关闭发送消息" />
+        <OverlayScrollArea className="po-dialog-form-scroll">
         <Form form={form} layout="vertical" requiredMark={false} className="po-form">
           <div className="po-form-row">
             <Form.Item name="fromSessionId" label="发送方会话" rules={[{ required: true }]}>
@@ -561,9 +553,12 @@ export default function CollaborationPage() {
             唤醒会在接收方启动一次真实 Agent 运行；如果模型未配置，消息仍会持久化，但不会启动运行。
           </div>
         </Form>
-      </Modal>
+        </OverlayScrollArea>
+        <OverlayFooter>
+          <Button onClick={() => setSendOpen(false)}>取消</Button>
+          <Button type="primary" loading={send.isPending} onClick={() => void submitSend()}>发送消息</Button>
+        </OverlayFooter>
+      </DialogShell>
     </div>
   )
 }
-
-
