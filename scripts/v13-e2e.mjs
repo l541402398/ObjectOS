@@ -154,7 +154,7 @@ try {
   if (nestedModals !== 0) throw new Error('connection editor still renders as a nested modal')
   await page.screenshot({ path: 'test-results/v13-connection-editor.png' })
   await page.locator('.po-ai-editor-top button').first().click()
-  await page.locator('.po-settings-modal .ant-modal-close').click()
+  await page.locator('[data-testid="settings-dialog"] button[aria-label="关闭"]').click()
   await page.waitForTimeout(300)
 
   await app.close()

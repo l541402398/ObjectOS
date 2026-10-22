@@ -1,4 +1,3 @@
-import { Modal } from 'antd'
 import {
   ApiOutlined,
   AppstoreOutlined,
@@ -22,6 +21,7 @@ import { ToolsSettingsPanel } from './ToolsSettingsPanel'
 import { DataSecuritySettingsPanel, OpenSpecSettingsPanel, PermissionsSettingsPanel } from './AdvancedSettingsPanels'
 import { UsageSettingsPanel } from './UsageSettingsPanel'
 import { SkillsSettingsPanel } from './SkillsSettingsPanel'
+import { DialogShell, OverlayHeader } from '../../next-ui/overlay/overlay-shell'
 import './settings.css'
 
 const SECTIONS: Array<{ key: SettingsSection; label: string; icon: ReactNode }> = [
@@ -85,24 +85,9 @@ export function SettingsModal() {
   }, [section])
 
   return (
-    <Modal
-      open={open}
-      onCancel={close}
-      footer={null}
-      title={null}
-      width="min(1180px, 94vw)"
-      centered
-      destroyOnHidden
-      className="po-settings-modal"
-      styles={{ body: { padding: 0 } }}
-    >
-      <div className="po-settings-dialog">
-        <div className="po-settings-top">
-          <div>
-            <h1>设置</h1>
-            <p>ProjectOS 1.7.0</p>
-          </div>
-        </div>
+    <DialogShell open={open} onOpenChange={(next) => { if (!next) close() }} ariaLabel="设置" width={1180} modal={false} testId="settings-dialog">
+      <OverlayHeader eyebrow="PROJECTOS 1.7.0" title="设置" />
+      <div className="po-settings-dialog is-next">
         <div className="po-settings-body">
           <nav className="po-settings-nav" aria-label="设置分类">
             {SECTIONS.map((item) => (
@@ -120,12 +105,6 @@ export function SettingsModal() {
           <div className="po-settings-content" key={section} ref={contentRef}>{renderSection(section)}</div>
         </div>
       </div>
-    </Modal>
+    </DialogShell>
   )
 }
-
-
-
-
-
-

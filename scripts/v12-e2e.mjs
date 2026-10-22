@@ -63,7 +63,7 @@ async function launch() {
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text())
   })
-  page.on('pageerror', (error) => errors.push(error.message))
+  page.on('pageerror', (error) => errors.push(error.message + ' STACK ' + error.stack))
   return { app: next, page }
 }
 
@@ -94,7 +94,7 @@ try {
   const secondRow = page.locator('tr').filter({ hasText: 'fake-second' })
   await secondRow.getByRole('button', { name: '设为默认模型' }).click()
   await page.waitForTimeout(1200)
-  await page.locator('.po-settings-modal .ant-modal-close').click()
+  await page.locator('[data-testid="settings-dialog"] button[aria-label="关闭"]').click()
   await page.waitForTimeout(400)
 
   const ids = await page.evaluate(

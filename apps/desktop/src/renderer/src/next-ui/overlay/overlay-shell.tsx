@@ -126,6 +126,7 @@ function ModalShell({
   onDiscard,
   ariaLabel,
   variant = 'dialog',
+  modal = true,
   width = 640,
   side = 'right',
   theme,
@@ -139,6 +140,7 @@ function ModalShell({
   onDiscard?: () => void
   ariaLabel: string
   variant?: 'dialog' | 'sheet'
+  modal?: boolean
   width?: number
   side?: 'left' | 'right'
   theme?: 'light' | 'dark'
@@ -151,7 +153,7 @@ function ModalShell({
   const guard = useDismissGuard(open, onOpenChange, dirty, onDiscard)
   if (!present) return null
   return (
-    <DialogPrimitive.Root open={present} onOpenChange={(next) => { if (!next) guard.requestClose() }}>
+    <DialogPrimitive.Root open={present} modal={modal} onOpenChange={(next) => { if (!next) guard.requestClose() }}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="pui-overlay-backdrop" style={{ zIndex }} />
         <DialogPrimitive.Content
@@ -302,8 +304,3 @@ export function PopoverShell({
 }
 
 export { OverlayHeader, OverlayFooter, OverlayScrollArea, InspectorSection }
-
-
-
-
-

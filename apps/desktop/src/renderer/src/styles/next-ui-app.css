@@ -1,0 +1,574 @@
+/* ==========================================================================
+   ProjectOS Next UI — Premium Liquid Glass application skin
+   This layer is intentionally additive: it remaps the existing shell and
+   business surfaces to the accepted Design Lab material system without
+   changing page data flow. Page-specific compositions migrate above it.
+   ========================================================================== */
+
+:root {
+  --nx-ink: #22304d;
+  --nx-ink-2: #52617b;
+  --nx-muted: #5f6e89;
+  --nx-line: rgba(77, 98, 140, .14);
+  --nx-line-strong: rgba(77, 98, 140, .24);
+  --nx-accent: #4f64d9;
+  --nx-cyan: #2a92a2;
+  --nx-glass: rgba(251, 253, 255, .72);
+  --nx-glass-strong: rgba(251, 253, 255, .9);
+  --nx-solid: #fbfdff;
+  --nx-shadow: 0 30px 80px -44px rgba(18, 38, 73, .48);
+  --nx-blur: 24px;
+}
+
+:root[data-theme='dark'] {
+  --nx-ink: #eff4ff;
+  --nx-ink-2: #b5c2d9;
+  --nx-muted: #8e9eb9;
+  --nx-line: rgba(174, 194, 231, .13);
+  --nx-line-strong: rgba(184, 203, 239, .22);
+  --nx-accent: #9badff;
+  --nx-cyan: #74d7df;
+  --nx-glass: rgba(17, 27, 48, .72);
+  --nx-glass-strong: rgba(17, 27, 48, .9);
+  --nx-solid: #111b30;
+  --nx-shadow: 0 34px 90px -38px rgba(0, 0, 0, .74);
+}
+
+/* --- shell ---------------------------------------------------------------- */
+
+.po-shell {
+  background: var(--color-canvas);
+  color: var(--nx-ink);
+}
+
+.po-shell::before {
+  background:
+    radial-gradient(58% 44% at 8% -8%, rgba(127, 146, 255, .28), transparent 68%),
+    radial-gradient(44% 38% at 96% 0%, rgba(117, 224, 232, .18), transparent 70%),
+    radial-gradient(42% 40% at 52% 106%, rgba(171, 135, 243, .12), transparent 74%);
+  opacity: 1;
+}
+
+.po-shell::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: .3;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.13'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+
+:root[data-theme='dark'] .po-shell::before {
+  background:
+    radial-gradient(54% 46% at 6% -10%, rgba(100, 116, 218, .38), transparent 68%),
+    radial-gradient(42% 42% at 96% 0%, rgba(65, 183, 196, .2), transparent 70%),
+    radial-gradient(46% 36% at 56% 106%, rgba(138, 104, 212, .16), transparent 74%);
+}
+
+.po-titlebar {
+  height: 46px;
+  flex-basis: 46px;
+  padding: 0 14px;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.po-titlebar-inner {
+  min-width: 0;
+}
+
+.po-shell-body {
+  gap: 10px;
+  padding: 0 12px 8px;
+}
+
+.po-sidebar {
+  border-radius: 22px;
+}
+
+.po-sidebar.glass-panel {
+  border: 1px solid rgba(255, 255, 255, .78);
+  background: linear-gradient(160deg, rgba(251, 253, 255, .78), rgba(239, 246, 255, .62));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .88), var(--nx-shadow);
+  -webkit-backdrop-filter: blur(var(--nx-blur)) saturate(1.2);
+  backdrop-filter: blur(var(--nx-blur)) saturate(1.2);
+}
+
+:root[data-theme='dark'] .po-sidebar.glass-panel {
+  border-color: var(--nx-line-strong);
+  background: linear-gradient(160deg, rgba(25, 38, 64, .82), rgba(11, 19, 36, .72));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), var(--nx-shadow);
+}
+
+.po-main {
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, .8);
+  border-radius: 26px;
+  background: linear-gradient(145deg, rgba(251, 253, 255, .68), rgba(244, 249, 255, .48));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), var(--nx-shadow);
+  -webkit-backdrop-filter: blur(26px) saturate(1.12);
+  backdrop-filter: blur(26px) saturate(1.12);
+  scrollbar-gutter: stable;
+}
+
+:root[data-theme='dark'] .po-main {
+  border-color: var(--nx-line-strong);
+  background: linear-gradient(145deg, rgba(23, 35, 60, .72), rgba(11, 19, 35, .6));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), var(--nx-shadow);
+}
+
+.po-statusbar {
+  border-top: 1px solid var(--nx-line);
+  background: color-mix(in srgb, var(--color-canvas) 72%, transparent);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  color: var(--nx-muted);
+}
+
+/* --- navigation ----------------------------------------------------------- */
+
+.po-sidebar-inner {
+  color: var(--nx-ink);
+}
+
+.po-brand {
+  padding: 16px 12px 12px;
+}
+
+.po-brand-text strong {
+  color: var(--nx-ink);
+  letter-spacing: -.02em;
+}
+
+.po-brand-text span {
+  color: var(--nx-muted);
+}
+
+.po-project-switcher {
+  margin: 0 8px 8px;
+  padding: 8px;
+  border: 1px solid var(--nx-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--nx-solid) 42%, transparent);
+}
+
+.po-project-button {
+  color: var(--nx-ink);
+}
+
+.po-project-button-text span {
+  color: var(--nx-muted);
+}
+
+.po-sidenav-title {
+  color: var(--nx-muted);
+  font-size: 10px;
+  letter-spacing: .12em;
+}
+
+.po-nav-item {
+  height: 34px;
+  border-radius: 9px;
+  color: var(--nx-ink-2);
+  font-size: 12.5px;
+}
+
+.po-nav-item:hover {
+  background: color-mix(in srgb, var(--nx-accent) 7%, transparent);
+  color: var(--nx-ink);
+}
+
+.po-nav-item.is-active,
+.po-nav-item[aria-current='page'] {
+  border-color: color-mix(in srgb, var(--nx-accent) 18%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--nx-accent) 12%, transparent), color-mix(in srgb, var(--nx-cyan) 5%, transparent));
+  color: var(--nx-accent);
+}
+
+.po-sidebar-footer {
+  border-top: 1px solid var(--nx-line);
+}
+
+/* --- page rhythm ---------------------------------------------------------- */
+
+.po-page {
+  max-width: 1600px;
+  gap: 16px;
+  padding: 22px 24px 34px;
+}
+
+.po-page-title {
+  color: var(--nx-ink);
+  font-size: 26px;
+  font-weight: 660;
+  letter-spacing: -.03em;
+  line-height: 1.24;
+}
+
+.po-page-description {
+  color: var(--nx-muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.po-page-header {
+  padding: 0 2px 2px;
+  border-bottom: 0;
+}
+
+/* --- common surfaces ------------------------------------------------------ */
+
+.po-card,
+.v16-stat-card,
+.v16-project-visual,
+.v16-lifecycle-card,
+.po-panel,
+.po-metric,
+.po-surface,
+.v16-settings-card,
+.po-resource-card,
+.po-knowledge-card,
+.po-run-card,
+.po-approval-card {
+  border: 1px solid rgba(255, 255, 255, .76);
+  border-radius: 16px;
+  background: linear-gradient(150deg, rgba(251, 253, 255, .78), rgba(242, 248, 255, .58));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .86), 0 18px 42px -36px rgba(22, 44, 82, .45);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  backdrop-filter: blur(18px) saturate(1.1);
+}
+
+:root[data-theme='dark'] .po-card,
+:root[data-theme='dark'] .v16-stat-card,
+:root[data-theme='dark'] .v16-project-visual,
+:root[data-theme='dark'] .v16-lifecycle-card,
+:root[data-theme='dark'] .po-panel,
+:root[data-theme='dark'] .po-metric,
+:root[data-theme='dark'] .po-surface,
+:root[data-theme='dark'] .v16-settings-card,
+:root[data-theme='dark'] .po-resource-card,
+:root[data-theme='dark'] .po-knowledge-card,
+:root[data-theme='dark'] .po-run-card,
+:root[data-theme='dark'] .po-approval-card {
+  border-color: var(--nx-line);
+  background: linear-gradient(150deg, rgba(25, 38, 64, .8), rgba(13, 23, 42, .68));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 18px 42px -32px rgba(0, 0, 0, .72);
+}
+
+.v16-stat-card::before,
+.v16-project-cover::before {
+  opacity: .7;
+}
+
+.v16-stat-value {
+  color: var(--nx-ink);
+  font-size: 28px;
+  font-weight: 660;
+  letter-spacing: -.035em;
+}
+
+.v16-stat-label,
+.v16-stat-hint {
+  color: var(--nx-muted);
+  font-size: 11.5px;
+}
+
+.po-section-title,
+.v16-section-title {
+  color: var(--nx-ink);
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -.015em;
+}
+
+.po-muted {
+  color: var(--nx-muted);
+}
+
+/* --- Ant controls --------------------------------------------------------- */
+
+.po-shell .ant-btn {
+  height: 32px;
+  border-radius: 8px;
+  border-color: var(--nx-line);
+  box-shadow: none;
+  font-size: 12.5px;
+  font-weight: 520;
+}
+
+.po-shell .ant-btn-primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, #5d70e4, #5f9fe8);
+  box-shadow: 0 8px 20px -14px rgba(66, 89, 200, .8);
+}
+
+.po-shell .ant-btn-primary:not(:disabled):hover {
+  background: linear-gradient(135deg, #5265d9, #4f92dc);
+}
+
+.po-shell .ant-input,
+.po-shell .ant-input-affix-wrapper,
+.po-shell .ant-select-selector,
+.po-shell .ant-input-number {
+  border-radius: 8px !important;
+  border-color: var(--nx-line) !important;
+  background: color-mix(in srgb, var(--nx-solid) 48%, transparent) !important;
+  box-shadow: none !important;
+}
+
+.po-shell .ant-input:focus,
+.po-shell .ant-input-affix-wrapper-focused,
+.po-shell .ant-select-focused .ant-select-selector {
+  border-color: color-mix(in srgb, var(--nx-accent) 50%, var(--nx-line)) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--nx-accent) 9%, transparent) !important;
+}
+
+.po-shell .ant-tag {
+  border-radius: 6px;
+  font-size: 10.5px;
+}
+
+.po-shell .ant-table,
+.po-shell .ant-table-container {
+  background: transparent;
+}
+
+.po-shell .ant-table-thead > tr > th {
+  background: color-mix(in srgb, var(--nx-solid) 32%, transparent);
+  color: var(--nx-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+.po-shell .ant-table-tbody > tr > td {
+  border-bottom-color: var(--nx-line);
+}
+
+.po-shell .ant-tabs-tab {
+  font-size: 12.5px;
+}
+
+.po-shell .ant-modal-content,
+.po-shell .ant-drawer-content {
+  border: 1px solid rgba(255, 255, 255, .78);
+  border-radius: 20px;
+  background: var(--nx-solid);
+  box-shadow: var(--nx-shadow);
+}
+
+:root[data-theme='dark'] .po-shell .ant-modal-content,
+:root[data-theme='dark'] .po-shell .ant-drawer-content {
+  border-color: var(--nx-line-strong);
+}
+
+/* --- responsive ----------------------------------------------------------- */
+
+@media (max-width: 1180px) {
+  .po-shell-body { padding: 0 8px 6px; gap: 8px; }
+  .po-page { padding: 18px 18px 28px; }
+  .po-page-title { font-size: 24px; }
+}
+
+@media (max-width: 900px) {
+  .po-main { border-radius: 18px; }
+  .po-page { padding: 16px 14px 26px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .po-shell::after { display: none; }
+}
+
+@media (prefers-contrast: more) {
+  .po-shell::after { display: none; }
+  .po-main, .po-sidebar.glass-panel { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+/* --- task board composition ---------------------------------------------- */
+
+.po-center-page .po-page-header,
+.po-task-board-page .po-page-header {
+  align-items: flex-end;
+}
+
+.po-board-toolbar {
+  margin-top: 0;
+  padding: 9px 10px;
+  border: 1px solid var(--nx-line);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--nx-solid) 38%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+
+.po-board-search {
+  min-width: 300px;
+}
+
+.po-board-scroll {
+  gap: 10px;
+  padding-bottom: 8px;
+}
+
+.po-board-column {
+  border: 1px solid var(--nx-line);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--nx-solid) 26%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .48);
+}
+
+.po-board-column-head {
+  padding: 10px 11px 8px;
+  border-bottom: 1px solid var(--nx-line);
+  color: var(--nx-ink);
+  font-size: 12px;
+  font-weight: 620;
+}
+
+.po-board-column-body {
+  padding: 8px;
+}
+
+.po-task-tile {
+  border: 1px solid rgba(255, 255, 255, .72);
+  border-radius: 11px;
+  background: linear-gradient(155deg, rgba(251, 253, 255, .9), rgba(241, 247, 255, .68));
+  box-shadow: 0 8px 22px -22px rgba(16, 37, 74, .5), inset 0 1px 0 rgba(255, 255, 255, .86);
+}
+
+:root[data-theme='dark'] .po-task-tile {
+  border-color: var(--nx-line);
+  background: linear-gradient(155deg, rgba(29, 43, 70, .88), rgba(15, 26, 46, .74));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 8px 22px -20px rgba(0, 0, 0, .7);
+}
+
+.po-task-tile:hover {
+  border-color: color-mix(in srgb, var(--nx-accent) 32%, var(--nx-line));
+  transform: translateY(-1px);
+}
+
+.po-task-tile-title {
+  color: var(--nx-ink);
+  font-size: 12.5px;
+  font-weight: 570;
+  line-height: 1.45;
+}
+
+.po-task-tile-desc {
+  color: var(--nx-muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.po-task-meta {
+  color: var(--nx-muted);
+  font-size: 10.5px;
+}
+
+.po-project-button-text {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.po-project-button-text strong,
+.po-project-button-text span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- project center composition ----------------------------------------- */
+
+.v16-center-page .v16-stat-grid {
+  gap: 10px;
+}
+
+.v16-center-page .v16-stat-card {
+  min-height: 104px;
+  padding: 15px 16px;
+}
+
+.v16-center-page .v16-project-visual {
+  border-radius: 16px;
+}
+
+.v16-project-cover {
+  min-height: 108px;
+}
+
+.v16-project-body > strong {
+  color: var(--nx-ink);
+  font-size: 15px;
+}
+
+.v16-project-body > p {
+  color: var(--nx-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.v16-project-meta {
+  color: var(--nx-muted);
+  font-size: 11px;
+}
+
+.v16-quick-action {
+  border: 1px solid var(--nx-line);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--nx-solid) 34%, transparent);
+}
+
+.po-task-tile { contain: paint; }
+
+@media (max-width: 1179px) {
+  .po-project-switcher { display: none; }
+  .po-brand { padding: 12px 0 8px; justify-content: center; }
+  .po-brand-text { display: none; }
+  .po-sidenav-scroll { padding: 0 6px; }
+  .po-nav-item { height: 36px; border-radius: 10px; }
+  .po-sidebar-runtime span:not(.po-status-dot) { display: none; }
+  .po-sidebar-footer { padding: 6px 0; }
+}
+
+@media (max-width: 1179px) {
+  .po-sidebar-inner { width: var(--sidebar-collapsed-width); flex-basis: var(--sidebar-collapsed-width); }
+  .po-nav-item { width: 100%; }
+}
+
+/* Keep the workspace optical without a second full-page blur layer. In this
+   Electron build a blurred scrolling workspace can leave stale tiles during
+   capture (notably one task card). The frame still carries glass; the content
+   surface is an opaque optical wash. */
+.po-main {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: linear-gradient(145deg, rgba(251, 253, 255, .84), rgba(242, 248, 255, .72));
+}
+
+:root[data-theme='dark'] .po-main {
+  background: linear-gradient(145deg, rgba(22, 34, 58, .9), rgba(11, 19, 35, .82));
+}
+
+.po-shell.is-collapsed .po-project-switcher { display: none; }
+.po-shell.is-collapsed .po-brand { padding: 12px 0 8px; justify-content: center; }
+.po-shell.is-collapsed .po-brand-text { display: none; }
+.po-sidebar-inner {
+  width: 100%;
+  flex-basis: 100%;
+}
+
+.po-sidebar-inner {
+  width: calc(100% - 2px);
+  flex: 0 0 calc(100% - 2px);
+}
+
+.po-shell .po-sidebar-inner,
+.po-shell.is-collapsed .po-sidebar-inner {
+  width: calc(100% - 2px) !important;
+  flex: 0 0 calc(100% - 2px) !important;
+}

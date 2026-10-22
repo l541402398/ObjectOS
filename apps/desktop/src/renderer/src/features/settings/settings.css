@@ -871,3 +871,25 @@
   background: linear-gradient(180deg, #4ca6ff, #0a84ff);
 }
 .v17-preferences-group .ant-switch .ant-switch-handle::before { box-shadow: 0 1px 4px rgba(0,0,0,.32); }
+
+/* Settings is a DialogShell now, not an Ant modal. */
+.pui-overlay-dialog .po-settings-dialog.is-next {
+  height: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.pui-overlay-dialog .po-settings-body {
+  height: 100%;
+  min-height: 0;
+}
+.pui-overlay-dialog .po-settings-content {
+  min-height: 0;
+  overflow: auto;
+  padding: 20px 24px 28px;
+}
+.pui-overlay-dialog .po-settings-nav {
+  overflow: auto;
+  padding: 12px 10px;
+}

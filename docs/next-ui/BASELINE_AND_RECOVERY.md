@@ -143,4 +143,3 @@ The baseline is considered protected when:
 5. a clean Git checkpoint exists before the first page replacement.
 
 No page migration starts before this checkpoint.
-

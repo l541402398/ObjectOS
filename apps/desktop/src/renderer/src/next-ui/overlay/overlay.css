@@ -30,7 +30,7 @@
 .pui-overlay-surface button { cursor: pointer; }
 .pui-overlay-surface button:focus-visible, .pui-overlay-surface input:focus-visible, .pui-overlay-surface textarea:focus-visible, .pui-overlay-surface select:focus-visible { outline: 2px solid color-mix(in srgb, var(--pui-ov-accent) 66%, transparent); outline-offset: 2px; }
 .pui-overlay-backdrop { position: fixed; inset: 0; background: rgba(8, 16, 30, .28); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); animation: pui-overlay-fade-in 180ms ease-out; }
-.pui-overlay-dialog { position: fixed; left: 50%; top: 50%; display: flex; max-height: min(82vh, 820px); flex-direction: column; overflow: hidden; border: 1px solid rgba(255, 255, 255, .78); border-radius: 20px; background: var(--pui-ov-solid); box-shadow: var(--pui-ov-shadow), inset 0 1px 0 rgba(255, 255, 255, .8); transform: translate(-50%, -50%); }
+.pui-overlay-dialog { position: fixed; inset: 0; display: flex; width: min(520px, calc(100vw - 32px)); height: fit-content; max-height: min(82vh, 820px); flex-direction: column; margin: auto; overflow: hidden; border: 1px solid rgba(255, 255, 255, .78); border-radius: 20px; background: var(--pui-ov-solid); box-shadow: var(--pui-ov-shadow), inset 0 1px 0 rgba(255, 255, 255, .8); }
 .pui-overlay-surface[data-theme='dark'].pui-overlay-dialog { border-color: var(--pui-ov-line-strong); box-shadow: var(--pui-ov-shadow), inset 0 1px 0 rgba(255, 255, 255, .1); }
 .pui-overlay-dialog-sm { width: min(380px, calc(100vw - 32px)) !important; }
 .pui-overlay-sheet { position: fixed; top: 14px; right: 14px; bottom: 14px; display: flex; flex-direction: column; width: min(560px, calc(100vw - 28px)); overflow: hidden; border: 1px solid rgba(255, 255, 255, .76); border-radius: 20px; background: var(--pui-ov-solid); box-shadow: var(--pui-ov-shadow), inset 0 1px 0 rgba(255, 255, 255, .8); }
@@ -96,7 +96,7 @@
 .pui-overlay-surface.pui-overlay-inspector.pdl-root { position: fixed; top: 12px; right: 12px; bottom: 12px; width: min(480px, calc(100vw - 24px)); height: auto; min-width: 0; transform: none; }
 .pui-overlay-surface.pui-overlay-inspector.pdl-root .pdl-inspector-scroll { height: auto; flex: 1; min-height: 0; }
 
-.pui-overlay-surface.pui-overlay-dialog.pdl-root { position: fixed; left: 50%; top: 50%; width: min(520px, calc(100vw - 32px)); height: auto; min-width: 0; transform: translate(-50%, -50%); }
+.pui-overlay-surface.pui-overlay-dialog.pdl-root { position: fixed; inset: 0; width: min(520px, calc(100vw - 32px)); height: fit-content; min-width: 0; margin: auto; }
 .pui-overlay-surface.pui-overlay-dialog.pdl-root .pui-overlay-body { padding: 0 18px; }
 
 
