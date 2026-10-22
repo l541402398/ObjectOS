@@ -132,3 +132,22 @@ skill catalog; this session verified both after installation.
   and keeps the inspector surface opaque. Verified with 1200ms Electron captures.
 
 
+
+## 2026-10-22 — Round 8/9 workspace, grid and information surfaces
+
+- Consulted the loaded `ui-ux-pro-max`, `impeccable`,
+  `vercel-composition-patterns` and `vercel-react-best-practices` guidance for
+  responsive layout, focus/keyboard behavior, composition and render cost. The
+  frozen Premium Liquid Glass tokens and accepted Design Lab direction still win.
+- Orchestration now uses a real CSS Grid: canvas + 390px node inspector at
+  desktop, single column below 1280px. No backdrop, no fixed inspector.
+- Agent Workbench defaults the run inspector open at >=1280px and reserves a
+  384px column so chat/composer are never covered.
+- Approvals, Operations, Health and Notifications use content-driven card heights
+  and compact bordered rows instead of equal-height empty dashboard boxes.
+- Workspace narrows the tree/diff panes at <=1180px and enables Monaco word wrap,
+  removing the clipped-line state at 1100px.
+- Full 15-page matrix: 60 Electron captures at 1440 light/dark, 1100 and 125%;
+  0 horizontal document overflows, 0 page errors.
+- Motion walkthrough: 8 real frames in
+  `docs/next-ui/screens/projectos-next-ui-tour.gif`; raw MP4 still open.
