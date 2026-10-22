@@ -34,7 +34,7 @@ Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.
 | P2-7 | A Task Board tile can appear blank in a full-page Electron capture until repainted; DOM text and element screenshots are correct. | `docs/next-ui/screens/regression/*task-board.png` | Open capture evidence defect. |
 | P2-8 | Workspace code editor long lines clipped at 1100px. | `docs/next-ui/screens/pages/workspace-1100.png` | **Resolved** with Monaco word wrap + compact file pane; token contrast still under review. |
 | P2-5 | Agent Lab save and approval Lab are local-only. | `OVERLAY_SYSTEM.md` | Open — formal pages must use real mutations. |
-| P2-6 | Settings uses `DialogShell modal={false}` so Ant Select/Dropdown portals do not fight the Radix focus scope. Backdrop blocks pointer, but keyboard focus can reach the app; this needs a custom focus guard or Ant-to-Radix control migration. | `SettingsModal.tsx`, `DialogShell` | Open. |
+| P2-6 | Settings uses `DialogShell modal={false}` so Ant Select/Dropdown portals do not fight the Radix focus scope. | `SettingsModal.tsx`, `DialogShell` | **Resolved behaviourally**: non-modal focus guard contains Tab focus (40/40 tabs) while allowing Ant portals. Radix modal remains false. |
 
 ## P3 — polish
 
@@ -50,3 +50,4 @@ Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.
 - [x] Overlay primitives and three samples implemented (31/31 Design Lab checks).
 - [x] Dirty-close guard, focus/Escape, backdrop z-index and Electron ghost workaround.
 - [x] Baseline lint/typecheck/unit/build pass (265 tests).
+

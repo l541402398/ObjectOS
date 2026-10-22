@@ -432,3 +432,12 @@ Head: `8023df5`.
 - This is a motion evidence asset built from actual frames, not a substitute for
   a raw MP4 screen recording; MP4 capture remains open.
 
+
+## Slice 23 — Settings keyboard containment
+
+- `DialogShell` now installs a focus guard only for `modal={false}` surfaces.
+- Focus is redirected to the first control when it tries to escape the settings
+  surface; Ant Select/Dropdown/Popover portals remain allowed.
+- Verified with 40 consecutive Tab presses: 0 escapes, focus stayed in the
+  Settings surface or its Ant portal.
+- `v12-e2e` still passes with Settings connection CRUD/test/restart.

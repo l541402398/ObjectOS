@@ -151,6 +151,32 @@ function ModalShell({
   const reduce = useReducedMotion()
   const { zIndex } = useOverlayLayer('modal')
   const guard = useDismissGuard(open, onOpenChange, dirty, onDiscard)
+  const surfaceRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open || modal) return
+    const surface = surfaceRef.current
+    if (!surface) return
+    const selector = 'a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    const focusFirst = (): void => {
+      surface.querySelector<HTMLElement>(selector)?.focus({ preventScroll: true })
+    }
+    const onFocusIn = (event: FocusEvent): void => {
+      const target = event.target as HTMLElement | null
+      if (!target || surface.contains(target)) return
+      if (target.closest('.ant-select-dropdown, .ant-dropdown, .ant-popover, .ant-picker-dropdown, .ant-tooltip, [data-radix-popper-content-wrapper]')) return
+      focusFirst()
+    }
+    const timer = window.setTimeout(() => {
+      if (!surface.contains(document.activeElement)) focusFirst()
+    }, 0)
+    document.addEventListener('focusin', onFocusIn)
+    return () => {
+      window.clearTimeout(timer)
+      document.removeEventListener('focusin', onFocusIn)
+    }
+  }, [open, modal])
+
   if (!present) return null
   return (
     <DialogPrimitive.Root open={present} modal={modal} onOpenChange={(next) => { if (!next) guard.requestClose() }}>
@@ -163,6 +189,7 @@ function ModalShell({
           onPointerDownOutside={(event) => { event.preventDefault(); guard.requestClose() }}
         >
           <motion.div
+            ref={surfaceRef}
             data-testid={testId}
             data-theme={theme}
             className={cn('pui-overlay-surface', variant === 'sheet' ? 'pui-overlay-sheet' : 'pui-overlay-dialog', skin === 'projectos' && 'pdl-root', !open && 'is-closing')}
