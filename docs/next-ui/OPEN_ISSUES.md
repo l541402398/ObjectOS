@@ -1,7 +1,7 @@
 # ProjectOS Next UI — Open Issues
 
 Last updated: 2026-10-22  
-Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.
+Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.`n`nFor the complete post-migration residual list, package status and verification gaps, see`n[`REMAINING_ISSUES.md`](REMAINING_ISSUES.md).
 
 ## P0 — protection / data
 
@@ -50,6 +50,7 @@ Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.
 - [x] Overlay primitives and three samples implemented (31/31 Design Lab checks).
 - [x] Dirty-close guard, focus/Escape, backdrop z-index and Electron ghost workaround.
 - [x] Baseline lint/typecheck/unit/build pass (265 tests).
+
 
 
 
