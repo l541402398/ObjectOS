@@ -5,7 +5,6 @@ import {
   App as AntApp,
   Button,
   Input,
-  Modal,
   Select,
   Table,
   Tabs,
@@ -34,6 +33,7 @@ import { useApprovals, useProjectEvents, useRunDetail, useRuns } from '../lib/qu
 import { formatDateTime, formatDuration, formatRelative } from '../lib/format'
 import { runStatusLabel } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
+import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea, SheetShell } from '../next-ui/overlay/overlay-shell'
 
 const ACTIVE = new Set(['created', 'queued', 'running', 'waiting_tool', 'waiting_approval', 'verifying', 'suspended'])
 
@@ -277,15 +277,9 @@ export default function RunsPage() {
                 )}
               </div>
 
-              <Modal
-                open={detailOpen && Boolean(selectedRun)}
-                onCancel={() => setDetailOpen(false)}
-                footer={null}
-                width={920}
-                className="po-run-detail-modal"
-                title="运行详情"
-                styles={{ body: { maxHeight: '72vh', overflow: 'auto' } }}
-              >
+              <SheetShell open={detailOpen && Boolean(selectedRun)} onOpenChange={(open) => { if (!open) setDetailOpen(false) }} ariaLabel="运行详情" width={920} testId="run-detail-sheet">
+                <OverlayHeader eyebrow="RUN AUDIT" title="运行详情" closeLabel="关闭运行详情" meta={selectedRun ? <><span>{selectedRun.agentName}</span><StatusPill tone={toneForStatus(selectedRun.status)}>{runStatusLabel(selectedRun.status)}</StatusPill></> : null} />
+                <OverlayScrollArea className="po-run-detail-scroll">
                 {!selectedRun ? null : runDetail.isLoading ? (
                   <LoadingBlock rows={6} />
                 ) : runDetail.isError || !runDetail.data ? (
@@ -384,21 +378,11 @@ export default function RunsPage() {
                     />
                   </div>
                 )}
-              </Modal>
-              <Modal
-                title="人工核对运行"
-                open={reconcileOpen && Boolean(selectedRun)}
-                onCancel={() => setReconcileOpen(false)}
-                onOk={() => {
-                  if (!selectedRun) return
-                  reconcile.mutate({ runId: selectedRun.id, decision: reconcileDecision, note: reconcileNote })
-                }}
-                okText="记录核对"
-                cancelText="取消"
-                confirmLoading={reconcile.isPending}
-                width={520}
-                destroyOnHidden
-              >
+                </OverlayScrollArea>
+              </SheetShell>
+              <DialogShell open={reconcileOpen && Boolean(selectedRun)} onOpenChange={(open) => { if (!open) setReconcileOpen(false) }} ariaLabel="人工核对运行" width={520}>
+                <OverlayHeader eyebrow="RECONCILIATION" title="人工核对运行" closeLabel="关闭人工核对" />
+                <OverlayScrollArea className="po-reconcile-scroll">
                 <p className="po-muted">
                   该运行在 Runtime 中断后状态未知。核对不会自动重复执行可能已写盘或产生外部副作用的操作；
                   原始 Run、ToolCall 和 RunStep 会保留。
@@ -419,7 +403,15 @@ export default function RunsPage() {
                   onChange={(event) => setReconcileNote(event.target.value)}
                   placeholder="说明你核对到的实际状态、已验证的文件/命令，以及为什么可以继续。"
                 />
-              </Modal>
+                </OverlayScrollArea>
+                <OverlayFooter>
+                  <Button onClick={() => setReconcileOpen(false)}>取消</Button>
+                  <Button type="primary" loading={reconcile.isPending} onClick={() => {
+                    if (!selectedRun) return
+                    reconcile.mutate({ runId: selectedRun.id, decision: reconcileDecision, note: reconcileNote })
+                  }}>记录核对</Button>
+                </OverlayFooter>
+              </DialogShell>
               </>
             ),
           },
@@ -454,5 +446,3 @@ export default function RunsPage() {
     </div>
   )
 }
-
-

@@ -8,5 +8,5 @@ const page=await app.firstWindow(); await page.waitForSelector('.v16-project-vis
 await page.evaluate((pid)=>{location.hash=`#/projects/${pid}/runs`},id)
 await page.waitForSelector('.po-runs-full'); await page.waitForTimeout(800)
 console.log('aside count', await page.locator('.po-run-detail-panel').count(), 'rows', await page.locator('.po-runs-full .ant-table-row').count())
-await page.locator('.po-runs-full .ant-table-row').first().click(); await page.waitForSelector('.po-run-detail-modal'); await page.waitForTimeout(500)
+await page.locator('.po-runs-full .ant-table-row').first().click(); await page.waitForSelector('[data-testid="run-detail-sheet"]'); await page.waitForTimeout(500)
 await page.screenshot({path:join(root,'docs/v1.7/run-audit-modal.png')}); console.log('RUN AUDIT MODAL PASS'); await app.close()

@@ -48,7 +48,7 @@ Status legend: `not-started`, `in-progress`, `migrated`, `blocked`, `not-applica
 | 13 | Approvals `/approvals` | `pages/ApprovalsPage.tsx` | approval decisions | approval detail | not-started |
 | 14 | Project Settings `/project-settings` | `pages/ProjectSettingsPage.tsx` | project config, policy | forms | not-started |
 | 15 | Project Health `/health` | `pages/ProjectHealthPage.tsx` | health checks, repair | repair dialogs | not-started |
-| 16 | Runs `/runs` | `pages/RunsPage.tsx` | run list/detail, reconcile | run detail modal, reconcile modal | not-started |
+| 16 | Runs `/runs` | `pages/RunsPage.tsx` | run list/detail, reconcile | SheetShell detail, DialogShell reconcile | in-progress — overlays migrated; page composition pending |
 | 17 | Settings (global modal) | `features/settings/SettingsModal.tsx` + panels | AI connections, models, runtime, skills, tools | shared DialogShell + InspectorShell | in-progress — overlays migrated; content composition polish pending |
 | 18 | Design Lab `#/design-lab` | `features/design-lab/` | prototype | Inspector, Agent, Approval | migrated baseline |
 
@@ -187,3 +187,13 @@ Known in this slice:
 - Cross-session message composer moved to `DialogShell`.
 - Real send mutation, wake switch and delivery semantics retained.
 - `v17-collaboration-link-e2e.mjs` PASS.
+
+
+## Slice 7 — Run audit Sheet + reconcile Dialog
+
+- Run detail moved from a 920px Ant Modal to `SheetShell`; the audit timeline,
+  approval block and artifacts retain real data.
+- Human reconciliation moved to `DialogShell`; the original Run/ToolCall/Step
+  records are preserved and no side effect is retried automatically.
+- `v17-run-audit-modal-e2e.mjs` PASS.
+- Evidence: `docs/next-ui/screens/run-detail-sheet.png`.

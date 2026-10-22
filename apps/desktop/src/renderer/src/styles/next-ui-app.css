@@ -634,3 +634,7 @@
 }
 
 .pui-overlay-scroll.po-advance-scroll { padding: 14px 18px 8px; }
+
+.pui-overlay-scroll.po-run-detail-scroll { padding: 0 18px 18px; }
+.pui-overlay-scroll.po-run-detail-scroll .po-run-detail { padding-top: 14px; }
+.pui-overlay-scroll.po-reconcile-scroll { padding: 14px 18px 8px; }
