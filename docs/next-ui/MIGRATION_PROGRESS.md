@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `b6353ed` after true orchestration grid, Agent three-column, health/notifications and full 15-page matrix
+Latest checkpoint: pending after workspace responsive/editor wrap
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -411,3 +411,12 @@ Head: `8023df5`.
   `notifications.png`.
 
 
+
+
+## Slice 21 — Workspace compact layout
+
+- At <=1180px the file tree narrows to 200px and the diff pane to 200px, giving
+  the read-only Monaco surface the primary width.
+- Monaco `wordWrap` is now `on`, so long Markdown/source lines wrap instead of
+  being clipped behind a horizontal scrollbar.
+- Evidence: `docs/next-ui/screens/pages/workspace-1100.png`.

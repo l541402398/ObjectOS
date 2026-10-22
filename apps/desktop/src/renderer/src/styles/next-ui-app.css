@@ -882,3 +882,11 @@
   .v16-health-page .v16-settings-grid,
   .v16-notifications-page .v16-settings-grid { grid-template-columns: 1fr; }
 }
+
+/* Workspace gives the editor more width on compact desktops; the tree remains
+   available but the code surface is the primary task. */
+@media (max-width: 1180px) {
+  .po-workspace { grid-template-columns: 200px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 200px; }
+  .po-editor-surface .cm-editor { font-size: 11.5px; }
+  .po-editor-pane { min-width: 0; }
+}

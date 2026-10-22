@@ -349,7 +349,7 @@ export default function WorkspacePage() {
                     overviewRulerBorder: false,
                     lineNumbersMinChars: 4,
                     folding: true,
-                    wordWrap: 'off',
+                    wordWrap: 'on',
                     automaticLayout: true,
                     contextmenu: false,
                     scrollbar: { verticalScrollbarSize: 10, horizontalScrollbarSize: 10 },
@@ -482,5 +482,6 @@ export default function WorkspacePage() {
     </div>
   )
 }
+
 
 
