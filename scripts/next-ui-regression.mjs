@@ -47,6 +47,9 @@ try {
     ['orchestration', `#/projects/${projectId}/orchestration`],
     ['approvals', `#/projects/${projectId}/approvals`],
     ['runs', `#/projects/${projectId}/runs`],
+    ['agent-workbench', `#/projects/${projectId}/agents`],
+    ['knowledge', `#/projects/${projectId}/knowledge`],
+    ['health', `#/projects/${projectId}/health`],
   ]
 
   const prepare = async (name) => {
@@ -100,4 +103,5 @@ try {
 } finally {
   await app.close().catch(() => undefined)
 }
+
 

@@ -31,6 +31,7 @@ Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.
 | P2-2 | `SheetShell` is implemented but not yet exercised by a real page. | `docs/design/OVERLAY_SYSTEM.md` | Open. |
 | P2-3 | Liquid Glass React SVG filter / forced Aurora are not production-safe. | Design Lab perf evidence | Accepted limitation; static fallback. |
 | P2-4 | 125% Electron capture can crop the right edge while DOM width is correct. | prior Design Lab evidence | Known; document per screenshot. |
+| P2-7 | A Task Board tile can appear blank in a full-page Electron capture until repainted; DOM text and element screenshots are correct. | `docs/next-ui/screens/regression/*task-board.png` | Open capture evidence defect. |
 | P2-5 | Agent Lab save and approval Lab are local-only. | `OVERLAY_SYSTEM.md` | Open — formal pages must use real mutations. |
 | P2-6 | Settings uses `DialogShell modal={false}` so Ant Select/Dropdown portals do not fight the Radix focus scope. Backdrop blocks pointer, but keyboard focus can reach the app; this needs a custom focus guard or Ant-to-Radix control migration. | `SettingsModal.tsx`, `DialogShell` | Open. |
 
@@ -48,3 +49,4 @@ Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.
 - [x] Overlay primitives and three samples implemented (31/31 Design Lab checks).
 - [x] Dirty-close guard, focus/Escape, backdrop z-index and Electron ghost workaround.
 - [x] Baseline lint/typecheck/unit/build pass (265 tests).
+
