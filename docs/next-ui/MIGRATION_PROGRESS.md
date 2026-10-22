@@ -3,7 +3,7 @@
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  
-Latest checkpoint: `139acee` after Command Palette/Worktree Diff and all prior Round 2 overlay slices
+Latest checkpoint: `51ca610` after Agent Studio SheetShell and Round 3 overlay slices
 
 This file is the recovery entry point. If a session is compacted or a new Agent
 starts, read this file, `BASELINE_AND_RECOVERY.md`, `OPEN_ISSUES.md`,
@@ -279,3 +279,4 @@ Remaining page-level composition work is unchanged and listed by the page matrix
 - Real Agent creation E2E PASS (`v16-agent-studio-e2e`), including task run.
 - Evidence: `docs/next-ui/screens/agent-studio-sheet.png`.
 - This also fixed the shared `SheetShell` width bug for Run audit and group chat.
+
