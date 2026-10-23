@@ -3,16 +3,20 @@ import { useParams } from 'react-router-dom'
 import { App as AntApp, Button } from 'antd'
 import { CheckOutlined, CloseOutlined, SafetyCertificateOutlined } from '@ant-design/icons'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { EmptyState, PageHeader, StatusPill } from '@projectos/ui'
+import { EmptyState, StatusPill } from '@projectos/ui'
 import { useApprovals } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
 import { formatRelative } from '../lib/format'
+import { useResolvedTheme } from '../stores/ui'
+import '../features/design-lab/design-lab.css'
+import '../styles/approvals-workspace.css'
 
 function approvalStatusLabel(status: string): string {
   return status === 'pending' ? '待审批' : status === 'approved' ? '已批准' : status === 'rejected' ? '已拒绝' : status
 }
 
 export default function ApprovalsPage() {
+  const resolvedTheme = useResolvedTheme()
   const { projectId } = useParams<{ projectId: string }>()
   const { message } = AntApp.useApp()
   const queryClient = useQueryClient()
@@ -35,8 +39,15 @@ export default function ApprovalsPage() {
   })
 
   return (
-    <div className="po-page v16-approvals-page">
-      <PageHeader title="审批中心" description="工具调用与高风险操作的集中审批" />
+    <div className="po-page v16-approvals-page pdl-root po-ux-approvals" data-theme={resolvedTheme}>
+      <header className="po-ux-approvals-head">
+        <div>
+          <span className="pdl-eyebrow">APPROVAL QUEUE <b>· {(approvals.data?.approvals ?? []).filter((item) => item.status === 'pending').length} 项待处理</b></span>
+          <h1 className="po-page-title">审批中心</h1>
+          <p>工具调用与高风险操作的集中审批；每次决定都会写入审计记录。</p>
+        </div>
+        <div className="po-ux-approvals-metric"><strong>{(approvals.data?.approvals ?? []).filter((item) => item.status === 'pending').length}</strong><span>待审批</span></div>
+      </header>
       <div className="v16-filter-tabs">
         <button type="button" className={filter === 'pending' ? 'is-active' : ''} onClick={() => setFilter('pending')}>待审批</button>
         <button type="button" className={filter === 'all' ? 'is-active' : ''} onClick={() => setFilter('all')}>全部</button>
@@ -67,3 +78,4 @@ export default function ApprovalsPage() {
     </div>
   )
 }
+

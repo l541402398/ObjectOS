@@ -1,0 +1,93 @@
+/* Approvals — Design Lab decision queue. */
+
+.pdl-root.po-ux-approvals {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--pdl-ink);
+  font-family: var(--pdl-font);
+}
+
+.po-ux-approvals-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px 23px;
+  border: 1px solid var(--pdl-line-strong);
+  border-radius: 21px;
+  background:
+    radial-gradient(380px 200px at 88% -10%, color-mix(in srgb, var(--pdl-warning) 10%, transparent), transparent 72%),
+    linear-gradient(136deg, color-mix(in srgb, var(--pdl-surface-2) 94%, transparent), color-mix(in srgb, var(--pdl-surface) 86%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 24px 54px -46px rgba(25, 48, 92, .55);
+  backdrop-filter: blur(24px) saturate(1.12);
+  -webkit-backdrop-filter: blur(24px) saturate(1.12);
+}
+.po-ux-approvals-head h1 { margin: 5px 0 0; color: var(--pdl-ink); font-size: 27px; font-weight: 700; letter-spacing: -.04em; line-height: 1.2; }
+.po-ux-approvals-head p { margin: 5px 0 0; color: var(--pdl-ink-2); font-size: 12.5px; line-height: 1.5; }
+.po-ux-approvals-metric { display: flex; align-items: flex-end; flex-direction: column; gap: 2px; min-width: 92px; }
+.po-ux-approvals-metric strong { color: var(--pdl-warning); font-size: 36px; font-weight: 680; letter-spacing: -.05em; line-height: 1; }
+.po-ux-approvals-metric span { color: var(--pdl-muted); font-size: 10.5px; }
+
+.po-ux-approvals .v16-filter-tabs {
+  display: inline-flex;
+  gap: 2px;
+  margin-top: 13px;
+  padding: 3px;
+  border: 1px solid var(--pdl-line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--pdl-surface-2) 42%, transparent);
+}
+.po-ux-approvals .v16-filter-tabs button {
+  height: 26px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--pdl-muted);
+  background: transparent;
+  font-size: 11px;
+}
+.po-ux-approvals .v16-filter-tabs button.is-active { color: var(--pdl-ink); background: var(--pdl-solid); box-shadow: 0 1px 4px rgba(30, 50, 90, .08), inset 0 1px 0 rgba(255, 255, 255, .7); }
+
+.po-ux-approvals .v16-approval-grid { margin-top: 12px; gap: 11px; }
+.po-ux-approvals .v16-approval-card {
+  overflow: hidden;
+  border: 1px solid var(--pdl-line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--pdl-solid) 90%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 20px 42px -40px rgba(25, 48, 92, .55);
+  backdrop-filter: blur(18px) saturate(1.08);
+}
+.po-ux-approvals .v16-approval-card header { display: flex; align-items: flex-start; gap: 10px; padding: 14px 15px 11px; }
+.po-ux-approvals .v16-approval-card-icon { display: grid; width: 28px; height: 28px; flex: 0 0 28px; place-items: center; border: 1px solid color-mix(in srgb, var(--pdl-warning) 24%, var(--pdl-line)); border-radius: 9px; color: var(--pdl-warning); background: color-mix(in srgb, var(--pdl-warning) 8%, transparent); }
+.po-ux-approvals .v16-approval-card header strong { display: block; color: var(--pdl-ink); font-size: 13px; font-weight: 640; letter-spacing: -.01em; }
+.po-ux-approvals .v16-approval-card header span { display: block; margin-top: 2px; color: var(--pdl-muted); font-size: 10.5px; }
+.po-ux-approvals .v16-approval-card header > :last-child { margin-left: auto; }
+.po-ux-approvals .v16-approval-task { padding: 0 15px 8px; color: var(--pdl-ink-2); font-size: 11.5px; }
+.po-ux-approvals .v16-approval-detail {
+  margin: 0 15px;
+  padding: 11px 12px;
+  border: 1px solid var(--pdl-line);
+  border-radius: 10px;
+  color: var(--pdl-ink-2);
+  background: color-mix(in srgb, var(--pdl-surface-2) 45%, transparent);
+  font-family: "SFMono-Regular", ui-monospace, monospace;
+  font-size: 10.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.po-ux-approvals .v16-approval-card footer { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 15px 14px; }
+.po-ux-approvals .v16-approval-card .ant-btn { height: 31px; border-radius: 9px; }
+.po-ux-approvals .v16-approval-card .ant-btn-primary { border-color: transparent; color: #fff; background: linear-gradient(135deg, #6d78e8, #7399ee 58%, #76c5e5); box-shadow: 0 10px 22px -14px rgba(79, 96, 205, .8), inset 0 1px 0 rgba(255, 255, 255, .3); }
+.po-ux-approvals .v16-approval-card .ant-btn-dangerous { border-color: color-mix(in srgb, var(--pdl-danger) 28%, var(--pdl-line)); color: var(--pdl-danger); background: color-mix(in srgb, var(--pdl-danger) 5%, transparent); }
+.po-ux-approvals .v16-glass-card { border: 1px solid var(--pdl-line); border-radius: 16px; background: color-mix(in srgb, var(--pdl-solid) 86%, transparent); }
+
+@media (max-width: 1180px) {
+  .po-ux-approvals-head { align-items: flex-start; }
+  .po-ux-approvals .v16-approval-grid { grid-template-columns: minmax(0, 1fr); }
+}

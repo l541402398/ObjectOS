@@ -41,6 +41,20 @@ try {
   check('overview keeps real metrics', await page.locator('.po-ux-metric-strip .po-metric').count() === 4)
   check('overview keeps milestones', await page.locator('.po-milestone').count() >= 1)
 
+  await page.evaluate(() => { location.hash = '#/' })
+  await page.waitForSelector('.po-ux-center', { timeout: 20000 })
+  check('project center renders portfolio header', await page.locator('.po-ux-center-head h1').innerText() === '项目中心')
+  check('project center keeps project cards', await page.locator('.v16-project-visual').count() >= 1)
+  check('project center keeps portfolio stats', await page.locator('.v16-stat-card').count() === 4)
+
+  await page.evaluate((id) => { location.hash = `#/projects/${id}/approvals` }, projectId)
+  await page.waitForSelector('.po-ux-approvals', { timeout: 20000 })
+  check('approvals renders decision header', await page.locator('.po-ux-approvals-head h1').innerText() === '审批中心')
+  check('approvals keeps pending/real cards', await page.locator('.v16-approval-card').count() >= 1)
+  await page.getByRole('button', { name: '全部' }).click()
+  await page.waitForTimeout(200)
+  check('approvals filter still works', await page.locator('.v16-filter-tabs button.is-active').innerText() === '全部')
+
   await page.evaluate((id) => { location.hash = `#/projects/${id}/tasks` }, projectId)
   await page.waitForSelector('.po-ux-board', { timeout: 20000 })
   check('board renders approved execution header', await page.locator('.po-ux-board-head h1').innerText() === '任务看板')
@@ -63,3 +77,4 @@ try {
 } finally {
   await app.close()
 }
+

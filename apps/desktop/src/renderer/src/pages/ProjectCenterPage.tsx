@@ -19,7 +19,6 @@ import {
   EmptyState,
   ErrorState,
   LoadingBlock,
-  PageHeader,
   ProgressBar,
   StatusPill,
   toneForStatus,
@@ -29,6 +28,9 @@ import { formatRelative, truncate } from '../lib/format'
 import { stageLabel } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
 import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '../next-ui/overlay/overlay-shell'
+import { useResolvedTheme } from '../stores/ui'
+import '../features/design-lab/design-lab.css'
+import '../styles/center-workspace.css'
 
 interface CreateFormValues {
   name: string
@@ -67,6 +69,7 @@ function ProjectVisualCard({ project, index, onOpen }: { project: ProjectSummary
 }
 
 export default function ProjectCenterPage() {
+  const resolvedTheme = useResolvedTheme()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { message } = AntApp.useApp()
@@ -142,24 +145,19 @@ export default function ProjectCenterPage() {
   }
 
   return (
-    <div className="po-page po-center-page v16-center-page">
-      <PageHeader
-        title="项目中心"
-        description="项目全生命周期与 Agent 执行工作台"
-        actions={
-          <>
-            <Button icon={<FolderOpenOutlined />} onClick={() => void seedDemo.mutate()} loading={seedDemo.isPending}>
-              载入示例项目
-            </Button>
-            <Button icon={<FolderOpenOutlined />} onClick={() => { setImportMode(true); setCreateOpen(true) }}>
-              导入项目
-            </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => { setImportMode(false); setCreateOpen(true) }}>
-              新建项目
-            </Button>
-          </>
-        }
-      />
+    <div className="po-page po-center-page v16-center-page pdl-root po-ux-center" data-theme={resolvedTheme}>
+      <header className="po-ux-center-head">
+        <div>
+          <span className="pdl-eyebrow">PROJECT PORTFOLIO <b>· {projects.length} 个本地项目</b></span>
+          <h1 className="po-page-title">项目中心</h1>
+          <p>项目全生命周期与 Agent 执行工作台</p>
+        </div>
+        <div className="po-ux-center-actions">
+          <Button icon={<FolderOpenOutlined />} onClick={() => void seedDemo.mutate()} loading={seedDemo.isPending}>载入示例项目</Button>
+          <Button icon={<FolderOpenOutlined />} onClick={() => { setImportMode(true); setCreateOpen(true) }}>导入项目</Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => { setImportMode(false); setCreateOpen(true) }}>新建项目</Button>
+        </div>
+      </header>
 
       {bootstrap.isError ? (
         <ErrorState message={errorMessage(bootstrap.error)} onRetry={() => void bootstrap.refetch()} />
@@ -478,3 +476,4 @@ export default function ProjectCenterPage() {
     </div>
   )
 }
+

@@ -1,0 +1,111 @@
+/* Project Center — Design Lab optical portfolio surface. */
+
+.pdl-root.po-ux-center {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--pdl-ink);
+  font-family: var(--pdl-font);
+}
+
+.po-ux-center-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px 24px 19px;
+  border: 1px solid var(--pdl-line-strong);
+  border-radius: 22px;
+  background:
+    radial-gradient(420px 220px at 88% -10%, color-mix(in srgb, var(--pdl-violet) 13%, transparent), transparent 72%),
+    radial-gradient(360px 220px at 0% 100%, color-mix(in srgb, var(--pdl-cyan) 9%, transparent), transparent 76%),
+    linear-gradient(136deg, color-mix(in srgb, var(--pdl-surface-2) 94%, transparent), color-mix(in srgb, var(--pdl-surface) 86%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 24px 54px -46px rgba(25, 48, 92, .55);
+  backdrop-filter: blur(24px) saturate(1.12);
+  -webkit-backdrop-filter: blur(24px) saturate(1.12);
+}
+.po-ux-center-head h1 { margin: 5px 0 0; color: var(--pdl-ink); font-size: 28px; font-weight: 700; letter-spacing: -.04em; line-height: 1.2; }
+.po-ux-center-head p { margin: 5px 0 0; color: var(--pdl-ink-2); font-size: 12.5px; line-height: 1.5; }
+.po-ux-center-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.po-ux-center .ant-btn { height: 32px; padding: 0 12px; border-color: var(--pdl-line-strong); border-radius: 10px; color: var(--pdl-ink-2); background: color-mix(in srgb, var(--pdl-surface-2) 62%, transparent); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55); }
+.po-ux-center .ant-btn:hover { border-color: color-mix(in srgb, var(--pdl-accent) 45%, var(--pdl-line)) !important; color: var(--pdl-accent) !important; background: var(--pdl-surface-2) !important; }
+.po-ux-center .ant-btn-primary { border-color: transparent; color: #fff; background: linear-gradient(135deg, #6d78e8, #7399ee 58%, #76c5e5); box-shadow: 0 10px 24px -14px rgba(79, 96, 205, .85), inset 0 1px 0 rgba(255, 255, 255, .35); }
+.po-ux-center .ant-btn-primary:hover { color: #fff !important; filter: brightness(1.04); }
+
+.po-ux-center .nx-center-hero {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 24px;
+  overflow: hidden;
+  margin-top: 14px;
+  padding: 20px 22px;
+  border: 1px solid var(--pdl-line);
+  border-radius: 19px;
+  background:
+    radial-gradient(420px 220px at 84% 0%, color-mix(in srgb, var(--pdl-accent) 10%, transparent), transparent 72%),
+    linear-gradient(130deg, color-mix(in srgb, var(--pdl-solid) 92%, transparent), color-mix(in srgb, var(--pdl-surface-2) 78%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .75), 0 22px 46px -42px rgba(25, 48, 92, .5);
+}
+.po-ux-center .nx-hero-kicker { display: inline-flex; align-items: center; gap: 6px; color: var(--pdl-accent); font-size: 10px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase; }
+.po-ux-center .nx-hero-copy h2 { margin: 7px 0 0; color: var(--pdl-ink); font-size: 23px; font-weight: 690; letter-spacing: -.032em; }
+.po-ux-center .nx-hero-copy p { max-width: 690px; margin: 7px 0 0; color: var(--pdl-ink-2); font-size: 12.5px; line-height: 1.55; }
+.po-ux-center .nx-hero-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 7px 14px; margin-top: 11px; color: var(--pdl-muted); font-size: 10.5px; }
+.po-ux-center .nx-hero-side { display: flex; min-width: 210px; flex: 0 0 auto; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.po-ux-center .nx-hero-progress { width: 100%; text-align: right; }
+.po-ux-center .nx-hero-progress strong { display: block; color: var(--pdl-ink); font-size: 32px; font-weight: 680; letter-spacing: -.05em; line-height: 1; }
+.po-ux-center .nx-hero-progress span { display: block; margin-top: 3px; color: var(--pdl-muted); font-size: 10.5px; }
+.po-ux-center .nx-hero-progress .po-progress { margin-top: 8px; background: color-mix(in srgb, var(--pdl-line) 65%, transparent); }
+.po-ux-center .nx-hero-progress .po-progress > span { background: linear-gradient(90deg, var(--pdl-accent), var(--pdl-cyan)); }
+
+.po-ux-center .v16-stat-grid { margin-top: 14px; gap: 11px; }
+.po-ux-center .v16-stat-card {
+  min-height: 104px;
+  padding: 14px 15px;
+  border: 1px solid var(--pdl-line);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--pdl-solid) 88%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .68), 0 16px 32px -34px rgba(25, 48, 92, .5);
+}
+.po-ux-center .v16-stat-icon { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 8px; color: var(--pdl-accent); background: color-mix(in srgb, var(--pdl-accent) 8%, transparent); }
+.po-ux-center .v16-stat-value { margin-top: 8px; color: var(--pdl-ink); font-size: 27px; font-weight: 680; letter-spacing: -.045em; line-height: 1; }
+.po-ux-center .v16-stat-label { margin-top: 4px; color: var(--pdl-ink-2); font-size: 11px; }
+.po-ux-center .v16-stat-hint { color: var(--pdl-muted); font-size: 10px; }
+
+.po-ux-center .po-section-head, .po-ux-center .v16-section-head { margin-top: 20px; }
+.po-ux-center .po-section-title, .po-ux-center .v16-section-title { color: var(--pdl-ink); font-size: 16px; font-weight: 650; letter-spacing: -.018em; }
+.po-ux-center .v16-project-visual-grid { margin-top: 11px; gap: 12px; }
+.po-ux-center .v16-project-visual {
+  overflow: hidden;
+  border: 1px solid var(--pdl-line);
+  border-radius: 16px;
+  background: var(--pdl-solid);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 20px 42px -38px rgba(25, 48, 92, .5);
+}
+.po-ux-center .v16-project-visual::before { opacity: .78; filter: saturate(.82); }
+.po-ux-center .v16-project-visual:hover { border-color: color-mix(in srgb, var(--pdl-accent) 32%, var(--pdl-line)); transform: translateY(-2px); }
+.po-ux-center .v16-project-visual-body, .po-ux-center .po-project-card-body { color: var(--pdl-ink); }
+
+.po-ux-center .v16-quick-grid { margin-top: 14px; gap: 11px; }
+.po-ux-center .v16-quick-card {
+  border: 1px solid var(--pdl-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--pdl-solid) 82%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6);
+}
+.po-ux-center .v16-quick-card strong { color: var(--pdl-ink); font-size: 12.5px; }
+.po-ux-center .v16-quick-card span { color: var(--pdl-muted); font-size: 10.5px; }
+
+@media (max-width: 1180px) {
+  .po-ux-center-head { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .po-ux-center .nx-center-hero { flex-direction: column; }
+  .po-ux-center .nx-hero-side { align-items: flex-start; min-width: 0; }
+  .po-ux-center .nx-hero-progress { text-align: left; }
+}
