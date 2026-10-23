@@ -78,6 +78,17 @@ E2E additions verify:
 - Overview/board checks from the first Phase 5 slice remain green.
 - No page errors.
 
+## Package
+
+```text
+release/win-phase5-pages/ProjectOS-1.7.0-win-x64-portable.exe
+commit:   ff8be37
+size:     98,511,257 bytes
+SHA256:   F2E5470FF0145CF341378C56FD9CD3AB4CFD90B56CFD4AA9238FE0DD1ABBA48A
+```
+
+Unsigned portable build; `pnpm test:package` passed.
+
 ## Known limitations
 
 1. The app-shell mountain background remains behind Project Center; only the
@@ -92,3 +103,4 @@ E2E additions verify:
 
 This slice stops for user visual confirmation of Project Center and Approvals
 before the next route group.
+
