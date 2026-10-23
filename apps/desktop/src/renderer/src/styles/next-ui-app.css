@@ -917,3 +917,109 @@
   border-radius: 13px;
   overflow: hidden;
 }
+
+/* Formal plan review is a page, not a dialog. It keeps the app shell but gives
+   the approved Design Lab workspace the full content area. */
+.po-plan-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--titlebar-height) - var(--statusbar-height) - 20px);
+  min-height: 0;
+  margin: 10px 12px 0;
+  border: 1px solid var(--nx-line);
+  border-radius: 18px;
+  background: var(--nx-solid);
+  box-shadow: var(--nx-shadow);
+  overflow: hidden;
+}
+.po-plan-page-surface { flex: 1 1 auto; min-height: 0; }
+.po-plan-page-surface .pui-root { height: 100%; border-radius: 0; }
+.po-plan-page-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 20;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid var(--nx-line);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--nx-solid) 86%, transparent);
+  color: var(--nx-muted);
+  cursor: pointer;
+}
+.po-plan-page-close:hover { color: var(--nx-ink); border-color: var(--nx-line-strong); }
+.po-plan-page-footer {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 18px 12px;
+  border-top: 1px solid var(--nx-line);
+  background: color-mix(in srgb, var(--nx-solid) 90%, transparent);
+}
+.po-plan-page-footer .po-plan-footer-actions { width: 100%; }
+
+/* Design Lab visual details on the formal plan workspace. */
+.po-plan-view-tabs { border-color: color-mix(in srgb, var(--pui-cyan) 28%, var(--pui-border)) !important; background: color-mix(in srgb, var(--pui-cyan) 9%, var(--pui-surface-muted)) !important; }
+.po-plan-view-tabs [role='tab'] { color: var(--pui-cyan); font-size: 13px; }
+.po-plan-view-tabs [role='tab'][data-state='active'] {
+  color: var(--pui-accent);
+  background: var(--pui-surface-strong);
+  box-shadow: 0 2px 8px -5px rgba(35, 60, 110, .5), inset 0 1px 0 rgba(255,255,255,.75);
+}
+.po-plan-status-pill {
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--pui-warning) 34%, var(--pui-border));
+  border-radius: 999px;
+  color: var(--pui-warning);
+  background: color-mix(in srgb, var(--pui-warning) 10%, transparent);
+  font-size: 11px;
+  font-weight: 620;
+  line-height: 1.3;
+}
+.po-plan-agent-chip {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+  color: var(--pui-ink-muted);
+  font-size: 11.5px;
+}
+.po-plan-agent-chip i {
+  display: inline-grid;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--pui-accent);
+  background: var(--pui-accent-soft);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 650;
+}
+.po-plan-task-state {
+  min-width: 42px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+}
+.po-plan-task-state.ok { color: var(--pui-ok); background: color-mix(in srgb, var(--pui-ok) 10%, transparent); }
+.po-plan-task-state.accent { color: var(--pui-accent); background: var(--pui-accent-soft); }
+.po-plan-task-state.warn { color: var(--pui-warning); background: color-mix(in srgb, var(--pui-warning) 12%, transparent); }
+.po-plan-compact-task { min-height: 40px; }
+
+.po-plan-readiness-score { margin-top: 8px; color: var(--pui-ink); font-size: 30px; font-weight: 680; letter-spacing: -.04em; line-height: 1; }
+.po-plan-readiness-score em { margin-left: 4px; color: var(--pui-ink-muted); font-size: 12px; font-style: normal; font-weight: 500; letter-spacing: 0; }
+.po-plan-readiness-copy { margin-top: 8px; color: var(--pui-ink-muted); font-size: 11.5px; line-height: 1.55; }
+.po-plan-readiness-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--pui-border); }
+.po-plan-readiness-stats div { display: flex; flex-direction: column; gap: 2px; }
+.po-plan-readiness-stats span { color: var(--pui-ink-muted); font-size: 11px; }
+.po-plan-readiness-stats strong { color: var(--pui-ink); font-size: 15px; font-weight: 600; }
+.po-plan-readiness-stats strong.is-warning { color: var(--pui-warning); }

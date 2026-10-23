@@ -135,10 +135,12 @@ export function PlanReviewNext({
 
   const summaryPath = stages.map((stage) => stage.title).join(' → ')
   const activeStage = stages.find((stage) => stage.id === selectedStage) ?? stages[0]
+  const dependencyCount = draft.tasks.reduce((total, task) => total + task.dependsOn.length, 0)
+  const readyCount = draft.tasks.filter((task) => !task.assignmentBlocked && !issues.some((issue) => issue.taskKey === task.key)).length
 
   return (
     <>
-      <div className="pui-root relative isolate flex h-full min-h-0 flex-col gap-0 overflow-hidden rounded-[20px] text-[var(--pui-ink)]" data-testid="plan-review-workbench">
+      <div className="pui-root relative isolate flex h-full min-h-0 flex-col gap-0 overflow-hidden rounded-none text-[var(--pui-ink)]" data-testid="plan-review-workbench">
         <div className="pui-ambient" />
         <motion.div
           initial={{ opacity: 0, y: 7 }}
@@ -146,9 +148,9 @@ export function PlanReviewNext({
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className="relative z-[1] flex h-full min-h-0 flex-col"
         >
-        <header className="po-plan-review-overview relative flex shrink-0 items-start justify-between gap-6 border-b border-[var(--pui-border)] pb-3 pl-8 pr-1 pt-1">
+        <header className="po-plan-review-overview relative flex shrink-0 items-start justify-between gap-6 border-b border-[var(--pui-border)] px-8 pb-4 pt-5 pr-14">
           <div className="min-w-0">
-            <div className="pui-kicker">Plan review · R{draft.revision}</div>
+            <div className="pui-kicker">PLAN REVIEW · {stages.length} 个阶段 · {draft.tasks.length} 项工作</div>
             {editingGoal ? (
               <div className="mt-1 flex max-w-[760px] flex-col gap-2">
                 <textarea
@@ -164,20 +166,21 @@ export function PlanReviewNext({
               </div>
             ) : (
               <div className="mt-0.5 flex items-start gap-2">
-                <h1 className="line-clamp-2 max-w-[820px] text-[21px] font-semibold leading-[1.32] tracking-[-0.015em] text-[var(--pui-ink)]" title={draft.goal}>{draft.goal}</h1>
+                <h1 className="line-clamp-2 max-w-[860px] text-[26px] font-semibold leading-[1.24] tracking-[-0.03em] text-[var(--pui-ink)]" title={draft.goal}>{draft.goal}</h1>
                 {draft.status === 'draft' ? (
                   <Button size="icon" variant="ghost" className="mt-0.5 text-[var(--pui-ink-muted)]" aria-label="编辑计划目标" onClick={() => { setGoalDraft(draft.goal); setEditingGoal(true) }}><Pencil size={13} /></Button>
                 ) : null}
               </div>
             )}
             <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[12px] text-[var(--pui-ink-muted)]">
+              <span className="po-plan-status-pill">待批准</span>
               <span>{summaryPath || '单任务'}</span><span>·</span><span>{draft.tasks.length} 个任务</span><span>·</span><span className={risks.length ? 'text-[var(--pui-warning)]' : ''}>{risks.length ? `${risks.length} 项提醒` : '无待处理项'}</span>
             </div>
           </div>
           <div className="flex shrink-0 items-start gap-5 pt-1">
-            {[['任务', draft.tasks.length], ['阶段', stages.length], ['待复核', risks.length], ['版本', `r${draft.revision}`]].map(([label, value]) => (
+            {[['工作项', draft.tasks.length], ['阶段', stages.length], ['待复核', risks.length]].map(([label, value]) => (
               <div key={String(label)} className="flex min-w-[46px] flex-col gap-0.5">
-                <strong className={cn('pui-metric-value', label === '待复核' && blocking > 0 && 'text-[var(--pui-danger)]')}>{value}</strong>
+                <strong className={cn('pui-metric-value', label === '待复核' && blocking > 0 && 'text-[var(--pui-danger)]', label === '待复核' && blocking === 0 && risks.length > 0 && 'text-[var(--pui-warning)]')}>{value}</strong>
                 <span className="text-[11.5px] text-[var(--pui-ink-muted)]">{label}</span>
               </div>
             ))}
@@ -186,7 +189,7 @@ export function PlanReviewNext({
 
         <Tabs.Root defaultValue="route" className="flex min-h-0 flex-1 flex-col">
           <div className="flex shrink-0 items-center justify-between gap-3 py-2.5">
-            <Tabs.List className="inline-flex items-center gap-0.5 rounded-[10px] border border-[var(--pui-border)] bg-[var(--pui-surface-muted)] p-[3px]" aria-label="计划视图">
+            <Tabs.List className="po-plan-view-tabs inline-flex items-center gap-0.5 rounded-[10px] border border-[var(--pui-border)] bg-[var(--pui-surface-muted)] p-[3px]" aria-label="计划视图">
               <Tabs.Trigger value="route" className="inline-flex h-6 items-center gap-1.5 rounded-[7px] px-2.5 text-[12px] text-[var(--pui-ink-muted)] outline-none transition-colors hover:text-[var(--pui-ink)] data-[state=active]:bg-[var(--pui-surface-strong)] data-[state=active]:text-[var(--pui-ink)]"><ArrowRight size={13} />阶段路线</Tabs.Trigger>
               <Tabs.Trigger value="dag" className="inline-flex h-6 items-center gap-1.5 rounded-[7px] px-2.5 text-[12px] text-[var(--pui-ink-muted)] outline-none transition-colors hover:text-[var(--pui-ink)] data-[state=active]:bg-[var(--pui-surface-strong)] data-[state=active]:text-[var(--pui-ink)]"><Layers3 size={13} />任务依赖</Tabs.Trigger>
             </Tabs.List>
@@ -209,13 +212,6 @@ export function PlanReviewNext({
               <div className="flex h-full min-h-0 flex-col gap-3">
                 <Tabs.Content value="route" className="min-h-0 outline-none">
                   <StageJourney stages={stages} activeStage={selectedStage} onSelect={selectStage} />
-                  {activeStage ? (
-                    <div className="pui-focus-row">
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-[9px] bg-[var(--pui-accent-soft)] text-[var(--pui-accent)]"><Sparkles size={14} /></span>
-                      <div className="min-w-0 flex-1"><div className="truncate text-[12.5px] font-medium text-[var(--pui-ink)]">{activeStage.title} · {activeStage.entries.length} 个任务</div><div className="truncate text-[11px] text-[var(--pui-ink-muted)]">{activeStage.entries.map((entry) => entry.task.title).join(' / ')}</div></div>
-                      {activeStage.entries[0] ? <button type="button" className="flex shrink-0 items-center gap-1 text-[11.5px] font-medium text-[var(--pui-accent)]" onClick={() => openTask(activeStage.entries[0]!.task.key)}>查看任务<ChevronRight size={12} /></button> : null}
-                    </div>
-                  ) : null}
                 </Tabs.Content>
 
                 <Tabs.Content value="dag" className="min-h-0 outline-none">
@@ -224,7 +220,7 @@ export function PlanReviewNext({
 
                 <div className="flex min-h-0 flex-1 flex-col">
                   <div className="mb-1.5 flex items-end justify-between gap-3">
-                    <div><h2 className="text-[13px] font-semibold text-[var(--pui-ink)]">任务清单</h2><p className="mt-0.5 text-[11.5px] text-[var(--pui-ink-muted)]">点击任务查看完整字段</p></div>
+                    <div><div className="pui-kicker">TASK SEQUENCE</div><h2 className="mt-0.5 text-[16px] font-semibold text-[var(--pui-ink)]">准备审核的工作</h2></div>
                     {draft.status === 'draft' ? <Button size="sm" variant="ghost" onClick={onAddTask}><Plus size={13} />添加任务</Button> : null}
                   </div>
                   <ScrollArea className="min-h-0 flex-1">
@@ -234,20 +230,22 @@ export function PlanReviewNext({
                         return (
                           <div key={stage.id} ref={(node) => { stageRefs.current[stage.id] = node }} className="border-t border-[var(--pui-border)] first:border-t-0">
                             <button type="button" className="flex h-8 w-full items-center gap-2 bg-[color-mix(in_srgb,var(--pui-ink-muted)_4%,transparent)] px-2.5 text-left" onClick={() => { setSelectedStage(stage.id); setCollapsed((current) => { const next = new Set(current); if (next.has(stage.id)) next.delete(stage.id); else next.add(stage.id); return next }) }} aria-expanded={!isCollapsed}>
-                              {isCollapsed ? <ChevronRight size={13} /> : <ChevronDown size={13} />}<strong className="text-[12.5px] font-medium">{stage.title}</strong><span className="text-[11.5px] text-[var(--pui-ink-muted)]">{stage.entries.length} 个任务</span>
+                              {isCollapsed ? <ChevronRight size={13} /> : <ChevronDown size={13} />}<strong className="text-[12.5px] font-medium">{stage.title}</strong><span className="ml-auto text-[11.5px] text-[var(--pui-ink-muted)]">{stage.entries.length}</span>
                             </button>
                             {isCollapsed ? null : stage.entries.map((entry) => {
                               const risk = entry.task.assignmentBlocked || issues.some((issue) => issue.taskKey === entry.task.key)
+                              const agent = shortAgent(agentOptions.find((option) => option.value === entry.task.agentId)?.label)
+                              const state = risk ? { label: '需复核', tone: 'warn' } : entry.task.requiresApproval ? { label: '待审批', tone: 'accent' } : { label: '就绪', tone: 'ok' }
                               return (
                                 <button type="button" key={entry.task.key} data-testid={`plan-task-${entry.task.key}`} onClick={() => openTask(entry.task.key)} data-selected={selectedTaskKey === entry.task.key}
-                                  className="pui-ledger-row po-plan-compact-task flex min-h-[38px] w-full items-center gap-2 border-t border-[var(--pui-border)] px-3 py-1 text-left">
+                                  className="pui-ledger-row po-plan-compact-task flex min-h-[40px] w-full items-center gap-2 border-t border-[var(--pui-border)] px-3 py-1 text-left">
                                   <span className="w-5 shrink-0 font-mono text-[11px] text-[var(--pui-ink-muted)]">{String(entry.index + 1).padStart(2, '0')}</span>
                                   <span className="min-w-0 flex-1">
-                                    <span className="block truncate text-[12.5px] font-medium leading-[1.4] text-[var(--pui-ink)]">{entry.task.title}</span>
+                                    <span className="block truncate text-[14px] font-medium leading-[1.4] text-[var(--pui-ink)]">{entry.task.title}</span>
                                   </span>
-                                  <span className="max-w-[110px] truncate text-[11.5px] text-[var(--pui-ink-muted)]">{shortAgent(agentOptions.find((option) => option.value === entry.task.agentId)?.label)}</span>
-                                  {risk ? <Badge tone="danger">需复核</Badge> : entry.task.dependsOn.length ? <span className="text-[11px] text-[var(--pui-ink-muted)]">{entry.task.dependsOn.length} 前置</span> : null}
-                                  <ChevronRight size={12} className="text-[var(--pui-ink-muted)] opacity-60" />
+                                  <span className="po-plan-agent-chip max-w-[120px]"><i>{agent.slice(0, 1)}</i><span className="truncate">{agent}</span></span>
+                                  <span className={`po-plan-task-state ${state.tone}`}>{state.label}</span>
+                                  <ChevronRight size={13} className="text-[var(--pui-ink-muted)] opacity-55" />
                                 </button>
                               )
                             })}
@@ -264,12 +262,16 @@ export function PlanReviewNext({
             </Separator>
             <Panel defaultSize={narrow ? '32%' : '24%'} minSize="18%" className="min-h-0">
               <aside className="pui-scroll flex h-full min-h-0 flex-col gap-2 overflow-auto pl-1">
-                <div className="pui-risk-panel rounded-[15px] p-3">
-                  <div className="flex items-center justify-between gap-2"><span className="text-[11.5px] text-[var(--pui-ink-muted)]">审批状态</span><strong className={cn('text-[12px] font-semibold', blocking ? 'text-[var(--pui-danger)]' : 'text-[var(--pui-success)]')}>{blocking ? '待修复' : risks.length ? '可批准 · 有提醒' : '可批准'}</strong></div>
-                  <div className="mt-2 grid grid-cols-3 gap-2 text-[11px] text-[var(--pui-ink-muted)]"><span>阻塞 {blocking}</span><span>任务 {draft.tasks.length}</span><span>阶段 {stages.length}</span></div>
-                  <p className="mt-2 text-[11.5px] leading-relaxed text-[var(--pui-ink-muted)]">批准只创建任务与依赖，不会启动 Agent；执行需单独授权。</p>
-                </div>
-                <div className="pui-risk-panel overflow-hidden rounded-[15px]">
+                <div className="pui-risk-panel po-plan-readiness rounded-[15px] p-3">
+                  <div className="flex items-center justify-between gap-2"><span className="pui-kicker">REVIEW READINESS</span><span className={cn('text-[11px] font-medium', blocking ? 'text-[var(--pui-danger)]' : risks.length ? 'text-[var(--pui-warning)]' : 'text-[var(--pui-success)]')}>{blocking ? '待修复' : risks.length ? '有提醒' : '可批准'}</span></div>
+                  <div className="po-plan-readiness-score">{readyCount}<em>/ {draft.tasks.length}</em></div>
+                  <p className="po-plan-readiness-copy">{risks.length ? `还有 ${risks.length} 项需要复核；批准只会创建任务与依赖，不会启动 Agent。` : '计划结构完整；批准只会创建任务与依赖，不会启动 Agent。'}</p>
+                  <div className="po-plan-readiness-stats">
+                    <div><span>阶段</span><strong>{stages.length}</strong></div>
+                    <div><span>依赖</span><strong>{dependencyCount}</strong></div>
+                    <div><span>待复核</span><strong className={risks.length ? 'is-warning' : ''}>{risks.length}</strong></div>
+                  </div>
+                </div>                <div className="pui-risk-panel overflow-hidden rounded-[15px]">
                   <button type="button" className="po-plan-risk-summary flex w-full items-center gap-2 px-3 py-2.5 text-left" onClick={() => setRiskOpen((open) => !open)} aria-expanded={riskOpen}>
                     <AlertTriangle size={14} className={risks.length ? 'text-[var(--pui-warning)]' : 'text-[var(--pui-ink-muted)]'} />
                     <span className="flex-1 text-[12px]">{risks.length ? `${risks.length} 项需复核` : '无待处理项'}</span><ChevronDown size={12} className={cn('transition-transform', riskOpen && 'rotate-180')} />
@@ -405,3 +407,6 @@ export function PlanReviewNext({
     </>
   )
 }
+
+
+

@@ -1357,6 +1357,35 @@ export default function OrchestrationWorkspace() {
     )
   })()
 
+  if (planOpen && draft?.status === 'draft') {
+    return (
+      <div className="po-plan-page" data-testid="plan-review-page">
+        <div className="po-plan-page-surface">
+          <PlanReviewNext
+            draft={draft}
+            roleLabels={ROLE_LABELS}
+            agentOptions={planAgentOptions}
+            onUpdateTask={updateDraftTask}
+            onUpdateGoal={(goal) => setDraft((current) => (current ? { ...current, goal } : current))}
+            onAddTask={addDraftTask}
+            onRemoveTask={removeDraftTask}
+            onOpenCustomAgent={openCustomAgent}
+          />
+        </div>
+        <footer className="po-plan-page-footer">
+          <Button onClick={() => setPlanOpen(false)}>返回编排</Button>
+          <div className="po-plan-footer-actions">
+            {hasPlanBlockingIssues(draft) ? <span className="po-plan-footer-blocker">存在阻塞性问题：展开“需复核”查看并修复后再批准。</span> : null}
+            <Button onClick={() => void reject()}>拒绝计划</Button>
+            <Button type="primary" aria-label="批准并创建任务" onClick={() => void approve()} disabled={hasPlanBlockingIssues(draft)} data-testid="plan-approve">
+              <CheckCircleOutlined /> 批准计划
+            </Button>
+          </div>
+        </footer>
+      </div>
+    )
+  }
+
   return (
     <div className={`po-page po-page-wide po-orchestration-page${selected ? ' is-inspector-open' : ''}`}>
         <header className="po-orch-header">
@@ -1831,4 +1860,6 @@ export default function OrchestrationWorkspace() {
       </div>
   )
 }
+
+
 

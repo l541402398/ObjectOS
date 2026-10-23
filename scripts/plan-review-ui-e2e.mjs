@@ -97,7 +97,7 @@ try {
   await page.screenshot({ path: join(shots, 'plan-review-final.png') })
 
   const checks = [
-    ['overview shows goal, stages, risk count and version', overview.includes('实现设置页') && overview.includes('阶段') && overview.includes('R1') && overview.includes('版本')],
+    ['overview shows goal, stages and risk count', overview.includes('实现设置页') && overview.includes('阶段') && overview.includes('提醒')],
     ['stage route is derived and clickable', stageCount >= 1],
     ['task rows are compact by default', compactCount >= 1],
     ['risk summary expands real review items', riskRows >= 1],
@@ -118,3 +118,4 @@ try {
 } finally {
   if (app) await app.close().catch(() => undefined)
 }
+

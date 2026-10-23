@@ -14,6 +14,7 @@ import {
   type ReactFlowInstance,
 } from '@xyflow/react'
 import type { PlannedTask } from '@projectos/contracts'
+import { PremiumDependencyEdge, type PremiumEdgeData } from './PremiumDependencyEdge'
 
 type GraphNodeData = {
   task: PlannedTask
@@ -26,6 +27,8 @@ type GraphNodeData = {
 }
 
 type GraphNode = Node<GraphNodeData, 'premium-task'>
+type PremiumEdge = Edge<PremiumEdgeData, 'premiumDependency'>
+const edgeTypes = { premiumDependency: PremiumDependencyEdge }
 
 function TaskNode({ data }: NodeProps<GraphNode>) {
   return (
@@ -71,7 +74,7 @@ export function TaskGraph({
   onSelect: (taskKey: string) => void
 }): ReactElement {
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({})
-  const [instance, setInstance] = useState<ReactFlowInstance<GraphNode, Edge> | null>(null)
+  const [instance, setInstance] = useState<ReactFlowInstance<GraphNode, PremiumEdge> | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -148,16 +151,18 @@ export function TaskGraph({
     },
   })), [activeStage, agentLabels, positions, related, selectedTaskKey, stageByTask, tasks])
 
-  const edges = useMemo<Edge[]>(() => tasks.flatMap((task) => task.dependsOn.filter((dependency) => tasks.some((item) => item.key === dependency)).map((dependency) => {
-    const isRelated = !selectedTaskKey || related.has(dependency) || related.has(task.key) || dependency === selectedTaskKey || task.key === selectedTaskKey
+  const edges = useMemo<PremiumEdge[]>(() => tasks.flatMap((task) => task.dependsOn.filter((dependency) => tasks.some((item) => item.key === dependency)).map((dependency) => {
+    const isRelated = related.has(dependency) || related.has(task.key) || dependency === selectedTaskKey || task.key === selectedTaskKey
+    const highlighted = Boolean(selectedTaskKey) && isRelated
+    const focused = dependency === selectedTaskKey || task.key === selectedTaskKey
     return {
       id: `${dependency}->${task.key}`,
       source: dependency,
       target: task.key,
-      type: 'smoothstep',
-      className: selectedTaskKey ? (isRelated ? 'pui-edge-related' : 'pui-edge-dimmed') : undefined,
-      markerEnd: { type: MarkerType.ArrowClosed, width: 14, height: 14, color: isRelated ? '#7f99bb' : '#aeb9c8' },
-      style: { stroke: isRelated ? 'rgba(103,132,172,.78)' : 'rgba(150,164,184,.3)', strokeWidth: isRelated ? 1.5 : 1 },
+      type: 'premiumDependency',
+      data: { highlighted, focused },
+      className: selectedTaskKey && !highlighted ? 'pui-edge-dimmed' : undefined,
+      markerEnd: { type: MarkerType.ArrowClosed, width: 12, height: 12, color: highlighted ? '#8fa8eb' : '#95abc9' },
     }
   })), [related, selectedTaskKey, tasks])
 
@@ -167,6 +172,7 @@ export function TaskGraph({
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onInit={(flow) => setInstance(flow)}
         onNodeClick={(_event, node) => onSelect(node.id)}
         nodesDraggable={false}
@@ -185,3 +191,4 @@ export function TaskGraph({
     </div>
   )
 }
+
