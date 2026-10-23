@@ -3,6 +3,7 @@ import type { PlanDraft, PlanRole, PlannedTask } from '@projectos/contracts'
 import {
   computeStages,
   hasPlanBlockingIssues,
+  mergeStagesByRole,
   planDependencyIssues,
 } from '../apps/desktop/src/renderer/src/features/orchestration/components/plan-review-logic.js'
 
@@ -78,6 +79,15 @@ describe('plan review stage derivation', () => {
     expect(stages).toHaveLength(1)
     expect(stages[0]?.entries).toHaveLength(2)
   })
+
+  it('merges dependency levels with the same role into one display stage', () => {
+    const stages = computeStages([task('a'), task('b'), task('c', ['a', 'b'])], labels)
+    expect(stages).toHaveLength(2)
+    const merged = mergeStagesByRole(stages)
+    expect(merged).toHaveLength(1)
+    expect(merged[0]?.title).toBe('开发阶段')
+    expect(merged[0]?.entries.map((entry) => entry.task.key)).toEqual(['a', 'b', 'c'])
+  })
 })
 
 describe('plan review dependency validation', () => {
@@ -100,3 +110,4 @@ describe('plan review dependency validation', () => {
     expect(hasPlanBlockingIssues(withRisk)).toBe(false)
   })
 })
+

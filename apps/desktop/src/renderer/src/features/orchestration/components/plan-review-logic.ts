@@ -87,3 +87,31 @@ export function computeStages(tasks: PlannedTask[], roleLabels: Record<PlanRole,
       }
     })
 }
+
+/**
+ * Presentation-only merge of dependency levels into role stages.
+ * A plan can have many execution levels with the same role; the approved
+ * Design Lab journey shows one stage per role, with all of that role's tasks
+ * inside one expandable task-list group.
+ */
+export function mergeStagesByRole(stages: Stage[]): Stage[] {
+  const groups = new Map<string, Stage>()
+  for (const stage of stages) {
+    const key = stage.roles.length === 1 ? `role:${stage.roles[0]}` : `title:${stage.title}`
+    const current = groups.get(key)
+    if (!current) {
+      groups.set(key, { ...stage, entries: [...stage.entries] })
+      continue
+    }
+    current.entries.push(...stage.entries)
+    current.hasRisk = current.hasRisk || stage.hasRisk
+    current.level = Math.min(current.level, stage.level)
+  }
+  return [...groups.values()]
+    .sort((a, b) => a.level - b.level)
+    .map((stage, index) => ({
+      ...stage,
+      id: `stage-${index}`,
+      entries: [...stage.entries].sort((a, b) => a.index - b.index),
+    }))
+}

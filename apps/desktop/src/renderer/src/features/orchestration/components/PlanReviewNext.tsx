@@ -26,7 +26,7 @@ import {
   type PlanRole,
   type PlannedTask,
 } from '@projectos/contracts'
-import { computeStages, planDependencyIssues, type Stage } from './plan-review-logic'
+import { computeStages, mergeStagesByRole, planDependencyIssues, type Stage } from './plan-review-logic'
 import { cn } from '../../../next-ui/cn'
 import { Button } from '../../../next-ui/ui/button'
 import { Badge } from '../../../next-ui/ui/badge'
@@ -80,7 +80,7 @@ export function PlanReviewNext({
   onOpenCustomAgent: (taskKey: string) => void
 }): ReactElement {
   const narrow = useNarrow()
-  const stages = useMemo(() => computeStages(draft.tasks, roleLabels), [draft.tasks, roleLabels])
+  const stages = useMemo(() => mergeStagesByRole(computeStages(draft.tasks, roleLabels)), [draft.tasks, roleLabels])
   const issues = useMemo(() => planDependencyIssues(draft.tasks), [draft.tasks])
   const blockingTasks = draft.tasks.filter((task) => task.assignmentBlocked)
   const blocking = blockingTasks.length + issues.length
@@ -91,7 +91,7 @@ export function PlanReviewNext({
   ]
   const [selectedTaskKey, setSelectedTaskKey] = useState<string | null>(null)
   const [selectedStage, setSelectedStage] = useState(stages[0]?.id ?? '')
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set(stages.slice(1).map((stage) => stage.id)))
   const [editingGoal, setEditingGoal] = useState(false)
   const [goalDraft, setGoalDraft] = useState(draft.goal)
   const [riskOpen, setRiskOpen] = useState(true)
@@ -240,11 +240,10 @@ export function PlanReviewNext({
                               const risk = entry.task.assignmentBlocked || issues.some((issue) => issue.taskKey === entry.task.key)
                               return (
                                 <button type="button" key={entry.task.key} data-testid={`plan-task-${entry.task.key}`} onClick={() => openTask(entry.task.key)} data-selected={selectedTaskKey === entry.task.key}
-                                  className="pui-ledger-row po-plan-compact-task flex min-h-[48px] w-full items-center gap-2 border-t border-[var(--pui-border)] px-3 py-1.5 text-left">
-                                  <span className="w-5 shrink-0 self-start pt-0.5 font-mono text-[11px] text-[var(--pui-ink-muted)]">{String(entry.index + 1).padStart(2, '0')}</span>
+                                  className="pui-ledger-row po-plan-compact-task flex min-h-[38px] w-full items-center gap-2 border-t border-[var(--pui-border)] px-3 py-1 text-left">
+                                  <span className="w-5 shrink-0 font-mono text-[11px] text-[var(--pui-ink-muted)]">{String(entry.index + 1).padStart(2, '0')}</span>
                                   <span className="min-w-0 flex-1">
                                     <span className="block truncate text-[12.5px] font-medium leading-[1.4] text-[var(--pui-ink)]">{entry.task.title}</span>
-                                    <span className="mt-0.5 block truncate text-[11px] leading-[1.35] text-[var(--pui-ink-muted)]">{entry.task.description || '未填写任务描述'}</span>
                                   </span>
                                   <span className="max-w-[110px] truncate text-[11.5px] text-[var(--pui-ink-muted)]">{shortAgent(agentOptions.find((option) => option.value === entry.task.agentId)?.label)}</span>
                                   {risk ? <Badge tone="danger">需复核</Badge> : entry.task.dependsOn.length ? <span className="text-[11px] text-[var(--pui-ink-muted)]">{entry.task.dependsOn.length} 前置</span> : null}
