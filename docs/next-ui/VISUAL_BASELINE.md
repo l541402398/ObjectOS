@@ -24,6 +24,26 @@
 
 ![Approved icon-only dark baseline](visual-regression/current-10d84f4-dark.png)
 
+## 1.1 认可的是哪个路由
+
+用户认可的界面是 **Design Lab 页面**：
+
+```text
+#/design-lab
+```
+
+不是正式业务页 `PLAN REVIEW · R1` 的 Dialog。两者目前不是同一实现：
+
+| 区域 | 已认可 Design Lab | 当前正式 Plan Review |
+|---|---|---|
+| 顶部版本 | 无 R1 字样 | `PLAN REVIEW · R1` / 版本列 |
+| 指标 | 工作项 / 阶段 / 待复核 | 任务 / 阶段 / 待复核 / 版本 |
+| 列表标题 | `TASK SEQUENCE` + `准备审核的工作` | `任务清单` |
+| 字体 | Design Lab 14px 任务标题体系 | 正式页 12.5px 压缩体系 |
+| 容器 | 完整 Design Lab 工作台 | 业务 DialogShell |
+
+正式 Plan Review 目前**没有得到用户视觉认可**，不能拿它当 approved 证据。
+
 ## 2. 已排除的错误候选
 
 以下版本**不是**用户认可的基线：
@@ -88,5 +108,6 @@ docs/next-ui/visual-regression/current-10d84f4.png
 - `docs/next-ui/visual-regression/`
 - `docs/next-ui/BASELINE_AND_RECOVERY.md`
 - `docs/next-ui/OPEN_ISSUES.md`
+
 
 

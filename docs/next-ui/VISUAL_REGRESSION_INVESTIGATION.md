@@ -3,7 +3,7 @@
 日期：2026-10-22  
 状态：**已停止 UI 修改；等待用户确认具体回归页面**  
 当前分支：`feature/projectos-next-ui-full-migration`  
-当前 HEAD：`10d84f4`  
+当前 HEAD：`98557bc`（正式页任务清单修正）；Design Lab 认可版本仍为 `10d84f4`  
 已认可基线：`10d84f4` / tag `visual-baseline-approved-icons-10d84f4`  
 未合并 stable
 
@@ -41,25 +41,23 @@ docs/next-ui/visual-regression/current-10d84f4.png
 
 因此 **Design Lab 的阶段路线不是本次回归点**。
 
-## 3. 现在真正需要定位的问题
+## 3. 已确认的真正问题
 
-“越改越差”不可能再用“阶段文案被删”解释。当前确认的候选差异只有：
+用户认可的是 **Design Lab 路由 `#/design-lab`**，不是正式 Plan Review Dialog。
+当前正式页面虽然也用了 icon-only 路线，但整体不是同一界面：
 
-1. **正式业务页面与 Design Lab 的框架不一致**
-   - Design Lab 是完整的 Plan Review 工作台。
-   - 正式页面被装入 `DialogShell`，布局、留白、任务列表和右侧 readiness
-     不再与 Design Lab 保持同一视觉关系。
-   - 这可能让用户觉得“改版丢失”。
+- 顶部出现 `PLAN REVIEW · R1` 和版本列；用户认可版没有 R1。
+- 指标是“任务 / 阶段 / 待复核 / 版本”；用户认可版是“工作项 / 阶段 / 待复核”。
+- 列表标题是“任务清单”；用户认可版是 `TASK SEQUENCE` + “准备审核的工作”。
+- 正式页用 12.5px 紧凑字体；Design Lab 用更大的标题和任务字号。
+- 正式页装在业务 DialogShell 中；Design Lab 是完整工作台布局。
 
-2. **全局 `next-ui-app.css` 对正式页面的统一覆盖**
-   - 该文件新增 900+ 行，统一改写了大量 `.po-*` / `.v16-*` 页面样式。
-   - Design Lab 使用 `.pdl-*`，未直接被覆盖；正式页面则被统一成通用模板。
-   - 需要逐页对比，而不是继续全局修改。
+因此：**不是 Design Lab 被改坏，而是正式业务页从未按 Design Lab 实现，却被错误地称为“已迁移/已认可”。**
 
-3. **可能只是旧包/旧实例**
-   - 应用使用单实例锁。
-   - 旧 ProjectOS 仍在运行时，启动新 portable 会聚焦旧窗口。
-   - 用户此前看到的“图1”包含当前源码中不存在的文案，确认不是最新包。
+另外两个可能因素：
+
+1. 全局 `next-ui-app.css` 对正式页面统一覆盖，削弱页面个性。
+2. 旧包/旧实例被单实例锁拉到前台，造成“新包没生效”的错觉。
 
 ## 4. 当前状态保护
 
@@ -161,4 +159,6 @@ C:\Users\Administrator\Desktop\workplace\_projectos-next-ui-pre-restore-20261022
 ## 10. 停止状态
 
 已停止 UI 修改。等待用户指定具体回归页面后，再在隔离分支进行单页恢复。
+
+
 
