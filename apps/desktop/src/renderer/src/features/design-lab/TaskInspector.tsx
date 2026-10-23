@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactElement, type ReactNode, type WheelEvent as ReactWheelEvent } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Check, ChevronDown, GitBranch, Layers3, Plus, Trash2, X } from 'lucide-react'
 import { OpticalGlass } from './OpticalGlass'
@@ -14,18 +14,33 @@ export function TaskInspector({
   onPatch,
   onClose,
   onDelete,
+  onApprove,
+  onReject,
+  approveDisabled,
+  approveHint,
 }: {
   task: LabTask
   tasks: LabTask[]
   onPatch: (id: string, patch: Partial<LabTask>) => void
   onClose: () => void
   onDelete?: () => void
+  onApprove?: () => void
+  onReject?: () => void
+  approveDisabled?: boolean
+  approveHint?: string
 }): ReactElement {
   const reduce = useReducedMotion()
   const closeRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<'agent' | 'deps' | 'artifacts' | null>(null)
   const patch = (value: Partial<LabTask>): void => onPatch(task.id, value)
+  const onWheel = (event: ReactWheelEvent<HTMLElement>): void => {
+    const scroller = scrollRef.current
+    if (!scroller || scroller.contains(event.target as Node)) return
+    if (scroller.scrollHeight <= scroller.clientHeight) return
+    scroller.scrollTop += event.deltaY
+  }
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null
@@ -59,6 +74,7 @@ export function TaskInspector({
         aria-modal="true"
         aria-labelledby="pdl-inspector-title"
         onMouseDown={(event) => event.stopPropagation()}
+        onWheel={onWheel}
         initial={reduce ? false : { x: 40, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         exit={reduce ? {} : { x: 30, opacity: 0 }}
@@ -73,7 +89,7 @@ export function TaskInspector({
           <button ref={closeRef} type="button" className="pdl-icon-button" onClick={onClose} aria-label="关闭任务检查器"><X size={17} /></button>
         </div>
 
-        <div className="pdl-inspector-scroll">
+        <div ref={scrollRef} className="pdl-inspector-scroll">
           <section className="pdl-field-block">
             <FieldLabel>任务身份</FieldLabel>
             <input id="pdl-inspector-title" className="pdl-title-input" value={task.title} onChange={(event) => patch({ title: event.target.value })} />
@@ -171,9 +187,31 @@ export function TaskInspector({
         </div>
 
         <div className="pdl-inspector-foot">
-          <OpticalGlass className="pdl-liquid-action" radius={14} style={{ width: '100%' }}>
-            <button type="button" className="pdl-primary pdl-primary-wide" onClick={onClose}>返回计划审核</button>
-          </OpticalGlass>
+          {onApprove && onReject ? (
+            <div className="pdl-inspector-approval">
+              <div className="pdl-inspector-approval-meta">
+                <span>计划审批</span>
+                <p>{approveHint ?? '批准只创建任务与依赖，不会启动 Agent。'}</p>
+              </div>
+              <div className="pdl-inspector-approval-actions">
+                <button type="button" className="pdl-quiet" onClick={onReject} data-testid="inspector-reject">拒绝计划</button>
+                <button
+                  type="button"
+                  className="pdl-primary"
+                  onClick={onApprove}
+                  disabled={approveDisabled}
+                  title={approveDisabled ? '存在阻塞项，修复后才能批准' : undefined}
+                  data-testid="inspector-approve"
+                >
+                  <Check size={14} />批准计划
+                </button>
+              </div>
+            </div>
+          ) : (
+            <OpticalGlass className="pdl-liquid-action" radius={14} style={{ width: '100%' }}>
+              <button type="button" className="pdl-primary pdl-primary-wide" onClick={onClose}>返回计划审核</button>
+            </OpticalGlass>
+          )}
         </div>
       </motion.aside>
     </motion.div>

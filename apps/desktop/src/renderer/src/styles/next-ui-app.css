@@ -1138,3 +1138,21 @@ body.po-plan-workspace-open .po-sidebar { display: none; }
   backdrop-filter: blur(8px) saturate(1.15) !important;
 }
 
+
+/* Ant message toasts are informational and must never intercept clicks
+   intended for the top-right inspector/modal controls. */
+.ant-message,
+.ant-message-list,
+.ant-message-list-content,
+.ant-message-notice-wrapper,
+.ant-message-notice-content {
+  pointer-events: none !important;
+}
+
+.ant-message,
+.ant-message * {
+  pointer-events: none !important;
+}
+.pdl-inspector-backdrop {
+  z-index: 3000 !important;
+}

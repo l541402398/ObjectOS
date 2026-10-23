@@ -261,7 +261,19 @@ export function PlanReviewWorkspace({
           </footer>
         </main>
       </div>
-      <AnimatePresence>{selected && inspectorOpen ? <TaskInspector task={selected} tasks={tasks} onPatch={patchTask} onDelete={() => onRemoveTask(selected.id)} onClose={() => setInspectorOpen(false)} /> : null}</AnimatePresence>
+      <AnimatePresence>{selected && inspectorOpen ? (
+        <TaskInspector
+          task={selected}
+          tasks={tasks}
+          onPatch={patchTask}
+          onDelete={() => onRemoveTask(selected.id)}
+          onClose={() => setInspectorOpen(false)}
+          onApprove={onApprove}
+          onReject={onReject}
+          approveDisabled={blocking}
+          approveHint={blocking ? '存在阻塞项，修复后才能批准。' : '批准只创建任务与依赖，不会启动 Agent。'}
+        />
+      ) : null}</AnimatePresence>
     </div>
   )
 }
