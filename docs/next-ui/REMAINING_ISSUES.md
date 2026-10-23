@@ -232,9 +232,9 @@ BUILD_INFO.txt
 ```text
 Version: 1.7.0
 Platform: Windows x64
-Commit: ed231d5
-Size: 98,522,845 bytes
-SHA256: D8C813916AC03338A854B6609F9E9108E1B0580B83C032B91085054100A52FCC
+Commit: 5bf195d
+Size: 98,522,687 bytes
+SHA256: 8808CE158B655976086FA99EAC7130C2DE83D4203FA7A9F5AD52F4E96F50A268
 ```
 
 打包后 smoke：
@@ -295,3 +295,4 @@ and recovers after restart.
 
 说明 portable 与已验收的 win-unpacked 是同一份代码。若仍看到旧界面，先完全退出
 所有 ProjectOS 进程（单实例锁会聚焦旧窗口），再启动新包。
+
