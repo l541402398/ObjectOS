@@ -59,6 +59,17 @@ New checks:
 - All prior thirteen pages remain green.
 - No page errors.
 
+## Package
+
+```text
+release/win-phase5-pages/ProjectOS-1.7.0-win-x64-portable.exe
+commit:   9add90f
+size:     98,514,133 bytes
+SHA256:   3D4A95C957A4783DA231AFF124B341D5B8E871ABE530E176AD6968E15DE449A0
+```
+
+Unsigned portable build; `pnpm test:package` passed.
+
 ## Known limitations
 
 1. Graph node internals still use the existing business graph component; the
@@ -73,3 +84,4 @@ New checks:
 This completes the orchestration business page. The only legacy surface still
 tracked is the global Settings modal; no further page migration should start
 without user confirmation.
+
