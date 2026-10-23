@@ -119,6 +119,12 @@ try {
   await page.keyboard.press('Escape')
   await page.waitForTimeout(250)
 
+  await page.evaluate((id) => { location.hash = `#/projects/${id}/orchestration` }, projectId)
+  await page.waitForSelector('.po-ux-orchestration', { timeout: 20000 })
+  check('orchestration renders dependency workspace', await page.locator('.po-orch-header h1').innerText().then((text) => text.length > 0))
+  check('orchestration keeps real metrics', await page.locator('.po-orch-metrics > div').count() === 4)
+  check('orchestration keeps real canvas', await page.locator('.po-orch-canvas-card').count() === 1)
+
   await page.evaluate((id) => { location.hash = `#/projects/${id}/tasks` }, projectId)
   await page.waitForSelector('.po-ux-board', { timeout: 20000 })
   check('board renders approved execution header', await page.locator('.po-ux-board-head h1').innerText() === '任务看板')

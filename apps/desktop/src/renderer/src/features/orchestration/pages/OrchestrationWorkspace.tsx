@@ -89,6 +89,8 @@ import { formatRelative } from '../../../lib/format'
 import { useQueryClient } from '@tanstack/react-query'
 import { useResolvedTheme } from '../../../stores/ui'
 import './orchestration.css'
+import '../../design-lab/design-lab.css'
+import '../../../styles/orchestration-workspace.css'
 
 interface WorkbenchData extends Record<string, unknown> {
   graph: GraphNode
@@ -1375,7 +1377,7 @@ export default function OrchestrationWorkspace() {
   }
 
   return (
-    <div className={`po-page po-page-wide po-orchestration-page${selected ? ' is-inspector-open' : ''}`}>
+    <div className={`po-page po-page-wide po-orchestration-page pdl-root po-ux-orchestration${selected ? ' is-inspector-open' : ''}`} data-theme={resolvedTheme}>
         <header className="po-orch-header">
           <div className="po-orch-identity">
             <div className="po-orch-kicker"><NodeIndexOutlined /> 编排工作台</div>

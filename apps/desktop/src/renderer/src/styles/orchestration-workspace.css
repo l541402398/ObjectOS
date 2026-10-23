@@ -1,0 +1,101 @@
+/* Orchestration workspace — Design Lab dependency canvas shell. */
+
+.pdl-root.po-ux-orchestration {
+  display: flex;
+  width: 100%;
+  min-height: 100%;
+  flex-direction: column;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--pdl-ink);
+  font-family: var(--pdl-font);
+}
+
+.po-ux-orchestration .po-orch-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 17px 21px 15px;
+  border: 1px solid var(--pdl-line-strong);
+  border-radius: 20px;
+  background:
+    radial-gradient(420px 190px at 90% -10%, color-mix(in srgb, var(--pdl-violet) 11%, transparent), transparent 72%),
+    linear-gradient(136deg, color-mix(in srgb, var(--pdl-surface-2) 94%, transparent), color-mix(in srgb, var(--pdl-surface) 86%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 24px 52px -46px rgba(25, 48, 92, .55);
+  backdrop-filter: blur(24px) saturate(1.12);
+  -webkit-backdrop-filter: blur(24px) saturate(1.12);
+}
+.po-ux-orchestration .po-orch-kicker { color: var(--pdl-accent); font-size: 10px; font-weight: 650; letter-spacing: .11em; text-transform: uppercase; }
+.po-ux-orchestration .po-orch-name h1 { margin: 4px 0 0; color: var(--pdl-ink); font-size: 25px; font-weight: 700; letter-spacing: -.04em; line-height: 1.2; }
+.po-ux-orchestration .po-orch-sub { display: flex; flex-wrap: wrap; gap: 5px 13px; margin-top: 7px; color: var(--pdl-muted); font-size: 10px; }
+.po-ux-orchestration .po-orch-sub span:first-child { max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.po-ux-orchestration .po-orch-metrics { display: flex; gap: 7px; }
+.po-ux-orchestration .po-orch-metrics > div {
+  min-width: 58px;
+  padding: 8px 10px;
+  border: 1px solid var(--pdl-line);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--pdl-solid) 78%, transparent);
+  text-align: right;
+}
+.po-ux-orchestration .po-orch-metrics span { color: var(--pdl-muted); font-size: 9px; letter-spacing: .05em; text-transform: uppercase; }
+.po-ux-orchestration .po-orch-metrics strong { display: block; margin-top: 2px; color: var(--pdl-ink); font-size: 20px; font-weight: 680; letter-spacing: -.04em; line-height: 1; }
+.po-ux-orchestration .po-orch-metrics strong.is-danger { color: var(--pdl-danger); }
+.po-ux-orchestration .po-orch-actions { display: flex; align-items: center; gap: 7px; }
+.po-ux-orchestration .ant-btn { height: 31px; padding: 0 11px; border-color: var(--pdl-line-strong); border-radius: 9px; color: var(--pdl-ink-2); background: color-mix(in srgb, var(--pdl-surface-2) 62%, transparent); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55); }
+.po-ux-orchestration .ant-btn:hover { border-color: color-mix(in srgb, var(--pdl-accent) 45%, var(--pdl-line)) !important; color: var(--pdl-accent) !important; background: var(--pdl-surface-2) !important; }
+.po-ux-orchestration .ant-btn-primary { border-color: transparent; color: #fff; background: linear-gradient(135deg, #6d78e8, #7399ee 58%, #76c5e5); box-shadow: 0 10px 24px -14px rgba(79, 96, 205, .85), inset 0 1px 0 rgba(255, 255, 255, .35); }
+
+.po-ux-orchestration .po-orch-progress-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 9px;
+  padding: 8px 13px;
+  border: 1px solid var(--pdl-line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--pdl-solid) 78%, transparent);
+  color: var(--pdl-muted);
+  font-size: 10px;
+}
+.po-ux-orchestration .po-orch-progress-line div { width: min(240px, 30vw); height: 3px; overflow: hidden; border-radius: 99px; background: color-mix(in srgb, var(--pdl-line) 65%, transparent); }
+.po-ux-orchestration .po-orch-progress-line i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--pdl-accent), var(--pdl-cyan)); }
+.po-ux-orchestration .po-orch-progress-line strong { color: var(--pdl-ink); font-size: 10.5px; }
+
+.po-ux-orchestration .po-orch-main { min-height: 0; flex: 1; margin-top: 10px; }
+.po-ux-orchestration .po-orch-canvas-card {
+  overflow: hidden;
+  border: 1px solid var(--pdl-line);
+  border-radius: 17px;
+  background: color-mix(in srgb, var(--pdl-solid) 88%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 22px 46px -42px rgba(25, 48, 92, .5);
+}
+.po-ux-orchestration .po-orch-canvas-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--pdl-line);
+  background: color-mix(in srgb, var(--pdl-surface-2) 38%, transparent);
+  color: var(--pdl-muted);
+  font-size: 9.5px;
+}
+.po-ux-orchestration .po-orch-kind-filter { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--pdl-line); border-radius: 8px; background: color-mix(in srgb, var(--pdl-surface-2) 45%, transparent); }
+.po-ux-orchestration .po-orch-kind-filter button { height: 23px; padding: 0 8px; border: 0; border-radius: 6px; color: var(--pdl-muted); background: transparent; font-size: 9.5px; }
+.po-ux-orchestration .po-orch-kind-filter button.is-active { color: var(--pdl-ink); background: var(--pdl-solid); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7); }
+.po-ux-orchestration .po-orch-canvas-toolbar .ant-input-affix-wrapper { border-color: var(--pdl-line) !important; border-radius: 8px !important; background: color-mix(in srgb, var(--pdl-surface-2) 58%, transparent) !important; box-shadow: none !important; }
+.po-ux-orchestration .po-orch-canvas-toolbar .ant-input { color: var(--pdl-ink); font-size: 10px; }
+.po-ux-orchestration .po-orch-canvas { background: color-mix(in srgb, var(--pdl-solid) 72%, transparent); }
+.po-ux-orchestration .react-flow__node { border-radius: 11px; }
+.po-ux-orchestration .react-flow__attribution { display: none; }
+.po-ux-orchestration .po-orch-legend { border-top-color: var(--pdl-line); color: var(--pdl-muted); background: color-mix(in srgb, var(--pdl-surface-2) 30%, transparent); font-size: 9.5px; }
+.po-ux-orchestration .po-orch-minimap { border: 1px solid var(--pdl-line); border-radius: 12px; background: color-mix(in srgb, var(--pdl-solid) 86%, transparent); box-shadow: 0 16px 32px -28px rgba(25, 48, 92, .5); }
+
+@media (max-width: 1180px) {
+  .po-ux-orchestration .po-orch-header { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .po-ux-orchestration .po-orch-metrics { order: 3; }
+}
