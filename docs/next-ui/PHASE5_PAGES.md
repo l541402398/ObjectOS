@@ -100,6 +100,18 @@ E2E checks:
 - Task Inspector opens.
 - No page errors.
 
+## Package
+
+```text
+release/win-phase5-pages/ProjectOS-1.7.0-win-x64-portable.exe
+commit:  630272c
+size:    98,509,279 bytes
+SHA256:  48B2A1F442DD6046635EA08D4993FB41681485F58AB9273364B493BD0AD1FE22
+```
+
+Unsigned portable build. `pnpm test:package` passed after the overview title
+hook (`po-page-title`) was restored for packaged navigation smoke.
+
 ## Known issues / next pages
 
 1. **Task Board horizontal density** — at 1100px the five-column board still
