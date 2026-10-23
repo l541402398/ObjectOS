@@ -70,6 +70,17 @@ New checks:
 - Prior twelve pages remain green.
 - No page errors.
 
+## Package
+
+```text
+release/win-phase5-pages/ProjectOS-1.7.0-win-x64-portable.exe
+commit:   01d658c
+size:     98,515,285 bytes
+SHA256:   7902BC9090F604C8123DD76E52E36EBAE08CF398DA1541F9040135A4AB87A2E2
+```
+
+Unsigned portable build; `pnpm test:package` passed.
+
 ## Known limitations
 
 1. **Global Settings modal remains legacy.** The optical attempt caused text
@@ -82,3 +93,4 @@ New checks:
 
 This slice stops for user visual confirmation of Project Settings and for a
 decision on how to handle the global Settings modal safely.
+
