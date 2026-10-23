@@ -30,6 +30,7 @@
     "test:e2e": "pnpm build && node scripts/e2e.mjs",
     "screenshots": "pnpm build && node scripts/screenshots.mjs",
     "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "ai:route-check": "node scripts/ai-route-check.mjs",
     "test:agent": "pnpm build && node scripts/agent-e2e.mjs",
     "test:command": "pnpm build && node scripts/command-e2e.mjs",
     "package:win": "pnpm build && pnpm --filter @projectos/desktop package:win:x64 && pnpm --filter @projectos/desktop package:win:ia32 && node scripts/collect-win-artifacts.mjs",

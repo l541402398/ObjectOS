@@ -3,6 +3,7 @@
 ## 运行命令
 
 ```bash
+pnpm ai:route-check   # docs/AI_TOOL_ROUTING.md + .agents/skills + dependency claims
 pnpm lint
 pnpm typecheck
 pnpm test

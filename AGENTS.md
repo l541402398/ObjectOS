@@ -3,13 +3,42 @@
 ProjectOS is a local-first, AI-native project lifecycle workspace. The implementation baseline is
 `ProjectOS_AI开发实施设计说明书_v1.1.md`; approved ADRs live in `docs/adr/`.
 
+## Mandatory AI task routing (DSH)
+
+Before planning or editing any ProjectOS task, execute this route and state the choice in the reply:
+
+1. Classify the task with `docs/AI_TOOL_ROUTING.md` (R-01…R-10).
+2. Read the matching routing section and its linked code/docs.
+3. Search OpenViking for the task + component + constraint; read exact URIs, not just abstracts.
+4. Load the matching ProjectOS skill from `.agents/skills/` with the `skill` tool. If the
+   catalog has not refreshed, read `.agents/skills/<name>/SKILL.md` directly and say so.
+5. Load the required general skills from `AGENTS.md` (UI tasks) and inspect actual dependencies.
+6. List the selected skill, open-source components/versions and evidence before changing code.
+7. Implement the smallest change; run the routing entry's acceptance commands.
+8. Record success/failure in `docs/AI_EXPERIENCE_LOG.md`; recurring defects must become an E2E or
+   detector rule, not only a memory.
+
+ProjectOS skills:
+
+```text
+.agents/skills/projectos-glass-ui/SKILL.md            # R-01/R-02
+.agents/skills/projectos-workflow-design/SKILL.md     # R-04…R-07
+.agents/skills/projectos-ux-audit/SKILL.md            # R-03
+.agents/skills/projectos-performance/SKILL.md         # R-08
+.agents/skills/projectos-visual-regression/SKILL.md   # R-09
+```
+
+OpenViking retrieval supplements the repository; it never overrides it. If retrieval is
+unavailable or empty, record that fact and continue from the repository. Do not claim automatic
+skill execution: the project instruction and explicit `skill` load are the enforcement.
+
 ## Required UI source of truth
 
 Before changing any ProjectOS renderer UI, read `docs/design/PROJECTOS_UI_CONTRACT.md`, `docs/design/DESIGN.md` (tokens and materials), `docs/design/DESIGN_CHANGELOG.md`, `docs/design/OVERLAY_SYSTEM.md`, `docs/design/OVERLAY_AUDIT.md`, `docs/design/PROJECTOS_DESIGN_SYSTEM.md`, `docs/next-ui/BASELINE_AND_RECOVERY.md`, `docs/next-ui/MIGRATION_PROGRESS.md`, `docs/next-ui/OPEN_ISSUES.md`, `docs/next-ui/VISUAL_BASELINE.md`, `docs/next-ui/VISUAL_REGRESSION_INVESTIGATION.md`, the current Design Lab implementation and `docs/design/baselines/` images. The selected product aesthetic is the approved Premium Liquid Glass Design Lab, not an invitation to restyle it freely. Preserve its semantic components, tokens and motion system.
 
-The protected visual baseline is commit `0686c41` / tag `visual-baseline-approved-0686c41` and the user-supplied `APPROVED_design_lab_DAG.jpeg`: the **Design Lab DAG workspace** at `#/design-lab`, with its left rail, full-screen optical composition, `工作项/阶段/待复核`, `DEPENDENCY MAP / 任务依赖`, compact task nodes, legend and `拒绝计划/批准计划`. When a written contract conflicts with the user-approved screenshot, **the screenshot wins until the user explicitly re-approves the contract**. The formal `PLAN REVIEW · R1` Modal is explicitly rejected and must not be treated as an approved baseline.
+The protected visual baseline is commit `0686c41` / tag `visual-baseline-approved-0686c41` and the repository copy `docs/next-ui/visual-regression/APPROVED-design-lab-dag.png` (the source user JPEG `APPROVED_design_lab_DAG.jpeg` is not committed): the **Design Lab DAG workspace** at `#/design-lab`, with its left rail, full-screen optical composition, `工作项/阶段/待复核`, `DEPENDENCY MAP / 任务依赖`, compact task nodes, legend and `拒绝计划/批准计划`. When a written contract conflicts with the user-approved screenshot, **the screenshot wins until the user explicitly re-approves the contract**. The formal `PLAN REVIEW · R1` Modal is explicitly rejected and must not be treated as an approved baseline.
 
-Apply all five outstanding Design Lab fixes in `PROJECTOS_UI_CONTRACT.md` before major page migration. Any deviation requires a documented rationale and new screenshots. Do not create filler or explanatory text. Do not change backend behavior during design migration.
+Apply the four non-conflicting Design Lab fixes in `PROJECTOS_UI_CONTRACT.md` before major page migration. The typography item (#3) is an unresolved conflict: the contract asks for 14px body, while the approved screenshot and current `design-lab.css` use a compact 8.5–11.5px scale. Per the screenshot-wins rule, do not globally enlarge type without a new explicit user approval and a full visual comparison. Any deviation requires a documented rationale and new screenshots. Do not create filler or explanatory text. Do not change backend behavior during design migration.
 
 For every UI task: (1) inspect relevant source/tokens, (2) check design contract and loaded skills, (3) implement, (4) run visual/a11y/function tests, (5) produce comparison screenshots and report unverified items. Green unit tests never imply visual acceptance. The executing DSH harness loads this root `AGENTS.md`; configured skills are listed by the runtime and must be loaded with the skill tool when applicable.
 
@@ -80,6 +109,7 @@ enforces the allowed `@projectos/*` imports and forbids renderer access to Node/
 Before marking work done, run the real commands and report actual results:
 
 ```bash
+pnpm ai:route-check    # routing docs/skills/dependency claims (offline)
 pnpm lint
 pnpm typecheck
 pnpm test
