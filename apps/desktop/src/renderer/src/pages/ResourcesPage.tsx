@@ -3,11 +3,14 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from 'antd'
 import { CodeOutlined, DatabaseOutlined, FolderOpenOutlined, RobotOutlined, ThunderboltOutlined } from '@ant-design/icons'
-import { PageHeader } from '@projectos/ui'
+import { useResolvedTheme } from '../stores/ui'
+import '../features/design-lab/design-lab.css'
+import '../styles/resources-workspace.css'
 import { useAIConnections, useRuntimeProfiles, useSkills } from '../lib/queries'
 import { useUiStore } from '../stores/ui'
 
 export default function ResourcesPage() {
+  const resolvedTheme = useResolvedTheme()
   const { projectId } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const openSettings = useUiStore((state) => state.openSettings)
@@ -28,12 +31,15 @@ export default function ResourcesPage() {
   }, [workspace.data])
 
   return (
-    <div className="po-page v16-resources-page">
-      <PageHeader
-        title="资源中心"
-        description="项目文件、Skills、Runtime 与 AI 连接"
-        actions={<Button icon={<CodeOutlined />} onClick={() => navigate(`/projects/${projectId}/workspace`)}>打开工作区</Button>}
-      />
+    <div className="po-page v16-resources-page pdl-root po-ux-resources" data-theme={resolvedTheme}>
+      <header className="po-ux-resources-head">
+        <div>
+          <span className="pdl-eyebrow">RESOURCE INVENTORY <b>· {stats.files} 个文件</b></span>
+          <h1 className="po-page-title">资源中心</h1>
+          <p>项目文件、Skills、Runtime 与 AI 连接</p>
+        </div>
+        <Button icon={<CodeOutlined />} onClick={() => navigate(`/projects/${projectId}/workspace`)}>打开工作区</Button>
+      </header>
 
       <div className="v16-resource-cards">
         <section className="v16-glass-card">
@@ -76,3 +82,4 @@ export default function ResourcesPage() {
     </div>
   )
 }
+

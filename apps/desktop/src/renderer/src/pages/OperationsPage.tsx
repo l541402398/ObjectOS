@@ -7,8 +7,12 @@ import { EmptyState, ErrorState, LoadingBlock, StatusPill } from '@projectos/ui'
 import { useAgents, useOperations } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
 import { formatRelative } from '../lib/format'
+import { useResolvedTheme } from '../stores/ui'
+import '../features/design-lab/design-lab.css'
+import '../styles/ops-workspace.css'
 
 export default function OperationsPage() {
+  const resolvedTheme = useResolvedTheme()
   const { projectId = '' } = useParams<{ projectId: string }>()
   const query = useOperations(projectId)
   const agents = useAgents(projectId)
@@ -129,7 +133,7 @@ export default function OperationsPage() {
   const data = query.data
 
   return (
-    <div className="po-page po-page-wide">
+    <div className="po-page po-page-wide pdl-root po-ux-ops" data-theme={resolvedTheme}>
       <header className="po-page-header">
         <div>
           <div className="po-eyebrow"><SafetyCertificateOutlined /> 自主运营</div>
@@ -298,3 +302,5 @@ export default function OperationsPage() {
     </div>
   )
 }
+
+

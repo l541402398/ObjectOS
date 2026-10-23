@@ -67,6 +67,19 @@ try {
   check('collaboration keeps real inbox rows', await page.locator('.po-inbox-row').count() >= 1)
   check('collaboration keeps four signals', await page.locator('.po-metric').count() === 4)
 
+  await page.evaluate((id) => { location.hash = `#/projects/${id}/resources` }, projectId)
+  await page.waitForSelector('.po-ux-resources', { timeout: 20000 })
+  check('resources renders inventory header', await page.locator('.po-ux-resources-head h1').innerText() === '资源中心')
+  check('resources keeps four real resource cards', await page.locator('.v16-resource-cards .v16-glass-card').count() === 4)
+  await page.waitForSelector('.v16-resource-file', { timeout: 10000 })
+  check('resources keeps real file inventory', await page.locator('.v16-resource-file').count() >= 5)
+
+  await page.evaluate((id) => { location.hash = `#/projects/${id}/operations` }, projectId)
+  await page.waitForSelector('.po-ux-ops', { timeout: 20000 })
+  check('operations renders health console', await page.locator('.po-ux-ops .po-page-header h1').innerText() === '健康检查与修复')
+  check('operations keeps three real panels', await page.locator('.po-operations-grid .po-operations-card').count() === 3)
+  check('operations keeps real check action', await page.getByRole('button', { name: '运行健康检查' }).count() === 1)
+
   await page.evaluate((id) => { location.hash = `#/projects/${id}/tasks` }, projectId)
   await page.waitForSelector('.po-ux-board', { timeout: 20000 })
   check('board renders approved execution header', await page.locator('.po-ux-board-head h1').innerText() === '任务看板')
@@ -89,5 +102,9 @@ try {
 } finally {
   await app.close()
 }
+
+
+
+
 
 

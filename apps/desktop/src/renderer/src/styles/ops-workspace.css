@@ -1,0 +1,60 @@
+/* Autonomous operations — Design Lab operations console. */
+
+.pdl-root.po-ux-ops {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--pdl-ink);
+  font-family: var(--pdl-font);
+}
+
+.po-ux-ops .po-page-header {
+  align-items: flex-end;
+  padding: 18px 22px 17px;
+  border: 1px solid var(--pdl-line-strong);
+  border-radius: 21px;
+  background:
+    radial-gradient(380px 180px at 90% -10%, color-mix(in srgb, var(--pdl-warning) 9%, transparent), transparent 72%),
+    linear-gradient(136deg, color-mix(in srgb, var(--pdl-surface-2) 94%, transparent), color-mix(in srgb, var(--pdl-surface) 86%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 24px 52px -46px rgba(25, 48, 92, .55);
+  backdrop-filter: blur(24px) saturate(1.12);
+  -webkit-backdrop-filter: blur(24px) saturate(1.12);
+}
+.po-ux-ops .po-page-header h1 { margin: 6px 0 0; color: var(--pdl-ink); font-size: 26px; font-weight: 700; letter-spacing: -.04em; line-height: 1.2; }
+.po-ux-ops .po-eyebrow { color: var(--pdl-accent); font-size: 10px; font-weight: 650; letter-spacing: .11em; text-transform: uppercase; }
+.po-ux-ops .po-operations-actions { align-items: center; gap: 7px; flex-wrap: wrap; }
+.po-ux-ops .ant-btn { height: 31px; padding: 0 11px; border-color: var(--pdl-line-strong); border-radius: 9px; color: var(--pdl-ink-2); background: color-mix(in srgb, var(--pdl-surface-2) 62%, transparent); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55); }
+.po-ux-ops .ant-btn:hover { border-color: color-mix(in srgb, var(--pdl-accent) 45%, var(--pdl-line)) !important; color: var(--pdl-accent) !important; background: var(--pdl-surface-2) !important; }
+.po-ux-ops .ant-btn-primary { border-color: transparent; color: #fff; background: linear-gradient(135deg, #6d78e8, #7399ee 58%, #76c5e5); box-shadow: 0 10px 24px -14px rgba(79, 96, 205, .85), inset 0 1px 0 rgba(255, 255, 255, .35); }
+.po-ux-ops .ant-select-selector { border-color: var(--pdl-line) !important; border-radius: 9px !important; background: color-mix(in srgb, var(--pdl-surface-2) 66%, transparent) !important; box-shadow: none !important; }
+.po-ux-ops .ant-select-selection-item { color: var(--pdl-ink-2) !important; font-size: 10.5px; }
+
+.po-ux-ops .po-operations-grid { margin-top: 13px; gap: 11px; }
+.po-ux-ops .po-operations-card {
+  overflow: hidden;
+  border: 1px solid var(--pdl-line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--pdl-solid) 89%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 20px 42px -40px rgba(25, 48, 92, .5);
+}
+.po-ux-ops .po-operations-card-head { padding: 12px 14px 10px; border-bottom: 1px solid var(--pdl-line); }
+.po-ux-ops .po-operations-card-head strong { color: var(--pdl-ink); font-size: 12.5px; font-weight: 650; }
+.po-ux-ops .po-operations-card-head span { color: var(--pdl-muted); font-size: 10.5px; }
+.po-ux-ops .po-check-row, .po-ux-ops .po-finding-row, .po-ux-ops .po-proposal-row, .po-ux-ops .po-run-row { border-bottom-color: var(--pdl-line); }
+.po-ux-ops .po-check-row strong, .po-ux-ops .po-finding-row strong, .po-ux-ops .po-proposal-row strong { color: var(--pdl-ink); font-size: 11px; }
+.po-ux-ops .po-check-row span, .po-ux-ops .po-finding-row span { color: var(--pdl-muted); font-size: 9.5px; }
+.po-ux-ops .po-operations-card .ant-empty-description, .po-ux-ops .po-empty-title { color: var(--pdl-muted); font-size: 10.5px; }
+.po-ux-ops .po-card, .po-ux-ops .v16-glass-card { border: 1px solid var(--pdl-line); border-radius: 16px; background: color-mix(in srgb, var(--pdl-solid) 88%, transparent); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .68), 0 18px 36px -36px rgba(25, 48, 92, .5); }
+.po-ux-ops .po-card-header { padding: 12px 14px 10px; border-bottom: 1px solid var(--pdl-line); }
+.po-ux-ops .po-card-title { color: var(--pdl-ink); font-size: 12.5px; font-weight: 650; }
+.po-ux-ops .po-caption, .po-ux-ops .po-muted { color: var(--pdl-muted); font-size: 10px; }
+
+@media (max-width: 1180px) {
+  .po-ux-ops .po-page-header { align-items: flex-start; flex-direction: column; gap: 11px; }
+  .po-ux-ops .po-operations-grid { grid-template-columns: minmax(0, 1fr); }
+}
