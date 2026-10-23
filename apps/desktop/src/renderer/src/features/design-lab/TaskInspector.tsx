@@ -13,11 +13,13 @@ export function TaskInspector({
   tasks,
   onPatch,
   onClose,
+  onDelete,
 }: {
   task: LabTask
   tasks: LabTask[]
   onPatch: (id: string, patch: Partial<LabTask>) => void
   onClose: () => void
+  onDelete?: () => void
 }): ReactElement {
   const reduce = useReducedMotion()
   const closeRef = useRef<HTMLButtonElement>(null)
@@ -164,7 +166,7 @@ export function TaskInspector({
             <button type="button" className="pdl-approval-toggle" onClick={() => patch({ requiresApproval: !task.requiresApproval })}>
               <span className={`pdl-switch${task.requiresApproval ? ' is-on' : ''}`}><i /></span>执行前人工审批
             </button>
-            <button type="button" className="pdl-text-danger" onClick={onClose}><Trash2 size={13} />删除任务</button>
+            <button type="button" className="pdl-text-danger" onClick={() => { onDelete?.(); onClose() }} disabled={!onDelete}><Trash2 size={13} />删除任务</button>
           </section>
         </div>
 
@@ -177,5 +179,6 @@ export function TaskInspector({
     </motion.div>
   )
 }
+
 
 

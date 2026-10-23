@@ -78,6 +78,7 @@ export function PlanReviewWorkspace({
   agentOptions,
   onUpdateTask,
   onAddTask,
+  onRemoveTask,
   onApprove,
   onReject,
   onBack,
@@ -87,6 +88,7 @@ export function PlanReviewWorkspace({
   agentOptions: AgentOption[]
   onUpdateTask: (index: number, patch: Partial<PlannedTask>) => void
   onAddTask: () => void
+  onRemoveTask: (key: string) => void
   onApprove: () => void
   onReject: () => void
   onBack: () => void
@@ -259,10 +261,11 @@ export function PlanReviewWorkspace({
           </footer>
         </main>
       </div>
-      <AnimatePresence>{selected && inspectorOpen ? <TaskInspector task={selected} tasks={tasks} onPatch={patchTask} onClose={() => setInspectorOpen(false)} /> : null}</AnimatePresence>
+      <AnimatePresence>{selected && inspectorOpen ? <TaskInspector task={selected} tasks={tasks} onPatch={patchTask} onDelete={() => onRemoveTask(selected.id)} onClose={() => setInspectorOpen(false)} /> : null}</AnimatePresence>
     </div>
   )
 }
+
 
 
 

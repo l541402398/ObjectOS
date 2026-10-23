@@ -1366,6 +1366,7 @@ export default function OrchestrationWorkspace() {
         agentOptions={planAgentOptions}
         onUpdateTask={updateDraftTask}
         onAddTask={addDraftTask}
+        onRemoveTask={removeDraftTask}
         onApprove={async () => { await approve(); setPlanOpen(false) }}
         onReject={async () => { await reject(); setPlanOpen(false) }}
         onBack={() => setPlanOpen(false)}
@@ -1847,6 +1848,7 @@ export default function OrchestrationWorkspace() {
       </div>
   )
 }
+
 
 
 
