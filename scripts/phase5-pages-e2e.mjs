@@ -55,6 +55,18 @@ try {
   await page.waitForTimeout(200)
   check('approvals filter still works', await page.locator('.v16-filter-tabs button.is-active').innerText() === '全部')
 
+  await page.evaluate((id) => { location.hash = `#/projects/${id}/agents` }, projectId)
+  await page.waitForSelector('.po-ux-agents', { timeout: 20000 })
+  check('agent workbench renders console header', await page.locator('.po-ux-agents-head h1').innerText() === 'Agent 工作台')
+  check('agent workbench keeps real chat session', await page.locator('.v17-session-switch').count() === 1 && await page.locator('.po-chat-pane').count() === 1)
+  check('agent workbench keeps run inspector', await page.locator('.po-agent-workspace').count() === 1)
+
+  await page.evaluate((id) => { location.hash = `#/projects/${id}/collaboration` }, projectId)
+  await page.waitForSelector('.po-ux-collab', { timeout: 20000 })
+  check('collaboration renders cross-session header', await page.locator('.po-ux-collab-head h1').innerText() === '跨会话中心')
+  check('collaboration keeps real inbox rows', await page.locator('.po-inbox-row').count() >= 1)
+  check('collaboration keeps four signals', await page.locator('.po-metric').count() === 4)
+
   await page.evaluate((id) => { location.hash = `#/projects/${id}/tasks` }, projectId)
   await page.waitForSelector('.po-ux-board', { timeout: 20000 })
   check('board renders approved execution header', await page.locator('.po-ux-board-head h1').innerText() === '任务看板')
@@ -77,4 +89,5 @@ try {
 } finally {
   await app.close()
 }
+
 

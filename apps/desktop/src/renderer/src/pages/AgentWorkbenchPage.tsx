@@ -31,7 +31,6 @@ import {
   ErrorState,
   KeyValueList,
   LoadingBlock,
-  PageHeader,
   StatusPill,
   toneForStatus,
 } from '@projectos/ui'
@@ -52,7 +51,9 @@ import { runStatusLabel, taskStatusLabel } from '../lib/labels'
 import { AgentStudioModal } from '../components/AgentStudioModal'
 import { errorMessage } from '../lib/errors'
 import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea, SheetShell } from '../next-ui/overlay/overlay-shell'
-import { useUiStore } from '../stores/ui'
+import { useResolvedTheme, useUiStore } from '../stores/ui'
+import '../features/design-lab/design-lab.css'
+import '../styles/agents-workspace.css'
 
 const ACTIVE_STATUSES: RunStatus[] = [
   'created',
@@ -98,6 +99,7 @@ function SessionRow({
 }
 
 export default function AgentWorkbenchPage() {
+  const resolvedTheme = useResolvedTheme()
   const { projectId = '' } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -374,32 +376,24 @@ export default function AgentWorkbenchPage() {
   }
 
   return (
-    <div className="po-page po-agent-page">
-      <PageHeader
-        compact
-        title="Agent 工作台"
-        actions={
-          <>
-            <Button icon={<ReloadOutlined />} onClick={() => void invalidateSession()} loading={sessions.isRefetching}>
-              刷新
-            </Button>
-            <Button
-              icon={<SettingOutlined />}
-              onClick={() =>
-                providerInfo
-                  ? openSettings('models', providerInfo.id)
-                  : openSettings('ai-connections')
-              }
-            >
-              模型设置
-            </Button>
-            <Button onClick={() => setStudioOpen(true)}>Agent 管理</Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-              新建会话
-            </Button>
-          </>
-        }
-      />
+    <div className="po-page po-agent-page pdl-root po-ux-agents" data-theme={resolvedTheme}>
+      <header className="po-ux-agents-head">
+        <div className="po-ux-agents-title-block">
+          <span className="pdl-eyebrow">AGENT WORKBENCH <b>· {sessionList.length} 个会话</b></span>
+          <h1 className="po-page-title">Agent 工作台</h1>
+          <div className="po-ux-agents-meta">
+            <span><i className={providerReady ? 'is-ready' : 'is-warn'} />{providerReady ? 'AI 连接可用' : providerInfo ? '连接不可用' : '未配置 AI 连接'}</span>
+            <span>{agents.data?.agents.length ?? 0} 个 Agent</span>
+            <span>{sessionList.length} 个持久化会话</span>
+          </div>
+        </div>
+        <div className="po-ux-agents-actions">
+          <Button icon={<ReloadOutlined />} onClick={() => void invalidateSession()} loading={sessions.isRefetching}>刷新</Button>
+          <Button icon={<SettingOutlined />} onClick={() => providerInfo ? openSettings('models', providerInfo.id) : openSettings('ai-connections')}>模型设置</Button>
+          <Button onClick={() => setStudioOpen(true)}>Agent 管理</Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>新建会话</Button>
+        </div>
+      </header>
 
       {!providerReady ? (
         <div className="po-provider-banner">
@@ -769,3 +763,5 @@ export default function AgentWorkbenchPage() {
     </div>
   )
 }
+
+

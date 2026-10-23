@@ -1,0 +1,83 @@
+/* Agent Workbench — Design Lab optical console. */
+
+.pdl-root.po-ux-agents {
+  display: flex;
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  flex-direction: column;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--pdl-ink);
+  font-family: var(--pdl-font);
+}
+
+.po-ux-agents-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 22px;
+  padding: 17px 21px 16px;
+  border: 1px solid var(--pdl-line-strong);
+  border-radius: 20px;
+  background:
+    radial-gradient(380px 180px at 90% -10%, color-mix(in srgb, var(--pdl-violet) 12%, transparent), transparent 72%),
+    linear-gradient(136deg, color-mix(in srgb, var(--pdl-surface-2) 94%, transparent), color-mix(in srgb, var(--pdl-surface) 86%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 24px 52px -46px rgba(25, 48, 92, .55);
+  backdrop-filter: blur(24px) saturate(1.12);
+  -webkit-backdrop-filter: blur(24px) saturate(1.12);
+}
+.po-ux-agents-title-block { min-width: 0; }
+.po-ux-agents-head h1 { margin: 5px 0 0; color: var(--pdl-ink); font-size: 26px; font-weight: 700; letter-spacing: -.04em; line-height: 1.2; }
+.po-ux-agents-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 7px 15px; margin-top: 10px; color: var(--pdl-muted); font-size: 10.5px; }
+.po-ux-agents-meta span { display: inline-flex; align-items: center; gap: 5px; }
+.po-ux-agents-meta i { width: 5px; height: 5px; border-radius: 50%; }
+.po-ux-agents-meta i.is-ready { background: var(--pdl-success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pdl-success) 12%, transparent); }
+.po-ux-agents-meta i.is-warn { background: var(--pdl-warning); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pdl-warning) 12%, transparent); }
+.po-ux-agents-actions { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.po-ux-agents .ant-btn { height: 31px; padding: 0 11px; border-color: var(--pdl-line-strong); border-radius: 9px; color: var(--pdl-ink-2); background: color-mix(in srgb, var(--pdl-surface-2) 62%, transparent); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55); }
+.po-ux-agents .ant-btn:hover { border-color: color-mix(in srgb, var(--pdl-accent) 45%, var(--pdl-line)) !important; color: var(--pdl-accent) !important; background: var(--pdl-surface-2) !important; }
+.po-ux-agents .ant-btn-primary { border-color: transparent; color: #fff; background: linear-gradient(135deg, #6d78e8, #7399ee 58%, #76c5e5); box-shadow: 0 10px 24px -14px rgba(79, 96, 205, .85), inset 0 1px 0 rgba(255, 255, 255, .35); }
+
+.po-ux-agents .po-provider-banner {
+  margin-top: 11px;
+  border: 1px solid color-mix(in srgb, var(--pdl-warning) 22%, var(--pdl-line));
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--pdl-warning) 6%, var(--pdl-solid));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+.po-ux-agents .po-provider-banner strong { color: var(--pdl-ink); font-size: 11.5px; }
+.po-ux-agents .po-provider-banner span { color: var(--pdl-muted); font-size: 10.5px; }
+
+.po-ux-agents .po-agent-workspace { min-height: 0; flex: 1; gap: 11px; margin-top: 11px; }
+.po-ux-agents .po-chat-pane {
+  overflow: hidden;
+  border: 1px solid var(--pdl-line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--pdl-solid) 90%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 20px 42px -40px rgba(25, 48, 92, .5);
+}
+.po-ux-agents .v17-session-switch { border-bottom-color: var(--pdl-line); background: color-mix(in srgb, var(--pdl-surface-2) 38%, transparent); }
+.po-ux-agents .v17-session-switch button { color: var(--pdl-ink); }
+.po-ux-agents .v17-session-switch strong { color: var(--pdl-ink); font-size: 12px; }
+.po-ux-agents .po-session-row.is-selected { border-color: color-mix(in srgb, var(--pdl-accent) 25%, var(--pdl-line)); background: color-mix(in srgb, var(--pdl-accent) 6%, transparent); }
+.po-ux-agents .po-session-title { color: var(--pdl-ink); font-size: 12px; }
+.po-ux-agents .po-session-meta, .po-ux-agents .po-chat-meta { color: var(--pdl-muted); font-size: 10px; }
+.po-ux-agents .po-run-panel, .po-ux-agents .po-run-inspector {
+  overflow: hidden;
+  border: 1px solid var(--pdl-line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--pdl-solid) 90%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 20px 42px -40px rgba(25, 48, 92, .5);
+}
+.po-ux-agents .po-run-panel-head, .po-ux-agents .po-run-inspector-head { border-bottom-color: var(--pdl-line); }
+.po-ux-agents .po-agent-composer, .po-ux-agents .po-composer { border-top-color: var(--pdl-line); background: color-mix(in srgb, var(--pdl-surface-2) 35%, transparent); }
+.po-ux-agents .po-composer textarea, .po-ux-agents .po-agent-composer textarea { color: var(--pdl-ink); }
+.po-ux-agents .po-empty-state, .po-ux-agents .po-agent-empty { color: var(--pdl-muted); }
+
+@media (max-width: 1180px) {
+  .po-ux-agents-head { align-items: flex-start; flex-direction: column; gap: 11px; }
+  .po-ux-agents-actions { justify-content: flex-start; }
+}

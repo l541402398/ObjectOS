@@ -26,7 +26,6 @@ import {
   ErrorState,
   LoadingBlock,
   MetricCard,
-  PageHeader,
   SectionCard,
   StatusPill,
   toneForStatus,
@@ -36,6 +35,9 @@ import { formatRelative, truncate } from '../lib/format'
 import { DELIVERY_LABELS, HANDOFF_LABELS } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
 import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '../next-ui/overlay/overlay-shell'
+import { useResolvedTheme } from '../stores/ui'
+import '../features/design-lab/design-lab.css'
+import '../styles/collaboration-workspace.css'
 
 const TYPE_LABELS: Record<string, string> = {
   'agent.message': '消息',
@@ -157,6 +159,7 @@ function HandoffCard({
 }
 
 export default function CollaborationPage() {
+  const resolvedTheme = useResolvedTheme()
   const { projectId = '' } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -311,28 +314,23 @@ export default function CollaborationPage() {
   }
 
   return (
-    <div className="po-page po-collaboration-page">
-      <PageHeader
-        title="跨会话中心"
-        actions={
-          <>
-            <Button icon={<MessageOutlined />} onClick={() => navigate(`/projects/${projectId}/agents`)}>
-              Agent 工作台
-            </Button>
-            <Button type="primary" icon={<SendOutlined />} onClick={openSend} disabled={sessions.length < 1}>
-              手动投递
-            </Button>
-          </>
-        }
-        meta={
-          <>
+    <div className="po-page po-collaboration-page pdl-root po-ux-collab" data-theme={resolvedTheme}>
+      <header className="po-ux-collab-head">
+        <div className="po-ux-collab-title-block">
+          <span className="pdl-eyebrow">CROSS-SESSION <b>· {inbox.length} 条跨会话消息</b></span>
+          <h1 className="po-page-title">跨会话中心</h1>
+          <div className="po-ux-collab-meta">
             <span>{agents.length} 个 Agent</span>
             <span>{sessions.length} 个会话</span>
-            <span>{inbox.length} 条跨会话消息</span>
+            <span>{inbox.length} 条消息</span>
             <span>{pendingHandoffs.length} 个待接受交接</span>
-          </>
-        }
-      />
+          </div>
+        </div>
+        <div className="po-ux-collab-actions">
+          <Button icon={<MessageOutlined />} onClick={() => navigate(`/projects/${projectId}/agents`)}>Agent 工作台</Button>
+          <Button type="primary" icon={<SendOutlined />} onClick={openSend} disabled={sessions.length < 1}>手动投递</Button>
+        </div>
+      </header>
 
       {!providerConfigured ? (
         <div className="po-provider-banner is-neutral">
@@ -562,3 +560,5 @@ export default function CollaborationPage() {
     </div>
   )
 }
+
+
