@@ -1072,3 +1072,10 @@
 body.po-plan-workspace-open .po-titlebar { display: none; }
 body.po-plan-workspace-open .po-shell-body { padding: 0; }
 body.po-plan-workspace-open .po-sidebar { display: none; }
+
+@media (max-width: 1200px) {
+  .po-plan-workspace .pdl-content-grid { grid-template-columns: minmax(0, 1fr); }
+  .po-plan-workspace .pdl-review-panel { display: none; }
+  .po-plan-workspace .pdl-plan-head { gap: 12px; }
+  .po-plan-workspace .pdl-head-side { flex: 0 0 auto; }
+}
