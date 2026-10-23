@@ -378,7 +378,7 @@ export default function OrchestrationWorkspace() {
   const [seqGap, setSeqGap] = useState(false)
   const [nodeFilter, setNodeFilter] = useState('')
   const [kindFilter, setKindFilter] = useState<'all' | 'orchestrator' | 'agent' | 'task'>('all')
-  const [compactGraph, setCompactGraph] = useState(false)
+  const canvasRef = useRef<HTMLDivElement | null>(null)
   const seqCursorRef = useRef(0)
   const saveLayoutRef = useRef<() => void>(() => undefined)
   const [flowNodes, setFlowNodes] = useState<FlowNode[]>([])
@@ -454,6 +454,10 @@ export default function OrchestrationWorkspace() {
   useEffect(() => {
     let syncing = false
     const unsubscribe = window.projectos.runtime.onEvent((envelope) => {
+      // The full-screen Plan Review workspace owns the screen while it is open.
+      // Avoid refetch storms from runtime events behind it; close/approve already
+      // invalidates the relevant queries explicitly.
+      if (planOpen) return
       const event = envelope.event as unknown as { projectId?: string; type?: string }
       if (event.projectId && event.projectId !== projectId) return
       void (async () => {
@@ -486,7 +490,7 @@ export default function OrchestrationWorkspace() {
       }
     })
     return unsubscribe
-  }, [projectId, queryClient])
+  }, [planOpen, projectId, queryClient])
 
   useEffect(() => {
     const handler = (event: KeyboardEvent): void => {
@@ -1480,7 +1484,7 @@ export default function OrchestrationWorkspace() {
               <Button size="small" icon={<CompressOutlined />} onClick={() => void flowRef.current?.fitView({ padding: 0.04 })}>适配</Button>
               <Button size="small" icon={<ReloadOutlined />} onClick={() => void graphQuery.refetch()} />
             </div>
-            <div className={`po-orch-canvas${compactGraph ? ' is-compact' : ''}`}>
+            <div ref={canvasRef} className="po-orch-canvas">
               <ReactFlow
                 nodes={visibleNodes}
                 edges={visibleEdges}
@@ -1491,9 +1495,9 @@ export default function OrchestrationWorkspace() {
                 maxZoom={1.5}
                 onInit={(flow) => {
                   flowRef.current = flow
-                  setCompactGraph(flow.getZoom() < COMPACT_GRAPH_ZOOM)
+                  canvasRef.current?.classList.toggle('is-compact', flow.getZoom() < COMPACT_GRAPH_ZOOM)
                 }}
-                onMove={(_event, viewport) => setCompactGraph(viewport.zoom < COMPACT_GRAPH_ZOOM)}
+                onMove={(_event, viewport) => { canvasRef.current?.classList.toggle('is-compact', viewport.zoom < COMPACT_GRAPH_ZOOM) }}
                 onNodesChange={(changes: NodeChange<FlowNode>[]) => setFlowNodes((current) => applyNodeChanges(changes, current))}
                 onNodeClick={(_event, node) => {
                   const graph = graphQuery.data?.nodes.find((item) => item.id === node.id) ?? null
@@ -1838,18 +1842,23 @@ export default function OrchestrationWorkspace() {
           </OverlayFooter>
         </SheetShell>
 
-        <AgentStudioModal
-          open={agentStudioOpen}
-          projectId={projectId}
-          onClose={() => {
-            setAgentStudioOpen(false)
-            setCustomAgentTaskKey(null)
-          }}
-          onCreated={attachCreatedAgent}
-        />
+        {agentStudioOpen ? (
+          <AgentStudioModal
+            open={agentStudioOpen}
+            projectId={projectId}
+            onClose={() => {
+              setAgentStudioOpen(false)
+              setCustomAgentTaskKey(null)
+            }}
+            onCreated={attachCreatedAgent}
+          />
+        ) : null}
       </div>
   )
 }
+
+
+
 
 
 

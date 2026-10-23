@@ -1079,3 +1079,62 @@ body.po-plan-workspace-open .po-sidebar { display: none; }
   .po-plan-workspace .pdl-plan-head { gap: 12px; }
   .po-plan-workspace .pdl-head-side { flex: 0 0 auto; }
 }
+
+/* Performance: large fixed surfaces do not need a full-strength blur under
+   software compositing. Keep the same gradient, border and highlight; only
+   the expensive backdrop kernel is reduced/removed. */
+.po-sidebar.glass-panel {
+  -webkit-backdrop-filter: blur(12px) saturate(1.15) !important;
+  backdrop-filter: blur(12px) saturate(1.15) !important;
+}
+.po-statusbar {
+  -webkit-backdrop-filter: blur(6px) !important;
+  backdrop-filter: blur(6px) !important;
+}
+.po-ux-overview-head,
+.po-ux-board-head,
+.po-ux-center-head,
+.po-ux-approvals-head,
+.po-ux-agents-head,
+.po-ux-collab-head,
+.po-ux-resources-head,
+.po-ux-ops .po-page-header,
+.po-ux-runs-head,
+.po-ux-health-head,
+.po-ux-workspace-head,
+.po-ux-knowledge-head,
+.po-ux-project-settings-head,
+.po-ux-orchestration .po-orch-header {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.ant-btn {
+  -webkit-backdrop-filter: blur(6px) !important;
+  backdrop-filter: blur(6px) !important;
+}
+
+/* Plan review performance: the full-screen glass canvas uses a large blur
+   kernel. Keep the material and highlights, reduce the kernel so software
+   compositing can keep up. */
+.pdl-workspace {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.pdl-topbar {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.pdl-rail,
+.pdl-review-panel {
+  -webkit-backdrop-filter: blur(10px) saturate(1.1) !important;
+  backdrop-filter: blur(10px) saturate(1.1) !important;
+}
+.pdl-viewbar-glass {
+  -webkit-backdrop-filter: blur(8px) saturate(1.15) !important;
+  backdrop-filter: blur(8px) saturate(1.15) !important;
+}
+.pdl-stop-orb {
+  -webkit-backdrop-filter: blur(8px) saturate(1.15) !important;
+  backdrop-filter: blur(8px) saturate(1.15) !important;
+}
+

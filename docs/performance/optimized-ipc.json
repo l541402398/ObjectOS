@@ -1,0 +1,558 @@
+{
+  "generatedAt": "2026-10-23T16:39:59.588Z",
+  "packageRoot": "C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-next-ui-full-migration\\release\\win-perf-probe\\win-unpacked",
+  "electron": "1.7.0",
+  "coldStartMs": 3598,
+  "firstInteractiveMs": 3598,
+  "projectId": "prj_01m5mt2wqw7adgj0w4h6q3n9n7",
+  "screen": {
+    "width": 2552,
+    "height": 1308,
+    "dpr": 1
+  },
+  "gpu": {
+    "featureStatus": {
+      "2d_canvas": "unavailable_software",
+      "direct_rendering_display_compositor": "disabled_off_ok",
+      "gpu_compositing": "disabled_software",
+      "multiple_raster_threads": "enabled_on",
+      "opengl": "disabled_off",
+      "rasterization": "disabled_software",
+      "raw_draw": "disabled_off_ok",
+      "skia_graphite": "disabled_off",
+      "trees_in_viz": "disabled_off",
+      "video_decode": "disabled_software",
+      "video_encode": "disabled_software",
+      "webgl": "unavailable_software",
+      "webgpu": "unavailable_software",
+      "webnn": "unavailable_software"
+    },
+    "gpuInfo": {
+      "auxAttributes": {
+        "amdSwitchable": false,
+        "canSupportThreadedTextureMailbox": false,
+        "directMLFeatureLevel": "Not supported",
+        "dx12FeatureLevel": "Not supported",
+        "glImplementationParts": "(gl=none,angle=none)",
+        "glResetNotificationStrategy": 0,
+        "inProcessGpu": true,
+        "initializationTime": 0,
+        "isAsan": false,
+        "isClangCoverage": false,
+        "jpegDecodeAcceleratorSupported": false,
+        "optimus": false,
+        "overlayInfo": {
+          "bgra8OverlaySupport": "NONE",
+          "directComposition": false,
+          "nv12OverlaySupport": "NONE",
+          "p010OverlaySupport": "NONE",
+          "rgb10a2OverlaySupport": "NONE",
+          "supportsOverlays": false,
+          "yuy2OverlaySupport": "NONE"
+        },
+        "passthroughCmdDecoder": false,
+        "sandboxed": false,
+        "skiaBackendType": "None",
+        "subpixelFontRendering": true,
+        "supportsD3dSharedImages": false,
+        "supportsDirectML": false,
+        "supportsDx12": false,
+        "supportsVulkan": false,
+        "targetCpuBits": 64,
+        "visibilityCallbackCallCount": 0,
+        "vulkanVersion": "Not supported"
+      },
+      "gpuDevice": [
+        {
+          "active": false,
+          "deviceId": 140,
+          "deviceString": "Microsoft Basic Render Driver",
+          "driverVersion": "10.0.19041.5794",
+          "gpuPreference": 0,
+          "revision": 0,
+          "subSysId": 0,
+          "vendorId": 5140
+        },
+        {
+          "active": false,
+          "deviceId": 140,
+          "deviceString": "Microsoft Basic Render Driver",
+          "driverVersion": "10.0.19041.5794",
+          "gpuPreference": 0,
+          "revision": 0,
+          "subSysId": 0,
+          "vendorId": 5140
+        }
+      ]
+    }
+  },
+  "finalProcess": {
+    "processCount": 4,
+    "totalCpuPercent": 0,
+    "totalWorkingSetMb": 619.1,
+    "totalPeakWorkingSetMb": 698.7,
+    "processes": [
+      {
+        "type": "Browser",
+        "cpu": 0,
+        "workingSetMb": 105
+      },
+      {
+        "type": "GPU",
+        "cpu": 0,
+        "workingSetMb": 130.5
+      },
+      {
+        "type": "Utility",
+        "cpu": 0,
+        "workingSetMb": 47.7
+      },
+      {
+        "type": "Tab",
+        "cpu": 0,
+        "workingSetMb": 335.9
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "project-center idle",
+      "durationMs": 3546,
+      "fps": 63.2,
+      "frames": 224,
+      "longTasks": [],
+      "longTaskTotalMs": 0,
+      "reactCommits": 2,
+      "heapUsedMb": 33.5,
+      "ipcCalls": 0,
+      "ipcChannels": [],
+      "ipcMaxMs": 0,
+      "ipcTotalMsMain": 0,
+      "ipcTotalMs": 0,
+      "ipcTop": [],
+      "renderer": {
+        "layoutCount": 0,
+        "recalcStyleCount": 0,
+        "scriptDurationMs": 0,
+        "taskDurationMs": 0,
+        "jsHeapUsedMb": 0,
+        "nodes": null
+      },
+      "main": {
+        "cpuPercent": 0.5,
+        "workingSetMb": 504.1,
+        "peakWorkingSetMb": 551.2,
+        "processCount": 4
+      }
+    },
+    {
+      "name": "project-center -> overview",
+      "durationMs": 3057.8,
+      "fps": 47.1,
+      "frames": 144,
+      "longTasks": [
+        361
+      ],
+      "longTaskTotalMs": 361,
+      "reactCommits": 3,
+      "heapUsedMb": 33.5,
+      "ipcCalls": 4,
+      "ipcChannels": [
+        [
+          "projectos:request",
+          {
+            "calls": 1,
+            "totalMs": 302.84360000000015,
+            "maxMs": 302.84360000000015,
+            "errors": 0
+          }
+        ]
+      ],
+      "ipcMaxMs": 302.8,
+      "ipcTotalMsMain": 367.2,
+      "ipcTotalMs": 0,
+      "ipcTop": [],
+      "renderer": {
+        "layoutCount": 0,
+        "recalcStyleCount": 0,
+        "scriptDurationMs": 0,
+        "taskDurationMs": 0,
+        "jsHeapUsedMb": 0,
+        "nodes": null
+      },
+      "main": {
+        "cpuPercent": 6.2,
+        "workingSetMb": 522.5,
+        "peakWorkingSetMb": 554.6,
+        "processCount": 4
+      }
+    },
+    {
+      "name": "task board scroll + detail",
+      "durationMs": 3918.5,
+      "fps": 49.5,
+      "frames": 194,
+      "longTasks": [
+        64,
+        51
+      ],
+      "longTaskTotalMs": 115,
+      "reactCommits": 16,
+      "heapUsedMb": 33.5,
+      "ipcCalls": 4,
+      "ipcChannels": [
+        [
+          "projectos:request",
+          {
+            "calls": 2,
+            "totalMs": 12.26220000000103,
+            "maxMs": 8.023800000000847,
+            "errors": 0
+          }
+        ]
+      ],
+      "ipcMaxMs": 8,
+      "ipcTotalMsMain": 25.8,
+      "ipcTotalMs": 0,
+      "ipcTop": [],
+      "renderer": {
+        "layoutCount": 0,
+        "recalcStyleCount": 0,
+        "scriptDurationMs": 0,
+        "taskDurationMs": 0,
+        "jsHeapUsedMb": 0,
+        "nodes": null
+      },
+      "main": {
+        "cpuPercent": 7,
+        "workingSetMb": 539.9,
+        "peakWorkingSetMb": 563.7,
+        "processCount": 4
+      }
+    },
+    {
+      "name": "sidebar collapse/expand",
+      "durationMs": 2357.1,
+      "fps": 43.7,
+      "frames": 103,
+      "longTasks": [
+        59
+      ],
+      "longTaskTotalMs": 59,
+      "reactCommits": 3,
+      "heapUsedMb": 33.5,
+      "ipcCalls": 0,
+      "ipcChannels": [],
+      "ipcMaxMs": 0,
+      "ipcTotalMsMain": 0,
+      "ipcTotalMs": 0,
+      "ipcTop": [],
+      "renderer": {
+        "layoutCount": 0,
+        "recalcStyleCount": 0,
+        "scriptDurationMs": 0,
+        "taskDurationMs": 0,
+        "jsHeapUsedMb": 0,
+        "nodes": null
+      },
+      "main": {
+        "cpuPercent": 18.1,
+        "workingSetMb": 622.5,
+        "peakWorkingSetMb": 634.4,
+        "processCount": 4
+      }
+    },
+    {
+      "name": "DAG zoom + node select",
+      "durationMs": 3141.8,
+      "fps": 49,
+      "frames": 154,
+      "longTasks": [],
+      "longTaskTotalMs": 0,
+      "reactCommits": 167,
+      "heapUsedMb": 33.5,
+      "ipcCalls": 10,
+      "ipcChannels": [
+        [
+          "projectos:request",
+          {
+            "calls": 7,
+            "totalMs": 2351.741199999993,
+            "maxMs": 2265.951399999998,
+            "errors": 0
+          }
+        ]
+      ],
+      "ipcMaxMs": 2266,
+      "ipcTotalMsMain": 3084.3,
+      "ipcTotalMs": 0,
+      "ipcTop": [],
+      "renderer": {
+        "layoutCount": 0,
+        "recalcStyleCount": 0,
+        "scriptDurationMs": 0,
+        "taskDurationMs": 0,
+        "jsHeapUsedMb": 0,
+        "nodes": null
+      },
+      "main": {
+        "cpuPercent": 9.7,
+        "workingSetMb": 598.3,
+        "peakWorkingSetMb": 672,
+        "processCount": 4
+      }
+    },
+    {
+      "name": "plan review open + interaction",
+      "durationMs": 6077.8,
+      "fps": 39,
+      "frames": 237,
+      "longTasks": [
+        52,
+        150,
+        137,
+        82,
+        103
+      ],
+      "longTaskTotalMs": 524,
+      "reactCommits": 182,
+      "heapUsedMb": 33.5,
+      "ipcCalls": 115,
+      "ipcChannels": [
+        [
+          "projectos:request",
+          {
+            "calls": 107,
+            "totalMs": 66265.8723,
+            "maxMs": 1685.7507000000005,
+            "errors": 0
+          }
+        ]
+      ],
+      "ipcMaxMs": 1685.8,
+      "ipcTotalMsMain": 70224.5,
+      "ipcTotalMs": 0,
+      "ipcTop": [],
+      "renderer": {
+        "layoutCount": 0,
+        "recalcStyleCount": 0,
+        "scriptDurationMs": 0,
+        "taskDurationMs": 0,
+        "jsHeapUsedMb": 0,
+        "nodes": null
+      },
+      "main": {
+        "cpuPercent": 11.7,
+        "workingSetMb": 659.7,
+        "peakWorkingSetMb": 694.7,
+        "processCount": 4
+      }
+    },
+    {
+      "name": "settings page switch",
+      "durationMs": 3836.5,
+      "fps": 41.2,
+      "frames": 158,
+      "longTasks": [
+        72
+      ],
+      "longTaskTotalMs": 72,
+      "reactCommits": 16,
+      "heapUsedMb": 33.5,
+      "ipcCalls": 2,
+      "ipcChannels": [
+        [
+          "projectos:request",
+          {
+            "calls": 110,
+            "totalMs": 68209.64180000001,
+            "maxMs": 1929.7909,
+            "errors": 0
+          }
+        ]
+      ],
+      "ipcMaxMs": 1929.8,
+      "ipcTotalMsMain": 1931.6,
+      "ipcTotalMs": 0,
+      "ipcTop": [],
+      "renderer": {
+        "layoutCount": 0,
+        "recalcStyleCount": 0,
+        "scriptDurationMs": 0,
+        "taskDurationMs": 0,
+        "jsHeapUsedMb": 0,
+        "nodes": null
+      },
+      "main": {
+        "cpuPercent": 7.8,
+        "workingSetMb": 627.5,
+        "peakWorkingSetMb": 698.1,
+        "processCount": 4
+      }
+    },
+    {
+      "name": "run audit idle/update",
+      "durationMs": 5143.2,
+      "fps": 57.2,
+      "frames": 294,
+      "longTasks": [
+        78
+      ],
+      "longTaskTotalMs": 78,
+      "reactCommits": 11,
+      "heapUsedMb": 33.5,
+      "ipcCalls": 5,
+      "ipcChannels": [
+        [
+          "projectos:request",
+          {
+            "calls": 3,
+            "totalMs": 9.973600000004808,
+            "maxMs": 4.410700000000361,
+            "errors": 0
+          }
+        ]
+      ],
+      "ipcMaxMs": 4.4,
+      "ipcTotalMsMain": 15.2,
+      "ipcTotalMs": 0,
+      "ipcTop": [],
+      "renderer": {
+        "layoutCount": 0,
+        "recalcStyleCount": 0,
+        "scriptDurationMs": 0,
+        "taskDurationMs": 0,
+        "jsHeapUsedMb": 0,
+        "nodes": null
+      },
+      "main": {
+        "cpuPercent": 3,
+        "workingSetMb": 594.4,
+        "peakWorkingSetMb": 698.1,
+        "processCount": 4
+      }
+    },
+    {
+      "name": "window resize 1440 -> 1100 -> 1440",
+      "durationMs": 3163.5,
+      "fps": 47.4,
+      "frames": 150,
+      "longTasks": [],
+      "longTaskTotalMs": 0,
+      "reactCommits": 41,
+      "heapUsedMb": 33.5,
+      "ipcCalls": 2,
+      "ipcChannels": [
+        [
+          "projectos:request",
+          {
+            "calls": 2,
+            "totalMs": 5.7783999999955995,
+            "maxMs": 2.952399999994668,
+            "errors": 0
+          }
+        ]
+      ],
+      "ipcMaxMs": 3,
+      "ipcTotalMsMain": 5.8,
+      "ipcTotalMs": 0,
+      "ipcTop": [],
+      "renderer": {
+        "layoutCount": 0,
+        "recalcStyleCount": 0,
+        "scriptDurationMs": 0,
+        "taskDurationMs": 0,
+        "jsHeapUsedMb": 0,
+        "nodes": null
+      },
+      "main": {
+        "cpuPercent": 11.5,
+        "workingSetMb": 640.9,
+        "peakWorkingSetMb": 698.7,
+        "processCount": 4
+      }
+    },
+    {
+      "name": "idle 5s",
+      "durationMs": 5526.1,
+      "fps": 63.9,
+      "frames": 353,
+      "longTasks": [],
+      "longTaskTotalMs": 0,
+      "reactCommits": 0,
+      "heapUsedMb": 33.5,
+      "ipcCalls": 2,
+      "ipcChannels": [
+        [
+          "projectos:request",
+          {
+            "calls": 2,
+            "totalMs": 5.59769999999844,
+            "maxMs": 2.8289000000004307,
+            "errors": 0
+          }
+        ]
+      ],
+      "ipcMaxMs": 2.8,
+      "ipcTotalMsMain": 5.6,
+      "ipcTotalMs": 0,
+      "ipcTop": [],
+      "renderer": {
+        "layoutCount": 0,
+        "recalcStyleCount": 0,
+        "scriptDurationMs": 0,
+        "taskDurationMs": 0,
+        "jsHeapUsedMb": 0,
+        "nodes": null
+      },
+      "main": {
+        "cpuPercent": 0.1,
+        "workingSetMb": 558.9,
+        "peakWorkingSetMb": 698.7,
+        "processCount": 4
+      }
+    }
+  ],
+  "cssExperiment": {
+    "name": "DAG zoom + select (backdrop-filter off)",
+    "durationMs": 3121.8,
+    "fps": 55.1,
+    "frames": 172,
+    "longTasks": [
+      69
+    ],
+    "longTaskTotalMs": 69,
+    "reactCommits": 11,
+    "heapUsedMb": 33.5,
+    "ipcCalls": 1,
+    "ipcChannels": [
+      [
+        "projectos:request",
+        {
+          "calls": 18,
+          "totalMs": 2677.3106999999945,
+          "maxMs": 1937.2238999999972,
+          "errors": 0
+        }
+      ]
+    ],
+    "ipcMaxMs": 1937.2,
+    "ipcTotalMsMain": 1937.2,
+    "ipcTotalMs": 0,
+    "ipcTop": [],
+    "renderer": {
+      "layoutCount": 0,
+      "recalcStyleCount": 0,
+      "scriptDurationMs": 0,
+      "taskDurationMs": 0,
+      "jsHeapUsedMb": 0,
+      "nodes": null
+    },
+    "main": {
+      "cpuPercent": 4.4,
+      "workingSetMb": 619.1,
+      "peakWorkingSetMb": 698.7,
+      "processCount": 4
+    }
+  }
+}
