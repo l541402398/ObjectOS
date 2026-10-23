@@ -73,6 +73,17 @@ New checks:
 - Prior ten pages remain green.
 - No page errors.
 
+## Package
+
+```text
+release/win-phase5-pages/ProjectOS-1.7.0-win-x64-portable.exe
+commit:   79f7002
+size:     98,515,442 bytes
+SHA256:   8245B244C062C4D4BFEA5D778C8B13145B83FA92AF79048004102647DAF0CB4D
+```
+
+Unsigned portable build; `pnpm test:package` passed.
+
 ## Known limitations
 
 1. Monaco retains its own editor theme; only the surrounding workspace shell
@@ -86,3 +97,4 @@ New checks:
 
 This slice stops for user visual confirmation of Workspace and Knowledge before
 the final migration group.
+
