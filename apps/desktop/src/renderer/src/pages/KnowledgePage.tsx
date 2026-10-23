@@ -7,6 +7,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { qk, useKnowledge, useKnowledgeSearch } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
 import { formatRelative } from '../lib/format'
+import { useResolvedTheme } from '../stores/ui'
+import '../features/design-lab/design-lab.css'
+import '../styles/knowledge-workspace.css'
 
 
 function splitField(body: string, label: string, separator = ' / '): string[] {
@@ -56,6 +59,7 @@ function SnapshotCard({ entry }: { entry: { title: string; body: string; status:
 }
 
 export default function KnowledgePage() {
+  const resolvedTheme = useResolvedTheme()
   const { projectId = '' } = useParams<{ projectId: string }>()
   const { message } = AntApp.useApp()
   const queryClient = useQueryClient()
@@ -92,16 +96,14 @@ export default function KnowledgePage() {
   }
 
   return (
-    <div className="po-page po-page-wide">
-      <header className="po-page-header">
+    <div className="po-page po-page-wide pdl-root po-ux-knowledge" data-theme={resolvedTheme}>
+      <header className="po-ux-knowledge-head">
         <div>
-          <div className="po-eyebrow"><ReadOutlined /> 项目记忆</div>
-          <h1>知识库</h1>
-          <p className="po-page-sub">扫描索引、决策与项目记忆的全文检索。</p>
+          <span className="pdl-eyebrow"><ReadOutlined /> PROJECT MEMORY <b>· {entries.length} 条</b></span>
+          <h1 className="po-page-title">知识库</h1>
+          <p>扫描索引、决策与项目记忆的全文检索。</p>
         </div>
-        <div className="po-page-header-actions">
-          <Button onClick={() => void scan()} loading={scanning}>重新扫描项目</Button>
-        </div>
+        <Button onClick={() => void scan()} loading={scanning}>重新扫描项目</Button>
       </header>
       <div className="po-knowledge-search">
         <Input
@@ -140,4 +142,5 @@ export default function KnowledgePage() {
     </div>
   )
 }
+
 

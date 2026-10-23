@@ -19,14 +19,14 @@ import {
   EmptyState,
   ErrorState,
   LoadingBlock,
-  PageHeader,
-  StatusPill,
 } from '@projectos/ui'
 import { useFileContent, useGitDiff, useWorkspace } from '../lib/queries'
 import { formatBytes } from '../lib/format'
 import { errorMessage } from '../lib/errors'
 import { useResolvedTheme } from '../stores/ui'
 import '../lib/monaco'
+import '../features/design-lab/design-lab.css'
+import '../styles/workspace-workspace.css'
 
 interface TerminalEntry {
   command: string
@@ -216,42 +216,26 @@ export default function WorkspacePage() {
   const entries = workspace.data?.entries ?? []
 
   return (
-    <div className="po-page po-workspace-page">
-      <PageHeader
-        compact
-        eyebrow={
-          <>
-            <CodeOutlined /> 工作区
-          </>
-        }
-        title={workspace.data?.rootPath.split(/[\\/]/).pop() ?? '项目工作区'}
-        actions={
-          <>
-            <Button icon={<FolderOpenOutlined />} onClick={() => void window.projectos.projects.reveal(projectId)}>
-              打开目录
-            </Button>
-            <Button icon={<ReloadOutlined />} onClick={() => void refresh()} loading={workspace.isRefetching}>
-              刷新
-            </Button>
-          </>
-        }
-        meta={
-          <>
+    <div className="po-page po-workspace-page pdl-root po-ux-workspace" data-theme={theme}>
+      <header className="po-ux-workspace-head">
+        <div className="po-ux-workspace-title-block">
+          <span className="pdl-eyebrow"><CodeOutlined /> WORKSPACE <b>· {entries.length} 个条目</b></span>
+          <h1 className="po-page-title">{workspace.data?.rootPath.split(/[\\/]/).pop() ?? '项目工作区'}</h1>
+          <div className="po-ux-workspace-meta">
             <span className="po-mono">{workspace.data?.rootPath ?? '—'}</span>
             {git ? (
               <>
                 <span>⑂ {git.branch}</span>
-                <StatusPill tone={git.clean ? 'success' : 'warning'}>
-                  {git.clean ? '工作区干净' : `${git.changes.length} 个变更`}
-                </StatusPill>
+                <span className={git.clean ? 'is-clean' : 'is-changed'}>{git.clean ? '工作区干净' : `${git.changes.length} 个变更`}</span>
               </>
-            ) : (
-              <StatusPill tone="neutral">未初始化 Git</StatusPill>
-            )}
-            <span>{entries.length} 个条目</span>
-          </>
-        }
-      />
+            ) : <span>未初始化 Git</span>}
+          </div>
+        </div>
+        <div className="po-ux-workspace-actions">
+          <Button icon={<FolderOpenOutlined />} onClick={() => void window.projectos.projects.reveal(projectId)}>打开目录</Button>
+          <Button icon={<ReloadOutlined />} onClick={() => void refresh()} loading={workspace.isRefetching}>刷新</Button>
+        </div>
+      </header>
 
       {workspace.isLoading ? (
         <LoadingBlock rows={8} label="正在读取工作区" />
@@ -482,6 +466,7 @@ export default function WorkspacePage() {
     </div>
   )
 }
+
 
 
 

@@ -93,6 +93,19 @@ try {
   check('project health keeps four real stats', await page.locator('.po-ux-health .v16-stat-card').count() === 4)
   check('project health keeps agent rows', await page.locator('.po-ux-health .v16-glass-card').count() >= 2)
 
+  await page.evaluate((id) => { location.hash = `#/projects/${id}/workspace` }, projectId)
+  await page.waitForSelector('.po-ux-workspace', { timeout: 20000 })
+  check('workspace renders editor header', (await page.locator('.po-ux-workspace-head h1').innerText()).length > 0)
+  await page.waitForSelector('.po-file-pane', { timeout: 10000 })
+  check('workspace keeps real file tree', await page.locator('.po-file-pane').count() === 1)
+  check('workspace keeps real editor', await page.locator('.po-editor-pane').count() === 1)
+
+  await page.evaluate((id) => { location.hash = `#/projects/${id}/knowledge` }, projectId)
+  await page.waitForSelector('.po-ux-knowledge', { timeout: 20000 })
+  check('knowledge renders project memory header', await page.locator('.po-ux-knowledge-head h1').innerText() === '知识库')
+  check('knowledge keeps real scan action', await page.getByRole('button', { name: '重新扫描项目' }).count() === 1)
+  check('knowledge shows real empty or indexed state', await page.locator('.po-knowledge-card, .po-empty-title').count() >= 1)
+
   await page.evaluate((id) => { location.hash = `#/projects/${id}/tasks` }, projectId)
   await page.waitForSelector('.po-ux-board', { timeout: 20000 })
   check('board renders approved execution header', await page.locator('.po-ux-board-head h1').innerText() === '任务看板')

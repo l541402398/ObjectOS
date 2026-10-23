@@ -1,0 +1,65 @@
+/* Workspace — Design Lab editor shell. */
+
+.pdl-root.po-ux-workspace {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--pdl-ink);
+  font-family: var(--pdl-font);
+}
+.po-ux-workspace-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex: 0 0 auto;
+  padding: 16px 20px 15px;
+  border: 1px solid var(--pdl-line-strong);
+  border-radius: 19px;
+  background:
+    radial-gradient(360px 170px at 90% -10%, color-mix(in srgb, var(--pdl-cyan) 10%, transparent), transparent 72%),
+    linear-gradient(136deg, color-mix(in srgb, var(--pdl-surface-2) 94%, transparent), color-mix(in srgb, var(--pdl-surface) 86%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 22px 48px -44px rgba(25, 48, 92, .55);
+  backdrop-filter: blur(24px) saturate(1.12);
+  -webkit-backdrop-filter: blur(24px) saturate(1.12);
+}
+.po-ux-workspace-head h1 { margin: 5px 0 0; color: var(--pdl-ink); font-size: 24px; font-weight: 700; letter-spacing: -.04em; line-height: 1.2; }
+.po-ux-workspace-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 13px; margin-top: 8px; color: var(--pdl-muted); font-size: 10px; }
+.po-ux-workspace-meta .po-mono { max-width: 620px; overflow: hidden; color: var(--pdl-muted); text-overflow: ellipsis; white-space: nowrap; }
+.po-ux-workspace-meta .is-clean { color: var(--pdl-success); }
+.po-ux-workspace-meta .is-changed { color: var(--pdl-warning); }
+.po-ux-workspace-actions { display: flex; align-items: center; gap: 7px; }
+.po-ux-workspace .ant-btn { height: 31px; padding: 0 11px; border-color: var(--pdl-line-strong); border-radius: 9px; color: var(--pdl-ink-2); background: color-mix(in srgb, var(--pdl-surface-2) 62%, transparent); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55); }
+.po-ux-workspace .ant-btn:hover { border-color: color-mix(in srgb, var(--pdl-accent) 45%, var(--pdl-line)) !important; color: var(--pdl-accent) !important; background: var(--pdl-surface-2) !important; }
+
+.po-ux-workspace .po-workspace { min-height: 0; flex: 1; gap: 10px; margin-top: 10px; }
+.po-ux-workspace .po-file-pane, .po-ux-workspace .po-editor-pane, .po-ux-workspace .po-diff-pane {
+  overflow: hidden;
+  border: 1px solid var(--pdl-line);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--pdl-solid) 91%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 18px 38px -40px rgba(25, 48, 92, .5);
+}
+.po-ux-workspace .po-pane-head { border-bottom-color: var(--pdl-line); background: color-mix(in srgb, var(--pdl-surface-2) 38%, transparent); }
+.po-ux-workspace .po-pane-title { color: var(--pdl-ink); font-size: 12px; font-weight: 650; }
+.po-ux-workspace .po-pane-subtitle { color: var(--pdl-muted); font-size: 9.5px; }
+.po-ux-workspace .po-file-row, .po-ux-workspace .po-file-node { color: var(--pdl-ink-2); font-size: 10.5px; }
+.po-ux-workspace .po-file-row:hover { background: color-mix(in srgb, var(--pdl-accent) 5%, transparent); }
+.po-ux-workspace .po-editor-tabs { border-bottom-color: var(--pdl-line); background: color-mix(in srgb, var(--pdl-surface-2) 32%, transparent); }
+.po-ux-workspace .po-editor-tab { color: var(--pdl-muted); font-size: 10.5px; }
+.po-ux-workspace .po-editor-tab.is-active { color: var(--pdl-ink); background: var(--pdl-solid); }
+.po-ux-workspace .po-diff-pane { min-height: 180px; }
+.po-ux-workspace .po-diff { color: var(--pdl-ink-2); font-size: 10px; }
+.po-ux-workspace .po-diff .is-add { color: var(--pdl-success); background: color-mix(in srgb, var(--pdl-success) 7%, transparent); }
+.po-ux-workspace .po-diff .is-del { color: var(--pdl-danger); background: color-mix(in srgb, var(--pdl-danger) 7%, transparent); }
+
+@media (max-width: 1180px) {
+  .po-ux-workspace-head { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .po-ux-workspace .po-workspace { grid-template-columns: 220px minmax(0, 1fr); }
+}
