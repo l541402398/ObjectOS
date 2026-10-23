@@ -6,6 +6,14 @@ import type { Stage } from './plan-review-logic'
 
 const ICONS = [Layers3, Code2, ScanEye, FlaskConical]
 
+const ROLE_DESCRIPTIONS: Record<PlanRole, string> = {
+  architect: '确认边界与风险',
+  developer: '实现依赖与核心改动',
+  reviewer: '复核实现与风险',
+  tester: '回归与验收',
+  custom: '执行计划任务',
+}
+
 function iconFor(role: PlanRole | undefined) {
   if (role === 'architect') return Layers3
   if (role === 'developer') return Code2
@@ -35,10 +43,12 @@ export function StageJourney({
   stages,
   activeStage,
   onSelect,
+  roleLabels,
 }: {
   stages: Stage[]
   activeStage: string
   onSelect: (stage: Stage) => void
+  roleLabels: Record<PlanRole, string>
 }): ReactElement {
   const reduce = useReducedMotion()
   const gradientId = `pui-route-${useId().replace(/:/g, '')}`
@@ -69,6 +79,7 @@ export function StageJourney({
         {stages.map((stage, index) => {
           const Icon = ICONS[index % ICONS.length] ?? iconFor(stage.roles[0])
           const selected = activeStage === stage.id
+          const tooltip = `${stage.title} · ${ROLE_DESCRIPTIONS[stage.roles[0] ?? 'custom']} · ${stage.entries.length} 个任务 · ${roleLabels[stage.roles[0] ?? 'custom']}`
           return (
             <button
               key={stage.id}
@@ -76,8 +87,8 @@ export function StageJourney({
               className={`pui-stop po-stage-card${selected ? ' is-active' : ''}${stage.hasRisk ? ' is-risk' : ''}`}
               onClick={() => onSelect(stage)}
               aria-pressed={selected}
-              aria-label={`${stage.title}，${stage.entries.length} 个任务`}
-              title={`${stage.title} · ${stage.entries.length} 个任务`}
+              aria-label={tooltip}
+              title={tooltip}
               style={{ transform: `translateY(${index % 2 === 0 ? 7 : -11}px)` }}
             >
               <motion.span
@@ -88,6 +99,7 @@ export function StageJourney({
                 <Icon size={25} strokeWidth={1.55} />
                 {stage.hasRisk ? <i className="pui-stop-risk" /> : null}
               </motion.span>
+              <span className="pui-stop-tooltip" role="tooltip" aria-hidden="true">{tooltip}</span>
             </button>
           )
         })}

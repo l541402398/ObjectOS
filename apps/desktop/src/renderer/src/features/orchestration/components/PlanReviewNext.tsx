@@ -208,7 +208,7 @@ export function PlanReviewNext({
             <Panel defaultSize={narrow ? '68%' : '76%'} minSize="45%" className="min-h-0">
               <div className="flex h-full min-h-0 flex-col gap-3">
                 <Tabs.Content value="route" className="min-h-0 outline-none">
-                  <StageJourney stages={stages} activeStage={selectedStage} onSelect={selectStage} />
+                  <StageJourney stages={stages} activeStage={selectedStage} onSelect={selectStage} roleLabels={roleLabels} />
                   {activeStage ? (
                     <div className="pui-focus-row">
                       <span className="flex size-7 shrink-0 items-center justify-center rounded-[9px] bg-[var(--pui-accent-soft)] text-[var(--pui-accent)]"><Sparkles size={14} /></span>
@@ -406,3 +406,4 @@ export function PlanReviewNext({
     </>
   )
 }
+

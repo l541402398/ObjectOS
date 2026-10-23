@@ -44,7 +44,8 @@
 | R-19 | P3 | 文案 | 少量技术性英文仍保留（如 `AGENT TOPOLOGY`、`active`、`P1`） | 多数是技术标签，但与中文界面的统一性可再检查 | 区分“技术标识”与“用户标签”，只本地化后者 |
 | R-20 | P3 | 原型路由 | `#/design-lab`、Agent Lab、Approval Lab 仍是 prototype/local-only | 不应被误认为生产流程 | 在导航/说明中保持明确标记，或发布构建隐藏 |
 | R-21 | P3 | 仓库体积 | 60 张矩阵图 + 15 页清单 + GIF + MP4 增加仓库体积 | 克隆/PR 体积变大 | 后续可将矩阵图转为 CI artifact；当前保留以便验收 |
-| R-22 | P3 | 发布资料 | 没有正式 release notes / 安装说明 / 校验和文档页面 | 拿到 EXE 的人缺少安装与校验上下文 | 随包附 `BUILD_INFO.txt`，补 release notes |`n| R-23 | P2 | 版本混淆 | 应用使用单实例锁；旧 ProjectOS 仍在运行时，启动新 portable 会聚焦旧窗口，看起来像“改版丢失” | 旧窗口内容不是当前 `app.asar`，会误导验收 | 比较版本前先完全退出所有 ProjectOS（含托盘），再启动新包；用 `app.asar` SHA256 校验 |
+| R-22 | P3 | 发布资料 | 没有正式 release notes / 安装说明 / 校验和文档页面 | 拿到 EXE 的人缺少安装与校验上下文 | 随包附 `BUILD_INFO.txt`，补 release notes |
+| R-23 | P2 | 版本混淆 | 应用使用单实例锁；旧 ProjectOS 仍在运行时，启动新 portable 会聚焦旧窗口，看起来像“改版丢失” | 旧窗口内容不是当前 `app.asar`，会误导验收 | 比较版本前先完全退出所有 ProjectOS（含托盘），再启动新包；用 `app.asar` SHA256 校验 |
 
 ## 2. P1 详细说明
 
