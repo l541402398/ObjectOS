@@ -115,7 +115,7 @@ C:\Users\Administrator\.dsh\profiles\desktop\node_modules\
 **触发**：改页面材质、玻璃、渐变、阴影、Overlay 皮肤、视觉基线。
 
 **已批准方案**：
-- 唯一视觉事实：`0686c41` + `APPROVED_design_lab_DAG.jpeg` + `docs/next-ui/VISUAL_BASELINE.md`。
+- 唯一视觉事实：`0686c41` + 仓库 PNG `docs/next-ui/visual-regression/APPROVED-design-lab-dag.png` + `docs/next-ui/VISUAL_BASELINE.md`（源 JPEG 未提交，以仓库 PNG 为准）。
 - 材质来源：`design-lab.css` 的 `--pdl-*`；页面级作用域 `.pdl-root`。
 - 文本层必须不透明；`opacity/filter/blur` 不得作用于承载文字的 surface。
 - 浮层：`OpticalGlass` 静态光学层优先；`liquid-glass-react` 仅作兼容性对照。

@@ -75,7 +75,7 @@ metadata:
 
 ## 验收标准
 
-- [ ] 与 `0686c41` / `APPROVED_design_lab_DAG.jpeg` 并排无结构/材质退化。
+- [ ] 与 `0686c41` / `docs/next-ui/visual-regression/APPROVED-design-lab-dag.png` 并排无结构/材质退化（源 JPEG 未提交，仓库 PNG 为准）。
 - [ ] 文字清晰、无重影/裁切；正文对比度 ≥4.5:1。
 - [ ] 1440×900、1100px、125% light/dark 截图。
 - [ ] 目标 E2E 通过；真实数据/空态/错误态未被破坏。
