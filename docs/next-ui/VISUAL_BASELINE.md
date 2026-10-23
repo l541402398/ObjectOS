@@ -22,6 +22,8 @@
 
 ![Approved icon-only baseline](visual-regression/current-10d84f4.png)
 
+![Approved icon-only dark baseline](visual-regression/current-10d84f4-dark.png)
+
 ## 2. 已排除的错误候选
 
 以下版本**不是**用户认可的基线：
@@ -86,3 +88,5 @@ docs/next-ui/visual-regression/current-10d84f4.png
 - `docs/next-ui/visual-regression/`
 - `docs/next-ui/BASELINE_AND_RECOVERY.md`
 - `docs/next-ui/OPEN_ISSUES.md`
+
+

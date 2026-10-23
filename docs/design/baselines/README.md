@@ -1,28 +1,37 @@
 # Approved Visual Baselines
 
-Status: approved as the Premium Liquid Glass direction (with five required fixes).
+Status: **approved icon-only Premium Liquid Glass Design Lab**  
+Approved tag: `visual-baseline-approved-icons-10d84f4`  
+Approved commit: `10d84f4`  
+Corrected: 2026-10-22 after user clarified that the approved stage route has **no text under the icons**
 
-The handoff package referred to reviewer images `211.png` and `212.png`, but those
-files were not present in the supplied text handoff. These are the actual accepted
-Design Lab captures from the implementation at commit `0686c41`, copied here as
-the versioned visual baseline so future sessions do not depend on chat history.
+## Current approved set
 
 | File | Surface |
 |---|---|
-| `approved-light.png` | 1440×900 light plan review workspace |
-| `approved-dark.png` | 1440×900 dark plan review workspace |
-| `approved-stage-route.png` | stage route / workspace composition |
+| `approved-light.png` | 1440×900 light Design Lab, icon-only stage route |
+| `approved-dark.png` | 1440×900 dark Design Lab, icon-only stage route |
+| `approved-stage-route.png` | approved stage route / workspace composition |
 | `approved-dag.png` | ELK + React Flow dependency map |
 
-Post-fix review captures:
+These files are protected. Do not re-add always-visible stage names, descriptions or
+counts under the icons. Stage details live in the tooltip and selected-stage summary.
 
-| File | Surface |
-|---|---|
-| `post-fix-light.png` | icon-only stage route, 14px body, 1440×900 |
-| `post-fix-dark.png` | dark equivalent |
-| `post-fix-dag.png` | solid custom edges, neutral default |
-| `post-fix-inspector.png` | read-first inspector |
-| `post-fix-stage-tooltip.png` | icon tooltip / accessible name |
+## Rejected candidate
 
-The five post-approval fixes are tracked in
+`0686c41` showed stage names, descriptions and counts under the icons. It was
+previously misidentified as approved. The screenshots are retained for history as:
+
+- `rejected-labels-0686c41-light.png`
+- `rejected-labels-0686c41-dark.png`
+
+Do not use those as the acceptance baseline.
+
+## Historical post-fix captures
+
+`post-fix-*` captures are retained as historical implementation evidence. They are
+closer to the approved icon-only direction than the rejected label versions, but
+the authoritative reference is now `approved-light.png` / `approved-dark.png`.
+
+The five required fixes are tracked in
 `docs/design/PROJECTOS_UI_CONTRACT.md` and `docs/design/DESIGN_CHANGELOG.md`.

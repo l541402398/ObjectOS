@@ -154,10 +154,11 @@ C:\Users\Administrator\Desktop\workplace\_projectos-next-ui-pre-restore-20261022
 ## 9. 当前截图与基线
 
 - 已认可：`docs/next-ui/visual-regression/current-10d84f4.png`
-- 错误候选：`docs/next-ui/visual-regression/approved-0686c41.png`
+- 错误候选：`docs/next-ui/visual-regression/rejected-labels-0686c41.png`
 - 对照图：`docs/next-ui/visual-regression/comparison-0686-vs-10d84.png`
   （该图现在只用于证明“标签版不是 approved”，不再作为恢复目标）
 
 ## 10. 停止状态
 
 已停止 UI 修改。等待用户指定具体回归页面后，再在隔离分支进行单页恢复。
+
