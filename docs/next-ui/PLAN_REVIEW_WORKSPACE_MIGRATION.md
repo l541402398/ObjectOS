@@ -5,8 +5,8 @@ Status: **Phase 0鈥? implemented in an isolated integration worktree; Phase 5 n
 Approved baseline: `0686c41` / `visual-baseline-approved-0686c41`  
 Integration branch: `feature/plan-review-design-lab-integration`  
 Integration worktree: `C:\Users\Administrator\Desktop\workplace\ProjectOS-plan-review-integration`  
-Integration HEAD: `fefe062` plus responsive follow-up  
-Final package commit: recorded in BUILD_INFO after the final package build  
+Integration HEAD: `9090465`  
+Final package commit: `9090465`  
 Stable branch: untouched  
 Main migration branch: untouched
 
@@ -181,8 +181,8 @@ PACKAGE SMOKE PASS
 
 ```text
 release/win-plan-workspace/ProjectOS-1.7.0-win-x64-portable.exe
-size:   98,506,882 bytes
-SHA256: E7ABCB83E7413411EDF1FC973C704CF670F8168285AAE5C769CFC8A4FB5E135D
+size:   98,506,650 bytes
+SHA256: 3C6AB6C37C1F8FFF0C885B17B351F082260692760586452FF7799B84E1A7EA9D
 ```
 
 Unsigned (`NotSigned`), portable target only.
@@ -216,4 +216,5 @@ This round stops after the formal plan review workspace migration.
 - No stable merge.
 - No automatic merge into the main migration branch.
 - User visual/functional confirmation is required before continuing.
+
 
