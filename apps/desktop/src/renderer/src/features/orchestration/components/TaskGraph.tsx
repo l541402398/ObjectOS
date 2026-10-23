@@ -167,7 +167,7 @@ export function TaskGraph({
   })), [related, selectedTaskKey, tasks])
 
   return (
-    <div data-testid="plan-task-dag" className="pui-dag-wrap po-plan-dag h-[420px] overflow-hidden rounded-[15px] border border-[var(--pui-border)]">
+    <div data-testid="plan-task-dag" className="pui-dag-wrap po-plan-dag h-full min-h-[480px] overflow-hidden rounded-[15px] border border-[var(--pui-border)]">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -196,5 +196,6 @@ export function TaskGraph({
     </div>
   )
 }
+
 
 

@@ -91,6 +91,7 @@ export function PlanReviewNext({
   ]
   const [selectedTaskKey, setSelectedTaskKey] = useState<string | null>(null)
   const [selectedStage, setSelectedStage] = useState(stages[0]?.id ?? '')
+  const [planView, setPlanView] = useState<'route' | 'dag'>('route')
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set(stages.slice(1).map((stage) => stage.id)))
   const [editingGoal, setEditingGoal] = useState(false)
   const [goalDraft, setGoalDraft] = useState(draft.goal)
@@ -187,7 +188,7 @@ export function PlanReviewNext({
           </div>
         </header>
 
-        <Tabs.Root defaultValue="route" className="flex min-h-0 flex-1 flex-col">
+        <Tabs.Root value={planView} onValueChange={(value) => setPlanView(value as 'route' | 'dag')} className="flex min-h-0 flex-1 flex-col">
           <div className="flex shrink-0 items-center justify-between gap-3 py-2.5">
             <Tabs.List className="po-plan-view-tabs inline-flex items-center gap-0.5 rounded-[10px] border border-[var(--pui-border)] bg-[var(--pui-surface-muted)] p-[3px]" aria-label="计划视图">
               <Tabs.Trigger value="route" className="inline-flex h-6 items-center gap-1.5 rounded-[7px] px-2.5 text-[12px] text-[var(--pui-ink-muted)] outline-none transition-colors hover:text-[var(--pui-ink)] data-[state=active]:bg-[var(--pui-surface-strong)] data-[state=active]:text-[var(--pui-ink)]"><ArrowRight size={13} />阶段路线</Tabs.Trigger>
@@ -208,17 +209,21 @@ export function PlanReviewNext({
           </div>
 
           <Group orientation={narrow ? 'vertical' : 'horizontal'} className="min-h-0 flex-1">
-            <Panel defaultSize={narrow ? '68%' : '76%'} minSize="45%" className="min-h-0">
+            <Panel defaultSize={narrow ? '68%' : planView === 'dag' ? '100%' : '76%'} minSize="45%" className="min-h-0">
               <div className="flex h-full min-h-0 flex-col gap-3">
                 <Tabs.Content value="route" className="min-h-0 outline-none">
                   <StageJourney stages={stages} activeStage={selectedStage} onSelect={selectStage} />
                 </Tabs.Content>
 
-                <Tabs.Content value="dag" className="min-h-0 outline-none">
+                <Tabs.Content value="dag" className="flex min-h-0 flex-1 flex-col outline-none">
+                  <div className="mb-2 flex shrink-0 items-end justify-between px-1">
+                    <div><div className="pui-kicker">DEPENDENCY MAP</div><h2 className="mt-0.5 text-[16px] font-semibold text-[var(--pui-ink)]">任务依赖</h2></div>
+                    <span className="text-[11.5px] text-[var(--pui-ink-muted)]">{draft.tasks.filter((task) => task.dependsOn.length === 0).length} 个起点 · {dependencyCount} 条依赖</span>
+                  </div>
                   <TaskGraph tasks={draft.tasks} stages={stages} activeStage={selectedStage} selectedTaskKey={selectedTaskKey} agentLabels={Object.fromEntries(agentOptions.map((option) => [option.value, option.label]))} onSelect={openTask} />
                 </Tabs.Content>
 
-                <div className="flex min-h-0 flex-1 flex-col">
+                <div className={cn('flex min-h-0 flex-1 flex-col', planView === 'dag' && 'hidden')}>
                   <div className="mb-1.5 flex items-end justify-between gap-3">
                     <div><div className="pui-kicker">TASK SEQUENCE</div><h2 className="mt-0.5 text-[16px] font-semibold text-[var(--pui-ink)]">准备审核的工作</h2></div>
                     {draft.status === 'draft' ? <Button size="sm" variant="ghost" onClick={onAddTask}><Plus size={13} />添加任务</Button> : null}
@@ -257,6 +262,7 @@ export function PlanReviewNext({
                 </div>
               </div>
             </Panel>
+            {planView !== 'dag' ? (<>
             <Separator className={cn('group relative shrink-0', narrow ? 'h-2' : 'w-2')}>
               <div className={cn('absolute rounded-full bg-[var(--pui-border)] transition-colors group-hover:bg-[var(--pui-accent)]', narrow ? 'left-1/2 top-0.5 h-1 w-10 -translate-x-1/2' : 'left-0.5 top-1/2 h-10 w-1 -translate-y-1/2')} />
             </Separator>
@@ -292,6 +298,7 @@ export function PlanReviewNext({
                 </div>
               </aside>
             </Panel>
+            </>) : null}
           </Group>
         </Tabs.Root>
 
