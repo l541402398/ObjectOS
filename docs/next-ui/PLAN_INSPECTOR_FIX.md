@@ -40,6 +40,19 @@ The scroll area existed, but wheel input over the drawer chrome did not move
 it. The inspector now forwards wheel deltas from head/footer chrome to the
 scroll container, contains overscroll, and uses explicit `overflow-y: auto`.
 
+### Why an existing plan showed no change
+
+The reported plan was already **approved** in the local database
+(`plan_revisions.status = approved`). Approved plans use the read-only legacy
+`PlanReviewNext` surface, not the draft-only full-screen workspace. That
+surface hard-coded the status pill as `待批准`, which contradicted its own
+`已批准只读` metadata and made the missing approval action look like a bug.
+
+Fix: the pill now reads from the real plan status (`待批准 / 已批准 / 已拒绝 /
+已被替代`), and approved task rows read `已批准` instead of `待审批`. An
+approved plan intentionally has no approve action; create a new plan or use
+`修订为新版本` to get a draft, then approve that draft.
+
 ## Verification
 
 - `scripts/plan-review-workspace-e2e.mjs` — 13 checks, including approval

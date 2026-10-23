@@ -37,6 +37,13 @@ import { TaskGraph } from './TaskGraph'
 
 type AgentOption = { value: string; label: string }
 
+const PLAN_STATUS_LABEL: Record<PlanDraft['status'], string> = {
+  draft: '待批准',
+  approved: '已批准',
+  rejected: '已拒绝',
+  superseded: '已被替代',
+}
+
 function roleIcon(role: PlanRole): ReactNode {
   if (role === 'architect') return <Layers3 size={14} />
   if (role === 'developer') return <Code2 size={14} />
@@ -174,7 +181,7 @@ export function PlanReviewNext({
               </div>
             )}
             <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[12px] text-[var(--pui-ink-muted)]">
-              <span className="po-plan-status-pill">待批准</span>
+              <span className="po-plan-status-pill" data-status={draft.status}>{PLAN_STATUS_LABEL[draft.status]}</span>
               <span>{summaryPath || '单任务'}</span><span>·</span><span>{draft.tasks.length} 个任务</span><span>·</span><span className={risks.length ? 'text-[var(--pui-warning)]' : ''}>{risks.length ? `${risks.length} 项提醒` : '无待处理项'}</span>
             </div>
           </div>
@@ -240,7 +247,11 @@ export function PlanReviewNext({
                             {isCollapsed ? null : stage.entries.map((entry) => {
                               const risk = entry.task.assignmentBlocked || issues.some((issue) => issue.taskKey === entry.task.key)
                               const agent = shortAgent(agentOptions.find((option) => option.value === entry.task.agentId)?.label)
-                              const state = risk ? { label: '需复核', tone: 'warn' } : entry.task.requiresApproval ? { label: '待审批', tone: 'accent' } : { label: '就绪', tone: 'ok' }
+                              const state = risk
+                                ? { label: '需复核', tone: 'warn' }
+                                : draft.status !== 'draft'
+                                  ? { label: draft.status === 'approved' ? '已批准' : '只读', tone: 'ok' }
+                                  : entry.task.requiresApproval ? { label: '待审批', tone: 'accent' } : { label: '就绪', tone: 'ok' }
                               return (
                                 <button type="button" key={entry.task.key} data-testid={`plan-task-${entry.task.key}`} onClick={() => openTask(entry.task.key)} data-selected={selectedTaskKey === entry.task.key}
                                   className="pui-ledger-row po-plan-compact-task flex min-h-[40px] w-full items-center gap-2 border-t border-[var(--pui-border)] px-3 py-1 text-left">

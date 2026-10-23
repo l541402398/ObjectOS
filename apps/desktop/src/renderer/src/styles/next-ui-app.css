@@ -980,6 +980,17 @@
   font-weight: 620;
   line-height: 1.3;
 }
+.po-plan-status-pill[data-status='approved'] {
+  border-color: color-mix(in srgb, var(--pui-success) 40%, var(--pui-border));
+  color: var(--pui-success);
+  background: color-mix(in srgb, var(--pui-success) 10%, transparent);
+}
+.po-plan-status-pill[data-status='rejected'],
+.po-plan-status-pill[data-status='superseded'] {
+  border-color: color-mix(in srgb, var(--pui-danger) 34%, var(--pui-border));
+  color: var(--pui-danger);
+  background: color-mix(in srgb, var(--pui-danger) 9%, transparent);
+}
 .po-plan-agent-chip {
   display: inline-flex;
   min-width: 0;
@@ -1155,4 +1166,20 @@ body.po-plan-workspace-open .po-sidebar { display: none; }
 }
 .pdl-inspector-backdrop {
   z-index: 3000 !important;
+}
+
+/* Legacy approved-plan inspector: keep it above transient messages and the
+   plan dialog so its close control and wheel scrolling receive input. */
+.pui-overlay-inspector {
+  z-index: 3000 !important;
+  pointer-events: auto;
+  overscroll-behavior: contain;
+}
+.pui-overlay-inspector .pui-overlay-close {
+  width: 36px;
+  height: 36px;
+}
+.pui-overlay-inspector .pui-overlay-scroll,
+.pui-plan-inspector-scroll {
+  overscroll-behavior: contain;
 }
