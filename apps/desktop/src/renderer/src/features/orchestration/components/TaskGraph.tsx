@@ -43,12 +43,12 @@ function TaskNode({ data }: NodeProps<GraphNode>) {
     >
       <Handle type="target" position={Position.Left} className="po-biz-port" isConnectable={false} />
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-[11px] font-medium tracking-[.06em] text-[var(--pui-accent)]">TASK {String(data.index + 1).padStart(2, '0')}</span>
-        {data.risk ? <span className="rounded-full bg-[var(--pui-danger-soft)] px-1.5 py-0.5 text-[11px] text-[var(--pui-danger)]">需复核</span> : null}
+        <span className="po-plan-dag-code">TASK {String(data.index + 1).padStart(2, '0')}</span>
+        {data.risk ? <i className="po-plan-dag-risk" aria-label="需复核" /> : null}
       </div>
-      <h4 className="mt-1.5 line-clamp-2 min-h-[34px] text-[12.5px] font-semibold leading-[1.4] text-[var(--pui-ink)]" title={data.task.title}>{data.task.title}</h4>
-      <div className="mt-2 flex items-center justify-between border-t border-[var(--pui-border)] pt-1.5 text-[11.5px] text-[var(--pui-ink-muted)]">
-        <span className="truncate">{data.agent}</span>
+      <h4 className="po-plan-dag-title" title={data.task.title}>{data.task.title}</h4>
+      <div className="po-plan-dag-foot">
+        <span className="po-plan-dag-agent"><i>{data.agent.slice(0, 1)}</i>{data.agent}</span>
         <span>{data.task.dependsOn.length ? `${data.task.dependsOn.length} 前置` : '起点'}</span>
       </div>
       <Handle type="source" position={Position.Right} className="po-biz-port" isConnectable={false} />
@@ -84,12 +84,12 @@ export function TaskGraph({
       layoutOptions: {
         'elk.algorithm': 'layered',
         'elk.direction': 'RIGHT',
-        'elk.spacing.nodeNode': '28',
-        'elk.layered.spacing.nodeNodeBetweenLayers': '48',
+        'elk.spacing.nodeNode': '26',
+        'elk.layered.spacing.nodeNodeBetweenLayers': '42',
         'elk.edgeRouting': 'ORTHOGONAL',
         'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
       },
-      children: tasks.map((task) => ({ id: task.key, width: 204, height: 108 })),
+      children: tasks.map((task) => ({ id: task.key, width: 168, height: 72 })),
       edges: tasks.flatMap((task) => task.dependsOn.filter((dependency) => tasks.some((item) => item.key === dependency)).map((dependency) => ({
         id: `${dependency}->${task.key}`,
         sources: [dependency],
@@ -167,7 +167,7 @@ export function TaskGraph({
   })), [related, selectedTaskKey, tasks])
 
   return (
-    <div data-testid="plan-task-dag" className="pui-dag-wrap h-[300px] overflow-hidden rounded-[15px] border border-[var(--pui-border)]">
+    <div data-testid="plan-task-dag" className="pui-dag-wrap po-plan-dag h-[420px] overflow-hidden rounded-[15px] border border-[var(--pui-border)]">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -188,7 +188,13 @@ export function TaskGraph({
         <Background gap={20} size={1} color="rgba(110,144,203,.14)" />
         <Controls showInteractive={false} />
       </ReactFlow>
+      <div className="po-plan-dag-legend" aria-hidden="true">
+        <span><i className="is-start" />起点</span>
+        <span><i className="is-risk" />需复核</span>
+        <span><i className="is-path" />当前路径</span>
+      </div>
     </div>
   )
 }
+
 

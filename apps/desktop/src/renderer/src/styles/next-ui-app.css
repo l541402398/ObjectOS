@@ -1023,3 +1023,24 @@
 .po-plan-readiness-stats span { color: var(--pui-ink-muted); font-size: 11px; }
 .po-plan-readiness-stats strong { color: var(--pui-ink); font-size: 15px; font-weight: 600; }
 .po-plan-readiness-stats strong.is-warning { color: var(--pui-warning); }
+
+/* Task dependency view matches the approved Design Lab node silhouette while
+   keeping the premium solid edge component. */
+.po-plan-dag .pui-dag-node {
+  width: 168px;
+  min-height: 72px;
+  padding: 8px 9px 7px;
+  border-radius: 11px;
+}
+.po-plan-dag-code { color: var(--pui-accent); font-family: ui-monospace, "SFMono-Regular", monospace; font-size: 9px; font-weight: 560; letter-spacing: .07em; }
+.po-plan-dag-risk { width: 5px; height: 5px; border-radius: 50%; background: var(--pui-danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pui-danger) 12%, transparent); }
+.po-plan-dag-title { display: -webkit-box; min-height: 25px; margin-top: 3px; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: var(--pui-ink); font-size: 11.5px; font-weight: 580; letter-spacing: -.008em; line-height: 1.4; }
+.po-plan-dag-foot { display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--pui-border); color: var(--pui-ink-muted); font-size: 9px; }
+.po-plan-dag-agent { display: inline-flex; min-width: 0; align-items: center; gap: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.po-plan-dag-agent i { display: inline-grid; width: 14px; height: 14px; flex: 0 0 14px; place-items: center; border-radius: 50%; color: var(--pui-accent); background: var(--pui-accent-soft); font-size: 8px; font-style: normal; font-weight: 650; }
+.po-plan-dag-legend { display: flex; flex-wrap: wrap; gap: 12px; padding: 7px 10px; border-top: 1px solid var(--pui-border); color: var(--pui-ink-muted); font-size: 10px; }
+.po-plan-dag-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.po-plan-dag-legend i { width: 5px; height: 5px; border-radius: 50%; }
+.po-plan-dag-legend i.is-start { background: var(--pui-cyan); }
+.po-plan-dag-legend i.is-risk { background: var(--pui-danger); }
+.po-plan-dag-legend i.is-path { background: var(--pui-accent); }
