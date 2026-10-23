@@ -25,7 +25,6 @@ import {
   KeyValueList,
   LoadingBlock,
   MetricCard,
-  PageHeader,
   SectionCard,
   StatusPill,
   toneForStatus,
@@ -33,6 +32,7 @@ import {
 import { ApprovalCard } from '@projectos/ai-ui'
 import { useApprovals, useProjectBudget, useProjectMetrics, useProjectOverview } from '../lib/queries'
 import { formatDate, formatRelative, parseLines, percent } from '../lib/format'
+import { useResolvedTheme } from '../stores/ui'
 import {
   DECISION_LABELS,
   MILESTONE_LABELS,
@@ -41,6 +41,8 @@ import {
 } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
 import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '../next-ui/overlay/overlay-shell'
+import '../features/design-lab/design-lab.css'
+import '../styles/overview-workspace.css'
 
 function StageRail({ stages, currentStage, gates }: { stages: ProjectStage[]; currentStage: string; gates: LifecycleGate[] }) {  const gateMap = new Map(gates.map((gate) => [gate.stage, gate]))
   return (
@@ -91,6 +93,7 @@ const LIFECYCLE_LABELS: Record<LifecycleKind, string> = {
 }
 
 export default function ProjectOverviewPage() {
+  const resolvedTheme = useResolvedTheme()
   const { projectId = '' } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -257,61 +260,37 @@ export default function ProjectOverviewPage() {
   const verifiedArtifacts = data.stats.artifacts
 
   return (
-    <div className="po-page po-overview-page">
-      <PageHeader
-        eyebrow={
-          <>
-            <RocketOutlined /> {stageLabel(project.currentStage)} · 项目工作台
-          </>
-        }
-        title={
-          <span className="po-title-with-badge">
-            {project.name}
+    <div className="po-page po-overview-page pdl-root po-ux-overview" data-theme={resolvedTheme}>
+      <header className="po-ux-overview-head">
+        <div className="po-ux-overview-title-block">
+          <span className="pdl-eyebrow"><RocketOutlined /> PROJECT WORKSPACE <b>· {stageLabel(project.currentStage)}</b></span>
+          <div className="po-ux-overview-title">
+            <h1>{project.name}</h1>
             {project.isDemo ? <span className="po-demo-tag">示例数据</span> : null}
-          </span>
-        }
-        description={project.description || '尚未填写项目描述。'}
-        actions={
-          <>
-            <Button icon={<FolderOpenOutlined />} onClick={() => void reveal.mutate()} loading={reveal.isPending}>
-              打开目录
-            </Button>
-            <Button icon={<PlusOutlined />} onClick={() => navigate(`/projects/${projectId}/tasks?new=1`)}>
-              新建任务
-            </Button>
-            <Tooltip title={next ? `${stageLabel(next.stage)}：${nextGate?.requirement ?? ''}` : '已到达最后阶段'}>
-              <Button
-                type="primary"
-                icon={<ArrowRightOutlined />}
-                onClick={() => setAdvanceOpen(true)}
-                disabled={!next}
-              >
-                推进阶段
-              </Button>
-            </Tooltip>
-          </>
-        }
-        meta={
-          <>
-            <span>
-              <CodeOutlined /> {project.rootPath}
-            </span>
+          </div>
+          <p>{project.description || '尚未填写项目描述。'}</p>
+          <div className="po-ux-overview-meta">
+            <span><CodeOutlined /> {project.rootPath}</span>
             {data.git ? (
-              <span>
-                <span className="po-git-branch">⑂ {data.git.branch}</span>
-                {data.git.clean ? ' · 工作区干净' : ` · ${data.git.changedFiles} 个变更`}
-              </span>
-            ) : (
-              <span>未初始化 Git</span>
-            )}
-            <span>
-              <ClockCircleOutlined /> 更新于 {formatRelative(project.updatedAt)}
-            </span>
-          </>
-        }
-      />
+              <span><span className="po-git-branch">⑂ {data.git.branch}</span>{data.git.clean ? ' · 工作区干净' : ` · ${data.git.changedFiles} 个变更`}</span>
+            ) : <span>未初始化 Git</span>}
+            <span><ClockCircleOutlined /> 更新于 {formatRelative(project.updatedAt)}</span>
+          </div>
+        </div>
+        <div className="po-ux-overview-actions">
+          <Button icon={<FolderOpenOutlined />} onClick={() => void reveal.mutate()} loading={reveal.isPending}>打开目录</Button>
+          <Button icon={<PlusOutlined />} onClick={() => navigate(`/projects/${projectId}/tasks?new=1`)}>新建任务</Button>
+          <Tooltip title={next ? `${stageLabel(next.stage)}：${nextGate?.requirement ?? ''}` : '已到达最后阶段'}>
+            <Button type="primary" icon={<ArrowRightOutlined />} onClick={() => setAdvanceOpen(true)} disabled={!next}>推进阶段</Button>
+          </Tooltip>
+        </div>
+      </header>
 
-      <SectionCard title="生命周期" subtitle="阶段门禁由需求、ADR、里程碑、任务与交付物共同决定" className="po-lifecycle-card">
+      <section className="po-ux-lifecycle">
+        <div className="pdl-panel-head">
+          <div><span className="pdl-eyebrow">LIFECYCLE</span><h2>生命周期</h2></div>
+          <span className="pdl-panel-note">阶段门禁由需求、ADR、里程碑、任务与交付物共同决定</span>
+        </div>
         <StageRail stages={data.stages} currentStage={project.currentStage} gates={data.gates} />
         <div className="po-lifecycle-footer">
           <div>
@@ -335,9 +314,9 @@ export default function ProjectOverviewPage() {
           <span className="po-grow" />
           <span className="po-caption po-muted">{nextStage?.status === 'active' ? '阶段进行中' : ''}</span>
         </div>
-      </SectionCard>
+      </section>
 
-      <div className="po-metric-grid">
+      <div className="po-metric-grid po-ux-metric-strip">
         <MetricCard
           label="任务进度"
           value={percent(data.stats.progress)}
@@ -771,3 +750,5 @@ export default function ProjectOverviewPage() {
     </div>
   )
 }
+
+

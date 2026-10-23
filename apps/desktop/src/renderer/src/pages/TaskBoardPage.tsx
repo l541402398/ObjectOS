@@ -47,7 +47,6 @@ import {
   EmptyState,
   ErrorState,
   LoadingBlock,
-  PageHeader,
   SectionCard,
   StatusPill,
   toneForStatus,
@@ -71,6 +70,9 @@ import {
 } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
 import { DialogShell, InspectorShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '../next-ui/overlay/overlay-shell'
+import { useResolvedTheme } from '../stores/ui'
+import '../features/design-lab/design-lab.css'
+import '../styles/board-workspace.css'
 
 function descriptionBlocks(description: string): string[] {
   return description
@@ -198,6 +200,7 @@ function TaskTile({
 }
 
 export default function TaskBoardPage() {
+  const resolvedTheme = useResolvedTheme()
   const { projectId = '' } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -594,28 +597,23 @@ export default function TaskBoardPage() {
   ) : null
 
   return (
-    <div className="po-page po-page-wide po-tasks-page">
-      <PageHeader
-        title="任务看板"
-        actions={
-          <>
-            <Button icon={<RobotOutlined />} onClick={() => navigate(`/projects/${projectId}/agents`)}>
-              Agent 工作台
-            </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
-              新建任务
-            </Button>
-          </>
-        }
-        meta={
-          <>
-            <span>{tasks.length} 个任务</span>
-            <span>{tasks.filter((task) => task.status === 'running').length} 个执行中</span>
-            <span>{tasks.filter((task) => task.status === 'review').length} 个待审查</span>
-            <span>{(approvals.data?.approvals ?? []).filter((approval) => approval.status === 'pending').length} 个待授权</span>
-          </>
-        }
-      />
+    <div className="po-page po-page-wide po-tasks-page pdl-root po-ux-board" data-theme={resolvedTheme}>
+      <header className="po-ux-board-head">
+        <div className="po-ux-board-title-block">
+          <span className="pdl-eyebrow">EXECUTION BOARD <b>· {tasks.length} 项工作</b></span>
+          <h1>任务看板</h1>
+          <p>在真实任务流中查看阻塞、审查与执行状态；拖动卡片更新状态。</p>
+          <div className="po-ux-board-meta">
+            <span><i className="is-running" />{tasks.filter((task) => task.status === 'running').length} 个执行中</span>
+            <span><i className="is-review" />{tasks.filter((task) => task.status === 'review').length} 个待审查</span>
+            <span><i className="is-approval" />{(approvals.data?.approvals ?? []).filter((approval) => approval.status === 'pending').length} 个待授权</span>
+          </div>
+        </div>
+        <div className="po-ux-board-actions">
+          <Button icon={<RobotOutlined />} onClick={() => navigate(`/projects/${projectId}/agents`)}>Agent 工作台</Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>新建任务</Button>
+        </div>
+      </header>
 
       {pendingPlan ? (
         <div className="v17-next-step-banner">
@@ -1128,3 +1126,5 @@ export default function TaskBoardPage() {
     </div>
   )
 }
+
+

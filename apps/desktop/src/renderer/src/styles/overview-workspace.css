@@ -1,0 +1,171 @@
+/* Project Overview adopts the approved Design Lab optical language while
+   staying inside the normal application shell. Scoped to this page only. */
+
+.pdl-root.po-ux-overview {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--pdl-ink);
+  font-family: var(--pdl-font);
+}
+
+.po-ux-overview-head {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+  overflow: hidden;
+  padding: 25px 28px 23px;
+  border: 1px solid var(--pdl-line-strong);
+  border-radius: 24px;
+  background:
+    radial-gradient(420px 220px at 92% 2%, color-mix(in srgb, var(--pdl-violet) 13%, transparent), transparent 70%),
+    radial-gradient(380px 240px at 0% 100%, color-mix(in srgb, var(--pdl-cyan) 10%, transparent), transparent 72%),
+    linear-gradient(136deg, color-mix(in srgb, var(--pdl-surface-2) 94%, transparent), color-mix(in srgb, var(--pdl-surface) 86%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 26px 60px -46px rgba(25, 48, 92, .55);
+  backdrop-filter: blur(26px) saturate(1.15);
+  -webkit-backdrop-filter: blur(26px) saturate(1.15);
+}
+
+.po-ux-overview-head::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, .22) 68%, transparent 84%);
+  content: '';
+}
+
+.po-ux-overview-title-block { position: relative; z-index: 1; min-width: 0; }
+.po-ux-overview-title { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.po-ux-overview-title h1 { margin: 0; color: var(--pdl-ink); font-size: 30px; font-weight: 700; letter-spacing: -.035em; line-height: 1.18; }
+.po-ux-overview-title-block > p { max-width: 760px; margin: 8px 0 0; color: var(--pdl-ink-2); font-size: 13.5px; line-height: 1.62; }
+.po-ux-overview-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 7px 16px; margin-top: 14px; color: var(--pdl-muted); font-size: 11.5px; }
+.po-ux-overview-meta span { display: inline-flex; align-items: center; gap: 5px; min-width: 0; }
+.po-ux-overview-meta .po-git-branch { color: var(--pdl-accent); font-weight: 600; }
+.po-ux-overview-title .po-demo-tag { border-color: color-mix(in srgb, var(--pdl-cyan) 35%, var(--pdl-line)); color: var(--pdl-accent); background: color-mix(in srgb, var(--pdl-cyan) 9%, transparent); }
+.po-ux-overview-actions { position: relative; z-index: 1; display: flex; flex: 0 0 auto; align-items: center; gap: 8px; padding-top: 7px; }
+
+.po-ux-overview .ant-btn {
+  height: 32px;
+  padding: 0 12px;
+  border-color: var(--pdl-line-strong);
+  border-radius: 10px;
+  color: var(--pdl-ink-2);
+  background: color-mix(in srgb, var(--pdl-surface-2) 62%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55);
+}
+.po-ux-overview .ant-btn:hover { border-color: color-mix(in srgb, var(--pdl-accent) 45%, var(--pdl-line)) !important; color: var(--pdl-accent) !important; background: var(--pdl-surface-2) !important; }
+.po-ux-overview .ant-btn-primary {
+  border-color: transparent;
+  color: #fff;
+  background: linear-gradient(135deg, #6d78e8, #7399ee 58%, #76c5e5);
+  box-shadow: 0 10px 24px -14px rgba(79, 96, 205, .85), inset 0 1px 0 rgba(255, 255, 255, .35);
+}
+.po-ux-overview .ant-btn-primary:hover { color: #fff !important; filter: brightness(1.04); }
+.po-ux-overview .ant-btn-text, .po-ux-overview .ant-btn-link { box-shadow: none; background: transparent; }
+
+.po-ux-lifecycle {
+  margin-top: 16px;
+  overflow: hidden;
+  border: 1px solid var(--pdl-line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--pdl-solid) 88%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 20px 48px -44px rgba(25, 48, 92, .5);
+}
+.po-ux-lifecycle .pdl-panel-head { padding: 13px 16px 11px; border-bottom: 1px solid var(--pdl-line); }
+.po-ux-lifecycle .pdl-panel-note { max-width: 48%; white-space: normal; text-align: right; line-height: 1.45; }
+
+.po-ux-lifecycle .po-stage-rail {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  padding: 24px 16px 16px;
+}
+.po-ux-lifecycle .po-stage-rail::before {
+  position: absolute;
+  top: 39px;
+  right: 7%;
+  left: 7%;
+  height: 1px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--pdl-accent) 38%, transparent), var(--pdl-line), color-mix(in srgb, var(--pdl-cyan) 25%, transparent));
+  content: '';
+}
+.po-ux-lifecycle .po-stage { position: relative; z-index: 1; display: flex; align-items: center; flex-direction: column; gap: 3px; min-width: 0; text-align: center; }
+.po-ux-lifecycle .po-stage-dot {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  margin-bottom: 7px;
+  border: 1px solid var(--pdl-line-strong);
+  border-radius: 50%;
+  color: var(--pdl-muted);
+  background: color-mix(in srgb, var(--pdl-surface-2) 85%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .78), 0 8px 18px -16px rgba(25, 48, 92, .55);
+  font-size: 10.5px;
+  font-weight: 650;
+}
+.po-ux-lifecycle .po-stage.done .po-stage-dot { border-color: color-mix(in srgb, var(--pdl-cyan) 38%, var(--pdl-line)); color: #fff; background: linear-gradient(145deg, #78bcd8, #7d91ec); }
+.po-ux-lifecycle .po-stage.active .po-stage-dot { border-color: color-mix(in srgb, var(--pdl-accent) 65%, var(--pdl-line)); color: var(--pdl-accent); background: radial-gradient(120% 120% at 20% 0%, color-mix(in srgb, var(--pdl-accent) 22%, transparent), transparent 62%), var(--pdl-surface-2); box-shadow: 0 0 0 4px color-mix(in srgb, var(--pdl-accent) 8%, transparent), inset 0 1px 0 rgba(255, 255, 255, .8); }
+.po-ux-lifecycle .po-stage-label { overflow: hidden; max-width: 92px; color: var(--pdl-ink-2); font-size: 11.5px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.po-ux-lifecycle .po-stage.active .po-stage-label { color: var(--pdl-accent); }
+.po-ux-lifecycle .po-stage-state { color: var(--pdl-muted); font-size: 9.5px; }
+.po-ux-lifecycle .po-lifecycle-footer { display: flex; align-items: center; gap: 12px; margin-top: 0; padding: 12px 16px; border-top: 1px solid var(--pdl-line); background: color-mix(in srgb, var(--pdl-surface-2) 38%, transparent); }
+.po-ux-lifecycle .po-lifecycle-footer > div { display: flex; align-items: baseline; gap: 5px; }
+.po-ux-lifecycle .po-lifecycle-footer strong { color: var(--pdl-ink); font-size: 12.5px; }
+.po-ux-lifecycle .po-caption { font-size: 10px; }
+
+.po-ux-metric-strip { margin-top: 16px; gap: 12px !important; }
+.po-ux-metric-strip .po-metric {
+  min-height: 118px;
+  padding: 15px 16px;
+  border: 1px solid var(--pdl-line);
+  border-radius: 16px;
+  background:
+    radial-gradient(180px 100px at 10% 0%, color-mix(in srgb, var(--pdl-accent) 7%, transparent), transparent 75%),
+    color-mix(in srgb, var(--pdl-solid) 90%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .68), 0 16px 34px -34px rgba(25, 48, 92, .5);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+.po-ux-metric-strip .po-metric.is-clickable:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--pdl-accent) 28%, var(--pdl-line)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), 0 22px 42px -32px rgba(39, 68, 128, .55); }
+.po-ux-metric-strip .po-metric-top { margin-bottom: 8px; }
+.po-ux-metric-strip .po-metric-label { color: var(--pdl-muted); font-size: 11px; font-weight: 560; letter-spacing: .01em; }
+.po-ux-metric-strip .po-metric-icon { display: grid; width: 25px; height: 25px; place-items: center; border-radius: 8px; color: var(--pdl-accent); background: color-mix(in srgb, var(--pdl-accent) 9%, transparent); font-size: 12px; }
+.po-ux-metric-strip .po-metric-value { color: var(--pdl-ink); font-size: 27px; font-weight: 680; letter-spacing: -.045em; line-height: 1.1; }
+.po-ux-metric-strip .po-metric-suffix { margin-left: 3px; color: var(--pdl-muted); font-size: 11.5px; font-weight: 500; }
+.po-ux-metric-strip .po-metric-hint { margin-top: 5px; color: var(--pdl-muted); font-size: 10.5px; line-height: 1.45; }
+.po-ux-metric-strip .po-metric-bar { height: 3px; margin-top: 9px; border-radius: 99px; background: color-mix(in srgb, var(--pdl-line) 65%, transparent); }
+.po-ux-metric-strip .po-metric-bar > span { background: linear-gradient(90deg, var(--pdl-accent), var(--pdl-cyan)); }
+
+.po-ux-overview .po-workbench-grid { margin-top: 16px; gap: 14px; }
+.po-ux-overview .po-card {
+  border: 1px solid var(--pdl-line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--pdl-solid) 89%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 20px 44px -40px rgba(25, 48, 92, .5);
+}
+.po-ux-overview .po-card-header { padding: 14px 16px 11px; border-bottom: 1px solid var(--pdl-line); }
+.po-ux-overview .po-card-title { color: var(--pdl-ink); font-size: 14px; font-weight: 650; letter-spacing: -.012em; }
+.po-ux-overview .po-card-subtitle { margin-top: 3px; color: var(--pdl-muted); font-size: 10.5px; }
+.po-ux-overview .po-card-body { padding: 6px 16px 14px; }
+.po-ux-overview .po-milestone { border-bottom-color: var(--pdl-line); }
+.po-ux-overview .po-milestone-flag { color: var(--pdl-accent); background: color-mix(in srgb, var(--pdl-accent) 8%, transparent); }
+.po-ux-overview .po-milestone-head strong, .po-ux-overview .po-requirement-head strong { color: var(--pdl-ink); font-size: 12.5px; }
+.po-ux-overview .po-milestone-description, .po-ux-overview .po-requirement-body { color: var(--pdl-ink-2); font-size: 11.5px; line-height: 1.55; }
+.po-ux-overview .po-milestone-meta, .po-ux-overview .po-caption, .po-ux-overview .po-muted { color: var(--pdl-muted); font-size: 10.5px; }
+.po-ux-overview .po-requirement { border-bottom-color: var(--pdl-line); }
+.po-ux-overview .po-requirement-criteria span { border-color: var(--pdl-line); color: var(--pdl-ink-2); background: color-mix(in srgb, var(--pdl-accent) 5%, transparent); font-size: 10px; }
+.po-ux-overview .po-agent-card, .po-ux-overview .po-activity-row { border-bottom-color: var(--pdl-line); }
+
+@media (max-width: 1180px) {
+  .po-ux-overview-head { flex-direction: column; gap: 14px; }
+  .po-ux-overview-actions { padding-top: 0; }
+  .po-ux-lifecycle .po-stage-rail { overflow-x: auto; grid-template-columns: repeat(8, 96px); }
+  .po-ux-overview .po-workbench-grid { grid-template-columns: minmax(0, 1fr); }
+}
