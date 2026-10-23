@@ -106,6 +106,19 @@ try {
   check('knowledge keeps real scan action', await page.getByRole('button', { name: '重新扫描项目' }).count() === 1)
   check('knowledge shows real empty or indexed state', await page.locator('.po-knowledge-card, .po-empty-title').count() >= 1)
 
+  await page.evaluate((id) => { location.hash = `#/projects/${id}/project-settings?section=general` }, projectId)
+  await page.waitForSelector('.po-ux-project-settings', { timeout: 20000 })
+  check('project settings renders config header', await page.locator('.po-ux-project-settings-head h1').innerText() === '项目设置')
+  check('project settings keeps real form', await page.getByLabel('项目名称').count() === 1)
+  check('project settings keeps save action', await page.getByRole('button', { name: '保存修改' }).count() === 1)
+
+  await page.getByText('设置', { exact: true }).first().click()
+  await page.waitForSelector('[data-testid="settings-dialog"]', { timeout: 10000 })
+  check('global settings modal opens', await page.locator('[data-testid="settings-dialog"]').count() === 1)
+  check('global settings keeps real sections', await page.locator('.po-settings-nav-item').count() >= 10)
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(250)
+
   await page.evaluate((id) => { location.hash = `#/projects/${id}/tasks` }, projectId)
   await page.waitForSelector('.po-ux-board', { timeout: 20000 })
   check('board renders approved execution header', await page.locator('.po-ux-board-head h1').innerText() === '任务看板')

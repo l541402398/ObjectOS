@@ -3,7 +3,10 @@ import { useParams } from 'react-router-dom'
 import { App as AntApp, Button, Form, Input, Select } from 'antd'
 import { FolderOpenOutlined } from '@ant-design/icons'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ErrorState, LoadingBlock, PageHeader } from '@projectos/ui'
+import { ErrorState, LoadingBlock } from '@projectos/ui'
+import { useResolvedTheme } from '../stores/ui'
+import '../features/design-lab/design-lab.css'
+import '../styles/project-settings-workspace.css'
 import { useProjectOverview } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
 import { stageLabel } from '../lib/labels'
@@ -11,6 +14,7 @@ import { stageLabel } from '../lib/labels'
 interface FormValues { name: string; description: string; status: 'active' | 'archived' | 'completed' | 'paused' }
 
 export default function ProjectSettingsPage() {
+  const resolvedTheme = useResolvedTheme()
   const { projectId } = useParams<{ projectId: string }>()
   const { message } = AntApp.useApp()
   const overview = useProjectOverview(projectId)
@@ -49,8 +53,14 @@ export default function ProjectSettingsPage() {
   const project = overview.data.project
 
   return (
-    <div className="po-page v16-project-settings">
-      <PageHeader title="项目设置" description={project.name} />
+    <div className="po-page v16-project-settings pdl-root po-ux-project-settings" data-theme={resolvedTheme}>
+      <header className="po-ux-project-settings-head">
+        <div>
+          <span className="pdl-eyebrow">PROJECT SETTINGS <b>· {stageLabel(project.currentStage)}</b></span>
+          <h1 className="po-page-title">项目设置</h1>
+          <p>{project.name}</p>
+        </div>
+      </header>
       <div className="v16-settings-grid">
         <section className="v16-glass-card">
           <div className="v16-card-title"><strong>基础信息</strong><span>{stageLabel(project.currentStage)}</span></div>
@@ -79,4 +89,5 @@ export default function ProjectSettingsPage() {
     </div>
   )
 }
+
 

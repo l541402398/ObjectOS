@@ -1,0 +1,51 @@
+/* Project settings — Design Lab configuration surface. */
+
+.pdl-root.po-ux-project-settings {
+  display: block;
+  width: 100%;
+  min-height: 100%;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--pdl-ink);
+  font-family: var(--pdl-font);
+}
+.po-ux-project-settings-head {
+  padding: 18px 22px 17px;
+  border: 1px solid var(--pdl-line-strong);
+  border-radius: 21px;
+  background:
+    radial-gradient(380px 180px at 90% -10%, color-mix(in srgb, var(--pdl-violet) 10%, transparent), transparent 72%),
+    linear-gradient(136deg, color-mix(in srgb, var(--pdl-surface-2) 94%, transparent), color-mix(in srgb, var(--pdl-surface) 86%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 24px 52px -46px rgba(25, 48, 92, .55);
+  backdrop-filter: blur(24px) saturate(1.12);
+  -webkit-backdrop-filter: blur(24px) saturate(1.12);
+}
+.po-ux-project-settings-head h1 { margin: 5px 0 0; color: var(--pdl-ink); font-size: 26px; font-weight: 700; letter-spacing: -.04em; line-height: 1.2; }
+.po-ux-project-settings-head p { margin: 5px 0 0; color: var(--pdl-ink-2); font-size: 12.5px; }
+
+.po-ux-project-settings .v16-settings-grid { margin-top: 13px; gap: 12px; }
+.po-ux-project-settings .v16-glass-card {
+  border: 1px solid var(--pdl-line);
+  border-radius: 17px;
+  background: color-mix(in srgb, var(--pdl-solid) 89%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 20px 42px -40px rgba(25, 48, 92, .5);
+}
+.po-ux-project-settings .v16-card-title { padding-bottom: 10px; border-bottom: 1px solid var(--pdl-line); }
+.po-ux-project-settings .v16-card-title strong { color: var(--pdl-ink); font-size: 12.5px; font-weight: 650; }
+.po-ux-project-settings .v16-card-title span { color: var(--pdl-muted); font-size: 10px; }
+.po-ux-project-settings .ant-form-item-label > label { color: var(--pdl-ink-2); font-size: 10.5px; }
+.po-ux-project-settings .ant-input, .po-ux-project-settings .ant-input-affix-wrapper, .po-ux-project-settings .ant-select-selector {
+  border: 1px solid var(--pdl-line) !important;
+  border-radius: 9px !important;
+  color: var(--pdl-ink) !important;
+  background: color-mix(in srgb, var(--pdl-surface-2) 60%, transparent) !important;
+  box-shadow: none !important;
+  font-size: 11pt;
+}
+.po-ux-project-settings .ant-btn { height: 31px; padding: 0 11px; border-radius: 9px; }
+.po-ux-project-settings .ant-btn-primary { border-color: transparent; color: #fff; background: linear-gradient(135deg, #6d78e8, #7399ee 58%, #76c5e5); box-shadow: 0 10px 24px -14px rgba(79, 96, 205, .85); }
+.po-ux-project-settings .v16-kv-row { border-bottom-color: var(--pdl-line); color: var(--pdl-muted); font-size: 10.5px; }
+.po-ux-project-settings .v16-kv-row strong { color: var(--pdl-ink-2); }
+
