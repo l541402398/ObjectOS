@@ -61,6 +61,7 @@ approved plan intentionally has no approve action; create a new plan or use
 - Real `批准计划` in the drawer closes the workspace (manual packaged check).
 - 620px-tall window: drawer scrollTop moved 0 → 231 with a wheel event.
 - Visual: [plan-inspector-fixed.png](visual-regression/plan-inspector-fixed.png)
+- Approved status: [plan-approved-status.png](visual-regression/plan-approved-status.png)
 
 ## Files
 
@@ -69,3 +70,4 @@ approved plan intentionally has no approve action; create a new plan or use
 - `apps/desktop/src/renderer/src/features/orchestration/components/PlanReviewWorkspace.tsx`
 - `apps/desktop/src/renderer/src/styles/next-ui-app.css`
 - `scripts/plan-review-workspace-e2e.mjs`
+
