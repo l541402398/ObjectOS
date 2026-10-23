@@ -79,6 +79,17 @@ E2E additions:
 - Previous Overview / Center / Approvals / Board checks remain green.
 - No page errors.
 
+## Package
+
+```text
+release/win-phase5-pages/ProjectOS-1.7.0-win-x64-portable.exe
+commit:   9134914
+size:     98,510,852 bytes
+SHA256:   151E43DB535A6B6A6B3FC07D3C484810C76C47C3A9AA7A9DB6DD980AC8ABC9C9
+```
+
+Unsigned portable build; `pnpm test:package` passed.
+
 ## Known limitations
 
 1. Agent message bubbles retain the business message component styling; only
@@ -93,3 +104,4 @@ E2E additions:
 
 This slice stops for user visual confirmation of Agent Workbench and
 Collaboration before the next route group.
+
