@@ -77,6 +77,17 @@ New E2E checks:
 - Previous six pages remain green.
 - No page errors.
 
+## Package
+
+```text
+release/win-phase5-pages/ProjectOS-1.7.0-win-x64-portable.exe
+commit:   6f8c4d1
+size:     98,513,002 bytes
+SHA256:   C36631259F741AD717BA2A286D8B46012E6064DF3422161834D63377B519EA01
+```
+
+Unsigned portable build; `pnpm test:package` passed.
+
 ## Known limitations
 
 1. Operations starts with no checks; the empty state is the real product state.
@@ -89,3 +100,4 @@ New E2E checks:
 
 This slice stops for user visual confirmation of Resources and Operations
 before the next route group.
+
