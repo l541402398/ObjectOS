@@ -75,6 +75,17 @@ New checks:
 - All prior eight pages remain green.
 - No page errors.
 
+## Package
+
+```text
+release/win-phase5-pages/ProjectOS-1.7.0-win-x64-portable.exe
+commit:   cbf146b
+size:     98,512,203 bytes
+SHA256:   DB221E4DDBF3F91C81C30C1BA0E2CD756D74527DE5F2EAB4928DFB0737C560DB
+```
+
+Unsigned portable build; `pnpm test:package` passed.
+
 ## Known limitations
 
 1. Run detail sheet retains the business ToolTrace/approval components; only
@@ -88,3 +99,4 @@ New checks:
 
 This slice stops for user visual confirmation of Run Audit and Project Health
 before the final route group.
+
