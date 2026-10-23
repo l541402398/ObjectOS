@@ -23,7 +23,6 @@ import {
   ErrorState,
   KeyValueList,
   LoadingBlock,
-  PageHeader,
   SectionCard,
   StatusPill,
   toneForStatus,
@@ -34,10 +33,14 @@ import { formatDateTime, formatDuration, formatRelative } from '../lib/format'
 import { runStatusLabel } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
 import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea, SheetShell } from '../next-ui/overlay/overlay-shell'
+import { useResolvedTheme } from '../stores/ui'
+import '../features/design-lab/design-lab.css'
+import '../styles/runs-workspace.css'
 
 const ACTIVE = new Set(['created', 'queued', 'running', 'waiting_tool', 'waiting_approval', 'verifying', 'suspended'])
 
 export default function RunsPage() {
+  const resolvedTheme = useResolvedTheme()
   const { projectId = '' } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -179,22 +182,19 @@ export default function RunsPage() {
   const detailApprovals = (runDetail.data?.approvals ?? []).filter((approval) => approval.status === 'pending')
 
   return (
-    <div className="po-page po-runs-page">
-      <PageHeader
-        title="运行审计"
-        actions={
-          <Button icon={<ReloadOutlined />} onClick={() => void refresh()} loading={runs.isRefetching}>
-            刷新
-          </Button>
-        }
-        meta={
-          <>
-            <span>{runList.length} 个运行</span>
+    <div className="po-page po-runs-page pdl-root po-ux-runs" data-theme={resolvedTheme}>
+      <header className="po-ux-runs-head">
+        <div>
+          <span className="pdl-eyebrow">RUN AUDIT <b>· {runList.length} 个运行</b></span>
+          <h1 className="po-page-title">运行审计</h1>
+          <div className="po-ux-runs-meta">
             <span>{runList.filter((run) => ACTIVE.has(run.status)).length} 个进行中</span>
             <span>{pendingApprovals.length} 个待授权</span>
-          </>
-        }
-      />
+            <span>真实运行、工具与授权记录</span>
+          </div>
+        </div>
+        <Button icon={<ReloadOutlined />} onClick={() => void refresh()} loading={runs.isRefetching}>刷新</Button>
+      </header>
 
       {pendingApprovals.length > 0 ? (
         <SectionCard
@@ -446,3 +446,4 @@ export default function RunsPage() {
     </div>
   )
 }
+

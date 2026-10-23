@@ -80,6 +80,19 @@ try {
   check('operations keeps three real panels', await page.locator('.po-operations-grid .po-operations-card').count() === 3)
   check('operations keeps real check action', await page.getByRole('button', { name: '运行健康检查' }).count() === 1)
 
+  await page.evaluate((id) => { location.hash = `#/projects/${id}/runs` }, projectId)
+  await page.waitForSelector('.po-ux-runs', { timeout: 20000 })
+  check('run audit renders trace header', await page.locator('.po-ux-runs-head h1').innerText() === '运行审计')
+  await page.waitForSelector('.ant-table-row', { timeout: 10000 })
+  check('run audit keeps real runs', await page.locator('.ant-table-row').count() >= 1)
+  check('run audit keeps real approval card', await page.getByText('需要你的授权').count() === 1)
+
+  await page.evaluate((id) => { location.hash = `#/projects/${id}/health` }, projectId)
+  await page.waitForSelector('.po-ux-health', { timeout: 20000 })
+  check('project health renders signal board', await page.locator('.po-ux-health-head h1').innerText() === '项目健康')
+  check('project health keeps four real stats', await page.locator('.po-ux-health .v16-stat-card').count() === 4)
+  check('project health keeps agent rows', await page.locator('.po-ux-health .v16-glass-card').count() >= 2)
+
   await page.evaluate((id) => { location.hash = `#/projects/${id}/tasks` }, projectId)
   await page.waitForSelector('.po-ux-board', { timeout: 20000 })
   check('board renders approved execution header', await page.locator('.po-ux-board-head h1').innerText() === '任务看板')
@@ -102,6 +115,8 @@ try {
 } finally {
   await app.close()
 }
+
+
 
 
 

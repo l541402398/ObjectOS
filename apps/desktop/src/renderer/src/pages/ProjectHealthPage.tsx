@@ -1,10 +1,14 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from 'antd'
 import { ApartmentOutlined, ThunderboltOutlined } from '@ant-design/icons'
-import { EmptyState, LoadingBlock, PageHeader } from '@projectos/ui'
+import { EmptyState, LoadingBlock } from '@projectos/ui'
+import { useResolvedTheme } from '../stores/ui'
+import '../features/design-lab/design-lab.css'
+import '../styles/health-workspace.css'
 import { useProjectMetrics } from '../lib/queries'
 
 export default function ProjectHealthPage() {
+  const resolvedTheme = useResolvedTheme()
   const { projectId } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const metrics = useProjectMetrics(projectId)
@@ -14,12 +18,15 @@ export default function ProjectHealthPage() {
   const data = metrics.data
 
   return (
-    <div className="po-page v16-health-page">
-      <PageHeader
-        title="项目健康"
-        description="真实任务、运行与 Agent 指标"
-        actions={<Button type="primary" icon={<ApartmentOutlined />} onClick={() => navigate(`/projects/${projectId}/orchestration`)}>打开编排</Button>}
-      />
+    <div className="po-page v16-health-page pdl-root po-ux-health" data-theme={resolvedTheme}>
+      <header className="po-ux-health-head">
+        <div>
+          <span className="pdl-eyebrow">PROJECT HEALTH <b>· 真实指标</b></span>
+          <h1 className="po-page-title">项目健康</h1>
+          <p>真实任务、运行与 Agent 指标</p>
+        </div>
+        <Button type="primary" icon={<ApartmentOutlined />} onClick={() => navigate(`/projects/${projectId}/orchestration`)}>打开编排</Button>
+      </header>
       <div className="v16-stat-grid">
         <div className="v16-stat-card is-teal"><div className="v16-stat-value">{Math.round(data.completionRate * 100)}%</div><div className="v16-stat-label">完成率</div><span className="v16-stat-hint">{data.tasksDone}/{data.tasksTotal} 任务</span></div>
         <div className="v16-stat-card is-blue"><div className="v16-stat-value">{data.activeRuns}</div><div className="v16-stat-label">活跃运行</div><span className="v16-stat-hint">{data.throughput7d} 个 7 日完成</span></div>
@@ -55,3 +62,4 @@ export default function ProjectHealthPage() {
     </div>
   )
 }
+
