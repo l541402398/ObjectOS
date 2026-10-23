@@ -44,7 +44,7 @@
 | R-19 | P3 | 文案 | 少量技术性英文仍保留（如 `AGENT TOPOLOGY`、`active`、`P1`） | 多数是技术标签，但与中文界面的统一性可再检查 | 区分“技术标识”与“用户标签”，只本地化后者 |
 | R-20 | P3 | 原型路由 | `#/design-lab`、Agent Lab、Approval Lab 仍是 prototype/local-only | 不应被误认为生产流程 | 在导航/说明中保持明确标记，或发布构建隐藏 |
 | R-21 | P3 | 仓库体积 | 60 张矩阵图 + 15 页清单 + GIF + MP4 增加仓库体积 | 克隆/PR 体积变大 | 后续可将矩阵图转为 CI artifact；当前保留以便验收 |
-| R-22 | P3 | 发布资料 | 没有正式 release notes / 安装说明 / 校验和文档页面 | 拿到 EXE 的人缺少安装与校验上下文 | 随包附 `BUILD_INFO.txt`，补 release notes |
+| R-22 | P3 | 发布资料 | 没有正式 release notes / 安装说明 / 校验和文档页面 | 拿到 EXE 的人缺少安装与校验上下文 | 随包附 `BUILD_INFO.txt`，补 release notes |`n| R-23 | P2 | 版本混淆 | 应用使用单实例锁；旧 ProjectOS 仍在运行时，启动新 portable 会聚焦旧窗口，看起来像“改版丢失” | 旧窗口内容不是当前 `app.asar`，会误导验收 | 比较版本前先完全退出所有 ProjectOS（含托盘），再启动新包；用 `app.asar` SHA256 校验 |
 
 ## 2. P1 详细说明
 
@@ -271,3 +271,27 @@ and recovers after restart.
 - `docs/next-ui/screens/projectos-next-ui-walkthrough.mp4`
 - `release/win-x64/BUILD_INFO.txt`
 
+
+
+## 9. 本次截图核验（2026-10-22）
+
+用户提供的旧计划草案截图包含 `计划草案` / `计划审核台` 文案，这两个字符串
+不在当前 renderer 源码，也不在当前 `app.asar` 中。当前正式计划审核使用：
+
+- `PLAN REVIEW · R1`
+- 四个图标-only 阶段节点
+- 独立选中阶段摘要
+- 无横向阶段卡片
+
+打包后 `release/win-x64/win-unpacked/ProjectOS.exe` 已实际生成计划并截图为
+`docs/next-ui/screens/packaged-plan-review.png`。
+
+运行中的 portable 解压目录 `%TEMP%\ProjectOS-1.7.0\resources\app.asar` 与
+`release/win-x64/win-unpacked/resources/app.asar` 的 SHA256 均为：
+
+```text
+9313A3797C90EA4F7E69CD022F435E79E78FAC96EB83EE3EC2A63E073DC37A53
+```
+
+说明 portable 与已验收的 win-unpacked 是同一份代码。若仍看到旧界面，先完全退出
+所有 ProjectOS 进程（单实例锁会聚焦旧窗口），再启动新包。
