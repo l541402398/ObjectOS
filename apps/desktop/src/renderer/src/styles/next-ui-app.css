@@ -924,7 +924,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - var(--titlebar-height) - var(--statusbar-height) - 20px);
+  height: calc(100vh - var(--titlebar-height) - var(--statusbar-height) - 60px);
   min-height: 0;
   margin: 10px 12px 0;
   border: 1px solid var(--nx-line);
@@ -1045,3 +1045,30 @@
 .po-plan-dag-legend i.is-risk { background: var(--pui-danger); }
 .po-plan-dag-legend i.is-path { background: var(--pui-accent); }
 
+
+/* The approved Design Lab is a 100vw prototype page. Inside the formal app shell
+   it must occupy the routed content area, not the whole window. */
+.pdl-root.po-plan-workspace {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 0;
+  z-index: 1200;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+}
+.po-plan-workspace .pdl-topbar { background: color-mix(in srgb, var(--pdl-surface-strong) 82%, transparent); border-bottom: 1px solid var(--pdl-line); backdrop-filter: blur(20px) saturate(1.2); }`n.po-plan-workspace .pdl-shell { height: calc(100% - 58px); }
+.po-plan-workspace .pdl-workspace { min-width: 0; }
+
+
+
+
+
+.pdl-panel-actions { display: flex; align-items: center; gap: 8px; }
+.pdl-panel-actions .pdl-quiet { height: 26px; padding: 0 9px; font-size: 10.5px; }
+
+body.po-plan-workspace-open .po-titlebar { display: none; }
+body.po-plan-workspace-open .po-shell-body { padding: 0; }
+body.po-plan-workspace-open .po-sidebar { display: none; }

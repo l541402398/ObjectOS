@@ -5,7 +5,6 @@ import { OpticalGlass } from './OpticalGlass'
 import {
   Activity,
   ArrowRight,
-  Bot,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -29,8 +28,6 @@ import { demoGoal, labStages, labTasks, type LabTask } from './data'
 import { LabStageJourney } from './StageJourney'
 import { LabTaskGraph } from './TaskGraph'
 import { TaskInspector } from './TaskInspector'
-import { AgentInspector, defaultAgent, type LabAgent } from './AgentInspector'
-import { ApprovalDialog } from './ApprovalDialog'
 
 type View = 'route' | 'dag'
 
@@ -52,10 +49,6 @@ export default function DesignLabPage(): ReactElement {
   const [inspectorOpen, setInspectorOpen] = useState(false)
   const [riskOpen, setRiskOpen] = useState(true)
   const [approved, setApproved] = useState(false)
-  const [approvalOpen, setApprovalOpen] = useState(false)
-  const [agentOpen, setAgentOpen] = useState(false)
-  const [agent, setAgent] = useState<LabAgent>(defaultAgent)
-  const [agentSource, setAgentSource] = useState<'demo' | 'runtime'>('demo')
   const [toast, setToast] = useState('')
   const [collapsedStages, setCollapsedStages] = useState<Set<string>>(() => new Set())
 
@@ -102,7 +95,7 @@ export default function DesignLabPage(): ReactElement {
   }
 
   return (
-    <div className={`pdl-root${inspectorOpen || agentOpen || approvalOpen ? ' is-overlay-open' : ''}`} data-theme={theme} data-aurora={auroraMode} data-testid="design-lab">
+    <div className="pdl-root" data-theme={theme} data-aurora={auroraMode} data-testid="design-lab">
       <div className="pdl-aurora" aria-hidden="true">
         {auroraMode === 'fallback' ? (
           <div className="pdl-aurora-fallback"><i /><i /><i /></div>
@@ -142,15 +135,6 @@ export default function DesignLabPage(): ReactElement {
         <aside className="pdl-rail" aria-label="工作区导航">
           <button type="button" className="pdl-rail-button" aria-label="项目概览"><House size={18} /></button>
           <button type="button" className="pdl-rail-button is-active" aria-label="计划审核"><Layers3 size={18} /></button>
-          <button type="button" className="pdl-rail-button" aria-label="Agent 配置" onClick={() => {
-              setAgentOpen(true)
-              void window.projectos.agentDefinitions.list().then(({ agents }) => {
-                const first = agents[0]
-                if (!first) return
-                setAgent({ id: first.id, name: first.name, role: first.role, description: first.description, model: first.modelRef ?? '默认模型', runtime: first.primaryRuntimeProfileId ?? 'Native Runtime', status: first.status, capabilities: ['Agent 定义'], permissions: first.permissions, skills: first.skills.map((skill) => skill.skillId) })
-                setAgentSource('runtime')
-              }).catch(() => undefined)
-            }}><Bot size={18} /></button>
           <button type="button" className="pdl-rail-button" aria-label="编排"><Workflow size={18} /></button>
           <button type="button" className="pdl-rail-button" aria-label="任务"><GitBranch size={18} /></button>
           <button type="button" className="pdl-rail-button" aria-label="审计"><Activity size={18} /></button>
@@ -182,8 +166,8 @@ export default function DesignLabPage(): ReactElement {
           <div className="pdl-viewbar-row">
             <OpticalGlass className="pdl-viewbar-glass" radius={18}>
               <div className="pdl-viewbar" role="tablist" aria-label="计划视图">
-                <button type="button" role="tab" aria-selected={view === 'route'} className={view === 'route' ? 'is-active' : ''} onClick={() => { setView('route'); setSelectedId(null) }}><Layers3 size={14} />阶段路线</button>
-                <button type="button" role="tab" aria-selected={view === 'dag'} className={view === 'dag' ? 'is-active' : ''} onClick={() => { setView('dag'); setSelectedId(null) }}><GitBranch size={14} />任务依赖</button>
+                <button type="button" role="tab" aria-selected={view === 'route'} className={view === 'route' ? 'is-active' : ''} onClick={() => setView('route')}><Layers3 size={14} />阶段路线</button>
+                <button type="button" role="tab" aria-selected={view === 'dag'} className={view === 'dag' ? 'is-active' : ''} onClick={() => setView('dag')}><GitBranch size={14} />任务依赖</button>
               </div>
             </OpticalGlass>
             <div className="pdl-view-context"><span>{view === 'route' ? `${stageLabel} · ${activeTasks.length} 项工作` : '真实依赖结构 · ELK 自动布局'}</span><button type="button" onClick={() => setToast('原型交互：视图已重置')}>重置视图</button></div>
@@ -261,16 +245,14 @@ export default function DesignLabPage(): ReactElement {
             <div className="pdl-footer-meta"><i />原型交互 · 不写入数据库 · 不启动 Agent</div>
             <div className="pdl-footer-actions">
               <button type="button" className="pdl-quiet" disabled={approved} onClick={() => { setApproved(true); setToast('原型交互：已模拟拒绝，未修改任何任务') }}>拒绝计划</button>
-              <button type="button" className="pdl-primary" disabled={approved} onClick={() => setApprovalOpen(true)}><Check size={14} />{approved ? '已批准' : '批准计划'}</button>
+              <button type="button" className="pdl-primary" disabled={approved} onClick={() => { setApproved(true); setToast('原型交互：已模拟批准，未写入真实任务') }}><Check size={14} />{approved ? '已批准' : '批准计划'}</button>
             </div>
           </footer>
         </main>
       </div>
 
-      {agentOpen ? <AgentInspector agent={agent} theme={theme} source={agentSource} onSave={(next) => { setAgent(next); setToast('原型交互：Agent 配置仅保留在本地') }} onClose={() => setAgentOpen(false)} /> : null}
-      <ApprovalDialog open={approvalOpen} theme={theme} tasks={tasks} onOpenChange={setApprovalOpen} onConfirm={() => { setApproved(true); setApprovalOpen(false); setToast('原型交互：已模拟批准，未写入真实任务') }} />
       <AnimatePresence>
-        {selected && inspectorOpen ? <TaskInspector task={selected} tasks={tasks} theme={theme} onPatch={patchTask} onDelete={(id) => { setTasks((current) => current.filter((task) => task.id !== id)); setSelectedId(null); setInspectorOpen(false) }} onClose={() => setInspectorOpen(false)} /> : null}
+        {selected && inspectorOpen ? <TaskInspector task={selected} tasks={tasks} onPatch={patchTask} onClose={() => setInspectorOpen(false)} /> : null}
       </AnimatePresence>
       {glassLab ? (
         <div className="pdl-glass-probe">
@@ -286,3 +268,7 @@ export default function DesignLabPage(): ReactElement {
     </div>
   )
 }
+
+
+
+
