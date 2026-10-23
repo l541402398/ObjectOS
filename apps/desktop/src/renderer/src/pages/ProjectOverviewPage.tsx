@@ -265,7 +265,7 @@ export default function ProjectOverviewPage() {
         <div className="po-ux-overview-title-block">
           <span className="pdl-eyebrow"><RocketOutlined /> PROJECT WORKSPACE <b>· {stageLabel(project.currentStage)}</b></span>
           <div className="po-ux-overview-title">
-            <h1>{project.name}</h1>
+            <h1 className="po-page-title">{project.name}</h1>
             {project.isDemo ? <span className="po-demo-tag">示例数据</span> : null}
           </div>
           <p>{project.description || '尚未填写项目描述。'}</p>
@@ -750,5 +750,6 @@ export default function ProjectOverviewPage() {
     </div>
   )
 }
+
 
 
