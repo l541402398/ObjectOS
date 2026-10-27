@@ -390,6 +390,9 @@ export interface TaskRow {
   project_id: string
   parent_id: string | null
   milestone_id: string | null
+  version_id?: string | null
+  iteration_id?: string | null
+  work_type?: string
   title: string
   description: string
   status: string
@@ -672,6 +675,9 @@ export function toTask(row: TaskRow): Task {
     projectId: row.project_id,
     parentId: row.parent_id,
     milestoneId: row.milestone_id,
+    versionId: row.version_id ?? null,
+    iterationId: row.iteration_id ?? null,
+    workType: row.work_type ?? 'development',
     title: row.title,
     description: row.description,
     status: row.status as TaskStatus,

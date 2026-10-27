@@ -48,6 +48,13 @@ import {
   type ProjectStats,
   type ProjectSummary,
   type Requirement,
+  type Product,
+  type ProductVersion,
+  type Iteration,
+  type Environment,
+  type ProjectFocus,
+  type LifecycleOverview,
+  type ProjectPosture,
   type Run,
   type RunDetail,
   type RunSnapshot,
@@ -1955,6 +1962,142 @@ export class ReadModels {
         agentId,
       )?.count ?? 0,
     )
+  }
+
+  listProducts(projectId: string): Product[] {
+    return this.all<Record<string, unknown>>(
+      'SELECT * FROM products WHERE project_id = ? ORDER BY created_at ASC',
+      projectId,
+    ).map((row) => ({
+      id: String(row.id),
+      projectId: String(row.project_id),
+      key: String(row.key),
+      name: String(row.name),
+      description: String(row.description ?? ''),
+      status: row.status === 'retired' ? 'retired' : 'active',
+      createdAt: Number(row.created_at),
+      updatedAt: Number(row.updated_at),
+    }))
+  }
+
+  listProductVersions(projectId: string): ProductVersion[] {
+    return this.all<Record<string, unknown>>(
+      'SELECT * FROM product_versions WHERE project_id = ? ORDER BY is_default DESC, created_at ASC',
+      projectId,
+    ).map((row) => ({
+      id: String(row.id),
+      projectId: String(row.project_id),
+      productId: String(row.product_id),
+      version: String(row.version),
+      phase: String(row.phase) as ProductVersion['phase'],
+      supportLevel: String(row.support_level ?? 'normal'),
+      isDefault: Number(row.is_default) === 1,
+      plannedAt: row.planned_at == null ? null : Number(row.planned_at),
+      releasedAt: row.released_at == null ? null : Number(row.released_at),
+      retiredAt: row.retired_at == null ? null : Number(row.retired_at),
+      createdAt: Number(row.created_at),
+      updatedAt: Number(row.updated_at),
+    }))
+  }
+
+  listIterations(projectId: string, versionId?: string | null): Iteration[] {
+    const rows = versionId
+      ? this.all<Record<string, unknown>>(
+          'SELECT * FROM iterations WHERE project_id = ? AND version_id = ? ORDER BY created_at ASC',
+          projectId,
+          versionId,
+        )
+      : this.all<Record<string, unknown>>(
+          'SELECT * FROM iterations WHERE project_id = ? ORDER BY created_at ASC',
+          projectId,
+        )
+    return rows.map((row) => ({
+      id: String(row.id),
+      projectId: String(row.project_id),
+      versionId: String(row.version_id),
+      name: String(row.name),
+      goal: String(row.goal ?? ''),
+      status: String(row.status) as Iteration['status'],
+      startsAt: row.starts_at == null ? null : Number(row.starts_at),
+      endsAt: row.ends_at == null ? null : Number(row.ends_at),
+      createdAt: Number(row.created_at),
+      updatedAt: Number(row.updated_at),
+    }))
+  }
+
+  listEnvironments(projectId: string): Environment[] {
+    return this.all<Record<string, unknown>>(
+      'SELECT * FROM environments WHERE project_id = ? ORDER BY sort_order ASC, created_at ASC',
+      projectId,
+    ).map((row) => ({
+      id: String(row.id),
+      projectId: String(row.project_id),
+      key: String(row.key),
+      name: String(row.name),
+      kind: String(row.kind) as Environment['kind'],
+      protected: Number(row.protected) === 1,
+      sortOrder: Number(row.sort_order ?? 0),
+      createdAt: Number(row.created_at),
+      updatedAt: Number(row.updated_at),
+    }))
+  }
+
+  getProjectFocus(projectId: string): ProjectFocus | null {
+    const row = this.get<Record<string, unknown>>('SELECT * FROM project_focus WHERE project_id = ?', projectId)
+    if (!row) return null
+    return {
+      projectId: String(row.project_id),
+      subjectType: String(row.subject_type) as ProjectFocus['subjectType'],
+      subjectId: row.subject_id == null ? null : String(row.subject_id),
+      updatedAt: Number(row.updated_at),
+    }
+  }
+
+  getProjectPosture(projectId: string): ProjectPosture | null {
+    const project = this.get<{ current_stage: string }>('SELECT current_stage FROM projects WHERE id = ?', projectId)
+    if (!project) return null
+    const focus = this.getProjectFocus(projectId)
+    const count = (sql: string, ...params: Array<string | number | null>): number =>
+      Number(this.get<{ count: number }>(sql, ...params)?.count ?? 0)
+    return {
+      projectId,
+      legacyStage: String(project.current_stage),
+      activeVersionId: focus?.subjectType === 'version' ? focus.subjectId : null,
+      activeIterationId: focus?.subjectType === 'iteration' ? focus.subjectId : null,
+      productCount: count('SELECT COUNT(*) AS count FROM products WHERE project_id = ?', projectId),
+      versionCount: count('SELECT COUNT(*) AS count FROM product_versions WHERE project_id = ?', projectId),
+      activeVersionCount: count(
+        "SELECT COUNT(*) AS count FROM product_versions WHERE project_id = ? AND phase NOT IN ('retired')",
+        projectId,
+      ),
+      iterationCount: count('SELECT COUNT(*) AS count FROM iterations WHERE project_id = ?', projectId),
+      environmentCount: count('SELECT COUNT(*) AS count FROM environments WHERE project_id = ?', projectId),
+      pendingApprovals: count(
+        "SELECT COUNT(*) AS count FROM approvals WHERE project_id = ? AND status = 'pending'",
+        projectId,
+      ),
+      runningRuns: count(
+        "SELECT COUNT(*) AS count FROM agent_runs WHERE project_id = ? AND status = 'running'",
+        projectId,
+      ),
+      reviewTasks: count(
+        "SELECT COUNT(*) AS count FROM tasks WHERE project_id = ? AND status = 'review'",
+        projectId,
+      ),
+    }
+  }
+
+  getLifecycleOverview(projectId: string): LifecycleOverview | null {
+    const posture = this.getProjectPosture(projectId)
+    if (!posture) return null
+    return {
+      products: this.listProducts(projectId),
+      versions: this.listProductVersions(projectId),
+      iterations: this.listIterations(projectId),
+      environments: this.listEnvironments(projectId),
+      focus: this.getProjectFocus(projectId),
+      posture,
+    }
   }
 }
 

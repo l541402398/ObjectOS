@@ -858,6 +858,199 @@ CREATE TABLE run_snapshots (
 CREATE INDEX idx_run_snapshots_agent ON run_snapshots(agent_id);
 `
 
+const V25 = `
+CREATE TABLE products (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  key TEXT NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE (project_id, key)
+);
+CREATE INDEX idx_products_project ON products(project_id, status);
+
+CREATE TABLE product_versions (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  product_id TEXT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  version TEXT NOT NULL,
+  phase TEXT NOT NULL DEFAULT 'planned',
+  support_level TEXT NOT NULL DEFAULT 'normal',
+  is_default INTEGER NOT NULL DEFAULT 0,
+  planned_at INTEGER,
+  released_at INTEGER,
+  retired_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE (project_id, product_id, version)
+);
+CREATE INDEX idx_product_versions_project ON product_versions(project_id, phase);
+CREATE INDEX idx_product_versions_product ON product_versions(product_id, version);
+
+CREATE TABLE iterations (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  version_id TEXT NOT NULL REFERENCES product_versions(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  goal TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'planned',
+  starts_at INTEGER,
+  ends_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_iterations_version ON iterations(version_id, status);
+
+CREATE TABLE environments (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  key TEXT NOT NULL,
+  name TEXT NOT NULL,
+  kind TEXT NOT NULL DEFAULT 'custom',
+  protected INTEGER NOT NULL DEFAULT 0,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE (project_id, key)
+);
+CREATE INDEX idx_environments_project ON environments(project_id, sort_order);
+
+CREATE TABLE project_focus (
+  project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,
+  subject_type TEXT NOT NULL,
+  subject_id TEXT,
+  updated_at INTEGER NOT NULL
+);
+
+INSERT INTO products (id, project_id, key, name, description, status, created_at, updated_at)
+SELECT 'prd_' || lower(hex(randomblob(16))), p.id, 'default', p.name, '', 'active', CAST(strftime('%s','now') AS INTEGER) * 1000, CAST(strftime('%s','now') AS INTEGER) * 1000
+FROM projects p;
+
+INSERT INTO product_versions (id, project_id, product_id, version, phase, support_level, is_default, planned_at, created_at, updated_at)
+SELECT 'ver_' || lower(hex(randomblob(16))), p.id, prd.id, '0.1.0',
+  CASE p.current_stage
+    WHEN 'ideation' THEN 'discovery'
+    WHEN 'requirements' THEN 'discovery'
+    WHEN 'architecture' THEN 'discovery'
+    WHEN 'planning' THEN 'discovery'
+    WHEN 'implementation' THEN 'build'
+    WHEN 'testing' THEN 'verify'
+    WHEN 'release' THEN 'release_candidate'
+    WHEN 'maintenance' THEN 'maintenance'
+    ELSE 'planned'
+  END,
+  'normal', 1, NULL, CAST(strftime('%s','now') AS INTEGER) * 1000, CAST(strftime('%s','now') AS INTEGER) * 1000
+FROM projects p
+JOIN products prd ON prd.project_id = p.id AND prd.key = 'default';
+
+INSERT INTO environments (id, project_id, key, name, kind, protected, sort_order, created_at, updated_at)
+SELECT 'env_' || lower(hex(randomblob(16))), p.id, 'local', 'Local', 'local', 0, 0, CAST(strftime('%s','now') AS INTEGER) * 1000, CAST(strftime('%s','now') AS INTEGER) * 1000
+FROM projects p;
+
+INSERT INTO project_focus (project_id, subject_type, subject_id, updated_at)
+SELECT p.id, 'version', pv.id, CAST(strftime('%s','now') AS INTEGER) * 1000
+FROM projects p
+JOIN product_versions pv ON pv.project_id = p.id AND pv.is_default = 1;
+`
+
+const V26 = `
+ALTER TABLE requirements ADD COLUMN version_id TEXT REFERENCES product_versions(id);
+ALTER TABLE requirements ADD COLUMN iteration_id TEXT REFERENCES iterations(id);
+ALTER TABLE tasks ADD COLUMN work_type TEXT NOT NULL DEFAULT 'development';
+ALTER TABLE tasks ADD COLUMN version_id TEXT REFERENCES product_versions(id);
+ALTER TABLE tasks ADD COLUMN iteration_id TEXT REFERENCES iterations(id);
+ALTER TABLE tasks ADD COLUMN source_type TEXT;
+ALTER TABLE tasks ADD COLUMN source_id TEXT;
+ALTER TABLE milestones ADD COLUMN version_id TEXT REFERENCES product_versions(id);
+ALTER TABLE plan_revisions ADD COLUMN kind TEXT NOT NULL DEFAULT 'development';
+ALTER TABLE plan_revisions ADD COLUMN subject_type TEXT;
+ALTER TABLE plan_revisions ADD COLUMN subject_id TEXT;
+ALTER TABLE plan_revisions ADD COLUMN environment_id TEXT REFERENCES environments(id);
+CREATE INDEX idx_requirements_version ON requirements(version_id, iteration_id);
+CREATE INDEX idx_tasks_version ON tasks(version_id, iteration_id);
+CREATE INDEX idx_tasks_work_type ON tasks(project_id, work_type);
+CREATE INDEX idx_milestones_version ON milestones(version_id);
+CREATE INDEX idx_plan_revisions_kind ON plan_revisions(project_id, kind, revision DESC);
+`
+
+const V27 = `
+CREATE TABLE gate_definitions (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  subject_scope TEXT NOT NULL,
+  key TEXT NOT NULL,
+  policy_profile TEXT NOT NULL DEFAULT 'default',
+  blocking INTEGER NOT NULL DEFAULT 1,
+  conditions_json TEXT NOT NULL DEFAULT '[]',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE (project_id, subject_scope, key)
+);
+CREATE INDEX idx_gate_definitions_project ON gate_definitions(project_id, subject_scope);
+
+CREATE TABLE evidence (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  evidence_type TEXT NOT NULL,
+  verification_status TEXT NOT NULL DEFAULT 'unknown',
+  assurance TEXT NOT NULL DEFAULT 'self_declared',
+  title TEXT NOT NULL,
+  summary TEXT NOT NULL DEFAULT '',
+  provenance_json TEXT NOT NULL DEFAULT '{}',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_evidence_project ON evidence(project_id, created_at DESC);
+CREATE INDEX idx_evidence_type ON evidence(project_id, evidence_type, verification_status);
+
+CREATE TABLE evidence_links (
+  evidence_id TEXT NOT NULL REFERENCES evidence(id) ON DELETE CASCADE,
+  link_type TEXT NOT NULL,
+  subject_type TEXT NOT NULL,
+  subject_id TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (evidence_id, link_type, subject_type, subject_id)
+);
+CREATE INDEX idx_evidence_links_subject ON evidence_links(subject_type, subject_id);
+
+CREATE TABLE gate_evaluations (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  gate_id TEXT NOT NULL REFERENCES gate_definitions(id) ON DELETE CASCADE,
+  subject_type TEXT NOT NULL,
+  subject_id TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  condition_results_json TEXT NOT NULL DEFAULT '[]',
+  evaluated_by TEXT NOT NULL DEFAULT 'system',
+  evaluated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_gate_evaluations_subject ON gate_evaluations(subject_type, subject_id, evaluated_at DESC);
+
+CREATE TABLE run_checkpoints (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
+  open_loops_json TEXT NOT NULL DEFAULT '[]',
+  next_action TEXT NOT NULL DEFAULT '',
+  context_hash TEXT,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_run_checkpoints_run ON run_checkpoints(run_id, created_at DESC);
+
+ALTER TABLE artifacts ADD COLUMN evidence_type TEXT;
+ALTER TABLE artifacts ADD COLUMN assurance TEXT;
+
+INSERT INTO gate_definitions (id, project_id, subject_scope, key, policy_profile, blocking, conditions_json, created_at, updated_at)
+SELECT 'gat_' || lower(hex(randomblob(16))), p.id, 'version', 'version-release',
+  'default', 1,
+  '[{"evidenceType":"test_report","requiredStatus":"passed","minAssurance":"source_observed"},{"evidenceType":"approval_record","requiredStatus":"passed","minAssurance":"self_declared","allowSelfDeclared":true}]',
+  CAST(strftime('%s','now') AS INTEGER) * 1000, CAST(strftime('%s','now') AS INTEGER) * 1000
+FROM projects p;
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -883,6 +1076,9 @@ export const MIGRATIONS: Migration[] = [
   { version: 22, name: 'plan execution grants and planner usage', sql: V22 },
   { version: 23, name: 'grant start reservations and replan proposals', sql: V23 },
   { version: 24, name: 'replan proposal source state', sql: V24 },
+  { version: 25, name: 'product versions iterations environments and project focus', sql: V25 },
+  { version: 26, name: 'version and iteration links for work items and plans', sql: V26 },
+  { version: 27, name: 'gates evidence links and run checkpoints', sql: V27 },
 ]
 
 function checksum(sql: string): string {

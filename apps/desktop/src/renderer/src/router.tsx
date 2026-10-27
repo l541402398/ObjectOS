@@ -4,6 +4,8 @@ import { EmptyState, LoadingBlock } from '@projectos/ui'
 import AppLayout from './components/AppLayout'
 import ProjectCenterPage from './pages/ProjectCenterPage'
 import ProjectOverviewPage from './pages/ProjectOverviewPage'
+import WorkCenterPage from './pages/WorkCenterPage'
+import LifecyclePage from './pages/LifecyclePage'
 import TaskBoardPage from './pages/TaskBoardPage'
 import AgentWorkbenchPage from './pages/AgentWorkbenchPage'
 import CollaborationPage from './pages/CollaborationPage'
@@ -53,7 +55,10 @@ export const router = createHashRouter([
       {
         path: 'projects/:projectId',
         children: [
-          { index: true, element: <ProjectOverviewPage /> },
+          { index: true, element: <WorkCenterPage /> },
+          { path: 'work', element: <WorkCenterPage /> },
+          { path: 'versions', element: <LifecyclePage /> },
+          { path: 'overview', element: <ProjectOverviewPage /> },
           { path: 'tasks', element: <TaskBoardPage /> },
           { path: 'orchestration', element: <LazyPage><OrchestrationPage /></LazyPage> },
           { path: 'agents', element: <AgentWorkbenchPage /> },

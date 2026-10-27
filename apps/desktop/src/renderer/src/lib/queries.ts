@@ -29,6 +29,7 @@ export const qk = {
   planGrant: (planId: string) => ['plan-grant', planId] as const,
   replanProposals: (projectId: string, planId: string) => ['replan-proposals', projectId, planId] as const,
   graph: (projectId: string) => ['graph', projectId] as const,
+  lifecycle: (projectId: string) => ['lifecycle', projectId] as const,
 }
 
 export function useBootstrap() {
@@ -322,6 +323,14 @@ export function useAgents(projectId: string | null | undefined) {
   return useQuery({
     queryKey: ['agents', projectId ?? ''] as const,
     queryFn: () => window.projectos.agents.list(projectId!),
+    enabled: Boolean(projectId),
+  })
+}
+
+export function useLifecycle(projectId: string | null | undefined) {
+  return useQuery({
+    queryKey: qk.lifecycle(projectId ?? ''),
+    queryFn: () => window.projectos.lifecycle.overview(projectId!),
     enabled: Boolean(projectId),
   })
 }

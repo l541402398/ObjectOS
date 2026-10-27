@@ -24,6 +24,7 @@ import {
   SettingOutlined,
   SunOutlined,
   SwapOutlined,
+  ThunderboltOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
@@ -46,7 +47,9 @@ import { stageLabel } from '../lib/labels'
 import { truncate } from '../lib/format'
 
 const PAGE_LABELS: Record<string, string> = {
-  overview: '项目总览',
+  work: '研发工作中心',
+  versions: '版本与迭代',
+  overview: '项目姿态',
   orchestration: '编排工作台',
   tasks: '任务看板',
   knowledge: '知识库',
@@ -65,7 +68,9 @@ const PAGE_LABELS: Record<string, string> = {
 }
 
 const NAV_PATHS: Record<string, string> = {
-  overview: '',
+  work: '',
+  versions: '/versions',
+  overview: '/overview',
   orchestration: '/orchestration',
   tasks: '/tasks',
   knowledge: '/knowledge',
@@ -130,8 +135,8 @@ export default function AppLayout() {
   const activeKey = useMemo(() => {
     if (location.pathname === '/settings') return 'settings'
     if (location.pathname === '/') return 'center'
-    const segment = location.pathname.split('/')[3] ?? 'overview'
-    return segment in PAGE_LABELS ? segment : 'overview'
+    const segment = location.pathname.split('/')[3] ?? 'work'
+    return segment in PAGE_LABELS ? segment : 'work'
   }, [location.pathname])
 
   useEffect(() => {
@@ -229,7 +234,9 @@ export default function AppLayout() {
     const list: PaletteCommand[] = []
     if (projectId) {
       list.push(
-        { id: 'overview', label: '项目总览', group: currentProject?.name ?? '项目', icon: <AppstoreOutlined />, run: () => handleNavigate('overview') },
+        { id: 'work', label: '研发工作中心', group: currentProject?.name ?? '项目', icon: <ThunderboltOutlined />, run: () => handleNavigate('work') },
+        { id: 'overview', label: '项目姿态', group: currentProject?.name ?? '项目', icon: <AppstoreOutlined />, run: () => handleNavigate('overview') },
+        { id: 'versions', label: '版本与迭代', group: currentProject?.name ?? '项目', icon: <ApartmentOutlined />, run: () => handleNavigate('versions') },
         { id: 'orchestration', label: '编排工作台', group: currentProject?.name ?? '项目', icon: <ApartmentOutlined />, run: () => handleNavigate('orchestration') },
         { id: 'tasks', label: '任务看板', group: currentProject?.name ?? '项目', icon: <UnorderedListOutlined />, run: () => handleNavigate('tasks') },
         { id: 'knowledge', label: '知识库', group: currentProject?.name ?? '项目', icon: <ReadOutlined />, run: () => handleNavigate('knowledge') },
@@ -285,25 +292,21 @@ export default function AppLayout() {
   const navGroups: SidebarNavGroup[] = []
   if (projectId && currentProject) {
     navGroups.push({
-      title: '工作台',
+      title: '研发',
       items: [
-        { key: 'overview', label: '项目总览', icon: <AppstoreOutlined /> },
-        { key: 'orchestration', label: '编排工作台', icon: <ApartmentOutlined /> },
-        { key: 'tasks', label: '任务看板', icon: <UnorderedListOutlined />, badge: taskBadge || null },
-        { key: 'knowledge', label: '知识库', icon: <ReadOutlined /> },
-        { key: 'operations', label: '自主运营', icon: <SafetyCertificateOutlined /> },
-        { key: 'agents', label: 'Agent 工作台', icon: <RobotOutlined />, badge: approvalBadge || null },
-        { key: 'collaboration', label: '跨会话中心', icon: <SendOutlined /> },
-        { key: 'resources', label: '资源中心', icon: <FolderOpenOutlined /> },
-        { key: 'approvals', label: '审批中心', icon: <SafetyCertificateOutlined />, badge: approvalBadge || null },
+        { key: 'work', label: '研发工作中心', icon: <ThunderboltOutlined /> },
+        { key: 'tasks', label: '任务与验收', icon: <UnorderedListOutlined />, badge: taskBadge || null },
+        { key: 'agents', label: 'Agent 协作', icon: <RobotOutlined />, badge: approvalBadge || null },
+        { key: 'approvals', label: '审批', icon: <SafetyCertificateOutlined />, badge: approvalBadge || null },
+        { key: 'runs', label: '运行审计', icon: <HistoryOutlined /> },
       ],
     })
     navGroups.push({
-      title: '工程',
+      title: '项目',
       items: [
-        { key: 'workspace', label: '工作区', icon: <CodeOutlined /> },
-        { key: 'runs', label: '运行审计', icon: <HistoryOutlined /> },
-        { key: 'health', label: '项目健康', icon: <SafetyCertificateOutlined /> },
+        { key: 'overview', label: '项目姿态', icon: <AppstoreOutlined /> },
+        { key: 'versions', label: '版本与迭代', icon: <ApartmentOutlined /> },
+        { key: 'knowledge', label: '知识与成果', icon: <ReadOutlined /> },
         { key: 'project-settings', label: '项目设置', icon: <SettingOutlined /> },
       ],
     })

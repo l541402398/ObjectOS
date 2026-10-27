@@ -31,6 +31,16 @@ export interface ProjectOSDesktopApi {
     toggleMaximize: () => Promise<{ maximized: boolean }>
     close: () => Promise<void>
   }
+  lifecycle: {
+    overview: (projectId: string) => Promise<Out<'lifecycle.overview'>>
+    products: (projectId: string) => Promise<Out<'product.list'>>
+    createVersion: (input: In<'version.create'>) => Promise<Out<'version.create'>>
+    transitionVersion: (input: In<'version.transition'>) => Promise<Out<'version.transition'>>
+    createIteration: (input: In<'iteration.create'>) => Promise<Out<'iteration.create'>>
+    setIterationStatus: (input: In<'iteration.setStatus'>) => Promise<Out<'iteration.setStatus'>>
+    createEnvironment: (input: In<'environment.create'>) => Promise<Out<'environment.create'>>
+    setFocus: (input: In<'project.focus.set'>) => Promise<Out<'project.focus.set'>>
+  }
   projects: {
     list: (input?: In<'project.list'>) => Promise<Out<'project.list'>>
     create: (input: In<'project.create'>) => Promise<Out<'project.create'>>
@@ -263,6 +273,9 @@ export interface ProjectOSDesktopApi {
     cancel: (planId: string) => Promise<Out<'orchestration.cancel'>>
     reassign: (planId: string, taskId: string, agentId: string) => Promise<Out<'orchestration.reassign'>>
     declineReassign: (planId: string, taskId: string, note?: string) => Promise<Out<'orchestration.declineReassign'>>
+  }
+  verification: {
+    request: (projectId: string, taskId: string) => Promise<Out<'verification.request'>>
   }
   worktrees: {
     info: (planId: string) => Promise<Out<'worktree.info'>>

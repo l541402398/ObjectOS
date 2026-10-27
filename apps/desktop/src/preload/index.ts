@@ -61,6 +61,16 @@ const api: ProjectOSDesktopApi = {
     toggleMaximize: () => call('app.windowToggleMaximize'),
     close: () => call('app.windowClose'),
   },
+  lifecycle: {
+    overview: (projectId) => call('lifecycle.overview', { projectId }),
+    products: (projectId) => call('product.list', { projectId }),
+    createVersion: (input) => call('version.create', input),
+    transitionVersion: (input) => call('version.transition', input),
+    createIteration: (input) => call('iteration.create', input),
+    setIterationStatus: (input) => call('iteration.setStatus', input),
+    createEnvironment: (input) => call('environment.create', input),
+    setFocus: (input) => call('project.focus.set', input),
+  },
   projects: {
     list: (input) => call('project.list', input ?? {}),
     create: (input) => call('project.create', input),
@@ -272,6 +282,9 @@ const api: ProjectOSDesktopApi = {
     cancel: (planId) => call('orchestration.cancel', { planId }),
     reassign: (planId, taskId, agentId) => call('orchestration.reassign', { planId, taskId, agentId }),
     declineReassign: (planId, taskId, note = '') => call('orchestration.declineReassign', { planId, taskId, note }),
+  },
+  verification: {
+    request: (projectId, taskId) => call('verification.request', { projectId, taskId }),
   },
   worktrees: {
     info: (planId) => call('worktree.info', { planId }),

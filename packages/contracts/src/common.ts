@@ -50,6 +50,10 @@ export const ID_PREFIXES = {
   planGrantStart: 'pgs',
   replanProposal: 'rpp',
   plannerRequest: 'plr',
+  product: 'prd',
+  version: 'ver',
+  iteration: 'itr',
+  environment: 'env',
 } as const
 
 export type IdPrefix = (typeof ID_PREFIXES)[keyof typeof ID_PREFIXES]

@@ -329,6 +329,52 @@ export class SqliteStore {
           stage.updatedAt,
         )
       }
+      const productId = newId('prd')
+      const versionId = newId('ver')
+      const environmentId = newId('env')
+      this.run(
+        `INSERT INTO products (id, project_id, key, name, description, status, created_at, updated_at)
+         VALUES (?, ?, 'default', ?, '', 'active', ?, ?)`,
+        productId,
+        project.id,
+        project.name,
+        project.createdAt,
+        project.updatedAt,
+      )
+      this.run(
+        `INSERT INTO product_versions (id, project_id, product_id, version, phase, support_level, is_default, planned_at, created_at, updated_at)
+         VALUES (?, ?, ?, '0.1.0', ?, 'normal', 1, ?, ?, ?)`,
+        versionId,
+        project.id,
+        productId,
+        project.currentStage === 'implementation'
+          ? 'build'
+          : project.currentStage === 'testing'
+            ? 'verify'
+            : project.currentStage === 'release'
+              ? 'release_candidate'
+              : project.currentStage === 'maintenance'
+                ? 'maintenance'
+                : 'discovery',
+        project.createdAt,
+        project.createdAt,
+        project.updatedAt,
+      )
+      this.run(
+        `INSERT INTO environments (id, project_id, key, name, kind, protected, sort_order, created_at, updated_at)
+         VALUES (?, ?, 'local', 'Local', 'local', 0, 0, ?, ?)`,
+        environmentId,
+        project.id,
+        project.createdAt,
+        project.updatedAt,
+      )
+      this.run(
+        `INSERT INTO project_focus (project_id, subject_type, subject_id, updated_at)
+         VALUES (?, 'version', ?, ?)`,
+        project.id,
+        versionId,
+        project.updatedAt,
+      )
       return project
     })
   }
@@ -578,12 +624,15 @@ export class SqliteStore {
   createTask(task: Task, dependencies: string[] = []): Task {
     return this.write(() => {
       this.run(
-        `INSERT INTO tasks (id, project_id, parent_id, milestone_id, title, description, status, priority, assignee_agent_id, acceptance_json, expected_artifacts_json, labels_json, version, due_at, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO tasks (id, project_id, parent_id, milestone_id, version_id, iteration_id, work_type, title, description, status, priority, assignee_agent_id, acceptance_json, expected_artifacts_json, labels_json, version, due_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         task.id,
         task.projectId,
         task.parentId,
         task.milestoneId,
+        task.versionId ?? null,
+        task.iterationId ?? null,
+        task.workType ?? 'development',
         task.title,
         task.description,
         task.status,
@@ -620,6 +669,9 @@ export class SqliteStore {
       expectedArtifacts?: string[]
       labels?: string[]
       milestoneId?: string | null
+      versionId?: string | null
+      iterationId?: string | null
+      workType?: string
       dueAt?: number | null
     },
   ): Task {
@@ -657,6 +709,18 @@ export class SqliteStore {
       if (patch.milestoneId !== undefined) {
         sets.push('milestone_id = ?')
         params.push(patch.milestoneId)
+      }
+      if (patch.versionId !== undefined) {
+        sets.push('version_id = ?')
+        params.push(patch.versionId)
+      }
+      if (patch.iterationId !== undefined) {
+        sets.push('iteration_id = ?')
+        params.push(patch.iterationId)
+      }
+      if (patch.workType !== undefined) {
+        sets.push('work_type = ?')
+        params.push(patch.workType)
       }
       if (patch.dueAt !== undefined) {
         sets.push('due_at = ?')

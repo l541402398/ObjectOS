@@ -100,7 +100,9 @@ async function runViewport(width, height) {
 
     await navigate(page, '#/')
     await capture(page, size, 'light', 'project-center')
-    await navigate(page, `#/projects/${projectId}`, '.po-overview-page')
+    await navigate(page, `#/projects/${projectId}/work`, '.po-work-center')
+    await capture(page, size, 'light', 'work-center')
+    await navigate(page, `#/projects/${projectId}/overview`, '.po-overview-page')
     await capture(page, size, 'light', 'overview')
     await navigate(page, `#/projects/${projectId}/tasks`, '.po-task-tile')
     await capture(page, size, 'light', 'tasks')
@@ -114,7 +116,7 @@ async function runViewport(width, height) {
     await page.waitForSelector('.react-flow__node', { timeout: 20_000 })
     await page.waitForTimeout(1_100)
     await capture(page, size, 'light', 'orchestration')
-    await navigate(page, `#/projects/${projectId}/agents`, '.po-session-row')
+    await navigate(page, `#/projects/${projectId}/agents`, '.po-page')
     const kaiSession = page.locator('.po-session-row').filter({ hasText: 'Kai · 图谱视图实现' })
     if ((await kaiSession.count()) > 0) {
       await kaiSession.first().click()
@@ -172,11 +174,13 @@ async function runViewport(width, height) {
     }
 
     await setTheme(page, 'dark')
-    await navigate(page, `#/projects/${projectId}`, '.po-overview-page')
+    await navigate(page, `#/projects/${projectId}/work`, '.po-work-center')
+    await capture(page, size, 'dark', 'work-center')
+    await navigate(page, `#/projects/${projectId}/overview`, '.po-overview-page')
     await capture(page, size, 'dark', 'overview')
     await navigate(page, `#/projects/${projectId}/tasks`, '.po-task-tile')
     await capture(page, size, 'dark', 'tasks')
-    await navigate(page, `#/projects/${projectId}/agents`, '.po-session-row')
+    await navigate(page, `#/projects/${projectId}/agents`, '.po-page')
     const kaiDark = page.locator('.po-session-row').filter({ hasText: 'Kai · 图谱视图实现' })
     if ((await kaiDark.count()) > 0) {
       await kaiDark.first().click()

@@ -530,6 +530,8 @@ export class OrchestrationService {
       {
         ...plan,
         goal: input.goal ?? plan.goal,
+        versionId: input.versionId ?? plan.versionId ?? null,
+        iterationId: input.iterationId ?? plan.iterationId ?? null,
         tasks,
         assumptions: input.assumptions ?? plan.assumptions,
         risks: input.risks ?? plan.risks,
@@ -540,6 +542,11 @@ export class OrchestrationService {
     validatePlanDraft(next)
     this.validatePlanAgents(next)
     this.store.updatePlanRevision(next)
+    if (next.versionId !== undefined) {
+      this.store.db
+        .prepare("UPDATE plan_revisions SET subject_type = 'version', subject_id = ?, updated_at = ? WHERE id = ?")
+        .run(next.versionId ?? null, now(), next.id)
+    }
     this.ensurePlanCollaboration(next)
     return next
   }
@@ -705,6 +712,8 @@ export class OrchestrationService {
           labels: ['plan', planned.role],
           assigneeAgentId,
           milestoneId: null,
+          versionId: plan.versionId ?? null,
+          iterationId: plan.iterationId ?? null,
           dependsOn,
           dueAt: null,
         })

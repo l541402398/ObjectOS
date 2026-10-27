@@ -176,6 +176,9 @@ export const PlanDraftSchema = z.object({
   revision: z.number().int().positive(),
   status: PlanStatusSchema,
   goal: z.string().min(1).max(8000),
+  versionId: IdSchema.nullable().optional(),
+  iterationId: IdSchema.nullable().optional(),
+  kind: z.string().max(40).optional(),
   tasks: z.array(PlannedTaskSchema),
   assumptions: z.array(z.string()),
   risks: z.array(z.string()),
@@ -257,6 +260,8 @@ export type GraphLayout = z.infer<typeof GraphLayoutSchema>
 export const PlanUpdateInputSchema = z.object({
   planId: IdSchema,
   goal: z.string().min(1).max(8000).optional(),
+  versionId: IdSchema.nullable().optional(),
+  iterationId: IdSchema.nullable().optional(),
   tasks: z.array(PlannedTaskSchema).optional(),
   assumptions: z.array(z.string()).optional(),
   risks: z.array(z.string()).optional(),

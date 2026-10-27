@@ -58,6 +58,20 @@ import {
 } from './plan-replan.js'
 import { RuntimeSettingsSchema, RuntimeSettingsUpdateSchema } from './runtime-settings.js'
 import {
+  CreateEnvironmentInputSchema,
+  CreateIterationInputSchema,
+  CreateVersionInputSchema,
+  EnvironmentSchema,
+  IterationSchema,
+  LifecycleOverviewSchema,
+  ProductSchema,
+  ProductVersionSchema,
+  ProjectFocusSchema,
+  SetIterationStatusInputSchema,
+  SetProjectFocusInputSchema,
+  TransitionVersionInputSchema,
+} from './lifecycle.js'
+import {
   ActivityItemSchema,
   AgentViewSchema,
   ApprovalViewSchema,
@@ -116,6 +130,9 @@ export const CreateTaskInputSchema = z.object({
   labels: z.array(z.string().trim().min(1).max(60)).max(20).default([]),
   assigneeAgentId: IdSchema.nullable().default(null),
   milestoneId: IdSchema.nullable().default(null),
+  versionId: IdSchema.nullable().optional(),
+  iterationId: IdSchema.nullable().optional(),
+  workType: z.string().trim().min(1).max(40).optional(),
   dependsOn: z.array(IdSchema).max(50).default([]),
   dueAt: TimestampSchema.nullable().default(null),
 })
@@ -132,6 +149,9 @@ export const UpdateTaskInputSchema = z.object({
   labels: z.array(z.string().trim().min(1).max(60)).max(20).optional(),
   assigneeAgentId: IdSchema.nullable().optional(),
   milestoneId: IdSchema.nullable().optional(),
+  versionId: IdSchema.nullable().optional(),
+  iterationId: IdSchema.nullable().optional(),
+  workType: z.string().trim().min(1).max(40).optional(),
   dueAt: TimestampSchema.nullable().optional(),
 })
 export type UpdateTaskInput = z.infer<typeof UpdateTaskInputSchema>
@@ -324,6 +344,38 @@ export const ApiSchemas = {
   'project.overview': {
     input: projectIdInput,
     output: ProjectOverviewSchema,
+  },
+  'lifecycle.overview': {
+    input: projectIdInput,
+    output: LifecycleOverviewSchema,
+  },
+  'version.create': {
+    input: CreateVersionInputSchema,
+    output: ProductVersionSchema,
+  },
+  'version.transition': {
+    input: TransitionVersionInputSchema,
+    output: ProductVersionSchema,
+  },
+  'iteration.create': {
+    input: CreateIterationInputSchema,
+    output: IterationSchema,
+  },
+  'iteration.setStatus': {
+    input: SetIterationStatusInputSchema,
+    output: IterationSchema,
+  },
+  'environment.create': {
+    input: CreateEnvironmentInputSchema,
+    output: EnvironmentSchema,
+  },
+  'project.focus.set': {
+    input: SetProjectFocusInputSchema,
+    output: ProjectFocusSchema,
+  },
+  'product.list': {
+    input: projectIdInput,
+    output: z.object({ products: z.array(ProductSchema) }),
   },
   'project.update': {
     input: UpdateProjectInputSchema,
@@ -1022,6 +1074,10 @@ export const ApiSchemas = {
   'orchestration.declineReassign': {
     input: z.object({ planId: IdSchema, taskId: IdSchema, note: z.string().max(2000).default('') }),
     output: z.object({ taskId: IdSchema, status: z.literal('declined') }),
+  },
+  'verification.request': {
+    input: z.object({ projectId: IdSchema, taskId: IdSchema }),
+    output: z.object({ sessionId: IdSchema, runId: IdSchema }),
   },
   'worktree.info': {
     input: z.object({ planId: IdSchema }),

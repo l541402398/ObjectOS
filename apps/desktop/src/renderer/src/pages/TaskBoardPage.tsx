@@ -59,6 +59,7 @@ import {
   useProjectOverview,
   usePlans,
   useTaskBoard,
+  useLifecycle,
   useTaskDetail,
 } from '../lib/queries'
 import { formatDate, formatDateTime, formatRelative, parseLines } from '../lib/format'
@@ -204,6 +205,7 @@ export default function TaskBoardPage() {
   const { message } = AntApp.useApp()
   const [searchParams, setSearchParams] = useSearchParams()
   const board = useTaskBoard(projectId)
+  const lifecycle = useLifecycle(projectId)
   const plans = usePlans(projectId)
   const overview = useProjectOverview(projectId)
   const agents = useAgents(projectId)
@@ -220,6 +222,7 @@ export default function TaskBoardPage() {
   const taskDetail = useTaskDetail(selectedTaskId)
   const [query, setQuery] = useState('')
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
+  const [versionFilter, setVersionFilter] = useState<string | null>(null)
   const [priorityFilter, setPriorityFilter] = useState<number | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dropTarget, setDropTarget] = useState<TaskStatus | null>(null)
@@ -394,10 +397,11 @@ export default function TaskBoardPage() {
         return false
       }
       if (assigneeFilter && task.assigneeAgentId !== assigneeFilter) return false
+      if (versionFilter && task.versionId !== versionFilter) return false
       if (priorityFilter && task.priority !== priorityFilter) return false
       return true
     })
-  }, [board.data, query, assigneeFilter, priorityFilter])
+  }, [board.data, query, assigneeFilter, versionFilter, priorityFilter])
 
   const columns = TASK_COLUMNS.map((status) => ({
     status,
@@ -439,6 +443,12 @@ export default function TaskBoardPage() {
   const submitCreate = async (): Promise<void> => {
     const values = await createForm.validateFields()
     const acceptance = parseLines(values.acceptance ?? '')
+    const versions = lifecycle.data?.versions ?? []
+    const activeVersion =
+      versions.find((item) => item.id === lifecycle.data?.focus?.subjectId) ??
+      versions.find((item) => item.isDefault) ??
+      versions[0] ??
+      null
     createTask.mutate({
       projectId,
       title: values.title.trim(),
@@ -451,6 +461,7 @@ export default function TaskBoardPage() {
         .filter(Boolean),
       assigneeAgentId: values.assigneeAgentId ?? null,
       milestoneId: values.milestoneId ?? null,
+      versionId: activeVersion?.id ?? null,
       dependsOn: values.dependsOn ?? [],
       dueAt: values.dueAt ? values.dueAt.valueOf() : null,
     })
@@ -657,6 +668,17 @@ export default function TaskBoardPage() {
           onChange={(value) => setAssigneeFilter(value ?? null)}
           options={agentOptions}
           style={{ width: 200 }}
+        />
+        <Select
+          allowClear
+          placeholder="按版本过滤"
+          value={versionFilter}
+          onChange={(value) => setVersionFilter(value ?? null)}
+          options={(lifecycle.data?.versions ?? []).map((version) => ({
+            value: version.id,
+            label: `v${version.version}${version.isDefault ? ' · 默认' : ''}`,
+          }))}
+          style={{ width: 160 }}
         />
         <Select
           allowClear

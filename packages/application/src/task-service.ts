@@ -94,6 +94,9 @@ export class TaskService {
       projectId: input.projectId,
       parentId: null,
       milestoneId: input.milestoneId,
+      versionId: input.versionId ?? null,
+      iterationId: input.iterationId ?? null,
+      workType: input.workType ?? 'development',
       title: input.title,
       description: input.description,
       status: 'backlog',
@@ -136,6 +139,9 @@ export class TaskService {
         labels: input.labels,
         assigneeAgentId: input.assigneeAgentId,
         milestoneId: input.milestoneId,
+        versionId: input.versionId,
+        iterationId: input.iterationId,
+        workType: input.workType,
         dueAt: input.dueAt,
       })
       this.store.appendEvent(task.projectId, task.id, PROJECT_EVENT_TYPES.taskUpdated, {

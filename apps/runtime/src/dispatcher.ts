@@ -30,6 +30,7 @@ import { AIConnectionService } from './ai-connections.js'
 import { listExternalAgents } from './external-agents.js'
 import { ExternalAgentRunner } from './external-runner.js'
 import { OperationsService, repairRunKey } from './operations.js'
+import { LifecycleService } from './lifecycle.js'
 import { AgentStudioService } from './agent-studio.js'
 import { RuntimeExecutionService } from './runtime-executor.js'
 import { OrchestrationService } from './orchestration.js'
@@ -78,6 +79,7 @@ export class RuntimeDispatcher {
   private readonly scheduler: OrchestrationScheduler
   private readonly externalRunner: ExternalAgentRunner
   private readonly operations: OperationsService
+  private readonly lifecycle: LifecycleService
   private readonly agentStudio: AgentStudioService
   private readonly runtimeExecutor: RuntimeExecutionService
   private readonly operationsTimer: NodeJS.Timeout
@@ -104,6 +106,7 @@ export class RuntimeDispatcher {
     this.replans = new ReplanService(deps.store, this.orchestration, planner, this.planGrants, deps.logger)
     this.externalRunner = new ExternalAgentRunner(deps.store, deps.services, deps.logger)
     this.operations = new OperationsService(deps.store, deps.services)
+    this.lifecycle = new LifecycleService(deps.store)
     this.agentStudio = new AgentStudioService(deps.store)
     this.runtimeExecutor = new RuntimeExecutionService(deps.store, () => deps.provider.rawConfig())
     this.operationsTimer = setInterval(() => this.runDueChecks(), 30_000)
@@ -220,6 +223,40 @@ export class RuntimeDispatcher {
         this.deps.logger.warn({ err: error, proposalId: proposal.id }, 'automatic repair start failed')
       }
     }
+  }
+
+  private async requestVerification(projectId: string, taskId: string): Promise<{ sessionId: string; runId: string }> {
+    const task = this.deps.store.read.getTask(taskId)
+    if (!task || task.projectId !== projectId) throw new AppError('NOT_FOUND', '任务不存在')
+    if (task.status === 'done' || task.status === 'cancelled') {
+      throw new AppError('CONFLICT', '该任务已结束，不能再次请求验证')
+    }
+    if (task.status === 'running') throw new AppError('CONFLICT', '任务正在执行，请等待当前运行结束')
+    const agentId =
+      task.assigneeAgentId ??
+      this.deps.services.projects.listAgents(projectId)[0]?.agent.id ??
+      null
+    if (!agentId) throw new AppError('CONFLICT', '项目没有可用 Agent，无法执行受控验证')
+    const session = this.deps.services.sessions.create({
+      projectId,
+      agentId,
+      title: `验证 · ${task.title}`.slice(0, 240),
+    })
+    const result = await this.deps.runner.startRun({
+      projectId,
+      sessionId: session.id,
+      taskId,
+      prompt: [
+        `受控验证任务：${task.title}`,
+        '请只做验证，不要修改无关文件：',
+        '1. 阅读任务验收标准与当前 Artifact。',
+        '2. 使用 run_tests 或受控命令执行真实测试/检查；命令不可执行时明确报告原因。',
+        '3. 创建 test-report / review Artifact，写入实际命令、退出码、输出摘要与哈希（如有）。',
+        '4. 只有证据满足验收标准时才声明完成；否则列出缺失项，等待人工决定。',
+        '不得伪造测试结果，不得把 skipped/未验证写成 passed。',
+      ].join('\n'),
+    })
+    return { sessionId: session.id, runId: result.runId }
   }
 
   private async startRepair(proposalId: string, source: 'manual' | 'autofix' = 'manual') {
@@ -713,6 +750,38 @@ export class RuntimeDispatcher {
       case 'project.overview': {
         const input = this.parse('project.overview', rawInput)
         return services.projects.overview(input.projectId)
+      }
+      case 'lifecycle.overview': {
+        const input = this.parse('lifecycle.overview', rawInput)
+        return this.lifecycle.overview(input.projectId)
+      }
+      case 'product.list': {
+        const input = this.parse('product.list', rawInput)
+        return { products: this.lifecycle.products(input.projectId) }
+      }
+      case 'version.create': {
+        const input = this.parse('version.create', rawInput)
+        return this.lifecycle.createVersion(input)
+      }
+      case 'version.transition': {
+        const input = this.parse('version.transition', rawInput)
+        return this.lifecycle.transitionVersion(input)
+      }
+      case 'iteration.create': {
+        const input = this.parse('iteration.create', rawInput)
+        return this.lifecycle.createIteration(input)
+      }
+      case 'iteration.setStatus': {
+        const input = this.parse('iteration.setStatus', rawInput)
+        return this.lifecycle.setIterationStatus(input.iterationId, input.status)
+      }
+      case 'environment.create': {
+        const input = this.parse('environment.create', rawInput)
+        return this.lifecycle.createEnvironment(input)
+      }
+      case 'project.focus.set': {
+        const input = this.parse('project.focus.set', rawInput)
+        return this.lifecycle.setFocus(input)
       }
       case 'project.update': {
         const input = this.parse('project.update', rawInput)
@@ -1403,6 +1472,10 @@ export class RuntimeDispatcher {
       case 'orchestration.declineReassign': {
         const input = this.parse('orchestration.declineReassign', rawInput)
         return this.scheduler.declineReassignment(input.planId, input.taskId, input.note)
+      }
+      case 'verification.request': {
+        const input = this.parse('verification.request', rawInput)
+        return this.requestVerification(input.projectId, input.taskId)
       }
       case 'worktree.info': {
         const input = this.parse('worktree.info', rawInput)
