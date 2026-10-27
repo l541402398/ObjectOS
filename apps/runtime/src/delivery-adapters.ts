@@ -30,7 +30,7 @@ export interface DeliveryExecutionContext {
 export interface DeliveryExecutionResult {
   externalId: string
   status: 'succeeded' | 'failed' | 'needs_reconciliation'
-  assurance: 'source_observed' | 'independently_reproduced' | 'externally_confirmed'
+  assurance: 'self_declared' | 'source_observed' | 'independently_reproduced' | 'externally_confirmed'
   artifactHash: string | null
   receipt: Record<string, unknown>
   health: { ok: boolean; detail: string }
@@ -100,22 +100,20 @@ export class LocalArtifactAdapter implements DeliveryAdapter {
       targetPath: releaseDir,
       manifestHash,
       artifacts: hashes,
+      artifactDelivered: true,
+      serviceHealthVerified: false,
       deployedAt: Date.now(),
     }
-    writeFileSync(join(releaseDir, 'deployment-receipt.json'), JSON.stringify(receipt, null, 2))
-    const healthFile = join(context.targetPath, 'health.json')
-    const health = {
-      ok: existsSync(releaseDir) && existsSync(join(releaseDir, 'deployment-receipt.json')),
-      detail: '本地制品目录与回执可读',
-    }
-    writeFileSync(healthFile, JSON.stringify({ ...health, deploymentId: context.deploymentId, checkedAt: Date.now() }, null, 2))
+    // File delivery is not service health. Keep assurance self_declared so this
+    // record can never become the environment's verified current release.
+    writeFileSync(join(releaseDir, 'delivery-receipt.json'), JSON.stringify(receipt, null, 2))
     return {
       externalId: `local-${context.deploymentId}`,
-      status: health.ok ? 'succeeded' : 'failed',
-      assurance: 'independently_reproduced',
+      status: 'succeeded',
+      assurance: 'self_declared',
       artifactHash: manifestHash,
       receipt,
-      health,
+      health: { ok: false, detail: '制品已交付并校验哈希；未启动服务，未验证健康' },
     }
   }
 }

@@ -1262,6 +1262,21 @@ CREATE TABLE deployment_events (
 CREATE INDEX idx_deployment_events_deployment ON deployment_events(deployment_id, created_at DESC);
 `
 
+// Corrects Phase 2.2 local file-delivery records: copying + hash verification is
+// not service health, so it must never project as an independently verified release.
+const V30 = `
+UPDATE deployments
+SET assurance = 'self_declared',
+    receipt_json = json_set(
+      receipt_json,
+      '$.health.ok', json('false'),
+      '$.health.detail', '历史文件交付记录：未验证服务健康',
+      '$.serviceHealthVerified', json('false')
+    )
+WHERE external_id LIKE 'local-%'
+  AND assurance = 'independently_reproduced';
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -1292,6 +1307,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 27, name: 'gates evidence links and run checkpoints', sql: V27 },
   { version: 28, name: 'change requests and generalized delivery approvals', sql: V28 },
   { version: 29, name: 'release candidates releases deployments and targets', sql: V29 },
+  { version: 30, name: 'correct local file delivery assurance semantics', sql: V30 },
 ]
 
 function checksum(sql: string): string {

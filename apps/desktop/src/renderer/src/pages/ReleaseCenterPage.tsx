@@ -1,9 +1,8 @@
 import { useMemo } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Button, Select } from 'antd'
-import { PageHeader } from '@projectos/ui'
 import { useLifecycle } from '../lib/queries'
-import { ReleasePanel } from '../components/ReleasePanel'
+import { ReleaseWorkbench } from '../components/ReleaseWorkbench'
 import './delivery.css'
 
 export default function ReleaseCenterPage() {
@@ -22,29 +21,24 @@ export default function ReleaseCenterPage() {
   }, [lifecycle.data, search, versions])
 
   return (
-    <div className="po-page po-delivery-page">
-      <PageHeader
-        eyebrow="DELIVERY"
-        title="发布中心"
-        description="从真实研发成果形成候选、变更审批与不可变 Release 记录。"
-        actions={
-          <div className="delivery-head-actions">
-            <Select
-              value={selected?.id}
-              placeholder="选择版本"
-              options={versions.map((version) => ({ value: version.id, label: `v${version.version}` }))}
-              onChange={(versionId) => navigate(`/projects/${projectId}/releases?version=${versionId}`)}
-              style={{ width: 160 }}
-            />
-            <Button onClick={() => selected && navigate(`/projects/${projectId}/deployments?version=${selected.id}`)}>
-              部署中心
-            </Button>
-          </div>
-        }
-        meta={<span>{selected ? `当前版本 v${selected.version}` : '没有可选版本'}</span>}
-      />
+    <div className="po-page po-delivery-page rw-page">
       {selected ? (
-        <ReleasePanel projectId={projectId} versionId={selected.id} versionLabel={selected.version} mode="release" />
+        <ReleaseWorkbench
+          projectId={projectId}
+          versionId={selected.id}
+          versionLabel={`v${selected.version}`}
+          versionControl={
+            <div className="rw-version-control-inner">
+              <Select
+                value={selected.id}
+                options={versions.map((version) => ({ value: version.id, label: `v${version.version}` }))}
+                onChange={(versionId) => navigate(`/projects/${projectId}/releases?version=${versionId}`)}
+                style={{ width: 140 }}
+              />
+              <Button size="small" onClick={() => navigate(`/projects/${projectId}/deployments?version=${selected.id}`)}>部署中心</Button>
+            </div>
+          }
+        />
       ) : (
         <div className="delivery-empty">先创建版本，再进入发布中心。</div>
       )}

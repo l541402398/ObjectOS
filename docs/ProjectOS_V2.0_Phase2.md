@@ -577,3 +577,20 @@ SSH 私钥/密码、kubeconfig Token、ServiceAccount Token、CI/CD Access Token
 已获得 Contabo 隔离测试 VPS 授权并完成真实 SSH Adapter 部署：/opt/projectos-delivery-test、projectos-delivery-test 容器、仅绑定 127.0.0.1:18080、/health 返回 ok、xternally_confirmed。K8s/GitOps/Pipeline 仍未连接，保持 BLOCKED。
 
 Phase 3 仍不启动。
+
+---
+
+## 16. Phase 2.3 商业级工作台与交付语义纠偏（2026-10-27）
+
+- 发布中心改为「列表 + 详情 + 发布就绪 Inspector」三栏工作台，移除等宽卡片堆叠；增加水平发布状态轨迹。
+- 部署中心改为「目标导航 + 部署轨迹 + 目标 Inspector」；执行、人工记录按钮移入中央主操作区，1024 下仍可操作。
+- 审批中心改为「待审队列 + 变更详情 + 决策栏」Master–Detail；工具权限与交付审批统一队列。
+- LocalArtifactAdapter 不再写 `health.json`，不再返回 `independently_reproduced`：
+  - 仅证明制品复制与 SHA-256 校验；
+  - assurance=`self_declared`；
+  - `health.ok=false`；
+  - 不计入环境当前运行版本。
+- SSH/VPS Adapter 保持真实执行：Contabo 隔离容器、`/health`、外部回执、`externally_confirmed`。
+- 保留 V28/V29；V30 兼容迁移修正 Phase 2.2 本地文件交付的 assurance/health 语义。
+
+详见 `docs/v2/ProjectOS_V2.0_Phase2_3_Experience_And_Deployment_Report.md`。
