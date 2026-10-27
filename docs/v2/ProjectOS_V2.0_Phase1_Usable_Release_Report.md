@@ -137,7 +137,7 @@ Review task
 |---|---|
 | `pnpm lint` | **PASS**，0 errors，2 个既有 warnings（PlanReviewNext） |
 | `pnpm typecheck` | **PASS** |
-| `pnpm test` | **PASS**：51 files passed / 1 skipped（52）；275 tests passed / 3 skipped（278）；67.40s |
+| `pnpm test` | **PASS**：51 files passed / 1 skipped（52）；275 tests passed / 3 skipped（278）；66.92s |
 | `pnpm build` | **PASS** |
 | `pnpm package:dir` | **PASS** |
 | `pnpm test:package` | **PASS**（打包 EXE 创建项目、写 starter、重启恢复） |
