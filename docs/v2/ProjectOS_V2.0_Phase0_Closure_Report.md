@@ -228,7 +228,7 @@ update_task_status/handoff_task
 |---|---|---|
 | `pnpm lint` | **PASS（0 errors，2 warnings）** | warnings 在 `PlanReviewNext.tsx`（Sparkles/activeStage），非本轮引入 |
 | `pnpm typecheck` | **PASS** | `tsc --noEmit` |
-| `pnpm test` | **PASS**：50 files passed / 1 skipped（51）；273 tests passed / 3 skipped（276）；67.39s | 含新增 Phase 0 测试 |
+| `pnpm test` | **PASS**：50 files passed / 1 skipped（51）；273 tests passed / 3 skipped（276）；68.08s | 含新增 Phase 0 测试 |
 | `pnpm build` | **PASS** | runtime 1.95MB + desktop main/preload/renderer |
 | `pnpm package:dir` | **PASS** | `release/win-unpacked/ProjectOS.exe` |
 | `pnpm test:package` | **PASS** | 打包 EXE 创建项目/写 starter/重启恢复 |
