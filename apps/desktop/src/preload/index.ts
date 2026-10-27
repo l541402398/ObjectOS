@@ -278,7 +278,7 @@ const api: ProjectOSDesktopApi = {
     setTrigger: (projectId, intervalMinutes, enabled) => call('operations.setTrigger', { projectId, intervalMinutes, enabled }),
   },
   orchestration: {
-    start: (planId, concurrency = 2, maxRetries = 2, allowOverBudget = false, grantId = null, startRequestId = null) => call('orchestration.start', { planId, concurrency, maxRetries, allowOverBudget, grantId, startRequestId }),
+    start: (planId, concurrency = 2, maxRetries = 2, allowOverBudget = false, grantId = null, startRequestId = null, maxEvidenceRetries = 1) => call('orchestration.start', { planId, concurrency, maxRetries, allowOverBudget, grantId, startRequestId, maxEvidenceRetries }),
     pause: (planId) => call('orchestration.pause', { planId }),
     resume: (planId) => call('orchestration.resume', { planId }),
     cancel: (planId) => call('orchestration.cancel', { planId }),

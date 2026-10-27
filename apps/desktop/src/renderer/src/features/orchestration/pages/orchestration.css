@@ -2098,6 +2098,13 @@
   font-size: var(--text-small);
 }
 
+.po-worktree-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
 .po-diff-view {
   max-height: 52vh;
   overflow: auto;

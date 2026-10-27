@@ -313,16 +313,16 @@ export default function WorkCenterPage() {
     : !activePlan
       ? { kicker: '下一步', title: '把需求变成可审核的计划', description: 'AI 会生成 DAG、Agent 分工与验收节点；批准后再单独授权执行。', action: '生成计划', run: () => document.getElementById('work-goal')?.focus() }
       : activePlan.status === 'draft'
-        ? { kicker: '当前重点', title: '审核并批准计划', description: '检查依赖、Agent 分工和验收标准；批准不会自动授权执行。', action: '打开 Plan Review', run: () => navigate(`/projects/${projectId}/orchestration?plan=${activePlan.id}`) }
+        ? { kicker: '当前重点', title: '审核并批准计划', description: '检查依赖、Agent 分工和验收标准；批准不会自动授权执行。', action: '', run: () => undefined }
         : !grantReady
-          ? { kicker: '当前重点', title: '计划已批准，等待执行授权', description: '确认 revision、任务、Agent、路径和预算后，再启动 Scheduler。', action: '授权执行', run: confirmGrant }
+          ? { kicker: '当前重点', title: '计划已批准，等待执行授权', description: '确认 revision、任务、Agent、路径和预算后，再启动 Scheduler。', action: '', run: () => undefined }
           : execution?.status === 'paused'
-            ? { kicker: '需要处理', title: '执行已暂停', description: execution.error ?? '检查暂停原因，处理后继续；未知副作用不会自动重试。', action: '继续执行', run: () => resume.mutate(activePlan) }
+            ? { kicker: '需要处理', title: '执行已暂停', description: execution.error ?? '检查暂停原因，处理后继续；未知副作用不会自动重试。', action: '', run: () => undefined }
             : execution?.status === 'running'
-              ? { kicker: '正在发生', title: 'Agent 正在执行', description: '查看任务、Run 和待审批事项；需要你决定时会在右侧集中展示。', action: '打开 Agent 协作', run: () => navigate(`/projects/${projectId}/agents`) }
+              ? { kicker: '正在发生', title: 'Agent 正在执行', description: '查看任务、Run 和待审批事项；需要你决定时会在右侧集中展示。', action: '', run: () => undefined }
               : execution?.status === 'completed'
-                ? { kicker: '已交付', title: '执行完成，查看成果与验收', description: '测试、Diff 和 Artifact 已可追溯；把结论沉淀到知识库。', action: '查看成果', run: () => navigate(`/projects/${projectId}/knowledge`) }
-                : { kicker: '下一步', title: '启动执行或查看编排', description: '当前计划已就绪，可启动 Scheduler 或进入完整编排工作台。', action: '打开编排工作台', run: () => navigate(`/projects/${projectId}/orchestration`) }
+                ? { kicker: '已交付', title: '执行完成，查看成果与验收', description: '测试、Diff 和 Artifact 已可追溯；把结论沉淀到知识库。', action: '', run: () => undefined }
+                : { kicker: '下一步', title: '启动执行或查看编排', description: '当前计划已就绪，可启动 Scheduler 或进入完整编排工作台。', action: '', run: () => undefined }
 
   return (
     <div className="po-page po-work-center">
@@ -362,10 +362,6 @@ export default function WorkCenterPage() {
           <h2>{focus.title}</h2>
           <p>{focus.description}</p>
         </div>
-        <Button type="primary" size="large" onClick={focus.run}>
-          {focus.action}
-          <ArrowRightOutlined />
-        </Button>
       </div>
 
       <div className="wc-metrics">

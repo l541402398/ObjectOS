@@ -1829,6 +1829,19 @@ export default function OrchestrationWorkspace() {
               <code>{worktreeInfo?.workspaceRef ?? '—'}</code>
               <span>{worktreeInfo?.diffArtifactId ? 'Diff artifact 已生成' : 'Diff 实时读取'}</span>
             </div>
+            {worktreeInfo?.files?.length ? (
+              <div className="po-worktree-files">
+                {worktreeInfo.files.map((file) => (
+                  <Tag
+                    key={`${file.path}-${file.status}`}
+                    color={file.sensitive ? 'red' : file.allowed ? 'green' : 'orange'}
+                  >
+                    {file.status.trim()} · {file.path}
+                    {file.sensitive ? ' · 敏感' : !file.allowed ? ' · 未授权' : ''}
+                  </Tag>
+                ))}
+              </div>
+            ) : null}
             <pre className="po-diff-view">{worktreeInfo?.diff || '暂无改动'}</pre>
           </OverlayScrollArea>
           <OverlayFooter>

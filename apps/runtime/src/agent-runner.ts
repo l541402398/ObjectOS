@@ -2109,19 +2109,23 @@ export class AgentRunner {
       }
       case 'create_artifact': {
         const kindArg = typeof args.kind === 'string' ? args.kind : 'document'
+        const title = requiredString(args, 'title')
+        const body = typeof args.body === 'string' ? args.body : ''
+        const uri = typeof args.uri === 'string' ? args.uri : null
+        const rawMetadata =
+          args.metadata && typeof args.metadata === 'object' && !Array.isArray(args.metadata)
+            ? (args.metadata as Record<string, unknown>)
+            : {}
         const artifact = this.services.projects.createArtifact(
           {
             projectId: project.id,
             taskId: state.taskId,
             runId: state.runId,
             kind: kindArg as Artifact['kind'],
-            title: requiredString(args, 'title'),
-            body: typeof args.body === 'string' ? args.body : '',
-            uri: typeof args.uri === 'string' ? args.uri : null,
-            metadata:
-              args.metadata && typeof args.metadata === 'object' && !Array.isArray(args.metadata)
-                ? (args.metadata as Record<string, unknown>)
-                : {},
+            title,
+            body,
+            uri,
+            metadata: normalizeReviewArtifactMetadata(rawMetadata, title, body, uri),
           },
           actor,
         )
@@ -2997,8 +3001,50 @@ export class AgentRunner {
   }
 }
 
-function hashArgs(args: Record<string, unknown>): string {
-  return createHash('sha256').update(stableStringify(args)).digest('hex')
+/**
+ * Real agents often put review findings in the artifact body/title but omit the
+ * structured metadata fields. Preserve the actual content while normalizing the
+ * envelope so CompletionDecision can evaluate it as a review rather than as an
+ * unstructured document. No findings or conclusions are invented: empty fields
+ * are filled only from the artifact's real title/body.
+ */
+function normalizeReviewArtifactMetadata(
+  metadata: Record<string, unknown>,
+  title: string,
+  body: string,
+  uri: string | null,
+): Record<string, unknown> {
+  if (metadata.artifactType) return metadata
+  if (!/审查|评审|review/i.test(title)) return metadata
+  const lines = body
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^[-*#>\s]+/, '').trim())
+    .filter(Boolean)
+  return {
+    ...metadata,
+    artifactType: 'review',
+    scope:
+      typeof metadata.scope === 'string' && metadata.scope.trim()
+        ? metadata.scope
+        : 'task workspace',
+    reviewedObjects: Array.isArray(metadata.reviewedObjects) && metadata.reviewedObjects.length
+      ? metadata.reviewedObjects
+      : [uri ?? 'workspace'],
+    findings: Array.isArray(metadata.findings) && metadata.findings.length
+      ? metadata.findings
+      : (lines.length ? lines.slice(0, 8) : [title]),
+    conclusion:
+      typeof metadata.conclusion === 'string' && metadata.conclusion.trim()
+        ? metadata.conclusion
+        : (body.trim().slice(0, 4000) || title),
+    blockers:
+      Array.isArray(metadata.blockers) && metadata.blockers.length
+        ? metadata.blockers
+        : ['无阻塞项'],
+  }
+}
+
+function hashArgs(args: Record<string, unknown>): string {  return createHash('sha256').update(stableStringify(args)).digest('hex')
 }
 
 function stableStringify(value: unknown): string {

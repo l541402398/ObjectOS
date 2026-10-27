@@ -171,6 +171,15 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
   const hasDesign = designArtifacts.length > 0
   const reviewArtifacts = artifacts.filter((artifact) => {
     const metadata = metadataOf(artifact)
+    const blockers = Array.isArray(metadata.blockers)
+      ? metadata.blockers.filter((item): item is string => typeof item === 'string')
+      : []
+    const blocking = blockers.some((item) => !/^(无|none|no blockers?)/i.test(item.trim()))
+    const conclusion = typeof metadata.conclusion === 'string' ? metadata.conclusion : ''
+    const positiveConclusion = /^(通过|放行|approve|approved|pass|passed|conditionally passed)/i.test(
+      conclusion.trim(),
+    )
+    const rejected = !positiveConclusion && /阻断|不通过|拒绝|reject|blocking|blocked|fail/i.test(conclusion)
     return (
       metadata.artifactType === 'review' &&
       nonEmptyArray(metadata.reviewedObjects) &&
@@ -178,7 +187,8 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
       nonEmptyArray(metadata.findings) &&
       nonEmptyString(metadata.conclusion) &&
       stringArrayField(metadata.blockers) &&
-      (stringArrayField(metadata.relatedArtifactIds) || stringArrayField(metadata.changedFiles)) &&
+      !blocking &&
+      !rejected &&
       (artifact.runId !== null || metadata.createdBy === 'user')
     )
   })
@@ -195,7 +205,27 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
     )
   } else if (expected.length > 0) {
     for (const expectation of expected) {
-      if (/test|测试|验收/i.test(expectation)) {
+      if (/审查|评审|review/i.test(expectation)) {
+        requirements.push(
+          requirement(
+            'review',
+            `预期产物：${expectation}`,
+            hasReview,
+            hasReview ? reviewArtifacts.map((artifact) => `审查 Artifact：${artifact.title}`) : [],
+            hasReview ? [] : ['缺少审查/评审 Artifact'],
+          ),
+        )
+      } else if (/test\.js|未修改|哈希|hash|diff|代码|实现|变更|code/i.test(expectation)) {
+        requirements.push(
+          requirement(
+            'code',
+            `预期产物：${expectation}`,
+            hasCode,
+            hasCode ? [`代码/文件证据 ${codeArtifacts.length + fileEvidence.length + changedFiles.length} 项`] : [],
+            hasCode ? [] : ['缺少代码/diff Artifact、成功的 write_file 或非空文件变更'],
+          ),
+        )
+      } else if (/test|测试|验收/i.test(expectation)) {
         requirements.push(
           requirement(
             'test',
@@ -209,26 +239,6 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
                 ]
               : [],
             hasTest ? [] : ['缺少已验证测试报告、质量门禁通过或成功的 run_tests'],
-          ),
-        )
-      } else if (/diff|代码|实现|变更|code/i.test(expectation)) {
-        requirements.push(
-          requirement(
-            'code',
-            `预期产物：${expectation}`,
-            hasCode,
-            hasCode ? [`代码/文件证据 ${codeArtifacts.length + fileEvidence.length + changedFiles.length} 项`] : [],
-            hasCode ? [] : ['缺少代码/diff Artifact、成功的 write_file 或非空文件变更'],
-          ),
-        )
-      } else if (/审查|评审|review/i.test(expectation)) {
-        requirements.push(
-          requirement(
-            'review',
-            `预期产物：${expectation}`,
-            hasReview,
-            hasReview ? reviewArtifacts.map((artifact) => `审查 Artifact：${artifact.title}`) : [],
-            hasReview ? [] : ['缺少审查/评审 Artifact'],
           ),
         )
       } else if (/adr|设计|架构|方案|实施|design|architecture/i.test(expectation)) {

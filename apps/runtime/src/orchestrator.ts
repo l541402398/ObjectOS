@@ -70,6 +70,7 @@ function execution(status: PlanExecution['status'], concurrency: number, previou
     runIds: previous?.runIds ?? [],
     workspaceRef: previous?.workspaceRef ?? null,
     branch: previous?.branch ?? null,
+    allowedPaths: previous?.allowedPaths ?? ['.'],
     diffArtifactId: previous?.diffArtifactId ?? null,
     mergedAt: previous?.mergedAt ?? null,
     maxRetries: previous?.maxRetries ?? 2,
@@ -181,6 +182,8 @@ export class OrchestrationScheduler {
     maxRetries = 2,
     allowOverBudget = false,
     requireWorktree = false,
+    allowedPaths?: string[],
+    maxEvidenceRetries = 1,
   ): Promise<PlanDraft> {
     const plan = this.getPlan(planId)
     if (plan.status !== 'approved') throw new AppError('CONFLICT', '计划尚未批准，不能开始执行')
@@ -201,7 +204,12 @@ export class OrchestrationScheduler {
       deadlineAt: planWallClockMs > 0 ? now() + planWallClockMs : 0,
       budgetExhausted: null,
       maxRetries: Math.max(0, Math.min(5, maxRetries)),
+      maxEvidenceRetries: Math.max(0, Math.min(3, maxEvidenceRetries)),
       requireWorktree: requireWorktree || Boolean(plan.execution?.requireWorktree),
+      allowedPaths:
+        allowedPaths && allowedPaths.length
+          ? allowedPaths
+          : plan.execution?.allowedPaths ?? ['.'],
     })
     try {
       await this.ensureWorkspace(next)
@@ -233,6 +241,19 @@ export class OrchestrationScheduler {
     this.planGrantGuard?.(plan)
     if (plan.execution.deadlineAt > 0 && now() >= plan.execution.deadlineAt) {
       throw new AppError('BUDGET_EXCEEDED', '计划总执行时间已超出上限，不能继续；请修订计划并重新开始')
+    }
+    // A human-requested verification may leave the reviewed task blocked. Resume
+    // re-enters review so CompletionDecision can re-evaluate the new evidence
+    // without starting a duplicate execution run.
+    for (const taskId of plan.createdTaskIds) {
+      const card = this.store.read.getTaskCard(taskId)
+      if (!card || card.status !== 'blocked') continue
+      if (this.store.read.getActiveRunForTask(taskId)) continue
+      try {
+        this.services.tasks.move({ taskId, expectedVersion: card.version, to: 'review' }, SYSTEM_ACTOR)
+      } catch (error) {
+        this.logger.warn({ err: error, taskId }, 'failed to requeue blocked task for review after resume')
+      }
     }
     const next = this.saveExecution(plan, { ...plan.execution, status: 'running', error: null, updatedAt: now() })
     this.arm(planId)
@@ -267,9 +288,11 @@ export class OrchestrationScheduler {
       execution?.branch && execution.workspaceRef && existsSync(execution.workspaceRef),
     )
     let diff = ''
+    let files: WorktreeInfo['files'] = []
     if (available && execution?.workspaceRef) {
       try {
         diff = await this.worktrees.diff(execution.workspaceRef)
+        files = await this.worktrees.changedFiles(execution.workspaceRef, execution.allowedPaths ?? ['.'])
       } catch (error) {
         diff = `无法读取 diff：${error instanceof Error ? error.message : String(error)}`
       }
@@ -281,6 +304,7 @@ export class OrchestrationScheduler {
       workspaceRef: execution?.workspaceRef ?? null,
       status: execution?.status ?? null,
       diff,
+      files,
       diffArtifactId: execution?.diffArtifactId ?? null,
       mergedAt: execution?.mergedAt ?? null,
     }
@@ -298,6 +322,7 @@ export class OrchestrationScheduler {
       project.rootPath,
       execution.branch,
       `Merge ProjectOS plan ${plan.id}: ${plan.goal.slice(0, 120)}`,
+      execution.allowedPaths ?? ['.'],
     )
     if (!result.ok) throw new AppError('CONFLICT', result.message || '合并失败')
     this.saveExecution(plan, { ...execution, mergedAt: now(), updatedAt: now() })
@@ -1226,7 +1251,21 @@ export class OrchestrationScheduler {
       const refreshed = plan.createdTaskIds
         .map((taskId) => this.store.read.getTaskCard(taskId))
         .filter((card): card is TaskCard => Boolean(card))
-      if (refreshed.every((card) => card.status === 'done')) {
+      const hasActiveRun = plan.createdTaskIds.some((taskId) => Boolean(this.store.read.getActiveRunForTask(taskId)))
+      const reconciling = plan.createdTaskIds
+        .map((taskId) => this.store.read.getActiveRunForTask(taskId))
+        .filter((run) => run?.status === 'needs_reconciliation')
+      if (reconciling.length > 0) {
+        this.saveExecution(plan, {
+          ...plan.execution!,
+          status: 'paused',
+          error: `存在待人工核对的 Run（${reconciling.map((run) => run!.id).join('、')}），未知副作用不会自动重试`,
+          updatedAt: now(),
+        })
+        this.disarm(planId)
+        return
+      }
+      if (!hasActiveRun && refreshed.every((card) => card.status === 'done')) {
         let completedExecution: PlanExecution = { ...plan.execution!, status: 'completed', error: null, updatedAt: now() }
         if (completedExecution.branch && completedExecution.workspaceRef && !completedExecution.diffArtifactId) {
           try {

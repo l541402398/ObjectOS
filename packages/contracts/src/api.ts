@@ -1069,6 +1069,8 @@ export const ApiSchemas = {
       grantId: IdSchema.nullable().default(null),
       /** Idempotency key for retry/reservation recovery. */
       startRequestId: z.string().max(120).nullable().default(null),
+      /** Automatic evidence re-collection attempts; 0 forces pause for human verification. */
+      maxEvidenceRetries: z.number().int().min(0).max(3).default(1),
     }),
     output: PlanDraftSchema,
   },

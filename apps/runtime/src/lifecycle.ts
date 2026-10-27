@@ -178,7 +178,7 @@ export class LifecycleService {
     })
   }
 
-  transitionVersion(input: TransitionVersionInput): ProductVersion {
+  transitionVersion(input: TransitionVersionInput, options?: { beforeCommit?: () => void }): ProductVersion {
     const version = this.getVersion(input.versionId)
     if (!VERSION_TRANSITIONS[version.phase]?.includes(input.to)) {
       throw new AppError('CONFLICT', `版本不能从 ${version.phase} 直接进入 ${input.to}`)
@@ -191,16 +191,54 @@ export class LifecycleService {
         })
       }
     }
+    options?.beforeCommit?.()
+    if (input.to !== 'retired') {
+      const preCommitVersion = this.getVersion(version.id)
+      const preCommitGate = this.computeVersionGate(preCommitVersion, input.to)
+      if (preCommitGate.status !== 'passed') {
+        this.persistGateEvaluation(preCommitGate)
+        throw new AppError('CONFLICT', `版本门禁在提交前失效：${preCommitGate.conditionResults.filter((item) => !item.satisfied).map((item) => item.reason).join('；')}`, {
+          details: preCommitGate,
+        })
+      }
+    }
     return this.store.transaction(() => {
+      const current = this.getVersion(version.id)
+      if (current.phase !== version.phase || current.updatedAt !== version.updatedAt) {
+        throw new AppError('CONFLICT', '版本阶段已被其他操作修改，请重新评估门禁后重试')
+      }
+      // Re-check immediately before the compare-and-swap so evidence removed or
+      // downgraded between the first evaluation and this commit cannot advance.
+      if (input.to !== 'retired') {
+        const recheck = this.computeVersionGate(current, input.to)
+        if (recheck.status !== 'passed') {
+          throw new AppError('CONFLICT', `版本门禁在提交前失效：${recheck.conditionResults.filter((item) => !item.satisfied).map((item) => item.reason).join('；')}`, {
+            details: recheck,
+          })
+        }
+      }
       const timestamp = now()
-      this.store.db
+      const result = this.store.db
         .prepare(
           `UPDATE product_versions
            SET phase = ?, released_at = CASE WHEN ? = 'released' THEN COALESCE(released_at, ?) ELSE released_at END,
                retired_at = CASE WHEN ? = 'retired' THEN ? ELSE retired_at END, updated_at = ?
-           WHERE id = ?`,
+           WHERE id = ? AND phase = ? AND updated_at = ?`,
         )
-        .run(input.to, input.to, timestamp, input.to, timestamp, timestamp, version.id)
+        .run(
+          input.to,
+          input.to,
+          timestamp,
+          input.to,
+          timestamp,
+          timestamp,
+          version.id,
+          version.phase,
+          version.updatedAt,
+        )
+      if (Number(result.changes) !== 1) {
+        throw new AppError('CONFLICT', '版本阶段并发更新失败，请重试')
+      }
       return this.getVersion(version.id)
     })
   }
@@ -337,7 +375,7 @@ export class LifecycleService {
   private listGateEvaluations(subjectType: string, subjectId: string): GateEvaluation[] {
     return this.store.db
       .prepare(
-        'SELECT * FROM gate_evaluations WHERE subject_type = ? AND subject_id = ? ORDER BY evaluated_at DESC',
+        'SELECT * FROM gate_evaluations WHERE subject_type = ? AND subject_id = ? ORDER BY evaluated_at DESC, rowid DESC',
       )
       .all(subjectType, subjectId)
       .map((row) => {
@@ -382,8 +420,7 @@ export class LifecycleService {
       })
   }
 
-  private evaluateVersionGate(version: ProductVersion, to: VersionPhase): GateEvaluation {
-    this.ensureDefaultGates(version.projectId)
+  private computeVersionGate(version: ProductVersion, to: VersionPhase): GateEvaluation {
     const key = GATE_FOR_TARGET[to]
     if (!key) throw new AppError('CONFLICT', `没有为 ${to} 定义门禁`)
     const definition = this.listGateDefinitions(version.projectId).find((item) => item.key === key)
@@ -408,7 +445,7 @@ export class LifecycleService {
       }
     })
     const status: GateEvaluation['status'] = conditionResults.every((item) => item.satisfied) ? 'passed' : 'failed'
-    const evaluation: GateEvaluation = {
+    return {
       id: newId('gev'),
       projectId: version.projectId,
       gateId: definition.id,
@@ -419,6 +456,9 @@ export class LifecycleService {
       evaluatedBy: 'system',
       evaluatedAt: now(),
     }
+  }
+
+  private persistGateEvaluation(evaluation: GateEvaluation): void {
     this.store.db
       .prepare(
         `INSERT INTO gate_evaluations (id, project_id, gate_id, subject_type, subject_id, status, condition_results_json, evaluated_by, evaluated_at)
@@ -435,6 +475,12 @@ export class LifecycleService {
         evaluation.evaluatedBy,
         evaluation.evaluatedAt,
       )
+  }
+
+  private evaluateVersionGate(version: ProductVersion, to: VersionPhase): GateEvaluation {
+    this.ensureDefaultGates(version.projectId)
+    const evaluation = this.computeVersionGate(version, to)
+    this.persistGateEvaluation(evaluation)
     return evaluation
   }
 

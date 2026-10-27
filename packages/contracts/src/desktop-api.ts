@@ -273,6 +273,7 @@ export interface ProjectOSDesktopApi {
       allowOverBudget?: boolean,
       grantId?: string | null,
       startRequestId?: string | null,
+      maxEvidenceRetries?: number,
     ) => Promise<Out<'orchestration.start'>>
     pause: (planId: string) => Promise<Out<'orchestration.pause'>>
     resume: (planId: string) => Promise<Out<'orchestration.resume'>>

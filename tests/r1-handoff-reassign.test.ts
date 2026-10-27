@@ -127,6 +127,14 @@ function scenarioProvider(receiverIdRef: { id: string }, options: HandoffScenari
     }
     if (call.toolResults.length === 1) {
       handoffCreated = true
+      const artifactId = (() => {
+        try {
+          const parsed = JSON.parse(call.toolResults[0] ?? '{}') as Record<string, unknown>
+          return typeof parsed.artifactId === 'string' ? parsed.artifactId : ''
+        } catch {
+          return ''
+        }
+      })()
       return {
         tool: {
           name: 'handoff_task',
@@ -138,6 +146,7 @@ function scenarioProvider(receiverIdRef: { id: string }, options: HandoffScenari
             risks: [],
             nextActions: ['继续执行'],
             riskLevel: options.riskLevel ?? 'low',
+            artifactRefs: artifactId ? [artifactId] : [],
           },
         },
       }
@@ -238,6 +247,23 @@ describe('R1-D safe Handoff receiver fallback', () => {
     const updatedHandoff = harness.services.collaboration.listHandoffs(project.id).find((item) => item.id === handoff.id)
     expect(updatedHandoff?.status).toBe('accepted')
     expect(updatedHandoff?.continuedAt).toBeTruthy()
+    const sourceArtifact = store.read
+      .listArtifacts(project.id)
+      .find((artifact) => artifact.title === '测试报告')
+    expect(sourceArtifact).toBeTruthy()
+    expect(updatedHandoff?.artifactRefs.map((artifact) => artifact.id)).toContain(sourceArtifact!.id)
+    const downstreamRun = runs.find((run) => run.agentId === 'agt_qa')
+    expect(downstreamRun).toBeTruthy()
+    const contextStep = store.read
+      .getRunSteps(downstreamRun!.id)
+      .find((step) => step.kind === 'context' && typeof step.payload.handoffId === 'string')
+    expect(contextStep).toBeTruthy()
+    expect(JSON.stringify(contextStep!.payload)).toContain(sourceArtifact!.id)
+    console.log(
+      `[handoff-structured] handoff=${updatedHandoff!.id} from=${updatedHandoff!.fromAgentId} ` +
+        `to=${updatedHandoff!.toAgentId} artifact=${sourceArtifact!.id} downstreamRun=${downstreamRun!.id} ` +
+        `artifactRefs=${updatedHandoff!.artifactRefs.length} contextStep=${contextStep!.id}`,
+    )
 
     // Repeat tick / restart recovery must not duplicate the Run.
     const before = store.read.listRunSummaries(project.id, 50).filter((run) => run.taskId === planned.taskIds[0]).length

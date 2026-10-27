@@ -16,7 +16,7 @@ const TASK_TRANSITIONS: Record<TaskStatus, readonly TaskStatus[]> = {
   running: ['review', 'ready', 'blocked', 'cancelled'],
   review: ['done', 'running', 'blocked', 'cancelled'],
   done: ['review'],
-  blocked: ['ready', 'backlog', 'cancelled'],
+  blocked: ['ready', 'review', 'backlog', 'cancelled'],
   cancelled: ['backlog'],
 }
 

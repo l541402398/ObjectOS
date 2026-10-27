@@ -111,4 +111,65 @@ describe('V25 lifecycle domain', () => {
     expect(next.posture.environmentCount).toBe(2)
     expect(harness.store.read.getProject(project.id)?.currentStage).toBe(project.currentStage)
   })
+
+  it('rejects stale evidence and concurrent phase changes before the gate commit', async () => {
+    const harness = setup()
+    cleanups.push(harness.close)
+    const project = await createGitProject(harness.services, harness.dataDir, 'Lifecycle Gate Consistency')
+    const lifecycle = new LifecycleService(harness.store)
+    const overview = lifecycle.overview(project.id)
+    const productId = overview.products[0]!.id
+    const version = lifecycle.createVersion({
+      projectId: project.id,
+      productId,
+      version: '3.0.0',
+      phase: 'planned',
+      isDefault: false,
+    })
+    const evidence = lifecycle.recordEvidence({
+      projectId: project.id,
+      subjectType: 'version',
+      subjectId: version.id,
+      evidenceType: 'review_record',
+      verificationStatus: 'passed',
+      assurance: 'self_declared',
+      title: 'stale gate evidence',
+      summary: 'will be removed before commit',
+      provenance: { sourceSystem: 'test' },
+    })
+
+    expect(() =>
+      lifecycle.transitionVersion(
+        { versionId: version.id, to: 'discovery' },
+        { beforeCommit: () => harness.store.db.prepare('DELETE FROM evidence_links WHERE evidence_id = ?').run(evidence.id) },
+      ),
+    ).toThrow(/门禁在提交前失效/)
+    expect(lifecycle.gateOverview(project.id, 'version', version.id).evaluations[0]?.status).toBe('failed')
+
+    lifecycle.recordEvidence({
+      projectId: project.id,
+      subjectType: 'version',
+      subjectId: version.id,
+      evidenceType: 'review_record',
+      verificationStatus: 'passed',
+      assurance: 'self_declared',
+      title: 'fresh gate evidence',
+      summary: 'concurrent phase mutation must win nothing',
+      provenance: { sourceSystem: 'test' },
+    })
+    expect(() =>
+      lifecycle.transitionVersion(
+        { versionId: version.id, to: 'discovery' },
+        {
+          beforeCommit: () =>
+            harness.store.db
+              .prepare('UPDATE product_versions SET phase = ?, updated_at = ? WHERE id = ?')
+              .run('build', Date.now() + 1000, version.id),
+        },
+      ),
+    ).toThrow(/已被其他操作修改/)
+
+    const current = lifecycle.overview(project.id).versions.find((item) => item.id === version.id)
+    expect(current?.phase).toBe('build')
+  })
 })

@@ -252,7 +252,13 @@ export class RuntimeDispatcher {
         '1. 阅读任务验收标准与当前 Artifact。',
         '2. 使用 run_tests 或受控命令执行真实测试/检查；命令不可执行时明确报告原因。',
         '3. 创建 test-report / review Artifact，写入实际命令、退出码、输出摘要与哈希（如有）。',
+        '   若任务要求审查/评审，create_artifact 必须包含 metadata：',
+        '   { artifactType: "review", reviewedObjects: ["实际审查对象"], findings: ["发现"], conclusion: "结论", blockers: [], changedFiles: ["涉及文件"] }。',
+        '   Artifact 的 body 必须对应真实检查结果，不能只写“已完成”。',
         '4. 只有证据满足验收标准时才声明完成；否则列出缺失项，等待人工决定。',
+        '5. 只依据当前任务的验收标准判断；满足标准时审查结论必须为“通过”，不要把 skipped/未验证状态或不可执行的历史哈希当作新增阻断项。',
+        '不要调用 update_task_status 把任务直接标记为 done；验证 Run 结束后保持 review，由编排器按证据执行 CompletionDecision。',
+        '不要调用 send_agent_message 或 handoff_task 创建额外 Run；本次验证只允许只读检查、run_tests 和 create_artifact。',
         '不得伪造测试结果，不得把 skipped/未验证写成 passed。',
       ].join('\n'),
     })
@@ -1432,6 +1438,9 @@ export class RuntimeDispatcher {
             input.concurrency,
             input.maxRetries,
             input.allowOverBudget,
+            false,
+            grant.allowedPaths,
+            input.maxEvidenceRetries,
           )
           this.planGrants.markStartSucceeded(reserved.reservation.id, started)
           const overBudget =

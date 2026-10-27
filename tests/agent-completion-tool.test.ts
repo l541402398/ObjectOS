@@ -279,6 +279,45 @@ describe('Agent update_task_status(done) evidence gate', () => {
     console.log(`[done-gate] valid-artifact task=${store.read.getTask(task.id)?.status} tool=${toolStatus(store, project.id, task.id, 'update_task_status')} acceptance=${acceptance?.id}`)
   }, 30_000)
 
+  it('keeps a blocking review conclusion from being auto-accepted', async () => {
+    const provider = new FakeProvider((call) =>
+      call.toolResults.length === 0
+        ? { tool: { name: 'update_task_status', args: { status: 'done' } } }
+        : { text: '阻断审查' },
+    )
+    const { store, services, runner, dataDir } = setup(provider)
+    const project = await createProject(services, dataDir, 'done-blocking-review')
+    const task = await readyTask(services, project.id, {
+      title: '阻断审查',
+      role: 'reviewer',
+      expectedArtifacts: ['审查报告'],
+      assignee: 'agt_reviewer',
+    })
+    await services.projects.createArtifact({
+      projectId: project.id,
+      taskId: task.id,
+      kind: 'document',
+      title: '审查报告',
+      body: '存在未解决的阻断项',
+      metadata: {
+        artifactType: 'review',
+        reviewedObjects: ['src/rbac.ts'],
+        scope: 'RBAC 实现',
+        findings: ['缺少真实测试'],
+        conclusion: '阻断（不可放行）',
+        blockers: ['缺少真实测试'],
+        relatedArtifactIds: [],
+        changedFiles: ['src/rbac.ts'],
+      },
+    })
+    const session = services.sessions.create({ projectId: project.id, agentId: 'agt_reviewer', title: 'Review blocking' })
+    const started = await runner.startRun({ projectId: project.id, sessionId: session.id, taskId: task.id, prompt: '审查' })
+    await runner.awaitRunTerminal(started.runId, { timeoutMs: 10_000, pollMs: 50 })
+    expect(store.read.getTask(task.id)?.status).not.toBe('done')
+    expect(toolStatus(store, project.id, task.id, 'update_task_status')).toBe('failed')
+    console.log(`[done-gate] blocking-review task=${store.read.getTask(task.id)?.status} tool=${toolStatus(store, project.id, task.id, 'update_task_status')}`)
+  }, 30_000)
+
   it('keeps human acceptance distinct from agent automatic acceptance', async () => {
     const provider = new FakeProvider(() => ({ text: 'no agent run' }))
     const { store, services, dataDir } = setup(provider)

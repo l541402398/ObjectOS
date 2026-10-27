@@ -93,6 +93,8 @@ export const PlanExecutionSchema = z.object({
   runIds: z.array(IdSchema).default([]),
   workspaceRef: z.string().max(2048).nullable().default(null),
   branch: z.string().max(240).nullable().default(null),
+  /** Project-relative paths authorized by the PlanGrant for this execution. */
+  allowedPaths: z.array(z.string().max(500)).max(30).default(['.']),
   diffArtifactId: IdSchema.nullable().default(null),
   mergedAt: TimestampSchema.nullable().default(null),
   maxRetries: z.number().int().min(0).max(5).default(2),
@@ -275,6 +277,16 @@ export const WorktreeInfoSchema = z.object({
   workspaceRef: z.string().nullable(),
   status: PlanExecutionStatusSchema.nullable(),
   diff: z.string(),
+  files: z
+    .array(
+      z.object({
+        path: z.string(),
+        status: z.string(),
+        sensitive: z.boolean(),
+        allowed: z.boolean(),
+      }),
+    )
+    .default([]),
   diffArtifactId: IdSchema.nullable(),
   mergedAt: TimestampSchema.nullable(),
 })
