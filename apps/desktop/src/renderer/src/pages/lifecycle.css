@@ -418,3 +418,18 @@
   margin-top: 14px;
 }
 
+
+.v16-delivery-approvals { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+.v16-delivery-approvals-head { display: flex; align-items: baseline; gap: 8px; }
+.v16-delivery-approvals-head strong { font-size: 13px; color: var(--color-text-primary); }
+.v16-delivery-approvals-head span { font-size: 10.5px; color: var(--color-text-tertiary); }
+
+.v16-approval-fingerprint {
+  padding: 9px 11px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+}

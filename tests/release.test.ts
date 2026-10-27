@@ -81,6 +81,9 @@ describe('Phase 2 release and deployment domain', () => {
       linkedTaskIds: [],
     })
     const submitted = release.submitChangeRequest(request.id)
+    const pendingApproval = release.listApprovals(project.id).find((approval) => approval.id === submitted.approval.id)
+    expect(pendingApproval?.subjectType).toBe('change_request')
+    expect(pendingApproval?.subjectTitle).toBe('Release 0.1.0')
     const approved = release.decideApproval({ approvalId: submitted.approval.id, decision: 'approved', note: 'ok', rationale: 'ok' })
     expect(approved.status).toBe('approved')
 

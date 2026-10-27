@@ -66,6 +66,7 @@ export const ApprovalRequestSchema = z.object({
   subjectType: ApprovalSubjectSchema,
   subjectId: IdSchema,
   subjectRevision: z.number().int().positive(),
+  subjectTitle: z.string().nullable().default(null),
   contentFingerprint: z.string().min(16),
   status: DeliveryApprovalStatusSchema,
   requestedBy: z.string(),

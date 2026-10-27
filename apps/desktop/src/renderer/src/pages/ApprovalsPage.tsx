@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { App as AntApp, Button } from 'antd'
 import { CheckOutlined, CloseOutlined, SafetyCertificateOutlined } from '@ant-design/icons'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { EmptyState, PageHeader, StatusPill } from '@projectos/ui'
 import { useApprovals } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
@@ -17,6 +17,11 @@ export default function ApprovalsPage() {
   const { message } = AntApp.useApp()
   const queryClient = useQueryClient()
   const approvals = useApprovals(projectId ?? null)
+  const deliveryApprovals = useQuery({
+    queryKey: ['release-approvals', projectId],
+    queryFn: () => window.projectos.release.approvals(projectId!),
+    enabled: Boolean(projectId),
+  })
   const [filter, setFilter] = useState<'pending' | 'all'>('pending')
   const list = useMemo(() => {
     const items = approvals.data?.approvals ?? []
@@ -30,6 +35,17 @@ export default function ApprovalsPage() {
       await queryClient.invalidateQueries({ queryKey: ['approvals'] })
       await queryClient.invalidateQueries({ queryKey: ['bootstrap'] })
       message.success('审批已提交')
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+
+  const decideDelivery = useMutation({
+    mutationFn: ({ approvalId, decision }: { approvalId: string; decision: 'approved' | 'rejected' }) =>
+      window.projectos.release.decideApproval({ approvalId, decision, note: '审批中心处理', rationale: '审批中心处理' }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['release-approvals'] })
+      await queryClient.invalidateQueries({ queryKey: ['release-overview'] })
+      message.success('交付审批已提交')
     },
     onError: (error) => message.error(errorMessage(error)),
   })
@@ -64,6 +80,42 @@ export default function ApprovalsPage() {
           ))}
         </div>
       )}
+
+      <div className="v16-delivery-approvals">
+        <div className="v16-delivery-approvals-head">
+          <strong>交付审批</strong>
+          <span>变更与部署，绑定内容指纹与版本</span>
+        </div>
+        {(deliveryApprovals.data?.approvals ?? []).filter((approval) => filter === 'all' || approval.status === 'pending').length === 0 ? (
+          <div className="v16-glass-card"><EmptyState compact title="没有交付审批" description="发布变更或部署进入审批后会出现在这里。" /></div>
+        ) : (
+          <div className="v16-approval-grid">
+            {(deliveryApprovals.data?.approvals ?? [])
+              .filter((approval) => filter === 'all' || approval.status === 'pending')
+              .map((approval) => (
+                <article className="v16-approval-card" key={approval.id}>
+                  <header>
+                    <span className="v16-approval-card-icon"><SafetyCertificateOutlined /></span>
+                    <div>
+                      <strong>{approval.subjectTitle ?? (approval.subjectType === 'change_request' ? '发布变更审批' : '部署审批')}</strong>
+                      <span>r{approval.subjectRevision} · {formatRelative(approval.requestedAt)}</span>
+                    </div>
+                    <StatusPill tone={approval.status === 'pending' ? 'warning' : approval.status === 'approved' ? 'success' : 'danger'}>
+                      {approvalStatusLabel(approval.status)}
+                    </StatusPill>
+                  </header>
+                  <div className="v16-approval-fingerprint">内容指纹 {approval.contentFingerprint.slice(0, 20)}…</div>
+                  {approval.status === 'pending' ? (
+                    <footer>
+                      <Button danger icon={<CloseOutlined />} onClick={() => decideDelivery.mutate({ approvalId: approval.id, decision: 'rejected' })}>拒绝</Button>
+                      <Button type="primary" icon={<CheckOutlined />} loading={decideDelivery.isPending} onClick={() => decideDelivery.mutate({ approvalId: approval.id, decision: 'approved' })}>批准</Button>
+                    </footer>
+                  ) : null}
+                </article>
+              ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

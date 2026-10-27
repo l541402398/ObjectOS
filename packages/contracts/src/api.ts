@@ -411,6 +411,10 @@ export const ApiSchemas = {
     input: z.object({ projectId: IdSchema, versionId: IdSchema }),
     output: ReleaseOverviewSchema,
   },
+  'release.approvals': {
+    input: projectIdInput,
+    output: z.object({ approvals: z.array(ApprovalRequestSchema) }),
+  },
   'changeRequest.create': {
     input: CreateChangeRequestInputSchema,
     output: ChangeRequestSchema,

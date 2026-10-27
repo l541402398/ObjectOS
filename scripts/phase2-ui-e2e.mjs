@@ -67,6 +67,30 @@ try {
   await page.waitForTimeout(700)
   console.log('[phase2-ui] version delivery summary loaded')
 
+  if (!(await page.locator('.po-shell.is-collapsed').count())) {
+    const devGroup = page.locator('.po-sidenav-group-trigger').filter({ hasText: '研发' }).first()
+    if (!(await page.getByText('研发工作中心', { exact: true }).isVisible().catch(() => false))) {
+      await devGroup.click()
+      await page.waitForTimeout(250)
+    }
+    if (!(await page.getByText('研发工作中心', { exact: true }).isVisible().catch(() => false))) {
+      throw new Error('研发 group did not expand')
+    }
+    await devGroup.click()
+    await page.waitForTimeout(250)
+    if (await page.getByText('研发工作中心', { exact: true }).isVisible().catch(() => false)) {
+      throw new Error('研发 group did not collapse')
+    }
+    await devGroup.click()
+    await page.waitForTimeout(250)
+    await page.reload()
+    await page.waitForSelector('.po-lifecycle-page', { timeout: 30_000 })
+    if (!(await page.getByText('研发工作中心', { exact: true }).isVisible().catch(() => false))) {
+      throw new Error('研发 group expansion was not restored after reload')
+    }
+    console.log('[phase2-ui] accordion nav expand/collapse/persistence PASS')
+  }
+
   const versionCard = page.locator('.lc-version').first()
   await page.getByRole('button', { name: /记录证据/ }).first().click()
   await page.locator('input[placeholder="例如：v0.1.0 验收评审记录"]').fill('Phase 2 发布验证测试报告')
@@ -96,9 +120,17 @@ try {
   await clickLastModalButton(page, '创建')
   await page.waitForFunction(() => document.body.innerText.includes('Phase 2 发布变更'), null, { timeout: 15_000 })
   await page.getByRole('button', { name: '提交审批' }).first().click()
-  await page.waitForSelector('.rel-approval-actions', { timeout: 15_000 })
-  await page.locator('.po-delivery-page .rel-approval-actions button').first().click()
+  await page.waitForTimeout(400)
+  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/approvals` }, setup)
+  await page.waitForSelector('.v16-delivery-approvals', { timeout: 15_000 })
+  await page.evaluate(() => { document.documentElement.dataset.theme = 'light' })
+  await page.waitForTimeout(400)
+  await page.screenshot({ path: join(root, 'docs', 'screenshots', '1440x900-light-approval-center-delivery.png') })
+  await page.locator('.v16-delivery-approvals .v16-approval-card footer button').last().click()
   await page.waitForTimeout(900)
+  await page.evaluate(({ projectId, versionId }) => { location.hash = `#/projects/${projectId}/releases?version=${versionId}` }, setup)
+  await page.waitForSelector('.po-delivery-page', { timeout: 15_000 })
+  await page.waitForTimeout(600)
   console.log('[phase2-ui] change request approved PASS')
 
   await page.getByRole('button', { name: /生成发布候选/ }).click()
@@ -126,11 +158,16 @@ try {
   console.log('[phase2-ui] deployment center loaded')
   await page.locator('.rel-deploy-releases button').first().click()
   await clickLastModalButton(page, '创建待审批部署')
-  await page.waitForTimeout(900)
+  await page.waitForTimeout(500)
+  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/approvals` }, setup)
+  await page.waitForSelector('.v16-delivery-approvals', { timeout: 15_000 })
+  await page.locator('.v16-delivery-approvals .v16-approval-card footer button').last().click()
+  await page.waitForTimeout(700)
+  await page.evaluate(({ projectId, versionId }) => { location.hash = `#/projects/${projectId}/deployments?version=${versionId}` }, setup)
+  await page.waitForSelector('.po-delivery-page', { timeout: 15_000 })
+  await page.waitForTimeout(500)
   const deployPage = page.locator('.po-delivery-page')
-  await deployPage.locator('.rel-approval-actions button').first().click()
-  await page.waitForTimeout(900)
-  await page.getByRole('button', { name: /记录成功结果/ }).first().click()
+  await page.getByRole('button', { name: /登记结果/ }).first().click()
   await page.waitForTimeout(1000)
   const finalText = await deployPage.innerText()
   if (!finalText.includes('手工声明') || !finalText.includes('自我声明')) throw new Error('deployment provenance missing')

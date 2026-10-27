@@ -302,7 +302,9 @@ export default function AppLayout() {
   const navGroups: SidebarNavGroup[] = []
   if (projectId && currentProject) {
     navGroups.push({
+      key: '研发',
       title: '研发',
+      collapsible: true,
       items: [
         { key: 'work', label: '研发工作中心', icon: <ThunderboltOutlined /> },
         { key: 'tasks', label: '任务与验收', icon: <UnorderedListOutlined />, badge: taskBadge || null },
@@ -312,14 +314,25 @@ export default function AppLayout() {
       ],
     })
     navGroups.push({
+      key: '交付',
       title: '交付',
+      collapsible: true,
       items: [
         { key: 'releases', label: '发布中心', icon: <RocketOutlined /> },
         { key: 'deployments', label: '部署中心', icon: <CloudUploadOutlined /> },
       ],
     })
     navGroups.push({
+      key: '运维',
+      title: '运维',
+      note: 'Phase 3',
+      disabled: true,
+      items: [],
+    })
+    navGroups.push({
+      key: '项目',
       title: '项目',
+      collapsible: true,
       items: [
         { key: 'overview', label: '项目姿态', icon: <AppstoreOutlined /> },
         { key: 'versions', label: '版本与迭代', icon: <ApartmentOutlined /> },
@@ -329,7 +342,9 @@ export default function AppLayout() {
     })
   }
   navGroups.push({
+    key: '全局',
     title: '全局',
+    collapsible: true,
     items: [
       { key: 'center', label: '项目中心', icon: <ProjectOutlined /> },
       { key: 'settings', label: '设置', icon: <SettingOutlined /> },

@@ -75,6 +75,7 @@ const api: ProjectOSDesktopApi = {
   },
   release: {
     overview: (projectId, versionId) => call('release.overview', { projectId, versionId }),
+    approvals: (projectId) => call('release.approvals', { projectId }),
     createChangeRequest: (input) => call('changeRequest.create', input),
     updateChangeRequest: (input) => call('changeRequest.update', input),
     submitChangeRequest: (changeRequestId) => call('changeRequest.submit', { changeRequestId }),

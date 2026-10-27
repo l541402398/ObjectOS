@@ -925,3 +925,48 @@
     justify-content: flex-start;
   }
 }
+
+.po-sidenav-group-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.po-sidenav-group-trigger:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.po-sidenav-group-trigger > span:first-child {
+  flex: 0 1 auto;
+}
+
+.po-sidenav-note {
+  margin-left: auto;
+  font-size: var(--text-micro);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--color-text-tertiary);
+}
+
+.po-sidenav-chevron {
+  margin-left: 2px;
+  color: var(--color-text-tertiary);
+  font-size: 14px;
+  line-height: 1;
+  transform: rotate(0deg);
+  transition: transform 160ms ease;
+}
+
+.po-sidenav-group-trigger.is-open .po-sidenav-chevron {
+  transform: rotate(90deg);
+}
+
+.po-sidenav-group.is-disabled {
+  opacity: 0.7;
+}

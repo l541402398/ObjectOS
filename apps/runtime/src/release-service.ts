@@ -665,6 +665,7 @@ export class ReleaseService {
       subjectType: String(row.subject_type) as ApprovalRequest['subjectType'],
       subjectId: String(row.subject_id),
       subjectRevision: Number(row.subject_revision),
+      subjectTitle: null,
       contentFingerprint: String(row.content_fingerprint),
       status: String(row.status) as ApprovalRequest['status'],
       requestedBy: String(row.requested_by),
@@ -676,11 +677,21 @@ export class ReleaseService {
     }
   }
 
-  private listApprovals(projectId: string): ApprovalRequest[] {
+  listApprovals(projectId: string): ApprovalRequest[] {
     return this.store.db
       .prepare('SELECT * FROM approval_requests WHERE project_id=? ORDER BY requested_at DESC')
       .all(projectId)
-      .map((row) => this.getApproval(String((row as Record<string, unknown>).id)))
+      .map((row) => {
+        const approval = this.getApproval(String((row as Record<string, unknown>).id))
+        if (approval.subjectType === 'change_request') {
+          const request = this.store.db.prepare('SELECT title FROM change_requests WHERE id=?').get(approval.subjectId) as { title: string } | undefined
+          return { ...approval, subjectTitle: request?.title ?? null }
+        }
+        const deployment = this.store.db
+          .prepare('SELECT d.id, e.name AS environment_name FROM deployments d LEFT JOIN environments e ON e.id=d.environment_id WHERE d.id=?')
+          .get(approval.subjectId) as { id: string; environment_name: string | null } | undefined
+        return { ...approval, subjectTitle: deployment ? `部署 · ${deployment.environment_name ?? deployment.id}` : null }
+      })
   }
 
   private getChangeRequest(id: string): ChangeRequest {

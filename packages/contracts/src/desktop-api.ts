@@ -49,6 +49,7 @@ export interface ProjectOSDesktopApi {
   }
   release: {
     overview: (projectId: string, versionId: string) => Promise<Out<'release.overview'>>
+    approvals: (projectId: string) => Promise<Out<'release.approvals'>>
     createChangeRequest: (input: In<'changeRequest.create'>) => Promise<Out<'changeRequest.create'>>
     updateChangeRequest: (input: In<'changeRequest.update'>) => Promise<Out<'changeRequest.update'>>
     submitChangeRequest: (changeRequestId: string) => Promise<Out<'changeRequest.submit'>>

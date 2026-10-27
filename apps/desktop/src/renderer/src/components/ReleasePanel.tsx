@@ -20,11 +20,11 @@ const CR_STATUS: Record<string, string> = {
 const CANDIDATE_STATUS: Record<string, string> = {
   draft: '草稿',
   blocked: '证据不足',
-  ready: '可发布',
+  ready: '可冻结',
   submitted: '已提交',
   approved: '已批准',
   rejected: '已拒绝',
-  released: '已发布',
+  released: '已生成 Release',
   superseded: '已替代',
 }
 
@@ -33,7 +33,7 @@ const DEPLOYMENT_STATUS: Record<string, string> = {
   pending: '待记录',
   running: '执行中',
   verifying: '验证中',
-  succeeded: '记录成功',
+  succeeded: '已登记',
   failed: '失败',
   cancelled: '已取消',
   unknown: '未知',
@@ -144,15 +144,6 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
     onSuccess: async () => {
       await invalidate()
       message.success('变更已提交审批')
-    },
-    onError: (error) => message.error(errorMessage(error)),
-  })
-  const decide = useMutation({
-    mutationFn: ({ approvalId, decision }: { approvalId: string; decision: 'approved' | 'rejected' }) =>
-      window.projectos.release.decideApproval({ approvalId, decision, note: '版本页审批', rationale: '版本页审批' }),
-    onSuccess: async () => {
-      await invalidate()
-      message.success('审批已处理')
     },
     onError: (error) => message.error(errorMessage(error)),
   })
@@ -394,7 +385,7 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
               <div className="rel-item-head">
                 <strong>v{release.version}</strong>
                 <Tag color={release.distributionStatus === 'externally_confirmed' ? 'green' : 'blue'}>
-                  {release.distributionStatus === 'externally_confirmed' ? '外部确认' : '未外部分发'}
+                  {release.distributionStatus === 'externally_confirmed' ? '已登记 · 外部确认' : '已登记 · 未外部分发'}
                 </Tag>
               </div>
               <div className="rel-meta">{release.artifactManifest.length} 个冻结制品 · {formatRelative(release.createdAt)}</div>
@@ -425,10 +416,7 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
                 <Tag color="gold">待处理</Tag>
               </div>
               <div className="rel-meta">r{approval.subjectRevision} · {formatRelative(approval.requestedAt)}</div>
-              <div className="rel-approval-actions">
-                <Button size="small" type="primary" onClick={() => decide.mutate({ approvalId: approval.id, decision: 'approved' })}>批准</Button>
-                <Button size="small" danger onClick={() => decide.mutate({ approvalId: approval.id, decision: 'rejected' })}>拒绝</Button>
-              </div>
+              <div className="rel-meta">在审批中心统一处理</div>
             </article>
           ))}
         </section>
@@ -472,10 +460,13 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
                 <div className="rel-meta">
                   {SOURCE_LABEL[deployment.source] ?? deployment.source} · {ASSURANCE_LABEL[deployment.assurance] ?? deployment.assurance} · {formatRelative(deployment.createdAt)}
                 </div>
+                {deployment.source === 'manual' && deployment.status === 'succeeded' ? (
+                  <div className="rel-meta">未核实 · 仅用户声明，不计入环境当前版本</div>
+                ) : null}
                 {deployment.externalId ? <div className="rel-hash">外部 ID {deployment.externalId}</div> : null}
                 {deployment.approvalId && ['pending', 'awaiting_approval'].includes(deployment.status) ? (
                   <Button size="small" onClick={() => recordResult.mutate(deployment.id)} loading={recordResult.isPending}>
-                    记录成功结果
+                    登记结果
                   </Button>
                 ) : null}
               </article>
@@ -508,7 +499,7 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
                 <div className="rel-item-head">
                   <strong>v{release.version}</strong>
                   <Tag color={release.distributionStatus === 'externally_confirmed' ? 'green' : 'blue'}>
-                    {release.distributionStatus === 'externally_confirmed' ? '外部确认' : '未外部分发'}
+                    {release.distributionStatus === 'externally_confirmed' ? '已登记 · 外部确认' : '已登记 · 未外部分发'}
                   </Tag>
                 </div>
                 <div className="rel-meta">{release.artifactManifest.length} 个制品 · {formatRelative(release.publishedAt)}</div>

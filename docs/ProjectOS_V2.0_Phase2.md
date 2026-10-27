@@ -523,3 +523,33 @@ SSH 私钥/密码、kubeconfig Token、ServiceAccount Token、CI/CD Access Token
 - Electron 真实点击：版本摘要 → 发布中心 → 变更提交/批准 → 候选 → Release → 部署中心 → 部署审批/结果登记。
 - 1440 Light/Dark、1024、实际 DPR 1.25；`scrollWidth == innerWidth`，无裁切。
 - 旧路由兼容；单测、E2E、构建与打包通过。
+
+---
+
+## 14. Phase 2.1 收口与导航重构实施状态（2026-10-27）
+
+### 14.1 已实施
+
+- 侧栏改为一/二级分组可折叠：研发、交付、项目、全局；当前路由所属组自动展开。
+- 展开状态写入 `localStorage`（`projectos.sidebar.expandedGroups`），重启/刷新恢复；手动折叠当前组在路由切换前保持。
+- 运维组仅显示“Phase 3”占位，不创建空页面或假监控。
+- 侧栏内容区独立滚动；底部设置与 Runtime 状态固定；窄屏保留图标 + Tooltip。
+- 发布中心 `/releases`、部署中心 `/deployments` 独立工作区；旧 `/versions` 和深链接保留。
+- 版本页只保留发布/部署摘要，完整交付容器移出。
+- 交付审批接入统一审批中心，保留 subject/revision/content fingerprint；Release/Deployment 页不再重复放置批准按钮。
+- 候选状态改为“可冻结/已生成 Release”；Release 显示“已登记 · 未外部分发”；手工部署显示“已登记 · 未核实”，不计入环境当前版本。
+- 真实 Electron E2E：折叠/展开/持久化、版本证据/门禁、发布中心、审批中心处理、部署中心、部署结果登记均通过。
+
+### 14.2 Adapter 与真实远程链
+
+仓库内只发现 `.github/workflows/linux-build.yml`（构建 AppImage，不含部署）；未发现 Helm/Kustomize、Argo CD/Flux/Tekton、Jenkinsfile 或生产部署配置。没有外部连接凭据与写操作授权。
+
+因此：
+
+- CI/CD、Kubernetes、GitOps、SSH 真实 Adapter：**未实现，BLOCKED**。
+- 当前只实现手工/导入部署事实登记与来源可信性；不宣称自动部署能力。
+- Phase 3 再接入真实 Service/Incident/Observability 数据并建立运维一级菜单。
+
+### 14.3 验收
+
+`pnpm typecheck`、`pnpm test`、`pnpm build`、`package:dir`、`test:package` 通过；详见 `docs/v2/ProjectOS_V2.0_Phase2_1_Delivery_Closure.md`。

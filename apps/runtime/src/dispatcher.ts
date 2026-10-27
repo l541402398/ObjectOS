@@ -804,6 +804,10 @@ export class RuntimeDispatcher {
         const input = this.parse('release.overview', rawInput)
         return this.release.overview(input.projectId, input.versionId)
       }
+      case 'release.approvals': {
+        const input = this.parse('release.approvals', rawInput)
+        return { approvals: this.release.listApprovals(input.projectId) }
+      }
       case 'changeRequest.create': {
         const input = this.parse('changeRequest.create', rawInput)
         return this.release.createChangeRequest(input)
