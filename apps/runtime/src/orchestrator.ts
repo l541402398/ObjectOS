@@ -27,7 +27,7 @@ import {
 } from '@projectos/planning'
 import type { AgentRunner } from './agent-runner.js'
 import type { Logger } from './logger.js'
-import { QualityGateService, DEFAULT_QUALITY_POLICY, type QualityGateReport } from './quality-gate.js'
+import { QualityGateService, DEFAULT_QUALITY_POLICY, AUTO_QUALITY_GATE_ENABLED, type QualityGateReport } from './quality-gate.js'
 import { planSessionTitle } from '@projectos/session-manager'
 import { buildAssignmentCandidates } from './assignment-candidates.js'
 import { classifyExecutionFailure } from './failure-classifier.js'
@@ -1052,6 +1052,20 @@ export class OrchestrationScheduler {
         const role = card.labels.find((label) => ['architect', 'developer', 'reviewer', 'tester'].includes(label))
         let report = this.qualityReports.get(card.id)
         if (role === 'developer' || role === 'tester') {
+          if (!AUTO_QUALITY_GATE_ENABLED) {
+            // Phase 0: never auto-run repository scripts through the quality gate.
+            // Pause the plan and leave the task in review for explicit human work.
+            if (plan.execution) {
+              this.saveExecution(plan, {
+                ...plan.execution,
+                status: 'paused',
+                error: 'Phase 0：自动质量门禁已禁用；请在受控 Agent/手工流程完成质量验证后人工验收',
+                updatedAt: now(),
+              })
+            }
+            this.disarm(planId)
+            return
+          }
           if (!report) {
             const policy = this.store.read.getQualityPolicy(plan.projectId) ?? DEFAULT_QUALITY_POLICY
             report = await this.qualityGate.run(workspaceRoot, { policy })

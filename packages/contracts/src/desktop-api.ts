@@ -229,9 +229,7 @@ export interface ProjectOSDesktopApi {
     detect: (profileId?: string) => Promise<Out<'runtime.detect'>>
     install: (profileId: string) => Promise<Out<'runtime.install'>>
     registry: (force?: boolean) => Promise<Out<'runtime.registry'>>
-    execute: (profileId: string, prompt: string, cwd?: string) => Promise<Out<'runtime.execute'>>
     acpHandshake: (profileId: string, cwd?: string) => Promise<Out<'runtime.acpHandshake'>>
-    acpPrompt: (profileId: string, prompt: string, cwd?: string) => Promise<Out<'runtime.acpPrompt'>>
     acpAuthenticate: (profileId: string, methodId: string, cwd?: string) => Promise<Out<'runtime.acpAuthenticate'>>
     importRegistry: (input: In<'runtime.importRegistry'>) => Promise<Out<'runtime.importRegistry'>>
     cancel: (executionId: string) => Promise<Out<'runtime.cancel'>>

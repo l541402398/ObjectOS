@@ -388,10 +388,7 @@ export function AgentStudioModal({
     setRunning(true)
     setRunOutput(null)
     try {
-      const result = await window.projectos.agentDefinitions.run({ agentId: editing.id, projectId, prompt: runPrompt })
-      setRunOutput(`[${result.status}] ${result.output}`)
-    } catch (error) {
-      setRunOutput(errorMessage(error))
+      setRunOutput('Phase 0：Agent Studio 直跑入口已禁用（绕过 Scheduler、执行槽、任务租约与审批）。请在 Agent 工作台创建会话运行该 Agent；那里会走受控的 AgentRunner.startRun / Run / 审批链。')
     } finally {
       setRunning(false)
     }
@@ -769,7 +766,7 @@ export function AgentStudioModal({
         </OverlayScrollArea>
         <OverlayFooter>
           <Button onClick={() => setRunOpen(false)}>取消</Button>
-          <Button type="primary" loading={running} onClick={() => void runAgent()}>运行</Button>
+          <Button type="primary" loading={running} onClick={() => void runAgent()}>查看替代入口</Button>
         </OverlayFooter>
       </DialogShell>
     </SheetShell>

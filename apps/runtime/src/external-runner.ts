@@ -10,6 +10,39 @@ import { listExternalAgents } from './external-agents.js'
 const SYSTEM_ACTOR = { kind: 'system' as const, id: 'external-agent', name: '外部 Agent' }
 const LEASE_TTL_MS = 30 * 60 * 1000
 
+/** Environment keys a read-only external harness may need. Never pass provider secrets. */
+const SAFE_ENV_KEYS = [
+  'PATH',
+  'HOME',
+  'USERPROFILE',
+  'APPDATA',
+  'LOCALAPPDATA',
+  'TEMP',
+  'TMP',
+  'SystemRoot',
+  'ComSpec',
+  'PATHEXT',
+  'LANG',
+  'LC_ALL',
+  'TERM',
+  'SHELL',
+  'USER',
+  'LOGNAME',
+  'HOSTNAME',
+  'NUMBER_OF_PROCESSORS',
+  'PROCESSOR_ARCHITECTURE',
+  'OS',
+] as const
+
+function safeEnvironment(): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = {}
+  for (const key of SAFE_ENV_KEYS) {
+    const value = process.env[key]
+    if (value) env[key] = value
+  }
+  return env
+}
+
 interface ActiveExternalRun {
   child: ReturnType<typeof crossSpawn>
   store: SqliteStore
@@ -18,6 +51,8 @@ interface ActiveExternalRun {
   taskId: string | null
   toolCallId: string
   lease: { token: number; expiresAt: number } | null
+  slot: { token: number; expiresAt: number } | null
+  agentId: string
 }
 
 function claudeArgs(prompt: string, allowWrite: boolean): string[] {
@@ -48,6 +83,14 @@ export function externalCommand(adapterId: 'claude-code' | 'codex', prompt: stri
   ]
 }
 
+export function assertExternalWriteAllowed(allowWrite: boolean): void {
+  if (!allowWrite) return
+  // Phase 0 safety gate: external CLI write mode needs a run-level approval
+  // before it may mutate a Worktree. Until that approval path is wired, keep
+  // the safe read-only capability and fail closed for writes.
+  throw new AppError('POLICY_DENIED', '外部 Agent 写模式在 Phase 0 已禁用（缺少运行级审批）；只读模式仍可用')
+}
+
 export class ExternalAgentRunner {
   private readonly active = new Map<string, ActiveExternalRun>()
 
@@ -60,6 +103,7 @@ export class ExternalAgentRunner {
   async execute(input: ExternalAgentRunInput): Promise<{ runId: string; sessionId: string; adapterId: 'claude-code' | 'codex'; readOnly: boolean }> {
     const project = this.store.read.getProject(input.projectId)
     if (!project) throw new AppError('NOT_FOUND', '项目不存在')
+    assertExternalWriteAllowed(input.allowWrite)
     const installations = await listExternalAgents()
     const installation = installations.find((item) => item.adapterId === input.adapterId)
     if (!installation?.installed) throw new AppError('CONFLICT', `${input.adapterId} 未安装或不可用`)
@@ -106,6 +150,15 @@ export class ExternalAgentRunner {
       if (card.blockedBy.length > 0) throw new AppError('CONFLICT', '存在未完成的依赖任务，无法启动外部 Agent')
     }
     const lease = task ? this.store.acquireTaskLease(task.id, `run:${runId}`, LEASE_TTL_MS) : null
+    let slot: { token: number; expiresAt: number } | null = null
+    try {
+      slot = this.store.acquireAgentExecutionSlot(agent.agent.id, runId, LEASE_TTL_MS)
+    } catch (error) {
+      if (lease && task) {
+        try { this.store.releaseTaskLease(task.id, `run:${runId}`, lease.token) } catch { /* ignore */ }
+      }
+      throw error
+    }
     const attemptNo = task ? this.store.nextAttemptNo(task.id) : 1
     let toolCallId = ''
     try {
@@ -191,6 +244,9 @@ export class ExternalAgentRunner {
       if (lease && task) {
         try { this.store.releaseTaskLease(task.id, `run:${runId}`, lease.token) } catch { /* ignore */ }
       }
+      if (slot) {
+        try { this.store.releaseAgentExecutionSlot(agent.agent.id, runId, slot.token) } catch { /* ignore */ }
+      }
       throw error
     }
 
@@ -199,7 +255,7 @@ export class ExternalAgentRunner {
       cwd: workspaceRoot,
       windowsHide: true,
       stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...process.env },
+      env: safeEnvironment(),
     })
     this.active.set(runId, {
       child,
@@ -209,6 +265,8 @@ export class ExternalAgentRunner {
       taskId: input.taskId ?? null,
       toolCallId,
       lease,
+      slot,
+      agentId: agent.agent.id,
     })
     let output = ''
     let outputStepId: string | null = null
@@ -294,11 +352,18 @@ export class ExternalAgentRunner {
         runId,
       })
       this.store.updateTaskAttemptStatus(runId, 'cancelled')
-      if (active.taskId && active.lease) {
-        try { this.store.releaseTaskLease(active.taskId, `run:${runId}`, active.lease.token) } catch { /* ignore */ }
-      }
     }
+    this.releaseLeaseAndSlot(active)
     this.active.delete(runId)
+  }
+
+  private releaseLeaseAndSlot(active: ActiveExternalRun): void {
+    if (active.taskId && active.lease) {
+      try { this.store.releaseTaskLease(active.taskId, `run:${active.runId}`, active.lease.token) } catch { /* ignore */ }
+    }
+    if (active.slot) {
+      try { this.store.releaseAgentExecutionSlot(active.agentId, active.runId, active.slot.token) } catch { /* ignore */ }
+    }
   }
 
   private finish(runId: string, status: 'completed' | 'failed', summary: string, stepId: string | null): void {
@@ -319,9 +384,7 @@ export class ExternalAgentRunner {
       finishedAt: now(),
     })
     this.store.updateTaskAttemptStatus(runId, status)
-    if (active.taskId && active.lease) {
-      try { this.store.releaseTaskLease(active.taskId, `run:${runId}`, active.lease.token) } catch { /* ignore */ }
-    }
+    this.releaseLeaseAndSlot(active)
     this.store.appendRunStep({
       runId,
       kind: 'status',

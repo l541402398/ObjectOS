@@ -66,17 +66,22 @@ export function RuntimeSettingsPanel() {
   const runHarnessTest = async (profile: RuntimeProfile): Promise<void> => {
     setTestingId(profile.id)
     try {
-      const prompt = 'Reply with exactly: PROJECTOS-HARNESS-OK'
-      if (profile.protocol === 'acp') {
-        const result = await window.projectos.runtimeProfiles.acpPrompt(profile.id, prompt)
-        setTestResults((current) => ({ ...current, [profile.id]: { ok: true, text: JSON.stringify(result.result).slice(0, 4000) } }))
-        message.success('Harness 测试完成')
-      } else {
-        const result = await window.projectos.runtimeProfiles.execute(profile.id, prompt)
-        setTestResults((current) => ({ ...current, [profile.id]: { ok: result.status === 'completed', text: `[${result.status}] ${result.output}`.slice(0, 4000) } }))
-        if (result.status === 'completed') message.success('Harness 测试通过')
-        else message.warning(`Harness 测试 ${result.status}`)
-      }
+      // Phase 0: do not run an arbitrary prompt through a raw runtime path.
+      // The legitimate Agent execution path is Agent Workbench -> AgentRunner,
+      // which has Run/ToolCall/Approval/budget/lease boundaries. This button only
+      // re-runs the sandboxed detection (version/executable availability).
+      const result = await window.projectos.runtimeProfiles.detect(profile.id)
+      const detection = result.detections.find((item) => item.profileId === profile.id)
+      const ok = detection?.status === 'available'
+      setTestResults((current) => ({
+        ...current,
+        [profile.id]: {
+          ok,
+          text: `安全检测：${detection?.status ?? 'unknown'}${detection?.version ? ` · ${detection.version}` : ''}${detection?.message ? ` · ${detection.message}` : ''}\n（Phase 0 不通过 Renderer 直接执行任意 Prompt；请在 Agent 工作台运行 Agent）`,
+        },
+      }))
+      if (ok) message.success('Harness 可用')
+      else message.warning(`Harness ${detection?.status ?? '未知'}`)
     } catch (error) {
       setTestResults((current) => ({ ...current, [profile.id]: { ok: false, text: errorMessage(error) } }))
       message.error(errorMessage(error))
@@ -249,7 +254,7 @@ export function RuntimeSettingsPanel() {
 
               {testResult ? (
                 <div className={`v17-runtime-test ${testResult.ok ? 'is-ok' : 'is-error'}`}>
-                  <div><strong>{testResult.ok ? '测试通过' : '测试失败'}</strong><Button type="text" size="small" onClick={() => setTestResults((current) => { const next = { ...current }; delete next[profile.id]; return next })}>清除</Button></div>
+                  <div><strong>{testResult.ok ? '检测通过' : '检测异常'}</strong><Button type="text" size="small" onClick={() => setTestResults((current) => { const next = { ...current }; delete next[profile.id]; return next })}>清除</Button></div>
                   <pre>{testResult.text}</pre>
                 </div>
               ) : null}
@@ -259,7 +264,7 @@ export function RuntimeSettingsPanel() {
                   <Button size="small" type="primary" loading={installing === profile.id} onClick={() => install(profile)}>安装</Button>
                 ) : null}
                 {profile.protocol !== 'native' ? (
-                  <Button size="small" loading={testingId === profile.id} onClick={() => void runHarnessTest(profile)}>测试</Button>
+                  <Button size="small" loading={testingId === profile.id} onClick={() => void runHarnessTest(profile)}>安全检测</Button>
                 ) : null}
                 {profile.protocol === 'acp' ? (
                   <Button

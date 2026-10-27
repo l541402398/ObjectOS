@@ -159,6 +159,33 @@ interface ActiveRun {
 /** setTimeout overflows above 2^31-1 ms; clamp the deadline timer. */
 const MAX_TIMER_MS = 2_147_483_647
 
+export function assertCoordinatedTaskScope(input: {
+  action: 'update' | 'handoff'
+  projectId: string
+  agentId: string
+  runTaskId: string | null
+  target: { id: string; projectId: string; assigneeAgentId: string | null }
+}): void {
+  // Phase 0: coordination tools must not mutate a task from another project
+  // or another plan. A run bound to a task may only act on that task; a
+  // project-level run may only update tasks assigned to its own Agent.
+  if (input.target.projectId !== input.projectId) {
+    throw new AppError('POLICY_DENIED', '协调工具不能操作其他项目的任务')
+  }
+  if (input.runTaskId) {
+    if (input.target.id !== input.runTaskId) {
+      throw new AppError('POLICY_DENIED', '协调工具只能操作当前计划/当前运行绑定的任务')
+    }
+    return
+  }
+  if (input.action === 'handoff') {
+    throw new AppError('POLICY_DENIED', '没有运行绑定任务时不能发起交接')
+  }
+  if (input.target.assigneeAgentId && input.target.assigneeAgentId !== input.agentId) {
+    throw new AppError('POLICY_DENIED', '协调工具只能更新分配给当前 Agent 的任务')
+  }
+}
+
 export class AgentRunner {
   private readonly active = new Map<string, ActiveRun>()
   private readonly runtimeExecutor: RuntimeExecutionService
@@ -547,7 +574,7 @@ export class AgentRunner {
       }
     }
     if (definition && runtimeProfile && useRuntime) {
-      void this.executeViaRuntime(state, runtimeProfile, state.promptOverride ?? promptMessage.content, project.rootPath).catch((error) => {
+      void this.executeViaRuntime(state, runtimeProfile, state.promptOverride ?? promptMessage.content, state.workspaceRoot).catch((error) => {
         this.logger.error({ err: error, runId }, 'runtime agent run crashed')
         void this.failRun(state, error instanceof Error ? error.message : String(error)).catch((nested) => {
           this.logger.error({ err: nested, runId }, 'failed to finalize runtime run')
@@ -1918,6 +1945,18 @@ export class AgentRunner {
       typeof args.taskId === 'string' && args.taskId
         ? args.taskId
         : state.taskId
+    if (invocation.name === 'update_task_status' || invocation.name === 'handoff_task') {
+      if (!taskId) throw new AppError('POLICY_DENIED', '当前运行没有关联任务，无法执行协调操作')
+      const target = this.store.read.getTask(taskId)
+      if (!target) throw new AppError('POLICY_DENIED', '协调工具目标任务不存在')
+      assertCoordinatedTaskScope({
+        action: invocation.name === 'handoff_task' ? 'handoff' : 'update',
+        projectId: project.id,
+        agentId: agent.id,
+        runTaskId: state.taskId,
+        target,
+      })
+    }
     switch (invocation.name) {
       case 'list_directory': {
         const subPath = typeof args.path === 'string' ? args.path.replace(/^\.\/?/, '').replace(/\/$/, '') : ''

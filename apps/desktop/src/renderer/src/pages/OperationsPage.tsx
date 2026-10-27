@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { App, Button, Checkbox, Popconfirm, Select, Tag } from 'antd'
 import { PlayCircleOutlined, SafetyCertificateOutlined } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -44,7 +44,6 @@ export default function OperationsPage() {
   const grantValid = Boolean(
     grant.data && !grant.data.revokedAt && grant.data.expiresAt > grant.dataUpdatedAt && grant.data.usedRuns < grant.data.maxRuns,
   )
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { message } = App.useApp()
   const [selected, setSelected] = useState<string[]>([])
@@ -82,19 +81,8 @@ export default function OperationsPage() {
     }
   }
 
-  const startRepair = async (proposalId: string): Promise<void> => {
-    setBusy(proposalId)
-    try {
-      await window.projectos.operations.startRepair(proposalId)
-      await refresh()
-      await queryClient.invalidateQueries({ queryKey: ['operations-grant', projectId] })
-      message.success('修复计划已启动')
-      navigate(`/projects/${projectId}/orchestration`)
-    } catch (error) {
-      message.error(errorMessage(error))
-    } finally {
-      setBusy(null)
-    }
+  const startRepair = async (_proposalId: string): Promise<void> => {
+    message.info('Phase 0 已禁用自动修复写能力；请在受控 Agent 计划中修复，或等待 allowedPaths/审批接入')
   }
 
   const changeGrant = async (action: 'grant' | 'revoke'): Promise<void> => {
@@ -141,7 +129,7 @@ export default function OperationsPage() {
             options={[
               { value: 'observe', label: 'Observe · 只观察' },
               { value: 'propose', label: 'Propose · 生成提案' },
-              { value: 'approved-autofix', label: 'Approved autofix' },
+              { value: 'approved-autofix', label: 'Approved autofix（Phase 0 禁用）', disabled: true },
             ]}
             onChange={(mode) => {
               void window.projectos.operations.setMode(projectId, mode as 'observe' | 'propose' | 'approved-autofix').then(refresh)

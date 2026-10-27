@@ -24,6 +24,17 @@ export const DEFAULT_QUALITY_POLICY: QualityPolicy = {
   optional: ['typecheck', 'lint', 'build'],
 }
 
+export function autoQualityGateEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env.PROJECTOS_ENABLE_AUTO_QUALITY_GATE === '1' || env.NODE_ENV === 'test'
+}
+
+/**
+ * Phase 0 fail-closed switch. Package scripts are arbitrary repository code and
+ * currently run through a shell, so automatic execution stays off outside the
+ * test harness until a trusted, approval-backed runner is wired.
+ */
+export const AUTO_QUALITY_GATE_ENABLED = autoQualityGateEnabled()
+
 export interface QualityGateReport {
   passed: boolean
   skipped: boolean
@@ -139,6 +150,21 @@ export class QualityGateService {
   ): Promise<QualityGateReport> {
     const startedAt = Date.now()
     const timeoutMs = options.timeoutMs ?? 120_000
+    if (!AUTO_QUALITY_GATE_ENABLED) {
+      const policy = options.policy ?? DEFAULT_QUALITY_POLICY
+      const required = [...new Set(policy.required)]
+      return {
+        passed: false,
+        skipped: true,
+        outcome: 'skipped',
+        required,
+        optional: [...new Set(policy.optional)].filter((name) => !required.includes(name)),
+        missingRequired: required,
+        checks: [],
+        startedAt,
+        finishedAt: Date.now(),
+      }
+    }
     const checks: QualityCheck[] = []
     let required: string[]
     let optional: string[]

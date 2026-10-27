@@ -32,7 +32,6 @@ import { ExternalAgentRunner } from './external-runner.js'
 import { OperationsService, repairRunKey } from './operations.js'
 import { AgentStudioService } from './agent-studio.js'
 import { RuntimeExecutionService } from './runtime-executor.js'
-import { RuntimeRunService } from './runtime-run.js'
 import { OrchestrationService } from './orchestration.js'
 import { PlannerService } from './planner.js'
 import { AiPlannerModelSource } from './planner-provider.js'
@@ -53,6 +52,9 @@ import { planGroupTitle } from '@projectos/session-manager'
 const EVENT_CHECK_DEBOUNCE_MS = 60_000
 const REPAIR_MAX_RUN_MS = 60 * 60_000
 const MAX_CONCURRENT_REPAIRS = 1
+// Phase 0: approved-autofix writes are disabled until allowedPaths is derived
+// from a real automation grant and enforced by the execution gateway.
+const AUTOFIX_WRITE_ENABLED = false
 
 export interface DispatcherDeps {
   config: RuntimeConfig
@@ -78,7 +80,6 @@ export class RuntimeDispatcher {
   private readonly operations: OperationsService
   private readonly agentStudio: AgentStudioService
   private readonly runtimeExecutor: RuntimeExecutionService
-  private readonly runtimeRun: RuntimeRunService
   private readonly operationsTimer: NodeJS.Timeout
   private readonly inboxTimer: NodeJS.Timeout
   private readonly eventChecks = new Map<string, NodeJS.Timeout>()
@@ -105,7 +106,6 @@ export class RuntimeDispatcher {
     this.operations = new OperationsService(deps.store, deps.services)
     this.agentStudio = new AgentStudioService(deps.store)
     this.runtimeExecutor = new RuntimeExecutionService(deps.store, () => deps.provider.rawConfig())
-    this.runtimeRun = new RuntimeRunService(deps.store, this.runtimeExecutor)
     this.operationsTimer = setInterval(() => this.runDueChecks(), 30_000)
     this.operationsTimer.unref()
     this.inboxTimer = setInterval(() => void deps.runner.retryPendingInbox(), 30_000)
@@ -205,6 +205,7 @@ export class RuntimeDispatcher {
   }
 
   private async autoStartRepairs(projectId: string): Promise<void> {
+    if (!AUTOFIX_WRITE_ENABLED) return
     if (this.deps.store.read.getAutonomyMode(projectId) !== 'approved-autofix') return
     if (this.operations.circuitOpen(projectId)) {
       this.deps.logger.warn({ projectId }, 'automatic repairs paused by circuit breaker')
@@ -222,6 +223,9 @@ export class RuntimeDispatcher {
   }
 
   private async startRepair(proposalId: string, source: 'manual' | 'autofix' = 'manual') {
+    if (!AUTOFIX_WRITE_ENABLED) {
+      throw new AppError('POLICY_DENIED', 'Phase 0 已禁用自动修复写能力（allowedPaths 尚未由授权派生）；请使用受控 Agent 计划修复')
+    }
     const proposal = this.deps.store.read.getProposal(proposalId)
     if (!proposal) throw new AppError('NOT_FOUND', '修复提案不存在')
     if (proposal.status !== 'approved') throw new AppError('CONFLICT', '提案尚未批准')
@@ -846,8 +850,11 @@ export class RuntimeDispatcher {
         return { ok: true as const }
       }
       case 'agentDefinition.run': {
-        const input = this.parse('agentDefinition.run', rawInput)
-        return this.runtimeRun.run(input)
+        // Phase 0: the legacy Agent Studio direct-run path bypasses the scheduler,
+        // execution slots, task leases and approval. Use Agent Workbench sessions
+        // (AgentRunner.startRun) instead until it is routed through the gateway.
+        this.parse('agentDefinition.run', rawInput)
+        throw new AppError('POLICY_DENIED', 'Agent Studio 直跑入口已在 Phase 0 禁用；请在 Agent 工作台创建会话运行 Agent')
       }
       case 'agentDefinition.preview': {
         const input = this.parse('agentDefinition.preview', rawInput)
@@ -888,17 +895,9 @@ export class RuntimeDispatcher {
         const input = this.parse('runtime.acpAuthenticate', rawInput)
         return this.agentStudio.acpAuthenticate(input.profileId, input.methodId, input.cwd)
       }
-      case 'runtime.acpPrompt': {
-        const input = this.parse('runtime.acpPrompt', rawInput)
-        return this.agentStudio.acpPrompt(input.profileId, input.prompt, input.cwd)
-      }
       case 'runtime.acpHandshake': {
         const input = this.parse('runtime.acpHandshake', rawInput)
         return this.agentStudio.acpHandshake(input.profileId, input.cwd)
-      }
-      case 'runtime.execute': {
-        const input = this.parse('runtime.execute', rawInput)
-        return this.runtimeExecutor.execute(input.profileId, input.prompt, input.cwd)
       }
       case 'runtime.cancel': {
         const input = this.parse('runtime.cancel', rawInput)
@@ -1117,7 +1116,11 @@ export class RuntimeDispatcher {
       case 'externalAgents.list':
         return { installations: await listExternalAgents() }
       case 'externalAgents.execute':
-        return this.externalRunner.execute(this.parse('externalAgents.execute', rawInput))
+        this.parse('externalAgents.execute', rawInput)
+        // Phase 0: external CLI runs have no run-level approval yet. Keep
+        // detection/list, but fail closed rather than spawning an unapproved
+        // external agent. The controlled CLI/ACP path is Agent Workbench.
+        throw new AppError('POLICY_DENIED', 'Phase 0 已禁用外部 Agent 执行（缺少运行级审批）；请使用 Agent 工作台的受控 CLI/ACP 或原生 Agent')
       case 'externalAgents.cancel': {
         const input = this.parse('externalAgents.cancel', rawInput)
         await this.externalRunner.cancel(input.runId)
