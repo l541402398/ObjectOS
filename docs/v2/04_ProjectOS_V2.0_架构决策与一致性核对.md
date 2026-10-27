@@ -378,6 +378,7 @@ flowchart LR
 | P1-1 allowedPaths | **通过（能力关闭）** | `startRepair` 拒绝；UI 禁用 |
 | P1-2 quality gate | **通过（默认关闭）** | 显式 opt-in 才执行；Scheduler 暂停并提示 |
 | P1-3 coordination | **通过** | `assertCoordinatedTaskScope` + 6 个安全单测 |
+| `runtime.install` | **通过（禁用）** | 全局安装无审批；UI 提示手动安装 |
 | ACCEPT-1 | **不依赖** | 外部执行公共入口已禁用 |
 | 合法 Agent 回归 | **通过** | `agent-e2e`、`v13-e2e`；Teamwork opt-in 后通过 |
 | 备份/恢复 | **通过** | 真实 DB integrity=ok，backup/restore 计数一致 |

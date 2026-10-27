@@ -25,6 +25,7 @@ try {
       agentStudioRunError: null,
       repairError: null,
       externalExecuteError: null,
+      installError: null,
     }
     try {
       await api.agentDefinitions.run({ agentId: 'agt_missing', projectId: 'prj_missing', prompt: 'phase0' })
@@ -46,6 +47,11 @@ try {
     } catch (error) {
       out.externalExecuteError = String(error?.message ?? error)
     }
+    try {
+      await api.runtimeProfiles.install('rtp_missing')
+    } catch (error) {
+      out.installError = String(error?.message ?? error)
+    }
     return out
   })
 
@@ -55,7 +61,8 @@ try {
     result.handshakeExposed === 'function' &&
     /POLICY_DENIED|Phase 0|禁用/.test(result.agentStudioRunError ?? '') &&
     /POLICY_DENIED|Phase 0|禁用/.test(result.repairError ?? '') &&
-    /POLICY_DENIED|Phase 0|禁用/.test(result.externalExecuteError ?? '')
+    /POLICY_DENIED|Phase 0|禁用/.test(result.externalExecuteError ?? '') &&
+    /POLICY_DENIED|Phase 0|禁用/.test(result.installError ?? '')
   console.log(JSON.stringify({ pass, result }, null, 2))
   if (!pass) process.exitCode = 1
 } finally {

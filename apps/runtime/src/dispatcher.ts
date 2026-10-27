@@ -884,8 +884,11 @@ export class RuntimeDispatcher {
         return { detections: await this.agentStudio.detect(input.profileId) }
       }
       case 'runtime.install': {
-        const input = this.parse('runtime.install', rawInput)
-        return this.agentStudio.install(input.profileId)
+        this.parse('runtime.install', rawInput)
+        // Phase 0: global npm installation is an unapproved process/network
+        // side effect. Keep detection/registry read-only until an approved
+        // installer path exists.
+        throw new AppError('POLICY_DENIED', 'Phase 0 已禁用自动安装 Harness（缺少审批）；请手动安装后在设置中检测')
       }
       case 'runtime.importRegistry': {
         const input = this.parse('runtime.importRegistry', rawInput)
