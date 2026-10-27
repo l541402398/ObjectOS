@@ -1277,6 +1277,71 @@ WHERE external_id LIKE 'local-%'
   AND assurance = 'independently_reproduced';
 `
 
+const V31 = `
+CREATE TABLE resources (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  name TEXT NOT NULL,
+  endpoint TEXT NOT NULL DEFAULT '',
+  purpose TEXT NOT NULL DEFAULT '',
+  labels_json TEXT NOT NULL DEFAULT '[]',
+  metadata_json TEXT NOT NULL DEFAULT '{}',
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_resources_project ON resources(project_id, type, status);
+
+CREATE TABLE credential_metadata (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL,
+  label TEXT NOT NULL,
+  vault_key TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_credential_metadata_project ON credential_metadata(project_id, status);
+
+CREATE TABLE connection_profiles (
+  id TEXT PRIMARY KEY,
+  resource_id TEXT NOT NULL REFERENCES resources(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  protocol TEXT NOT NULL,
+  host TEXT NOT NULL,
+  port INTEGER NOT NULL,
+  username TEXT NOT NULL DEFAULT '',
+  auth_type TEXT NOT NULL,
+  credential_ref TEXT REFERENCES credential_metadata(id),
+  host_key_fingerprint TEXT,
+  trust_policy TEXT NOT NULL DEFAULT 'pinned',
+  connect_timeout_ms INTEGER NOT NULL DEFAULT 15000,
+  last_test_status TEXT,
+  last_test_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_connection_profiles_resource ON connection_profiles(resource_id);
+
+CREATE TABLE connection_test_runs (
+  id TEXT PRIMARY KEY,
+  profile_id TEXT NOT NULL REFERENCES connection_profiles(id) ON DELETE CASCADE,
+  resource_id TEXT NOT NULL REFERENCES resources(id) ON DELETE CASCADE,
+  status TEXT NOT NULL,
+  stage TEXT NOT NULL,
+  message TEXT NOT NULL DEFAULT '',
+  latency_ms INTEGER,
+  details_json TEXT NOT NULL DEFAULT '{}',
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_connection_test_runs_profile ON connection_test_runs(profile_id, created_at DESC);
+
+ALTER TABLE deployment_targets ADD COLUMN resource_id TEXT;
+ALTER TABLE deployment_targets ADD COLUMN connection_profile_id TEXT;
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -1308,6 +1373,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 28, name: 'change requests and generalized delivery approvals', sql: V28 },
   { version: 29, name: 'release candidates releases deployments and targets', sql: V29 },
   { version: 30, name: 'correct local file delivery assurance semantics', sql: V30 },
+  { version: 31, name: 'resources connection profiles credentials and test runs', sql: V31 },
 ]
 
 function checksum(sql: string): string {

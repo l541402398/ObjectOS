@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { randomUUID } from 'node:crypto'
 import {
   ApiSchemas,
   AppError,
@@ -19,12 +20,15 @@ import {
 import type { MainLogger } from './logger.js'
 import type { ProviderConfigStore } from './provider-config.js'
 import type { ConnectionSecretStore } from './connection-secrets.js'
+import type { ResourceCredentialVault } from './resource-credentials.js'
+import { testSshConnection } from './resource-connection.js'
 import type { RuntimeSupervisor } from './runtime-supervisor.js'
 
 export interface IpcContext {
   supervisor: RuntimeSupervisor
   providerConfig: ProviderConfigStore
   connectionSecrets: ConnectionSecretStore
+  resourceSecrets: ResourceCredentialVault
   dataDir: string
   window: BrowserWindow
   logger: MainLogger
@@ -58,7 +62,7 @@ function aggregateStats(projects: ProjectSummary[]): ProjectStats {
 }
 
 export function registerIpc(ctx: IpcContext): () => void {
-  const { supervisor, providerConfig, connectionSecrets, window, logger } = ctx
+  const { supervisor, providerConfig, connectionSecrets, resourceSecrets, window, logger } = ctx
 
   const syncProvider = async (): Promise<void> => {
     if (!supervisor.isReady()) return
@@ -472,6 +476,34 @@ export function registerIpc(ctx: IpcContext): () => void {
         }
       case 'runtime.health':
         return supervisor.request('runtime.health', {}, 8_000)
+      case 'resource.credential.create': {
+        if (!supervisor.isReady()) throw new AppError('RUNTIME_UNAVAILABLE', 'Runtime 尚未就绪')
+        const id = `crd_${randomUUID().replace(/-/g, '')}`
+        resourceSecrets.set(id, input.secret as Record<string, unknown>)
+        try {
+          return await supervisor.request('resource.credential.register', {
+            id, projectId: input.projectId, kind: input.kind, label: input.label, vaultKey: id,
+          }, 10_000)
+        } catch (error) {
+          resourceSecrets.delete(id)
+          throw error
+        }
+      }
+      case 'resource.credential.disable': {
+        if (!supervisor.isReady()) throw new AppError('RUNTIME_UNAVAILABLE', 'Runtime 尚未就绪')
+        resourceSecrets.delete(String(input.credentialId))
+        return supervisor.request('resource.credential.disable', { credentialId: input.credentialId }, 10_000)
+      }
+      case 'resource.connection.test': {
+        if (!supervisor.isReady()) throw new AppError('RUNTIME_UNAVAILABLE', 'Runtime 尚未就绪')
+        const profile = await supervisor.request<import('@projectos/contracts').ConnectionProfile>('resource.profile.internal', { profileId: input.profileId }, 10_000)
+        const secret = profile.credentialRef ? resourceSecrets.get(profile.credentialRef) : null
+        const result = await testSshConnection(profile, secret)
+        return supervisor.request('resource.test.record', {
+          profileId: profile.id, status: result.status, stage: result.stage, message: result.message,
+          latencyMs: result.latencyMs, details: result.details,
+        }, 10_000)
+      }
       default:
         throw new AppError('NOT_IMPLEMENTED', `Main 尚未实现方法：${method}`)
     }

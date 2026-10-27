@@ -594,3 +594,16 @@ Phase 3 仍不启动。
 - 保留 V28/V29；V30 兼容迁移修正 Phase 2.2 本地文件交付的 assurance/health 语义。
 
 详见 `docs/v2/ProjectOS_V2.0_Phase2_3_Experience_And_Deployment_Report.md`。
+
+---
+
+## 17. Phase 2.3 资源与连接（2026-10-27）
+
+- 新增 V31：`resources`、`connection_profiles`、`credential_metadata`、`connection_test_runs`，以及 `deployment_targets.resource_id/connection_profile_id`。
+- 新增「交付 → 资源与连接」：资源目录 + Inspector + 主机/平台登记 + 凭据库 + 连接测试。
+- 凭据只进入 Electron Main 的 safeStorage 加密 vault；SQLite 仅保存 `credential_metadata` 与 opaque 引用；Renderer/AI 不可读回。
+- SSH 只读连接：ssh2、严格 host key、指纹首次确认、指纹变化拒绝、白名单 `uname/whoami` 探测；真实 Contabo 验证通过。
+- 部署目标选择器可引用 Resource/ConnectionProfile，旧手工 Target 保持兼容。
+- Kubernetes/CI/CD/GitOps 本轮只建立连接元数据模型并明确连接器未实现，不伪造测试成功。
+
+详见 `docs/v2/ProjectOS_V2.0_Phase2_3_Resources_Connections_Acceptance.md`。

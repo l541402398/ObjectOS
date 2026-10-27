@@ -174,6 +174,8 @@ export const DeploymentTargetSchema = z.object({
   controlMode: z.enum(['pipeline_managed', 'gitops_managed', 'direct_kubernetes', 'ssh_managed', 'external_observed']),
   adapterType: z.string().nullable(),
   targetRef: z.string().max(1000).default(''),
+  resourceId: IdSchema.nullable().default(null),
+  connectionProfileId: IdSchema.nullable().default(null),
   protected: z.boolean(),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,

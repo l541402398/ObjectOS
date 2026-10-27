@@ -64,6 +64,10 @@ export const ID_PREFIXES = {
   deploymentTarget: 'dtg',
   deploymentStrategy: 'dst',
   approvalRequest: 'apr',
+  resource: 'res',
+  connectionProfile: 'prf',
+  credential: 'crd',
+  connectionTest: 'ctr',
 } as const
 
 export type IdPrefix = (typeof ID_PREFIXES)[keyof typeof ID_PREFIXES]

@@ -27,6 +27,7 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
     queryFn: () => window.projectos.release.overview(projectId, versionId),
   })
   const adapters = useQuery({ queryKey: ['delivery-adapters', projectId], queryFn: () => window.projectos.release.adapters(projectId) })
+  const resourceOverview = useQuery({ queryKey: ['resource-overview', projectId], queryFn: () => window.projectos.resources.overview(projectId) })
   const data = overview.data
   const [environmentId, setEnvironmentId] = useState<string | null>(null)
   const [targetId, setTargetId] = useState<string | null>(null)
@@ -38,6 +39,9 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
   const [targetName, setTargetName] = useState('')
   const [targetRef, setTargetRef] = useState('')
   const [targetKind, setTargetKind] = useState<'local' | 'ssh'>('ssh')
+  const [targetResourceId, setTargetResourceId] = useState<string | null>(null)
+  const [targetProfileId, setTargetProfileId] = useState<string | null>(null)
+  const [targetPath, setTargetPath] = useState('/opt/projectos-delivery-test')
   const [executeError, setExecuteError] = useState<string | null>(null)
   const poller = useRef<ReturnType<typeof setInterval> | null>(null)
   useEffect(() => () => { if (poller.current) clearInterval(poller.current) }, [])
@@ -100,9 +104,12 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
         projectId, environmentId: environmentId!, name: targetName.trim(), kind: targetKind,
         controlMode: targetKind === 'ssh' ? 'ssh_managed' : 'external_observed',
         adapterType: targetKind === 'ssh' ? 'ssh-artifact' : 'local-artifact',
-        targetRef: targetRef.trim(), protected: false,
+        targetRef: targetRef.trim() || targetPath.trim(),
+        resourceId: targetResourceId,
+        connectionProfileId: targetProfileId,
+        protected: false,
       }),
-    onSuccess: async () => { setTargetOpen(false); setTargetName(''); setTargetRef(''); await invalidate(); message.success('目标已登记') },
+    onSuccess: async () => { setTargetOpen(false); setTargetName(''); setTargetRef(''); setTargetProfileId(null); setTargetResourceId(null); await invalidate(); message.success('目标已登记') },
     onError: (error) => message.error(errorMessage(error)),
   })
 
@@ -264,10 +271,25 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
 
       <Modal open={targetOpen} title="连接部署目标" okText="登记" cancelText="取消" confirmLoading={createTarget.isPending} okButtonProps={{ disabled: !targetName.trim() || !targetRef.trim() }} onOk={() => createTarget.mutate()} onCancel={() => setTargetOpen(false)}>
         <div className="rw-form">
+          <label><span>已登记资源</span><Select allowClear value={targetResourceId} onChange={(value) => { setTargetResourceId(value ?? null); setTargetProfileId(null) }} options={(resourceOverview.data?.resources ?? []).map((item) => ({ value: item.id, label: `${item.name} · ${item.endpoint}` }))} /></label>
+          <label><span>连接 Profile</span><Select allowClear value={targetProfileId} onChange={(value) => {
+            setTargetProfileId(value ?? null)
+            const profile = (resourceOverview.data?.profiles ?? []).find((item) => item.id === value)
+            if (!profile) return
+            setTargetResourceId(profile.resourceId)
+            setTargetKind('ssh')
+            setTargetName((resourceOverview.data?.resources ?? []).find((item) => item.id === profile.resourceId)?.name ?? profile.name)
+            setTargetRef(`ssh://${profile.username}@${profile.host}:${profile.port}${targetPath.startsWith('/') ? targetPath : `/${targetPath}`}`)
+          }} options={(resourceOverview.data?.profiles ?? []).filter((item) => !targetResourceId || item.resourceId === targetResourceId).map((item) => ({ value: item.id, label: `${item.name} · ${item.username}@${item.host}:${item.port}` }))} /></label>
           <label><span>名称</span><Input value={targetName} onChange={(event) => setTargetName(event.target.value)} placeholder="例如：Contabo 隔离测试" /></label>
           <label><span>类型</span><Select value={targetKind} onChange={setTargetKind} options={[{ value: 'ssh', label: 'SSH / VPS' }, { value: 'local', label: '本地目录' }]} /></label>
-          <label><span>目标地址</span><Input value={targetRef} onChange={(event) => setTargetRef(event.target.value)} placeholder="ssh://root@host:22/opt/projectos-... 或本地目录" /></label>
-          <p className="dc-note">SSH 密钥由本机安全环境提供，不写入数据库。连接检测成功后才显示可执行。</p>
+          <label><span>远程目录 / 本地路径</span><Input value={targetPath} onChange={(event) => {
+            setTargetPath(event.target.value)
+            const profile = (resourceOverview.data?.profiles ?? []).find((item) => item.id === targetProfileId)
+            if (profile) setTargetRef(`ssh://${profile.username}@${profile.host}:${profile.port}${event.target.value.startsWith('/') ? event.target.value : `/${event.target.value}`}`)
+          }} placeholder="/opt/projectos-delivery-test" /></label>
+          <label><span>目标地址（自动填充，可修正）</span><Input value={targetRef} onChange={(event) => setTargetRef(event.target.value)} placeholder="ssh://root@host:22/opt/projectos-... 或本地目录" /></label>
+          <p className="dc-note">SSH 密钥由 OS 安全存储引用，不写入数据库。连接检测成功后才显示可执行。</p>
         </div>
       </Modal>
     </div>

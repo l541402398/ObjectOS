@@ -47,6 +47,17 @@ export interface ProjectOSDesktopApi {
       subjectId: string,
     ) => Promise<Out<'gate.overview'>>
   }
+  resources: {
+    overview: (projectId: string) => Promise<Out<'resource.overview'>>
+    create: (input: In<'resource.create'>) => Promise<Out<'resource.create'>>
+    update: (input: In<'resource.update'>) => Promise<Out<'resource.update'>>
+    createProfile: (input: In<'resource.profile.create'>) => Promise<Out<'resource.profile.create'>>
+    updateProfile: (input: In<'resource.profile.update'>) => Promise<Out<'resource.profile.update'>>
+    deleteProfile: (profileId: string) => Promise<Out<'resource.profile.delete'>>
+    createCredential: (input: In<'resource.credential.create'>) => Promise<Out<'resource.credential.create'>>
+    disableCredential: (credentialId: string) => Promise<Out<'resource.credential.disable'>>
+    testConnection: (profileId: string) => Promise<Out<'resource.connection.test'>>
+  },
   release: {
     overview: (projectId: string, versionId: string) => Promise<Out<'release.overview'>>
     approvals: (projectId: string) => Promise<Out<'release.approvals'>>

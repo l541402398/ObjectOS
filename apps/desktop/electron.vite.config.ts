@@ -8,10 +8,11 @@ const repoRoot = resolve(root, '../..')
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin({ exclude: ['@projectos/contracts', 'zod', 'ulid'] })],
+    plugins: [externalizeDepsPlugin({ exclude: ['@projectos/contracts', 'zod', 'ulid', 'ssh2'] })],
     resolve: {
       alias: {
         '@main': resolve(root, 'src/main'),
+        'cpu-features': resolve(root, 'src/main/optional-cpu-features.ts'),
       },
     },
     build: {

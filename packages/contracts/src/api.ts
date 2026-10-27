@@ -92,6 +92,15 @@ import {
   UpdateChangeRequestInputSchema,
 } from './release.js'
 import {
+  ConnectionProfileSchema,
+  ConnectionTestRunSchema,
+  CreateConnectionProfileInputSchema,
+  CreateResourceInputSchema,
+  CredentialMetadataSchema,
+  ResourceOverviewSchema,
+  ResourceSchema,
+} from './resource.js'
+import {
   ActivityItemSchema,
   AgentViewSchema,
   ApprovalViewSchema,
@@ -415,6 +424,96 @@ export const ApiSchemas = {
     input: projectIdInput,
     output: z.object({ approvals: z.array(ApprovalRequestSchema) }),
   },
+  'resource.overview': {
+    input: projectIdInput,
+    output: ResourceOverviewSchema,
+  },
+  'resource.credential.create': {
+    input: z.object({
+      projectId: IdSchema,
+      kind: CredentialMetadataSchema.shape.kind,
+      label: z.string().min(1).max(120),
+      secret: z.object({
+        password: z.string().max(4000).optional(),
+        privateKey: z.string().max(20000).optional(),
+        passphrase: z.string().max(4000).optional(),
+        token: z.string().max(8000).optional(),
+      }).refine((value) => Object.values(value).some((item) => Boolean(item)), '凭据内容不能为空'),
+    }),
+    output: CredentialMetadataSchema,
+  },
+  'resource.connection.test': {
+    input: z.object({ profileId: IdSchema }),
+    output: ConnectionTestRunSchema,
+  },
+  'resource.create': {
+    input: CreateResourceInputSchema,
+    output: ResourceSchema,
+  },
+  'resource.update': {
+    input: z.object({
+      resourceId: IdSchema,
+      name: z.string().min(1).max(120).optional(),
+      endpoint: z.string().max(500).optional(),
+      purpose: z.string().max(500).optional(),
+      status: z.enum(['active', 'disabled', 'archived']).optional(),
+      labels: z.array(z.string().max(40)).max(20).optional(),
+      metadata: z.record(z.string(), z.unknown()).optional(),
+    }),
+    output: ResourceSchema,
+  },
+  'resource.profile.create': {
+    input: CreateConnectionProfileInputSchema,
+    output: ConnectionProfileSchema,
+  },
+  'resource.profile.update': {
+    input: z.object({
+      profileId: IdSchema,
+      name: z.string().min(1).max(120).optional(),
+      host: z.string().min(1).max(255).optional(),
+      port: z.number().int().min(1).max(65535).optional(),
+      username: z.string().max(120).optional(),
+      authType: z.enum(['password', 'private_key', 'agent', 'token', 'kubeconfig']).optional(),
+      credentialRef: IdSchema.nullable().optional(),
+      hostKeyFingerprint: z.string().max(200).nullable().optional(),
+      trustPolicy: z.enum(['pinned', 'first_use']).optional(),
+      connectTimeoutMs: z.number().int().min(1000).max(120000).optional(),
+    }),
+    output: ConnectionProfileSchema,
+  },
+  'resource.profile.delete': {
+    input: z.object({ profileId: IdSchema }),
+    output: z.object({ deleted: z.boolean() }),
+  },
+  'resource.credential.register': {
+    input: z.object({
+      id: IdSchema,
+      projectId: IdSchema,
+      kind: CredentialMetadataSchema.shape.kind,
+      label: z.string().min(1).max(120),
+      vaultKey: z.string().min(1).max(200),
+    }),
+    output: CredentialMetadataSchema,
+  },
+  'resource.credential.disable': {
+    input: z.object({ credentialId: IdSchema }),
+    output: CredentialMetadataSchema,
+  },
+  'resource.profile.internal': {
+    input: z.object({ profileId: IdSchema }),
+    output: ConnectionProfileSchema,
+  },
+  'resource.test.record': {
+    input: z.object({
+      profileId: IdSchema,
+      status: ConnectionTestRunSchema.shape.status,
+      stage: z.string().max(120),
+      message: z.string().max(2000),
+      latencyMs: z.number().int().nullable().default(null),
+      details: z.record(z.string(), z.unknown()).default({}),
+    }),
+    output: ConnectionTestRunSchema,
+  },
   'changeRequest.create': {
     input: CreateChangeRequestInputSchema,
     output: ChangeRequestSchema,
@@ -488,6 +587,8 @@ export const ApiSchemas = {
       controlMode: DeploymentTargetSchema.shape.controlMode,
       adapterType: z.string().max(120).nullable().default(null),
       targetRef: z.string().max(1000).default(''),
+      resourceId: IdSchema.nullable().default(null),
+      connectionProfileId: IdSchema.nullable().default(null),
       protected: z.boolean().default(false),
     }),
     output: DeploymentTargetSchema,
@@ -1293,6 +1394,9 @@ export const MAIN_METHODS = [
   'aiModels.create',
   'aiModels.delete',
   'aiModels.setDefault',
+  'resource.credential.create',
+  'resource.credential.disable',
+  'resource.connection.test',
   'app.pickDirectory',
   'app.revealPath',
   'app.openExternal',

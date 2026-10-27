@@ -439,6 +439,8 @@ export class ReleaseService {
     controlMode: DeploymentTarget['controlMode']
     adapterType?: string | null
     targetRef?: string
+    resourceId?: string | null
+    connectionProfileId?: string | null
     protected?: boolean
   }): DeploymentTarget {
     return this.store.transaction(() => {
@@ -447,10 +449,10 @@ export class ReleaseService {
       const timestamp = now()
       this.store.db
         .prepare(
-          `INSERT INTO deployment_targets (id, project_id, environment_id, name, kind, control_mode, adapter_type, target_ref, protected, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO deployment_targets (id, project_id, environment_id, name, kind, control_mode, adapter_type, target_ref, resource_id, connection_profile_id, protected, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
-        .run(id, input.projectId, input.environmentId, input.name, input.kind, input.controlMode, input.adapterType ?? null, input.targetRef ?? '', input.protected ? 1 : 0, timestamp, timestamp)
+        .run(id, input.projectId, input.environmentId, input.name, input.kind, input.controlMode, input.adapterType ?? null, input.targetRef ?? '', input.resourceId ?? null, input.connectionProfileId ?? null, input.protected ? 1 : 0, timestamp, timestamp)
       return this.getTarget(id)
     })
   }
@@ -920,6 +922,8 @@ export class ReleaseService {
       controlMode: String(row.control_mode) as DeploymentTarget['controlMode'],
       adapterType: row.adapter_type ? String(row.adapter_type) : null,
       targetRef: String(row.target_ref ?? ''),
+      resourceId: row.resource_id ? String(row.resource_id) : null,
+      connectionProfileId: row.connection_profile_id ? String(row.connection_profile_id) : null,
       protected: bool(row.protected),
       createdAt: Number(row.created_at),
       updatedAt: Number(row.updated_at),

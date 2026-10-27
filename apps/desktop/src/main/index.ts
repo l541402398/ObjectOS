@@ -4,6 +4,7 @@ import { app, BrowserWindow, Menu, Tray, dialog, nativeImage, nativeTheme, sessi
 import { createMainLogger } from './logger.js'
 import { ProviderConfigStore } from './provider-config.js'
 import { ConnectionSecretStore } from './connection-secrets.js'
+import { ResourceCredentialVault } from './resource-credentials.js'
 import { RuntimeSupervisor } from './runtime-supervisor.js'
 import { registerIpc } from './ipc.js'
 import { applyContentSecurityPolicy, hardenWebContents } from './security.js'
@@ -26,6 +27,7 @@ let dataDir = ''
 let logger: ReturnType<typeof createMainLogger>
 let providerConfig: ProviderConfigStore
 let connectionSecrets: ConnectionSecretStore
+let resourceSecrets: ResourceCredentialVault
 
 function broadcast(channel: string, payload: unknown): void {
   if (!mainWindow || mainWindow.isDestroyed()) return
@@ -159,6 +161,7 @@ async function bootstrap(): Promise<void> {
   logger = createMainLogger(dataDir)
   providerConfig = new ProviderConfigStore(dataDir, logger)
   connectionSecrets = new ConnectionSecretStore(dataDir, logger)
+  resourceSecrets = new ResourceCredentialVault(dataDir, logger)
   Menu.setApplicationMenu(null)
   applyContentSecurityPolicy(session.defaultSession, isDevServer)
   nativeTheme.themeSource = 'system'
@@ -183,6 +186,7 @@ async function bootstrap(): Promise<void> {
     supervisor,
     providerConfig,
     connectionSecrets,
+    resourceSecrets,
     dataDir,
     window: mainWindow,
     logger,

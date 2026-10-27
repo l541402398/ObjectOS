@@ -8,6 +8,7 @@ import WorkCenterPage from './pages/WorkCenterPage'
 import LifecyclePage from './pages/LifecyclePage'
 import ReleaseCenterPage from './pages/ReleaseCenterPage'
 import DeploymentCenterPage from './pages/DeploymentCenterPage'
+import DeliveryResourcesPage from './pages/DeliveryResourcesPage'
 import TaskBoardPage from './pages/TaskBoardPage'
 import AgentWorkbenchPage from './pages/AgentWorkbenchPage'
 import CollaborationPage from './pages/CollaborationPage'
@@ -62,6 +63,7 @@ export const router = createHashRouter([
           { path: 'versions', element: <LifecyclePage /> },
           { path: 'releases', element: <ReleaseCenterPage /> },
           { path: 'deployments', element: <DeploymentCenterPage /> },
+          { path: 'connections', element: <DeliveryResourcesPage /> },
           { path: 'overview', element: <ProjectOverviewPage /> },
           { path: 'tasks', element: <TaskBoardPage /> },
           { path: 'orchestration', element: <LazyPage><OrchestrationPage /></LazyPage> },

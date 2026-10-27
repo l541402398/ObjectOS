@@ -21,6 +21,7 @@ import {
   RobotOutlined,
   RocketOutlined,
   CloudUploadOutlined,
+  CloudServerOutlined,
   SearchOutlined,
   SendOutlined,
   SettingOutlined,
@@ -53,6 +54,7 @@ const PAGE_LABELS: Record<string, string> = {
   versions: '版本与迭代',
   releases: '发布中心',
   deployments: '部署中心',
+  connections: '资源与连接',
   overview: '项目姿态',
   orchestration: '编排工作台',
   tasks: '任务看板',
@@ -76,6 +78,7 @@ const NAV_PATHS: Record<string, string> = {
   versions: '/versions',
   releases: '/releases',
   deployments: '/deployments',
+  connections: '/connections',
   overview: '/overview',
   orchestration: '/orchestration',
   tasks: '/tasks',
@@ -247,6 +250,7 @@ export default function AppLayout() {
         { id: 'versions', label: '版本与迭代', group: currentProject?.name ?? '项目', icon: <ApartmentOutlined />, run: () => handleNavigate('versions') },
         { id: 'releases', label: '发布中心', group: '交付', icon: <RocketOutlined />, run: () => handleNavigate('releases') },
         { id: 'deployments', label: '部署中心', group: '交付', icon: <CloudUploadOutlined />, run: () => handleNavigate('deployments') },
+    { id: 'connections', label: '资源与连接', group: '交付', icon: <CloudServerOutlined />, run: () => handleNavigate('connections') },
         { id: 'orchestration', label: '编排工作台', group: currentProject?.name ?? '项目', icon: <ApartmentOutlined />, run: () => handleNavigate('orchestration') },
         { id: 'tasks', label: '任务看板', group: currentProject?.name ?? '项目', icon: <UnorderedListOutlined />, run: () => handleNavigate('tasks') },
         { id: 'knowledge', label: '知识库', group: currentProject?.name ?? '项目', icon: <ReadOutlined />, run: () => handleNavigate('knowledge') },
@@ -320,6 +324,7 @@ export default function AppLayout() {
       items: [
         { key: 'releases', label: '发布中心', icon: <RocketOutlined /> },
         { key: 'deployments', label: '部署中心', icon: <CloudUploadOutlined /> },
+        { key: 'connections', label: '资源与连接', icon: <CloudServerOutlined /> },
       ],
     })
     navGroups.push({

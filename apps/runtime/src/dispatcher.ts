@@ -48,6 +48,7 @@ import type { Logger } from './logger.js'
 import type { ProviderManager } from './provider-manager.js'
 import { seedDemo } from './demo.js'
 import { OrchestrationScheduler } from './orchestrator.js'
+import { ResourceService } from './resource-service.js'
 import { agentForPlannedTask } from '@projectos/planning'
 import { planGroupTitle } from '@projectos/session-manager'
 
@@ -82,6 +83,7 @@ export class RuntimeDispatcher {
   private readonly operations: OperationsService
   private readonly lifecycle: LifecycleService
   private readonly release: ReleaseService
+  private readonly resources: ResourceService
   private readonly agentStudio: AgentStudioService
   private readonly runtimeExecutor: RuntimeExecutionService
   private readonly operationsTimer: NodeJS.Timeout
@@ -110,6 +112,7 @@ export class RuntimeDispatcher {
     this.operations = new OperationsService(deps.store, deps.services)
     this.lifecycle = new LifecycleService(deps.store)
     this.release = new ReleaseService(deps.store)
+    this.resources = new ResourceService(deps.store)
     this.agentStudio = new AgentStudioService(deps.store)
     this.runtimeExecutor = new RuntimeExecutionService(deps.store, () => deps.provider.rawConfig())
     this.operationsTimer = setInterval(() => this.runDueChecks(), 30_000)
@@ -799,6 +802,46 @@ export class RuntimeDispatcher {
       case 'gate.overview': {
         const input = this.parse('gate.overview', rawInput)
         return this.lifecycle.gateOverview(input.projectId, input.subjectType, input.subjectId)
+      }
+      case 'resource.overview': {
+        const input = this.parse('resource.overview', rawInput)
+        return this.resources.overview(input.projectId)
+      }
+      case 'resource.create': {
+        const input = this.parse('resource.create', rawInput)
+        return this.resources.create(input)
+      }
+      case 'resource.update': {
+        const input = this.parse('resource.update', rawInput)
+        return this.resources.update(input)
+      }
+      case 'resource.profile.create': {
+        const input = this.parse('resource.profile.create', rawInput)
+        return this.resources.createProfile(input)
+      }
+      case 'resource.profile.update': {
+        const input = this.parse('resource.profile.update', rawInput)
+        return this.resources.updateProfile(input)
+      }
+      case 'resource.profile.delete': {
+        const input = this.parse('resource.profile.delete', rawInput)
+        return this.resources.deleteProfile(input.profileId)
+      }
+      case 'resource.credential.register': {
+        const input = this.parse('resource.credential.register', rawInput)
+        return this.resources.registerCredential(input)
+      }
+      case 'resource.credential.disable': {
+        const input = this.parse('resource.credential.disable', rawInput)
+        return this.resources.disableCredential(input.credentialId)
+      }
+      case 'resource.profile.internal': {
+        const input = this.parse('resource.profile.internal', rawInput)
+        return this.resources.internalProfile(input.profileId)
+      }
+      case 'resource.test.record': {
+        const input = this.parse('resource.test.record', rawInput)
+        return this.resources.recordTest(input)
       }
       case 'release.overview': {
         const input = this.parse('release.overview', rawInput)

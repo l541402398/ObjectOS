@@ -73,6 +73,17 @@ const api: ProjectOSDesktopApi = {
     recordEvidence: (input) => call('evidence.record', input),
     gateOverview: (projectId, subjectType, subjectId) => call('gate.overview', { projectId, subjectType, subjectId }),
   },
+  resources: {
+    overview: (projectId) => call('resource.overview', { projectId }),
+    create: (input) => call('resource.create', input),
+    update: (input) => call('resource.update', input),
+    createProfile: (input) => call('resource.profile.create', input),
+    updateProfile: (input) => call('resource.profile.update', input),
+    deleteProfile: (profileId) => call('resource.profile.delete', { profileId }),
+    createCredential: (input) => call('resource.credential.create', input),
+    disableCredential: (credentialId) => call('resource.credential.disable', { credentialId }),
+    testConnection: (profileId) => call('resource.connection.test', { profileId }),
+  },
   release: {
     overview: (projectId, versionId) => call('release.overview', { projectId, versionId }),
     approvals: (projectId) => call('release.approvals', { projectId }),
