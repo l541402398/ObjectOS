@@ -32,6 +32,7 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
   const [description, setDescription] = useState('')
   const [risk, setRisk] = useState<'low' | 'medium' | 'high' | 'critical'>('medium')
   const [environmentId, setEnvironmentId] = useState<string | null>(null)
+  const [rowQuery, setRowQuery] = useState('')
 
   const versionArtifacts = useMemo(() => {
     const taskIds = new Set((board.data?.tasks ?? []).filter((task) => task.versionId === versionId).map((task) => task.id))
@@ -101,7 +102,8 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
   const selectedCandidate = selection?.type === 'candidate' ? data.candidates.find((item) => item.id === selection.id) : null
   const selectedRelease = selection?.type === 'release' ? data.releases.find((item) => item.id === selection.id) : null
   const selectedChange = selection?.type === 'change' ? data.changeRequests.find((item) => item.id === selection.id) : null
-  const rows = tab === 'candidates' ? data.candidates : tab === 'releases' ? data.releases : data.changeRequests
+  const rows = (tab === 'candidates' ? data.candidates : tab === 'releases' ? data.releases : data.changeRequests)
+    .filter((row) => !rowQuery.trim() || JSON.stringify(row).toLowerCase().includes(rowQuery.toLowerCase()))
   const ready = Boolean(approvedRequest && latestCandidate?.status === 'ready' && versionArtifacts.length > 0)
   const releaseRecorded = Boolean(latestRelease)
 
@@ -144,6 +146,7 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
             <button className={tab === 'changes' ? 'is-active' : ''} onClick={() => { setTab('changes'); setSelection(null) }}>变更 <span>{data.changeRequests.length}</span></button>
             <button className={tab === 'releases' ? 'is-active' : ''} onClick={() => { setTab('releases'); setSelection(null) }}>历史 <span>{data.releases.length}</span></button>
           </div>
+          <Input.Search className="rw-filter" size="small" allowClear placeholder="筛选当前视图" value={rowQuery} onChange={(event) => setRowQuery(event.target.value)} />
           <div className="rw-rows" role="list">
             {rows.length === 0 ? <div className="rw-list-empty">暂无记录</div> : null}
             {tab === 'candidates' && data.candidates.map((candidate) => (

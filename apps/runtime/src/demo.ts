@@ -1093,7 +1093,11 @@ export async function seedDemo(options: SeedDemoOptions): Promise<SeedDemoResult
         'Agent 请求写入文件：src/graph.ts\n\n内容长度：约 420 字符\n\n任务：笔记图谱视图与反向链接索引',
       request: {
         toolName: 'write_file',
-        args: { path: 'src/graph.ts' },
+        args: {
+          path: 'src/graph.ts',
+          content:
+            "import type { Note } from './notes.ts'\n\nexport interface GraphNode { id: string; label: string }\nexport function buildGraph(notes: Note[]) {\n  const byTitle = new Map(notes.map((note) => [note.title, note]))\n  const edges = notes.flatMap((note) => note.links.flatMap((link) => {\n    const target = byTitle.get(link)\n    return target ? [{ source: note.id, target: target.id }] : []\n  }))\n  return { nodes: notes.map((note) => ({ id: note.id, label: note.title })), edges }\n}\n",
+        },
         risk: 'workspace-write',
         reason: '修改项目文件需要人工授权',
       },

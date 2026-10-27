@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import { App as AntApp, Button, Empty, Input, Tag } from 'antd'
 import { CheckOutlined, CloseOutlined, SafetyCertificateOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useApprovals } from '../lib/queries'
+import { useApprovals, useFileContent } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
 import { formatRelative } from '../lib/format'
 import './approvals-workbench.css'
@@ -14,6 +14,65 @@ type QueueItem =
 
 function statusLabel(status: string): string {
   return status === 'pending' ? '待审批' : status === 'approved' ? '已批准' : status === 'rejected' ? '已拒绝' : status
+}
+
+type DiffLine = { type: 'add' | 'remove' | 'context'; text: string; oldLine: number | null; newLine: number | null }
+
+function lineDiff(before: string, after: string): DiffLine[] {
+  const oldLines = before.split('\n')
+  const newLines = after.split('\n')
+  if (oldLines.length * newLines.length > 250_000) {
+    return [
+      ...oldLines.slice(0, 200).map((text, index) => ({ type: 'remove' as const, text, oldLine: index + 1, newLine: null })),
+      ...newLines.slice(0, 200).map((text, index) => ({ type: 'add' as const, text, oldLine: null, newLine: index + 1 })),
+    ]
+  }
+  const table = Array.from({ length: oldLines.length + 1 }, () => new Array<number>(newLines.length + 1).fill(0))
+  for (let i = oldLines.length - 1; i >= 0; i -= 1) {
+    for (let j = newLines.length - 1; j >= 0; j -= 1) {
+      table[i]![j] = oldLines[i] === newLines[j] ? (table[i + 1]?.[j + 1] ?? 0) + 1 : Math.max(table[i + 1]?.[j] ?? 0, table[i]?.[j + 1] ?? 0)
+    }
+  }
+  const result: DiffLine[] = []
+  let i = 0
+  let j = 0
+  while (i < oldLines.length && j < newLines.length) {
+    if (oldLines[i] === newLines[j]) {
+      result.push({ type: 'context', text: oldLines[i]!, oldLine: i + 1, newLine: j + 1 })
+      i += 1
+      j += 1
+    } else if ((table[i + 1]?.[j] ?? 0) >= (table[i]?.[j + 1] ?? 0)) {
+      result.push({ type: 'remove', text: oldLines[i]!, oldLine: i + 1, newLine: null })
+      i += 1
+    } else {
+      result.push({ type: 'add', text: newLines[j]!, oldLine: null, newLine: j + 1 })
+      j += 1
+    }
+  }
+  while (i < oldLines.length) {
+    result.push({ type: 'remove', text: oldLines[i]!, oldLine: i + 1, newLine: null })
+    i += 1
+  }
+  while (j < newLines.length) {
+    result.push({ type: 'add', text: newLines[j]!, oldLine: null, newLine: j + 1 })
+    j += 1
+  }
+  return result.slice(0, 400)
+}
+
+function InlineDiff({ lines }: { lines: DiffLine[] }) {
+  return (
+    <div className="ap-diff">
+      {lines.map((line, index) => (
+        <div key={`${line.type}-${index}`} className={`ap-diff-line ${line.type}`}>
+          <span className="ap-diff-num">{line.oldLine ?? ''}</span>
+          <span className="ap-diff-num">{line.newLine ?? ''}</span>
+          <span className="ap-diff-sign">{line.type === 'add' ? '+' : line.type === 'remove' ? '−' : ' '}</span>
+          <code>{line.text || ' '}</code>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export default function ApprovalsPage() {
@@ -61,6 +120,15 @@ export default function ApprovalsPage() {
     items.find((item) => `${item.kind}:${item.id}` === selectedKey) ?? null
   const toolApproval = selected?.kind === 'tool' ? approvals.data?.approvals.find((item) => item.id === selected.id) ?? null : null
   const deliveryApproval = selected?.kind === 'delivery' ? delivery.data?.approvals.find((item) => item.id === selected.id) ?? null : null
+  const toolArgs = ((toolApproval?.request as { args?: Record<string, unknown> } | undefined)?.args ?? {})
+  const toolPath = typeof toolArgs.path === 'string' ? toolArgs.path : null
+  const toolContent = typeof toolArgs.content === 'string' ? toolArgs.content : null
+  const currentFile = useFileContent(projectId, toolPath)
+  const diff = useMemo(() => {
+    if (!toolContent) return null
+    const before = (currentFile.data as { content?: string } | undefined)?.content ?? ''
+    return lineDiff(before, toolContent)
+  }, [currentFile.data, toolContent])
 
   const decideTool = useMutation({
     mutationFn: ({ decision }: { decision: 'approved' | 'rejected' }) =>
@@ -132,10 +200,16 @@ export default function ApprovalsPage() {
               </div>
               {toolApproval ? (
                 <>
-                  <h3 className="ap-section">申请内容</h3>
-                  <div className="ap-code">{toolApproval.detail || '没有提供可审阅的详情'}</div>
+                  <h3 className="ap-section">{toolContent ? `实际修改 · ${toolPath ?? '文件'}` : '申请内容'}</h3>
+                  {diff ? (
+                    <>
+                      <InlineDiff lines={diff} />
+                      <p className="ap-muted">{diff.filter((line) => line.type === 'add').length} 行新增 · {diff.filter((line) => line.type === 'remove').length} 行删除 · {currentFile.isLoading ? '正在读取基线…' : '基线来自当前工作区'}</p>
+                    </>
+                  ) : (
+                    <div className="ap-code">{toolApproval.detail || '没有提供可审阅的详情'}</div>
+                  )}
                   {toolApproval.taskTitle ? <p className="ap-muted">关联任务：{toolApproval.taskTitle}</p> : null}
-                  <div className="ap-callout warn"><strong>Diff 预览未接入</strong><span>当前只能看到工具请求摘要；批准文件写入前需要接入真实 diff。</span></div>
                 </>
               ) : null}
               {deliveryApproval ? (

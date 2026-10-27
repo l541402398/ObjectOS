@@ -444,3 +444,5 @@
 .rw-page { padding: 18px 22px 22px; }
 .rw-version-control-inner { display: flex; gap: 8px; align-items: center; }
 .rw-head-right .rw-version-control { margin-bottom: 2px; }
+
+.rw-filter { margin: 4px 6px 6px; width: calc(100% - 12px); }
