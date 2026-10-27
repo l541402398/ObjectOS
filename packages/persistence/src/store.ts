@@ -455,8 +455,8 @@ export class SqliteStore {
   createRequirement(requirement: Requirement): Requirement {
     return this.write(() => {
       this.run(
-        `INSERT INTO requirements (id, project_id, title, body, status, source, acceptance_json, version, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO requirements (id, project_id, title, body, status, source, acceptance_json, version_id, iteration_id, version, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         requirement.id,
         requirement.projectId,
         requirement.title,
@@ -464,6 +464,8 @@ export class SqliteStore {
         requirement.status,
         requirement.source,
         JSON.stringify(requirement.acceptanceCriteria),
+        requirement.versionId ?? null,
+        requirement.iterationId ?? null,
         requirement.version,
         requirement.createdAt,
         requirement.updatedAt,

@@ -70,6 +70,8 @@ const api: ProjectOSDesktopApi = {
     setIterationStatus: (input) => call('iteration.setStatus', input),
     createEnvironment: (input) => call('environment.create', input),
     setFocus: (input) => call('project.focus.set', input),
+    recordEvidence: (input) => call('evidence.record', input),
+    gateOverview: (projectId, subjectType, subjectId) => call('gate.overview', { projectId, subjectType, subjectId }),
   },
   projects: {
     list: (input) => call('project.list', input ?? {}),

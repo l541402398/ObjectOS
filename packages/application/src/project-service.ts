@@ -233,6 +233,8 @@ export class ProjectService {
       body: input.body,
       status: 'draft',
       source: input.source,
+      versionId: input.versionId ?? null,
+      iterationId: input.iterationId ?? null,
       acceptanceCriteria: input.acceptanceCriteria,
       version: 0,
       createdAt: timestamp,

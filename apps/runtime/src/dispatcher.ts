@@ -783,6 +783,14 @@ export class RuntimeDispatcher {
         const input = this.parse('project.focus.set', rawInput)
         return this.lifecycle.setFocus(input)
       }
+      case 'evidence.record': {
+        const input = this.parse('evidence.record', rawInput)
+        return this.lifecycle.recordEvidence(input)
+      }
+      case 'gate.overview': {
+        const input = this.parse('gate.overview', rawInput)
+        return this.lifecycle.gateOverview(input.projectId, input.subjectType, input.subjectId)
+      }
       case 'project.update': {
         const input = this.parse('project.update', rawInput)
         return { project: services.projects.update(input) }

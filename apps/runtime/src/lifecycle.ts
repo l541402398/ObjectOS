@@ -11,6 +11,12 @@ import {
   type Product,
   type ProductVersion,
   type ProjectFocus,
+  type RecordEvidenceInput,
+  type Evidence,
+  type GateOverview,
+  type GateCondition,
+  type GateEvaluation,
+  type GateDefinition,
   type SetProjectFocusInput,
   type TransitionVersionInput,
   type VersionPhase,
@@ -28,6 +34,37 @@ const VERSION_TRANSITIONS: Record<VersionPhase, VersionPhase[]> = {
   retired: [],
 }
 
+const GATE_FOR_TARGET: Partial<Record<VersionPhase, string>> = {
+  discovery: 'version-discovery',
+  build: 'version-build',
+  verify: 'version-verify',
+  release_candidate: 'version-release',
+  released: 'version-release',
+}
+
+const DEFAULT_GATE_CONDITIONS: Record<string, GateCondition[]> = {
+  'version-discovery': [
+    { evidenceType: 'review_record', requiredStatus: 'passed', minAssurance: 'self_declared', allowSelfDeclared: true },
+  ],
+  'version-build': [
+    { evidenceType: 'review_record', requiredStatus: 'passed', minAssurance: 'self_declared', allowSelfDeclared: true },
+  ],
+  'version-verify': [
+    { evidenceType: 'test_report', requiredStatus: 'passed', minAssurance: 'source_observed', allowSelfDeclared: false },
+  ],
+  'version-release': [
+    { evidenceType: 'test_report', requiredStatus: 'passed', minAssurance: 'source_observed', allowSelfDeclared: false },
+    { evidenceType: 'approval_record', requiredStatus: 'passed', minAssurance: 'self_declared', allowSelfDeclared: true },
+  ],
+}
+
+const ASSURANCE_RANK: Record<string, number> = {
+  self_declared: 0,
+  source_observed: 1,
+  independently_reproduced: 2,
+  externally_confirmed: 3,
+}
+
 export class LifecycleService {
   constructor(private readonly store: SqliteStore) {}
 
@@ -39,6 +76,60 @@ export class LifecycleService {
 
   products(projectId: string): Product[] {
     return this.store.read.listProducts(projectId)
+  }
+
+  recordEvidence(input: RecordEvidenceInput): Evidence {
+    return this.store.transaction(() => {
+      const project = this.store.read.getProject(input.projectId)
+      if (!project) throw new AppError('NOT_FOUND', '项目不存在')
+      this.assertSubject(input.projectId, input.subjectType, input.subjectId)
+      const id = newId('evd')
+      const timestamp = now()
+      this.store.db
+        .prepare(
+          `INSERT INTO evidence (id, project_id, evidence_type, verification_status, assurance, title, summary, provenance_json, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .run(
+          id,
+          input.projectId,
+          input.evidenceType,
+          input.verificationStatus,
+          input.assurance,
+          input.title,
+          input.summary,
+          JSON.stringify(input.provenance),
+          timestamp,
+          timestamp,
+        )
+      this.store.db
+        .prepare(
+          `INSERT INTO evidence_links (evidence_id, link_type, subject_type, subject_id, created_at)
+           VALUES (?, 'supports', ?, ?, ?)`,
+        )
+        .run(id, input.subjectType, input.subjectId, timestamp)
+      return {
+        id,
+        projectId: input.projectId,
+        evidenceType: input.evidenceType,
+        verificationStatus: input.verificationStatus,
+        assurance: input.assurance,
+        title: input.title,
+        summary: input.summary,
+        provenance: input.provenance,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }
+    })
+  }
+
+  gateOverview(projectId: string, subjectType: string, subjectId: string): GateOverview {
+    this.assertSubject(projectId, subjectType, subjectId)
+    this.ensureDefaultGates(projectId)
+    const definitions = this.listGateDefinitions(projectId)
+    const evaluations = this.listGateEvaluations(subjectType, subjectId)
+    const evidence = this.listEvidence(subjectType, subjectId)
+    return { definitions, evaluations, evidence }
   }
 
   createVersion(input: CreateVersionInput): ProductVersion {
@@ -88,11 +179,19 @@ export class LifecycleService {
   }
 
   transitionVersion(input: TransitionVersionInput): ProductVersion {
-    return this.store.transaction(() => {
-      const version = this.getVersion(input.versionId)
-      if (!VERSION_TRANSITIONS[version.phase]?.includes(input.to)) {
-        throw new AppError('CONFLICT', `版本不能从 ${version.phase} 直接进入 ${input.to}`)
+    const version = this.getVersion(input.versionId)
+    if (!VERSION_TRANSITIONS[version.phase]?.includes(input.to)) {
+      throw new AppError('CONFLICT', `版本不能从 ${version.phase} 直接进入 ${input.to}`)
+    }
+    if (input.to !== 'retired') {
+      const gate = this.evaluateVersionGate(version, input.to)
+      if (gate.status !== 'passed') {
+        throw new AppError('CONFLICT', `版本门禁未通过：${gate.conditionResults.filter((item) => !item.satisfied).map((item) => item.reason).join('；')}`, {
+          details: gate,
+        })
       }
+    }
+    return this.store.transaction(() => {
       const timestamp = now()
       this.store.db
         .prepare(
@@ -195,6 +294,169 @@ export class LifecycleService {
         updatedAt: timestamp,
       }
     })
+  }
+
+  private ensureDefaultGates(projectId: string): void {
+    this.store.transaction(() => {
+      const timestamp = now()
+      for (const [key, conditions] of Object.entries(DEFAULT_GATE_CONDITIONS)) {
+        const existing = this.store.db
+          .prepare('SELECT id FROM gate_definitions WHERE project_id = ? AND subject_scope = ? AND key = ?')
+          .get(projectId, 'version', key)
+        if (existing) continue
+        this.store.db
+          .prepare(
+            `INSERT INTO gate_definitions (id, project_id, subject_scope, key, policy_profile, blocking, conditions_json, created_at, updated_at)
+             VALUES (?, ?, 'version', ?, 'default', 1, ?, ?, ?)`,
+          )
+          .run(newId('gat'), projectId, key, JSON.stringify(conditions), timestamp, timestamp)
+      }
+    })
+  }
+
+  private listGateDefinitions(projectId: string): GateDefinition[] {
+    return this.store.db
+      .prepare("SELECT * FROM gate_definitions WHERE project_id = ? AND subject_scope = 'version' ORDER BY key")
+      .all(projectId)
+      .map((row) => {
+        const item = row as Record<string, unknown>
+        return {
+          id: String(item.id),
+          projectId: String(item.project_id),
+          subjectScope: String(item.subject_scope),
+          key: String(item.key),
+          policyProfile: String(item.policy_profile),
+          blocking: Number(item.blocking) === 1,
+          conditions: JSON.parse(String(item.conditions_json ?? '[]')) as GateCondition[],
+          createdAt: Number(item.created_at),
+          updatedAt: Number(item.updated_at),
+        }
+      })
+  }
+
+  private listGateEvaluations(subjectType: string, subjectId: string): GateEvaluation[] {
+    return this.store.db
+      .prepare(
+        'SELECT * FROM gate_evaluations WHERE subject_type = ? AND subject_id = ? ORDER BY evaluated_at DESC',
+      )
+      .all(subjectType, subjectId)
+      .map((row) => {
+        const item = row as Record<string, unknown>
+        return {
+          id: String(item.id),
+          projectId: String(item.project_id),
+          gateId: String(item.gate_id),
+          subjectType: String(item.subject_type),
+          subjectId: String(item.subject_id),
+          status: String(item.status) as GateEvaluation['status'],
+          conditionResults: JSON.parse(String(item.condition_results_json ?? '[]')) as GateEvaluation['conditionResults'],
+          evaluatedBy: String(item.evaluated_by),
+          evaluatedAt: Number(item.evaluated_at),
+        }
+      })
+  }
+
+  private listEvidence(subjectType: string, subjectId: string): Evidence[] {
+    return this.store.db
+      .prepare(
+        `SELECT e.* FROM evidence e
+         JOIN evidence_links l ON l.evidence_id = e.id
+         WHERE l.subject_type = ? AND l.subject_id = ?
+         ORDER BY e.created_at DESC`,
+      )
+      .all(subjectType, subjectId)
+      .map((row) => {
+        const item = row as Record<string, unknown>
+        return {
+          id: String(item.id),
+          projectId: String(item.project_id),
+          evidenceType: String(item.evidence_type) as Evidence['evidenceType'],
+          verificationStatus: String(item.verification_status) as Evidence['verificationStatus'],
+          assurance: String(item.assurance) as Evidence['assurance'],
+          title: String(item.title),
+          summary: String(item.summary ?? ''),
+          provenance: JSON.parse(String(item.provenance_json ?? '{}')) as Record<string, unknown>,
+          createdAt: Number(item.created_at),
+          updatedAt: Number(item.updated_at),
+        }
+      })
+  }
+
+  private evaluateVersionGate(version: ProductVersion, to: VersionPhase): GateEvaluation {
+    this.ensureDefaultGates(version.projectId)
+    const key = GATE_FOR_TARGET[to]
+    if (!key) throw new AppError('CONFLICT', `没有为 ${to} 定义门禁`)
+    const definition = this.listGateDefinitions(version.projectId).find((item) => item.key === key)
+    if (!definition) throw new AppError('CONFLICT', `门禁 ${key} 不存在`)
+    const evidence = this.listEvidence('version', version.id)
+    const conditionResults = definition.conditions.map((condition, conditionIndex) => {
+      const candidates = evidence.filter((item) => item.evidenceType === condition.evidenceType)
+      const usable = candidates.filter((item) => {
+        if (item.verificationStatus !== condition.requiredStatus) return false
+        if (!condition.allowSelfDeclared && item.assurance === 'self_declared') return false
+        return (ASSURANCE_RANK[item.assurance] ?? -1) >= (ASSURANCE_RANK[condition.minAssurance] ?? 0)
+      })
+      return {
+        conditionIndex,
+        satisfied: usable.length > 0,
+        evidenceIds: usable.map((item) => item.id),
+        reason: usable.length
+          ? `${condition.evidenceType} 已满足`
+          : candidates.length
+            ? `${condition.evidenceType} 存在但状态/保证程度不足（需要 ${condition.requiredStatus}/${condition.minAssurance}）`
+            : `缺少 ${condition.evidenceType}（需要 ${condition.requiredStatus}/${condition.minAssurance}）`,
+      }
+    })
+    const status: GateEvaluation['status'] = conditionResults.every((item) => item.satisfied) ? 'passed' : 'failed'
+    const evaluation: GateEvaluation = {
+      id: newId('gev'),
+      projectId: version.projectId,
+      gateId: definition.id,
+      subjectType: 'version',
+      subjectId: version.id,
+      status,
+      conditionResults,
+      evaluatedBy: 'system',
+      evaluatedAt: now(),
+    }
+    this.store.db
+      .prepare(
+        `INSERT INTO gate_evaluations (id, project_id, gate_id, subject_type, subject_id, status, condition_results_json, evaluated_by, evaluated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(
+        evaluation.id,
+        evaluation.projectId,
+        evaluation.gateId,
+        evaluation.subjectType,
+        evaluation.subjectId,
+        evaluation.status,
+        JSON.stringify(evaluation.conditionResults),
+        evaluation.evaluatedBy,
+        evaluation.evaluatedAt,
+      )
+    return evaluation
+  }
+
+  private assertSubject(projectId: string, subjectType: string, subjectId: string): void {
+    if (subjectType === 'version') {
+      if (!this.store.read.listProductVersions(projectId).some((item) => item.id === subjectId)) {
+        throw new AppError('NOT_FOUND', '版本不存在')
+      }
+      return
+    }
+    if (subjectType === 'iteration') {
+      if (!this.store.read.listIterations(projectId).some((item) => item.id === subjectId)) {
+        throw new AppError('NOT_FOUND', '迭代不存在')
+      }
+      return
+    }
+    if (subjectType === 'task') {
+      const task = this.store.read.getTask(subjectId)
+      if (!task || task.projectId !== projectId) throw new AppError('NOT_FOUND', '任务不存在')
+      return
+    }
+    throw new AppError('NOT_FOUND', '该证据主体尚未实现')
   }
 
   private getVersion(id: string): ProductVersion {

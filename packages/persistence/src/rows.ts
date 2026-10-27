@@ -368,6 +368,8 @@ export interface RequirementRow {
   body: string
   status: string
   source: string
+  version_id?: string | null
+  iteration_id?: string | null
   acceptance_json: string
   version: number
   created_at: number
@@ -649,6 +651,8 @@ export function toRequirement(row: RequirementRow): Requirement {
     body: row.body,
     status: row.status as RequirementStatus,
     source: row.source,
+    versionId: row.version_id ?? null,
+    iterationId: row.iteration_id ?? null,
     acceptanceCriteria: parseStringArray(row.acceptance_json),
     version: Number(row.version),
     createdAt: Number(row.created_at),

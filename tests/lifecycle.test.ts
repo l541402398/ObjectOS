@@ -46,9 +46,40 @@ describe('V25 lifecycle domain', () => {
       phase: 'planned',
       isDefault: false,
     })
+    expect(() => lifecycle.transitionVersion({ versionId: v2.id, to: 'discovery' })).toThrow(/门禁未通过/)
+    lifecycle.recordEvidence({
+      projectId: project.id,
+      subjectType: 'version',
+      subjectId: v2.id,
+      evidenceType: 'review_record',
+      verificationStatus: 'passed',
+      assurance: 'self_declared',
+      title: 'v1.1.0 discovery review',
+      summary: 'reviewed scope',
+      provenance: { sourceSystem: 'test' },
+    })
     const discovery = lifecycle.transitionVersion({ versionId: v2.id, to: 'discovery' })
     expect(discovery.phase).toBe('discovery')
     expect(() => lifecycle.transitionVersion({ versionId: v2.id, to: 'released' })).toThrow(/不能从/)
+    const gate = lifecycle.gateOverview(project.id, 'version', v2.id)
+    expect(gate.evaluations.length).toBeGreaterThanOrEqual(2)
+    expect(gate.evaluations[0]?.status).toBe('passed')
+    expect(gate.definitions.some((item) => item.key === 'version-verify')).toBe(true)
+    const build = lifecycle.transitionVersion({ versionId: v2.id, to: 'build' })
+    expect(build.phase).toBe('build')
+    expect(() => lifecycle.transitionVersion({ versionId: v2.id, to: 'verify' })).toThrow(/test_report/)
+    lifecycle.recordEvidence({
+      projectId: project.id,
+      subjectType: 'version',
+      subjectId: v2.id,
+      evidenceType: 'test_report',
+      verificationStatus: 'passed',
+      assurance: 'source_observed',
+      title: 'v1.1.0 test report',
+      summary: 'node test exited 0',
+      provenance: { sourceSystem: 'test', command: 'npm test', exitCode: 0 },
+    })
+    expect(lifecycle.transitionVersion({ versionId: v2.id, to: 'verify' }).phase).toBe('verify')
     const iteration = lifecycle.createIteration({
       projectId: project.id,
       versionId: v2.id,

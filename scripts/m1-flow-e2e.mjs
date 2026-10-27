@@ -18,12 +18,19 @@ try {
     const project = (await window.projectos.projects.list()).projects[0]
     const lifecycle = await window.projectos.lifecycle.overview(project.id)
     const version = lifecycle.versions[0]
+    const iteration = await window.projectos.lifecycle.createIteration({
+      projectId: project.id,
+      versionId: version.id,
+      name: 'M1 flow iteration',
+      goal: 'version and iteration linkage',
+    })
+    await window.projectos.lifecycle.setIterationStatus({ iterationId: iteration.id, status: 'active' })
     const plan = await window.projectos.plans.generate(project.id, '为 Markdown 编辑器增加自动保存状态提示，并补充真实测试', {
       mode: 'local',
       maxTasks: 6,
       allowRuleFallback: true,
     })
-    await window.projectos.plans.update({ planId: plan.id, versionId: version.id })
+    await window.projectos.plans.update({ planId: plan.id, versionId: version.id, iterationId: iteration.id })
     const approved = await window.projectos.plans.approve(plan.id)
     const grant = await window.projectos.plans.grant.issue({
       planId: plan.id,
@@ -59,10 +66,13 @@ try {
       projectId: project.id,
       version: version?.version ?? null,
       versionId: version?.id ?? null,
+      iterationId: iteration.id,
       generatedBy: plan.generatedBy,
       taskCount: approved.taskIds.length,
       tasksVersioned: board.tasks.filter((task) => approved.taskIds.includes(task.id) && task.versionId === version?.id).length,
+      tasksIterationed: board.tasks.filter((task) => approved.taskIds.includes(task.id) && task.iterationId === iteration.id).length,
       planVersioned: plans.plans[0]?.versionId ?? null,
+      planIterationed: plans.plans[0]?.iterationId ?? null,
       grantValid: grant.valid,
       verificationRunId: verification?.runId ?? null,
       verificationError,
@@ -78,7 +88,9 @@ try {
     !result.grantValid ||
     result.startError ||
     result.tasksVersioned !== result.taskCount ||
-    result.planVersioned !== result.versionId
+    result.tasksIterationed !== result.taskCount ||
+    result.planVersioned !== result.versionId ||
+    result.planIterationed !== result.iterationId
   ) {
     process.exitCode = 1
   }

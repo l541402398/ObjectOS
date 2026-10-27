@@ -80,6 +80,104 @@ export const ProjectFocusSchema = z.object({
 })
 export type ProjectFocus = z.infer<typeof ProjectFocusSchema>
 
+export const EvidenceTypeSchema = z.enum([
+  'test_report',
+  'code_diff',
+  'build_artifact',
+  'run_log',
+  'metric_snapshot',
+  'deployment_receipt',
+  'approval_record',
+  'review_record',
+  'manual_attestation',
+  'postmortem',
+  'other',
+])
+export const VerificationStatusSchema = z.enum(['pending', 'passed', 'failed', 'unknown', 'waived'])
+export const EvidenceAssuranceSchema = z.enum([
+  'self_declared',
+  'source_observed',
+  'independently_reproduced',
+  'externally_confirmed',
+])
+export type EvidenceType = z.infer<typeof EvidenceTypeSchema>
+export type VerificationStatus = z.infer<typeof VerificationStatusSchema>
+export type EvidenceAssurance = z.infer<typeof EvidenceAssuranceSchema>
+
+export const EvidenceSchema = z.object({
+  id: IdSchema,
+  projectId: IdSchema,
+  evidenceType: EvidenceTypeSchema,
+  verificationStatus: VerificationStatusSchema,
+  assurance: EvidenceAssuranceSchema,
+  title: z.string().min(1).max(240),
+  summary: z.string().max(8000).default(''),
+  provenance: z.record(z.string(), z.unknown()).default({}),
+  createdAt: TimestampSchema,
+  updatedAt: TimestampSchema,
+})
+export type Evidence = z.infer<typeof EvidenceSchema>
+
+export const GateConditionSchema = z.object({
+  evidenceType: EvidenceTypeSchema,
+  requiredStatus: VerificationStatusSchema.default('passed'),
+  minAssurance: EvidenceAssuranceSchema.default('self_declared'),
+  allowSelfDeclared: z.boolean().default(false),
+})
+export type GateCondition = z.infer<typeof GateConditionSchema>
+
+export const GateDefinitionSchema = z.object({
+  id: IdSchema,
+  projectId: IdSchema,
+  subjectScope: z.string(),
+  key: z.string(),
+  policyProfile: z.string(),
+  blocking: z.boolean(),
+  conditions: z.array(GateConditionSchema),
+  createdAt: TimestampSchema,
+  updatedAt: TimestampSchema,
+})
+export type GateDefinition = z.infer<typeof GateDefinitionSchema>
+
+export const GateConditionResultSchema = z.object({
+  conditionIndex: z.number().int().nonnegative(),
+  satisfied: z.boolean(),
+  evidenceIds: z.array(IdSchema),
+  reason: z.string(),
+})
+export const GateEvaluationSchema = z.object({
+  id: IdSchema,
+  projectId: IdSchema,
+  gateId: IdSchema,
+  subjectType: z.string(),
+  subjectId: IdSchema,
+  status: z.enum(['passed', 'failed', 'pending', 'waived']),
+  conditionResults: z.array(GateConditionResultSchema),
+  evaluatedBy: z.string(),
+  evaluatedAt: TimestampSchema,
+})
+export type GateEvaluation = z.infer<typeof GateEvaluationSchema>
+
+export const GateOverviewSchema = z.object({
+  definitions: z.array(GateDefinitionSchema),
+  evaluations: z.array(GateEvaluationSchema),
+  evidence: z.array(EvidenceSchema),
+})
+export type GateOverview = z.infer<typeof GateOverviewSchema>
+
+export const RecordEvidenceInputSchema = z.object({
+  projectId: IdSchema,
+  subjectType: z.enum(['version', 'iteration', 'task', 'release', 'deployment', 'incident']),
+  subjectId: IdSchema,
+  evidenceType: EvidenceTypeSchema,
+  verificationStatus: VerificationStatusSchema.default('unknown'),
+  assurance: EvidenceAssuranceSchema.default('self_declared'),
+  title: z.string().trim().min(1).max(240),
+  summary: z.string().max(8000).default(''),
+  provenance: z.record(z.string(), z.unknown()).default({}),
+})
+export type RecordEvidenceInput = z.infer<typeof RecordEvidenceInputSchema>
+
 export const ProjectPostureSchema = z.object({
   projectId: IdSchema,
   legacyStage: z.string(),

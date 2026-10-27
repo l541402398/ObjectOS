@@ -55,6 +55,8 @@ export const RequirementSchema = z.object({
   body: z.string().max(40_000).default(''),
   status: RequirementStatusSchema,
   source: z.string().max(240).default('local'),
+  versionId: IdSchema.nullable().optional(),
+  iterationId: IdSchema.nullable().optional(),
   acceptanceCriteria: z.array(z.string().max(2000)).max(50),
   version: z.number().int().nonnegative(),
   createdAt: TimestampSchema,

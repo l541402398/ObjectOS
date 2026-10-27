@@ -223,6 +223,7 @@ export default function TaskBoardPage() {
   const [query, setQuery] = useState('')
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
   const [versionFilter, setVersionFilter] = useState<string | null>(null)
+  const [iterationFilter, setIterationFilter] = useState<string | null>(null)
   const [priorityFilter, setPriorityFilter] = useState<number | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dropTarget, setDropTarget] = useState<TaskStatus | null>(null)
@@ -398,10 +399,11 @@ export default function TaskBoardPage() {
       }
       if (assigneeFilter && task.assigneeAgentId !== assigneeFilter) return false
       if (versionFilter && task.versionId !== versionFilter) return false
+      if (iterationFilter && task.iterationId !== iterationFilter) return false
       if (priorityFilter && task.priority !== priorityFilter) return false
       return true
     })
-  }, [board.data, query, assigneeFilter, versionFilter, priorityFilter])
+  }, [board.data, query, assigneeFilter, versionFilter, iterationFilter, priorityFilter])
 
   const columns = TASK_COLUMNS.map((status) => ({
     status,
@@ -449,6 +451,11 @@ export default function TaskBoardPage() {
       versions.find((item) => item.isDefault) ??
       versions[0] ??
       null
+    const iterations = lifecycle.data?.iterations ?? []
+    const activeIteration =
+      iterations.find((item) => item.versionId === activeVersion?.id && item.status === 'active') ??
+      iterations.find((item) => item.versionId === activeVersion?.id) ??
+      null
     createTask.mutate({
       projectId,
       title: values.title.trim(),
@@ -462,6 +469,7 @@ export default function TaskBoardPage() {
       assigneeAgentId: values.assigneeAgentId ?? null,
       milestoneId: values.milestoneId ?? null,
       versionId: activeVersion?.id ?? null,
+      iterationId: activeIteration?.id ?? null,
       dependsOn: values.dependsOn ?? [],
       dueAt: values.dueAt ? values.dueAt.valueOf() : null,
     })
@@ -678,6 +686,16 @@ export default function TaskBoardPage() {
             value: version.id,
             label: `v${version.version}${version.isDefault ? ' · 默认' : ''}`,
           }))}
+          style={{ width: 160 }}
+        />
+        <Select
+          allowClear
+          placeholder="按迭代过滤"
+          value={iterationFilter}
+          onChange={(value) => setIterationFilter(value ?? null)}
+          options={(lifecycle.data?.iterations ?? [])
+            .filter((iteration) => !versionFilter || iteration.versionId === versionFilter)
+            .map((iteration) => ({ value: iteration.id, label: iteration.name }))}
           style={{ width: 160 }}
         />
         <Select

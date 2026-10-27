@@ -47,6 +47,9 @@ export class WorktreeManager {
   }
 
   async diff(worktreePath: string): Promise<string> {
+    // Mark untracked files as intent-to-add so their content appears in the
+    // evidence diff without staging/committing them from a read path.
+    await runGit(['add', '-N', '.'], worktreePath)
     const diff = await runGit(['diff', 'HEAD', '--no-ext-diff', '--unified=3'], worktreePath)
     const status = await runGit(['status', '--porcelain=v1'], worktreePath)
     return [`# git status\n${status.stdout.trim()}`, '# git diff', diff.stdout.trim()].join('\n\n').slice(0, 120_000)
@@ -56,7 +59,29 @@ export class WorktreeManager {
     const clean = await runGit(['status', '--porcelain=v1'], repoRoot)
     if (clean.code !== 0) return { ok: false, message: clean.stderr.trim() || '无法读取主工作区状态' }
     if (clean.stdout.trim()) return { ok: false, message: '主工作区存在未提交改动，拒绝合并' }
-    const result = await runGit(['merge', '--no-ff', branch, '-m', message], repoRoot)
+
+    // Agents write files but do not commit them. Commit the isolated worktree
+    // before merge so untracked/new files are actually delivered. The worktree
+    // is bounded by the plan grant and has no effect on the main workspace.
+    const worktree = (await this.list(repoRoot)).find((entry) => entry.branch === branch)
+    if (worktree) {
+      const status = await runGit(['status', '--porcelain=v1'], worktree.path)
+      if (status.code !== 0) return { ok: false, message: status.stderr.trim() || '无法读取 Worktree 状态' }
+      if (status.stdout.trim()) {
+        const add = await runGit(['add', '-A'], worktree.path)
+        if (add.code !== 0) return { ok: false, message: add.stderr.trim() || 'Worktree 暂存失败' }
+        const commit = await runGit(
+          ['-c', 'user.name=ProjectOS', '-c', 'user.email=projectos@local', 'commit', '-m', message],
+          worktree.path,
+        )
+        if (commit.code !== 0) return { ok: false, message: (commit.stderr || commit.stdout).trim() || 'Worktree 提交失败' }
+      }
+    }
+
+    const result = await runGit(
+      ['-c', 'user.name=ProjectOS', '-c', 'user.email=projectos@local', 'merge', '--no-ff', branch, '-m', message],
+      repoRoot,
+    )
     if (result.code === 0) return { ok: true, message: result.stdout.trim().slice(0, 4000) }
     // Never leave the main workspace in a half-merged state; restore it and report the conflict.
     const conflicts = await runGit(['diff', '--name-only', '--diff-filter=U'], repoRoot)

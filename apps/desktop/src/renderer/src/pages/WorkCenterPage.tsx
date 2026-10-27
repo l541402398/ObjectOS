@@ -73,6 +73,17 @@ const APPROVAL_LABELS: Record<string, string> = {
   cancelled: '已取消',
 }
 
+const VERSION_PHASE_LABELS: Record<string, string> = {
+  planned: '已计划',
+  discovery: '需求发现',
+  build: '开发中',
+  verify: '验证中',
+  release_candidate: '候选发布',
+  released: '已发布',
+  maintenance: '维护中',
+  retired: '已退役',
+}
+
 function firstUnfinished(plan: PlanDraft | null): string | null {
   if (!plan) return '生成计划'
   if (plan.status === 'draft') return '审核并批准计划'
@@ -122,6 +133,7 @@ export default function WorkCenterPage() {
   )
   const recentArtifacts = (artifacts.data?.artifacts ?? []).slice(0, 6)
   const activeAgents = (agents.data?.agents ?? []).filter((agent) => agent.status !== 'offline')
+  const workingAgents = activeAgents.filter((agent) => agent.status === 'working')
   const stats = overview.data?.stats
   const requirements = useMemo(() => overview.data?.requirements ?? [], [overview.data])
   const activeVersion = useMemo(() => {
@@ -129,6 +141,12 @@ export default function WorkCenterPage() {
     const focusId = lifecycle.data?.focus?.subjectType === 'version' ? lifecycle.data?.focus?.subjectId : null
     return versions.find((item) => item.id === focusId) ?? versions.find((item) => item.isDefault) ?? versions[0] ?? null
   }, [lifecycle.data])
+  const activeIteration = useMemo(() => {
+    const iterations = lifecycle.data?.iterations ?? []
+    return iterations.find((item) => item.versionId === activeVersion?.id && item.status === 'active') ??
+      iterations.find((item) => item.versionId === activeVersion?.id) ??
+      null
+  }, [activeVersion?.id, lifecycle.data])
 
   useEffect(() => {
     if (!goal && requirements[0]?.title) setGoal(requirements[0].title)
@@ -157,7 +175,7 @@ export default function WorkCenterPage() {
     onSuccess: async (plan) => {
       setGoal('')
       if (activeVersion) {
-        await window.projectos.plans.update({ planId: plan.id, versionId: activeVersion.id })
+        await window.projectos.plans.update({ planId: plan.id, versionId: activeVersion.id, iterationId: activeIteration?.id ?? null })
       }
       await invalidate()
       message.success(plan.generatedBy === 'provider' ? 'AI 计划已生成，进入审核' : '规则草案已生成，进入审核')
@@ -230,6 +248,8 @@ export default function WorkCenterPage() {
         body: requirementBody.trim(),
         acceptanceCriteria: [],
         source: 'work-center',
+        versionId: activeVersion?.id ?? null,
+        iterationId: activeIteration?.id ?? null,
       }),
     onSuccess: async (result) => {
       setRequirementOpen(false)
@@ -288,13 +308,28 @@ export default function WorkCenterPage() {
   const execution = activePlan?.execution ?? null
   const grantReady = Boolean(grant.data?.valid)
   const planStatus = activePlan?.status ?? 'none'
+  const focus = !requirements.length
+    ? { kicker: '从目标开始', title: '先记录一条真实需求', description: '写清背景、边界和验收标准，计划才有可靠输入。', action: '记录需求', run: () => setRequirementOpen(true) }
+    : !activePlan
+      ? { kicker: '下一步', title: '把需求变成可审核的计划', description: 'AI 会生成 DAG、Agent 分工与验收节点；批准后再单独授权执行。', action: '生成计划', run: () => document.getElementById('work-goal')?.focus() }
+      : activePlan.status === 'draft'
+        ? { kicker: '当前重点', title: '审核并批准计划', description: '检查依赖、Agent 分工和验收标准；批准不会自动授权执行。', action: '打开 Plan Review', run: () => navigate(`/projects/${projectId}/orchestration?plan=${activePlan.id}`) }
+        : !grantReady
+          ? { kicker: '当前重点', title: '计划已批准，等待执行授权', description: '确认 revision、任务、Agent、路径和预算后，再启动 Scheduler。', action: '授权执行', run: confirmGrant }
+          : execution?.status === 'paused'
+            ? { kicker: '需要处理', title: '执行已暂停', description: execution.error ?? '检查暂停原因，处理后继续；未知副作用不会自动重试。', action: '继续执行', run: () => resume.mutate(activePlan) }
+            : execution?.status === 'running'
+              ? { kicker: '正在发生', title: 'Agent 正在执行', description: '查看任务、Run 和待审批事项；需要你决定时会在右侧集中展示。', action: '打开 Agent 协作', run: () => navigate(`/projects/${projectId}/agents`) }
+              : execution?.status === 'completed'
+                ? { kicker: '已交付', title: '执行完成，查看成果与验收', description: '测试、Diff 和 Artifact 已可追溯；把结论沉淀到知识库。', action: '查看成果', run: () => navigate(`/projects/${projectId}/knowledge`) }
+                : { kicker: '下一步', title: '启动执行或查看编排', description: '当前计划已就绪，可启动 Scheduler 或进入完整编排工作台。', action: '打开编排工作台', run: () => navigate(`/projects/${projectId}/orchestration`) }
 
   return (
     <div className="po-page po-work-center">
       <PageHeader
         eyebrow={overview.data ? `${stageLabel(overview.data.project.currentStage)} · 本地优先` : 'WORK CENTER'}
         title={overview.data ? `${overview.data.project.name} · 研发工作中心` : '研发工作中心'}
-        description="从需求到成果的一条真实工作流：规划、审核、授权、协作、验证、交付。"
+        description="把一项真实工作从需求推进到可验收成果。"
         actions={
           <>
             <Button icon={<PlusOutlined />} onClick={() => setRequirementOpen(true)}>
@@ -311,7 +346,7 @@ export default function WorkCenterPage() {
             <div className="wc-meta">
               <span>{overview.data.project.name}</span>
               <span className="wc-dot" />
-              <span>{activeVersion ? `v${activeVersion.version} · ${activeVersion.phase}` : '未设置版本'}</span>
+              <span>{activeVersion ? `v${activeVersion.version} · ${VERSION_PHASE_LABELS[activeVersion.phase] ?? activeVersion.phase}` : '未设置版本'}</span>
               <span className="wc-dot" />
               <span>{overview.data.git?.branch ?? '未检测 Git'}</span>
               {stats ? <span className="wc-dot" /> : null}
@@ -321,26 +356,45 @@ export default function WorkCenterPage() {
         }
       />
 
+      <div className="wc-focus">
+        <div className="wc-focus-copy">
+          <span className="wc-focus-kicker">{focus.kicker}</span>
+          <h2>{focus.title}</h2>
+          <p>{focus.description}</p>
+        </div>
+        <Button type="primary" size="large" onClick={focus.run}>
+          {focus.action}
+          <ArrowRightOutlined />
+        </Button>
+      </div>
+
       <div className="wc-metrics">
-        <MetricCard label="需求" value={requirements.length} hint="已记录目标" icon={<FileTextOutlined />} />
+        <MetricCard label="需求" value={requirements.length} hint="全项目" icon={<FileTextOutlined />} />
         <MetricCard
-          label="待你处理"
-          value={pendingApprovals.length + reviewTasks.length}
-          hint="审批 + 验收"
-          tone={pendingApprovals.length + reviewTasks.length > 0 ? 'warning' : 'success'}
+          label="待审批"
+          value={pendingApprovals.length}
+          hint="需要你的决定"
+          tone={pendingApprovals.length > 0 ? 'warning' : 'success'}
           icon={<SafetyCertificateOutlined />}
         />
         <MetricCard
-          label="正在执行"
+          label="待验收"
+          value={reviewTasks.length}
+          hint="等待证据/人工验收"
+          tone={reviewTasks.length > 0 ? 'warning' : 'success'}
+          icon={<CheckCircleOutlined />}
+        />
+        <MetricCard
+          label="运行中"
           value={stats?.activeRuns ?? 0}
-          hint={`${activeAgents.length} 个 Agent 在线`}
+          hint={`${workingAgents.length} 个正在工作 · ${activeAgents.length} 个可用`}
           tone="accent"
           icon={<PlayCircleOutlined />}
         />
         <MetricCard
           label="成果"
           value={stats?.artifacts ?? recentArtifacts.length}
-          hint="Artifact / 测试 / Diff"
+          hint="全项目 · 含未验证"
           tone="info"
           icon={<CheckCircleOutlined />}
         />
@@ -368,6 +422,7 @@ export default function WorkCenterPage() {
                 />
                 <div className="wc-generate">
                   <Input.TextArea
+                    id="work-goal"
                     rows={3}
                     value={goal}
                     onChange={(event) => setGoal(event.target.value)}
@@ -459,7 +514,7 @@ export default function WorkCenterPage() {
                     <strong>{grantReady ? '有效' : activePlan.status === 'approved' ? '未授权' : '待批准'}</strong>
                   </div>
                   <div>
-                    <span className="wc-label">完成度</span>
+                    <span className="wc-label">项目完成度</span>
                     <strong>{stats ? `${Math.round(stats.progress * 100)}%` : '—'}</strong>
                   </div>
                 </div>
@@ -524,7 +579,7 @@ export default function WorkCenterPage() {
 
           <SectionCard
             title="Agent 协作"
-            subtitle="当前在线与最近运行；审批、Handoff、工具调用仍在既有边界内"
+            subtitle="谁在执行、做到哪一步、需要你决定什么"
             extra={
               <Button size="small" type="text" onClick={() => navigate(`/projects/${projectId}/agents`)}>
                 Agent 工作台 <ArrowRightOutlined />

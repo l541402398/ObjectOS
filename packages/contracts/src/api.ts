@@ -67,6 +67,9 @@ import {
   ProductSchema,
   ProductVersionSchema,
   ProjectFocusSchema,
+  GateOverviewSchema,
+  RecordEvidenceInputSchema,
+  EvidenceSchema,
   SetIterationStatusInputSchema,
   SetProjectFocusInputSchema,
   TransitionVersionInputSchema,
@@ -196,6 +199,8 @@ export const CreateRequirementInputSchema = z.object({
   title: z.string().trim().min(1).max(240),
   body: z.string().max(40_000).default(''),
   acceptanceCriteria: z.array(z.string().trim().min(1).max(2000)).max(50).default([]),
+  versionId: IdSchema.nullable().optional(),
+  iterationId: IdSchema.nullable().optional(),
   source: z.string().trim().max(240).default('local'),
 })
 export type CreateRequirementInput = z.infer<typeof CreateRequirementInputSchema>
@@ -372,6 +377,18 @@ export const ApiSchemas = {
   'project.focus.set': {
     input: SetProjectFocusInputSchema,
     output: ProjectFocusSchema,
+  },
+  'evidence.record': {
+    input: RecordEvidenceInputSchema,
+    output: EvidenceSchema,
+  },
+  'gate.overview': {
+    input: z.object({
+      projectId: IdSchema,
+      subjectType: z.enum(['version', 'iteration', 'task', 'release', 'deployment', 'incident']),
+      subjectId: IdSchema,
+    }),
+    output: GateOverviewSchema,
   },
   'product.list': {
     input: projectIdInput,

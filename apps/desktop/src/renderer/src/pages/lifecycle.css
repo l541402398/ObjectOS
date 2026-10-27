@@ -120,6 +120,40 @@
   flex-shrink: 0;
 }
 
+.lc-version-actions .ant-select {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary) !important;
+}
+
+.lc-version-actions .ant-select-content,
+.lc-version-actions .ant-select-placeholder,
+.lc-version-actions .ant-select-input,
+.lc-version-actions .ant-select-selection-placeholder {
+  background: transparent !important;
+  color: var(--color-text-secondary) !important;
+  opacity: 1;
+}
+
+.lc-version-actions .ant-select-selector {
+  background: var(--color-surface) !important;
+  background-color: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text-secondary) !important;
+  box-shadow: none !important;
+}
+
+.lc-version-actions .ant-select-selection-item,
+.lc-version-actions .ant-select-selection-placeholder {
+  color: var(--color-text-secondary) !important;
+  opacity: 1;
+}
+
+.lc-version-actions .ant-select-arrow {
+  color: var(--color-text-tertiary) !important;
+}
+
 .lc-retired {
   font-size: 10px;
   color: var(--color-text-tertiary);
@@ -252,6 +286,62 @@
 .lc-posture strong {
   font-size: 12px;
   color: var(--color-text-primary);
+}
+
+.lc-gate {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lc-gate-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--color-text-tertiary);
+}
+
+.lc-gate-error {
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--color-danger) 35%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-danger) 7%, var(--color-surface));
+  color: var(--color-danger);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.lc-gate-conditions {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.lc-gate-def {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+}
+
+.lc-gate-def strong {
+  font-size: 10.5px;
+  color: var(--color-text-primary);
+}
+
+.lc-gate-def span {
+  font-size: 9.5px;
+  color: var(--color-text-tertiary);
+}
+
+.lc-evidence-count {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
 }
 
 .lc-empty {

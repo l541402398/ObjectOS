@@ -40,6 +40,12 @@ export interface ProjectOSDesktopApi {
     setIterationStatus: (input: In<'iteration.setStatus'>) => Promise<Out<'iteration.setStatus'>>
     createEnvironment: (input: In<'environment.create'>) => Promise<Out<'environment.create'>>
     setFocus: (input: In<'project.focus.set'>) => Promise<Out<'project.focus.set'>>
+    recordEvidence: (input: In<'evidence.record'>) => Promise<Out<'evidence.record'>>
+    gateOverview: (
+      projectId: string,
+      subjectType: 'version' | 'iteration' | 'task' | 'release' | 'deployment' | 'incident',
+      subjectId: string,
+    ) => Promise<Out<'gate.overview'>>
   }
   projects: {
     list: (input?: In<'project.list'>) => Promise<Out<'project.list'>>

@@ -23,6 +23,10 @@ async function launch(width, height) {
   delete env.ELECTRON_RUN_AS_NODE
   app = await electron.launch({ executablePath: electronPath, args: ['.'], cwd: desktopDir, env, timeout: 30_000 })
   const page = await app.firstWindow()
+  await app.evaluate(({ BrowserWindow }) => {
+    const win = BrowserWindow.getAllWindows()[0]
+    if (win) win.webContents.setZoomFactor(1)
+  })
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text())
   })
@@ -89,6 +93,17 @@ try {
     await app.close()
     app = undefined
   }
+  const zoomPage = await launch(1152, 720)
+  const zoomProjectId = await zoomPage.evaluate(async () => (await window.projectos.projects.list()).projects[0].id)
+  await zoomPage.evaluate((next) => { location.hash = `#/projects/${next}/work` }, zoomProjectId)
+  await zoomPage.waitForSelector('.po-work-center', { timeout: 30_000 })
+  await zoomPage.waitForTimeout(700)
+  await theme(zoomPage, 'light')
+  await shot(zoomPage, '1152x720-125-equivalent-light-work-center')
+  await theme(zoomPage, 'dark')
+  await shot(zoomPage, '1152x720-125-equivalent-dark-work-center')
+  await app.close()
+  app = undefined
   if (errors.length) throw new Error(`renderer errors: ${errors.join(' | ')}`)
   console.log('WORK CENTER SCREENSHOTS PASS')
 } finally {

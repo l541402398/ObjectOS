@@ -45,6 +45,34 @@ describe('worktree isolation', () => {
     expect(readFileSync(join(root, 'feature.txt'), 'utf8').replace(/\r\n/g, '\n')).toBe('feature\n')
   })
 
+  it('commits untracked Agent files before merging so they are actually delivered', async () => {
+    const root = await repo()
+    const manager = new WorktreeManager()
+    const path = join(root, '..', `${root.split(/[\\/]/).pop()}-untracked`)
+    dirs.push(path)
+    await manager.create(root, path, 'projectos/plan-untracked')
+    writeFileSync(join(path, 'delivered.txt'), 'agent output\n')
+    const diff = await manager.diff(path)
+    expect(diff).toContain('delivered.txt')
+    const merged = await manager.merge(root, 'projectos/plan-untracked', 'deliver untracked')
+    expect(merged.ok).toBe(true)
+    expect(readFileSync(join(root, 'delivered.txt'), 'utf8').replace(/\r\n/g, '\n')).toBe('agent output\n')
+  })
+
+  it('merges with ProjectOS identity when the repository has no git user configured', async () => {
+    const root = await repo()
+    await exec('git', ['config', '--unset', 'user.name'], { cwd: root })
+    await exec('git', ['config', '--unset', 'user.email'], { cwd: root })
+    const manager = new WorktreeManager()
+    const path = join(root, '..', `${root.split(/[\\/]/).pop()}-no-identity`)
+    dirs.push(path)
+    await manager.create(root, path, 'projectos/plan-no-identity')
+    writeFileSync(join(path, 'identity.txt'), 'identity\n')
+    const merged = await manager.merge(root, 'projectos/plan-no-identity', 'merge without identity')
+    expect(merged.ok).toBe(true)
+    expect(readFileSync(join(root, 'identity.txt'), 'utf8').replace(/\r\n/g, '\n')).toBe('identity\n')
+  })
+
   it('aborts a conflicting merge and leaves the main workspace clean', async () => {
     const root = await repo()
     const manager = new WorktreeManager()
