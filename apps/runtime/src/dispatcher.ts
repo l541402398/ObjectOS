@@ -31,6 +31,7 @@ import { listExternalAgents } from './external-agents.js'
 import { ExternalAgentRunner } from './external-runner.js'
 import { OperationsService, repairRunKey } from './operations.js'
 import { LifecycleService } from './lifecycle.js'
+import { ReleaseService } from './release-service.js'
 import { AgentStudioService } from './agent-studio.js'
 import { RuntimeExecutionService } from './runtime-executor.js'
 import { OrchestrationService } from './orchestration.js'
@@ -80,6 +81,7 @@ export class RuntimeDispatcher {
   private readonly externalRunner: ExternalAgentRunner
   private readonly operations: OperationsService
   private readonly lifecycle: LifecycleService
+  private readonly release: ReleaseService
   private readonly agentStudio: AgentStudioService
   private readonly runtimeExecutor: RuntimeExecutionService
   private readonly operationsTimer: NodeJS.Timeout
@@ -107,6 +109,7 @@ export class RuntimeDispatcher {
     this.externalRunner = new ExternalAgentRunner(deps.store, deps.services, deps.logger)
     this.operations = new OperationsService(deps.store, deps.services)
     this.lifecycle = new LifecycleService(deps.store)
+    this.release = new ReleaseService(deps.store)
     this.agentStudio = new AgentStudioService(deps.store)
     this.runtimeExecutor = new RuntimeExecutionService(deps.store, () => deps.provider.rawConfig())
     this.operationsTimer = setInterval(() => this.runDueChecks(), 30_000)
@@ -796,6 +799,54 @@ export class RuntimeDispatcher {
       case 'gate.overview': {
         const input = this.parse('gate.overview', rawInput)
         return this.lifecycle.gateOverview(input.projectId, input.subjectType, input.subjectId)
+      }
+      case 'release.overview': {
+        const input = this.parse('release.overview', rawInput)
+        return this.release.overview(input.projectId, input.versionId)
+      }
+      case 'changeRequest.create': {
+        const input = this.parse('changeRequest.create', rawInput)
+        return this.release.createChangeRequest(input)
+      }
+      case 'changeRequest.update': {
+        const input = this.parse('changeRequest.update', rawInput)
+        return this.release.updateChangeRequest(input)
+      }
+      case 'changeRequest.submit': {
+        const input = this.parse('changeRequest.submit', rawInput)
+        return this.release.submitChangeRequest(input.changeRequestId)
+      }
+      case 'release.approval.decide': {
+        const input = this.parse('release.approval.decide', rawInput)
+        return this.release.decideApproval(input)
+      }
+      case 'release.candidate.create': {
+        const input = this.parse('release.candidate.create', rawInput)
+        return this.release.createCandidate(input)
+      }
+      case 'release.create': {
+        const input = this.parse('release.create', rawInput)
+        return this.release.createRelease(input)
+      }
+      case 'deployment.create': {
+        const input = this.parse('deployment.create', rawInput)
+        return this.release.createDeployment(input)
+      }
+      case 'deployment.record': {
+        const input = this.parse('deployment.record', rawInput)
+        return this.release.recordDeploymentResult(input)
+      }
+      case 'deployment.rollback': {
+        const input = this.parse('deployment.rollback', rawInput)
+        return this.release.createRollback(input.sourceDeploymentId, input)
+      }
+      case 'deployment.target.create': {
+        const input = this.parse('deployment.target.create', rawInput)
+        return this.release.createTarget(input)
+      }
+      case 'deployment.strategy.create': {
+        const input = this.parse('deployment.strategy.create', rawInput)
+        return this.release.createStrategy(input)
       }
       case 'project.update': {
         const input = this.parse('project.update', rawInput)

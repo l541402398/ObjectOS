@@ -19,6 +19,8 @@ import {
   MoonOutlined,
   ProjectOutlined,
   RobotOutlined,
+  RocketOutlined,
+  CloudUploadOutlined,
   SearchOutlined,
   SendOutlined,
   SettingOutlined,
@@ -49,6 +51,8 @@ import { truncate } from '../lib/format'
 const PAGE_LABELS: Record<string, string> = {
   work: '研发工作中心',
   versions: '版本与迭代',
+  releases: '发布中心',
+  deployments: '部署中心',
   overview: '项目姿态',
   orchestration: '编排工作台',
   tasks: '任务看板',
@@ -70,6 +74,8 @@ const PAGE_LABELS: Record<string, string> = {
 const NAV_PATHS: Record<string, string> = {
   work: '',
   versions: '/versions',
+  releases: '/releases',
+  deployments: '/deployments',
   overview: '/overview',
   orchestration: '/orchestration',
   tasks: '/tasks',
@@ -225,9 +231,11 @@ export default function AppLayout() {
         return
       }
       if (!projectId) return
-      navigate(`/projects/${projectId}${NAV_PATHS[key] ?? ''}`)
+      const versionId = new URLSearchParams(location.search).get('version')
+      const suffix = (key === 'releases' || key === 'deployments') && versionId ? `?version=${versionId}` : ''
+      navigate(`/projects/${projectId}${NAV_PATHS[key] ?? ''}${suffix}`)
     },
-    [navigate, openSettings, projectId],
+    [location.search, navigate, openSettings, projectId],
   )
 
   const commands = useMemo<PaletteCommand[]>(() => {
@@ -237,6 +245,8 @@ export default function AppLayout() {
         { id: 'work', label: '研发工作中心', group: currentProject?.name ?? '项目', icon: <ThunderboltOutlined />, run: () => handleNavigate('work') },
         { id: 'overview', label: '项目姿态', group: currentProject?.name ?? '项目', icon: <AppstoreOutlined />, run: () => handleNavigate('overview') },
         { id: 'versions', label: '版本与迭代', group: currentProject?.name ?? '项目', icon: <ApartmentOutlined />, run: () => handleNavigate('versions') },
+        { id: 'releases', label: '发布中心', group: '交付', icon: <RocketOutlined />, run: () => handleNavigate('releases') },
+        { id: 'deployments', label: '部署中心', group: '交付', icon: <CloudUploadOutlined />, run: () => handleNavigate('deployments') },
         { id: 'orchestration', label: '编排工作台', group: currentProject?.name ?? '项目', icon: <ApartmentOutlined />, run: () => handleNavigate('orchestration') },
         { id: 'tasks', label: '任务看板', group: currentProject?.name ?? '项目', icon: <UnorderedListOutlined />, run: () => handleNavigate('tasks') },
         { id: 'knowledge', label: '知识库', group: currentProject?.name ?? '项目', icon: <ReadOutlined />, run: () => handleNavigate('knowledge') },
@@ -299,6 +309,13 @@ export default function AppLayout() {
         { key: 'agents', label: 'Agent 协作', icon: <RobotOutlined />, badge: approvalBadge || null },
         { key: 'approvals', label: '审批', icon: <SafetyCertificateOutlined />, badge: approvalBadge || null },
         { key: 'runs', label: '运行审计', icon: <HistoryOutlined /> },
+      ],
+    })
+    navGroups.push({
+      title: '交付',
+      items: [
+        { key: 'releases', label: '发布中心', icon: <RocketOutlined /> },
+        { key: 'deployments', label: '部署中心', icon: <CloudUploadOutlined /> },
       ],
     })
     navGroups.push({

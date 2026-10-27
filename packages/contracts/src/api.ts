@@ -75,6 +75,23 @@ import {
   TransitionVersionInputSchema,
 } from './lifecycle.js'
 import {
+  ApprovalRequestSchema,
+  ChangeRequestSchema,
+  CreateCandidateInputSchema,
+  CreateChangeRequestInputSchema,
+  CreateDeploymentInputSchema,
+  CreateReleaseInputSchema,
+  ReleaseApprovalDecideInputSchema,
+  DeploymentSchema,
+  DeploymentStrategySchema,
+  DeploymentTargetSchema,
+  RecordDeploymentResultInputSchema,
+  ReleaseCandidateSchema,
+  ReleaseOverviewSchema,
+  ReleaseSchema,
+  UpdateChangeRequestInputSchema,
+} from './release.js'
+import {
   ActivityItemSchema,
   AgentViewSchema,
   ApprovalViewSchema,
@@ -389,6 +406,76 @@ export const ApiSchemas = {
       subjectId: IdSchema,
     }),
     output: GateOverviewSchema,
+  },
+  'release.overview': {
+    input: z.object({ projectId: IdSchema, versionId: IdSchema }),
+    output: ReleaseOverviewSchema,
+  },
+  'changeRequest.create': {
+    input: CreateChangeRequestInputSchema,
+    output: ChangeRequestSchema,
+  },
+  'changeRequest.update': {
+    input: UpdateChangeRequestInputSchema,
+    output: ChangeRequestSchema,
+  },
+  'changeRequest.submit': {
+    input: z.object({ changeRequestId: IdSchema }),
+    output: z.object({ changeRequest: ChangeRequestSchema, approval: ApprovalRequestSchema }),
+  },
+  'release.approval.decide': {
+    input: ReleaseApprovalDecideInputSchema,
+    output: ApprovalRequestSchema,
+  },
+  'release.candidate.create': {
+    input: CreateCandidateInputSchema,
+    output: ReleaseCandidateSchema,
+  },
+  'release.create': {
+    input: CreateReleaseInputSchema,
+    output: ReleaseSchema,
+  },
+  'deployment.create': {
+    input: CreateDeploymentInputSchema,
+    output: DeploymentSchema,
+  },
+  'deployment.record': {
+    input: RecordDeploymentResultInputSchema,
+    output: DeploymentSchema,
+  },
+  'deployment.rollback': {
+    input: z.object({
+      sourceDeploymentId: IdSchema,
+      idempotencyKey: z.string().trim().min(8).max(200),
+      targetReleaseId: IdSchema.nullable().default(null),
+      notes: z.string().max(8000).default(''),
+    }),
+    output: DeploymentSchema,
+  },
+  'deployment.target.create': {
+    input: z.object({
+      projectId: IdSchema,
+      environmentId: IdSchema,
+      name: z.string().trim().min(1).max(240),
+      kind: DeploymentTargetSchema.shape.kind,
+      controlMode: DeploymentTargetSchema.shape.controlMode,
+      adapterType: z.string().max(120).nullable().default(null),
+      targetRef: z.string().max(1000).default(''),
+      protected: z.boolean().default(false),
+    }),
+    output: DeploymentTargetSchema,
+  },
+  'deployment.strategy.create': {
+    input: z.object({
+      projectId: IdSchema,
+      environmentId: IdSchema,
+      targetId: IdSchema,
+      name: z.string().trim().min(1).max(240),
+      adapterType: z.string().trim().min(1).max(120),
+      source: DeploymentStrategySchema.shape.source,
+      requiresApproval: z.boolean().default(true),
+    }),
+    output: DeploymentStrategySchema,
   },
   'product.list': {
     input: projectIdInput,

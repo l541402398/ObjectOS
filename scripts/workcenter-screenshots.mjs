@@ -27,6 +27,10 @@ async function launch(width, height) {
     const win = BrowserWindow.getAllWindows()[0]
     if (win) win.webContents.setZoomFactor(1)
   })
+  if (await page.locator('.po-shell.is-collapsed').count()) {
+    await page.getByRole('button', { name: '切换侧边栏' }).click()
+    await page.waitForTimeout(250)
+  }
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text())
   })

@@ -57,6 +57,13 @@ export const ID_PREFIXES = {
   gate: 'gat',
   gateEvaluation: 'gev',
   evidence: 'evd',
+  changeRequest: 'crq',
+  releaseCandidate: 'rcd',
+  release: 'rel',
+  deployment: 'dep',
+  deploymentTarget: 'dtg',
+  deploymentStrategy: 'dst',
+  approvalRequest: 'apr',
 } as const
 
 export type IdPrefix = (typeof ID_PREFIXES)[keyof typeof ID_PREFIXES]

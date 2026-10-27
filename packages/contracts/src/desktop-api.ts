@@ -47,6 +47,20 @@ export interface ProjectOSDesktopApi {
       subjectId: string,
     ) => Promise<Out<'gate.overview'>>
   }
+  release: {
+    overview: (projectId: string, versionId: string) => Promise<Out<'release.overview'>>
+    createChangeRequest: (input: In<'changeRequest.create'>) => Promise<Out<'changeRequest.create'>>
+    updateChangeRequest: (input: In<'changeRequest.update'>) => Promise<Out<'changeRequest.update'>>
+    submitChangeRequest: (changeRequestId: string) => Promise<Out<'changeRequest.submit'>>
+    decideApproval: (input: In<'release.approval.decide'>) => Promise<Out<'release.approval.decide'>>
+    createCandidate: (input: In<'release.candidate.create'>) => Promise<Out<'release.candidate.create'>>
+    createRelease: (input: In<'release.create'>) => Promise<Out<'release.create'>>
+    createDeployment: (input: In<'deployment.create'>) => Promise<Out<'deployment.create'>>
+    recordDeployment: (input: In<'deployment.record'>) => Promise<Out<'deployment.record'>>
+    createRollback: (input: In<'deployment.rollback'>) => Promise<Out<'deployment.rollback'>>
+    createTarget: (input: In<'deployment.target.create'>) => Promise<Out<'deployment.target.create'>>
+    createStrategy: (input: In<'deployment.strategy.create'>) => Promise<Out<'deployment.strategy.create'>>
+  }
   projects: {
     list: (input?: In<'project.list'>) => Promise<Out<'project.list'>>
     create: (input: In<'project.create'>) => Promise<Out<'project.create'>>

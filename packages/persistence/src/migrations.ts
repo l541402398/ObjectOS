@@ -1051,6 +1051,217 @@ SELECT 'gat_' || lower(hex(randomblob(16))), p.id, 'version', 'version-release',
 FROM projects p;
 `
 
+const V28 = `
+CREATE TABLE change_requests (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  version_id TEXT NOT NULL REFERENCES product_versions(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  source_type TEXT NOT NULL DEFAULT 'manual',
+  source_id TEXT,
+  risk_level TEXT NOT NULL DEFAULT 'medium',
+  impact_scope TEXT NOT NULL DEFAULT '',
+  target_environment_id TEXT REFERENCES environments(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'draft',
+  revision INTEGER NOT NULL DEFAULT 1,
+  content_fingerprint TEXT NOT NULL,
+  requested_by TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  submitted_at INTEGER,
+  decided_at INTEGER
+);
+CREATE INDEX idx_change_requests_project ON change_requests(project_id, created_at DESC);
+CREATE INDEX idx_change_requests_version ON change_requests(version_id, created_at DESC);
+CREATE INDEX idx_change_requests_status ON change_requests(project_id, status);
+
+CREATE TABLE change_request_links (
+  id TEXT PRIMARY KEY,
+  change_request_id TEXT NOT NULL REFERENCES change_requests(id) ON DELETE CASCADE,
+  link_type TEXT NOT NULL,
+  target_type TEXT NOT NULL,
+  target_id TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_change_request_links_cr ON change_request_links(change_request_id);
+
+CREATE TABLE change_request_events (
+  id TEXT PRIMARY KEY,
+  change_request_id TEXT NOT NULL REFERENCES change_requests(id) ON DELETE CASCADE,
+  event_type TEXT NOT NULL,
+  message TEXT NOT NULL DEFAULT '',
+  payload_json TEXT NOT NULL DEFAULT '{}',
+  actor TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_change_request_events_cr ON change_request_events(change_request_id, created_at DESC);
+
+CREATE TABLE approval_requests (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  subject_type TEXT NOT NULL,
+  subject_id TEXT NOT NULL,
+  subject_revision INTEGER NOT NULL,
+  content_fingerprint TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  requested_by TEXT NOT NULL,
+  decided_by TEXT,
+  decision_note TEXT,
+  requested_at INTEGER NOT NULL,
+  decided_at INTEGER,
+  expires_at INTEGER,
+  UNIQUE (subject_type, subject_id, subject_revision, content_fingerprint)
+);
+CREATE INDEX idx_approval_requests_subject ON approval_requests(subject_type, subject_id, requested_at DESC);
+CREATE INDEX idx_approval_requests_project ON approval_requests(project_id, status, requested_at DESC);
+`
+
+const V29 = `
+CREATE TABLE release_candidates (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  version_id TEXT NOT NULL REFERENCES product_versions(id) ON DELETE CASCADE,
+  change_request_id TEXT REFERENCES change_requests(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'draft',
+  git_commit TEXT,
+  git_branch TEXT,
+  repository TEXT,
+  artifacts_ready INTEGER NOT NULL DEFAULT 0,
+  gate_status TEXT NOT NULL DEFAULT 'missing',
+  gate_evaluation_id TEXT REFERENCES gate_evaluations(id) ON DELETE SET NULL,
+  evidence_summary TEXT NOT NULL DEFAULT '',
+  notes TEXT NOT NULL DEFAULT '',
+  created_by TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_release_candidates_project ON release_candidates(project_id, created_at DESC);
+CREATE INDEX idx_release_candidates_version ON release_candidates(version_id, created_at DESC);
+
+CREATE TABLE release_candidate_artifacts (
+  id TEXT PRIMARY KEY,
+  candidate_id TEXT NOT NULL REFERENCES release_candidates(id) ON DELETE CASCADE,
+  artifact_id TEXT REFERENCES artifacts(id) ON DELETE SET NULL,
+  name TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  content_hash TEXT NOT NULL,
+  size_bytes INTEGER,
+  uri TEXT,
+  source TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_release_candidate_artifacts_candidate ON release_candidate_artifacts(candidate_id);
+
+CREATE TABLE releases (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  version_id TEXT NOT NULL REFERENCES product_versions(id) ON DELETE RESTRICT,
+  candidate_id TEXT NOT NULL REFERENCES release_candidates(id) ON DELETE RESTRICT,
+  version TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'recorded',
+  git_commit TEXT,
+  notes TEXT NOT NULL DEFAULT '',
+  manifest_hash TEXT NOT NULL,
+  distribution_status TEXT NOT NULL DEFAULT 'not_distributed',
+  external_receipt_json TEXT NOT NULL DEFAULT '{}',
+  idempotency_key TEXT NOT NULL,
+  published_at INTEGER NOT NULL,
+  created_by TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE (project_id, version_id, idempotency_key)
+);
+CREATE INDEX idx_releases_project ON releases(project_id, created_at DESC);
+CREATE INDEX idx_releases_version ON releases(version_id, created_at DESC);
+
+CREATE TABLE release_artifacts (
+  id TEXT PRIMARY KEY,
+  release_id TEXT NOT NULL REFERENCES releases(id) ON DELETE CASCADE,
+  artifact_id TEXT REFERENCES artifacts(id) ON DELETE SET NULL,
+  name TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  content_hash TEXT NOT NULL,
+  size_bytes INTEGER,
+  uri TEXT,
+  source TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_release_artifacts_release ON release_artifacts(release_id);
+
+CREATE TABLE deployment_targets (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  environment_id TEXT NOT NULL REFERENCES environments(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  control_mode TEXT NOT NULL,
+  adapter_type TEXT,
+  target_ref TEXT NOT NULL DEFAULT '',
+  protected INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_deployment_targets_project ON deployment_targets(project_id, environment_id);
+
+CREATE TABLE deployment_strategies (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  environment_id TEXT NOT NULL REFERENCES environments(id) ON DELETE CASCADE,
+  target_id TEXT NOT NULL REFERENCES deployment_targets(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  adapter_type TEXT NOT NULL,
+  source TEXT NOT NULL,
+  requires_approval INTEGER NOT NULL DEFAULT 1,
+  enabled INTEGER NOT NULL DEFAULT 1,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_deployment_strategies_project ON deployment_strategies(project_id, environment_id);
+
+CREATE TABLE deployments (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  version_id TEXT NOT NULL REFERENCES product_versions(id) ON DELETE CASCADE,
+  release_id TEXT NOT NULL REFERENCES releases(id) ON DELETE RESTRICT,
+  environment_id TEXT NOT NULL REFERENCES environments(id) ON DELETE RESTRICT,
+  target_id TEXT REFERENCES deployment_targets(id) ON DELETE SET NULL,
+  strategy_id TEXT REFERENCES deployment_strategies(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'awaiting_approval',
+  source TEXT NOT NULL DEFAULT 'manual',
+  assurance TEXT NOT NULL DEFAULT 'self_declared',
+  idempotency_key TEXT NOT NULL,
+  artifact_hash TEXT,
+  external_id TEXT,
+  receipt_json TEXT NOT NULL DEFAULT '{}',
+  approval_id TEXT REFERENCES approval_requests(id) ON DELETE SET NULL,
+  rollback_of_deployment_id TEXT REFERENCES deployments(id) ON DELETE SET NULL,
+  previous_deployment_id TEXT REFERENCES deployments(id) ON DELETE SET NULL,
+  notes TEXT NOT NULL DEFAULT '',
+  requested_by TEXT NOT NULL,
+  started_at INTEGER,
+  finished_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE (project_id, environment_id, idempotency_key)
+);
+CREATE INDEX idx_deployments_project ON deployments(project_id, created_at DESC);
+CREATE INDEX idx_deployments_release ON deployments(release_id, created_at DESC);
+CREATE INDEX idx_deployments_environment ON deployments(environment_id, created_at DESC);
+CREATE INDEX idx_deployments_status ON deployments(project_id, status);
+
+CREATE TABLE deployment_events (
+  id TEXT PRIMARY KEY,
+  deployment_id TEXT NOT NULL REFERENCES deployments(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  status TEXT,
+  message TEXT NOT NULL DEFAULT '',
+  payload_json TEXT NOT NULL DEFAULT '{}',
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_deployment_events_deployment ON deployment_events(deployment_id, created_at DESC);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -1079,6 +1290,8 @@ export const MIGRATIONS: Migration[] = [
   { version: 25, name: 'product versions iterations environments and project focus', sql: V25 },
   { version: 26, name: 'version and iteration links for work items and plans', sql: V26 },
   { version: 27, name: 'gates evidence links and run checkpoints', sql: V27 },
+  { version: 28, name: 'change requests and generalized delivery approvals', sql: V28 },
+  { version: 29, name: 'release candidates releases deployments and targets', sql: V29 },
 ]
 
 function checksum(sql: string): string {

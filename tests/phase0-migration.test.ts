@@ -12,7 +12,7 @@ afterEach(() => {
 })
 
 describe('Phase 0 V24 historical database fixture', () => {
-  it('keeps the V24 fixture readable and upgrades it to V27 with lifecycle defaults', () => {
+  it('keeps the V24 fixture readable and upgrades it to V29 with lifecycle and release defaults', () => {
     const dir = mkdtempSync(join(tmpdir(), 'projectos-v24-fixture-'))
     cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
     const dbPath = join(dir, 'v24-copy.sqlite')
@@ -34,7 +34,16 @@ describe('Phase 0 V24 historical database fixture', () => {
 
     const store = new SqliteStore({ filePath: dbPath })
     try {
-      expect(Number(store.db.prepare('SELECT MAX(version) AS version FROM schema_migrations').get()?.version)).toBe(27)
+      expect(Number(store.db.prepare('SELECT MAX(version) AS version FROM schema_migrations').get()?.version)).toBe(29)
+      const tables = new Set(
+        (store.db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as Array<{ name: string }>).map((row) => row.name),
+      )
+      expect(tables.has('change_requests')).toBe(true)
+      expect(tables.has('approval_requests')).toBe(true)
+      expect(tables.has('release_candidates')).toBe(true)
+      expect(tables.has('releases')).toBe(true)
+      expect(tables.has('deployments')).toBe(true)
+      expect(tables.has('deployment_events')).toBe(true)
       expect(store.read.getProject('prj_v24_fixture')?.currentStage).toBe('testing')
       expect(store.read.getTask('tsk_v24_fixture')?.title).toBe('Legacy V24 task')
       expect(store.read.listProducts('prj_v24_fixture')).toHaveLength(1)
@@ -43,6 +52,18 @@ describe('Phase 0 V24 historical database fixture', () => {
       expect(store.read.getProjectFocus('prj_v24_fixture')?.subjectType).toBe('version')
       expect(store.read.getPlanRevision('pln_v24_fixture')?.goal).toContain('Legacy plan')
       expect(store.read.listArtifacts('prj_v24_fixture', 'tsk_v24_fixture')).toHaveLength(1)
+
+      const backupPath = join(dir, 'backup-v29.sqlite')
+      store.db.exec(`VACUUM INTO '${backupPath.replace(/'/g, "''")}'`)
+      const backup = new DatabaseSync(backupPath, { readOnly: true })
+      try {
+        expect((backup.prepare('PRAGMA integrity_check').get() as { integrity_check: string }).integrity_check).toBe('ok')
+        expect(Number((backup.prepare('SELECT MAX(version) AS version FROM schema_migrations').get() as { version: number }).version)).toBe(29)
+        expect(Number((backup.prepare('SELECT COUNT(*) AS count FROM projects WHERE id=?').get('prj_v24_fixture') as { count: number }).count)).toBe(1)
+        expect(Number((backup.prepare('SELECT COUNT(*) AS count FROM releases').get() as { count: number }).count)).toBe(0)
+      } finally {
+        backup.close()
+      }
     } finally {
       store.close()
     }

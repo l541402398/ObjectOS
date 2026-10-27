@@ -9,6 +9,7 @@ import { qk, useArtifacts, useLifecycle, usePlans, useTaskBoard } from '../lib/q
 import { errorMessage } from '../lib/errors'
 import { formatRelative } from '../lib/format'
 import { stageLabel } from '../lib/labels'
+import { VersionDeliverySummary } from '../components/VersionDeliverySummary'
 import './lifecycle.css'
 
 const PHASE_LABELS: Record<VersionPhase, string> = {
@@ -316,6 +317,11 @@ export default function LifecyclePage() {
                               设为当前
                             </Button>
                           ) : null}
+                          {isFocus ? (
+                            <Button size="small" onClick={() => navigate(`/projects/${projectId}/releases?version=${item.id}`)}>
+                              发布与部署
+                            </Button>
+                          ) : null}
                           {next.length > 0 ? (
                             <Select
                               size="small"
@@ -341,6 +347,10 @@ export default function LifecyclePage() {
               </div>
             )}
           </SectionCard>
+
+          {selectedVersion ? (
+            <VersionDeliverySummary projectId={projectId} versionId={selectedVersion.id} versionLabel={selectedVersion.version} />
+          ) : null}
 
           <SectionCard
             title={selectedVersion ? `迭代 · v${selectedVersion.version}` : '迭代'}
@@ -389,7 +399,7 @@ export default function LifecyclePage() {
         </main>
 
         <aside className="lc-side">
-          <SectionCard title="环境" subtitle="登记上下文；发布/部署留到 Phase 2">
+          <SectionCard title="环境" subtitle="发布与部署记录在这里关联">
             <div className="lc-environments">
               {data.environments.map((environment) => (
                 <div className="lc-environment" key={environment.id}>
