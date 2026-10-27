@@ -37,16 +37,28 @@
   - `restore/visual-baseline-0686c41` 工作树保留。
   - `feature/plan-review-design-lab-integration`、`feature_dev_ux`、`perf/electron-v1.6-audit`、`feature/projectos-next-ui-full-migration`、`build/formal-0686style` 保留为 UI 候选。
 
-### 1.3 脏工作区保护
+### 1.3 全部 Worktree 核对
 
-- `feature_dev_ux` 的 `SettingsModal.tsx` 未提交修改：未触碰。
-- `perf/electron-v1.6-audit` 的 `apps/desktop/src/main/index.ts` 未提交修改：未触碰。
-- `fix/plan-review-inspector-actions` 的 `main/index.ts` 未提交修改：未触碰。
-- 主工作区现有未跟踪 `$a/ProjectOS.exe` 等：未读取、未修改、未删除。
+| Worktree | 分支/HEAD | 脏状态 | 处理 |
+|---|---|---|---|
+| `ProjectOS` | `feature/v1.6-ux` / `98cd5a3` | 7 未跟踪（docs/temp/`$a`） | 保留；只同步 docs，未改代码 |
+| `ProjectOS-ai-routing` | `chore/ai-tool-routing` / `d3686c4` | 干净 | 保留 |
+| `ProjectOS-ed231d5-build` | detached / `ed231d5` | 干净 | 保留（历史构建现场） |
+| `ProjectOS-feature-dev-ux` | `feature_dev_ux` / `49f9413` | `SettingsModal.tsx` 未提交 | **未触碰** |
+| `ProjectOS-formal-0686-style` | `build/formal-0686style` / `8a9ba85` | 干净 | 保留 |
+| `ProjectOS-next-ui-full-migration` | `feature/projectos-next-ui-full-migration` / `acfd86f` | 未跟踪视觉回归目录 | 保留，未触碰 |
+| `ProjectOS-perf-audit` | `fix/plan-review-inspector-actions` / `cfa26ef` | `main/index.ts` 未提交 | **未触碰** |
+| `ProjectOS-plan-review-integration` | `feature/plan-review-design-lab-integration` / `9dd12f1` | 干净 | 保留 |
+| `ProjectOS-v2-phase0` | `v2.0-phase0` / `ed7ea50` | 干净 | Phase 0 工作区 |
+| `ProjectOS-visual-baseline-0686c41` | `restore/visual-baseline-0686c41` / `0686c41` | 干净 | 保留 |
+
+> 主工作区现有未跟踪 `$a/ProjectOS.exe` 等：未读取、未修改、未删除。
 
 ### 1.4 本轮提交
 
 ```text
+ed7ea50 docs(phase0): record final test duration
+2b39ac1 docs(phase0): add closure report, migration readiness and license record
 effee70 fix(phase0): disable unapproved harness install and sync docs
 bf99361 feat(phase0): close raw execution paths and freeze V24 baseline
 ```
