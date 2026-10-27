@@ -57,6 +57,8 @@
 ### 1.4 本轮提交
 
 ```text
+66d5dab docs(phase0): clarify ACCEPT-1 is not used
+fbe1ee4 docs(phase0): record complete worktree audit
 ed7ea50 docs(phase0): record final test duration
 2b39ac1 docs(phase0): add closure report, migration readiness and license record
 effee70 fix(phase0): disable unapproved harness install and sync docs
