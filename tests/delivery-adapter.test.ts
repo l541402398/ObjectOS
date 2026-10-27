@@ -122,7 +122,8 @@ describe('Phase 2.2 local delivery adapter', () => {
     expect(executed.receipt.artifacts).toEqual([{ name: 'index.html', hash: expectedHash }])
     expect(release.currentEnvironmentVersion(project.id, environment.id).releaseId).toBe(created.id)
     expect(release.adapterCapabilities().find((adapter) => adapter.type === 'local-artifact')?.capabilities.execute).toBe(true)
-    expect(release.adapterCapabilities().find((adapter) => adapter.type === 'ssh')?.capabilities.execute).toBe(false)
+    expect(release.adapterCapabilities().find((adapter) => adapter.type === 'ssh-artifact')?.capabilities.execute).toBe(true)
+    expect(release.adapterCapabilities().find((adapter) => adapter.type === 'pipeline')?.capabilities.execute).toBe(false)
     await expect(release.executeDeployment(deployment.id)).rejects.toThrow(/只有已批准/)
 
     writeFileSync(sourceFile, '<h1>tampered</h1>')

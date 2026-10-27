@@ -104,7 +104,7 @@ export class ReleaseService {
         canBuild: false,
         canExecuteDeployment: true,
         canImportDeployment: true,
-        reason: '本地目录 Adapter 可执行并校验制品哈希；Pipeline/K8s/GitOps/SSH 远程连接未配置。',
+        reason: '本地目录与 SSH/VPS Adapter 可执行；Pipeline/K8s/GitOps 远程连接未配置。',
       },
     }
   }
@@ -633,15 +633,16 @@ export class ReleaseService {
     }
     if (!deployment.targetId) throw new AppError('CONFLICT', '部署缺少目标')
     const target = this.getTarget(deployment.targetId)
-    if (target.adapterType !== 'local-artifact' && target.kind !== 'local') {
-      throw new AppError('POLICY_DENIED', '目标未注册可执行本地 Adapter；不能伪造远程部署')
+    if (target.adapterType !== 'local-artifact' && target.kind !== 'local' && target.adapterType !== 'ssh-artifact') {
+      throw new AppError('POLICY_DENIED', '目标未注册可执行 Adapter；不能伪造远程部署')
     }
     const releaseArtifacts = this.releaseArtifacts(deployment.releaseId)
-    const adapter = DELIVERY_ADAPTERS.find((item) => item.type === 'local-artifact') as LocalArtifactAdapter | undefined
-    if (!adapter) throw new AppError('INTERNAL', '本地 Adapter 未注册')
+    const adapterType = target.adapterType === 'ssh-artifact' ? 'ssh-artifact' : 'local-artifact'
+    const adapter = DELIVERY_ADAPTERS.find((item) => item.type === adapterType) as LocalArtifactAdapter | undefined
+    if (!adapter) throw new AppError('INTERNAL', '部署 Adapter 未注册')
     const startedAt = now()
     this.store.db.prepare("UPDATE deployments SET status='running', started_at=?, updated_at=? WHERE id=?").run(startedAt, startedAt, deployment.id)
-    this.appendDeploymentEvent(deployment.id, 'adapter_started', 'running', 'LocalArtifactAdapter 开始执行', { adapter: adapter.type })
+    this.appendDeploymentEvent(deployment.id, 'adapter_started', 'running', `${adapterType} 开始执行`, { adapter: adapter.type })
     try {
       const result = await adapter.execute({
         deploymentId: deployment.id,

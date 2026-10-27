@@ -4,10 +4,13 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
 const root = process.cwd()
+const sshMode = process.env.PROJECTOS_SSH_UI_E2E === '1'
 const dataDir = mkdtempSync(join(tmpdir(), 'projectos-phase2-ui-'))
 const sourceFile = join(dataDir, 'release-index.html')
+const healthFile = join(dataDir, 'health')
 const targetDir = join(dataDir, 'deployed')
-writeFileSync(sourceFile, '<h1>ProjectOS Phase 2.2 local delivery</h1>')
+writeFileSync(sourceFile, sshMode ? '<h1>ProjectOS SSH UI delivery</h1>' : '<h1>ProjectOS Phase 2.2 local delivery</h1>')
+writeFileSync(healthFile, 'ok')
 mkdirSync(targetDir, { recursive: true })
 const env = { ...process.env, PROJECTOS_DATA_DIR: dataDir, PROJECTOS_SEED_DEMO: '1', PROJECTOS_WINDOW_WIDTH: '1440', PROJECTOS_WINDOW_HEIGHT: '900' }
 delete env.ELECTRON_RUN_AS_NODE
@@ -27,7 +30,7 @@ try {
   }
   if (await page.locator('.v16-project-visual').count()) await page.locator('.v16-project-visual').first().click()
   await page.waitForSelector('.po-work-center', { timeout: 30_000 })
-  const setup = await page.evaluate(async ({ sourceFile, targetDir }) => {
+  const setup = await page.evaluate(async ({ sourceFile, healthFile, targetDir, sshMode }) => {
     const project = (await window.projectos.projects.list()).projects[0]
     const lifecycle = await window.projectos.lifecycle.overview(project.id)
     const version = lifecycle.versions[0]
@@ -56,18 +59,32 @@ try {
       uri: sourceFile,
       metadata: { artifactType: 'test-report' },
     })
+    if (sshMode) {
+      await window.projectos.artifacts.create({
+        projectId: project.id,
+        taskId: task.task.id,
+        runId: null,
+        kind: 'other',
+        title: 'health',
+        body: 'ok',
+        uri: healthFile,
+        metadata: {},
+      })
+    }
     const target = await window.projectos.release.createTarget({
       projectId: project.id,
       environmentId: environment.id,
-      name: 'Local isolated target',
-      kind: 'local',
-      controlMode: 'external_observed',
-      adapterType: 'local-artifact',
-      targetRef: targetDir,
+      name: sshMode ? 'Contabo isolated target' : 'Local isolated target',
+      kind: sshMode ? 'ssh' : 'local',
+      controlMode: sshMode ? 'ssh_managed' : 'external_observed',
+      adapterType: sshMode ? 'ssh-artifact' : 'local-artifact',
+      targetRef: sshMode
+        ? 'ssh://root@169.58.112.111:22/opt/projectos-delivery-test?healthPort=18080&container=projectos-delivery-test&image=nginx:alpine'
+        : targetDir,
       protected: false,
     })
     return { projectId: project.id, versionId: version.id, targetId: target.id, taskId: task.task.id, artifactId: artifact.artifact.id }
-  }, { sourceFile, targetDir })
+  }, { sourceFile, healthFile, targetDir, sshMode })
   console.log('[phase2-ui] setup version evidence', setup)
   await page.reload()
   await page.waitForSelector('.po-shell', { timeout: 30_000 })
@@ -185,13 +202,23 @@ try {
   await page.waitForSelector('.po-delivery-page', { timeout: 15_000 })
   await page.waitForTimeout(500)
   const deployPage = page.locator('.po-delivery-page')
-  await page.getByRole('button', { name: /执行本地部署/ }).first().click()
-  await page.waitForTimeout(1500)
+  await page.getByRole('button', { name: /执行部署/ }).first().click()
+  await page.waitForFunction(
+    () => document.body.innerText.includes('独立复现') || document.body.innerText.includes('外部确认'),
+    null,
+    { timeout: 120_000 },
+  )
+  await page.waitForTimeout(400)
   await page.getByRole('button', { name: '历史与回滚' }).click()
   await page.waitForTimeout(400)
   const finalText = await deployPage.innerText()
-  if (!finalText.includes('独立复现') || !finalText.includes('local-')) throw new Error('local adapter result missing')
-  console.log('[phase2-ui] local adapter executed with real artifact hash/health PASS')
+  if (sshMode) {
+    if (!finalText.includes('外部确认') || !finalText.includes('ssh:projectos-delivery-test:')) throw new Error(`SSH adapter result missing: ${finalText.slice(0, 1000)}`)
+    console.log('[phase2-ui] SSH adapter executed with real external health/receipt PASS')
+  } else {
+    if (!finalText.includes('独立复现') || !finalText.includes('local-')) throw new Error('local adapter result missing')
+    console.log('[phase2-ui] local adapter executed with real artifact hash/health PASS')
+  }
 
   await page.evaluate(() => { document.documentElement.dataset.theme = 'light' })
   await page.waitForTimeout(500)

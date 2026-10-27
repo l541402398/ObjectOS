@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { App as AntApp, Button, Empty, Input, Modal, Select, Tag } from 'antd'
 import type { ReleaseOverview } from '@projectos/contracts'
@@ -92,6 +92,10 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
   const [strategyAdapter, setStrategyAdapter] = useState('manual')
   const [releaseView, setReleaseView] = useState<'candidates' | 'changes' | 'releases'>('candidates')
   const [deployView, setDeployView] = useState<'execute' | 'targets' | 'history'>('execute')
+  const executePoller = useRef<ReturnType<typeof setInterval> | null>(null)
+  useEffect(() => () => {
+    if (executePoller.current) clearInterval(executePoller.current)
+  }, [])
   const data = overview.data
   const pendingApprovals = useMemo(
     () =>
@@ -225,11 +229,24 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
   })
   const executeLocal = useMutation({
     mutationFn: (deploymentId: string) => window.projectos.release.executeDeployment(deploymentId),
-    onSuccess: async (result) => {
-      await invalidate()
-      message.success(`本地部署结果：${result.status === 'succeeded' ? '成功' : result.status}`)
+    onMutate: () => {
+      if (executePoller.current) clearInterval(executePoller.current)
+      executePoller.current = setInterval(() => {
+        void queryClient.refetchQueries({ queryKey: ['release-overview', projectId, versionId] })
+      }, 2500)
     },
-    onError: (error) => message.error(errorMessage(error)),
+    onSuccess: async (result) => {
+      if (executePoller.current) clearInterval(executePoller.current)
+      executePoller.current = null
+      await invalidate()
+      message.success(`部署结果：${result.status === 'succeeded' ? '成功' : result.status}`)
+    },
+    onError: (error) => {
+      if (executePoller.current) clearInterval(executePoller.current)
+      executePoller.current = null
+      void invalidate()
+      message.error(errorMessage(error))
+    },
   })
 
   const createTarget = useMutation({
@@ -240,7 +257,7 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
         name: targetName.trim(),
         kind: targetKind,
         controlMode: targetControl,
-        adapterType: targetKind === 'local' ? 'local-artifact' : null,
+        adapterType: targetKind === 'local' ? 'local-artifact' : targetKind === 'ssh' ? 'ssh-artifact' : null,
         targetRef: targetRef.trim(),
         protected: false,
       }),
@@ -520,11 +537,11 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
           {data.deployments.map((deployment) => {
             const environment = data.environments.find((item) => item.id === deployment.environmentId)
             const target = data.targets.find((item) => item.id === deployment.targetId)
-            const canExecuteLocal = deployment.status === 'pending' && target && (target.kind === 'local' || target.adapterType === 'local-artifact')
+            const canExecuteTarget = deployment.status === 'pending' && target && ['local-artifact', 'ssh-artifact'].includes(target.adapterType ?? '')
             return (
               <article className="rel-item" key={deployment.id}>
                 <div className="rel-item-head">
-                  <strong>{environment?.name ?? deployment.environmentId}</strong>
+                  <strong>{target?.name ?? environment?.name ?? deployment.environmentId}</strong>
                   <Tag color={deployment.status === 'succeeded' ? 'gold' : deployment.status === 'needs_reconciliation' ? 'red' : 'default'}>
                     {DEPLOYMENT_STATUS[deployment.status] ?? deployment.status}
                   </Tag>
@@ -536,9 +553,9 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
                   <div className="rel-meta">未核实 · 仅用户声明，不计入环境当前版本</div>
                 ) : null}
                 {deployment.externalId ? <div className="rel-hash">外部 ID {deployment.externalId}</div> : null}
-                {canExecuteLocal ? (
+                {canExecuteTarget ? (
                   <Button size="small" type="primary" onClick={() => executeLocal.mutate(deployment.id)} loading={executeLocal.isPending}>
-                    执行本地部署
+                    执行部署
                   </Button>
                 ) : null}
                 {deployment.approvalId && ['pending', 'awaiting_approval'].includes(deployment.status) ? (

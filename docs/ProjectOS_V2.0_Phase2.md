@@ -574,6 +574,6 @@ SSH 私钥/密码、kubeconfig Token、ServiceAccount Token、CI/CD Access Token
 
 ### 15.2 真实远程状态
 
-本机仓库无 Helm/Kustomize/Argo/Flux/Tekton/Jenkins 部署配置，未获得 K8s/CI/VPS 连接凭据与写授权。真实远程部署为 **BLOCKED**，需用户提供只读连接后继续。
+已获得 Contabo 隔离测试 VPS 授权并完成真实 SSH Adapter 部署：/opt/projectos-delivery-test、projectos-delivery-test 容器、仅绑定 127.0.0.1:18080、/health 返回 ok、xternally_confirmed。K8s/GitOps/Pipeline 仍未连接，保持 BLOCKED。
 
 Phase 3 仍不启动。

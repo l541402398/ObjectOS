@@ -26,7 +26,7 @@ export default function DeploymentCenterPage() {
       <PageHeader
         eyebrow="DELIVERY"
         title="部署中心"
-        description="统一管理环境、目标、策略与部署来源；当前没有适配器时只登记事实，不伪造执行。"
+        description="统一管理环境、目标、策略与部署来源；未配置远程连接时只登记事实，不伪造执行。"
         actions={
           <div className="delivery-head-actions">
             <Select
