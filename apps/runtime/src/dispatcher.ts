@@ -840,6 +840,14 @@ export class RuntimeDispatcher {
         const input = this.parse('deployment.record', rawInput)
         return this.release.recordDeploymentResult(input)
       }
+      case 'deployment.execute': {
+        const input = this.parse('deployment.execute', rawInput)
+        return this.release.executeDeployment(input.deploymentId)
+      }
+      case 'delivery.adapters': {
+        this.parse('delivery.adapters', rawInput)
+        return this.release.adapterCapabilities()
+      }
       case 'deployment.rollback': {
         const input = this.parse('deployment.rollback', rawInput)
         return this.release.createRollback(input.sourceDeploymentId, input)

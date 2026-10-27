@@ -1,10 +1,14 @@
 import { _electron as electron } from 'playwright-core'
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
 const root = process.cwd()
 const dataDir = mkdtempSync(join(tmpdir(), 'projectos-phase2-ui-'))
+const sourceFile = join(dataDir, 'release-index.html')
+const targetDir = join(dataDir, 'deployed')
+writeFileSync(sourceFile, '<h1>ProjectOS Phase 2.2 local delivery</h1>')
+mkdirSync(targetDir, { recursive: true })
 const env = { ...process.env, PROJECTOS_DATA_DIR: dataDir, PROJECTOS_SEED_DEMO: '1', PROJECTOS_WINDOW_WIDTH: '1440', PROJECTOS_WINDOW_HEIGHT: '900' }
 delete env.ELECTRON_RUN_AS_NODE
 let app
@@ -23,10 +27,11 @@ try {
   }
   if (await page.locator('.v16-project-visual').count()) await page.locator('.v16-project-visual').first().click()
   await page.waitForSelector('.po-work-center', { timeout: 30_000 })
-  const setup = await page.evaluate(async () => {
+  const setup = await page.evaluate(async ({ sourceFile, targetDir }) => {
     const project = (await window.projectos.projects.list()).projects[0]
     const lifecycle = await window.projectos.lifecycle.overview(project.id)
     const version = lifecycle.versions[0]
+    const environment = lifecycle.environments[0]
     const task = await window.projectos.tasks.create({
       projectId: project.id,
       title: 'Phase 2 release source work',
@@ -48,11 +53,21 @@ try {
       kind: 'test-report',
       title: 'Phase 2 version test evidence',
       body: 'npm test exit 0; default quality test passed',
-      uri: null,
+      uri: sourceFile,
       metadata: { artifactType: 'test-report' },
     })
-    return { projectId: project.id, versionId: version.id, taskId: task.task.id, artifactId: artifact.artifact.id }
-  })
+    const target = await window.projectos.release.createTarget({
+      projectId: project.id,
+      environmentId: environment.id,
+      name: 'Local isolated target',
+      kind: 'local',
+      controlMode: 'external_observed',
+      adapterType: 'local-artifact',
+      targetRef: targetDir,
+      protected: false,
+    })
+    return { projectId: project.id, versionId: version.id, targetId: target.id, taskId: task.task.id, artifactId: artifact.artifact.id }
+  }, { sourceFile, targetDir })
   console.log('[phase2-ui] setup version evidence', setup)
   await page.reload()
   await page.waitForSelector('.po-shell', { timeout: 30_000 })
@@ -118,6 +133,7 @@ try {
   await page.locator('.ant-modal:visible input').first().fill('Phase 2 发布变更')
   await page.locator('.ant-modal:visible textarea').first().fill('将真实研发成果转为发布记录；仅登记，不执行外部部署。')
   await clickLastModalButton(page, '创建')
+  await page.getByRole('button', { name: /^变更 / }).click()
   await page.waitForFunction(() => document.body.innerText.includes('Phase 2 发布变更'), null, { timeout: 15_000 })
   await page.getByRole('button', { name: '提交审批' }).first().click()
   await page.waitForTimeout(400)
@@ -140,6 +156,8 @@ try {
   await page.getByRole('button', { name: /登记为 Release/ }).first().click()
   await page.waitForTimeout(1000)
   const panel = page.locator('.po-delivery-page')
+  await page.getByRole('button', { name: /^Release / }).click()
+  await page.waitForTimeout(300)
   const panelText = await panel.innerText()
   if (!panelText.includes('未外部分发')) throw new Error(`release not recorded: ${panelText.slice(0, 800)}`)
   console.log('[phase2-ui] release recorded PASS')
@@ -167,11 +185,13 @@ try {
   await page.waitForSelector('.po-delivery-page', { timeout: 15_000 })
   await page.waitForTimeout(500)
   const deployPage = page.locator('.po-delivery-page')
-  await page.getByRole('button', { name: /登记结果/ }).first().click()
-  await page.waitForTimeout(1000)
+  await page.getByRole('button', { name: /执行本地部署/ }).first().click()
+  await page.waitForTimeout(1500)
+  await page.getByRole('button', { name: '历史与回滚' }).click()
+  await page.waitForTimeout(400)
   const finalText = await deployPage.innerText()
-  if (!finalText.includes('手工声明') || !finalText.includes('自我声明')) throw new Error('deployment provenance missing')
-  console.log('[phase2-ui] manual deployment recorded with self_declared provenance PASS')
+  if (!finalText.includes('独立复现') || !finalText.includes('local-')) throw new Error('local adapter result missing')
+  console.log('[phase2-ui] local adapter executed with real artifact hash/health PASS')
 
   await page.evaluate(() => { document.documentElement.dataset.theme = 'light' })
   await page.waitForTimeout(500)

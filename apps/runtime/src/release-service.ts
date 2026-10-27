@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import {
   AppError,
@@ -29,6 +30,7 @@ import {
   type UpdateChangeRequestInput,
 } from '@projectos/contracts'
 import type { SqliteStore } from '@projectos/persistence'
+import { DELIVERY_ADAPTERS, LocalArtifactAdapter } from './delivery-adapters.js'
 
 const CHANGE_SOURCE_STATUS: Record<string, string> = {
   draft: 'draft',
@@ -43,7 +45,8 @@ function fingerprint(value: unknown): string {
   return createHash('sha256').update(JSON.stringify(value)).digest('hex')
 }
 
-function artifactHash(artifact: { contentHash?: string | null; body?: string | null; title: string }): string {
+function artifactHash(artifact: { contentHash?: string | null; body?: string | null; title: string; uri?: string | null }): string {
+  if (artifact.uri && existsSync(artifact.uri)) return createHash('sha256').update(readFileSync(artifact.uri)).digest('hex')
   return artifact.contentHash?.trim() || createHash('sha256').update(`${artifact.title}\n${artifact.body ?? ''}`).digest('hex')
 }
 
@@ -99,9 +102,9 @@ export class ReleaseService {
       })),
       capabilities: {
         canBuild: false,
-        canExecuteDeployment: false,
+        canExecuteDeployment: true,
         canImportDeployment: true,
-        reason: '当前版本没有配置构建系统或部署适配器；发布记录与导入部署可登记，外部执行标记为不可用。',
+        reason: '本地目录 Adapter 可执行并校验制品哈希；Pipeline/K8s/GitOps/SSH 远程连接未配置。',
       },
     }
   }
@@ -621,6 +624,64 @@ export class ReleaseService {
       this.appendDeploymentEvent(id, 'rollback_created', 'awaiting_approval', `回滚来源部署 ${source.id}`, { sourceDeploymentId: source.id })
       return this.getDeployment(id)
     })
+  }
+
+  async executeDeployment(deploymentId: string): Promise<Deployment> {
+    const deployment = this.getDeployment(deploymentId)
+    if (deployment.status !== 'pending') {
+      throw new AppError('CONFLICT', '只有已批准且待记录的部署才能执行本地 Adapter')
+    }
+    if (!deployment.targetId) throw new AppError('CONFLICT', '部署缺少目标')
+    const target = this.getTarget(deployment.targetId)
+    if (target.adapterType !== 'local-artifact' && target.kind !== 'local') {
+      throw new AppError('POLICY_DENIED', '目标未注册可执行本地 Adapter；不能伪造远程部署')
+    }
+    const releaseArtifacts = this.releaseArtifacts(deployment.releaseId)
+    const adapter = DELIVERY_ADAPTERS.find((item) => item.type === 'local-artifact') as LocalArtifactAdapter | undefined
+    if (!adapter) throw new AppError('INTERNAL', '本地 Adapter 未注册')
+    const startedAt = now()
+    this.store.db.prepare("UPDATE deployments SET status='running', started_at=?, updated_at=? WHERE id=?").run(startedAt, startedAt, deployment.id)
+    this.appendDeploymentEvent(deployment.id, 'adapter_started', 'running', 'LocalArtifactAdapter 开始执行', { adapter: adapter.type })
+    try {
+      const result = await adapter.execute({
+        deploymentId: deployment.id,
+        targetPath: target.targetRef,
+        artifacts: releaseArtifacts.map((artifact) => ({ name: artifact.name, uri: artifact.uri, contentHash: artifact.contentHash })),
+      })
+      const finishedAt = now()
+      this.store.db
+        .prepare(
+          `UPDATE deployments SET status=?, assurance=?, external_id=?, artifact_hash=?, receipt_json=?, notes=?, finished_at=?, updated_at=? WHERE id=?`,
+        )
+        .run(
+          result.status,
+          result.assurance,
+          result.externalId,
+          result.artifactHash,
+          JSON.stringify({ ...result.receipt, health: result.health }),
+          result.health.detail,
+          finishedAt,
+          finishedAt,
+          deployment.id,
+        )
+      this.appendDeploymentEvent(deployment.id, 'adapter_result', result.status, result.health.detail, {
+        externalId: result.externalId,
+        health: result.health,
+      })
+      return this.getDeployment(deployment.id)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      const finishedAt = now()
+      this.store.db
+        .prepare("UPDATE deployments SET status='failed', notes=?, finished_at=?, updated_at=? WHERE id=?")
+        .run(message, finishedAt, finishedAt, deployment.id)
+      this.appendDeploymentEvent(deployment.id, 'adapter_failed', 'failed', message, {})
+      throw new AppError('CONFLICT', `本地 Adapter 执行失败：${message}`)
+    }
+  }
+
+  adapterCapabilities(): Array<{ type: string; label: string; capabilities: (typeof DELIVERY_ADAPTERS)[number]['capabilities'] }> {
+    return DELIVERY_ADAPTERS.map((adapter) => ({ type: adapter.type, label: adapter.label, capabilities: adapter.capabilities }))
   }
 
   currentEnvironmentVersion(projectId: string, environmentId: string): { releaseId: string | null; deploymentId: string | null; assurance: string | null } {

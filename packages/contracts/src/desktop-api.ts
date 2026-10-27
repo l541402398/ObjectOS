@@ -58,6 +58,8 @@ export interface ProjectOSDesktopApi {
     createRelease: (input: In<'release.create'>) => Promise<Out<'release.create'>>
     createDeployment: (input: In<'deployment.create'>) => Promise<Out<'deployment.create'>>
     recordDeployment: (input: In<'deployment.record'>) => Promise<Out<'deployment.record'>>
+    executeDeployment: (deploymentId: string) => Promise<Out<'deployment.execute'>>
+    adapters: (projectId: string) => Promise<Out<'delivery.adapters'>>
     createRollback: (input: In<'deployment.rollback'>) => Promise<Out<'deployment.rollback'>>
     createTarget: (input: In<'deployment.target.create'>) => Promise<Out<'deployment.target.create'>>
     createStrategy: (input: In<'deployment.strategy.create'>) => Promise<Out<'deployment.strategy.create'>>

@@ -447,6 +447,29 @@ export const ApiSchemas = {
     input: RecordDeploymentResultInputSchema,
     output: DeploymentSchema,
   },
+  'deployment.execute': {
+    input: z.object({ deploymentId: IdSchema }),
+    output: DeploymentSchema,
+  },
+  'delivery.adapters': {
+    input: projectIdInput,
+    output: z.array(
+      z.object({
+        type: z.string(),
+        label: z.string(),
+        capabilities: z.object({
+          inspect: z.boolean(),
+          execute: z.boolean(),
+          observe: z.boolean(),
+          logs: z.boolean(),
+          health: z.boolean(),
+          rollback: z.boolean(),
+          cancel: z.boolean(),
+          reconcile: z.boolean(),
+        }),
+      }),
+    ),
+  },
   'deployment.rollback': {
     input: z.object({
       sourceDeploymentId: IdSchema,

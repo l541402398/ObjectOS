@@ -553,3 +553,27 @@ SSH 私钥/密码、kubeconfig Token、ServiceAccount Token、CI/CD Access Token
 ### 14.3 验收
 
 `pnpm typecheck`、`pnpm test`、`pnpm build`、`package:dir`、`test:package` 通过；详见 `docs/v2/ProjectOS_V2.0_Phase2_1_Delivery_Closure.md`。
+
+---
+
+## 15. Phase 2.2 真实本地 Adapter 与三页 UX 重构（2026-10-27）
+
+### 15.1 已实施
+
+- 发布中心改为「候选 / 变更 / Release」分段视图，主列表 + 右侧发布就绪 Inspector；不再三栏等权堆叠。
+- 部署中心改为「部署执行 / 环境与目标 / 历史与回滚」分段；适配器能力可见。
+- 审批中心增加「全部类型 / 工具权限 / 交付审批」分段；交付审批不再与工具审批混排成长页。
+- 新增可执行 `LocalArtifactAdapter`：
+  - 校验冻结制品 SHA-256；
+  - 复制到目标目录 `versions/<deploymentId>`；
+  - 写入回执与 `health.json`；
+  - 记录外部 ID、独立复现 assurance、事件和哈希；
+  - 需要部署审批进入 `pending` 后才可执行，重复执行拒绝。
+- 保留 Pipeline / K8s / GitOps / SSH 只读能力契约，标记未连接，不伪造执行。
+- 真实 Electron E2E：本地目标、制品文件、候选、Release、部署审批、执行、哈希/健康回执全流程通过。
+
+### 15.2 真实远程状态
+
+本机仓库无 Helm/Kustomize/Argo/Flux/Tekton/Jenkins 部署配置，未获得 K8s/CI/VPS 连接凭据与写授权。真实远程部署为 **BLOCKED**，需用户提供只读连接后继续。
+
+Phase 3 仍不启动。

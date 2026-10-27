@@ -66,6 +66,10 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
     queryKey: ['release-overview', projectId, versionId],
     queryFn: () => window.projectos.release.overview(projectId, versionId),
   })
+  const adapters = useQuery({
+    queryKey: ['delivery-adapters', projectId],
+    queryFn: () => window.projectos.release.adapters(projectId),
+  })
   const [crOpen, setCrOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -75,15 +79,19 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
   const [deployOpen, setDeployOpen] = useState(false)
   const [deployReleaseId, setDeployReleaseId] = useState<string | null>(null)
   const [deployEnvironmentId, setDeployEnvironmentId] = useState<string | null>(null)
+  const [deployTargetId, setDeployTargetId] = useState<string | null>(null)
   const [deploySource, setDeploySource] = useState<'manual' | 'imported' | 'unknown'>('manual')
   const [targetOpen, setTargetOpen] = useState(false)
   const [targetName, setTargetName] = useState('')
+  const [targetRef, setTargetRef] = useState('')
   const [targetKind, setTargetKind] = useState<'local' | 'ssh' | 'kubernetes' | 'pipeline' | 'gitops' | 'external'>('ssh')
   const [targetControl, setTargetControl] = useState<'pipeline_managed' | 'gitops_managed' | 'direct_kubernetes' | 'ssh_managed' | 'external_observed'>('ssh_managed')
   const [strategyOpen, setStrategyOpen] = useState(false)
   const [strategyName, setStrategyName] = useState('')
   const [strategyTargetId, setStrategyTargetId] = useState<string | null>(null)
   const [strategyAdapter, setStrategyAdapter] = useState('manual')
+  const [releaseView, setReleaseView] = useState<'candidates' | 'changes' | 'releases'>('candidates')
+  const [deployView, setDeployView] = useState<'execute' | 'targets' | 'history'>('execute')
   const data = overview.data
   const pendingApprovals = useMemo(
     () =>
@@ -181,7 +189,7 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
         projectId,
         releaseId: deployReleaseId!,
         environmentId: deployEnvironmentId!,
-        targetId: null,
+        targetId: deployTargetId,
         strategyId: null,
         source: deploySource,
         idempotencyKey: `deploy:${deployReleaseId}:${deployEnvironmentId}:${deploySource}`,
@@ -215,6 +223,14 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
     },
     onError: (error) => message.error(errorMessage(error)),
   })
+  const executeLocal = useMutation({
+    mutationFn: (deploymentId: string) => window.projectos.release.executeDeployment(deploymentId),
+    onSuccess: async (result) => {
+      await invalidate()
+      message.success(`本地部署结果：${result.status === 'succeeded' ? '成功' : result.status}`)
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
 
   const createTarget = useMutation({
     mutationFn: () =>
@@ -224,8 +240,8 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
         name: targetName.trim(),
         kind: targetKind,
         controlMode: targetControl,
-        adapterType: null,
-        targetRef: '',
+        adapterType: targetKind === 'local' ? 'local-artifact' : null,
+        targetRef: targetRef.trim(),
         protected: false,
       }),
     onSuccess: async () => {
@@ -291,7 +307,30 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
         </Tag>
         <span>{data.capabilities.reason}</span>
       </div>
+      {showRelease ? (
+        <div className="rel-view-tabs">
+          <button type="button" className={releaseView === 'candidates' ? 'is-active' : ''} onClick={() => setReleaseView('candidates')}>候选 {data.candidates.length}</button>
+          <button type="button" className={releaseView === 'changes' ? 'is-active' : ''} onClick={() => setReleaseView('changes')}>变更 {data.changeRequests.length}</button>
+          <button type="button" className={releaseView === 'releases' ? 'is-active' : ''} onClick={() => setReleaseView('releases')}>Release {data.releases.length}</button>
+        </div>
+      ) : null}
       {showDeployment ? (
+        <div className="rel-view-tabs">
+          <button type="button" className={deployView === 'execute' ? 'is-active' : ''} onClick={() => setDeployView('execute')}>部署执行</button>
+          <button type="button" className={deployView === 'targets' ? 'is-active' : ''} onClick={() => setDeployView('targets')}>环境与目标</button>
+          <button type="button" className={deployView === 'history' ? 'is-active' : ''} onClick={() => setDeployView('history')}>历史与回滚</button>
+        </div>
+      ) : null}
+      {showDeployment ? (
+        <div className="rel-adapter-list">
+          {(adapters.data ?? []).map((adapter) => (
+            <Tag key={adapter.type} color={adapter.capabilities.execute ? 'green' : 'default'}>
+              {adapter.label} · {adapter.capabilities.execute ? '可执行' : '只读/未连接'}
+            </Tag>
+          ))}
+        </div>
+      ) : null}
+      {showDeployment && deployView === 'targets' ? (
         <div className="rel-env-facts">
           {data.environmentVersions.map((fact) => {
             const environment = data.environments.find((item) => item.id === fact.environmentId)
@@ -307,7 +346,7 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
         </div>
       ) : null}
 
-      {showDeployment ? (
+      {showDeployment && deployView === 'execute' ? (
         <div className="rel-deploy-releases">
           <span>选择 Release</span>
           {data.releases.length === 0 ? <small>还没有 Release 记录</small> : null}
@@ -318,6 +357,7 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
               onClick={() => {
                 setDeployReleaseId(release.id)
                 setDeployEnvironmentId(data.environments[0]?.id ?? null)
+                setDeployTargetId(data.targets[0]?.id ?? null)
                 setDeployOpen(true)
               }}
             >
@@ -328,7 +368,8 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
       ) : null}
 
       {showRelease ? (
-      <div className="rel-grid">
+      <div className="rel-grid rel-release-grid">
+        {releaseView === 'changes' ? (
         <section className="rel-column">
           <div className="rel-column-title">变更申请 <span>{data.changeRequests.length}</span></div>
           {data.changeRequests.length === 0 ? <div className="rel-empty">还没有变更申请；从当前版本创建第一条发布变更。</div> : null}
@@ -348,7 +389,9 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
             </article>
           ))}
         </section>
+        ) : null}
 
+        {releaseView === 'candidates' ? (
         <section className="rel-column">
           <div className="rel-column-title">发布候选 <span>{data.candidates.length}</span></div>
           <div className="rel-meta">本版本关联 {versionArtifacts.length} 个 Artifact；候选只快照这些成果。</div>
@@ -376,7 +419,9 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
             </article>
           ))}
         </section>
+        ) : null}
 
+        {releaseView === 'releases' ? (
         <section className="rel-column">
           <div className="rel-column-title">发布记录 <span>{data.releases.length}</span></div>
           {data.releases.length === 0 ? <div className="rel-empty">Release 记录需要候选就绪、门禁通过与独立审批。</div> : null}
@@ -394,6 +439,7 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
                 <Button size="small" onClick={() => {
                   setDeployReleaseId(release.id)
                   setDeployEnvironmentId(data.environments[0]?.id ?? null)
+                  setDeployTargetId(data.targets[0]?.id ?? null)
                   setDeployOpen(true)
                 }}>
                   登记部署
@@ -402,6 +448,30 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
             </article>
           ))}
         </section>
+        ) : null}
+
+        <aside className="rel-column rel-inspector-pane">
+          <div className="rel-column-title">发布就绪</div>
+          <div className="rel-fact-row"><span>变更批准</span><strong>{approvedRequest ? '已批准' : '未批准'}</strong></div>
+          <div className="rel-fact-row"><span>门禁</span><strong>{data.candidates[0]?.gateStatus ?? '未评估'}</strong></div>
+          <div className="rel-fact-row"><span>本版本制品</span><strong>{versionArtifacts.length}</strong></div>
+          <div className="rel-fact-row"><span>构建</span><strong>{data.capabilities.canBuild ? '可用' : '未配置'}</strong></div>
+          <div className="rel-inspector-separator" />
+          <div className="rel-column-title">最新 Release</div>
+          {data.releases[0] ? (
+            <>
+              <div className="rel-fact-row"><span>版本</span><strong>v{data.releases[0].version}</strong></div>
+              <div className="rel-fact-row"><span>分发</span><strong>{data.releases[0].distributionStatus === 'externally_confirmed' ? '外部确认' : '未外部分发'}</strong></div>
+              <div className="rel-fact-row"><span>Git</span><strong>{data.releases[0].gitCommit?.slice(0, 10) ?? '无'}</strong></div>
+              {data.releases[0].artifactManifest.slice(0, 4).map((artifact) => (
+                <div className="rel-artifact" key={artifact.id}>
+                  <span>{artifact.name}</span>
+                  <code>{artifact.contentHash.slice(0, 10)}…</code>
+                </div>
+              ))}
+            </>
+          ) : <div className="rel-empty">登记 Release 后展示冻结证据。</div>}
+        </aside>
       </div>
       ) : null}
 
@@ -421,7 +491,7 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
           ))}
         </section>
 
-        {showDeployment ? (
+        {showDeployment && deployView === 'targets' ? (
           <section className="rel-column">
             <div className="rel-column-title">环境与目标 <span>{data.targets.length}</span></div>
             {data.targets.length === 0 ? <div className="rel-empty">还没有部署目标；环境可登记，但登记不等于已连接服务器。</div> : null}
@@ -443,12 +513,14 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
         ) : null}
       </div>
 
-      {showDeployment ? (
+      {showDeployment && deployView !== 'targets' ? (
         <section className="rel-column rel-history">
           <div className="rel-column-title">部署历史 <span>{data.deployments.length}</span></div>
           {data.deployments.length === 0 ? <div className="rel-empty">部署记录区分手工声明、导入观察与适配器确认；不会把登记冒充真实执行。</div> : null}
           {data.deployments.map((deployment) => {
             const environment = data.environments.find((item) => item.id === deployment.environmentId)
+            const target = data.targets.find((item) => item.id === deployment.targetId)
+            const canExecuteLocal = deployment.status === 'pending' && target && (target.kind === 'local' || target.adapterType === 'local-artifact')
             return (
               <article className="rel-item" key={deployment.id}>
                 <div className="rel-item-head">
@@ -460,10 +532,15 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
                 <div className="rel-meta">
                   {SOURCE_LABEL[deployment.source] ?? deployment.source} · {ASSURANCE_LABEL[deployment.assurance] ?? deployment.assurance} · {formatRelative(deployment.createdAt)}
                 </div>
-                {deployment.source === 'manual' && deployment.status === 'succeeded' ? (
+                {deployment.source === 'manual' && deployment.status === 'succeeded' && deployment.assurance === 'self_declared' ? (
                   <div className="rel-meta">未核实 · 仅用户声明，不计入环境当前版本</div>
                 ) : null}
                 {deployment.externalId ? <div className="rel-hash">外部 ID {deployment.externalId}</div> : null}
+                {canExecuteLocal ? (
+                  <Button size="small" type="primary" onClick={() => executeLocal.mutate(deployment.id)} loading={executeLocal.isPending}>
+                    执行本地部署
+                  </Button>
+                ) : null}
                 {deployment.approvalId && ['pending', 'awaiting_approval'].includes(deployment.status) ? (
                   <Button size="small" onClick={() => recordResult.mutate(deployment.id)} loading={recordResult.isPending}>
                     登记结果
@@ -541,6 +618,7 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
         <div className="rel-form">
           <label><span>Release</span><Select value={deployReleaseId} onChange={setDeployReleaseId} options={data.releases.map((release) => ({ value: release.id, label: `v${release.version} · ${release.manifestHash.slice(0, 8)}` }))} /></label>
           <label><span>环境</span><Select value={deployEnvironmentId} onChange={setDeployEnvironmentId} options={data.environments.map((environment) => ({ value: environment.id, label: environment.name }))} /></label>
+          <label><span>部署目标</span><Select allowClear value={deployTargetId} onChange={(value) => setDeployTargetId(value ?? null)} options={data.targets.map((target) => ({ value: target.id, label: target.name }))} /></label>
           <label><span>来源</span><Select value={deploySource} onChange={setDeploySource} options={[
             { value: 'manual', label: '手工声明（仅用户声明）' },
             { value: 'imported', label: '导入记录（来源观察）' },
@@ -562,6 +640,7 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
       >
         <div className="rel-form">
           <label><span>名称</span><Input value={targetName} onChange={(event) => setTargetName(event.target.value)} placeholder="例如：staging-vps" /></label>
+          <label><span>目标目录 / 标识</span><Input value={targetRef} onChange={(event) => setTargetRef(event.target.value)} placeholder="local 目标填写可写目录；远程目标填写只读标识" /></label>
           <label><span>类型</span><Select value={targetKind} onChange={setTargetKind} options={[
             { value: 'ssh', label: 'SSH / VPS' },
             { value: 'kubernetes', label: 'Kubernetes' },

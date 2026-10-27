@@ -23,6 +23,7 @@ export default function ApprovalsPage() {
     enabled: Boolean(projectId),
   })
   const [filter, setFilter] = useState<'pending' | 'all'>('pending')
+  const [scope, setScope] = useState<'all' | 'tool' | 'delivery'>('all')
   const list = useMemo(() => {
     const items = approvals.data?.approvals ?? []
     return filter === 'pending' ? items.filter((item) => item.status === 'pending') : items
@@ -56,8 +57,12 @@ export default function ApprovalsPage() {
       <div className="v16-filter-tabs">
         <button type="button" className={filter === 'pending' ? 'is-active' : ''} onClick={() => setFilter('pending')}>待审批</button>
         <button type="button" className={filter === 'all' ? 'is-active' : ''} onClick={() => setFilter('all')}>全部</button>
+        <span className="v16-filter-sep" />
+        <button type="button" className={scope === 'all' ? 'is-active' : ''} onClick={() => setScope('all')}>全部类型</button>
+        <button type="button" className={scope === 'tool' ? 'is-active' : ''} onClick={() => setScope('tool')}>工具权限</button>
+        <button type="button" className={scope === 'delivery' ? 'is-active' : ''} onClick={() => setScope('delivery')}>交付审批</button>
       </div>
-      {list.length === 0 ? (
+      {scope !== 'delivery' ? (list.length === 0 ? (
         <div className="v16-glass-card"><EmptyState icon={<SafetyCertificateOutlined />} title="没有待审批操作" description="工具调用需要人工确认时会出现在这里。" /></div>
       ) : (
         <div className="v16-approval-grid">
@@ -79,8 +84,9 @@ export default function ApprovalsPage() {
             </article>
           ))}
         </div>
-      )}
+      )) : null}
 
+      {scope !== 'tool' ? (
       <div className="v16-delivery-approvals">
         <div className="v16-delivery-approvals-head">
           <strong>交付审批</strong>
@@ -116,6 +122,7 @@ export default function ApprovalsPage() {
           </div>
         )}
       </div>
+      ) : null}
     </div>
   )
 }
