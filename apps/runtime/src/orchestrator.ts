@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process'
+import { collectReviewSnapshot } from './review-snapshot-collector.js'
 import {
   AppError,
   now,
@@ -1063,9 +1064,14 @@ export class OrchestrationScheduler {
     const currentRevision = this.workspaceRevision(plan)
     const atCurrent = reviews.filter((item) => !item.revision || !currentRevision || item.revision === currentRevision)
     const decisive = atCurrent.length > 0 ? atCurrent : reviews
+    // Uncommitted rewrites change content without moving HEAD, so re-derive the snapshot.
+    const root = plan.execution?.workspaceRef
     const rejected: Array<{ title: string; conclusion: string }> = []
     for (const item of decisive) {
-      const verdict = reviewVerdictOf(item.metadata, { currentRevision })
+      const currentSnapshot = root
+        ? collectReviewSnapshot({ workspaceRoot: root, reviewedObjects: item.metadata.reviewedObjects })
+        : null
+      const verdict = reviewVerdictOf(item.metadata, { currentRevision, currentSnapshot })
       if (verdict !== 'approved') {
         rejected.push({ title: item.title, conclusion: `${item.conclusion || '未给出结论'}（${verdict}）` })
       }

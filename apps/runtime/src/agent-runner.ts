@@ -45,6 +45,7 @@ import {
   redactSecrets,
 } from '@projectos/policy'
 import { getToolDefinition, toolCatalogForAgent } from '@projectos/tools'
+import { collectReviewSnapshot } from './review-snapshot-collector.js'
 import { RuntimeExecutionService } from './runtime-executor.js'
 import { collectUpstreamContext } from './upstream-context.js'
 import { AcpClient, acpTextFromEvent, acpTextFromResult } from './acp-client.js'
@@ -2160,8 +2161,10 @@ export class AgentRunner {
           // Fact collection, not judgement: bind the review to the revision it was
           // written against, so a later code change can invalidate it (ADR-0024).
           if (typeof rawMetadata.reviewedRevision !== 'string' || !rawMetadata.reviewedRevision.trim()) {
-            const head = currentWorkspaceRevision(state.workspaceRoot)
-            if (head) rawMetadata.reviewedRevision = head
+            const snapshot = collectReviewSnapshot({ workspaceRoot: state.workspaceRoot, reviewedObjects: rawMetadata.reviewedObjects })
+            // The runtime collects facts; the Agent's own hashes are discarded.
+            rawMetadata.reviewSnapshot = snapshot
+            rawMetadata.reviewedRevision = snapshot.baselineCommit
           }
         }
         const artifact = this.services.projects.createArtifact(
@@ -3168,14 +3171,6 @@ export function resolveEffectiveToolArgs(
   return { args, defaulted }
 }
 
-/** Current git HEAD of the workspace, used to bind review evidence to a revision. */
-function currentWorkspaceRevision(workspaceRoot: string): string | null {
-  try {
-    return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: workspaceRoot, encoding: 'utf8' }).trim() || null
-  } catch {
-    return null
-  }
-}
 function hashArgs(args: Record<string, unknown>): string {
   return createHash('sha256').update(stableStringify(args)).digest('hex')
 }

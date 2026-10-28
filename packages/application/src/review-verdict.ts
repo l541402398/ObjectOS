@@ -11,11 +11,15 @@
  * *task* to complete (reporting a defect is a finished review), but never a pass.
  */
 
+import { snapshotMatches, type ReviewSnapshot } from './review-snapshot.js'
+
 export type ReviewVerdict = 'approved' | 'changes_requested' | 'blocked' | 'inconclusive'
 
 export interface ReviewVerdictOptions {
   /** Git revision the reviewed code is at right now, when known. */
   currentRevision?: string | null
+  /** When provided, the stored review snapshot must match it exactly. */
+  currentSnapshot?: ReviewSnapshot | null
 }
 
 const NON_BLOCKING = /^(无|none|no blockers?|没有|-|—|n\/a)$/i
@@ -55,7 +59,23 @@ export function reviewVerdictOf(
   // 1. A recorded blocking item always wins: nothing may pass while a real blocker stands.
   if (blocking.length > 0) return 'blocked'
 
-  // 2. An explicit structured verdict field is authoritative when it is one we understand.
+  // 2. Staleness gate runs BEFORE any approval path. A structured `verdict: 'approved'`
+  //    must not be able to skip the revision/snapshot check.
+  const reviewedRevision = asString(metadata.reviewedRevision)
+  const currentRevision = asString(options.currentRevision)
+  if (reviewedRevision && currentRevision && reviewedRevision !== currentRevision) {
+    return 'inconclusive'
+  }
+  if (options.currentSnapshot !== undefined) {
+    const storedSnapshot = metadata.reviewSnapshot
+    if (storedSnapshot === undefined || storedSnapshot === null) {
+      // Reviewing without a content snapshot cannot be trusted against current files.
+      return 'inconclusive'
+    }
+    if (!snapshotMatches(storedSnapshot, options.currentSnapshot)) return 'inconclusive'
+  }
+
+  // 3. An explicit structured verdict field is authoritative when it is one we understand.
   if (explicit) {
     if (POSITIVE_FIELD.test(explicit)) {
       // ...but it may not contradict a rejection written into the conclusion.
@@ -66,7 +86,7 @@ export function reviewVerdictOf(
     return 'inconclusive'
   }
 
-  // 3. Free-text conclusion. Both directions present at once is contradictory.
+  // 4. Free-text conclusion. Both directions present at once is contradictory.
   if (!conclusion) return 'inconclusive'
   const approvedText = APPROVAL_TOKENS.test(conclusion)
   const rejectedText = REJECTION.test(conclusion)
@@ -74,12 +94,6 @@ export function reviewVerdictOf(
   if (rejectedText) return 'changes_requested'
   if (!approvedText) return 'inconclusive'
 
-  // 4. An approval only counts for the revision it was written against.
-  const reviewedRevision = asString(metadata.reviewedRevision)
-  const currentRevision = asString(options.currentRevision)
-  if (reviewedRevision && currentRevision && reviewedRevision !== currentRevision) {
-    return 'inconclusive'
-  }
   return 'approved'
 }
 
