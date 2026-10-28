@@ -607,3 +607,15 @@ Phase 3 仍不启动。
 - Kubernetes/CI/CD/GitOps 本轮只建立连接元数据模型并明确连接器未实现，不伪造测试成功。
 
 详见 `docs/v2/ProjectOS_V2.0_Phase2_3_Resources_Connections_Acceptance.md`。
+
+---
+
+## 19. Phase 2.4 资源驱动部署（2026-10-27）
+
+- 新增 V32：Resource/Profile revision、审批 subject snapshot、Deployment execution_state/authorization_fingerprint。
+- 部署审批指纹绑定 Target/Resource/Profile/Host Key/路径/制品清单；批准后修改目标会失效。
+- Main 使用 safeStorage vault + ssh2 的受控 SSH 执行路径（SFTP 上传、远端 hash、docker、/health）。
+- 回滚默认选择上一个不同 Release 的成功部署。
+- Electron SSH 执行记录仍未闭环；v1/v2/rollback、Diff TOCTOU、K8s/CI 只读未完成。
+
+详见 `docs/v2/ProjectOS_V2.0_Phase2_4_Resource_Driven_Delivery_Final_Report.md`。
