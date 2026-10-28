@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
@@ -1892,7 +1893,7 @@ export class AgentRunner {
         runId: state.runId,
         toolCallId: toolCall.id,
         title: `授权 ${invocation.name}`,
-        detail: approvalDetail(invocation),
+        detail: approvalDetail(invocationEffective),
         request: {
           toolName: invocation.name,
           args: redactObject(effective.args),
@@ -2155,6 +2156,12 @@ export class AgentRunner {
             throw new AppError('BAD_REQUEST', `审查产物字段不合格，请补齐后重试：${errors.join('；')}`, {
               details: { fields: errors },
             })
+          }
+          // Fact collection, not judgement: bind the review to the revision it was
+          // written against, so a later code change can invalidate it (ADR-0024).
+          if (typeof rawMetadata.reviewedRevision !== 'string' || !rawMetadata.reviewedRevision.trim()) {
+            const head = currentWorkspaceRevision(state.workspaceRoot)
+            if (head) rawMetadata.reviewedRevision = head
           }
         }
         const artifact = this.services.projects.createArtifact(
@@ -3161,6 +3168,14 @@ export function resolveEffectiveToolArgs(
   return { args, defaulted }
 }
 
+/** Current git HEAD of the workspace, used to bind review evidence to a revision. */
+function currentWorkspaceRevision(workspaceRoot: string): string | null {
+  try {
+    return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: workspaceRoot, encoding: 'utf8' }).trim() || null
+  } catch {
+    return null
+  }
+}
 function hashArgs(args: Record<string, unknown>): string {
   return createHash('sha256').update(stableStringify(args)).digest('hex')
 }

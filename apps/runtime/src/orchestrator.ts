@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import {
   AppError,
   now,
@@ -11,7 +12,7 @@ import {
   type TaskCard,
   type WorktreeInfo,
 } from '@projectos/contracts'
-import { evaluateCompletion, type CoreServices } from '@projectos/application'
+import { evaluateCompletion, reviewVerdictOf, type CoreServices } from '@projectos/application'
 import { PROJECT_EVENT_TYPES } from '@projectos/domain'
 import { getGitStatus } from '@projectos/workspace'
 import { createArtifactRecord } from '@projectos/persistence'
@@ -1041,23 +1042,46 @@ export class OrchestrationScheduler {
    * success: it is a verification failure that goes back to the Replanner.
    */
   private negativeReviews(plan: PlanDraft): Array<{ title: string; conclusion: string }> {
-    const rejected: Array<{ title: string; conclusion: string }> = []
+    const reviews: Array<{ title: string; metadata: Record<string, unknown>; revision: string; conclusion: string }> = []
     for (const taskId of plan.createdTaskIds) {
       for (const artifact of this.store.read.listArtifacts(plan.projectId, taskId)) {
         const metadata = (artifact.metadata ?? {}) as Record<string, unknown>
         if (metadata.artifactType !== 'review') continue
-        const blockers = Array.isArray(metadata.blockers)
-          ? metadata.blockers.filter((item): item is string => typeof item === 'string')
-          : []
-        const blocking = blockers.some((item) => !/^(无|none|no blockers?)/i.test(item.trim()))
-        const conclusion = typeof metadata.conclusion === 'string' ? metadata.conclusion.trim() : ''
-        // Neutral wording ("未发现问题") is a pass; only explicit rejection language or a
-        // real blocking item counts as a negative review.
-        const explicitlyRejected = /阻断|不通过|拒绝|需要修改|不可放行|reject|blocking|blocked|fail|changes? requested/i.test(conclusion)
-        if (blocking || explicitlyRejected) rejected.push({ title: artifact.title, conclusion: conclusion || '未给出结论' })
+        reviews.push({
+          title: artifact.title,
+          metadata,
+          revision: typeof metadata.reviewedRevision === 'string' ? metadata.reviewedRevision : '',
+          conclusion: typeof metadata.conclusion === 'string' ? metadata.conclusion.trim() : '',
+        })
+      }
+    }
+    if (reviews.length === 0) return []
+
+    // ADR-0024 supersession: a re-review of the *current* revision supersedes older
+    // verdicts for the same plan (history is kept, it just stops being decisive). Every
+    // review that belongs to the current revision still has to pass.
+    const currentRevision = this.workspaceRevision(plan)
+    const atCurrent = reviews.filter((item) => !item.revision || !currentRevision || item.revision === currentRevision)
+    const decisive = atCurrent.length > 0 ? atCurrent : reviews
+    const rejected: Array<{ title: string; conclusion: string }> = []
+    for (const item of decisive) {
+      const verdict = reviewVerdictOf(item.metadata, { currentRevision })
+      if (verdict !== 'approved') {
+        rejected.push({ title: item.title, conclusion: `${item.conclusion || '未给出结论'}（${verdict}）` })
       }
     }
     return rejected
+  }
+
+  /** HEAD of the plan's workspace, when it can be read. */
+  private workspaceRevision(plan: PlanDraft): string | null {
+    const root = plan.execution?.workspaceRef
+    if (!root) return null
+    try {
+      return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim() || null
+    } catch {
+      return null
+    }
   }
 
   private async tick(planId: string): Promise<void> {

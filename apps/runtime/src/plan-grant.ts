@@ -221,6 +221,34 @@ export class PlanGrantService {
         }
       }
     }
+    // `npm test` / `pnpm run x`: what actually runs is the package.json script body, plus
+    // any local files it references. The approval is bound to that, not to the command text.
+    const scriptMatch = /^(?:npm|pnpm|yarn)\s+(?:run(?:-script)?\s+)?([\w:.-]+)/.exec(command.trim())
+    const scriptName = scriptMatch?.[1] ?? null
+    if (scriptName) {
+      try {
+        const pkg = existsSync(pkgPath)
+          ? (JSON.parse(readFileSync(pkgPath, 'utf8')) as { scripts?: Record<string, string> })
+          : null
+        const body = pkg?.scripts?.[scriptName]
+        if (typeof body === 'string') {
+          parts.push(`script:${scriptName}:${body}`)
+          for (const token of body.split(/\s+/)) {
+            const candidate = token.replace(/^['"]|['"]$/g, '')
+            if (!/\.(mjs|cjs|js|ts|json|sh|ps1)$/i.test(candidate) || candidate.includes('*')) continue
+            const file = isAbsolute(candidate) ? candidate : join(workspaceRoot, candidate)
+            if (!existsSync(file)) continue
+            try {
+              parts.push(`scriptFile:${candidate}:${createHash('sha256').update(readFileSync(file)).digest('hex')}`)
+            } catch {
+              return null
+            }
+          }
+        }
+      } catch {
+        return null
+      }
+    }
     return createHash('sha256').update(parts.join('\u0000')).digest('hex')
   }
 

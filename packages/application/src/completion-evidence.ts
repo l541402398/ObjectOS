@@ -1,4 +1,5 @@
 import type { Artifact, RunDetail, TaskCard } from '@projectos/contracts'
+import { reviewVerdictOf } from './review-verdict.js'
 
 export type CompletionRequirementId = 'design' | 'code' | 'test' | 'review' | 'artifact' | 'human' | 'diagnostic'
 
@@ -217,18 +218,6 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
    * says "需要修改 / 阻断交付". Only a positive verdict counts as review approval, and
    * approval still does not equal a quality gate pass.
    */
-  const reviewVerdictOf = (metadata: Record<string, unknown>): 'approved' | 'changes_requested' | 'blocked' => {
-    const conclusion = typeof metadata.conclusion === 'string' ? metadata.conclusion.trim() : ''
-    const blockers = Array.isArray(metadata.blockers)
-      ? metadata.blockers.filter((item): item is string => typeof item === 'string')
-      : []
-    const blocking = blockers.some((item) => !/^(无|none|no blockers?)/i.test(item.trim()))
-    if (blocking) return 'blocked'
-    const positive = /^(通过|放行|approve|approved|pass|passed|conditionally passed)/i.test(conclusion)
-    if (positive) return 'approved'
-    // Neutral wording (未发现问题) is a pass; only explicit rejection is a change request.
-    return /阻断|不通过|拒绝|需要修改|不可放行|reject|blocking|blocked|fail|changes? requested/i.test(conclusion) ? 'changes_requested' : 'approved'
-  }
   const reviewArtifacts = artifacts.filter((artifact) => {
     const metadata = metadataOf(artifact)
     return (
