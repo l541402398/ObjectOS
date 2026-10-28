@@ -153,7 +153,12 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
   const target = data?.targets.find((item) => item.id === selected?.targetId) ?? data?.targets.find((item) => item.id === targetId) ?? null
   const environment = data?.environments.find((item) => item.id === (selected?.environmentId ?? environmentId)) ?? null
   const currentFact = data?.environmentVersions.find((item) => item.environmentId === environment?.id) ?? null
-  const currentRelease = data?.releases.find((item) => item.id === currentFact?.releaseId) ?? null
+  // Prefer the label carried by the fact itself: the trusted running version can belong
+
+  // to a different version than the one currently being viewed.
+  const currentVersionLabel = currentFact?.releaseVersion
+    ?? data?.releases.find((item) => item.id === currentFact?.releaseId)?.version
+    ?? null
   const release = data?.releases.find((item) => item.id === selected?.releaseId) ?? null
   const health = selected?.receipt?.health as { ok?: boolean; detail?: string } | undefined
   const canExecute = selected?.status === 'pending' && target && ['local-artifact', 'ssh-artifact'].includes(target.adapterType ?? '')
@@ -167,7 +172,7 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
         <div>
           <div className="rw-eyebrow">DELIVERY CONTROL</div>
           <h1>部署控制台</h1>
-          <p>{environment?.name ?? '未选择环境'} · {target?.name ?? '未选择目标'} · {currentRelease ? `当前可信版本 v${currentRelease.version}` : '没有已验证运行版本'}</p>
+          <p>{environment?.name ?? '未选择环境'} · {target?.name ?? '未选择目标'} · {currentVersionLabel ? `当前可信版本 v${currentVersionLabel}` : '没有已验证运行版本'}</p>
         </div>
         <div className="dc-head-right">
           {versionControl}
@@ -307,7 +312,7 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
           <div className="dc-kv"><span>地址</span><strong className="dc-ellipsis">{target?.targetRef ?? '—'}</strong></div>
           <div className="dc-rail-divider" />
           <h3>当前可信运行版本</h3>
-          <div className="dc-current">{currentRelease ? `v${currentRelease.version}` : '无'}</div>
+          <div className="dc-current">{currentVersionLabel ? `v${currentVersionLabel}` : '无'}</div>
           <p className="dc-rail-copy">仅外部确认或独立观察的部署会成为环境运行版本。人工记录和文件交付不会。</p>
           <div className="dc-rail-divider" />
           <h3>操作</h3>

@@ -364,6 +364,7 @@ export const ReleaseOverviewSchema = z.object({
     z.object({
       environmentId: IdSchema,
       releaseId: IdSchema.nullable(),
+      releaseVersion: z.string().nullable().default(null),
       deploymentId: IdSchema.nullable(),
       assurance: z.string().nullable(),
     }),

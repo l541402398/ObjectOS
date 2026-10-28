@@ -1123,18 +1123,27 @@ export class ReleaseService {
     return DELIVERY_ADAPTERS.map((adapter) => ({ type: adapter.type, label: adapter.label, capabilities: adapter.capabilities }))
   }
 
-  currentEnvironmentVersion(projectId: string, environmentId: string): { releaseId: string | null; deploymentId: string | null; assurance: string | null } {
+  currentEnvironmentVersion(projectId: string, environmentId: string): { releaseId: string | null; releaseVersion: string | null; deploymentId: string | null; assurance: string | null } {
     this.assertEnvironment(projectId, environmentId)
     const row = this.store.db
       .prepare(
-        `SELECT id, release_id, assurance FROM deployments
-         WHERE project_id=? AND environment_id=? AND status='succeeded' AND assurance IN ('source_observed','independently_reproduced','externally_confirmed')
-         ORDER BY finished_at DESC, created_at DESC LIMIT 1`,
+        `SELECT d.id, d.release_id, d.assurance, r.version AS release_version FROM deployments d
+         LEFT JOIN releases r ON r.id = d.release_id
+         WHERE d.project_id=? AND d.environment_id=? AND d.status='succeeded'
+           AND d.assurance IN ('source_observed','independently_reproduced','externally_confirmed')
+         ORDER BY d.finished_at DESC, d.created_at DESC LIMIT 1`,
       )
       .get(projectId, environmentId) as Record<string, unknown> | undefined
     return row
-      ? { releaseId: String(row.release_id), deploymentId: String(row.id), assurance: String(row.assurance) }
-      : { releaseId: null, deploymentId: null, assurance: null }
+      ? {
+        releaseId: String(row.release_id),
+        // The trusted running version is cross-version by nature: carry its label so the
+        // UI never has to resolve it from a version-scoped release list.
+        releaseVersion: row.release_version ? String(row.release_version) : null,
+        deploymentId: String(row.id),
+        assurance: String(row.assurance),
+      }
+      : { releaseId: null, releaseVersion: null, deploymentId: null, assurance: null }
   }
 
   private createApproval(
