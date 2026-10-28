@@ -32,6 +32,7 @@ import { ExternalAgentRunner } from './external-runner.js'
 import { OperationsService, repairRunKey } from './operations.js'
 import { LifecycleService } from './lifecycle.js'
 import { ReleaseService } from './release-service.js'
+import { ActionCenter } from './action-center.js'
 import { AgentStudioService } from './agent-studio.js'
 import { RuntimeExecutionService } from './runtime-executor.js'
 import { OrchestrationService } from './orchestration.js'
@@ -83,6 +84,7 @@ export class RuntimeDispatcher {
   private readonly operations: OperationsService
   private readonly lifecycle: LifecycleService
   private readonly release: ReleaseService
+  private readonly actions: ActionCenter
   private readonly resources: ResourceService
   private readonly agentStudio: AgentStudioService
   private readonly runtimeExecutor: RuntimeExecutionService
@@ -112,6 +114,7 @@ export class RuntimeDispatcher {
     this.operations = new OperationsService(deps.store, deps.services)
     this.lifecycle = new LifecycleService(deps.store)
     this.release = new ReleaseService(deps.store)
+    this.actions = new ActionCenter(deps.store, this.lifecycle)
     this.resources = new ResourceService(deps.store)
     this.agentStudio = new AgentStudioService(deps.store)
     this.runtimeExecutor = new RuntimeExecutionService(deps.store, () => deps.provider.rawConfig())
@@ -882,6 +885,22 @@ export class RuntimeDispatcher {
       case 'deployment.record': {
         const input = this.parse('deployment.record', rawInput)
         return this.release.recordDeploymentResult(input)
+      }
+      case 'action.center': {
+        const input = this.parse('action.center', rawInput)
+        return { items: this.actions.items(input.projectId), summary: this.actions.summary(input.projectId) }
+      }
+      case 'action.autonomy.get': {
+        const input = this.parse('action.autonomy.get', rawInput)
+        return this.actions.autonomySettings(input.projectId)
+      }
+      case 'action.autonomy.set': {
+        const input = this.parse('action.autonomy.set', rawInput)
+        return this.actions.setAutonomySettings(input.projectId, { mode: input.mode, autoAdvancePhases: input.autoAdvancePhases })
+      }
+      case 'action.autonomy.tick': {
+        const input = this.parse('action.autonomy.tick', rawInput)
+        return this.actions.tick(input.projectId)
       }
       case 'deployment.inspect': {
         const input = this.parse('deployment.inspect', rawInput)

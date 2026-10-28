@@ -44,6 +44,7 @@ import {
 import { BootError, BootScreen } from './BootScreen'
 import { CommandPalette, type PaletteCommand } from './CommandPalette'
 import { SettingsModal } from '../features/settings/SettingsModal'
+import { ActionCenterButton } from './ActionCenterPanel'
 import { useBootstrap, useProjectOverview } from '../lib/queries'
 import { useResolvedTheme, useUiStore } from '../stores/ui'
 import { stageLabel } from '../lib/labels'
@@ -191,16 +192,57 @@ export default function AppLayout() {
         void queryClient.invalidateQueries({ queryKey: ['workspace', eventProjectId] })
         void queryClient.invalidateQueries({ queryKey: ['approvals', eventProjectId] })
         void queryClient.invalidateQueries({ queryKey: ['approvals', 'all'] })
+        void queryClient.invalidateQueries({ queryKey: ['action-center', eventProjectId] })
+        void queryClient.invalidateQueries({ queryKey: ['lifecycle', eventProjectId] })
+        void queryClient.invalidateQueries({ queryKey: ['gate-overview', eventProjectId] })
       }
       void queryClient.invalidateQueries({ queryKey: ['task'] })
       void queryClient.invalidateQueries({ queryKey: ['run'] })
+      // Once a human decision lands, re-evaluate gates and let the coordinator advance
+      // any phase that is now legally allowed. This is what removes the manual
+      // module-hopping: nobody has to press "推进阶段" after approving evidence.
+      if (event.type === 'approval.changed' && event.status !== 'pending' && 'projectId' in event) {
+        const eventProjectId = event.projectId
+        void window.projectos.actions
+          .tick(eventProjectId)
+          .then((result) => {
+            if (result.advanced.length > 0) {
+              void queryClient.invalidateQueries({ queryKey: ['lifecycle', eventProjectId] })
+              void queryClient.invalidateQueries({ queryKey: ['gate-overview', eventProjectId] })
+              void queryClient.invalidateQueries({ queryKey: ['action-center', eventProjectId] })
+              notification.success({
+                key: `auto-advance-${eventProjectId}`,
+                message: '系统已自动推进版本阶段',
+                description: result.advanced.map((entry) => `${entry.from} → ${entry.to}`).join('、'),
+                placement: 'bottomRight',
+                duration: 5,
+              })
+            }
+          })
+          .catch(() => undefined)
+      }
       if (event.type === 'approval.changed' && event.status === 'pending') {
+        const approvalId = encodeURIComponent(String(event.approvalId))
         notification.warning({
           key: `approval-${event.approvalId}`,
-          message: 'Agent 正在等待授权',
-          description: '写文件或执行命令需要你的确认。前往 Agent 工作台处理。',
+          message: '有操作在等待你的授权',
+          description: '打开对应审批，查看真实 Diff 与作用范围后决定。',
           placement: 'bottomRight',
-          duration: 6,
+          duration: 8,
+          btn: projectId
+            ? (
+              <Button
+                size="small"
+                type="primary"
+                onClick={() => {
+                  notification.destroy(`approval-${event.approvalId}`)
+                  navigate(`/projects/${projectId}/approvals?approval=${approvalId}`)
+                }}
+              >
+                查看审批
+              </Button>
+            )
+            : undefined,
         })
       }
     })
@@ -434,18 +476,7 @@ export default function AppLayout() {
             </StatusPill>
           </span>
         </Tooltip>
-        <Tooltip title={`${pendingApprovals.length} 个待授权请求`}>
-          <button
-            type="button"
-            className="po-icon-button"
-            onClick={() => (projectId ? navigate(`/projects/${projectId}/agents`) : navigate('/'))}
-            aria-label="待授权请求"
-          >
-            <Badge count={pendingApprovals.length} size="small" offset={[2, -1]}>
-              <BellOutlined />
-            </Badge>
-          </button>
-        </Tooltip>
+        <ActionCenterButton projectId={projectId} />
         <Dropdown
           menu={{
             items: themeItems,

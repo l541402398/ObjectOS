@@ -288,6 +288,59 @@ export const DeploymentOperationTraceSchema = z.object({
 })
 export type DeploymentOperationTrace = z.infer<typeof DeploymentOperationTraceSchema>
 
+/** Unified human-action item: maps existing facts into one actionable list. */
+export const ActionKindSchema = z.enum([
+  'tool_approval',
+  'task_acceptance',
+  'delivery_approval',
+  'version_gate',
+  'deployment_reconciliation',
+  'run_failure',
+])
+export type ActionKind = z.infer<typeof ActionKindSchema>
+
+export const ActionItemSchema = z.object({
+  id: z.string().min(8),
+  kind: ActionKindSchema,
+  projectId: IdSchema,
+  title: z.string(),
+  reason: z.string(),
+  requiredDecision: z.string(),
+  resume: z.string(),
+  risk: z.enum(['low', 'medium', 'high']),
+  route: z.string().min(4),
+  approvalId: z.string().nullable().default(null),
+  versionId: z.string().nullable().default(null),
+  runId: z.string().nullable().default(null),
+  taskId: z.string().nullable().default(null),
+  deploymentId: z.string().nullable().default(null),
+  createdAt: TimestampSchema,
+  stale: z.boolean().default(false),
+})
+export type ActionItem = z.infer<typeof ActionItemSchema>
+
+export const ProjectAutonomyModeSchema = z.enum(['assist', 'autonomous', 'managed'])
+export type ProjectAutonomyMode = z.infer<typeof ProjectAutonomyModeSchema>
+
+export const ProjectAutonomySettingsSchema = z.object({
+  mode: ProjectAutonomyModeSchema,
+  autoAdvancePhases: z.array(z.string()),
+})
+export type ProjectAutonomySettings = z.infer<typeof ProjectAutonomySettingsSchema>
+
+export const ActionCenterSchema = z.object({
+  items: z.array(ActionItemSchema),
+  summary: z.object({
+    total: z.number().int().nonnegative(),
+    needsHuman: z.number().int().nonnegative(),
+    byKind: z.record(z.string(), z.number().int().nonnegative()),
+    mode: ProjectAutonomyModeSchema,
+    autoAdvancedPhases: z.array(z.string()),
+  }),
+})
+export type ActionCenterView = z.infer<typeof ActionCenterSchema>
+
+
 export const ReleaseOverviewSchema = z.object({
   projectId: IdSchema,
   versionId: IdSchema,

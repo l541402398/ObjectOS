@@ -363,7 +363,7 @@ export default function ProjectCenterPage() {
                     type="button"
                     key={approval.id}
                     className="v16-approval-item"
-                    onClick={() => approval.projectId && navigate(`/projects/${approval.projectId}/agents`)}
+                    onClick={() => approval.projectId && navigate(`/projects/${approval.projectId}/approvals?approval=${encodeURIComponent(approval.id)}`)}
                   >
                     <span className="v16-approval-icon"><SafetyCertificateOutlined /></span>
                     <span>

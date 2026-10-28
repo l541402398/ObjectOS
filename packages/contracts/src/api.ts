@@ -93,6 +93,9 @@ import {
   ReleaseOverviewSchema,
   ReleaseSchema,
   UpdateChangeRequestInputSchema,
+  ActionCenterSchema,
+  ProjectAutonomyModeSchema,
+  ProjectAutonomySettingsSchema,
 } from './release.js'
 import {
   ConnectionProfileSchema,
@@ -426,6 +429,25 @@ export const ApiSchemas = {
   'release.approvals': {
     input: projectIdInput,
     output: z.object({ approvals: z.array(ApprovalRequestSchema) }),
+  },
+  'action.center': {
+    input: projectIdInput,
+    output: ActionCenterSchema,
+  },
+  'action.autonomy.get': {
+    input: projectIdInput,
+    output: ProjectAutonomySettingsSchema,
+  },
+  'action.autonomy.set': {
+    input: z.object({ projectId: IdSchema, mode: ProjectAutonomyModeSchema, autoAdvancePhases: z.array(z.string()).optional() }),
+    output: ProjectAutonomySettingsSchema,
+  },
+  'action.autonomy.tick': {
+    input: projectIdInput,
+    output: z.object({
+      mode: ProjectAutonomyModeSchema,
+      advanced: z.array(z.object({ versionId: IdSchema, from: z.string(), to: z.string() })),
+    }),
   },
   'resource.overview': {
     input: projectIdInput,

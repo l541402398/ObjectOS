@@ -156,6 +156,27 @@ export function useApprovals(projectId: string | null) {
   })
 }
 
+/**
+ * Unified human-action list. Polls while anything is open so a paused workflow
+ * becomes visible without the user refreshing each module.
+ */
+export function useActionCenter(projectId: string | null) {
+  return useQuery({
+    queryKey: ['action-center', projectId ?? ''],
+    queryFn: () => window.projectos.actions.center(projectId!),
+    enabled: Boolean(projectId),
+    refetchInterval: 8000,
+  })
+}
+
+export function useAutonomySettings(projectId: string | null) {
+  return useQuery({
+    queryKey: ['autonomy-settings', projectId ?? ''],
+    queryFn: () => window.projectos.actions.autonomy(projectId!),
+    enabled: Boolean(projectId),
+  })
+}
+
 export function useProjectEvents(projectId: string | null | undefined, limit = 100) {
   return useQuery({
     queryKey: [...qk.events(projectId ?? ''), limit] as const,

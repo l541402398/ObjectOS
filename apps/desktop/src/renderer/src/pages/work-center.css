@@ -648,3 +648,77 @@
     display: none;
   }
 }
+
+/* Phase 2.6 — unified "next step". Answers "what now?" without module hopping. */
+.wc-next {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  margin: 0 0 4px;
+  border: 1px solid var(--color-divider);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--color-surface) 62%, transparent);
+}
+
+.wc-next-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wc-next-kicker {
+  font-size: 9px;
+  letter-spacing: 0.09em;
+  color: var(--color-text-tertiary);
+}
+
+.wc-next-head strong { font-size: 12px; font-weight: 600; }
+.wc-next-count { margin-left: auto; font-size: 9px; line-height: 16px; }
+
+.wc-next-body {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.wc-next-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+
+.wc-next-title { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.wc-next-title h3 { margin: 0; font-size: 12.5px; font-weight: 600; }
+
+.wc-next-risk { font-size: 9px; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--color-divider); color: var(--color-text-tertiary); }
+.wc-next-risk.is-high { color: var(--color-danger); border-color: color-mix(in srgb, var(--color-danger) 45%, transparent); }
+.wc-next-risk.is-medium { color: var(--color-warning, #d08700); border-color: color-mix(in srgb, var(--color-warning, #d08700) 45%, transparent); }
+
+.wc-next-reason,
+.wc-next-decision,
+.wc-next-resume {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--color-text-tertiary);
+  overflow-wrap: anywhere;
+}
+
+.wc-next-decision { color: var(--color-text-secondary); }
+
+.wc-next-rest { display: flex; flex-direction: column; gap: 4px; }
+
+.wc-next-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--color-divider);
+  border-radius: 9px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.wc-next-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wc-next-row:hover { border-color: color-mix(in srgb, var(--color-accent, #4c6ef5) 45%, var(--color-divider)); }

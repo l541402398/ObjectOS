@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { NextStepPanel } from '../components/NextStepPanel'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { App as AntApp, Button, Input, Modal } from 'antd'
 import {
@@ -363,6 +364,8 @@ export default function WorkCenterPage() {
           <p>{focus.description}</p>
         </div>
       </div>
+
+      <NextStepPanel projectId={projectId} navigate={navigate} />
 
       <div className="wc-metrics">
         <MetricCard label="需求" value={requirements.length} hint="全项目" icon={<FileTextOutlined />} />

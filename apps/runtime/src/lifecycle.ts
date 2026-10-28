@@ -74,6 +74,38 @@ export class LifecycleService {
     return overview
   }
 
+  /**
+   * The next phase that is actually guarded by a gate. Used by the autonomy
+   * coordinator and the action center so both agree on what "next" means.
+   */
+  nextGatedPhase(phase: VersionPhase): VersionPhase | null {
+    const candidates = VERSION_TRANSITIONS[phase] ?? []
+    return candidates.find((item) => Boolean(GATE_FOR_TARGET[item])) ?? null
+  }
+
+  /**
+   * Versions whose next gated hop is currently blocked, with the concrete reasons.
+   * Read-only: the action center turns these into explicit "what is missing" items.
+   */
+  blockedGates(projectId: string): Array<{ versionId: string; version: string; phase: VersionPhase; to: VersionPhase; missing: string[] }> {
+    const versions = this.store.read.listProductVersions(projectId)
+    const blocked: Array<{ versionId: string; version: string; phase: VersionPhase; to: VersionPhase; missing: string[] }> = []
+    for (const version of versions) {
+      const to = this.nextGatedPhase(version.phase)
+      if (!to) continue
+      const evaluation = this.computeVersionGate(version, to)
+      if (evaluation.status === 'passed') continue
+      blocked.push({
+        versionId: version.id,
+        version: version.version,
+        phase: version.phase,
+        to,
+        missing: evaluation.conditionResults.filter((item) => !item.satisfied).map((item) => item.reason),
+      })
+    }
+    return blocked
+  }
+
   products(projectId: string): Product[] {
     return this.store.read.listProducts(projectId)
   }

@@ -330,9 +330,19 @@ export default function RunsPage() {
                     />
                     {selectedRun.error ? <ErrorState compact title="运行错误" message={selectedRun.error} /> : null}
                     <div className="po-run-detail-actions">
-                      <Button size="small" onClick={() => navigate(`/projects/${projectId}/agents`)}>
-                        打开会话
-                      </Button>
+                      {(() => {
+                        const sessionId = (selectedRun as { sessionId?: string | null }).sessionId
+                        return (
+                          <Button
+                            size="small"
+                            onClick={() => navigate(sessionId
+                              ? `/projects/${projectId}/agents?session=${encodeURIComponent(sessionId)}`
+                              : `/projects/${projectId}/runs?run=${encodeURIComponent(selectedRun.id)}`)}
+                          >
+                            打开会话
+                          </Button>
+                        )
+                      })()}
                       {selectedRun.status === 'needs_reconciliation' ? (
                         <Button
                           size="small"

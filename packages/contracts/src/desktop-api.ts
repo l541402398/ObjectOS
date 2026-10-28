@@ -77,6 +77,12 @@ export interface ProjectOSDesktopApi {
     createTarget: (input: In<'deployment.target.create'>) => Promise<Out<'deployment.target.create'>>
     createStrategy: (input: In<'deployment.strategy.create'>) => Promise<Out<'deployment.strategy.create'>>
   }
+  actions: {
+    center: (projectId: string) => Promise<Out<'action.center'>>
+    autonomy: (projectId: string) => Promise<Out<'action.autonomy.get'>>
+    setAutonomy: (input: In<'action.autonomy.set'>) => Promise<Out<'action.autonomy.set'>>
+    tick: (projectId: string) => Promise<Out<'action.autonomy.tick'>>
+  }
   projects: {
     list: (input?: In<'project.list'>) => Promise<Out<'project.list'>>
     create: (input: In<'project.create'>) => Promise<Out<'project.create'>>

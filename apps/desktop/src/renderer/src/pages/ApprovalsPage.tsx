@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { App as AntApp, Button, Empty, Input, Tag } from 'antd'
 import { CheckOutlined, CloseOutlined, SafetyCertificateOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -89,6 +89,7 @@ export default function ApprovalsPage() {
   const [scope, setScope] = useState<'all' | 'tool' | 'delivery'>('all')
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const [note, setNote] = useState('')
+  const location = useLocation()
 
   const items = useMemo<QueueItem[]>(() => {
     const tool: QueueItem[] = (approvals.data?.approvals ?? []).map((approval) => ({
@@ -110,6 +111,17 @@ export default function ApprovalsPage() {
     () => items.filter((item) => (filter === 'pending' ? item.status === 'pending' : true) && (scope === 'all' || item.kind === scope)),
     [filter, items, scope],
   )
+  // Deep link support: the action center and the bell toast send the exact approval id.
+  const deepLink = useMemo(() => new URLSearchParams(location.search), [location.search])
+  useEffect(() => {
+    const approvalId = deepLink.get('approval')
+    if (!approvalId) return
+    const match = items.find((item) => item.id === approvalId)
+    if (!match) return
+    setFilter(match.status === 'pending' ? 'pending' : 'all')
+    if (match.kind === 'delivery') setScope('delivery')
+    setSelectedKey(`${match.kind}:${match.id}`)
+  }, [deepLink, items])
   useEffect(() => {
     if (!filtered.some((item) => `${item.kind}:${item.id}` === selectedKey)) {
       setSelectedKey(filtered[0] ? `${filtered[0].kind}:${filtered[0].id}` : null)
