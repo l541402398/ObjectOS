@@ -113,6 +113,9 @@ describe('Phase 2.2 local delivery adapter', () => {
       .prepare("SELECT id FROM approval_requests WHERE subject_type='deployment' AND subject_id=?")
       .get(deployment.id) as { id: string }
     release.decideApproval({ approvalId: approval.id, decision: 'approved', note: 'ok', rationale: 'ok' })
+    harness.store.db.prepare('UPDATE deployment_targets SET target_ref=? WHERE id=?').run(`${targetDir}-changed`, target.id)
+    await expect(release.executeDeployment(deployment.id)).rejects.toThrow(/授权失效/)
+    harness.store.db.prepare('UPDATE deployment_targets SET target_ref=? WHERE id=?').run(targetDir, target.id)
     const executed = await release.executeDeployment(deployment.id)
     expect(executed.status).toBe('succeeded')
     expect(executed.assurance).toBe('self_declared')

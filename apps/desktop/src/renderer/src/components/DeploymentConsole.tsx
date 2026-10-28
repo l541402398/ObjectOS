@@ -67,28 +67,32 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
     onSuccess: async () => { setDeployOpen(false); await invalidate(); message.success('部署已创建，等待独立审批') },
     onError: (error) => message.error(errorMessage(error)),
   })
-  const execute = useMutation({
-    mutationFn: (deploymentId: string) => window.projectos.release.executeDeployment(deploymentId),
-    onMutate: () => {
-      setExecuteError(null)
-      if (poller.current) clearInterval(poller.current)
-      poller.current = setInterval(() => { void queryClient.refetchQueries({ queryKey: ['release-overview', projectId, versionId] }) }, 2500)
-    },
-    onSuccess: async (result) => {
-      if (poller.current) clearInterval(poller.current)
-      poller.current = null
-      await invalidate()
+  const [executing, setExecuting] = useState(false)
+  const runExecute = async (deploymentId: string): Promise<void> => {
+    setExecuting(true)
+    setExecuteError(null)
+    if (poller.current) clearInterval(poller.current)
+    poller.current = setInterval(() => { void queryClient.refetchQueries({ queryKey: ['release-overview', projectId, versionId] }) }, 2500)
+    try {
+      const result = await window.projectos.release.executeDeployment(deploymentId)
+      queryClient.setQueryData(['release-overview', projectId, versionId], (current: any) => current ? {
+        ...current,
+        deployments: current.deployments.map((item: any) => item.id === result.id ? result : item),
+      } : current)
       const healthOk = (result.receipt?.health as { ok?: boolean } | undefined)?.ok === true
+      await invalidate()
+      await queryClient.refetchQueries({ queryKey: ['release-overview', projectId, versionId] })
       message.success(healthOk ? '服务健康验证通过，已记录回执' : '制品已交付并校验；服务未启动，未验证健康')
-    },
-    onError: (error) => {
-      if (poller.current) clearInterval(poller.current)
-      poller.current = null
+    } catch (error) {
       void invalidate()
       setExecuteError(errorMessage(error))
       message.error(errorMessage(error))
-    },
-  })
+    } finally {
+      if (poller.current) clearInterval(poller.current)
+      poller.current = null
+      setExecuting(false)
+    }
+  }
   const record = useMutation({
     mutationFn: (deploymentId: string) =>
       window.projectos.release.recordDeployment({
@@ -171,9 +175,10 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
         <section className="dc-center">
           <div className="dc-actions">
             <Button type="primary" disabled={!data.releases.length} onClick={() => { setDeployReleaseId(data.releases[0]?.id ?? null); setDeployOpen(true) }}>登记部署</Button>
-            {canExecute ? <Button type="primary" loading={execute.isPending} onClick={() => execute.mutate(selected!.id)}>执行部署</Button> : null}
+            {canExecute ? <Button type="primary" loading={executing} onClick={() => void runExecute(selected!.id)}>执行部署</Button> : null}
             {selected?.status === 'pending' ? <Button onClick={() => record.mutate(selected.id)} loading={record.isPending}>人工记录结果</Button> : null}
             <Button disabled={!data.releases.length} onClick={() => setDeployOpen(true)}>从 Release 开始</Button>
+            <Button onClick={() => { void queryClient.refetchQueries({ queryKey: ['release-overview', projectId, versionId] }) }}>刷新状态</Button>
           </div>
           {executeError ? <div className="dc-execute-error">{executeError}</div> : null}
           {!selected ? (

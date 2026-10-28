@@ -16,7 +16,7 @@ export class ResourceService {
       id: String(row.id), projectId: String(row.project_id), type: String(row.type) as Resource['type'],
       name: String(row.name), endpoint: String(row.endpoint), purpose: String(row.purpose),
       labels: json<string[]>(row.labels_json, []), metadata: json<Record<string, unknown>>(row.metadata_json, {}),
-      status: String(row.status) as Resource['status'], createdAt: Number(row.created_at), updatedAt: Number(row.updated_at),
+      status: String(row.status) as Resource['status'], revision: Number(row.revision ?? 1), createdAt: Number(row.created_at), updatedAt: Number(row.updated_at),
     }
   }
 
@@ -31,6 +31,7 @@ export class ResourceService {
       connectTimeoutMs: Number(row.connect_timeout_ms),
       lastTestStatus: row.last_test_status ? String(row.last_test_status) : null,
       lastTestAt: row.last_test_at ? Number(row.last_test_at) : null,
+      revision: Number(row.revision ?? 1),
       createdAt: Number(row.created_at), updatedAt: Number(row.updated_at),
     }
   }
@@ -79,7 +80,7 @@ export class ResourceService {
     const current = this.getResource(input.resourceId)
     const timestamp = now()
     this.store.db.prepare(
-      'UPDATE resources SET name=?, endpoint=?, purpose=?, status=?, labels_json=?, metadata_json=?, updated_at=? WHERE id=?',
+      'UPDATE resources SET name=?, endpoint=?, purpose=?, status=?, labels_json=?, metadata_json=?, revision=revision+1, updated_at=? WHERE id=?',
     ).run(
       input.name ?? current.name, input.endpoint ?? current.endpoint, input.purpose ?? current.purpose,
       input.status ?? current.status, JSON.stringify(input.labels ?? current.labels),
@@ -110,7 +111,7 @@ export class ResourceService {
     const resource = this.getResource(current.resourceId)
     if (input.credentialRef) this.assertCredentialForProject(input.credentialRef, resource.projectId)
     this.store.db.prepare(
-      `UPDATE connection_profiles SET name=?, host=?, port=?, username=?, auth_type=?, credential_ref=?, host_key_fingerprint=?, trust_policy=?, connect_timeout_ms=?, updated_at=? WHERE id=?`,
+      `UPDATE connection_profiles SET name=?, host=?, port=?, username=?, auth_type=?, credential_ref=?, host_key_fingerprint=?, trust_policy=?, connect_timeout_ms=?, revision=revision+1, updated_at=? WHERE id=?`,
     ).run(
       input.name ?? current.name, input.host ?? current.host, input.port ?? current.port, input.username ?? current.username,
       input.authType ?? current.authType, input.credentialRef === undefined ? current.credentialRef : input.credentialRef,

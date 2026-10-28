@@ -22,6 +22,7 @@ import type { ProviderConfigStore } from './provider-config.js'
 import type { ConnectionSecretStore } from './connection-secrets.js'
 import type { ResourceCredentialVault } from './resource-credentials.js'
 import { testSshConnection } from './resource-connection.js'
+import { executeSshDeployment } from './ssh-deploy.js'
 import type { RuntimeSupervisor } from './runtime-supervisor.js'
 
 export interface IpcContext {
@@ -494,8 +495,35 @@ export function registerIpc(ctx: IpcContext): () => void {
         resourceSecrets.delete(String(input.credentialId))
         return supervisor.request('resource.credential.disable', { credentialId: input.credentialId }, 10_000)
       }
-      case 'resource.connection.test': {
+      case 'deployment.execute': {
         if (!supervisor.isReady()) throw new AppError('RUNTIME_UNAVAILABLE', 'Runtime 尚未就绪')
+        const inspection = await supervisor.request<{ adapterType: string | null }>('deployment.inspect', { deploymentId: input.deploymentId }, 10_000)
+        if (inspection.adapterType !== 'ssh-artifact') {
+          return supervisor.request('deployment.execute.local', { deploymentId: input.deploymentId }, 180_000)
+        }
+        const context = await supervisor.request<any>('deployment.prepare', { deploymentId: input.deploymentId }, 30_000)
+        const secret = context.profile?.credentialRef ? resourceSecrets.get(context.profile.credentialRef) : null
+        try {
+          const result = await executeSshDeployment({
+            deploymentId: context.deployment.id, targetRef: context.target?.targetRef ?? '', profile: context.profile,
+            artifacts: context.artifacts,
+          }, secret)
+          return await supervisor.request('deployment.finish', {
+            deploymentId: context.deployment.id, status: result.status,
+            assurance: result.health.ok ? 'externally_confirmed' : 'source_observed',
+            externalId: result.externalId, artifactHash: result.artifactHash,
+            receipt: { ...result.receipt, health: result.health }, notes: result.notes,
+          }, 30_000)
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
+          await supervisor.request('deployment.finish', {
+            deploymentId: context.deployment.id, status: 'failed', assurance: 'self_declared',
+            externalId: null, artifactHash: null, receipt: {}, notes: message,
+          }, 30_000).catch(() => undefined)
+          throw error
+        }
+      }
+      case 'resource.connection.test': {
         const profile = await supervisor.request<import('@projectos/contracts').ConnectionProfile>('resource.profile.internal', { profileId: input.profileId }, 10_000)
         const secret = profile.credentialRef ? resourceSecrets.get(profile.credentialRef) : null
         const result = await testSshConnection(profile, secret)

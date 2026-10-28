@@ -221,9 +221,7 @@ describe('Phase 2 release and deployment domain', () => {
     expect(unknown.status).toBe('needs_reconciliation')
     expect(unknown.approvalId).toBeNull()
 
-    const rollback = release.createRollback(recorded.id, { idempotencyKey: 'rollback-manual-1', targetReleaseId: null, notes: 'rollback required' })
-    expect(rollback.status).toBe('awaiting_approval')
-    expect(rollback.rollbackOfDeploymentId).toBe(recorded.id)
+    expect(() => release.createRollback(recorded.id, { idempotencyKey: 'rollback-manual-1', targetReleaseId: null, notes: 'rollback required' })).toThrow(/没有可回滚/)
     expect(release.overview(project.id, version.id).deployments.find((item) => item.id === recorded.id)?.status).toBe('succeeded')
   })
 

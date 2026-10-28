@@ -16,6 +16,8 @@ import {
   type CreateDeploymentInput,
   type CreateReleaseInput,
   
+  type ConnectionProfile,
+  type Resource,
   type Deployment,
   type DeploymentEvent,
   type DeploymentSource,
@@ -481,6 +483,45 @@ export class ReleaseService {
     })
   }
 
+  private deploymentAuthorization(releaseId: string, environmentId: string, targetId: string | null): { fingerprint: string; snapshot: Record<string, unknown> } {
+    const release = this.getRelease(releaseId)
+    const target = targetId ? this.getTarget(targetId) : null
+    const profile = target?.connectionProfileId
+      ? this.store.db.prepare('SELECT * FROM connection_profiles WHERE id=?').get(target.connectionProfileId) as Record<string, unknown> | undefined
+      : undefined
+    const resource = target?.resourceId
+      ? this.store.db.prepare('SELECT * FROM resources WHERE id=?').get(target.resourceId) as Record<string, unknown> | undefined
+      : undefined
+    const artifacts = this.releaseArtifacts(releaseId)
+      .map((artifact) => ({ id: artifact.id, name: artifact.name, contentHash: artifact.contentHash, uri: artifact.uri ?? null }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+    const snapshot = {
+      releaseId: release.id,
+      manifestHash: release.manifestHash,
+      gitCommit: release.gitCommit ?? null,
+      environmentId,
+      target: target ? {
+        id: target.id, name: target.name, kind: target.kind, controlMode: target.controlMode,
+        adapterType: target.adapterType, targetRef: target.targetRef,
+        resourceId: target.resourceId, connectionProfileId: target.connectionProfileId,
+        protected: target.protected,
+      } : null,
+      resource: resource ? {
+        id: String(resource.id), revision: Number(resource.revision ?? 1), status: String(resource.status),
+        name: String(resource.name), endpoint: String(resource.endpoint),
+      } : null,
+      profile: profile ? {
+        id: String(profile.id), revision: Number(profile.revision ?? 1), host: String(profile.host),
+        port: Number(profile.port), username: String(profile.username), authType: String(profile.auth_type),
+        credentialRef: profile.credential_ref ? String(profile.credential_ref) : null,
+        hostKeyFingerprint: profile.host_key_fingerprint ? String(profile.host_key_fingerprint) : null,
+        trustPolicy: String(profile.trust_policy),
+      } : null,
+      artifacts,
+    }
+    return { snapshot, fingerprint: fingerprint(snapshot) }
+  }
+
   createDeployment(input: CreateDeploymentInput, actor = 'local-user'): Deployment {
     return this.store.transaction(() => {
       if (input.source === 'adapter') {
@@ -503,6 +544,7 @@ export class ReleaseService {
       }
       const timestamp = now()
       const id = newId('dep')
+      const authorization = this.deploymentAuthorization(release.id, input.environmentId, input.targetId)
       const approval =
         input.source === 'unknown'
           ? null
@@ -511,9 +553,10 @@ export class ReleaseService {
               'deployment',
               id,
               1,
-              fingerprint({ releaseId: release.id, environmentId: input.environmentId, targetId: input.targetId, source: input.source, artifactHash: input.artifactHash }),
+              authorization.fingerprint,
               actor,
               timestamp,
+              authorization.snapshot,
             )
       const assurance =
         input.source === 'imported' ? 'source_observed' : input.source === 'unknown' ? 'self_declared' : 'self_declared'
@@ -521,8 +564,8 @@ export class ReleaseService {
       this.store.db
         .prepare(
           `INSERT INTO deployments
-           (id, project_id, version_id, release_id, environment_id, target_id, strategy_id, status, source, assurance, idempotency_key, artifact_hash, external_id, receipt_json, approval_id, rollback_of_deployment_id, notes, requested_by, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '{}', ?, ?, ?, ?, ?, ?)`,
+           (id, project_id, version_id, release_id, environment_id, target_id, strategy_id, status, source, assurance, idempotency_key, artifact_hash, external_id, receipt_json, execution_state, authorization_fingerprint, approval_id, rollback_of_deployment_id, notes, requested_by, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '{}', 'not_started', ?, ?, ?, ?, ?, ?, ?)`,
         )
         .run(
           id,
@@ -538,6 +581,7 @@ export class ReleaseService {
           input.idempotencyKey,
           input.artifactHash ?? release.manifestHash,
           input.externalId,
+          authorization.fingerprint,
           approval?.id ?? null,
           input.rollbackOfDeploymentId,
           input.notes,
@@ -586,8 +630,13 @@ export class ReleaseService {
   createRollback(sourceDeploymentId: string, input: { idempotencyKey: string; targetReleaseId?: string | null; notes: string }, actor = 'local-user'): Deployment {
     return this.store.transaction(() => {
       const source = this.getDeployment(sourceDeploymentId)
-      const targetReleaseId = input.targetReleaseId ?? source.releaseId
+      const previous = this.store.db.prepare(
+        "SELECT release_id FROM deployments WHERE target_id=? AND environment_id=? AND id<>? AND release_id<>? AND status='succeeded' ORDER BY finished_at DESC LIMIT 1",
+      ).get(source.targetId, source.environmentId, source.id, source.releaseId) as { release_id: string } | undefined
+      const targetReleaseId = input.targetReleaseId ?? previous?.release_id
+      if (!targetReleaseId) throw new AppError('CONFLICT', '没有可回滚的上一个成功 Release')
       const release = this.getRelease(targetReleaseId)
+      const authorization = this.deploymentAuthorization(release.id, source.environmentId, source.targetId)
       const id = newId('dep')
       const timestamp = now()
       const approval = this.createApproval(
@@ -595,15 +644,16 @@ export class ReleaseService {
         'deployment',
         id,
         1,
-        fingerprint({ sourceDeploymentId, targetReleaseId, environmentId: source.environmentId, rollback: true }),
+        authorization.fingerprint,
         actor,
         timestamp,
+        { ...authorization.snapshot, rollbackOfDeploymentId: source.id },
       )
       this.store.db
         .prepare(
           `INSERT INTO deployments
-           (id, project_id, version_id, release_id, environment_id, target_id, strategy_id, status, source, assurance, idempotency_key, artifact_hash, receipt_json, approval_id, rollback_of_deployment_id, previous_deployment_id, notes, requested_by, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, 'awaiting_approval', 'manual', 'self_declared', ?, ?, '{}', ?, ?, ?, ?, ?, ?, ?)`,
+           (id, project_id, version_id, release_id, environment_id, target_id, strategy_id, status, source, assurance, idempotency_key, artifact_hash, receipt_json, execution_state, authorization_fingerprint, approval_id, rollback_of_deployment_id, previous_deployment_id, notes, requested_by, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'awaiting_approval', 'manual', 'self_declared', ?, ?, '{}', 'not_started', ?, ?, ?, ?, ?, ?, ?)`,
         )
         .run(
           id,
@@ -615,6 +665,7 @@ export class ReleaseService {
           source.strategyId,
           input.idempotencyKey,
           release.manifestHash,
+          authorization.fingerprint,
           approval.id,
           source.id,
           source.id,
@@ -628,13 +679,102 @@ export class ReleaseService {
     })
   }
 
+  inspectDeployment(deploymentId: string): { adapterType: string | null; targetId: string | null } {
+    const deployment = this.getDeployment(deploymentId)
+    const target = deployment.targetId ? this.getTarget(deployment.targetId) : null
+    return { adapterType: target?.adapterType ?? null, targetId: deployment.targetId }
+  }
+
+  prepareDeployment(deploymentId: string) {
+    const deployment = this.getDeployment(deploymentId)
+    if (deployment.status !== 'pending') throw new AppError('CONFLICT', '只有已批准且待执行的部署才能执行')
+    if (!deployment.targetId) throw new AppError('CONFLICT', '部署缺少目标')
+    if (!deployment.approvalId) throw new AppError('POLICY_DENIED', '部署缺少独立授权')
+    const approval = this.getApproval(deployment.approvalId)
+    if (approval.status !== 'approved') throw new AppError('POLICY_DENIED', '部署授权未批准')
+    const currentAuthorization = this.deploymentAuthorization(deployment.releaseId, deployment.environmentId, deployment.targetId)
+    if (approval.contentFingerprint !== currentAuthorization.fingerprint || deployment.authorizationFingerprint !== currentAuthorization.fingerprint) {
+      throw new AppError('POLICY_DENIED', '部署目标、凭据或制品已变化，原授权失效，需要重新审批')
+    }
+    const target = this.getTarget(deployment.targetId)
+    const resourceRow = target.resourceId
+      ? this.store.db.prepare('SELECT * FROM resources WHERE id=?').get(target.resourceId) as Record<string, unknown> | undefined
+      : undefined
+    if (resourceRow && String(resourceRow.status) !== 'active') throw new AppError('POLICY_DENIED', '资源已停用或归档')
+    const profileRow = target.connectionProfileId
+      ? this.store.db.prepare('SELECT * FROM connection_profiles WHERE id=?').get(target.connectionProfileId) as Record<string, unknown> | undefined
+      : undefined
+    if (target.connectionProfileId && !profileRow) throw new AppError('POLICY_DENIED', '连接 Profile 不存在')
+    if (profileRow?.credential_ref) {
+      const credential = this.store.db.prepare('SELECT status FROM credential_metadata WHERE id=?').get(String(profileRow.credential_ref)) as { status: string } | undefined
+      if (!credential || credential.status !== 'active') throw new AppError('POLICY_DENIED', '凭据已停用')
+    }
+    const startedAt = now()
+    this.store.db.prepare("UPDATE deployments SET status='running', execution_state='running', started_at=?, updated_at=? WHERE id=?").run(startedAt, startedAt, deployment.id)
+    this.appendDeploymentEvent(deployment.id, 'adapter_started', 'running', '受控 Adapter 开始执行', { targetId: target.id })
+    const release = this.getRelease(deployment.releaseId)
+    return {
+      deployment: this.getDeployment(deployment.id),
+      target,
+      profile: profileRow ? {
+        id: String(profileRow.id), resourceId: String(profileRow.resource_id), name: String(profileRow.name),
+        protocol: String(profileRow.protocol) as ConnectionProfile['protocol'], host: String(profileRow.host), port: Number(profileRow.port),
+        username: String(profileRow.username), authType: String(profileRow.auth_type) as ConnectionProfile['authType'],
+        credentialRef: profileRow.credential_ref ? String(profileRow.credential_ref) : null,
+        hostKeyFingerprint: profileRow.host_key_fingerprint ? String(profileRow.host_key_fingerprint) : null,
+        trustPolicy: String(profileRow.trust_policy) as ConnectionProfile['trustPolicy'], connectTimeoutMs: Number(profileRow.connect_timeout_ms),
+        lastTestStatus: profileRow.last_test_status ? String(profileRow.last_test_status) : null,
+        lastTestAt: profileRow.last_test_at ? Number(profileRow.last_test_at) : null, revision: Number(profileRow.revision ?? 1),
+        createdAt: Number(profileRow.created_at), updatedAt: Number(profileRow.updated_at),
+      } : null,
+      resource: resourceRow ? {
+        id: String(resourceRow.id), projectId: String(resourceRow.project_id), type: String(resourceRow.type) as Resource['type'],
+        name: String(resourceRow.name), endpoint: String(resourceRow.endpoint), purpose: String(resourceRow.purpose),
+        labels: parseJson(resourceRow.labels_json, []) as string[], metadata: parseJson(resourceRow.metadata_json, {}) as Record<string, unknown>,
+        status: String(resourceRow.status) as Resource['status'], revision: Number(resourceRow.revision ?? 1),
+        createdAt: Number(resourceRow.created_at), updatedAt: Number(resourceRow.updated_at),
+      } : null,
+      release,
+      artifacts: this.releaseArtifacts(deployment.releaseId).map((artifact) => ({ name: artifact.name, uri: artifact.uri ?? null, contentHash: artifact.contentHash })),
+    }
+  }
+
+  finishDeployment(input: { deploymentId: string; status: DeploymentStatus; assurance: Deployment['assurance']; externalId: string | null; artifactHash: string | null; receipt: Record<string, unknown>; notes: string }): Deployment {
+    const deployment = this.getDeployment(input.deploymentId)
+    const finishedAt = now()
+    this.store.db.prepare(
+      "UPDATE deployments SET status=?, execution_state=?, assurance=?, external_id=?, artifact_hash=?, receipt_json=?, notes=?, finished_at=?, updated_at=? WHERE id=?",
+    ).run(input.status, input.status === 'succeeded' ? 'completed' : 'failed', input.assurance, input.externalId, input.artifactHash, JSON.stringify(input.receipt), input.notes, finishedAt, finishedAt, deployment.id)
+    this.appendDeploymentEvent(deployment.id, 'adapter_result', input.status, input.notes, { externalId: input.externalId })
+    return this.getDeployment(deployment.id)
+  }
+
   async executeDeployment(deploymentId: string): Promise<Deployment> {
     const deployment = this.getDeployment(deploymentId)
     if (deployment.status !== 'pending') {
       throw new AppError('CONFLICT', '只有已批准且待记录的部署才能执行本地 Adapter')
     }
     if (!deployment.targetId) throw new AppError('CONFLICT', '部署缺少目标')
+    if (!deployment.approvalId) throw new AppError('POLICY_DENIED', '部署缺少独立授权')
+    const approval = this.getApproval(deployment.approvalId)
+    if (approval.status !== 'approved') throw new AppError('POLICY_DENIED', '部署授权未批准')
+    const currentAuthorization = this.deploymentAuthorization(deployment.releaseId, deployment.environmentId, deployment.targetId)
+    if (approval.contentFingerprint !== currentAuthorization.fingerprint || deployment.authorizationFingerprint !== currentAuthorization.fingerprint) {
+      throw new AppError('POLICY_DENIED', '部署目标、凭据或制品已变化，原授权失效，需要重新审批')
+    }
     const target = this.getTarget(deployment.targetId)
+    if (target.resourceId) {
+      const resource = this.store.db.prepare('SELECT status FROM resources WHERE id=?').get(target.resourceId) as { status: string } | undefined
+      if (!resource || resource.status !== 'active') throw new AppError('POLICY_DENIED', '资源已停用或归档')
+    }
+    if (target.connectionProfileId) {
+      const profile = this.store.db.prepare('SELECT credential_ref, host_key_fingerprint FROM connection_profiles WHERE id=?').get(target.connectionProfileId) as { credential_ref: string | null; host_key_fingerprint: string | null } | undefined
+      if (!profile) throw new AppError('POLICY_DENIED', '连接 Profile 不存在')
+      if (profile.credential_ref) {
+        const credential = this.store.db.prepare('SELECT status FROM credential_metadata WHERE id=?').get(profile.credential_ref) as { status: string } | undefined
+        if (!credential || credential.status !== 'active') throw new AppError('POLICY_DENIED', '凭据已停用')
+      }
+    }
     if (target.adapterType !== 'local-artifact' && target.kind !== 'local' && target.adapterType !== 'ssh-artifact') {
       throw new AppError('POLICY_DENIED', '目标未注册可执行 Adapter；不能伪造远程部署')
     }
@@ -643,7 +783,7 @@ export class ReleaseService {
     const adapter = DELIVERY_ADAPTERS.find((item) => item.type === adapterType) as LocalArtifactAdapter | undefined
     if (!adapter) throw new AppError('INTERNAL', '部署 Adapter 未注册')
     const startedAt = now()
-    this.store.db.prepare("UPDATE deployments SET status='running', started_at=?, updated_at=? WHERE id=?").run(startedAt, startedAt, deployment.id)
+    this.store.db.prepare("UPDATE deployments SET status='running', execution_state='running', started_at=?, updated_at=? WHERE id=?").run(startedAt, startedAt, deployment.id)
     this.appendDeploymentEvent(deployment.id, 'adapter_started', 'running', `${adapterType} 开始执行`, { adapter: adapter.type })
     try {
       const result = await adapter.execute({
@@ -654,10 +794,11 @@ export class ReleaseService {
       const finishedAt = now()
       this.store.db
         .prepare(
-          `UPDATE deployments SET status=?, assurance=?, external_id=?, artifact_hash=?, receipt_json=?, notes=?, finished_at=?, updated_at=? WHERE id=?`,
+          `UPDATE deployments SET status=?, execution_state=?, assurance=?, external_id=?, artifact_hash=?, receipt_json=?, notes=?, finished_at=?, updated_at=? WHERE id=?`,
         )
         .run(
           result.status,
+          result.status === 'succeeded' ? 'completed' : 'failed',
           result.assurance,
           result.externalId,
           result.artifactHash,
@@ -676,7 +817,7 @@ export class ReleaseService {
       const message = error instanceof Error ? error.message : String(error)
       const finishedAt = now()
       this.store.db
-        .prepare("UPDATE deployments SET status='failed', notes=?, finished_at=?, updated_at=? WHERE id=?")
+        .prepare("UPDATE deployments SET status='failed', execution_state='failed', notes=?, finished_at=?, updated_at=? WHERE id=?")
         .run(message, finishedAt, finishedAt, deployment.id)
       this.appendDeploymentEvent(deployment.id, 'adapter_failed', 'failed', message, {})
       throw new AppError('CONFLICT', `本地 Adapter 执行失败：${message}`)
@@ -709,14 +850,15 @@ export class ReleaseService {
     contentFingerprint: string,
     actor: string,
     timestamp: number,
+    snapshot: Record<string, unknown> = {},
   ): ApprovalRequest {
     const id = newId('apr')
     this.store.db
       .prepare(
-        `INSERT INTO approval_requests (id, project_id, subject_type, subject_id, subject_revision, content_fingerprint, status, requested_by, requested_at, expires_at)
-         VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`,
+        `INSERT INTO approval_requests (id, project_id, subject_type, subject_id, subject_revision, content_fingerprint, subject_snapshot_json, status, requested_by, requested_at, expires_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`,
       )
-      .run(id, projectId, subjectType, subjectId, revision, contentFingerprint, actor, timestamp, timestamp + 7 * 24 * 3600 * 1000)
+      .run(id, projectId, subjectType, subjectId, revision, contentFingerprint, JSON.stringify(snapshot), actor, timestamp, timestamp + 7 * 24 * 3600 * 1000)
     return this.getApproval(id)
   }
 
@@ -894,6 +1036,8 @@ export class ReleaseService {
       artifactHash: row.artifact_hash ? String(row.artifact_hash) : null,
       externalId: row.external_id ? String(row.external_id) : null,
       receipt: parseJson(row.receipt_json, {}) as Record<string, unknown>,
+      executionState: String(row.execution_state ?? 'not_started'),
+      authorizationFingerprint: row.authorization_fingerprint ? String(row.authorization_fingerprint) : null,
       approvalId: row.approval_id ? String(row.approval_id) : null,
       rollbackOfDeploymentId: row.rollback_of_deployment_id ? String(row.rollback_of_deployment_id) : null,
       previousDeploymentId: row.previous_deployment_id ? String(row.previous_deployment_id) : null,

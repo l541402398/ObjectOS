@@ -1,10 +1,12 @@
 import { _electron as electron } from 'playwright-core'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
 const root = process.cwd()
 const sshMode = process.env.PROJECTOS_SSH_UI_E2E === '1'
+const sshPrivateKey = sshMode && process.env.PROJECTOS_DEPLOY_SSH_KEY ? readFileSync(process.env.PROJECTOS_DEPLOY_SSH_KEY, 'utf8') : ''
+const sshFingerprint = process.env.PROJECTOS_SSH_HOST_FINGERPRINT ?? 'SHA256:wNRyPcQ8ed2dEy7LIVIFGieWCaTjb3GTsZ1FwTZEWB8'
 const dataDir = mkdtempSync(join(tmpdir(), 'projectos-phase2-ui-'))
 const sourceFile = join(dataDir, 'release-index.html')
 const healthFile = join(dataDir, 'health')
@@ -30,7 +32,7 @@ try {
   }
   if (await page.locator('.v16-project-visual').count()) await page.locator('.v16-project-visual').first().click()
   await page.waitForSelector('.po-work-center', { timeout: 30_000 })
-  const setup = await page.evaluate(async ({ sourceFile, healthFile, targetDir, sshMode }) => {
+  const setup = await page.evaluate(async ({ sourceFile, healthFile, targetDir, sshMode, sshPrivateKey, sshFingerprint }) => {
     const project = (await window.projectos.projects.list()).projects[0]
     const lifecycle = await window.projectos.lifecycle.overview(project.id)
     const version = lifecycle.versions[0]
@@ -71,6 +73,25 @@ try {
         metadata: {},
       })
     }
+    let resourceId = null
+    let connectionProfileId = null
+    if (sshMode) {
+      const resource = await window.projectos.resources.create({
+        projectId: project.id, type: 'host', name: 'Contabo E2E', endpoint: '169.58.112.111',
+        purpose: 'isolated deployment E2E', labels: [], metadata: {},
+      })
+      const credential = await window.projectos.resources.createCredential({
+        projectId: project.id, kind: 'ssh_private_key', label: 'Contabo E2E SSH Key',
+        secret: { privateKey: sshPrivateKey },
+      })
+      const profile = await window.projectos.resources.createProfile({
+        resourceId: resource.id, name: 'Contabo E2E SSH', protocol: 'ssh', host: '169.58.112.111', port: 22,
+        username: 'root', authType: 'private_key', credentialRef: credential.id,
+        hostKeyFingerprint: sshFingerprint, trustPolicy: 'pinned', connectTimeoutMs: 15000,
+      })
+      resourceId = resource.id
+      connectionProfileId = profile.id
+    }
     const target = await window.projectos.release.createTarget({
       projectId: project.id,
       environmentId: environment.id,
@@ -81,10 +102,12 @@ try {
       targetRef: sshMode
         ? 'ssh://root@169.58.112.111:22/opt/projectos-delivery-test?healthPort=18080&container=projectos-delivery-test&image=nginx:alpine'
         : targetDir,
+      resourceId,
+      connectionProfileId,
       protected: false,
     })
     return { projectId: project.id, versionId: version.id, targetId: target.id, taskId: task.task.id, artifactId: artifact.artifact.id }
-  }, { sourceFile, healthFile, targetDir, sshMode })
+  }, { sourceFile, healthFile, targetDir, sshMode, sshPrivateKey, sshFingerprint })
   console.log('[phase2-ui] setup version evidence', setup)
   await page.reload()
   await page.waitForSelector('.po-shell', { timeout: 30_000 })

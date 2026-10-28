@@ -550,6 +550,37 @@ export const ApiSchemas = {
     input: z.object({ deploymentId: IdSchema }),
     output: DeploymentSchema,
   },
+  'deployment.inspect': {
+    input: z.object({ deploymentId: IdSchema }),
+    output: z.object({ adapterType: z.string().nullable(), targetId: IdSchema.nullable() }),
+  },
+  'deployment.prepare': {
+    input: z.object({ deploymentId: IdSchema }),
+    output: z.object({
+      deployment: DeploymentSchema,
+      target: DeploymentTargetSchema.nullable(),
+      profile: ConnectionProfileSchema.nullable(),
+      resource: ResourceSchema.nullable(),
+      release: ReleaseSchema,
+      artifacts: z.array(z.object({ name: z.string(), uri: z.string().nullable(), contentHash: z.string() })),
+    }),
+  },
+  'deployment.finish': {
+    input: z.object({
+      deploymentId: IdSchema,
+      status: DeploymentSchema.shape.status,
+      assurance: DeploymentSchema.shape.assurance,
+      externalId: z.string().nullable(),
+      artifactHash: z.string().nullable(),
+      receipt: z.record(z.string(), z.unknown()).default({}),
+      notes: z.string().max(8000).default(''),
+    }),
+    output: DeploymentSchema,
+  },
+  'deployment.execute.local': {
+    input: z.object({ deploymentId: IdSchema }),
+    output: DeploymentSchema,
+  },
   'delivery.adapters': {
     input: projectIdInput,
     output: z.array(
@@ -1397,6 +1428,7 @@ export const MAIN_METHODS = [
   'resource.credential.create',
   'resource.credential.disable',
   'resource.connection.test',
+  'deployment.execute',
   'app.pickDirectory',
   'app.revealPath',
   'app.openExternal',

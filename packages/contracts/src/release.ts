@@ -212,6 +212,8 @@ export const DeploymentSchema = z.object({
   artifactHash: z.string().nullable(),
   externalId: z.string().nullable(),
   receipt: z.record(z.string(), z.unknown()).default({}),
+  executionState: z.string().default('not_started'),
+  authorizationFingerprint: z.string().nullable().default(null),
   approvalId: IdSchema.nullable(),
   rollbackOfDeploymentId: IdSchema.nullable(),
   previousDeploymentId: IdSchema.nullable(),

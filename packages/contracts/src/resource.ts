@@ -17,6 +17,7 @@ export const ResourceSchema = z.object({
   labels: z.array(z.string()).default([]),
   metadata: z.record(z.string(), z.unknown()).default({}),
   status: ResourceStatusSchema.default('active'),
+  revision: z.number().int().positive().default(1),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,
 })
@@ -37,6 +38,7 @@ export const ConnectionProfileSchema = z.object({
   connectTimeoutMs: z.number().int().min(1000).max(120000).default(15000),
   lastTestStatus: z.string().nullable().default(null),
   lastTestAt: TimestampSchema.nullable().default(null),
+  revision: z.number().int().positive().default(1),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,
 })

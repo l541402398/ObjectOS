@@ -1342,6 +1342,14 @@ ALTER TABLE deployment_targets ADD COLUMN resource_id TEXT;
 ALTER TABLE deployment_targets ADD COLUMN connection_profile_id TEXT;
 `
 
+const V32 = `
+ALTER TABLE resources ADD COLUMN revision INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE connection_profiles ADD COLUMN revision INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE approval_requests ADD COLUMN subject_snapshot_json TEXT NOT NULL DEFAULT '{}';
+ALTER TABLE deployments ADD COLUMN execution_state TEXT NOT NULL DEFAULT 'not_started';
+ALTER TABLE deployments ADD COLUMN authorization_fingerprint TEXT;
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -1374,6 +1382,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 29, name: 'release candidates releases deployments and targets', sql: V29 },
   { version: 30, name: 'correct local file delivery assurance semantics', sql: V30 },
   { version: 31, name: 'resources connection profiles credentials and test runs', sql: V31 },
+  { version: 32, name: 'resource revisions and deployment authorization snapshots', sql: V32 },
 ]
 
 function checksum(sql: string): string {

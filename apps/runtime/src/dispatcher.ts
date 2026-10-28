@@ -883,6 +883,22 @@ export class RuntimeDispatcher {
         const input = this.parse('deployment.record', rawInput)
         return this.release.recordDeploymentResult(input)
       }
+      case 'deployment.inspect': {
+        const input = this.parse('deployment.inspect', rawInput)
+        return this.release.inspectDeployment(input.deploymentId)
+      }
+      case 'deployment.prepare': {
+        const input = this.parse('deployment.prepare', rawInput)
+        return this.release.prepareDeployment(input.deploymentId)
+      }
+      case 'deployment.finish': {
+        const input = this.parse('deployment.finish', rawInput)
+        return this.release.finishDeployment(input)
+      }
+      case 'deployment.execute.local': {
+        const input = this.parse('deployment.execute.local', rawInput)
+        return this.release.executeDeployment(input.deploymentId)
+      }
       case 'deployment.execute': {
         const input = this.parse('deployment.execute', rawInput)
         return this.release.executeDeployment(input.deploymentId)
