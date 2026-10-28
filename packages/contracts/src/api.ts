@@ -1488,7 +1488,6 @@ export const MAIN_METHODS = [
   'resource.credential.disable',
   'resource.connection.test',
   'deployment.execute',
-  'deployment.operations',
   'deployment.reconcile.remote',
   'app.pickDirectory',
   'app.revealPath',

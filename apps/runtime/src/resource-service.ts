@@ -78,6 +78,16 @@ export class ResourceService {
 
   update(input: { resourceId: string; name?: string; endpoint?: string; purpose?: string; status?: Resource['status']; labels?: string[]; metadata?: Record<string, unknown> }): Resource {
     const current = this.getResource(input.resourceId)
+    if (input.status === 'archived') {
+      // Archiving is terminal: refuse while deployment targets still point at it so
+      // history never references a resource nobody can inspect.
+      const linked = this.store.db
+        .prepare('SELECT COUNT(*) AS count FROM deployment_targets WHERE resource_id=?')
+        .get(input.resourceId) as { count: number }
+      if (Number(linked.count) > 0) {
+        throw new AppError('CONFLICT', `该资源仍被 ${Number(linked.count)} 个部署目标引用，先解除引用再归档`)
+      }
+    }
     const timestamp = now()
     this.store.db.prepare(
       'UPDATE resources SET name=?, endpoint=?, purpose=?, status=?, labels_json=?, metadata_json=?, revision=revision+1, updated_at=? WHERE id=?',

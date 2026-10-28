@@ -139,23 +139,52 @@ async function main() {
     await page.waitForTimeout(900)
   }
 
+  async function findVersionRow(versionNumber) {
+    const rows = page.locator('article.lc-version')
+    const total = await rows.count()
+    for (let index = 0; index < total; index += 1) {
+      const text = (await rows.nth(index).innerText().catch(() => '')).replace(/\s+/g, ' ')
+      if (text.includes(versionNumber)) return { row: rows.nth(index), text }
+    }
+    return { row: null, text: total === 0 ? '(no rows)' : (await rows.allInnerTexts()).map((t) => t.replace(/\s+/g, ' ').slice(0, 40)).join(' || ') }
+  }
+
   async function advancePhase(versionNumber, label) {
     // Scope to the version row: the page lists several versions and the first
     // 推进阶段 selector belongs to the oldest one.
-    const row = page.locator('article.lc-version').filter({ hasText: `v${versionNumber}` }).first()
-    if (!(await row.count())) return { ok: false, reason: `no version row v${versionNumber}` }
-    const select = row.locator('.lc-version-actions .ant-select').first()
-    if (!(await select.count())) return { ok: false, reason: 'no advance select in row' }
+    const found = await findVersionRow(versionNumber)
+    if (!found.row) return { ok: false, reason: `no row ${versionNumber} [${found.text}]` }
+    const select = found.row.locator('.lc-version-actions .ant-select').first()
+    if (!(await select.count())) return { ok: false, reason: `no select in ${versionNumber}` }
+    await select.scrollIntoViewIfNeeded().catch(() => undefined)
     await select.click()
-    await page.waitForTimeout(600)
-    const option = page.locator('.ant-select-dropdown:visible .ant-select-item-option').filter({ hasText: label }).first()
+    await page.waitForTimeout(700)
+    let option = page.locator('.ant-select-dropdown:visible .ant-select-item-option').filter({ hasText: label }).first()
+    if (!(await option.count())) {
+      // Retry once: a dropdown still closing from the previous hop can swallow the open.
+      await page.keyboard.press('Escape')
+      await page.waitForTimeout(400)
+      await select.click()
+      await page.waitForTimeout(700)
+      option = page.locator('.ant-select-dropdown:visible .ant-select-item-option').filter({ hasText: label }).first()
+    }
     if (!(await option.count())) {
       const options = await page.locator('.ant-select-dropdown:visible .ant-select-item-option').allInnerTexts().catch(() => [])
       await page.keyboard.press('Escape')
-      return { ok: false, reason: `options=[${options.join('|')}]` }
+      return { ok: false, reason: `[${options.join('|')}]` }
     }
     await option.click()
-    await page.waitForTimeout(1600)
+    // Wait for the row's own phase text to change before attempting the next hop.
+    await page.waitForFunction(
+      ({ versionNumber, label }) => {
+        const rows = [...document.querySelectorAll('article.lc-version')]
+        const match = rows.find((item) => (item.textContent ?? '').includes(`v${versionNumber}`))
+        return Boolean(match && (match.textContent ?? '').includes(label))
+      },
+      { versionNumber, label },
+      { timeout: 8000 },
+    ).catch(() => undefined)
+    await page.waitForTimeout(900)
     return { ok: true, reason: '' }
   }
 
@@ -164,6 +193,18 @@ async function main() {
     await go(`#/projects/${project.id}/versions`)
     await page.waitForSelector('.po-lifecycle-page', { timeout: 30_000 })
     await page.waitForTimeout(700)
+    // Evidence binds to the focused version, so focus the target row first.
+    const focusRow = (await findVersionRow(versionNumber)).row
+    const focusButton = focusRow ? focusRow.getByRole('button', { name: '设为当前' }) : null
+    if (focusButton && (await focusButton.count())) {
+      await focusButton.click()
+      await page.waitForTimeout(1200)
+    }
+    const focused = await page.evaluate(async ({ projectId }) => {
+      const overview = await window.projectos.lifecycle.overview(projectId)
+      return overview.focus?.subjectId ?? null
+    }, { projectId: project.id })
+    record(`UI ${tag} 切换关注版本`, focused === versionId ? 'PASS' : 'FAIL', `focus=${focused}`)
     await recordEvidence(`${tag} 验收评审记录`, '评审记录', 'passed', '自我声明', '真实 Electron 端到端验收评审。')
     await recordEvidence(`${tag} 测试报告`, '测试报告', 'passed', '来源观察', 'npm test 287 passed；真实 SSH 制品哈希校验通过。')
     await recordEvidence(`${tag} 发布审批记录`, '审批记录', 'passed', '自我声明', '变更审批与部署独立审批均已完成。')
@@ -172,7 +213,7 @@ async function main() {
     const attempts = []
     for (const label of ['开发中', '验证中', '候选发布']) {
       const result = await advancePhase(versionNumber, label)
-      attempts.push(`${label}:${result.ok ? 'ok' : 'skip'}`)
+      attempts.push(`${label}:${result.ok ? 'ok' : result.reason}`)
     }
     const phase = await page.evaluate(async ({ projectId, versionId }) => (await window.projectos.lifecycle.overview(projectId)).versions.find((item) => item.id === versionId)?.phase ?? 'missing', { projectId: project.id, versionId })
     record(`UI ${tag} 门禁证据 + 推进到候选发布`, phase === 'release_candidate' ? 'PASS' : 'FAIL', `phase=${phase} ${attempts.join(' ')}`)
@@ -318,22 +359,49 @@ async function main() {
   record('v2 容器挂载 v2 Release', Boolean(v2DeploymentId) && v2DeploymentId !== v1DeploymentId ? 'PASS' : 'FAIL', v2DeploymentId)
 
   // ---------- 5. 回滚（控制台按钮 → 独立审批 → 执行） ----------
+  const pendingApprovals = () => page.evaluate(async ({ projectId }) => {
+    const result = await window.projectos.release.approvals(projectId)
+    const list = Array.isArray(result) ? result : (result?.approvals ?? [])
+    return list.filter((item) => item.subjectType === 'deployment' && item.status === 'pending').length
+  }, { projectId: project.id })
+  const approvalsBefore = await pendingApprovals()
   await page.getByRole('button', { name: '基于此版本创建回滚' }).first().click()
-  await page.waitForTimeout(1500)
-  const rollbackText = await page.locator('.dc-shell').innerText()
-  record('UI 控制台创建回滚部署', /回滚/.test(rollbackText) ? 'PASS' : 'FAIL', 'toast/row')
+  await page.waitForTimeout(2200)
+  const approvalsAfter = await pendingApprovals()
+  const rollbackToast = await page.evaluate(() => [...document.querySelectorAll('.ant-message-notice-content')].map((el) => (el.textContent ?? '').trim()).join(' | '))
+  record('UI 控制台创建回滚部署（新的待审批 Deployment）',
+    approvalsAfter === approvalsBefore + 1 ? 'PASS' : 'FAIL',
+    `pendingApprovals ${approvalsBefore} → ${approvalsAfter} toast="${rollbackToast}"`)
 
   await go(`#/projects/${project.id}/approvals`)
-  await page.waitForSelector('.ap-list', { timeout: 15_000 })
-  await page.locator('.ap-row').filter({ has: page.locator('.ap-kind.delivery') }).first().click()
-  await page.waitForTimeout(300)
-  await page.locator('.ap-actions button').last().click()
+  await page.waitForSelector('.ap-list', { timeout: 20_000 })
+  await page.waitForTimeout(900)
+  let rollbackApprovalRow = page.locator('.ap-row').filter({ has: page.locator('.ap-kind.delivery') }).first()
+  if (!(await rollbackApprovalRow.count())) rollbackApprovalRow = page.locator('.ap-row').first()
+  if (!(await rollbackApprovalRow.count())) {
+    await page.screenshot({ path: join(shots, 'p25-rollback-approval-missing.png') })
+    record('UI 回滚审批行可见', 'FAIL', (await page.locator('.ap-list').innerText().catch(() => '')).slice(0, 220).replace(/\n/g, ' '))
+    throw new Error('rollback approval row absent')
+  }
+  await rollbackApprovalRow.click()
+  await page.waitForTimeout(400)
+  const approveButton = page.locator('.ap-actions button').last()
+  if (!(await approveButton.count())) {
+    record('UI 回滚审批操作可用', 'FAIL', (await page.locator('.ap-list').innerText()).slice(0, 200).replace(/\n/g, ' '))
+    throw new Error('approve button absent')
+  }
+  await approveButton.click()
   await page.waitForTimeout(900)
   record('UI 回滚独立审批通过', 'PASS')
 
-  await go(`#/projects/${project.id}/deployments?version=${v2VersionId}`)
+  // A rollback is a new Deployment of the *previous* Release, so it is listed under
+  // that Release's version, not the one we rolled back from.
+  await go(`#/projects/${project.id}/deployments?version=${v1VersionId}`)
   await page.waitForSelector('.dc-shell', { timeout: 20_000 })
+  await page.getByRole('button', { name: '刷新状态' }).click()
   await page.waitForTimeout(1200)
+  await page.locator('.dc-history-row').first().click()
+  await page.waitForTimeout(800)
   const rollbackExec = await executeSelected('回滚')
   const afterRollback = remoteMount()
   record('回滚后远端 /version = v1', remoteVersion() === 'projectos-phase2.5-v1' ? 'PASS' : 'FAIL', remoteVersion())

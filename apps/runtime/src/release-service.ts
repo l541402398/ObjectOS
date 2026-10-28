@@ -499,6 +499,11 @@ export class ReleaseService {
     const artifacts = this.releaseArtifacts(releaseId)
       .map((artifact) => ({ id: artifact.id, name: artifact.name, contentHash: artifact.contentHash, uri: artifact.uri ?? null }))
       .sort((a, b) => a.name.localeCompare(b.name))
+    // Credential state participates in the fingerprint: rotating or disabling a
+    // credential must invalidate an approval that was granted against the old one.
+    const credential = profile?.credential_ref
+      ? this.store.db.prepare('SELECT id, status, updated_at FROM credential_metadata WHERE id=?').get(String(profile.credential_ref)) as Record<string, unknown> | undefined
+      : undefined
     const snapshot = {
       releaseId: release.id,
       manifestHash: release.manifestHash,
@@ -520,6 +525,9 @@ export class ReleaseService {
         credentialRef: profile.credential_ref ? String(profile.credential_ref) : null,
         hostKeyFingerprint: profile.host_key_fingerprint ? String(profile.host_key_fingerprint) : null,
         trustPolicy: String(profile.trust_policy),
+      } : null,
+      credential: credential ? {
+        id: String(credential.id), status: String(credential.status), updatedAt: Number(credential.updated_at),
       } : null,
       artifacts,
     }
@@ -656,8 +664,12 @@ export class ReleaseService {
       this.store.db
         .prepare(
           `INSERT INTO deployments
-           (id, project_id, version_id, release_id, environment_id, target_id, strategy_id, status, source, assurance, idempotency_key, artifact_hash, receipt_json, execution_state, authorization_fingerprint, approval_id, rollback_of_deployment_id, previous_deployment_id, notes, requested_by, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, 'awaiting_approval', 'manual', 'self_declared', ?, ?, '{}', 'not_started', ?, ?, ?, ?, ?, ?, ?)`,
+           (id, project_id, version_id, release_id, environment_id, target_id, strategy_id, status, source, assurance,
+            idempotency_key, artifact_hash, external_id, receipt_json, execution_state, authorization_fingerprint,
+            approval_id, rollback_of_deployment_id, previous_deployment_id, notes, requested_by, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'awaiting_approval', 'manual', 'self_declared',
+            ?, ?, NULL, '{}', 'not_started', ?,
+            ?, ?, ?, ?, ?, ?, ?)`,
         )
         .run(
           id,

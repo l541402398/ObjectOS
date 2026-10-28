@@ -30,6 +30,19 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
   const [passphrase, setPassphrase] = useState('')
   const [fingerprint, setFingerprint] = useState('')
   const [purpose, setPurpose] = useState('')
+  const [editResourceOpen, setEditResourceOpen] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [editEndpoint, setEditEndpoint] = useState('')
+  const [editPurpose, setEditPurpose] = useState('')
+  const [editProfileId, setEditProfileId] = useState<string | null>(null)
+  const [editProfileName, setEditProfileName] = useState('')
+  const [editProfileHost, setEditProfileHost] = useState('')
+  const [editProfilePort, setEditProfilePort] = useState('22')
+  const [editProfileUsername, setEditProfileUsername] = useState('root')
+  const [editProfileFingerprint, setEditProfileFingerprint] = useState('')
+  const [rotateCredentialId, setRotateCredentialId] = useState<string | null>(null)
+  const [rotateSecret, setRotateSecret] = useState('')
+  const [rotatePassphrase, setRotatePassphrase] = useState('')
 
   const data = overview.data
   const resources = useMemo(() => (data?.resources ?? []).filter((item) =>
@@ -90,7 +103,68 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
   })
   const archiveResource = useMutation({
     mutationFn: (resourceId: string) => window.projectos.resources.update({ resourceId, status: 'disabled' }),
-    onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: ['resource-overview', projectId] }); message.success('资源已停用') },
+    onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: ['resource-overview', projectId] }); message.success('资源已停用；引用它的部署授权随之失效') },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+  const archiveForever = useMutation({
+    mutationFn: (resourceId: string) => window.projectos.resources.update({ resourceId, status: 'archived' }),
+    onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: ['resource-overview', projectId] }); message.success('资源已归档') },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+  const editResource = useMutation({
+    mutationFn: () => window.projectos.resources.update({
+      resourceId: selected!.id, name: editName.trim(), endpoint: editEndpoint.trim(), purpose: editPurpose.trim(),
+    }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['resource-overview', projectId] })
+      await queryClient.invalidateQueries({ queryKey: ['release-overview'] })
+      setEditResourceOpen(false)
+      message.success('资源已更新；以旧配置批准的部署授权已失效')
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+  const editProfile = useMutation({
+    mutationFn: () => window.projectos.resources.updateProfile({
+      profileId: editProfileId!,
+      name: editProfileName.trim(),
+      host: editProfileHost.trim(),
+      port: Number(editProfilePort),
+      username: editProfileUsername.trim(),
+      hostKeyFingerprint: editProfileFingerprint.trim() || null,
+    }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['resource-overview', projectId] })
+      await queryClient.invalidateQueries({ queryKey: ['release-overview'] })
+      setEditProfileId(null)
+      message.success('连接配置已更新；原部署授权需要重新审批')
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+  const rotateCredential = useMutation({
+    mutationFn: async () => {
+      const target = credentials.find((item) => item.id === rotateCredentialId)
+      if (!target) throw new Error('凭据不存在')
+      const created = await window.projectos.resources.createCredential({
+        projectId, kind: target.kind, label: `${target.label}（轮换）`,
+        secret: { privateKey: rotateSecret, ...(rotatePassphrase ? { passphrase: rotatePassphrase } : {}) },
+      })
+      // Rebind every profile that used the old credential, then retire it. Rebinding
+      // bumps each profile revision, which invalidates approvals bound to the old one.
+      const affected = (data?.profiles ?? []).filter((item) => item.credentialRef === target.id)
+      for (const profile of affected) {
+        await window.projectos.resources.updateProfile({ profileId: profile.id, credentialRef: created.id })
+      }
+      await window.projectos.resources.disableCredential(target.id)
+      return { created, affected: affected.length }
+    },
+    onSuccess: async ({ affected }) => {
+      await queryClient.invalidateQueries({ queryKey: ['resource-overview', projectId] })
+      await queryClient.invalidateQueries({ queryKey: ['release-overview'] })
+      setRotateCredentialId(null)
+      setRotateSecret('')
+      setRotatePassphrase('')
+      message.success(`凭据已轮换，${affected} 个连接配置已切换；旧授权失效`)
+    },
     onError: (error) => message.error(errorMessage(error)),
   })
   const disable = useMutation({
@@ -131,7 +205,12 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
               <div key={credential.id} className="rc-row rc-credential-row">
                 <span className="rc-row-main"><strong>{credential.label}</strong><em>{credential.status === 'active' ? '可用' : '已停用'}</em></span>
                 <span className="rc-row-meta">{credential.kind} · {formatRelative(credential.updatedAt)}</span>
-                {credential.status === 'active' ? <Button size="small" onClick={() => disable.mutate(credential.id)}>停用</Button> : null}
+                {credential.status === 'active' ? (
+                  <>
+                    <Button size="small" onClick={() => { setRotateCredentialId(credential.id); setRotateSecret(''); setRotatePassphrase('') }}>轮换</Button>
+                    <Button size="small" onClick={() => disable.mutate(credential.id)}>停用</Button>
+                  </>
+                ) : null}
               </div>
             ))}
           </div>
@@ -146,7 +225,9 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
             <>
               <div className="rc-detail-head">
                 <div><span className="rw-kicker">{TYPE_LABEL[selected.type]}</span><h2>{selected.name}</h2><p>{selected.endpoint || '未填写端点'} · {selected.purpose || '未填写用途'}</p></div>
-                <div className="rc-detail-actions"><span className="rc-status">{profiles[0]?.lastTestStatus ? TEST_LABEL[profiles[0].lastTestStatus] ?? profiles[0].lastTestStatus : '未测试'}</span><Button size="small" onClick={() => archiveResource.mutate(selected.id)}>停用资源</Button></div>
+                <div className="rc-detail-actions"><span className="rc-status">{profiles[0]?.lastTestStatus ? TEST_LABEL[profiles[0].lastTestStatus] ?? profiles[0].lastTestStatus : '未测试'}</span><Button size="small" onClick={() => {
+                  setEditName(selected.name); setEditEndpoint(selected.endpoint); setEditPurpose(selected.purpose); setEditResourceOpen(true)
+                }}>编辑资源</Button><Button size="small" onClick={() => archiveResource.mutate(selected.id)}>停用资源</Button><Button size="small" danger onClick={() => archiveForever.mutate(selected.id)}>归档</Button></div>
               </div>
               <div className="rc-section-title">连接配置</div>
               {profiles.length === 0 ? <div className="rc-empty-inline">没有连接 Profile</div> : null}
@@ -154,6 +235,11 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
                 <div className="rc-profile" key={profile.id}>
                   <div><strong>{profile.name}</strong><span>{profile.protocol} · {profile.username}@{profile.host}:{profile.port} · {profile.authType}</span></div>
                   <div className="rc-profile-actions">
+                    <Button size="small" onClick={() => {
+                      setEditProfileId(profile.id); setEditProfileName(profile.name); setEditProfileHost(profile.host)
+                      setEditProfilePort(String(profile.port)); setEditProfileUsername(profile.username)
+                      setEditProfileFingerprint(profile.hostKeyFingerprint ?? '')
+                    }}>编辑</Button>
                     <Button size="small" loading={test.isPending} onClick={() => test.mutate(profile.id)}>测试连接</Button>
                   </div>
                   {profile.hostKeyFingerprint ? <code className="rc-fingerprint">HOST KEY {profile.hostKeyFingerprint}</code> : null}
@@ -219,6 +305,36 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
           ) : <label><span>密码（不读回）</span><Input.Password value={secret} onChange={(event) => setSecret(event.target.value)} /></label>) : null}
           {resourceType === 'host' ? <label><span>已固定主机指纹（可选）</span><Input value={fingerprint} onChange={(event) => setFingerprint(event.target.value)} placeholder="SHA256:..." /></label> : null}
           <p className="rc-form-note">{resourceType === 'host' ? '首次测试会返回主机指纹；确认后才能固定并重试。凭据保存需要系统安全存储可用。' : '本轮只登记平台连接元数据；Kubernetes/CI/CD 连接器未实现前明确标记未连接，不伪造测试成功。'}</p>
+        </div>
+      </Modal>
+
+      <Modal open={editResourceOpen} title="编辑资源" okText="保存" cancelText="取消" confirmLoading={editResource.isPending} okButtonProps={{ disabled: !editName.trim() }} onOk={() => editResource.mutate()} onCancel={() => setEditResourceOpen(false)}>
+        <div className="rc-form">
+          <label><span>名称</span><Input value={editName} onChange={(event) => setEditName(event.target.value)} /></label>
+          <label><span>端点</span><Input value={editEndpoint} onChange={(event) => setEditEndpoint(event.target.value)} /></label>
+          <label><span>用途</span><Input value={editPurpose} onChange={(event) => setEditPurpose(event.target.value)} /></label>
+          <p className="rc-form-note">修改会提升资源 revision；使用旧快照的部署授权将被拒绝，需要重新审批。</p>
+        </div>
+      </Modal>
+
+      <Modal open={Boolean(editProfileId)} title="编辑连接配置" okText="保存" cancelText="取消" confirmLoading={editProfile.isPending} okButtonProps={{ disabled: !editProfileName.trim() || !editProfileHost.trim() }} onOk={() => editProfile.mutate()} onCancel={() => setEditProfileId(null)}>
+        <div className="rc-form">
+          <label><span>名称</span><Input value={editProfileName} onChange={(event) => setEditProfileName(event.target.value)} /></label>
+          <div className="rc-form-grid">
+            <label><span>主机</span><Input value={editProfileHost} onChange={(event) => setEditProfileHost(event.target.value)} /></label>
+            <label><span>端口</span><Input value={editProfilePort} onChange={(event) => setEditProfilePort(event.target.value)} /></label>
+            <label><span>SSH 用户</span><Input value={editProfileUsername} onChange={(event) => setEditProfileUsername(event.target.value)} /></label>
+          </div>
+          <label><span>已固定主机指纹</span><Input value={editProfileFingerprint} onChange={(event) => setEditProfileFingerprint(event.target.value)} placeholder="SHA256:..." /></label>
+          <p className="rc-form-note">修改连接配置会提升 Profile revision；原部署授权立即失效。</p>
+        </div>
+      </Modal>
+
+      <Modal open={Boolean(rotateCredentialId)} title="轮换凭据" okText="轮换" cancelText="取消" confirmLoading={rotateCredential.isPending} okButtonProps={{ disabled: !rotateSecret.trim() }} onOk={() => rotateCredential.mutate()} onCancel={() => setRotateCredentialId(null)}>
+        <div className="rc-form">
+          <label><span>新私钥（不读回）</span><Input.TextArea rows={4} value={rotateSecret} onChange={(event) => setRotateSecret(event.target.value)} placeholder="-----BEGIN OPENSSH PRIVATE KEY-----" /></label>
+          <label><span>Passphrase（可选）</span><Input.Password value={rotatePassphrase} onChange={(event) => setRotatePassphrase(event.target.value)} /></label>
+          <p className="rc-form-note">轮换会创建新凭据、把引用它的连接配置切换到新凭据，并停用旧凭据；部署授权随之失效。</p>
         </div>
       </Modal>
     </div>
