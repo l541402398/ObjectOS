@@ -148,6 +148,86 @@ export class PlanGrantService {
     return plan
   }
 
+  /** Resolves the approved plan that owns a task, if any. */
+  private planForTask(projectId: string, taskId: string | null): PlanDraft | null {
+    if (!taskId) return null
+    const plans = this.store.read
+      .listAllPlanRevisions()
+      .filter((plan) => plan.projectId === projectId && plan.status === 'approved')
+      .sort((a, b) => b.revision - a.revision)
+    return plans.find((item) => item.createdTaskIds.includes(taskId)) ?? null
+  }
+
+  /**
+   * Called after a human approves a process tool call: remembers that this exact
+   * command is approved for this plan so identical repeats do not ask again.
+   */
+  recordApprovedCommandForTask(input: {
+    projectId: string
+    taskId: string | null
+    agentId: string
+    toolName: string
+    command: string
+    approvalId: string
+  }): void {
+    if (input.toolName !== 'run_command' && input.toolName !== 'run_tests') return
+    const plan = this.planForTask(input.projectId, input.taskId)
+    if (!plan) return
+    if (!this.store.read.getLatestPlanExecutionGrant(plan.id)) return
+    this.recordCommandApproval({
+      projectId: input.projectId,
+      planId: plan.id,
+      agentId: input.agentId,
+      toolName: input.toolName,
+      command: input.command,
+      approvalId: input.approvalId,
+    })
+  }
+
+  /**
+   * Records that a human approved a specific command for a plan. Later identical calls
+   * (same plan/agent/tool/normalized command) reuse it until it expires.
+   */
+  recordCommandApproval(input: {
+    projectId: string
+    planId: string
+    agentId: string
+    toolName: string
+    command: string
+    approvalId: string
+    ttlMs?: number
+  }): void {
+    const command = input.command.trim()
+    if (!command) return
+    const hash = createHash('sha256').update(command).digest('hex')
+    const timestamp = now()
+    const ttl = Math.max(60_000, Math.min(input.ttlMs ?? 30 * 60_000, 8 * 60 * 60_000))
+    this.store.db
+      .prepare(
+        `INSERT INTO plan_command_approvals
+         (id, project_id, plan_id, agent_id, tool_name, command_hash, command_text, approval_id, uses, created_at, expires_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+         ON CONFLICT(plan_id, agent_id, tool_name, command_hash)
+         DO UPDATE SET approval_id=excluded.approval_id, expires_at=excluded.expires_at`,
+      )
+      .run(newId('pca'), input.projectId, input.planId, input.agentId, input.toolName, hash, command.slice(0, 4000), input.approvalId, timestamp, timestamp + ttl)
+  }
+
+  private commandApproval(planId: string, agentId: string, toolName: string, command: string): { id: string; approval_id: string | null } | null {
+    const hash = createHash('sha256').update(command.trim()).digest('hex')
+    const row = this.store.db
+      .prepare(
+        `SELECT id, approval_id FROM plan_command_approvals
+         WHERE plan_id=? AND agent_id=? AND tool_name=? AND command_hash=? AND expires_at > ?`,
+      )
+      .get(planId, agentId, toolName, hash, now()) as { id: string; approval_id: string | null } | undefined
+    return row ?? null
+  }
+
+  private consumeCommandApproval(id: string): void {
+    this.store.db.prepare('UPDATE plan_command_approvals SET uses=uses+1 WHERE id=?').run(id)
+  }
+
   private currentAgents(plan: PlanDraft): Map<string, string | null> {
     const result = new Map<string, string | null>()
     for (const taskId of plan.createdTaskIds) {
@@ -614,6 +694,23 @@ export class PlanGrantService {
       return { decision: 'deny', reason: `计划执行授权状态为 ${statusText(view.status)}，已停止新的副作用`, grantId: grant.id }
     }
     if (input.toolName !== 'write_file') {
+      // Process tools are never covered by the grant itself. A human may, however, have
+      // already approved this exact command inside this plan: re-asking for the same
+      // `npm test` five times is product friction, not safety. Reuse is keyed on the
+      // exact normalized command plus plan/agent/tool and a short TTL, so any change to
+      // the command needs a fresh decision.
+      const command = typeof input.args.command === 'string' ? input.args.command.trim() : ''
+      if (command && (input.toolName === 'run_command' || input.toolName === 'run_tests')) {
+        const reused = this.commandApproval(plan.id, input.agentId, input.toolName, command)
+        if (reused) {
+          this.consumeCommandApproval(reused.id)
+          return {
+            decision: 'allow',
+            reason: `复用该计划内已批准的完全相同命令（审批 ${reused.approval_id ?? 'n/a'}，剩余有效期内）`,
+            grantId: grant.id,
+          }
+        }
+      }
       return {
         decision: 'approval',
         reason: '计划授权不覆盖进程、Git 写或外部 Runtime 操作，需逐次审批',

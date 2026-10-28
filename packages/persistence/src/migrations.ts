@@ -1428,6 +1428,24 @@ CREATE INDEX idx_autonomy_events_pending ON autonomy_events(status, created_at);
 CREATE INDEX idx_autonomy_events_project ON autonomy_events(project_id, created_at DESC);
 `
 
+const V35 = `
+CREATE TABLE plan_command_approvals (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  plan_id TEXT NOT NULL,
+  agent_id TEXT NOT NULL,
+  tool_name TEXT NOT NULL,
+  command_hash TEXT NOT NULL,
+  command_text TEXT NOT NULL,
+  approval_id TEXT,
+  uses INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX idx_plan_command_approvals_key ON plan_command_approvals(plan_id, agent_id, tool_name, command_hash);
+CREATE INDEX idx_plan_command_approvals_plan ON plan_command_approvals(plan_id, expires_at);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -1463,6 +1481,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 32, name: 'resource revisions and deployment authorization snapshots', sql: V32 },
   { version: 33, name: 'deployment operations and approval file baselines', sql: V33 },
   { version: 34, name: 'durable autonomy coordination events', sql: V34 },
+  { version: 35, name: 'plan command approval reuse', sql: V35 },
 ]
 
 function checksum(sql: string): string {

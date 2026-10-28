@@ -2403,6 +2403,29 @@ export class AgentRunner {
       })
       return decided
     })
+    // Remember an explicit human approval for this exact command so identical repeats in
+    // the same plan do not ask again. The command text itself is the key; any change
+    // requires a new decision.
+    if (decision === 'approved' && this.planGrants && toolCall) {
+      const request = (approval.request ?? {}) as Record<string, unknown>
+      const args = (request.args ?? {}) as Record<string, unknown>
+      const toolName = String(request.toolName ?? toolCall.toolName)
+      const command = typeof args.command === 'string' ? args.command : ''
+      if (command) {
+        try {
+          this.planGrants.recordApprovedCommandForTask({
+            projectId: run.projectId,
+            taskId: run.taskId,
+            agentId: run.agentId,
+            toolName,
+            command,
+            approvalId,
+          })
+        } catch (error) {
+          void error
+        }
+      }
+    }
     if (acpPermission) {
       return this.decideAcpPermission(approval, run, toolCall, decision, updated)
     }
