@@ -1350,6 +1350,65 @@ ALTER TABLE deployments ADD COLUMN execution_state TEXT NOT NULL DEFAULT 'not_st
 ALTER TABLE deployments ADD COLUMN authorization_fingerprint TEXT;
 `
 
+const V33 = `
+CREATE TABLE deployment_operations (
+  id TEXT PRIMARY KEY,
+  deployment_id TEXT NOT NULL REFERENCES deployments(id) ON DELETE CASCADE,
+  operation_key TEXT NOT NULL,
+  attempt INTEGER NOT NULL,
+  adapter_type TEXT NOT NULL,
+  target_ref TEXT NOT NULL,
+  state TEXT NOT NULL,
+  external_id TEXT,
+  remote_facts_json TEXT NOT NULL DEFAULT '{}',
+  last_error TEXT,
+  started_at INTEGER,
+  finished_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX idx_deployment_operations_key ON deployment_operations(deployment_id, operation_key);
+CREATE INDEX idx_deployment_operations_deployment ON deployment_operations(deployment_id, created_at DESC);
+
+ALTER TABLE deployments ADD COLUMN active_operation_id TEXT;
+
+CREATE TABLE deployment_operation_steps (
+  id TEXT PRIMARY KEY,
+  operation_id TEXT NOT NULL REFERENCES deployment_operations(id) ON DELETE CASCADE,
+  sequence INTEGER NOT NULL,
+  phase TEXT NOT NULL,
+  status TEXT NOT NULL,
+  detail TEXT NOT NULL DEFAULT '',
+  remote_ref TEXT,
+  duration_ms INTEGER,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_deployment_operation_steps_operation ON deployment_operation_steps(operation_id, sequence);
+
+CREATE TABLE approval_file_targets (
+  id TEXT PRIMARY KEY,
+  approval_id TEXT NOT NULL REFERENCES approval_requests(id) ON DELETE CASCADE,
+  path TEXT NOT NULL,
+  change_type TEXT NOT NULL,
+  baseline_hash TEXT,
+  proposed_hash TEXT NOT NULL,
+  baseline_bytes INTEGER,
+  proposed_bytes INTEGER NOT NULL,
+  truncated INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX idx_approval_file_targets_path ON approval_file_targets(approval_id, path);
+
+CREATE TABLE approval_file_snapshots (
+  approval_id TEXT NOT NULL REFERENCES approval_requests(id) ON DELETE CASCADE,
+  path TEXT NOT NULL,
+  baseline_content TEXT,
+  proposed_content TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (approval_id, path)
+);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -1383,6 +1442,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 30, name: 'correct local file delivery assurance semantics', sql: V30 },
   { version: 31, name: 'resources connection profiles credentials and test runs', sql: V31 },
   { version: 32, name: 'resource revisions and deployment authorization snapshots', sql: V32 },
+  { version: 33, name: 'deployment operations and approval file baselines', sql: V33 },
 ]
 
 function checksum(sql: string): string {

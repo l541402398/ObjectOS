@@ -20,6 +20,10 @@ import {
   type Resource,
   type Deployment,
   type DeploymentEvent,
+  type DeploymentOperation,
+  type DeploymentOperationState,
+  type DeploymentOperationStep,
+  type DeploymentOperationTrace,
   type DeploymentSource,
   type DeploymentStatus,
   type DeploymentStrategy,
@@ -687,7 +691,6 @@ export class ReleaseService {
 
   prepareDeployment(deploymentId: string) {
     const deployment = this.getDeployment(deploymentId)
-    if (deployment.status !== 'pending') throw new AppError('CONFLICT', '只有已批准且待执行的部署才能执行')
     if (!deployment.targetId) throw new AppError('CONFLICT', '部署缺少目标')
     if (!deployment.approvalId) throw new AppError('POLICY_DENIED', '部署缺少独立授权')
     const approval = this.getApproval(deployment.approvalId)
@@ -709,12 +712,62 @@ export class ReleaseService {
       const credential = this.store.db.prepare('SELECT status FROM credential_metadata WHERE id=?').get(String(profileRow.credential_ref)) as { status: string } | undefined
       if (!credential || credential.status !== 'active') throw new AppError('POLICY_DENIED', '凭据已停用')
     }
+    // Resume an in-flight attempt instead of starting a second one. This makes the
+    // remote side effect idempotent even when the renderer retries or Electron restarts.
+    const inflight = this.store.db
+      .prepare("SELECT * FROM deployment_operations WHERE deployment_id=? AND state IN ('prepared','executing') ORDER BY attempt DESC LIMIT 1")
+      .get(deployment.id) as Record<string, unknown> | undefined
+    if (inflight) {
+      return this.prepareDeploymentPayload(deployment.id, target, resourceRow, profileRow, this.mapDeploymentOperation(inflight), true)
+    }
+    // An operation whose outcome is unknown must be reconciled first: repeating the
+    // remote mutation could apply the same release twice or clobber a newer one.
+    const unknownOperation = this.store.db
+      .prepare("SELECT * FROM deployment_operations WHERE deployment_id=? AND state='unknown' ORDER BY attempt DESC LIMIT 1")
+      .get(deployment.id) as Record<string, unknown> | undefined
+    if (unknownOperation) {
+      throw new AppError('CONFLICT', '上一次执行结果未知，必须先对账远程事实，禁止重复执行')
+    }
+    if (deployment.status !== 'pending') throw new AppError('CONFLICT', '只有已批准且待执行的部署才能执行')
+    const attemptRow = this.store.db
+      .prepare('SELECT MAX(attempt) AS attempt FROM deployment_operations WHERE deployment_id=?')
+      .get(deployment.id) as { attempt: number | null } | undefined
+    const attempt = Number(attemptRow?.attempt ?? 0) + 1
+    const operationId = newId('dop')
+    const operationKey = `${deployment.id}:${attempt}`
     const startedAt = now()
-    this.store.db.prepare("UPDATE deployments SET status='running', execution_state='running', started_at=?, updated_at=? WHERE id=?").run(startedAt, startedAt, deployment.id)
-    this.appendDeploymentEvent(deployment.id, 'adapter_started', 'running', '受控 Adapter 开始执行', { targetId: target.id })
+    const adapterType = target.adapterType ?? 'unknown'
+    this.store.transaction(() => {
+      this.store.db
+        .prepare(
+          `INSERT INTO deployment_operations
+           (id, deployment_id, operation_key, attempt, adapter_type, target_ref, state, external_id, remote_facts_json, last_error, started_at, finished_at, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, 'prepared', NULL, '{}', NULL, ?, NULL, ?, ?)`,
+        )
+        .run(operationId, deployment.id, operationKey, attempt, adapterType, target.targetRef, startedAt, startedAt, startedAt)
+      this.store.db
+        .prepare("UPDATE deployments SET status='running', execution_state='running', started_at=?, active_operation_id=?, updated_at=? WHERE id=?")
+        .run(startedAt, operationId, startedAt, deployment.id)
+      this.appendDeploymentEvent(deployment.id, 'adapter_started', 'running', '受控 Adapter 开始执行', {
+        targetId: target.id, operationId, operationKey, attempt,
+      })
+    })
+    const operationRow = this.store.db.prepare('SELECT * FROM deployment_operations WHERE id=?').get(operationId) as Record<string, unknown>
+    return this.prepareDeploymentPayload(deployment.id, target, resourceRow, profileRow, this.mapDeploymentOperation(operationRow), false)
+  }
+
+  private prepareDeploymentPayload(
+    deploymentId: string,
+    target: DeploymentTarget,
+    resourceRow: Record<string, unknown> | undefined,
+    profileRow: Record<string, unknown> | undefined,
+    operation: DeploymentOperation,
+    resumed: boolean,
+  ) {
+    const deployment = this.getDeployment(deploymentId)
     const release = this.getRelease(deployment.releaseId)
     return {
-      deployment: this.getDeployment(deployment.id),
+      deployment,
       target,
       profile: profileRow ? {
         id: String(profileRow.id), resourceId: String(profileRow.resource_id), name: String(profileRow.name),
@@ -736,90 +789,274 @@ export class ReleaseService {
       } : null,
       release,
       artifacts: this.releaseArtifacts(deployment.releaseId).map((artifact) => ({ name: artifact.name, uri: artifact.uri ?? null, contentHash: artifact.contentHash })),
+      operation,
+      resumed,
     }
   }
 
-  finishDeployment(input: { deploymentId: string; status: DeploymentStatus; assurance: Deployment['assurance']; externalId: string | null; artifactHash: string | null; receipt: Record<string, unknown>; notes: string }): Deployment {
+  finishDeployment(input: { deploymentId: string; operationId: string; status: DeploymentStatus; assurance: Deployment['assurance']; externalId: string | null; artifactHash: string | null; receipt: Record<string, unknown>; notes: string }): Deployment {
     const deployment = this.getDeployment(input.deploymentId)
+    const operationRow = this.store.db.prepare('SELECT * FROM deployment_operations WHERE id=?').get(input.operationId) as Record<string, unknown> | undefined
+    if (!operationRow) throw new AppError('NOT_FOUND', '执行操作不存在，不能写入回执')
+    if (String(operationRow.deployment_id) !== deployment.id) throw new AppError('CONFLICT', '执行操作不属于该部署')
+    const operationState = String(operationRow.state)
+    if (operationState === 'confirmed' || operationState === 'failed') {
+      // A retried IPC call must not rewrite an already-settled fact.
+      return this.getDeployment(deployment.id)
+    }
     const finishedAt = now()
-    this.store.db.prepare(
-      "UPDATE deployments SET status=?, execution_state=?, assurance=?, external_id=?, artifact_hash=?, receipt_json=?, notes=?, finished_at=?, updated_at=? WHERE id=?",
-    ).run(input.status, input.status === 'succeeded' ? 'completed' : 'failed', input.assurance, input.externalId, input.artifactHash, JSON.stringify(input.receipt), input.notes, finishedAt, finishedAt, deployment.id)
-    this.appendDeploymentEvent(deployment.id, 'adapter_result', input.status, input.notes, { externalId: input.externalId })
+    const executionState = input.status === 'succeeded' ? 'completed' : input.status === 'needs_reconciliation' || input.status === 'unknown' ? 'unknown' : 'failed'
+    const nextOperationState: DeploymentOperationState = input.status === 'succeeded' ? 'confirmed' : 'failed'
+    this.store.transaction(() => {
+      this.store.db
+        .prepare('UPDATE deployment_operations SET state=?, external_id=?, last_error=?, finished_at=?, updated_at=? WHERE id=?')
+        .run(nextOperationState, input.externalId, input.status === 'succeeded' ? null : input.notes, finishedAt, finishedAt, input.operationId)
+      this.store.db.prepare(
+        "UPDATE deployments SET status=?, execution_state=?, assurance=?, external_id=?, artifact_hash=?, receipt_json=?, notes=?, finished_at=?, updated_at=? WHERE id=?",
+      ).run(input.status, executionState, input.assurance, input.externalId, input.artifactHash, JSON.stringify(input.receipt), input.notes, finishedAt, finishedAt, deployment.id)
+      this.appendDeploymentEvent(deployment.id, 'adapter_result', input.status, input.notes, { externalId: input.externalId, operationId: input.operationId })
+    })
     return this.getDeployment(deployment.id)
   }
 
-  async executeDeployment(deploymentId: string): Promise<Deployment> {
-    const deployment = this.getDeployment(deploymentId)
-    if (deployment.status !== 'pending') {
-      throw new AppError('CONFLICT', '只有已批准且待记录的部署才能执行本地 Adapter')
-    }
-    if (!deployment.targetId) throw new AppError('CONFLICT', '部署缺少目标')
-    if (!deployment.approvalId) throw new AppError('POLICY_DENIED', '部署缺少独立授权')
-    const approval = this.getApproval(deployment.approvalId)
-    if (approval.status !== 'approved') throw new AppError('POLICY_DENIED', '部署授权未批准')
-    const currentAuthorization = this.deploymentAuthorization(deployment.releaseId, deployment.environmentId, deployment.targetId)
-    if (approval.contentFingerprint !== currentAuthorization.fingerprint || deployment.authorizationFingerprint !== currentAuthorization.fingerprint) {
-      throw new AppError('POLICY_DENIED', '部署目标、凭据或制品已变化，原授权失效，需要重新审批')
-    }
-    const target = this.getTarget(deployment.targetId)
-    if (target.resourceId) {
-      const resource = this.store.db.prepare('SELECT status FROM resources WHERE id=?').get(target.resourceId) as { status: string } | undefined
-      if (!resource || resource.status !== 'active') throw new AppError('POLICY_DENIED', '资源已停用或归档')
-    }
-    if (target.connectionProfileId) {
-      const profile = this.store.db.prepare('SELECT credential_ref, host_key_fingerprint FROM connection_profiles WHERE id=?').get(target.connectionProfileId) as { credential_ref: string | null; host_key_fingerprint: string | null } | undefined
-      if (!profile) throw new AppError('POLICY_DENIED', '连接 Profile 不存在')
-      if (profile.credential_ref) {
-        const credential = this.store.db.prepare('SELECT status FROM credential_metadata WHERE id=?').get(profile.credential_ref) as { status: string } | undefined
-        if (!credential || credential.status !== 'active') throw new AppError('POLICY_DENIED', '凭据已停用')
-      }
-    }
-    if (target.adapterType !== 'local-artifact' && target.kind !== 'local' && target.adapterType !== 'ssh-artifact') {
-      throw new AppError('POLICY_DENIED', '目标未注册可执行 Adapter；不能伪造远程部署')
-    }
-    const releaseArtifacts = this.releaseArtifacts(deployment.releaseId)
-    const adapterType = target.adapterType === 'ssh-artifact' ? 'ssh-artifact' : 'local-artifact'
-    const adapter = DELIVERY_ADAPTERS.find((item) => item.type === adapterType) as LocalArtifactAdapter | undefined
-    if (!adapter) throw new AppError('INTERNAL', '部署 Adapter 未注册')
-    const startedAt = now()
-    this.store.db.prepare("UPDATE deployments SET status='running', execution_state='running', started_at=?, updated_at=? WHERE id=?").run(startedAt, startedAt, deployment.id)
-    this.appendDeploymentEvent(deployment.id, 'adapter_started', 'running', `${adapterType} 开始执行`, { adapter: adapter.type })
-    try {
-      const result = await adapter.execute({
-        deploymentId: deployment.id,
-        targetPath: target.targetRef,
-        artifacts: releaseArtifacts.map((artifact) => ({ name: artifact.name, uri: artifact.uri, contentHash: artifact.contentHash })),
-      })
-      const finishedAt = now()
+  recordOperationStep(input: {
+    operationId: string
+    phase: string
+    status: 'started' | 'ok' | 'failed' | 'skipped'
+    detail: string
+    remoteRef: string | null
+    durationMs: number | null
+    state?: DeploymentOperationState
+  }): DeploymentOperation {
+    const row = this.store.db.prepare('SELECT * FROM deployment_operations WHERE id=?').get(input.operationId) as Record<string, unknown> | undefined
+    if (!row) throw new AppError('NOT_FOUND', '执行操作不存在')
+    const sequenceRow = this.store.db
+      .prepare('SELECT COALESCE(MAX(sequence), -1) AS seq FROM deployment_operation_steps WHERE operation_id=?')
+      .get(input.operationId) as { seq: number }
+    const nowTs = now()
+    this.store.transaction(() => {
       this.store.db
         .prepare(
-          `UPDATE deployments SET status=?, execution_state=?, assurance=?, external_id=?, artifact_hash=?, receipt_json=?, notes=?, finished_at=?, updated_at=? WHERE id=?`,
+          'INSERT INTO deployment_operation_steps (id, operation_id, sequence, phase, status, detail, remote_ref, duration_ms, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        )
+        .run(newId('dos'), input.operationId, Number(sequenceRow.seq) + 1, input.phase, input.status, input.detail, input.remoteRef, input.durationMs, nowTs)
+      const nextState = input.state ?? (input.status === 'started' ? 'executing' : undefined)
+      if (nextState) {
+        this.store.db
+          .prepare('UPDATE deployment_operations SET state=?, updated_at=?, started_at=COALESCE(started_at, ?) WHERE id=? AND state NOT IN (\'confirmed\',\'failed\')')
+          .run(nextState, nowTs, nowTs, input.operationId)
+      } else {
+        this.store.db.prepare('UPDATE deployment_operations SET updated_at=? WHERE id=?').run(nowTs, input.operationId)
+      }
+    })
+    const refreshed = this.store.db.prepare('SELECT * FROM deployment_operations WHERE id=?').get(input.operationId) as Record<string, unknown>
+    return this.mapDeploymentOperation(refreshed)
+  }
+
+  /**
+   * Marks an attempt whose remote outcome cannot be confirmed locally. The deployment
+   * moves to needs_reconciliation so nothing is blindly replayed; a human (or the
+   * reconcile action) must establish the remote truth first.
+   */
+  markOperationUnknown(input: { operationId: string; reason: string; remoteFacts: Record<string, unknown> }): Deployment {
+    const row = this.store.db.prepare('SELECT * FROM deployment_operations WHERE id=?').get(input.operationId) as Record<string, unknown> | undefined
+    if (!row) throw new AppError('NOT_FOUND', '执行操作不存在')
+    const deploymentId = String(row.deployment_id)
+    if (String(row.state) === 'confirmed') return this.getDeployment(deploymentId)
+    const timestamp = now()
+    this.store.transaction(() => {
+      this.store.db
+        .prepare("UPDATE deployment_operations SET state='unknown', last_error=?, remote_facts_json=?, finished_at=?, updated_at=? WHERE id=?")
+        .run(input.reason, JSON.stringify(input.remoteFacts), timestamp, timestamp, input.operationId)
+      this.store.db
+        .prepare("UPDATE deployments SET status='needs_reconciliation', execution_state='unknown', notes=?, updated_at=? WHERE id=? AND status NOT IN ('succeeded','rolled_back')")
+        .run(input.reason, timestamp, deploymentId)
+      this.appendDeploymentEvent(deploymentId, 'needs_reconciliation', 'needs_reconciliation', input.reason, {
+        operationId: input.operationId, remoteFacts: input.remoteFacts,
+      })
+    })
+    return this.getDeployment(deploymentId)
+  }
+
+  /**
+   * Records the outcome of an out-of-band remote observation (see the Main process
+   * reconcile action). Only reachable from needs_reconciliation/unknown/running.
+   */
+  reconcileDeployment(input: {
+    deploymentId: string
+    observation: { reachable: boolean; externalId: string | null; healthOk: boolean; detail: string; facts: Record<string, unknown> }
+    note: string
+  }): Deployment {
+    const deployment = this.getDeployment(input.deploymentId)
+    const allowed = ['needs_reconciliation', 'unknown', 'running', 'pending', 'failed']
+    if (!allowed.includes(deployment.status)) throw new AppError('CONFLICT', `当前状态 ${deployment.status} 不需要对账`)
+    const timestamp = now()
+    const succeeded = input.observation.reachable && input.observation.healthOk && Boolean(input.observation.externalId)
+    const status: DeploymentStatus = succeeded ? 'succeeded' : 'needs_reconciliation'
+    const receipt = {
+      ...(deployment.receipt ?? {}),
+      reconciledAt: timestamp,
+      reconcile: input.observation.facts,
+      health: { ok: input.observation.healthOk, detail: input.observation.detail },
+      note: input.note,
+    }
+    this.store.transaction(() => {
+      const operation = this.store.db
+        .prepare("SELECT * FROM deployment_operations WHERE deployment_id=? AND state IN ('unknown','executing','prepared') ORDER BY attempt DESC LIMIT 1")
+        .get(deployment.id) as Record<string, unknown> | undefined
+      if (operation) {
+        this.store.db
+          .prepare('UPDATE deployment_operations SET state=?, external_id=?, remote_facts_json=?, finished_at=?, updated_at=? WHERE id=?')
+          .run(succeeded ? 'confirmed' : 'unknown', input.observation.externalId, JSON.stringify(input.observation.facts), timestamp, timestamp, String(operation.id))
+      }
+      this.store.db
+        .prepare(
+          'UPDATE deployments SET status=?, execution_state=?, assurance=?, external_id=COALESCE(?, external_id), receipt_json=?, notes=?, finished_at=?, updated_at=? WHERE id=?',
         )
         .run(
-          result.status,
-          result.status === 'succeeded' ? 'completed' : 'failed',
-          result.assurance,
-          result.externalId,
-          result.artifactHash,
-          JSON.stringify({ ...result.receipt, health: result.health }),
-          result.health.detail,
-          finishedAt,
-          finishedAt,
+          status,
+          succeeded ? 'completed' : 'unknown',
+          succeeded ? 'externally_confirmed' : 'source_observed',
+          input.observation.externalId,
+          JSON.stringify(receipt),
+          input.note || input.observation.detail,
+          succeeded ? timestamp : null,
+          timestamp,
           deployment.id,
         )
-      this.appendDeploymentEvent(deployment.id, 'adapter_result', result.status, result.health.detail, {
-        externalId: result.externalId,
-        health: result.health,
+      this.appendDeploymentEvent(deployment.id, 'reconciled', status, input.note || input.observation.detail, {
+        reachable: input.observation.reachable,
+        externalId: input.observation.externalId,
+        healthOk: input.observation.healthOk,
       })
-      return this.getDeployment(deployment.id)
+    })
+    return this.getDeployment(deployment.id)
+  }
+
+  /** Read-only context used by reconciliation: no status transition, no operation created. */
+  deploymentContext(deploymentId: string): { deployment: Deployment; target: DeploymentTarget | null; profile: ConnectionProfile | null } {
+    const deployment = this.getDeployment(deploymentId)
+    const target = deployment.targetId ? this.getTarget(deployment.targetId) : null
+    let profile: ConnectionProfile | null = null
+    if (target?.connectionProfileId) {
+      const row = this.store.db.prepare('SELECT * FROM connection_profiles WHERE id=?').get(target.connectionProfileId) as Record<string, unknown> | undefined
+      if (row) {
+        profile = {
+          id: String(row.id), resourceId: String(row.resource_id), name: String(row.name),
+          protocol: String(row.protocol) as ConnectionProfile['protocol'], host: String(row.host), port: Number(row.port),
+          username: String(row.username), authType: String(row.auth_type) as ConnectionProfile['authType'],
+          credentialRef: row.credential_ref ? String(row.credential_ref) : null,
+          hostKeyFingerprint: row.host_key_fingerprint ? String(row.host_key_fingerprint) : null,
+          trustPolicy: String(row.trust_policy) as ConnectionProfile['trustPolicy'], connectTimeoutMs: Number(row.connect_timeout_ms),
+          lastTestStatus: row.last_test_status ? String(row.last_test_status) : null,
+          lastTestAt: row.last_test_at ? Number(row.last_test_at) : null, revision: Number(row.revision ?? 1),
+          createdAt: Number(row.created_at), updatedAt: Number(row.updated_at),
+        }
+      }
+    }
+    return { deployment, target, profile }
+  }
+
+  deploymentOperations(deploymentId: string): DeploymentOperationTrace {
+    this.getDeployment(deploymentId)
+    const operations = this.store.db
+      .prepare('SELECT * FROM deployment_operations WHERE deployment_id=? ORDER BY attempt ASC')
+      .all(deploymentId) as Record<string, unknown>[]
+    const steps = operations.length
+      ? (this.store.db
+          .prepare(
+            `SELECT * FROM deployment_operation_steps WHERE operation_id IN (${operations.map(() => '?').join(',')}) ORDER BY operation_id, sequence ASC`,
+          )
+          .all(...operations.map((operation) => String(operation.id))) as Record<string, unknown>[])
+      : []
+    return { operations: operations.map((row) => this.mapDeploymentOperation(row)), steps: steps.map((row) => this.mapDeploymentStep(row)) }
+  }
+
+  private mapDeploymentOperation(row: Record<string, unknown>): DeploymentOperation {
+    return {
+      id: String(row.id),
+      deploymentId: String(row.deployment_id),
+      operationKey: String(row.operation_key),
+      attempt: Number(row.attempt),
+      adapterType: String(row.adapter_type),
+      targetRef: String(row.target_ref),
+      state: String(row.state) as DeploymentOperationState,
+      externalId: row.external_id ? String(row.external_id) : null,
+      remoteFacts: parseJson(row.remote_facts_json, {}) as Record<string, unknown>,
+      lastError: row.last_error ? String(row.last_error) : null,
+      startedAt: row.started_at ? Number(row.started_at) : null,
+      finishedAt: row.finished_at ? Number(row.finished_at) : null,
+      createdAt: Number(row.created_at),
+      updatedAt: Number(row.updated_at),
+    }
+  }
+
+  private mapDeploymentStep(row: Record<string, unknown>): DeploymentOperationStep {
+    return {
+      id: String(row.id),
+      operationId: String(row.operation_id),
+      sequence: Number(row.sequence),
+      phase: String(row.phase),
+      status: String(row.status),
+      detail: String(row.detail ?? ''),
+      remoteRef: row.remote_ref ? String(row.remote_ref) : null,
+      durationMs: row.duration_ms === null || row.duration_ms === undefined ? null : Number(row.duration_ms),
+      createdAt: Number(row.created_at),
+    }
+  }
+
+  /**
+   * Runs an in-process adapter (local-artifact only). It reuses prepareDeployment
+   * so both execution paths share one authorization check and one operation record.
+   * Remote adapters must go through the Main process, which owns credentials.
+   */
+  async executeDeployment(deploymentId: string): Promise<Deployment> {
+    const prepared = this.prepareDeployment(deploymentId)
+    const target = prepared.target
+    if (!target) throw new AppError('CONFLICT', '部署缺少目标')
+    if (target.adapterType !== 'local-artifact' && target.kind !== 'local') {
+      throw new AppError('POLICY_DENIED', '远程目标必须在 Main 进程内执行，Runtime 不持有凭据')
+    }
+    const adapter = DELIVERY_ADAPTERS.find((item) => item.type === 'local-artifact') as LocalArtifactAdapter | undefined
+    if (!adapter) throw new AppError('INTERNAL', '部署 Adapter 未注册')
+    const operation = prepared.operation
+    try {
+      const result = await adapter.execute({
+        deploymentId: prepared.deployment.id,
+        targetPath: target.targetRef,
+        artifacts: prepared.artifacts.map((artifact) => ({ name: artifact.name, uri: artifact.uri, contentHash: artifact.contentHash })),
+      })
+      this.recordOperationStep({
+        operationId: operation.id, phase: 'adapter', status: result.status === 'succeeded' ? 'ok' : 'failed',
+        detail: result.health.detail, remoteRef: result.externalId, durationMs: null,
+      })
+      return this.finishDeployment({
+        deploymentId: prepared.deployment.id,
+        operationId: operation.id,
+        status: result.status,
+        assurance: result.assurance,
+        externalId: result.externalId,
+        artifactHash: result.artifactHash,
+        receipt: { ...result.receipt, health: result.health },
+        notes: result.health.detail,
+      })
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      const finishedAt = now()
-      this.store.db
-        .prepare("UPDATE deployments SET status='failed', execution_state='failed', notes=?, finished_at=?, updated_at=? WHERE id=?")
-        .run(message, finishedAt, finishedAt, deployment.id)
-      this.appendDeploymentEvent(deployment.id, 'adapter_failed', 'failed', message, {})
+      this.recordOperationStep({
+        operationId: operation.id, phase: 'adapter', status: 'failed', detail: message, remoteRef: null, durationMs: null,
+      })
+      // The local adapter stages into a fresh per-deployment directory, so a failure
+      // leaves no ambiguous partial state: record it as a clean, retryable failure.
+      this.finishDeployment({
+        deploymentId: prepared.deployment.id,
+        operationId: operation.id,
+        status: 'failed',
+        assurance: 'self_declared',
+        externalId: null,
+        artifactHash: null,
+        receipt: {},
+        notes: `本地 Adapter 执行失败：${message}`,
+      })
       throw new AppError('CONFLICT', `本地 Adapter 执行失败：${message}`)
     }
   }

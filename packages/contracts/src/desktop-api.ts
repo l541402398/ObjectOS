@@ -70,6 +70,8 @@ export interface ProjectOSDesktopApi {
     createDeployment: (input: In<'deployment.create'>) => Promise<Out<'deployment.create'>>
     recordDeployment: (input: In<'deployment.record'>) => Promise<Out<'deployment.record'>>
     executeDeployment: (deploymentId: string) => Promise<Out<'deployment.execute'>>
+    deploymentOperations: (deploymentId: string) => Promise<Out<'deployment.operations'>>
+    reconcileDeployment: (deploymentId: string, note?: string) => Promise<Out<'deployment.reconcile.remote'>>
     adapters: (projectId: string) => Promise<Out<'delivery.adapters'>>
     createRollback: (input: In<'deployment.rollback'>) => Promise<Out<'deployment.rollback'>>
     createTarget: (input: In<'deployment.target.create'>) => Promise<Out<'deployment.target.create'>>

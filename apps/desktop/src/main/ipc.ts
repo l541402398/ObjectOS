@@ -22,7 +22,7 @@ import type { ProviderConfigStore } from './provider-config.js'
 import type { ConnectionSecretStore } from './connection-secrets.js'
 import type { ResourceCredentialVault } from './resource-credentials.js'
 import { testSshConnection } from './resource-connection.js'
-import { executeSshDeployment } from './ssh-deploy.js'
+import { executeSshDeployment, observeSshDeployment, SshDeployError, type SshObservation } from './ssh-deploy.js'
 import type { RuntimeSupervisor } from './runtime-supervisor.js'
 
 export interface IpcContext {
@@ -502,30 +502,106 @@ export function registerIpc(ctx: IpcContext): () => void {
           return supervisor.request('deployment.execute.local', { deploymentId: input.deploymentId }, 180_000)
         }
         const context = await supervisor.request<any>('deployment.prepare', { deploymentId: input.deploymentId }, 30_000)
-        logger.info('deployment.execute prepared', { deploymentId: input.deploymentId, targetId: context.target?.id })
+        const operationId = String(context.operation?.id ?? '')
+        if (!operationId) throw new AppError('INTERNAL', '部署缺少执行操作标识')
+        const recordStep = async (value: {
+          phase: string
+          status: 'started' | 'ok' | 'failed' | 'skipped'
+          detail: string
+          remoteRef?: string | null
+          durationMs?: number | null
+          state?: 'prepared' | 'executing' | 'confirmed' | 'failed' | 'unknown'
+        }): Promise<void> => {
+          await supervisor
+            .request('deployment.operation.step', {
+              operationId,
+              phase: value.phase,
+              status: value.status,
+              detail: value.detail,
+              remoteRef: value.remoteRef ?? null,
+              durationMs: value.durationMs ?? null,
+              ...(value.state ? { state: value.state } : {}),
+            }, 10_000)
+            .catch((error: unknown) => {
+              logger.warn('deployment step record failed', { operationId, phase: value.phase, error: String(error) })
+            })
+        }
+        // A resumed operation means a previous attempt never settled. Replaying remote
+        // side effects blindly is forbidden; a human must reconcile first.
+        if (context.resumed) {
+          const startedAt = Number(context.operation?.startedAt ?? 0)
+          const ageMs = Date.now() - startedAt
+          if (ageMs < 10 * 60_000) {
+            throw new AppError('CONFLICT', '该部署已有正在执行的操作，请等待其完成或稍后对账')
+          }
+          await supervisor.request('deployment.operation.mark_unknown', {
+            operationId,
+            reason: '上一次执行未返回结果（应用关闭或连接中断），需先对账远程事实',
+            remoteFacts: { resumedAfterMs: ageMs },
+          }, 10_000)
+          throw new AppError('CONFLICT', '上一次执行结果未知，已标记为待对账；请先对账远程事实再决定是否重试')
+        }
         const secret = context.profile?.credentialRef ? resourceSecrets.get(context.profile.credentialRef) : null
         try {
           const result = await executeSshDeployment({
             deploymentId: context.deployment.id, targetRef: context.target?.targetRef ?? '', profile: context.profile,
             artifacts: context.artifacts,
-          }, secret)
-          logger.info('deployment.execute ssh result', { deploymentId: context.deployment.id, status: result.status, externalId: result.externalId })
-          const finished = await supervisor.request('deployment.finish', {
-            deploymentId: context.deployment.id, status: result.status,
+          }, secret, (step) => {
+            void recordStep({ ...step, remoteRef: step.remoteRef ?? null, durationMs: step.durationMs ?? null })
+          })
+          await recordStep({ phase: 'receipt', status: 'ok', detail: `外部 ID ${result.externalId}`, remoteRef: result.externalId })
+          return await supervisor.request('deployment.finish', {
+            deploymentId: context.deployment.id, operationId, status: result.status,
             assurance: result.health.ok ? 'externally_confirmed' : 'source_observed',
             externalId: result.externalId, artifactHash: result.artifactHash,
             receipt: { ...result.receipt, health: result.health }, notes: result.notes,
           }, 30_000)
-          logger.info('deployment.execute finish done', { deploymentId: context.deployment.id, status: (finished as any)?.status })
-          return finished
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error)
-          await supervisor.request('deployment.finish', {
-            deploymentId: context.deployment.id, status: 'failed', assurance: 'self_declared',
-            externalId: null, artifactHash: null, receipt: {}, notes: message,
-          }, 30_000).catch(() => undefined)
+          const remoteMutated = error instanceof SshDeployError ? error.remoteMutated : false
+          await recordStep({ phase: 'error', status: 'failed', detail: message })
+          if (remoteMutated) {
+            // The target may already serve the new release: record the uncertainty
+            // instead of claiming a clean failure.
+            await supervisor.request('deployment.operation.mark_unknown', {
+              operationId, reason: `远程副作用可能已生效：${message}`, remoteFacts: { phase: (error as SshDeployError).phase },
+            }, 30_000).catch((failure: unknown) => {
+              logger.error('failed to mark deployment operation unknown', { operationId, error: String(failure) })
+            })
+          } else {
+            await supervisor.request('deployment.finish', {
+              deploymentId: context.deployment.id, operationId, status: 'failed', assurance: 'self_declared',
+              externalId: null, artifactHash: null, receipt: {}, notes: message,
+            }, 30_000).catch((failure: unknown) => {
+              logger.error('failed to record deployment failure', { operationId, error: String(failure) })
+            })
+          }
           throw error
         }
+      }
+      case 'deployment.operations': {
+        if (!supervisor.isReady()) throw new AppError('RUNTIME_UNAVAILABLE', 'Runtime 尚未就绪')
+        return supervisor.request('deployment.operations', { deploymentId: input.deploymentId }, 10_000)
+      }
+      case 'deployment.reconcile.remote': {
+        if (!supervisor.isReady()) throw new AppError('RUNTIME_UNAVAILABLE', 'Runtime 尚未就绪')
+        const context = await supervisor.request<any>('deployment.prepare_context', { deploymentId: input.deploymentId }, 15_000)
+        const secret = context.profile?.credentialRef ? resourceSecrets.get(context.profile.credentialRef) : null
+        const observation: SshObservation = context.target?.adapterType === 'ssh-artifact'
+          ? await observeSshDeployment({ deploymentId: String(input.deploymentId), targetRef: String(context.target?.targetRef ?? ''), profile: context.profile }, secret)
+          : { reachable: false, externalId: null, healthOk: false, detail: '该目标类型不支持远程对账', facts: {} }
+        logger.info('deployment reconcile observed', { deploymentId: input.deploymentId, reachable: observation.reachable, healthOk: observation.healthOk })
+        return supervisor.request('deployment.reconcile', {
+          deploymentId: input.deploymentId,
+          observation: {
+            reachable: observation.reachable,
+            externalId: observation.externalId,
+            healthOk: observation.healthOk,
+            detail: observation.detail,
+            facts: observation.facts,
+          },
+          note: input.note,
+        }, 15_000)
       }
       case 'resource.connection.test': {
         const profile = await supervisor.request<import('@projectos/contracts').ConnectionProfile>('resource.profile.internal', { profileId: input.profileId }, 10_000)

@@ -895,6 +895,26 @@ export class RuntimeDispatcher {
         const input = this.parse('deployment.finish', rawInput)
         return this.release.finishDeployment(input)
       }
+      case 'deployment.operation.step': {
+        const input = this.parse('deployment.operation.step', rawInput)
+        return this.release.recordOperationStep(input)
+      }
+      case 'deployment.operation.mark_unknown': {
+        const input = this.parse('deployment.operation.mark_unknown', rawInput)
+        return this.release.markOperationUnknown(input)
+      }
+      case 'deployment.operations': {
+        const input = this.parse('deployment.operations', rawInput)
+        return this.release.deploymentOperations(input.deploymentId)
+      }
+      case 'deployment.prepare_context': {
+        const input = this.parse('deployment.prepare_context', rawInput)
+        return this.release.deploymentContext(input.deploymentId)
+      }
+      case 'deployment.reconcile': {
+        const input = this.parse('deployment.reconcile', rawInput)
+        return this.release.reconcileDeployment(input)
+      }
       case 'deployment.execute.local': {
         const input = this.parse('deployment.execute.local', rawInput)
         return this.release.executeDeployment(input.deploymentId)

@@ -61,6 +61,8 @@ export const ID_PREFIXES = {
   releaseCandidate: 'rcd',
   release: 'rel',
   deployment: 'dep',
+  deploymentOperation: 'dop',
+  deploymentOperationStep: 'dos',
   deploymentTarget: 'dtg',
   deploymentStrategy: 'dst',
   approvalRequest: 'apr',

@@ -73,7 +73,7 @@ function profile(harness: ReturnType<typeof setup>, name: string, protocol: 'cli
 }
 
 describe('R2 Phase 1: missing R1 verification', () => {
-  it('migrates a V18 database to V32 without losing existing data', () => {
+  it('migrates a V18 database to V33 without losing existing data', () => {
     const dataDir = mkdtempSync(join(tmpdir(), 'projectos-r2-migrate-'))
     cleanups.push(() => rmSync(dataDir, { recursive: true, force: true }))
     const dbPath = join(dataDir, 'legacy-v18.db')
@@ -131,7 +131,7 @@ describe('R2 Phase 1: missing R1 verification', () => {
       const maxVersion = store.db
         .prepare('SELECT MAX(version) AS version FROM schema_migrations')
         .get() as { version: number }
-      expect(Number(maxVersion.version)).toBe(32)
+      expect(Number(maxVersion.version)).toBe(33)
       const runColumns = (store.db.prepare('PRAGMA table_info(agent_runs)').all() as Array<{ name: string }>).map(
         (column) => column.name,
       )

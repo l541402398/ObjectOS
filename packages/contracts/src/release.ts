@@ -237,6 +237,57 @@ export const DeploymentEventSchema = z.object({
 })
 export type DeploymentEvent = z.infer<typeof DeploymentEventSchema>
 
+/**
+ * A durable record of one attempt to apply remote side effects for a deployment.
+ * The operation is persisted before any remote mutation so a crash, SSH drop or
+ * app shutdown leaves a recoverable trace instead of a silently stuck row.
+ */
+export const DeploymentOperationStateSchema = z.enum([
+  'prepared',
+  'executing',
+  'confirmed',
+  'failed',
+  'unknown',
+])
+export type DeploymentOperationState = z.infer<typeof DeploymentOperationStateSchema>
+
+export const DeploymentOperationSchema = z.object({
+  id: IdSchema,
+  deploymentId: IdSchema,
+  operationKey: z.string().min(8),
+  attempt: z.number().int().positive(),
+  adapterType: z.string(),
+  targetRef: z.string(),
+  state: DeploymentOperationStateSchema,
+  externalId: z.string().nullable(),
+  remoteFacts: z.record(z.string(), z.unknown()).default({}),
+  lastError: z.string().nullable(),
+  startedAt: TimestampSchema.nullable(),
+  finishedAt: TimestampSchema.nullable(),
+  createdAt: TimestampSchema,
+  updatedAt: TimestampSchema,
+})
+export type DeploymentOperation = z.infer<typeof DeploymentOperationSchema>
+
+export const DeploymentOperationStepSchema = z.object({
+  id: IdSchema,
+  operationId: IdSchema,
+  sequence: z.number().int().nonnegative(),
+  phase: z.string(),
+  status: z.string(),
+  detail: z.string().max(8000).default(''),
+  remoteRef: z.string().nullable(),
+  durationMs: z.number().int().nonnegative().nullable(),
+  createdAt: TimestampSchema,
+})
+export type DeploymentOperationStep = z.infer<typeof DeploymentOperationStepSchema>
+
+export const DeploymentOperationTraceSchema = z.object({
+  operations: z.array(DeploymentOperationSchema),
+  steps: z.array(DeploymentOperationStepSchema),
+})
+export type DeploymentOperationTrace = z.infer<typeof DeploymentOperationTraceSchema>
+
 export const ReleaseOverviewSchema = z.object({
   projectId: IdSchema,
   versionId: IdSchema,

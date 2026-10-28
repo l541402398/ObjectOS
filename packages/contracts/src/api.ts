@@ -82,6 +82,9 @@ import {
   CreateDeploymentInputSchema,
   CreateReleaseInputSchema,
   ReleaseApprovalDecideInputSchema,
+  DeploymentOperationSchema,
+  DeploymentOperationStateSchema,
+  DeploymentOperationTraceSchema,
   DeploymentSchema,
   DeploymentStrategySchema,
   DeploymentTargetSchema,
@@ -554,6 +557,14 @@ export const ApiSchemas = {
     input: z.object({ deploymentId: IdSchema }),
     output: z.object({ adapterType: z.string().nullable(), targetId: IdSchema.nullable() }),
   },
+  'deployment.prepare_context': {
+    input: z.object({ deploymentId: IdSchema }),
+    output: z.object({
+      deployment: DeploymentSchema,
+      target: DeploymentTargetSchema.nullable(),
+      profile: ConnectionProfileSchema.nullable(),
+    }),
+  },
   'deployment.prepare': {
     input: z.object({ deploymentId: IdSchema }),
     output: z.object({
@@ -563,17 +574,65 @@ export const ApiSchemas = {
       resource: ResourceSchema.nullable(),
       release: ReleaseSchema,
       artifacts: z.array(z.object({ name: z.string(), uri: z.string().nullable(), contentHash: z.string() })),
+      operation: DeploymentOperationSchema,
+      resumed: z.boolean().default(false),
     }),
   },
   'deployment.finish': {
     input: z.object({
       deploymentId: IdSchema,
+      operationId: IdSchema,
       status: DeploymentSchema.shape.status,
       assurance: DeploymentSchema.shape.assurance,
       externalId: z.string().nullable(),
       artifactHash: z.string().nullable(),
       receipt: z.record(z.string(), z.unknown()).default({}),
       notes: z.string().max(8000).default(''),
+    }),
+    output: DeploymentSchema,
+  },
+  'deployment.operation.step': {
+    input: z.object({
+      operationId: IdSchema,
+      phase: z.string().trim().min(1).max(120),
+      status: z.enum(['started', 'ok', 'failed', 'skipped']),
+      detail: z.string().max(8000).default(''),
+      remoteRef: z.string().max(1000).nullable().default(null),
+      durationMs: z.number().int().nonnegative().nullable().default(null),
+      state: DeploymentOperationStateSchema.optional(),
+    }),
+    output: DeploymentOperationSchema,
+  },
+  'deployment.operation.mark_unknown': {
+    input: z.object({
+      operationId: IdSchema,
+      reason: z.string().trim().min(1).max(8000),
+      remoteFacts: z.record(z.string(), z.unknown()).default({}),
+    }),
+    output: DeploymentSchema,
+  },
+  'deployment.operations': {
+    input: z.object({ deploymentId: IdSchema }),
+    output: DeploymentOperationTraceSchema,
+  },
+  'deployment.reconcile': {
+    input: z.object({
+      deploymentId: IdSchema,
+      observation: z.object({
+        reachable: z.boolean(),
+        externalId: z.string().nullable().default(null),
+        healthOk: z.boolean(),
+        detail: z.string().max(4000).default(''),
+        facts: z.record(z.string(), z.unknown()).default({}),
+      }),
+      note: z.string().max(4000).default(''),
+    }),
+    output: DeploymentSchema,
+  },
+  'deployment.reconcile.remote': {
+    input: z.object({
+      deploymentId: IdSchema,
+      note: z.string().max(4000).default(''),
     }),
     output: DeploymentSchema,
   },
@@ -1429,6 +1488,8 @@ export const MAIN_METHODS = [
   'resource.credential.disable',
   'resource.connection.test',
   'deployment.execute',
+  'deployment.operations',
+  'deployment.reconcile.remote',
   'app.pickDirectory',
   'app.revealPath',
   'app.openExternal',
