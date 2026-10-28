@@ -377,8 +377,18 @@ PASS=14 FAIL=2 SKIP=3 BLOCKED=0
 
 | 提交 | 内容 |
 |---|---|
-| `4bb1541` | `feat(phase2.8.7)` 可信审查快照、任务契约预检、策略授权自主 Replan、审批停泊恢复（+5697/−154，38 文件） |
-| 见文末 | 真实运行发现的三个生产缺陷修复（Replanner Agent 绑定、启动预算语义、`revisePlan` 绑定钉住）与本报告 |
+| `4134e97` | 上一轮已推送：修复 review verdict 绕过并绑定审批到内容快照（本轮基线之上的既有提交） |
+| `4bb1541` | `feat(phase2.8.7)`：可信审查快照、任务契约预检、策略授权自主 Replan、审批停泊恢复（38 文件，+5697/−154） |
+| `cbe99d7` | `fix(phase2.8.7)`：关闭真实运行发现的自主修订循环（窗口计数 + superseded 源计划）、保留已批准 Agent 绑定、修订绑定钉住、启动预算语义 |
+
+**推送状态**：`git push -u origin v2.0-phase2.8.7` 执行后，紧接着的 `git ls-remote origin
+refs/heads/v2.0-phase2.8.7` 返回 `cbe99d79d2c0f0c22305ceb9ff1a2f0765f2aad8`（与本地 HEAD 一致），
+随后网络/代理持续失败（`Recv failure: Connection was reset` / `Could not connect to server`），
+因此**远端状态以那次成功读取为准，未能再次复核**。未创建 PR、未合并主分支、未推送任何其它分支。
+
+**推送前检查**：对本轮全部改动文件与 `docs/v2/evidence/*.txt` 做了凭据扫描
+（`sk-`、`apiKey`/`encryptedApiKey`、`BEGIN … PRIVATE KEY`、`Bearer <token>`），无命中；
+未提交 `provider.json`、`ai-secrets.vault.json` 或任何运行期密钥。
 
 ---
 
