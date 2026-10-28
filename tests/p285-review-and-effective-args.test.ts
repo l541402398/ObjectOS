@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { evaluateCompletion } from '../packages/application/src/completion-evidence.js'
+import { buildReviewSnapshot } from '../packages/application/src/review-snapshot.js'
 import { resolveEffectiveToolArgs } from '../apps/runtime/src/agent-runner.js'
 
 /**
@@ -27,6 +28,12 @@ function reviewArtifact(metadata: Record<string, unknown>) {
 
 const base = { qualityGate: null, actorKind: 'agent' as const, runs: [] as never[] }
 
+function currentSnapshot(paths: string[] = ['src/formatting.mjs']) {
+  return buildReviewSnapshot({
+    files: paths.map((path) => ({ path, sha256: 'a'.repeat(64) })),
+  })
+}
+
 describe('ADR-0022 review performed vs approved', () => {
   it('completes the review task when the review reports required changes', () => {
     const decision = evaluateCompletion({
@@ -46,7 +53,29 @@ describe('ADR-0022 review performed vs approved', () => {
     expect(decision.review?.approved).toBe(false)
   })
 
-  it('marks a positive review as approved', () => {
+  it('marks a positive review as approved only when it is bound to the current content', () => {
+    const snapshot = currentSnapshot()
+    const decision = evaluateCompletion({
+      ...base,
+      task: task(),
+      reviewContext: { currentSnapshot: snapshot },
+      artifacts: [reviewArtifact({
+        artifactType: 'review',
+        reviewedObjects: ['src/formatting.mjs'],
+        scope: 'formatting 模块',
+        findings: [],
+        conclusion: '通过',
+        blockers: [],
+        reviewSnapshot: snapshot,
+      })],
+    })
+    expect(decision.ok).toBe(true)
+    expect(decision.review?.approved).toBe(true)
+  })
+
+  it('never reports an unverifiable review as approved', () => {
+    // No content snapshot and no review context: the system cannot prove the review is about
+    // the code that exists now, so "approved" must not be claimed (ADR-0025).
     const decision = evaluateCompletion({
       ...base,
       task: task(),
@@ -59,8 +88,11 @@ describe('ADR-0022 review performed vs approved', () => {
         blockers: [],
       })],
     })
+    // The review task itself is still complete: reporting a verdict is finished work.
     expect(decision.ok).toBe(true)
-    expect(decision.review?.approved).toBe(true)
+    expect(decision.review?.performed).toBe(true)
+    expect(decision.review?.approved).toBe(false)
+    expect(decision.reasons.join(' ')).toContain('没有可校验的当前审查')
   })
 
   it('allows an honest clean review with zero findings (no fabricated finding)', () => {

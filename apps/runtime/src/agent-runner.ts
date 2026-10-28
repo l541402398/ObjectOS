@@ -2158,14 +2158,39 @@ export class AgentRunner {
               details: { fields: errors },
             })
           }
-          // Fact collection, not judgement: bind the review to the revision it was
-          // written against, so a later code change can invalidate it (ADR-0024).
-          if (typeof rawMetadata.reviewedRevision !== 'string' || !rawMetadata.reviewedRevision.trim()) {
-            const snapshot = collectReviewSnapshot({ workspaceRoot: state.workspaceRoot, reviewedObjects: rawMetadata.reviewedObjects })
-            // The runtime collects facts; the Agent's own hashes are discarded.
-            rawMetadata.reviewSnapshot = snapshot
-            rawMetadata.reviewedRevision = snapshot.baselineCommit
-          }
+          // Fact collection, not judgement (ADR-0025). The runtime ALWAYS collects the
+          // snapshot from the real files and overwrites whatever the Agent sent — including a
+          // self-claimed `reviewedRevision` or `reviewSnapshot`. Skipping collection when the
+          // Agent supplied a revision was the forgery hole: an Agent could name any commit and
+          // keep an old review looking current.
+          const agent = this.store.read.getAgent(state.agentId)
+          const artifactIds = Array.isArray(rawMetadata.reviewedArtifactIds)
+            ? rawMetadata.reviewedArtifactIds.filter((item): item is string => typeof item === 'string')
+            : []
+          const evidenceIds = Array.isArray(rawMetadata.evidenceIds)
+            ? rawMetadata.evidenceIds.filter((item): item is string => typeof item === 'string')
+            : []
+          const snapshot = collectReviewSnapshot({
+            workspaceRoot: state.workspaceRoot,
+            reviewedObjects: rawMetadata.reviewedObjects,
+            scope: rawMetadata.scope,
+            scopeRoots: rawMetadata.scopeRoots,
+            projectId: project.id,
+            planId: state.taskId ? this.store.read.findPlanRevisionForTask(project.id, state.taskId) : null,
+            taskId: state.taskId,
+            runId: state.runId,
+            reviewer: { agentId: state.agentId, name: agent?.name ?? state.agentId },
+            refs: {
+              diffArtifactId: typeof rawMetadata.diffArtifactId === 'string' ? rawMetadata.diffArtifactId : null,
+              artifactIds,
+              evidenceIds,
+            },
+          })
+          rawMetadata.reviewSnapshot = snapshot
+          rawMetadata.reviewedRevision = snapshot.baselineCommit
+          // The reviewer must be traceable; a review without an identity cannot be attributed.
+          rawMetadata.reviewerAgentId = state.agentId
+          rawMetadata.reviewerName = agent?.name ?? state.agentId
         }
         const artifact = this.services.projects.createArtifact(
           {

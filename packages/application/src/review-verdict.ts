@@ -1,5 +1,5 @@
 /**
- * ADR-0024 — the single source of truth for review verdicts.
+ * ADR-0024 / ADR-0025 — the single source of truth for review verdicts.
  *
  * Four explicit verdicts, no "default approve":
  *   approved           the reviewer stated an unambiguous pass
@@ -11,15 +11,35 @@
  * *task* to complete (reporting a defect is a finished review), but never a pass.
  */
 
-import { snapshotMatches, type ReviewSnapshot } from './review-snapshot.js'
+import { readSnapshot, snapshotMismatch, type ReviewSnapshot } from './review-snapshot.js'
 
 export type ReviewVerdict = 'approved' | 'changes_requested' | 'blocked' | 'inconclusive'
+
+/**
+ * How well a review is bound to the content that exists now.
+ *
+ *  current       the review names content that still matches the workspace
+ *  stale         the review names content that has since changed
+ *  unverifiable  there is no trustworthy binding, so nothing can be concluded
+ */
+export type ReviewFreshness = 'current' | 'stale' | 'unverifiable'
 
 export interface ReviewVerdictOptions {
   /** Git revision the reviewed code is at right now, when known. */
   currentRevision?: string | null
   /** When provided, the stored review snapshot must match it exactly. */
   currentSnapshot?: ReviewSnapshot | null
+  /**
+   * `enforce` (default) refuses to approve anything it cannot bind to current content.
+   * `report` returns the review's own stated verdict for display only; callers must never
+   * use it to unlock a gate.
+   */
+  mode?: 'enforce' | 'report'
+}
+
+export interface ReviewFreshnessResult {
+  freshness: ReviewFreshness
+  reason: string | null
 }
 
 const NON_BLOCKING = /^(无|none|no blockers?|没有|-|—|n\/a)$/i
@@ -44,6 +64,46 @@ export function blockingItems(blockers: unknown): string[] {
 }
 
 /**
+ * Whether a stored review is still bound to the content it claims to have reviewed.
+ *
+ * Content wins over commits: a review whose file hashes still match stays current even
+ * if the code was committed (or copied) afterwards, because the reviewed bytes did not
+ * change. A review with no snapshot and no revision cannot be verified at all.
+ */
+export function classifyReviewFreshness(
+  metadata: Record<string, unknown>,
+  options: ReviewVerdictOptions = {},
+): ReviewFreshnessResult {
+  const stored = readSnapshot(metadata.reviewSnapshot)
+  const reviewedRevision = asString(metadata.reviewedRevision)
+  const currentRevision = asString(options.currentRevision)
+
+  if (stored) {
+    if (options.currentSnapshot === undefined || options.currentSnapshot === null) {
+      return { freshness: 'unverifiable', reason: '审查带有内容快照，但当前无法重新采集快照进行校验' }
+    }
+    const mismatch = snapshotMismatch(stored, options.currentSnapshot)
+    return mismatch === null
+      ? { freshness: 'current', reason: null }
+      : { freshness: 'stale', reason: mismatch }
+  }
+
+  if (reviewedRevision) {
+    if (!currentRevision) {
+      return { freshness: 'unverifiable', reason: `审查绑定 revision ${reviewedRevision.slice(0, 12)}，当前无法取得工作区 revision` }
+    }
+    return reviewedRevision === currentRevision
+      ? { freshness: 'current', reason: null }
+      : {
+          freshness: 'stale',
+          reason: `审查针对 revision ${reviewedRevision.slice(0, 12)}，当前为 ${currentRevision.slice(0, 12)}`,
+        }
+  }
+
+  return { freshness: 'unverifiable', reason: '审查既没有内容快照也没有绑定 revision，无法证明它审查的是当前内容' }
+}
+
+/**
  * Resolves the verdict of a review artifact's metadata. Free text is only ever used to
  * *downgrade* certainty: an approval needs an explicit positive token, and anything the
  * parser cannot read confidently becomes `inconclusive` rather than approved.
@@ -53,27 +113,24 @@ export function reviewVerdictOf(
   options: ReviewVerdictOptions = {},
 ): ReviewVerdict {
   const blocking = blockingItems(metadata.blockers)
-  const conclusion = asString(metadata.conclusion)
-  const explicit = asString(metadata.verdict ?? metadata.reviewVerdict)
 
   // 1. A recorded blocking item always wins: nothing may pass while a real blocker stands.
   if (blocking.length > 0) return 'blocked'
 
   // 2. Staleness gate runs BEFORE any approval path. A structured `verdict: 'approved'`
-  //    must not be able to skip the revision/snapshot check.
-  const reviewedRevision = asString(metadata.reviewedRevision)
-  const currentRevision = asString(options.currentRevision)
-  if (reviewedRevision && currentRevision && reviewedRevision !== currentRevision) {
-    return 'inconclusive'
+  //    must not be able to skip the revision/snapshot check (ADR-0024 regression).
+  if ((options.mode ?? 'enforce') === 'enforce') {
+    const { freshness } = classifyReviewFreshness(metadata, options)
+    if (freshness !== 'current') return 'inconclusive'
   }
-  if (options.currentSnapshot !== undefined) {
-    const storedSnapshot = metadata.reviewSnapshot
-    if (storedSnapshot === undefined || storedSnapshot === null) {
-      // Reviewing without a content snapshot cannot be trusted against current files.
-      return 'inconclusive'
-    }
-    if (!snapshotMatches(storedSnapshot, options.currentSnapshot)) return 'inconclusive'
-  }
+
+  return statedVerdictOf(metadata)
+}
+
+/** The verdict the reviewer wrote, without any freshness enforcement. Display only. */
+export function statedVerdictOf(metadata: Record<string, unknown>): ReviewVerdict {
+  const conclusion = asString(metadata.conclusion)
+  const explicit = asString(metadata.verdict ?? metadata.reviewVerdict)
 
   // 3. An explicit structured verdict field is authoritative when it is one we understand.
   if (explicit) {

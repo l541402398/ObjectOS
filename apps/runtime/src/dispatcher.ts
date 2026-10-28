@@ -18,6 +18,7 @@ import {
 } from '@projectos/contracts'
 import { PROJECT_EVENT_TYPES } from '@projectos/domain'
 import type { CoreServices } from '@projectos/application'
+import { reviewRecordBindingOf, reviewRecordStillCurrent } from '@projectos/application'
 import type { SqliteStore } from '@projectos/persistence'
 import {
   getGitDiff,
@@ -34,6 +35,9 @@ import { LifecycleService } from './lifecycle.js'
 import { ReleaseService } from './release-service.js'
 import { ActionCenter } from './action-center.js'
 import { AutonomyCoordinator } from './autonomy-coordinator.js'
+import { TaskContractPreflightService } from './task-contract-preflight.js'
+import { ReplanAutopilot } from './replan-autopilot.js'
+import { recollectForReview } from './review-snapshot-collector.js'
 import { AgentStudioService } from './agent-studio.js'
 import { RuntimeExecutionService } from './runtime-executor.js'
 import { OrchestrationService } from './orchestration.js'
@@ -87,6 +91,8 @@ export class RuntimeDispatcher {
   private readonly release: ReleaseService
   private readonly actions: ActionCenter
   private readonly autonomy: AutonomyCoordinator
+  private readonly preflight: TaskContractPreflightService
+  private readonly autopilot: ReplanAutopilot
   private readonly resources: ResourceService
   private readonly agentStudio: AgentStudioService
   private readonly runtimeExecutor: RuntimeExecutionService
@@ -114,7 +120,7 @@ export class RuntimeDispatcher {
     this.replans = new ReplanService(deps.store, this.orchestration, planner, this.planGrants, deps.logger)
     this.externalRunner = new ExternalAgentRunner(deps.store, deps.services, deps.logger)
     this.operations = new OperationsService(deps.store, deps.services)
-    this.lifecycle = new LifecycleService(deps.store)
+    this.lifecycle = new LifecycleService(deps.store, (provenance) => this.verifyReviewRecord(provenance))
     this.release = new ReleaseService(deps.store)
     this.actions = new ActionCenter(deps.store, this.lifecycle)
     this.resources = new ResourceService(deps.store)
@@ -147,6 +153,18 @@ export class RuntimeDispatcher {
           })
       },
     )
+    this.preflight = new TaskContractPreflightService(deps.store)
+    this.autopilot = new ReplanAutopilot(
+      deps.store,
+      this.replans,
+      this.orchestration,
+      this.planGrants,
+      this.scheduler,
+      this.actions,
+      this.preflight,
+      this.lifecycle,
+      deps.logger,
+    )
     this.autonomy = new AutonomyCoordinator(
       deps.store,
       this.actions,
@@ -158,11 +176,42 @@ export class RuntimeDispatcher {
         if (result.actions.length === 0) return
         deps.logger.info({ projectId: result.projectId, advanced: result.advanced.length, nudged: result.nudgedPlans.length }, 'autonomy coordination pass')
       },
+      this.autopilot,
     )
   }
 
-  recoverOrchestrations(): void {
-    this.operations.recoverRuns()
+  /**
+   * ADR-0025 — is this `review_record` evidence row still true?
+   *
+   * The version gate is the third place that used to decide "a review exists, so pass". It now
+   * asks the same question the scheduler and CompletionDecision ask: does the record still name
+   * this plan revision, and do the reviewed files still hash to the recorded fingerprint?
+   */
+  private verifyReviewRecord(provenance: unknown): { current: boolean; reason: string } {
+    const binding = reviewRecordBindingOf(provenance)
+    if (!binding) return { current: false, reason: '审查记录缺少与 Artifact/revision/内容快照的绑定' }
+    if (binding.verdict !== 'approved') return { current: false, reason: `审查结论为 ${binding.verdict}` }
+    const plan = this.deps.store.read.getPlanRevision(binding.planId)
+    if (!plan) return { current: false, reason: '审查记录指向的计划不存在' }
+    if (plan.revision !== binding.planRevision) {
+      return { current: false, reason: `计划已到 r${plan.revision}，审查记录属于 r${binding.planRevision}` }
+    }
+    const root = plan.execution?.workspaceRef
+    if (!root) return { current: false, reason: '计划没有可用于复核的工作区' }
+    const artifact = this.deps.store.read
+      .listArtifacts(plan.projectId)
+      .find((item) => item.id === binding.reviewArtifactId)
+    if (!artifact) return { current: false, reason: '审查 Artifact 不存在或已被删除' }
+    const snapshot = recollectForReview(root, (artifact.metadata ?? {}) as Record<string, unknown>)
+    if (!snapshot) return { current: false, reason: '无法为审查范围重新采集内容快照' }
+    return reviewRecordStillCurrent(binding, {
+      planId: plan.id,
+      planRevision: plan.revision,
+      snapshotFingerprint: snapshot.fingerprint,
+    })
+  }
+
+  recoverOrchestrations(): void {    this.operations.recoverRuns()
     const recovered = this.planGrants.recoverStartReservations()
     if (recovered.started > 0 || recovered.released > 0) {
       this.deps.logger.info(recovered, 'recovered stale plan grant start reservations')
@@ -1601,6 +1650,27 @@ export class RuntimeDispatcher {
         const input = this.parse('plan.replan.apply', rawInput)
         return this.replans.apply(input.proposalId)
       }
+      case 'plan.replan.evaluate': {
+        const input = this.parse('plan.replan.evaluate', rawInput)
+        const evaluation = this.autopilot.evaluateProposal(input.proposalId)
+        return {
+          decision: evaluation.authorization.decision,
+          diffs: evaluation.authorization.diffs,
+          reasons: evaluation.authorization.reasons,
+          envelopeGrantId: evaluation.envelopeGrantId,
+          preflightGaps: evaluation.preflightGaps,
+          requirements: evaluation.requirements,
+        }
+      }
+      case 'plan.replan.approve': {
+        // A human explicitly authorized the out-of-envelope delta. The product still does the
+        // mechanical work (revision, derived grant, scheduler start) and records the basis.
+        const input = this.parse('plan.replan.approve', rawInput)
+        return await this.autopilot.approveProposal(
+          input.proposalId,
+          input.reason ? [input.reason] : ['用户在执行授权范围差异中批准'],
+        )
+      }
       case 'plan.replan.reject': {
         const input = this.parse('plan.replan.reject', rawInput)
         return this.replans.reject(input.proposalId, input.reason)
@@ -1741,6 +1811,8 @@ function groupTurnTimeoutMs(): number {
   if (!Number.isFinite(raw)) return 120_000
   return Math.max(1_000, Math.min(30 * 60_000, Math.trunc(raw)))
 }
+
+
 
 
 

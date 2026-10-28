@@ -1,5 +1,5 @@
 import type { Artifact, RunDetail, TaskCard } from '@projectos/contracts'
-import { reviewVerdictOf } from './review-verdict.js'
+import { resolveReviewEvidence, type ReviewEvidenceContext } from './review-evidence.js'
 
 export type CompletionRequirementId = 'design' | 'code' | 'test' | 'review' | 'artifact' | 'human' | 'diagnostic'
 
@@ -37,6 +37,12 @@ export interface CompletionEvidenceInput {
   changedFiles?: string[]
   actorKind: 'user' | 'agent' | 'system'
   humanNote?: string | null
+  /**
+   * How to verify that a review is about the content that exists now (ADR-0025).
+   * When omitted the review may still complete the task, but can never be reported as
+   * approving: an unverifiable review must not unlock anything.
+   */
+  reviewContext?: ReviewEvidenceContext
 }
 
 export interface CompletionDecision {
@@ -234,8 +240,20 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
   })
   // Review performed (evidence valid) vs review approved (positive verdict).
   const hasReview = reviewArtifacts.length > 0
-  const approvedReviews = reviewArtifacts.filter((artifact) => reviewVerdictOf(metadataOf(artifact)) === 'approved')
-  const rejectedReviews = reviewArtifacts.filter((artifact) => reviewVerdictOf(metadataOf(artifact)) !== 'approved')
+  // One shared resolution rule for the current review evidence (ADR-0024/0025). It decides
+  // approval, supersession and multi-review conflicts the same way the scheduler and the
+  // lifecycle gate do, so no module can disagree about whether a review still counts.
+  const reviewResolution = resolveReviewEvidence(
+    reviewArtifacts.map((artifact) => ({
+      id: artifact.id,
+      title: artifact.title,
+      metadata: metadataOf(artifact),
+    })),
+    input.reviewContext ?? {},
+  )
+  const approvedReviews = reviewArtifacts.filter(
+    (artifact) => reviewResolution.current.some((item) => item.id === artifact.id && item.verdict === 'approved'),
+  )
   const hasArtifact = artifacts.length > 0
 
   const requirements: CompletionRequirement[] = []
@@ -372,10 +390,13 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
   }
   if (reviewArtifacts.length > 0) {
     reasons.push(
-      approvedReviews.length > 0
-        ? `审查结论：通过（${approvedReviews.length} 份）`
-        : `审查结论：未通过（${rejectedReviews.length} 份）；审查任务可完成，但成果不得进入质量门禁通过状态`,
+      reviewResolution.approved
+        ? `审查结论：通过（当前内容 ${approvedReviews.length} 份一致）`
+        : `审查结论：未通过（${reviewResolution.reasons.join('；')}）；审查任务可完成，但成果不得进入质量门禁通过状态`,
     )
+    for (const item of reviewResolution.historical) {
+      reasons.push(`历史审查（旧内容，仅审计）：${item.title} → ${item.verdict}`)
+    }
   }
   const ok = requirements.every((item) => item.satisfied)
   return {
@@ -385,7 +406,11 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
     toolOutcomes,
     reasons,
     review: reviewArtifacts.length > 0
-      ? { performed: true, approved: approvedReviews.length > 0, blockingFindings: rejectedReviews.length }
+      ? {
+          performed: true,
+          approved: reviewResolution.approved,
+          blockingFindings: reviewResolution.blockingFindings,
+        }
       : undefined,
   }
 }

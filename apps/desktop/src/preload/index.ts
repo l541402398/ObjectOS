@@ -269,6 +269,8 @@ const api: ProjectOSDesktopApi = {
       list: (projectId, planId = null) => call('plan.replan.list', { projectId, planId }),
       get: (proposalId) => call('plan.replan.get', { proposalId }),
       apply: (proposalId) => call('plan.replan.apply', { proposalId }),
+      evaluate: (proposalId) => call('plan.replan.evaluate', { proposalId }),
+      approve: (proposalId, reason = '') => call('plan.replan.approve', { proposalId, reason }),
       reject: (proposalId, reason = '用户拒绝修订提案') => call('plan.replan.reject', { proposalId, reason }),
     },
   },

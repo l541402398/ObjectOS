@@ -439,7 +439,15 @@ export const ApiSchemas = {
     output: ProjectAutonomySettingsSchema,
   },
   'action.autonomy.set': {
-    input: z.object({ projectId: IdSchema, mode: ProjectAutonomyModeSchema, autoAdvancePhases: z.array(z.string()).optional() }),
+    input: z.object({
+      projectId: IdSchema,
+      mode: ProjectAutonomyModeSchema,
+      autoAdvancePhases: z.array(z.string()).optional(),
+      autoStartPlans: z.boolean().optional(),
+      autoApplyReplans: z.boolean().optional(),
+      autoDeliver: z.boolean().optional(),
+      maxAutoReplans: z.number().int().min(0).max(10).optional(),
+    }),
     output: ProjectAutonomySettingsSchema,
   },
   'action.autonomy.tick': {
@@ -1401,6 +1409,27 @@ export const ApiSchemas = {
     input: z.object({ proposalId: IdSchema }),
     output: z.object({ proposal: ReplanProposalViewSchema, plan: PlanDraftSchema }),
   },
+  'plan.replan.evaluate': {
+    input: z.object({ proposalId: IdSchema }),
+    output: z.object({
+      decision: z.enum(['auto-apply', 'require-approval', 'blocked']),
+      diffs: z.array(z.string()),
+      reasons: z.array(z.string()),
+      envelopeGrantId: IdSchema.nullable(),
+      preflightGaps: z.array(z.string()),
+      requirements: z.object({
+        agentsRequired: z.array(z.string()),
+        pathsRequired: z.array(z.string()),
+        tasksToRun: z.number().int().nonnegative(),
+        toolCallsNeeded: z.number().int().nonnegative(),
+        downgradeNotes: z.array(z.string()),
+      }),
+    }),
+  },
+  'plan.replan.approve': {
+    input: z.object({ proposalId: IdSchema, reason: z.string().trim().max(2000).default('') }),
+    output: z.object({ planId: IdSchema, grantId: IdSchema }),
+  },
   'plan.replan.reject': {
     input: z.object({ proposalId: IdSchema, reason: z.string().trim().max(4000).default('用户拒绝修订提案') }),
     output: ReplanProposalViewSchema,
@@ -1571,6 +1600,8 @@ export function isMainMethod(value: string): value is MainMethod {
 export const ApprovalDecisionSchema = ApprovalStatusSchema.extract(['approved', 'rejected'])
 export const PageSchema = PageInputSchema
 export const HandoffDecisionSchema = HandoffStatusSchema.extract(['accepted', 'rejected'])
+
+
 
 
 

@@ -314,6 +314,9 @@ export const ActionItemSchema = z.object({
   runId: z.string().nullable().default(null),
   taskId: z.string().nullable().default(null),
   deploymentId: z.string().nullable().default(null),
+  /** Exact replan proposal for scope approvals, so the UI can open the real object. */
+  proposalId: z.string().nullable().default(null),
+  planId: z.string().nullable().default(null),
   createdAt: TimestampSchema,
   stale: z.boolean().default(false),
 })
@@ -325,6 +328,11 @@ export type ProjectAutonomyMode = z.infer<typeof ProjectAutonomyModeSchema>
 export const ProjectAutonomySettingsSchema = z.object({
   mode: ProjectAutonomyModeSchema,
   autoAdvancePhases: z.array(z.string()),
+  /** ADR-0026 product-autonomy policies (all explicit, all auditable). */
+  autoStartPlans: z.boolean().default(true),
+  autoApplyReplans: z.boolean().default(true),
+  autoDeliver: z.boolean().default(false),
+  maxAutoReplans: z.number().int().min(0).max(10).default(3),
 })
 export type ProjectAutonomySettings = z.infer<typeof ProjectAutonomySettingsSchema>
 
@@ -448,3 +456,4 @@ export const RecordDeploymentResultInputSchema = z.object({
   notes: z.string().max(8000).default(''),
 })
 export type RecordDeploymentResultInput = z.infer<typeof RecordDeploymentResultInputSchema>
+

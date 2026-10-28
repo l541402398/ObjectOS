@@ -66,7 +66,15 @@ const ASSURANCE_RANK: Record<string, number> = {
 }
 
 export class LifecycleService {
-  constructor(private readonly store: SqliteStore) {}
+  constructor(
+    private readonly store: SqliteStore,
+    /**
+     * ADR-0025 DI: decides whether a `review_record` evidence row still matches the current
+     * plan revision and content. Wired by the dispatcher to the shared review resolver; tests
+     * and standalone uses may omit it, in which case the row is judged on its own fields.
+     */
+    private readonly reviewRecordVerifier?: (provenance: unknown) => { current: boolean; reason: string },
+  ) {}
 
   overview(projectId: string): LifecycleOverview {
     const overview = this.store.read.getLifecycleOverview(projectId)
@@ -467,20 +475,35 @@ export class LifecycleService {
     const evidence = this.listEvidence('version', version.id)
     const conditionResults = definition.conditions.map((condition, conditionIndex) => {
       const candidates = evidence.filter((item) => item.evidenceType === condition.evidenceType)
+      const reviewVerdicts = new Map<string, { current: boolean; reason: string }>()
       const usable = candidates.filter((item) => {
         if (item.verificationStatus !== condition.requiredStatus) return false
         if (!condition.allowSelfDeclared && item.assurance === 'self_declared') return false
-        return (ASSURANCE_RANK[item.assurance] ?? -1) >= (ASSURANCE_RANK[condition.minAssurance] ?? 0)
+        if ((ASSURANCE_RANK[item.assurance] ?? -1) < (ASSURANCE_RANK[condition.minAssurance] ?? 0)) return false
+        // ADR-0024/0025: a review record only counts while it still names the current plan
+        // revision and the current content. Otherwise this third module would re-introduce the
+        // "stale review unlocks a gate" bug that the shared resolver already forbids elsewhere.
+        if (condition.evidenceType === 'review_record' && this.reviewRecordVerifier) {
+          const verdict = this.reviewRecordVerifier(item.provenance)
+          reviewVerdicts.set(item.id, verdict)
+          return verdict.current
+        }
+        return true
       })
+      const stale = candidates.filter((item) => reviewVerdicts.get(item.id)?.current === false)
       return {
         conditionIndex,
         satisfied: usable.length > 0,
         evidenceIds: usable.map((item) => item.id),
         reason: usable.length
           ? `${condition.evidenceType} 已满足`
-          : candidates.length
-            ? `${condition.evidenceType} 存在但状态/保证程度不足（需要 ${condition.requiredStatus}/${condition.minAssurance}）`
-            : `缺少 ${condition.evidenceType}（需要 ${condition.requiredStatus}/${condition.minAssurance}）`,
+          : stale.length
+            ? `${condition.evidenceType} 已过期：${stale
+                .map((item) => reviewVerdicts.get(item.id)?.reason ?? '与当前 revision 不一致')
+                .join('；')}`
+            : candidates.length
+              ? `${condition.evidenceType} 存在但状态/保证程度不足（需要 ${condition.requiredStatus}/${condition.minAssurance}）`
+              : `缺少 ${condition.evidenceType}（需要 ${condition.requiredStatus}/${condition.minAssurance}）`,
       }
     })
     const status: GateEvaluation['status'] = conditionResults.every((item) => item.satisfied) ? 'passed' : 'failed'

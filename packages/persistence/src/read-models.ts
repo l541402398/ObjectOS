@@ -1851,6 +1851,16 @@ export class ReadModels {
     return this.all<PlanRevisionRow>('SELECT * FROM plan_revisions ORDER BY updated_at DESC').map(toPlanRevision)
   }
 
+  /** Plan revision that owns a task, when it still exists (ADR-0025 review binding). */
+  findPlanRevisionForTask(projectId: string, taskId: string): string | null {
+    const row = this.get<{ id: string }>(
+      "SELECT id FROM plan_revisions WHERE project_id = ? AND EXISTS (SELECT 1 FROM json_each(json_extract(plan_json, '$.createdTaskIds')) WHERE value = ?) ORDER BY revision DESC LIMIT 1",
+      projectId,
+      taskId,
+    )
+    return row ? String(row.id) : null
+  }
+
   getPlanRevision(id: string): PlanDraft | null {
     const row = this.get<PlanRevisionRow>('SELECT * FROM plan_revisions WHERE id = ?', id)
     return row ? toPlanRevision(row) : null

@@ -257,6 +257,8 @@ export interface ProjectOSDesktopApi {
       list: (projectId: string, planId?: string | null) => Promise<Out<'plan.replan.list'>>
       get: (proposalId: string) => Promise<Out<'plan.replan.get'>>
       apply: (proposalId: string) => Promise<Out<'plan.replan.apply'>>
+    evaluate: (proposalId: string) => Promise<Out<'plan.replan.evaluate'>>
+    approve: (proposalId: string, reason?: string) => Promise<Out<'plan.replan.approve'>>
       reject: (proposalId: string, reason?: string) => Promise<Out<'plan.replan.reject'>>
     }
   }
@@ -362,6 +364,7 @@ declare global {
     projectos: ProjectOSDesktopApi
   }
 }
+
 
 
 

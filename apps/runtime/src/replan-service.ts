@@ -198,6 +198,20 @@ export class ReplanService {
   }
 
   apply(proposalId: string): { proposal: ReplanProposalView; plan: PlanDraft } {
+    return this.applyAuthorized(proposalId, { kind: 'user', reasons: ['用户应用修订提案'] })
+  }
+
+  /**
+   * ADR-0026 — apply a revision with an explicit authorization basis.
+   *
+   * `kind: 'policy'` means the product verified that the revision stays inside the user's live
+   * grant envelope (paths/agents/tools/budget/expiry) and applied it without asking again. It is
+   * recorded as such: it is never written as a human decision, and it never issues a human grant.
+   */
+  applyAuthorized(
+    proposalId: string,
+    basis: { kind: 'user' | 'policy'; reasons: string[] },
+  ): { proposal: ReplanProposalView; plan: PlanDraft } {
     const proposal = this.store.read.getReplanProposal(proposalId)
     if (!proposal) throw new AppError('NOT_FOUND', '重规划提案不存在')
     if (proposal.status !== 'proposed') throw new AppError('CONFLICT', `重规划提案状态为 ${proposal.status}，不能应用`)
@@ -251,7 +265,10 @@ export class ReplanService {
       ...proposal,
       status: 'applied',
       decidedAt: timestamp,
-      decidedReason: '用户应用修订提案',
+      decidedReason:
+        basis.kind === 'policy'
+          ? `系统按现有执行授权范围自动应用修订：${basis.reasons.join('；')}`.slice(0, 4000)
+          : basis.reasons.join('；') || '用户应用修订提案',
       appliedPlanId: revised.id,
       updatedAt: timestamp,
     }
@@ -262,6 +279,8 @@ export class ReplanService {
       sourceRevision: plan.revision,
       appliedPlanId: revised.id,
       revision: revised.revision,
+      authorizedBy: basis.kind === 'policy' ? 'policy' : 'user',
+      authorizationBasis: basis.reasons,
     })
     return { proposal: this.view(next), plan: revised }
   }

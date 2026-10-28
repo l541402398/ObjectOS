@@ -19,6 +19,11 @@ import type { Logger } from './logger.js'
 
 const LOCAL_USER: PlanGrantActor = { kind: 'user', id: 'local-user', name: '你' }
 const SYSTEM_AUTOMATION: PlanGrantActor = { kind: 'system', id: 'automation', name: '自动化运营' }
+/**
+ * The product's own authorization actor. Used only for grants *derived* from a user grant
+ * inside its envelope; it never represents a human decision and never expands scope.
+ */
+const SYSTEM_AUTONOMY_POLICY: PlanGrantActor = { kind: 'system', id: 'autonomy-policy', name: '自主推进策略' }
 const MIN_TTL_MS = 5 * 60 * 1000
 const MAX_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -645,6 +650,127 @@ export class PlanGrantService {
     return this.store.findPlanGrantStartReservation(grantId, idempotencyKey)
   }
 
+  /**
+   * ADR-0026 — derive the grant for an autonomously applied revision.
+   *
+   * This is NOT a human grant and must never be recorded as one. It is a *derived* grant whose
+   * provenance names the user's grant and the exact envelope it inherits, and it can only be
+   * narrower: paths, Agents, actions, budget and expiry are all bounded by the source grant.
+   * The caller (`evaluateReplanAuthorization`) is what proves the revision fits; this method
+   * re-asserts the bounds so a coding mistake in the caller cannot widen authorization.
+   */
+  deriveReplanGrant(input: {
+    plan: PlanDraft
+    /**
+     * The envelope captured from the source grant *before* the revision superseded it.
+     * Supersession revokes the old grant by design, so the derived grant must inherit the
+     * captured bounds instead of re-reading a row that is now closed.
+     */
+    sourceGrant: {
+      id: string
+      actions: PlanExecutionGrant['actions']
+      allowedPaths: string[]
+      allowedAgentIds: string[]
+      maxRuns: number
+      maxToolCalls: number
+      expiresAt: number
+      allowOverBudget: boolean
+    }
+    /** Revision-level cap chosen by the policy; never above the captured remaining budget. */
+    maxRuns?: number
+    maxToolCalls?: number
+    note: string
+  }): PlanExecutionGrantView {
+    const plan = input.plan
+    if (plan.status !== 'approved') {
+      throw new AppError('APPROVAL_REQUIRED', '只有已批准的计划可以派生执行授权')
+    }
+    if (plan.createdTaskIds.length === 0) {
+      throw new AppError('CONFLICT', '修订计划尚未创建任务，不能派生执行授权')
+    }
+    const source = input.sourceGrant
+    if (source.expiresAt <= now()) throw new AppError('APPROVAL_REQUIRED', '源授权已过期，不能派生新授权')
+    const remainingRuns = Math.max(0, source.maxRuns)
+    const remainingToolCalls = Math.max(0, source.maxToolCalls)
+    if (remainingRuns <= 0) throw new AppError('APPROVAL_REQUIRED', '源授权启动次数已用尽，必须由用户重新授权')
+    if (remainingToolCalls <= 0) throw new AppError('APPROVAL_REQUIRED', '源授权工具调用预算已用尽，必须由用户重新授权')
+
+    const agents = this.currentAgents(plan)
+    const agentIds = [...new Set([...agents.values()].filter((value): value is string => Boolean(value)))]
+    const unassigned = [...agents.entries()].filter(([, agentId]) => !agentId)
+    if (unassigned.length > 0) {
+      throw new AppError('CONFLICT', '修订计划仍有任务没有分配 Agent，不能派生授权')
+    }
+    const outside = agentIds.filter((agentId) => !source.allowedAgentIds.includes(agentId))
+    if (outside.length > 0) {
+      throw new AppError(
+        'APPROVAL_REQUIRED',
+        `修订计划使用了源授权之外的 Agent（${outside.join('、')}），必须由用户批准扩大授权`,
+      )
+    }
+    const project = this.store.read.getProject(plan.projectId)
+    if (!project) throw new AppError('NOT_FOUND', '项目不存在')
+    const paths = source.allowedPaths
+    if (paths.some((path) => isCriticalGrantPath(path) || isProtectedPath(path))) {
+      throw new AppError('APPROVAL_REQUIRED', '源授权包含安全敏感路径，不能自动派生')
+    }
+
+    const timestamp = now()
+    const requestedRuns = input.maxRuns ?? remainingRuns
+    const requestedToolCalls = input.maxToolCalls ?? remainingToolCalls
+    const grant: PlanExecutionGrant = {
+      id: newId('pgr'),
+      projectId: plan.projectId,
+      planId: plan.id,
+      planRevision: plan.revision,
+      planFingerprint: planFingerprint(plan),
+      actor: SYSTEM_AUTONOMY_POLICY,
+      actions: source.actions,
+      allowedPaths: paths,
+      allowedTaskIds: [...plan.createdTaskIds],
+      allowedAgentIds: agentIds,
+      maxRuns: Math.max(1, Math.min(remainingRuns, requestedRuns)),
+      usedRuns: 0,
+      reservedRuns: 0,
+      maxToolCalls: Math.max(1, Math.min(remainingToolCalls, requestedToolCalls)),
+      usedToolCalls: 0,
+      allowOverBudget: source.allowOverBudget,
+      note: `${input.note.slice(0, 1200)}（派生自授权 ${source.id}，不扩大授权范围）`,
+      issuedAt: timestamp,
+      // Never outlive the authorization the user actually gave.
+      expiresAt: source.expiresAt,
+      revokedAt: null,
+      revokedReason: null,
+      lastUsedAt: null,
+    }
+    this.store.transaction(() => {
+      this.store.revokeActivePlanExecutionGrants(plan.id, `被派生授权 ${grant.id} 替换`, timestamp)
+      this.store.createPlanExecutionGrant(grant)
+      this.store.appendEvent(plan.projectId, plan.id, PROJECT_EVENT_TYPES.planGrantIssued, {
+        grantId: grant.id,
+        planId: plan.id,
+        revision: plan.revision,
+        actor: grant.actor,
+        actions: grant.actions,
+        allowedPaths: grant.allowedPaths,
+        allowedTaskIds: grant.allowedTaskIds,
+        allowedAgentIds: grant.allowedAgentIds,
+        maxRuns: grant.maxRuns,
+        maxToolCalls: grant.maxToolCalls,
+        expiresAt: grant.expiresAt,
+        allowOverBudget: grant.allowOverBudget,
+        note: grant.note,
+        derivedFromGrantId: source.id,
+        authorizationBasis: 'policy:existing-grant-envelope',
+      })
+    })
+    this.logger?.info(
+      { grantId: grant.id, planId: plan.id, derivedFrom: source.id },
+      'derived plan execution grant for autonomous revision',
+    )
+    return this.view(grant, plan)
+  }
+
   reserveStart(
     plan: PlanDraft,
     grant: PlanExecutionGrantView,
@@ -884,3 +1010,4 @@ function statusText(status: PlanExecutionGrantView['status']): string {
   if (status === 'exhausted') return '已用尽'
   return '有效'
 }
+

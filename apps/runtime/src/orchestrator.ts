@@ -1,5 +1,7 @@
 import { execFileSync } from 'node:child_process'
-import { collectReviewSnapshot } from './review-snapshot-collector.js'
+import { collectReviewSnapshot, recollectForReview } from './review-snapshot-collector.js'
+import { failingVerifications as sharedFailingVerifications, planReviewEvidence as planReviewEvidenceFor, workspaceRevision as sharedWorkspaceRevision } from './review-evidence-runtime.js'
+import { detectApprovalPark, type ApprovalPark } from './approval-park.js'
 import {
   AppError,
   now,
@@ -13,7 +15,12 @@ import {
   type TaskCard,
   type WorktreeInfo,
 } from '@projectos/contracts'
-import { evaluateCompletion, reviewVerdictOf, type CoreServices } from '@projectos/application'
+import {
+  evaluateCompletion,
+  resolveReviewEvidence,
+  type CoreServices,
+  type ReviewEvidenceResolution,
+} from '@projectos/application'
 import { PROJECT_EVENT_TYPES } from '@projectos/domain'
 import { getGitStatus } from '@projectos/workspace'
 import { createArtifactRecord } from '@projectos/persistence'
@@ -86,6 +93,8 @@ function execution(status: PlanExecution['status'], concurrency: number, previou
     maxWallClockMs: previous?.maxWallClockMs ?? 0,
     deadlineAt: previous?.deadlineAt ?? 0,
     budgetExhausted: previous?.budgetExhausted ?? null,
+    baseBranch: previous?.baseBranch ?? null,
+    baseCommit: previous?.baseCommit ?? null,
   }
 }
 
@@ -983,10 +992,21 @@ export class OrchestrationScheduler {
     try {
       const ref = await this.worktrees.create(project.rootPath, worktreePath, branch)
       const current = plan.execution ?? execution('running', 2)
+      // Record where the worktree was cut from: auto-delivery must refuse to merge into a
+      // different target branch than the one this work was reviewed against.
+      const baseBranch = (() => {
+        try {
+          return execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: project.rootPath, encoding: 'utf8' }).trim() || null
+        } catch {
+          return null
+        }
+      })()
       this.saveExecution(plan, {
         ...current,
         workspaceRef: ref.path,
         branch: ref.branch,
+        baseBranch,
+        baseCommit: ref.baseHead ?? null,
         updatedAt: now(),
       })
       return ref.path
@@ -1002,92 +1022,45 @@ export class OrchestrationScheduler {
   }
 
   /**
-   * Real, recorded check failures across the plan's runs. Only calls that actually
-   * executed and reported an exit code count; a later passing run of the same command
-   * supersedes the older failure so a genuine fix clears the signal.
+   * Review evidence for the plan's current content, resolved by the single shared rule
+   * (`resolveReviewEvidence`). A negative review legally completes the review task, but it
+   * must never let the plan claim success: it is a verification failure that goes back to
+   * the Replanner. Historical reviews of superseded content are kept for audit and are not
+   * decisive, so a legitimate re-review is not blocked forever by an old finding.
    */
-  private failingVerifications(plan: PlanDraft): Array<{ command: string; exitCode: number }> {
-    const latest = new Map<string, { command: string; exitCode: number; at: number }>()
-    const runs = this.store.db
-      .prepare("SELECT id, created_at FROM agent_runs WHERE task_id IN (SELECT value FROM json_each(?)) ORDER BY created_at ASC")
-      .all(JSON.stringify(plan.createdTaskIds)) as Array<{ id: string; created_at: number }>
-    for (const runRow of runs) {
-      for (const call of this.store.read.getToolCalls(runRow.id)) {
-        if (call.status !== 'completed') continue
-        if (call.toolName !== 'run_tests' && call.toolName !== 'run_command') continue
-        const cmdText = typeof call.args?.command === 'string' ? call.args.command.trim() : ''
-        // Only real verification commands can fail verification. A read-only helper such
-        // as `git diff --no-index` exits 1 when files differ; that is information, not a
-        // failing check, and must never pause a plan.
-        const isVerification =
-          call.toolName === 'run_tests' ||
-          /^(npm|pnpm|yarn)\s+(run\s+)?test\b/i.test(cmdText) ||
-          /^(npx\s+)?(vitest|jest|mocha)\b/i.test(cmdText) ||
-          /^node\s+--test\b/i.test(cmdText) ||
-          /^(npm|pnpm|yarn)\s+run\s+(build|typecheck|lint)\b/i.test(cmdText) ||
-          /^(npx\s+)?tsc\b/i.test(cmdText)
-        if (!isVerification) continue
-        const result = (call.result ?? {}) as Record<string, unknown>
-        const exitCode = typeof result.exitCode === 'number' ? result.exitCode : typeof result.code === 'number' ? result.code : null
-        if (exitCode === null) continue
-        const command = typeof call.args?.command === 'string' ? call.args.command : call.toolName
-        latest.set(command, { command, exitCode, at: call.startedAt ?? call.finishedAt ?? 0 })
-      }
-    }
-    return [...latest.values()].filter((item) => item.exitCode !== 0).map(({ command, exitCode }) => ({ command, exitCode }))
+  private planReviewEvidence(plan: PlanDraft): ReviewEvidenceResolution {
+    return planReviewEvidenceFor(this.store, plan)
   }
 
-  /**
-   * Review evidence that is valid but NOT approving (需要修改 / 阻断交付). A negative
-   * review legally completes the review task, but it must never let the plan claim
-   * success: it is a verification failure that goes back to the Replanner.
-   */
+  /** Reviews that currently block the plan, with the reason each one blocks. */
   private negativeReviews(plan: PlanDraft): Array<{ title: string; conclusion: string }> {
-    const reviews: Array<{ title: string; metadata: Record<string, unknown>; revision: string; conclusion: string }> = []
-    for (const taskId of plan.createdTaskIds) {
-      for (const artifact of this.store.read.listArtifacts(plan.projectId, taskId)) {
-        const metadata = (artifact.metadata ?? {}) as Record<string, unknown>
-        if (metadata.artifactType !== 'review') continue
-        reviews.push({
-          title: artifact.title,
-          metadata,
-          revision: typeof metadata.reviewedRevision === 'string' ? metadata.reviewedRevision : '',
-          conclusion: typeof metadata.conclusion === 'string' ? metadata.conclusion.trim() : '',
-        })
-      }
-    }
-    if (reviews.length === 0) return []
-
-    // ADR-0024 supersession: a re-review of the *current* revision supersedes older
-    // verdicts for the same plan (history is kept, it just stops being decisive). Every
-    // review that belongs to the current revision still has to pass.
-    const currentRevision = this.workspaceRevision(plan)
-    const atCurrent = reviews.filter((item) => !item.revision || !currentRevision || item.revision === currentRevision)
-    const decisive = atCurrent.length > 0 ? atCurrent : reviews
-    // Uncommitted rewrites change content without moving HEAD, so re-derive the snapshot.
-    const root = plan.execution?.workspaceRef
-    const rejected: Array<{ title: string; conclusion: string }> = []
-    for (const item of decisive) {
-      const currentSnapshot = root
-        ? collectReviewSnapshot({ workspaceRoot: root, reviewedObjects: item.metadata.reviewedObjects })
-        : null
-      const verdict = reviewVerdictOf(item.metadata, { currentRevision, currentSnapshot })
-      if (verdict !== 'approved') {
-        rejected.push({ title: item.title, conclusion: `${item.conclusion || '未给出结论'}（${verdict}）` })
-      }
-    }
-    return rejected
+    const resolution = this.planReviewEvidence(plan)
+    if (resolution.current.length === 0 && resolution.historical.length === 0) return []
+    if (resolution.approved) return []
+    return [
+      ...resolution.current
+        .filter((item) => item.verdict !== 'approved')
+        .map((item) => ({ title: item.title, conclusion: `${item.conclusion || '未给出结论'}（${item.verdict}）` })),
+      ...resolution.unverifiable
+        .filter((item) => item.blocking.length > 0)
+        .map((item) => ({ title: item.title, conclusion: `${item.blocking.join('、')}（阻断项未解决）` })),
+      ...(resolution.current.length === 0
+        ? [{ title: '当前内容缺少审查', conclusion: resolution.reasons.join('；') }]
+        : []),
+    ]
   }
 
   /** HEAD of the plan's workspace, when it can be read. */
   private workspaceRevision(plan: PlanDraft): string | null {
-    const root = plan.execution?.workspaceRef
-    if (!root) return null
-    try {
-      return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim() || null
-    } catch {
-      return null
-    }
+    return sharedWorkspaceRevision(plan.execution?.workspaceRef)
+  }
+
+  /**
+   * A plan parked on an undecided approval must not keep pretending to run (ADR-0027).
+   * Detection lives in approval-park.ts so it is unit-testable on real persisted rows.
+   */
+  private detectApprovalPark(plan: PlanDraft): ApprovalPark | null {
+    return detectApprovalPark(this.store, plan)
   }
 
   private async tick(planId: string): Promise<void> {
@@ -1122,6 +1095,28 @@ export class OrchestrationScheduler {
       // Hard Plan wall-clock budget: checked before any new task or tool can start.
       if (plan.execution.deadlineAt > 0 && now() >= plan.execution.deadlineAt) {
         await this.enforcePlanDeadline(plan)
+        return
+      }
+      // A Run parked on an undecided approval is not "running": say so, keep it resumable.
+      // Without this, a plan stays `running` for as long as nobody answers (900s+ observed),
+      // with no progress event and no way for an observer to tell waiting from working.
+      const parked = this.detectApprovalPark(plan)
+      if (parked) {
+        this.saveExecution(plan, {
+          ...plan.execution,
+          status: 'paused',
+          error: `${parked.detail}（运行 ${parked.runId}）`,
+          updatedAt: now(),
+        })
+        this.disarm(planId)
+        this.store.appendEvent(plan.projectId, plan.id, PROJECT_EVENT_TYPES.planStatusChanged, {
+          planId: plan.id,
+          revision: plan.revision,
+          from: 'running',
+          to: 'paused',
+          reason: 'approval.waiting',
+          ...parked,
+        })
         return
       }
       const cards = plan.createdTaskIds
@@ -1272,6 +1267,12 @@ export class OrchestrationScheduler {
           fileExists: (relativePath) => existsSync(join(workspaceRoot, relativePath)),
           changedFiles: git?.changes.map((change) => change.path) ?? [],
           actorKind: 'system',
+          // CompletionDecision must judge a review against the content that exists now, with
+          // the same rule the plan-level check uses (ADR-0024/0025).
+          reviewContext: {
+            currentRevision: this.workspaceRevision(plan),
+            snapshotFor: (metadata) => recollectForReview(workspaceRoot, metadata),
+          },
         })
         if (!decision.ok) {
           const missing = decision.requirements
@@ -1388,7 +1389,7 @@ export class OrchestrationScheduler {
         // plan exited non-zero and has not been superseded by a later passing run, the
         // plan is a verification failure: keep the failure evidence and ask the
         // Replanner for a legitimate fix instead of marking the plan completed.
-        const failedChecks = this.failingVerifications(plan)
+        const failedChecks = sharedFailingVerifications(this.store, plan)
         const rejectedReviews = this.negativeReviews(plan)
         if (failedChecks.length > 0 || rejectedReviews.length > 0) {
           const reason = [
@@ -1689,4 +1690,6 @@ export class OrchestrationScheduler {
     }
   }
 }
+
+
 

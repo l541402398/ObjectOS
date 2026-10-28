@@ -27,6 +27,7 @@ export type CoordinationKind =
   | 'version.settled'
   | 'delivery.settled'
   | 'handoff.settled'
+  | 'plan.settled'
 
 const MAX_ATTEMPTS = 3
 const MAX_ROWS = 2000
@@ -41,6 +42,10 @@ export function classifyEvent(type: string): CoordinationKind | null {
   if (type.startsWith('version.') || type.startsWith('iteration.')) return 'version.settled'
   if (type.startsWith('deployment.') || type.startsWith('release.') || type.startsWith('changeRequest.')) return 'delivery.settled'
   if (type.startsWith('handoff.')) return 'handoff.settled'
+  // Plan lifecycle events (replan proposed/applied, execution status) must also drive a
+  // pass: otherwise a revision is never picked up until some unrelated event lands.
+  if (type.startsWith('plan.')) return 'plan.settled'
+  if (type.startsWith('project.autonomy')) return 'plan.settled'
   return null
 }
 
@@ -81,6 +86,12 @@ export class AutonomyCoordinator {
     private readonly scheduler: { nudgeProject: (projectId: string) => string[] } | null,
     private readonly logger: { info: (payload: unknown, message: string) => void; warn: (payload: unknown, message: string) => void },
     private readonly onProgress?: (result: CoordinationResult) => void,
+    /**
+     * The product's own autonomy pipeline (ADR-0026). It is called from the same single pass,
+     * so a project never gets two competing loops; it starts work, applies authorized
+     * revisions and delivers, while this coordinator keeps nudging the existing scheduler.
+     */
+    private readonly pipeline?: { advance: (projectId: string) => void },
   ) {}
 
   /** Records an event as a coordination intent. Returns false when deduplicated. */
@@ -143,7 +154,15 @@ export class AutonomyCoordinator {
       }
     }
 
-    // 3) Whatever still needs a human is surfaced by the action center, not re-decided here.
+    // 3) Let the autonomy pipeline act inside the user's granted envelope. It is
+    // fire-and-forget: a slow model call must never stall coordination or the scheduler.
+    try {
+      this.pipeline?.advance(projectId)
+    } catch (error) {
+      this.logger.warn({ err: String(error), projectId }, 'autonomy pipeline advance failed')
+    }
+
+    // 4) Whatever still needs a human is surfaced by the action center, not re-decided here.
     const items = this.actions.items(projectId).filter((item) => !item.stale)
     result.openActions = items.length
     result.completed = items.length === 0
@@ -231,3 +250,4 @@ export class AutonomyCoordinator {
     }))
   }
 }
+

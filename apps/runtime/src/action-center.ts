@@ -19,6 +19,8 @@ export type ActionKind =
   | 'tool_approval'
   | 'task_acceptance'
   | 'delivery_approval'
+  | 'replan_scope'
+  | 'plan_delivery'
   | 'version_gate'
   | 'deployment_reconciliation'
   | 'run_failure'
@@ -43,6 +45,9 @@ export interface ActionItem {
   runId: string | null
   taskId: string | null
   deploymentId: string | null
+  /** Set for replan scope approvals so the UI can open the exact proposal. */
+  proposalId?: string | null
+  planId?: string | null
   createdAt: number
   /** True when the underlying object can no longer be acted on. */
   stale: boolean
@@ -54,6 +59,19 @@ export interface ProjectAutonomySettings {
   mode: ProjectAutonomyMode
   /** Phases that may advance without a human click when their gate passes. */
   autoAdvancePhases: string[]
+  /**
+   * ADR-0026 policies. Each one is an explicit user decision about how far the product may
+   * go on its own; all default to the conservative value except the ones the product needs to
+   * drive work at all.
+   */
+  /** Start an approved plan that already has an active execution grant. */
+  autoStartPlans: boolean
+  /** Apply a revision that stays inside the live grant envelope; never expands it. */
+  autoApplyReplans: boolean
+  /** Merge a completed plan's worktree without a click, when every delivery condition holds. */
+  autoDeliver: boolean
+  /** How many policy-authorized revisions a project may apply before a human must look. */
+  maxAutoReplans: number
 }
 
 const AUTONOMY_KEY = (projectId: string): string => `autonomy.mode.${projectId}`
@@ -66,6 +84,13 @@ const DEFAULT_AUTONOMY: ProjectAutonomySettings = {
   // Only lifecycle hops that are already gate-protected are auto-advanced; external
   // deployment and credential operations are never in this list.
   autoAdvancePhases: ['discovery', 'build', 'verify', 'release_candidate'],
+  // Starting work the user already approved and granted is the product's job.
+  autoStartPlans: true,
+  // Revisions are applied only inside the envelope the user granted (ADR-0026).
+  autoApplyReplans: true,
+  // Merging into the user's branch is a separate, higher-risk step: opt-in only.
+  autoDeliver: false,
+  maxAutoReplans: 3,
 }
 
 const PHASE_LABEL: Record<string, string> = {
@@ -92,20 +117,52 @@ export class ActionCenter {
       return {
         mode,
         autoAdvancePhases: Array.isArray(parsed.autoAdvancePhases) ? parsed.autoAdvancePhases.filter((item): item is string => typeof item === 'string') : [...DEFAULT_AUTONOMY.autoAdvancePhases],
+        autoStartPlans: parsed.autoStartPlans ?? DEFAULT_AUTONOMY.autoStartPlans,
+        autoApplyReplans: parsed.autoApplyReplans ?? DEFAULT_AUTONOMY.autoApplyReplans,
+        autoDeliver: parsed.autoDeliver ?? DEFAULT_AUTONOMY.autoDeliver,
+        maxAutoReplans:
+          typeof parsed.maxAutoReplans === 'number' && parsed.maxAutoReplans >= 0
+            ? Math.min(10, Math.floor(parsed.maxAutoReplans))
+            : DEFAULT_AUTONOMY.maxAutoReplans,
       }
     } catch {
       return { ...DEFAULT_AUTONOMY }
     }
   }
 
-  setAutonomySettings(projectId: string, input: { mode: ProjectAutonomyMode; autoAdvancePhases?: string[] }): ProjectAutonomySettings {
+  setAutonomySettings(
+    projectId: string,
+    input: {
+      mode: ProjectAutonomyMode
+      autoAdvancePhases?: string[]
+      autoStartPlans?: boolean
+      autoApplyReplans?: boolean
+      autoDeliver?: boolean
+      maxAutoReplans?: number
+    },
+  ): ProjectAutonomySettings {
+    const previous = this.autonomySettings(projectId)
     const next: ProjectAutonomySettings = {
       mode: input.mode,
-      autoAdvancePhases: input.autoAdvancePhases ?? this.autonomySettings(projectId).autoAdvancePhases,
+      autoAdvancePhases: input.autoAdvancePhases ?? previous.autoAdvancePhases,
+      autoStartPlans: input.autoStartPlans ?? previous.autoStartPlans,
+      autoApplyReplans: input.autoApplyReplans ?? previous.autoApplyReplans,
+      autoDeliver: input.autoDeliver ?? previous.autoDeliver,
+      maxAutoReplans: input.maxAutoReplans ?? previous.maxAutoReplans,
     }
     this.store.db
       .prepare('INSERT INTO app_settings (key, value_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value_json=excluded.value_json, updated_at=excluded.updated_at')
       .run(AUTONOMY_KEY(projectId), JSON.stringify(next), Date.now())
+    // The policy itself is a business fact: record when it changes, so an autonomous action
+    // can always be traced back to the policy that authorized it.
+    try {
+      this.store.appendEvent(projectId, projectId, 'project.autonomyPolicyChanged', {
+        previous,
+        next,
+      })
+    } catch {
+      /* event logging must not break a settings write */
+    }
     return next
   }
 
@@ -264,16 +321,81 @@ export class ActionCenter {
       })
     }
 
+    // 6) Revisions the product cannot apply by itself: the delta is outside the granted
+    //    envelope, so the user is asked exactly once, with the precise difference.
+    const proposals = this.store.db
+      .prepare("SELECT * FROM plan_replan_proposals WHERE project_id=? AND status='proposed' ORDER BY created_at DESC")
+      .all(projectId) as Row[]
+    for (const row of proposals) {
+      const grantImpact = this.parseJson(row.grant_impact_json)
+      const diff = this.parseJson(row.diff_json)
+      const added = Array.isArray(diff.added)
+        ? diff.added.map((item) => String((item as Row).key ?? '')).filter(Boolean)
+        : []
+      const removed = Array.isArray(diff.removed)
+        ? diff.removed.map((item) => String((item as Row).key ?? '')).filter(Boolean)
+        : []
+      const expanded = Array.isArray(grantImpact.expanded) ? grantImpact.expanded.map(String) : []
+      items.push({
+        id: `replan_scope:${String(row.id)}`,
+        kind: 'replan_scope',
+        projectId,
+        title: '修订需要超出当前授权范围，等待你的决定',
+        reason:
+          expanded.length > 0
+            ? expanded.join('；')
+            : `修订新增任务 ${added.join('、') || '无'}${removed.length ? `，移除 ${removed.join('、')}` : ''}`,
+        requiredDecision: '批准这次范围差异（将自动应用修订并继续执行），或拒绝并保持当前计划',
+        resume: '批准后产品会立即应用修订、派生同范围授权并自动恢复执行，无需回到聊天页',
+        risk: 'medium',
+        route: `/projects/${projectId}/plans?plan=${encodeURIComponent(String(row.plan_id))}&proposal=${encodeURIComponent(String(row.id))}`,
+        approvalId: null, versionId: null, runId: null, taskId: null, deploymentId: null,
+        proposalId: String(row.id), planId: String(row.plan_id),
+        createdAt: Number(row.created_at), stale: false,
+      })
+    }
+
+    // 7) Completed plans waiting for delivery. Only shown when the product is not allowed to
+    //    merge on its own — this is a real human decision, not an "AI is working" item.
+    const settings = this.autonomySettings(projectId)
+    const completed = this.store.db
+      .prepare(
+        "SELECT * FROM plan_revisions WHERE project_id=? AND status='approved' AND json_extract(plan_json,'$.execution.status')='completed' ORDER BY updated_at DESC LIMIT 10",
+      )
+      .all(projectId) as Row[]
+    for (const row of completed) {
+      const plan = this.parseJson(row.plan_json)
+      const execution = this.parseJsonValue(plan.execution)
+      if (!execution || execution.mergedAt) continue
+      if (!execution.branch) continue
+      items.push({
+        id: `plan_delivery:${String(row.id)}`,
+        kind: 'plan_delivery',
+        projectId,
+        title: `计划 r${String(row.revision)} 已完成，等待交付`,
+        reason: `分支 ${String(execution.branch)} 已完成并通过验证；项目策略${settings.autoDeliver ? '允许' : '未允许'}自动合并`,
+        requiredDecision: '确认将该 Worktree 合并到目标分支（会检查冲突、越权路径与主工作区状态）',
+        resume: '合并后产品会再次验证并保存交付证据；不会推送远端或部署',
+        risk: 'high',
+        route: `/projects/${projectId}/plans?plan=${encodeURIComponent(String(row.id))}`,
+        approvalId: null, versionId: null, runId: null, taskId: null, deploymentId: null,
+        proposalId: null, planId: String(row.id),
+        createdAt: Number(row.updated_at), stale: false,
+      })
+    }
+
     // Rank by "who is actually blocked", then by recency. A paused Run waiting on a
     // tool approval outranks an advisory gate hint; a gate item is never "newest" just
     // because it was read now.
     const KIND_RANK: Record<ActionKind, number> = {
       tool_approval: 0,
       task_acceptance: 1,
-      delivery_approval: 2,
-      deployment_reconciliation: 3,
-      run_failure: 4,
-      version_gate: 5,
+      replan_scope: 2,
+      plan_delivery: 3,
+      delivery_approval: 4,
+      deployment_reconciliation: 5,
+      run_failure: 6,
+      version_gate: 7,
     }
     return items.sort((a, b) => {
       const rank = KIND_RANK[a.kind] - KIND_RANK[b.kind]
@@ -326,6 +448,17 @@ export class ActionCenter {
     }
   }
 
+  private parseJsonValue(value: unknown): Record<string, unknown> | null {
+    if (value && typeof value === 'object' && !Array.isArray(value)) return value as Record<string, unknown>
+    if (typeof value !== 'string' || !value) return null
+    try {
+      const parsed = JSON.parse(value) as unknown
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : null
+    } catch {
+      return null
+    }
+  }
+
   private parseJson(value: unknown): Record<string, unknown> {
     if (typeof value !== 'string' || !value) return {}
     try {
@@ -335,3 +468,4 @@ export class ActionCenter {
     }
   }
 }
+

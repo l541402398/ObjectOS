@@ -112,6 +112,12 @@ export const PlanExecutionSchema = z.object({
   deadlineAt: TimestampSchema.default(0),
   /** Set when execution stopped because a hard budget was exhausted. */
   budgetExhausted: z.string().max(120).nullable().default(null),
+  /**
+   * Where the worktree was cut from. Auto-delivery refuses to merge into a different target
+   * branch, so a human switching branches mid-plan cannot silently receive the merge.
+   */
+  baseBranch: z.string().max(240).nullable().default(null),
+  baseCommit: z.string().max(120).nullable().default(null),
 })
 export type PlanExecution = z.infer<typeof PlanExecutionSchema>
 
