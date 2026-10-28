@@ -2420,6 +2420,7 @@ export class AgentRunner {
             toolName,
             command,
             approvalId,
+            workspaceRoot: this.active.get(run.id)?.workspaceRoot ?? this.store.read.getProject(run.projectId)?.rootPath ?? undefined,
           })
         } catch (error) {
           void error

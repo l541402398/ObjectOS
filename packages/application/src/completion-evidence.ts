@@ -1,6 +1,6 @@
 import type { Artifact, RunDetail, TaskCard } from '@projectos/contracts'
 
-export type CompletionRequirementId = 'design' | 'code' | 'test' | 'review' | 'artifact' | 'human'
+export type CompletionRequirementId = 'design' | 'code' | 'test' | 'review' | 'artifact' | 'human' | 'diagnostic'
 
 export interface CompletionRequirement {
   id: CompletionRequirementId
@@ -95,6 +95,29 @@ function toolExitOk(result: unknown): boolean {
   return value.exitCode === 0 || value.code === 0
 }
 
+/**
+ * Reads the exit code of a real test/command execution, whatever its value.
+ * `undefined` means the tool produced no verifiable exit code, so it cannot be
+ * used as negative evidence either.
+ */
+function toolExitCode(result: unknown): number | null {
+  if (!result || typeof result !== 'object') return null
+  const value = result as Record<string, unknown>
+  if (typeof value.exitCode === 'number') return value.exitCode
+  if (typeof value.code === 'number') return value.code
+  return null
+}
+
+/**
+ * ADR-2.8.3: a task may explicitly declare a *diagnostic* verification intent —
+ * "run the check and report the真实 result", where a failing result is a correct
+ * outcome. Intent is an explicit task contract, never inferred from the title.
+ */
+export function isDiagnosticTask(task: TaskCard): boolean {
+  const workType = (task as { workType?: string | null }).workType
+  return typeof workType === 'string' && /^(diagnostic|diagnosis|verification-diagnostic)$/i.test(workType.trim())
+}
+
 function requirement(
   id: CompletionRequirementId,
   label: string,
@@ -157,6 +180,23 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
     input.qualityGate?.outcome === 'passed' ||
     verifiedTestArtifacts.length > 0 ||
     runTestsOk
+
+  // Negative evidence: a test/command that really ran and reported a real exit code.
+  // This satisfies a *diagnostic* task's duty (it detected and reported the failure)
+  // while deliberately NOT feeding `hasTest`, so quality gates still cannot pass.
+  const executedChecks = input.runs.flatMap((run) =>
+    run.toolCalls
+      .filter((call) => (call.toolName === 'run_tests' || call.toolName === 'run_command') && call.status === 'completed')
+      .map((call) => {
+        const exitCode = toolExitCode(call.result)
+        const command = typeof call.args?.command === 'string' ? call.args.command : call.toolName
+        return { runId: run.run.id, toolName: call.toolName, command, exitCode }
+      })
+      .filter((item) => item.exitCode !== null),
+  )
+  const diagnosticEvidence = executedChecks.filter((item) => item.exitCode !== 0)
+  const hasDiagnostic = executedChecks.length > 0
+  const diagnosticIntent = isDiagnosticTask(input.task)
 
   const designArtifacts = artifacts.filter((artifact) => {
     const metadata = metadataOf(artifact)
@@ -226,6 +266,21 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
           ),
         )
       } else if (/test|测试|验收/i.test(expectation)) {
+        if (diagnosticIntent) {
+          // Diagnostic contract: executing the check and recording the real result is
+          // the deliverable. A failing exit code is valid *negative evidence*.
+          requirements.push(
+            requirement(
+              'diagnostic',
+              `预期产物：${expectation}（诊断任务，允许真实失败）`,
+              hasDiagnostic,
+              hasDiagnostic
+                ? executedChecks.map((item) => `${item.toolName} 真实退出码 ${String(item.exitCode)}：${item.command.slice(0, 80)}（run ${item.runId}）`)
+                : [],
+              hasDiagnostic ? [] : ['缺少带真实退出码的测试/检查执行记录'],
+            ),
+          )
+        } else {
         requirements.push(
           requirement(
             'test',
@@ -241,6 +296,7 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
             hasTest ? [] : ['缺少已验证测试报告、质量门禁通过或成功的 run_tests'],
           ),
         )
+        }
       } else if (/adr|设计|架构|方案|实施|design|architecture/i.test(expectation)) {
         requirements.push(
           requirement(
@@ -277,7 +333,17 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
     )
   } else if (role === 'tester') {
     requirements.push(
-      requirement('test', '测试任务需要已验证测试结果', hasTest, hasTest ? ['存在测试证据'] : [], hasTest ? [] : ['缺少已验证测试报告、质量门禁通过或成功的 run_tests']),
+      diagnosticIntent
+        ? requirement(
+            'diagnostic',
+            '诊断任务需要带真实退出码的检查记录',
+            hasDiagnostic,
+            hasDiagnostic
+              ? executedChecks.map((item) => `${item.toolName} 真实退出码 ${String(item.exitCode)}：${item.command.slice(0, 80)}（run ${item.runId}）`)
+              : [],
+            hasDiagnostic ? [] : ['缺少带真实退出码的测试/检查执行记录'],
+          )
+        : requirement('test', '测试任务需要已验证测试结果', hasTest, hasTest ? ['存在测试证据'] : [], hasTest ? [] : ['缺少已验证测试报告、质量门禁通过或成功的 run_tests']),
     )
   } else {
     requirements.push(

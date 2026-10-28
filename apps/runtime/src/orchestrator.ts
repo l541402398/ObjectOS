@@ -999,6 +999,30 @@ export class OrchestrationScheduler {
     }
   }
 
+  /**
+   * Real, recorded check failures across the plan's runs. Only calls that actually
+   * executed and reported an exit code count; a later passing run of the same command
+   * supersedes the older failure so a genuine fix clears the signal.
+   */
+  private failingVerifications(plan: PlanDraft): Array<{ command: string; exitCode: number }> {
+    const latest = new Map<string, { command: string; exitCode: number; at: number }>()
+    const runs = this.store.db
+      .prepare("SELECT id, created_at FROM agent_runs WHERE task_id IN (SELECT value FROM json_each(?)) ORDER BY created_at ASC")
+      .all(JSON.stringify(plan.createdTaskIds)) as Array<{ id: string; created_at: number }>
+    for (const runRow of runs) {
+      for (const call of this.store.read.getToolCalls(runRow.id)) {
+        if (call.status !== 'completed') continue
+        if (call.toolName !== 'run_tests' && call.toolName !== 'run_command') continue
+        const result = (call.result ?? {}) as Record<string, unknown>
+        const exitCode = typeof result.exitCode === 'number' ? result.exitCode : typeof result.code === 'number' ? result.code : null
+        if (exitCode === null) continue
+        const command = typeof call.args?.command === 'string' ? call.args.command : call.toolName
+        latest.set(command, { command, exitCode, at: call.startedAt ?? call.finishedAt ?? 0 })
+      }
+    }
+    return [...latest.values()].filter((item) => item.exitCode !== 0).map(({ command, exitCode }) => ({ command, exitCode }))
+  }
+
   private async tick(planId: string): Promise<void> {
     if (this.ticking.has(planId)) return
     this.ticking.add(planId)
@@ -1292,6 +1316,24 @@ export class OrchestrationScheduler {
         return
       }
       if (!hasActiveRun && refreshed.every((card) => card.status === 'done')) {
+        // ADR-2.8.3: a diagnostic task may legally finish by *reporting* a real failure,
+        // but that must never let the plan claim success. If any recorded check in this
+        // plan exited non-zero and has not been superseded by a later passing run, the
+        // plan is a verification failure: keep the failure evidence and ask the
+        // Replanner for a legitimate fix instead of marking the plan completed.
+        const failedChecks = this.failingVerifications(plan)
+        if (failedChecks.length > 0) {
+          const reason = `验证未通过：${failedChecks.map((item) => `${item.command.slice(0, 60)}（退出码 ${item.exitCode}）`).join('、')}`
+          this.saveExecution(plan, { ...plan.execution!, status: 'paused', error: reason, updatedAt: now() })
+          this.disarm(planId)
+          this.notifyReplan(plan, 'evidence_exhausted', reason)
+          this.store.appendEvent(plan.projectId, plan.id, PROJECT_EVENT_TYPES.planExecutionFailureClassified, {
+            planId: plan.id,
+            failureClass: 'verification_failed',
+            reason,
+          })
+          return
+        }
         let completedExecution: PlanExecution = { ...plan.execution!, status: 'completed', error: null, updatedAt: now() }
         if (completedExecution.branch && completedExecution.workspaceRef && !completedExecution.diffArtifactId) {
           try {

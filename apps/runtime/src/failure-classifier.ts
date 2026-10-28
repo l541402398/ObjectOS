@@ -78,7 +78,7 @@ const RULES: Array<{
   },
   {
     class: 'implementation',
-    pattern: /测试失败|断言失败|exit code|命令失败|构建失败|实现失败|断言|任务执行失败|任务失败|重试已用尽/i,
+    pattern: /测试失败|断言失败|exit code|退出码|验证未通过|命令失败|构建失败|实现失败|断言|任务执行失败|任务失败|重试已用尽/i,
     replan: true,
     action: 'reassign_or_replan',
     reason: '真实实施/测试失败可能需要调整实现任务或依赖；先保留重试与补证记录。',

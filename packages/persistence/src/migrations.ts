@@ -1433,8 +1433,7 @@ CREATE TABLE plan_command_approvals (
   id TEXT PRIMARY KEY,
   project_id TEXT NOT NULL,
   plan_id TEXT NOT NULL,
-  agent_id TEXT NOT NULL,
-  tool_name TEXT NOT NULL,
+  agent_id TEXT NOT NULL,  tool_name TEXT NOT NULL,
   command_hash TEXT NOT NULL,
   command_text TEXT NOT NULL,
   approval_id TEXT,
@@ -1444,6 +1443,10 @@ CREATE TABLE plan_command_approvals (
 );
 CREATE UNIQUE INDEX idx_plan_command_approvals_key ON plan_command_approvals(plan_id, agent_id, tool_name, command_hash);
 CREATE INDEX idx_plan_command_approvals_plan ON plan_command_approvals(plan_id, expires_at);
+`
+
+const V36 = `
+ALTER TABLE plan_command_approvals ADD COLUMN context_hash TEXT;
 `
 
 export const MIGRATIONS: Migration[] = [
@@ -1482,6 +1485,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 33, name: 'deployment operations and approval file baselines', sql: V33 },
   { version: 34, name: 'durable autonomy coordination events', sql: V34 },
   { version: 35, name: 'plan command approval reuse', sql: V35 },
+  { version: 36, name: 'command approval execution context fingerprint', sql: V36 },
 ]
 
 function checksum(sql: string): string {

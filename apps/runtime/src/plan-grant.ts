@@ -1,5 +1,6 @@
+import { existsSync, readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
-import { isAbsolute, relative } from 'node:path'
+import { isAbsolute, join, relative } from 'node:path'
 import {
   AppError,
   newId,
@@ -169,6 +170,7 @@ export class PlanGrantService {
     toolName: string
     command: string
     approvalId: string
+    workspaceRoot?: string
   }): void {
     if (input.toolName !== 'run_command' && input.toolName !== 'run_tests') return
     const plan = this.planForTask(input.projectId, input.taskId)
@@ -181,7 +183,38 @@ export class PlanGrantService {
       toolName: input.toolName,
       command: input.command,
       approvalId: input.approvalId,
+      workspaceRoot: input.workspaceRoot,
     })
+  }
+
+  /**
+   * Fingerprint of what a command will actually execute, not just its text.
+   *
+   * An identical command string is not identical execution: `npm test` runs whatever
+   * package.json says today, and `node x.mjs` runs whatever that file contains now. The
+   * fingerprint covers the tool name, the command text, package.json and the entry file
+   * (when one is named), so any change to those invalidates a previously granted reuse.
+   */
+  executionContextFingerprint(workspaceRoot: string, toolName: string, command: string): string {
+    const parts = [toolName, command.trim()]
+    const pkgPath = join(workspaceRoot, 'package.json')
+    if (existsSync(pkgPath)) {
+      try {
+        parts.push(`package.json:${createHash('sha256').update(readFileSync(pkgPath)).digest('hex')}`)
+      } catch { /* unreadable package.json: fall back to command-only */ }
+    }
+    // `node <entry>` / `node --test <entry>`: include the entry file content and mtime.
+    const entry = /^node\s+(?:--test\s+)?(?!--)(\S+)/.exec(command.trim())
+    const entryPath = entry?.[1]
+    if (entryPath) {
+      const target = isAbsolute(entryPath) ? entryPath : join(workspaceRoot, entryPath)
+      if (existsSync(target)) {
+        try {
+          parts.push(`entry:${createHash('sha256').update(readFileSync(target)).digest('hex')}`)
+        } catch { /* ignore */ }
+      }
+    }
+    return createHash('sha256').update(parts.join('\u0000')).digest('hex')
   }
 
   /**
@@ -195,33 +228,53 @@ export class PlanGrantService {
     toolName: string
     command: string
     approvalId: string
+    workspaceRoot?: string
     ttlMs?: number
   }): void {
     const command = input.command.trim()
     if (!command) return
     const hash = createHash('sha256').update(command).digest('hex')
+    const context = input.workspaceRoot
+      ? this.executionContextFingerprint(input.workspaceRoot, input.toolName, command)
+      : null
     const timestamp = now()
     const ttl = Math.max(60_000, Math.min(input.ttlMs ?? 30 * 60_000, 8 * 60 * 60_000))
     this.store.db
       .prepare(
         `INSERT INTO plan_command_approvals
-         (id, project_id, plan_id, agent_id, tool_name, command_hash, command_text, approval_id, uses, created_at, expires_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+         (id, project_id, plan_id, agent_id, tool_name, command_hash, command_text, approval_id, uses, created_at, expires_at, context_hash)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)
          ON CONFLICT(plan_id, agent_id, tool_name, command_hash)
-         DO UPDATE SET approval_id=excluded.approval_id, expires_at=excluded.expires_at`,
+         DO UPDATE SET approval_id=excluded.approval_id, expires_at=excluded.expires_at, context_hash=excluded.context_hash`,
       )
-      .run(newId('pca'), input.projectId, input.planId, input.agentId, input.toolName, hash, command.slice(0, 4000), input.approvalId, timestamp, timestamp + ttl)
+      .run(newId('pca'), input.projectId, input.planId, input.agentId, input.toolName, hash, command.slice(0, 4000), input.approvalId, timestamp, timestamp + ttl, context)
   }
 
-  private commandApproval(planId: string, agentId: string, toolName: string, command: string): { id: string; approval_id: string | null } | null {
+  private commandApproval(
+    planId: string,
+    agentId: string,
+    toolName: string,
+    command: string,
+    workspaceRoot?: string,
+  ): { id: string; approval_id: string | null } | null {
     const hash = createHash('sha256').update(command.trim()).digest('hex')
     const row = this.store.db
       .prepare(
-        `SELECT id, approval_id FROM plan_command_approvals
+        `SELECT id, approval_id, context_hash FROM plan_command_approvals
          WHERE plan_id=? AND agent_id=? AND tool_name=? AND command_hash=? AND expires_at > ?`,
       )
-      .get(planId, agentId, toolName, hash, now()) as { id: string; approval_id: string | null } | undefined
-    return row ?? null
+      .get(planId, agentId, toolName, hash, now()) as { id: string; approval_id: string | null; context_hash: string | null } | undefined
+    if (!row) return null
+    // Re-verify the execution context: a changed package.json script or entry file means
+    // the human approved different work than what would now run.
+    if (workspaceRoot) {
+      const current = this.executionContextFingerprint(workspaceRoot, toolName, command)
+      if (row.context_hash && row.context_hash !== current) {
+        this.store.db.prepare('DELETE FROM plan_command_approvals WHERE id=?').run(row.id)
+        return null
+      }
+    }
+    return row
   }
 
   private consumeCommandApproval(id: string): void {
@@ -701,7 +754,7 @@ export class PlanGrantService {
       // the command needs a fresh decision.
       const command = typeof input.args.command === 'string' ? input.args.command.trim() : ''
       if (command && (input.toolName === 'run_command' || input.toolName === 'run_tests')) {
-        const reused = this.commandApproval(plan.id, input.agentId, input.toolName, command)
+        const reused = this.commandApproval(plan.id, input.agentId, input.toolName, command, input.workspaceRoot)
         if (reused) {
           this.consumeCommandApproval(reused.id)
           return {
