@@ -680,7 +680,69 @@ export function registerIpc(ctx: IpcContext): () => void {
   }
 
   ipcMain.handle('projectos:request', handler)
+
+  /**
+   * Automatic reconciliation sweep.
+   *
+   * A deployment whose remote outcome is unknown must be resolved by reading the remote
+   * truth, not by asking the user and not by replaying the deploy. This sweep runs in
+   * Main because Main owns the credentials; it only ever performs read-only observation.
+   * Deployments that already exhausted their attempts stay visible in the action center.
+   */
+  const RECONCILE_ATTEMPT_LIMIT = 3
+  const reconciled = new Set<string>()
+  let reconciling = false
+  const sweep = async (): Promise<void> => {
+    if (reconciling || !supervisor.isReady()) return
+    reconciling = true
+    try {
+      const { deployments } = await supervisor.request<{ deployments: Array<{ deploymentId: string; targetRef: string; adapterType: string | null; profile: import('@projectos/contracts').ConnectionProfile | null; attempts: number }> }>(
+        'deployment.pending_reconciliation',
+        {},
+        15_000,
+      )
+      for (const deployment of deployments) {
+        if (reconciled.has(deployment.deploymentId)) continue
+        if (deployment.attempts >= RECONCILE_ATTEMPT_LIMIT) continue
+        if (deployment.adapterType !== 'ssh-artifact' || !deployment.profile?.credentialRef) continue
+        if (!deployment.targetRef) continue
+        const secret = resourceSecrets.get(deployment.profile.credentialRef)
+        if (!secret) continue
+        try {
+          const observation = await observeSshDeployment(
+            { deploymentId: deployment.deploymentId, targetRef: deployment.targetRef, profile: deployment.profile },
+            secret,
+          )
+          if (!observation.reachable) continue
+          await supervisor.request('deployment.reconcile', {
+            deploymentId: deployment.deploymentId,
+            observation: {
+              reachable: observation.reachable,
+              externalId: observation.externalId,
+              healthOk: observation.healthOk,
+              detail: observation.detail,
+              facts: observation.facts,
+            },
+            note: '系统自动只读对账',
+          }, 20_000)
+          reconciled.add(deployment.deploymentId)
+          logger.info('deployment auto-reconciled', { deploymentId: deployment.deploymentId, healthOk: observation.healthOk })
+        } catch (error) {
+          logger.warn('deployment auto-reconcile failed', { deploymentId: deployment.deploymentId, error: String(error) })
+        }
+      }
+    } catch (error) {
+      logger.warn('deployment reconciliation sweep failed', { error: String(error) })
+    } finally {
+      reconciling = false
+    }
+  }
+  void sweep()
+  const sweepTimer = setInterval(() => void sweep(), 60_000)
+  sweepTimer.unref?.()
+
   return () => {
+    clearInterval(sweepTimer)
     ipcMain.removeHandler('projectos:request')
   }
 }

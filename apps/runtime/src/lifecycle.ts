@@ -93,7 +93,14 @@ export class LifecycleService {
     for (const version of versions) {
       const to = this.nextGatedPhase(version.phase)
       if (!to) continue
-      const evaluation = this.computeVersionGate(version, to)
+      let evaluation: GateEvaluation
+      try {
+        evaluation = this.computeVersionGate(version, to)
+      } catch {
+        // A project whose gate definitions are not seeded yet, or a gate removed mid
+        // flight, must not break the whole action list.
+        continue
+      }
       if (evaluation.status === 'passed') continue
       blocked.push({
         versionId: version.id,

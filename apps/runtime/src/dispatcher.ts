@@ -33,6 +33,7 @@ import { OperationsService, repairRunKey } from './operations.js'
 import { LifecycleService } from './lifecycle.js'
 import { ReleaseService } from './release-service.js'
 import { ActionCenter } from './action-center.js'
+import { AutonomyCoordinator } from './autonomy-coordinator.js'
 import { AgentStudioService } from './agent-studio.js'
 import { RuntimeExecutionService } from './runtime-executor.js'
 import { OrchestrationService } from './orchestration.js'
@@ -85,6 +86,7 @@ export class RuntimeDispatcher {
   private readonly lifecycle: LifecycleService
   private readonly release: ReleaseService
   private readonly actions: ActionCenter
+  private readonly autonomy: AutonomyCoordinator
   private readonly resources: ResourceService
   private readonly agentStudio: AgentStudioService
   private readonly runtimeExecutor: RuntimeExecutionService
@@ -145,6 +147,18 @@ export class RuntimeDispatcher {
           })
       },
     )
+    this.autonomy = new AutonomyCoordinator(
+      deps.store,
+      this.actions,
+      this.scheduler,
+      deps.logger,
+      (result) => {
+        // Surface autonomous progress as a normal project event so the UI timeline and
+        // the renderer event listener both see it without a second channel.
+        if (result.actions.length === 0) return
+        deps.logger.info({ projectId: result.projectId, advanced: result.advanced.length, nudged: result.nudgedPlans.length }, 'autonomy coordination pass')
+      },
+    )
   }
 
   recoverOrchestrations(): void {
@@ -156,6 +170,9 @@ export class RuntimeDispatcher {
     const recoveredReplans = this.replans.recover()
     if (recoveredReplans > 0) this.deps.logger.info({ count: recoveredReplans }, 'recovered applying replan proposals')
     this.scheduler.recover()
+    // Replay coordination intents that were pending when the process stopped.
+    const pending = this.autonomy.replay()
+    if (pending > 0) this.deps.logger.info({ projects: pending }, 'replayed pending autonomy coordination events')
   }
 
   shutdownOrchestrations(): void {
@@ -163,11 +180,20 @@ export class RuntimeDispatcher {
     clearInterval(this.inboxTimer)
     for (const timer of this.eventChecks.values()) clearTimeout(timer)
     this.eventChecks.clear()
+    this.autonomy.dispose()
     this.scheduler.shutdown()
   }
 
   /** Task blocked / run failed schedules a debounced health check while monitoring is enabled. */
   private onProjectEvent(event: ProjectEvent): void {
+    // Event-driven autonomy runs for every business event, independent of the health
+    // automation trigger: a completed run, a new approval or a new gate result must be
+    // able to move the project forward without a human pressing anything.
+    try {
+      this.autonomy.enqueue(event)
+    } catch (error) {
+      this.deps.logger.warn({ err: String(error), projectId: event.projectId }, 'failed to enqueue autonomy event')
+    }
     if (!this.deps.store.read.getAutomationTrigger(event.projectId)?.enabled) return
     if (!this.operations.isTriggerEvent(event)) return
     if (this.eventChecks.has(event.projectId)) return
@@ -900,7 +926,15 @@ export class RuntimeDispatcher {
       }
       case 'action.autonomy.tick': {
         const input = this.parse('action.autonomy.tick', rawInput)
-        return this.actions.tick(input.projectId)
+        const result = this.actions.tick(input.projectId)
+        // Also run a full coordination pass so the diagnostic button behaves exactly
+        // like an event-driven pass (gate re-check + scheduler nudge).
+        const pass = this.autonomy.pass(input.projectId, 'manual.diagnostic')
+        return { mode: result.mode, advanced: pass.advanced }
+      }
+      case 'action.coordination.history': {
+        const input = this.parse('action.coordination.history', rawInput)
+        return { events: this.autonomy.history(input.projectId, input.limit) }
       }
       case 'deployment.inspect': {
         const input = this.parse('deployment.inspect', rawInput)
@@ -921,6 +955,10 @@ export class RuntimeDispatcher {
       case 'deployment.operation.mark_unknown': {
         const input = this.parse('deployment.operation.mark_unknown', rawInput)
         return this.release.markOperationUnknown(input)
+      }
+      case 'deployment.pending_reconciliation': {
+        const input = this.parse('deployment.pending_reconciliation', rawInput)
+        return { deployments: this.release.pendingReconciliations(input.projectId) }
       }
       case 'deployment.operations': {
         const input = this.parse('deployment.operations', rawInput)

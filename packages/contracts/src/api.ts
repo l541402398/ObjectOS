@@ -449,6 +449,20 @@ export const ApiSchemas = {
       advanced: z.array(z.object({ versionId: IdSchema, from: z.string(), to: z.string() })),
     }),
   },
+  'action.coordination.history': {
+    input: z.object({ projectId: IdSchema, limit: z.number().int().positive().max(100).default(20) }),
+    output: z.object({
+      events: z.array(z.object({
+        id: IdSchema,
+        kind: z.string(),
+        trigger: z.string(),
+        status: z.string(),
+        detail: z.string(),
+        attempts: z.number().int().nonnegative(),
+        createdAt: TimestampSchema,
+      })),
+    }),
+  },
   'resource.overview': {
     input: projectIdInput,
     output: ResourceOverviewSchema,
@@ -636,6 +650,21 @@ export const ApiSchemas = {
   'deployment.operations': {
     input: z.object({ deploymentId: IdSchema }),
     output: DeploymentOperationTraceSchema,
+  },
+  'deployment.pending_reconciliation': {
+    input: z.object({ projectId: IdSchema.optional() }),
+    output: z.object({
+      deployments: z.array(z.object({
+        deploymentId: IdSchema,
+        projectId: IdSchema,
+        versionId: IdSchema.nullable(),
+        targetRef: z.string(),
+        adapterType: z.string().nullable(),
+        profile: ConnectionProfileSchema.nullable(),
+        attempts: z.number().int().nonnegative(),
+        lastError: z.string().nullable(),
+      })),
+    }),
   },
   'deployment.reconcile': {
     input: z.object({

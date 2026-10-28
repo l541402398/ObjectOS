@@ -969,6 +969,52 @@ export class ReleaseService {
     return { deployment, target, profile }
   }
 
+  /**
+   * Deployments whose remote outcome is unknown, with everything Main needs to run a
+   * read-only reconciliation. Used by the automatic reconciliation sweep.
+   */
+  pendingReconciliations(projectId?: string): Array<{
+    deploymentId: string
+    projectId: string
+    versionId: string | null
+    targetRef: string
+    adapterType: string | null
+    profile: ConnectionProfile | null
+    attempts: number
+    lastError: string | null
+  }> {
+    const rows = (projectId
+      ? this.store.db.prepare("SELECT * FROM deployments WHERE project_id=? AND status IN ('needs_reconciliation','unknown') ORDER BY updated_at DESC").all(projectId)
+      : this.store.db.prepare("SELECT * FROM deployments WHERE status IN ('needs_reconciliation','unknown') ORDER BY updated_at DESC").all()) as Record<string, unknown>[]
+    const out: Array<{
+      deploymentId: string
+      projectId: string
+      versionId: string | null
+      targetRef: string
+      adapterType: string | null
+      profile: ConnectionProfile | null
+      attempts: number
+      lastError: string | null
+    }> = []
+    for (const row of rows) {
+      const context = this.deploymentContext(String(row.id))
+      const operation = this.store.db
+        .prepare('SELECT attempts_total FROM (SELECT COUNT(*) AS attempts_total FROM deployment_operations WHERE deployment_id=?)')
+        .get(String(row.id)) as { attempts_total: number } | undefined
+      out.push({
+        deploymentId: String(row.id),
+        projectId: String(row.project_id),
+        versionId: row.version_id ? String(row.version_id) : null,
+        targetRef: context.target?.targetRef ?? '',
+        adapterType: context.target?.adapterType ?? null,
+        profile: context.profile,
+        attempts: Number(operation?.attempts_total ?? 0),
+        lastError: row.notes ? String(row.notes) : null,
+      })
+    }
+    return out
+  }
+
   deploymentOperations(deploymentId: string): DeploymentOperationTrace {
     this.getDeployment(deploymentId)
     const operations = this.store.db

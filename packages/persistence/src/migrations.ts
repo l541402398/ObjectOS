@@ -1409,6 +1409,25 @@ CREATE TABLE approval_file_snapshots (
 );
 `
 
+const V34 = `
+CREATE TABLE autonomy_events (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  source_event_id TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  trigger TEXT NOT NULL DEFAULT '',
+  detail TEXT NOT NULL DEFAULT '',
+  actions_json TEXT NOT NULL DEFAULT '[]',
+  attempts INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  processed_at INTEGER
+);
+CREATE UNIQUE INDEX idx_autonomy_events_key ON autonomy_events(source_event_id, kind);
+CREATE INDEX idx_autonomy_events_pending ON autonomy_events(status, created_at);
+CREATE INDEX idx_autonomy_events_project ON autonomy_events(project_id, created_at DESC);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -1443,6 +1462,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 31, name: 'resources connection profiles credentials and test runs', sql: V31 },
   { version: 32, name: 'resource revisions and deployment authorization snapshots', sql: V32 },
   { version: 33, name: 'deployment operations and approval file baselines', sql: V33 },
+  { version: 34, name: 'durable autonomy coordination events', sql: V34 },
 ]
 
 function checksum(sql: string): string {

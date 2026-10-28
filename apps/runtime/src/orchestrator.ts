@@ -348,6 +348,22 @@ export class OrchestrationScheduler {
     }
   }
 
+  /**
+   * Nudges every running plan of a project. Used by the autonomy coordinator when a
+   * business event lands: it is the existing scheduler doing the work, just told that
+   * something changed. Returns the plan ids that were nudged.
+   */
+  nudgeProject(projectId: string): string[] {
+    const plans = this.store.read.listAllPlanRevisions().filter(
+      (plan) => plan.projectId === projectId && plan.execution?.status === 'running',
+    )
+    for (const plan of plans) {
+      this.arm(plan.id)
+      void this.tick(plan.id)
+    }
+    return plans.map((plan) => plan.id)
+  }
+
   shutdown(): void {
     for (const timer of this.timers.values()) clearInterval(timer)
     this.timers.clear()

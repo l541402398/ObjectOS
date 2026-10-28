@@ -264,7 +264,22 @@ export class ActionCenter {
       })
     }
 
-    return items.sort((a, b) => b.createdAt - a.createdAt)
+    // Rank by "who is actually blocked", then by recency. A paused Run waiting on a
+    // tool approval outranks an advisory gate hint; a gate item is never "newest" just
+    // because it was read now.
+    const KIND_RANK: Record<ActionKind, number> = {
+      tool_approval: 0,
+      task_acceptance: 1,
+      delivery_approval: 2,
+      deployment_reconciliation: 3,
+      run_failure: 4,
+      version_gate: 5,
+    }
+    return items.sort((a, b) => {
+      const rank = KIND_RANK[a.kind] - KIND_RANK[b.kind]
+      if (rank !== 0) return rank
+      return b.createdAt - a.createdAt
+    })
   }
 
   /**
