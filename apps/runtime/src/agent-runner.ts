@@ -1792,10 +1792,16 @@ export class AgentRunner {
     if (!definition || !project) {
       return { status: 'denied', error: `未知工具：${invocation.name}` }
     }
+    // ADR-0023: normalise the *effective* invocation once, before any security decision.
+    // Policy, PlanGrant, the approval request, the approval snapshot and the handler must
+    // all describe and execute the same command. Previously `run_tests` executed
+    // `pnpm test` by default while approval/UI/grants saw an empty command.
+    const effective = resolveEffectiveToolArgs(invocation.name, invocation.args)
+    const invocationEffective: ToolInvocation = { ...invocation, args: effective.args }
     const policy = evaluateToolPolicy({
       rootPath: state.workspaceRoot,
       toolName: invocation.name,
-      args: invocation.args,
+      args: effective.args,
     })
     const idempotencyKey = `${state.runId}:${invocation.callId}`
     let toolCall: ToolCall
@@ -1805,8 +1811,8 @@ export class AgentRunner {
         toolName: invocation.name,
         idempotencyKey,
         status: 'proposed',
-        argsHash: hashArgs(invocation.args),
-        args: invocation.args,
+        argsHash: hashArgs(effective.args),
+        args: effective.args,
       })
     } catch (error) {
       return { status: 'failed', error: error instanceof Error ? error.message : '工具调用记录失败' }
@@ -1824,7 +1830,7 @@ export class AgentRunner {
             agentId: state.agentId,
             toolName: invocation.name,
             toolCallId: toolCall.id,
-            args: invocation.args,
+            args: effective.args,
           })
         : null
     const effectiveDecision =
@@ -1841,7 +1847,7 @@ export class AgentRunner {
         toolCallId: toolCall.id,
         callId: invocation.callId,
         name: invocation.name,
-        args: redactObject(invocation.args),
+        args: redactObject(effective.args),
         risk: policy.risk,
         policy: effectiveDecision,
         grantId: grantDecision?.grantId ?? null,
@@ -1875,7 +1881,7 @@ export class AgentRunner {
       let snapshotSkipReason: string | null = null
       if (invocation.name === 'write_file') {
         try {
-          writePlan = planWriteSnapshot(state.workspaceRoot, invocation.args)
+          writePlan = planWriteSnapshot(state.workspaceRoot, effective.args)
           if (!writePlan) snapshotSkipReason = '工具参数缺少 path/content'
         } catch (error) {
           snapshotSkipReason = error instanceof Error ? error.message : String(error)
@@ -1889,7 +1895,7 @@ export class AgentRunner {
         detail: approvalDetail(invocation),
         request: {
           toolName: invocation.name,
-          args: redactObject(invocation.args),
+          args: redactObject(effective.args),
           risk: policy.risk,
           reason: policy.reason,
           grantId: grantDecision?.grantId ?? null,
@@ -1930,7 +1936,7 @@ export class AgentRunner {
     }
     this.store.updateToolCall(toolCall.id, { status: 'running', startedAt: now() })
     try {
-      const result = await this.executeToolHandler(state, invocation)
+      const result = await this.executeToolHandler(state, invocationEffective)
       this.store.updateToolCall(toolCall.id, {
         status: 'completed',
         result,
@@ -3114,8 +3120,10 @@ function validateReviewArtifactMetadata(metadata: Record<string, unknown>): stri
   if (typeof metadata.scope !== 'string' || !metadata.scope.trim()) {
     errors.push('scope: 需要说明审查覆盖的范围')
   }
-  if (!Array.isArray(metadata.findings) || metadata.findings.length === 0) {
-    errors.push('findings: 需要至少一条真实发现（确无问题时写 "无阻塞问题" 作为一条）')
+  if (!Array.isArray(metadata.findings)) {
+    // An honest clean review may submit findings: []; we never require the Agent to
+    // invent a finding, and we never inject one ourselves.
+    errors.push('findings: 必须是数组；没有发现问题时提交 []，有发现时逐条列出')
   }
   if (typeof metadata.conclusion !== 'string' || !metadata.conclusion.trim()) {
     errors.push('conclusion: 需要明确结论，例如 通过 / 需要修改 / 阻断交付')
@@ -3124,6 +3132,33 @@ function validateReviewArtifactMetadata(metadata: Record<string, unknown>): stri
     errors.push('blockers: 必须是字符串数组；无阻塞时写 []')
   }
   return errors
+}
+
+/**
+ * ADR-0023 — effective tool arguments.
+ *
+ * A tool's *effective* parameters are its raw arguments with the tool's documented
+ * defaults applied. Every security decision (policy, plan grant, approval request,
+ * approval snapshot) and the actual execution must use this single resolved form, so an
+ * operator never approves one command while a different one runs.
+ */
+export function resolveEffectiveToolArgs(
+  toolName: string,
+  rawArgs: Record<string, unknown>,
+): { args: Record<string, unknown>; defaulted: string[] } {
+  const args: Record<string, unknown> = { ...rawArgs }
+  const defaulted: string[] = []
+  if (toolName === 'run_tests') {
+    const command = typeof args.command === 'string' ? args.command.trim() : ''
+    // The tool really executes `pnpm test` when no command is given; the approval and
+    // the audit record must say the same thing.
+    args.command = command || 'pnpm test'
+    if (!command) defaulted.push('command')
+  }
+  if (toolName === 'run_command' && typeof args.command === 'string') {
+    args.command = args.command.trim()
+  }
+  return { args, defaulted }
 }
 
 function hashArgs(args: Record<string, unknown>): string {

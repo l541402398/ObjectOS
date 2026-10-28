@@ -195,15 +195,20 @@ export class PlanGrantService {
    * fingerprint covers the tool name, the command text, package.json and the entry file
    * (when one is named), so any change to those invalidates a previously granted reuse.
    */
-  executionContextFingerprint(workspaceRoot: string, toolName: string, command: string): string {
+  executionContextFingerprint(workspaceRoot: string, toolName: string, command: string): string | null {
     const parts = [toolName, command.trim()]
     const pkgPath = join(workspaceRoot, 'package.json')
     if (existsSync(pkgPath)) {
       try {
         parts.push(`package.json:${createHash('sha256').update(readFileSync(pkgPath)).digest('hex')}`)
-      } catch { /* unreadable package.json: fall back to command-only */ }
+      } catch {
+        // An unreadable context file means we cannot prove what would run: return
+        // "unverifiable" instead of a partial fingerprint that silently falls back to
+        // command-string-only matching.
+        return null
+      }
     }
-    // `node <entry>` / `node --test <entry>`: include the entry file content and mtime.
+    // `node <entry>` / `node --test <entry>`: include the entry file content.
     const entry = /^node\s+(?:--test\s+)?(?!--)(\S+)/.exec(command.trim())
     const entryPath = entry?.[1]
     if (entryPath) {
@@ -211,7 +216,9 @@ export class PlanGrantService {
       if (existsSync(target)) {
         try {
           parts.push(`entry:${createHash('sha256').update(readFileSync(target)).digest('hex')}`)
-        } catch { /* ignore */ }
+        } catch {
+          return null
+        }
       }
     }
     return createHash('sha256').update(parts.join('\u0000')).digest('hex')

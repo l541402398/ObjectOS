@@ -44,6 +44,8 @@ export interface CompletionDecision {
   requirements: CompletionRequirement[]
   toolOutcomes: CompletionToolOutcome[]
   reasons: string[]
+  /** Review outcome exposed separately from task completion (ADR-0022). */
+  review?: { performed: boolean; approved: boolean; blockingFindings: number }
 }
 
 function roleOf(task: TaskCard): string {
@@ -209,30 +211,42 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
     )
   })
   const hasDesign = designArtifacts.length > 0
-  const reviewArtifacts = artifacts.filter((artifact) => {
-    const metadata = metadataOf(artifact)
+  /**
+   * ADR-0022: review *evidence* and the review *verdict* are different things.
+   * A structurally valid, traceable review report completes the review task even when it
+   * says "需要修改 / 阻断交付". Only a positive verdict counts as review approval, and
+   * approval still does not equal a quality gate pass.
+   */
+  const reviewVerdictOf = (metadata: Record<string, unknown>): 'approved' | 'changes_requested' | 'blocked' => {
+    const conclusion = typeof metadata.conclusion === 'string' ? metadata.conclusion.trim() : ''
     const blockers = Array.isArray(metadata.blockers)
       ? metadata.blockers.filter((item): item is string => typeof item === 'string')
       : []
     const blocking = blockers.some((item) => !/^(无|none|no blockers?)/i.test(item.trim()))
-    const conclusion = typeof metadata.conclusion === 'string' ? metadata.conclusion : ''
-    const positiveConclusion = /^(通过|放行|approve|approved|pass|passed|conditionally passed)/i.test(
-      conclusion.trim(),
-    )
-    const rejected = !positiveConclusion && /阻断|不通过|拒绝|reject|blocking|blocked|fail/i.test(conclusion)
+    if (blocking) return 'blocked'
+    const positive = /^(通过|放行|approve|approved|pass|passed|conditionally passed)/i.test(conclusion)
+    if (positive) return 'approved'
+    // Neutral wording (未发现问题) is a pass; only explicit rejection is a change request.
+    return /阻断|不通过|拒绝|需要修改|不可放行|reject|blocking|blocked|fail|changes? requested/i.test(conclusion) ? 'changes_requested' : 'approved'
+  }
+  const reviewArtifacts = artifacts.filter((artifact) => {
+    const metadata = metadataOf(artifact)
     return (
       metadata.artifactType === 'review' &&
       nonEmptyArray(metadata.reviewedObjects) &&
       nonEmptyString(metadata.scope) &&
-      nonEmptyArray(metadata.findings) &&
+      // An honest clean review may legitimately have zero findings; it must still state a
+      // real scope and conclusion. We never inject a fake "no issues" finding.
+      Array.isArray(metadata.findings) &&
       nonEmptyString(metadata.conclusion) &&
       stringArrayField(metadata.blockers) &&
-      !blocking &&
-      !rejected &&
       (artifact.runId !== null || metadata.createdBy === 'user')
     )
   })
+  // Review performed (evidence valid) vs review approved (positive verdict).
   const hasReview = reviewArtifacts.length > 0
+  const approvedReviews = reviewArtifacts.filter((artifact) => reviewVerdictOf(metadataOf(artifact)) === 'approved')
+  const rejectedReviews = reviewArtifacts.filter((artifact) => reviewVerdictOf(metadataOf(artifact)) !== 'approved')
   const hasArtifact = artifacts.length > 0
 
   const requirements: CompletionRequirement[] = []
@@ -367,6 +381,22 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
   } else if (input.qualityGate?.outcome === 'error') {
     reasons.push('质量门禁：error（检查无法完成）')
   }
+  if (reviewArtifacts.length > 0) {
+    reasons.push(
+      approvedReviews.length > 0
+        ? `审查结论：通过（${approvedReviews.length} 份）`
+        : `审查结论：未通过（${rejectedReviews.length} 份）；审查任务可完成，但成果不得进入质量门禁通过状态`,
+    )
+  }
   const ok = requirements.every((item) => item.satisfied)
-  return { ok, role, requirements, toolOutcomes, reasons }
+  return {
+    ok,
+    role,
+    requirements,
+    toolOutcomes,
+    reasons,
+    review: reviewArtifacts.length > 0
+      ? { performed: true, approved: approvedReviews.length > 0, blockingFindings: rejectedReviews.length }
+      : undefined,
+  }
 }

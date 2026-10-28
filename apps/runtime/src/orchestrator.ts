@@ -1013,6 +1013,18 @@ export class OrchestrationScheduler {
       for (const call of this.store.read.getToolCalls(runRow.id)) {
         if (call.status !== 'completed') continue
         if (call.toolName !== 'run_tests' && call.toolName !== 'run_command') continue
+        const cmdText = typeof call.args?.command === 'string' ? call.args.command.trim() : ''
+        // Only real verification commands can fail verification. A read-only helper such
+        // as `git diff --no-index` exits 1 when files differ; that is information, not a
+        // failing check, and must never pause a plan.
+        const isVerification =
+          call.toolName === 'run_tests' ||
+          /^(npm|pnpm|yarn)\s+(run\s+)?test\b/i.test(cmdText) ||
+          /^(npx\s+)?(vitest|jest|mocha)\b/i.test(cmdText) ||
+          /^node\s+--test\b/i.test(cmdText) ||
+          /^(npm|pnpm|yarn)\s+run\s+(build|typecheck|lint)\b/i.test(cmdText) ||
+          /^(npx\s+)?tsc\b/i.test(cmdText)
+        if (!isVerification) continue
         const result = (call.result ?? {}) as Record<string, unknown>
         const exitCode = typeof result.exitCode === 'number' ? result.exitCode : typeof result.code === 'number' ? result.code : null
         if (exitCode === null) continue
@@ -1021,6 +1033,31 @@ export class OrchestrationScheduler {
       }
     }
     return [...latest.values()].filter((item) => item.exitCode !== 0).map(({ command, exitCode }) => ({ command, exitCode }))
+  }
+
+  /**
+   * Review evidence that is valid but NOT approving (需要修改 / 阻断交付). A negative
+   * review legally completes the review task, but it must never let the plan claim
+   * success: it is a verification failure that goes back to the Replanner.
+   */
+  private negativeReviews(plan: PlanDraft): Array<{ title: string; conclusion: string }> {
+    const rejected: Array<{ title: string; conclusion: string }> = []
+    for (const taskId of plan.createdTaskIds) {
+      for (const artifact of this.store.read.listArtifacts(plan.projectId, taskId)) {
+        const metadata = (artifact.metadata ?? {}) as Record<string, unknown>
+        if (metadata.artifactType !== 'review') continue
+        const blockers = Array.isArray(metadata.blockers)
+          ? metadata.blockers.filter((item): item is string => typeof item === 'string')
+          : []
+        const blocking = blockers.some((item) => !/^(无|none|no blockers?)/i.test(item.trim()))
+        const conclusion = typeof metadata.conclusion === 'string' ? metadata.conclusion.trim() : ''
+        // Neutral wording ("未发现问题") is a pass; only explicit rejection language or a
+        // real blocking item counts as a negative review.
+        const explicitlyRejected = /阻断|不通过|拒绝|需要修改|不可放行|reject|blocking|blocked|fail|changes? requested/i.test(conclusion)
+        if (blocking || explicitlyRejected) rejected.push({ title: artifact.title, conclusion: conclusion || '未给出结论' })
+      }
+    }
+    return rejected
   }
 
   private async tick(planId: string): Promise<void> {
@@ -1322,8 +1359,16 @@ export class OrchestrationScheduler {
         // plan is a verification failure: keep the failure evidence and ask the
         // Replanner for a legitimate fix instead of marking the plan completed.
         const failedChecks = this.failingVerifications(plan)
-        if (failedChecks.length > 0) {
-          const reason = `验证未通过：${failedChecks.map((item) => `${item.command.slice(0, 60)}（退出码 ${item.exitCode}）`).join('、')}`
+        const rejectedReviews = this.negativeReviews(plan)
+        if (failedChecks.length > 0 || rejectedReviews.length > 0) {
+          const reason = [
+            ...(failedChecks.length > 0
+              ? [`验证未通过：${failedChecks.map((item) => `${item.command.slice(0, 60)}（退出码 ${item.exitCode}）`).join('、')}`]
+              : []),
+            ...(rejectedReviews.length > 0
+              ? [`审查未通过：${rejectedReviews.map((item) => `${item.title}（${item.conclusion.slice(0, 40)}）`).join('、')}`]
+              : []),
+          ].join('；')
           this.saveExecution(plan, { ...plan.execution!, status: 'paused', error: reason, updatedAt: now() })
           this.disarm(planId)
           this.notifyReplan(plan, 'evidence_exhausted', reason)

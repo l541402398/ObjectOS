@@ -232,6 +232,7 @@ describe('Agent update_task_status(done) evidence gate', () => {
     const started = await runner.startRun({ projectId: project.id, sessionId: session.id, taskId: task.id, prompt: '审查' })
     await runner.awaitRunTerminal(started.runId, { timeoutMs: 10_000, pollMs: 50 })
     expect(store.read.getTask(task.id)?.status).not.toBe('done')
+    expect(store.read.getTask(task.id)?.status).toBe('review')
     expect(toolStatus(store, project.id, task.id, 'update_task_status')).toBe('failed')
     console.log(`[done-gate] wrong-artifact task=${store.read.getTask(task.id)?.status} tool=${toolStatus(store, project.id, task.id, 'update_task_status')}`)
   }, 30_000)
@@ -313,8 +314,12 @@ describe('Agent update_task_status(done) evidence gate', () => {
     const session = services.sessions.create({ projectId: project.id, agentId: 'agt_reviewer', title: 'Review blocking' })
     const started = await runner.startRun({ projectId: project.id, sessionId: session.id, taskId: task.id, prompt: '审查' })
     await runner.awaitRunTerminal(started.runId, { timeoutMs: 10_000, pollMs: 50 })
-    expect(store.read.getTask(task.id)?.status).not.toBe('done')
-    expect(toolStatus(store, project.id, task.id, 'update_task_status')).toBe('failed')
+    // ADR-0022: reporting a blocking defect IS a completed review — the task may finish,
+    // but the review is not approved and no acceptance record may claim it passed.
+    expect(store.read.getTask(task.id)?.status).toBe('done')
+    expect(toolStatus(store, project.id, task.id, 'update_task_status')).toBe('completed')
+    const reviewAcceptance = store.read.listArtifacts(project.id, task.id).find((item) => item.title.includes('验收记录'))
+    expect(reviewAcceptance?.metadata?.acceptanceMode).not.toBe('quality-passed')
     console.log(`[done-gate] blocking-review task=${store.read.getTask(task.id)?.status} tool=${toolStatus(store, project.id, task.id, 'update_task_status')}`)
   }, 30_000)
 
