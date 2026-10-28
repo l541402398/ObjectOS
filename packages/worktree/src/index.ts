@@ -94,16 +94,28 @@ export class WorktreeManager {
     if (!existsSync(`${repoRoot}/.git`)) {
       throw new Error('项目不是 Git 仓库，无法创建工作树')
     }
-    if (existsSync(worktreePath)) {
-      return { path: worktreePath, branch, baseHead: await this.head(worktreePath) }
+    const reuse = async (): Promise<WorktreeRef | null> => {
+      if (!existsSync(worktreePath)) return null
+      const head = await this.head(worktreePath)
+      // A directory that is not a usable worktree must not be silently reused: it is
+      // usually the debris of an interrupted `git worktree add`.
+      return head ? { path: worktreePath, branch, baseHead: head } : null
     }
+    const existing = await reuse()
+    if (existing) return existing
     mkdirSync(dirname(worktreePath), { recursive: true })
     let result = await runGit(['worktree', 'add', '-b', branch, worktreePath, 'HEAD'], repoRoot)
     if (result.code !== 0) {
       result = await runGit(['worktree', 'add', worktreePath, branch], repoRoot)
     }
-    if (result.code !== 0) throw new Error(result.stderr.trim() || 'git worktree add 失败')
-    return { path: worktreePath, branch, baseHead: await this.head(worktreePath) }
+    if (result.code === 0) return { path: worktreePath, branch, baseHead: await this.head(worktreePath) }
+    // Two plan starts (or a restart racing a tick) can both reach `worktree add`.
+    // The loser sees "already exists"; adopt the winner's worktree instead of failing
+    // the whole plan, but only when it really is a checked-out worktree.
+    const adopted = await reuse()
+    if (adopted) return adopted
+    await runGit(['worktree', 'prune'], repoRoot)
+    throw new Error(result.stderr.trim() || 'git worktree add 失败')
   }
 
   async head(worktreePath: string): Promise<string | null> {

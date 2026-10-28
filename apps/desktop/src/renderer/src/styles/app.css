@@ -4328,3 +4328,23 @@
 .po-acceptance-evidence { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 10px; border-radius: 10px; background: var(--glass-panel-bg, rgba(120, 140, 170, 0.08)); font-size: var(--text-micro); color: var(--text-secondary, #5b6472); }
 .po-acceptance-checks { display: flex; flex-direction: column; gap: 6px; font-size: var(--text-small); }
 .po-acceptance-approval { font-size: var(--text-small); color: var(--text-secondary, #5b6472); }
+
+/* Phase 2.8.1: a stale/unknown hash must not strand the user. */
+.po-notfound-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+}
+.po-notfound-path {
+  padding: 2px 8px;
+  border: 1px solid var(--color-divider);
+  border-radius: 7px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

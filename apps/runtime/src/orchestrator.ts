@@ -111,7 +111,8 @@ export function selectStartableTasks(input: {
 
 export class OrchestrationScheduler {
   private readonly timers = new Map<string, NodeJS.Timeout>()
-  private readonly ticking = new Set<string>()
+  private readonly ticking = new Set<string>
+  private readonly workspaceInflight = new Map<string, Promise<string>>()
   private readonly qualityReports = new Map<string, QualityGateReport>()
 
   constructor(
@@ -960,7 +961,16 @@ export class OrchestrationScheduler {
     }
   }
 
+  /** Single-flight per plan: a start racing a restart must not run `git worktree add` twice. */
   private async ensureWorkspace(plan: PlanDraft): Promise<string> {
+    const running = this.workspaceInflight.get(plan.id)
+    if (running) return running
+    const task = this.ensureWorkspaceInner(plan).finally(() => this.workspaceInflight.delete(plan.id))
+    this.workspaceInflight.set(plan.id, task)
+    return task
+  }
+
+  private async ensureWorkspaceInner(plan: PlanDraft): Promise<string> {
     const project = this.store.read.getProject(plan.projectId)
     if (!project) throw new AppError('NOT_FOUND', '项目不存在')
     if (plan.execution?.workspaceRef && existsSync(plan.execution.workspaceRef)) {

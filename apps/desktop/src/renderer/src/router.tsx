@@ -1,5 +1,6 @@
 import { Suspense, lazy, type ReactNode } from 'react'
-import { createHashRouter, Navigate } from 'react-router-dom'
+import { createHashRouter, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Button } from 'antd'
 import { EmptyState, LoadingBlock } from '@projectos/ui'
 import AppLayout from './components/AppLayout'
 import ProjectCenterPage from './pages/ProjectCenterPage'
@@ -40,9 +41,16 @@ function LazyPage({ children }: { children: ReactNode }) {
 }
 
 function NotFoundPage() {
+  const location = useLocation()
+  const navigate = useNavigate()
   return (
     <div className="po-page">
       <EmptyState title="页面不存在" description="检查地址，或返回项目中心继续工作。" />
+      <div className="po-notfound-actions">
+        <code className="po-notfound-path">{location.pathname}</code>
+        <Button size="small" onClick={() => navigate(-1)}>返回上一页</Button>
+        <Button size="small" type="primary" onClick={() => navigate('/', { replace: true })}>回到项目中心</Button>
+      </div>
     </div>
   )
 }
