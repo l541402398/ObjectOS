@@ -110,7 +110,53 @@ export class ReplanService {
         warnings: context.warnings,
       })
       generation = revised.generation
-      const assigned = this.orchestration.previewAssignedTasks(plan.projectId, plan.goal, revised.tasks)
+      const previewed = this.orchestration.previewAssignedTasks(plan.projectId, plan.goal, revised.tasks)
+      // ADR-0026: a revision must not silently re-bind the Agents the user already authorized.
+      // `previewAssignedTasks` resolves assignments by role, which picks a *different* Agent than
+      // the one the approved plan used; the revision then looks like it expands the Agent scope
+      // and has to escalate even for a legitimate repair. Kept tasks with an unchanged role keep
+      // the source plan's explicit binding; only genuinely new tasks get a fresh resolution.
+      const sourceByKey = new Map(plan.tasks.map((task) => [task.key, task]))
+      const authorizedAgentIds = new Set(grant?.valid ? grant.allowedAgentIds : [])
+      const roleCapability: Record<string, string | undefined> = {
+        developer: 'implement',
+        tester: 'test',
+        reviewer: 'review',
+        architect: 'architect',
+      }
+      const assigned = previewed.map((task) => {
+        const source = sourceByKey.get(task.key)
+        if (source?.agentId && source.role === task.role) {
+          if (task.agentId === source.agentId) return task
+          return {
+            ...task,
+            agentId: source.agentId,
+            assignmentMode: 'explicit' as const,
+            assignmentReasons: [...(task.assignmentReasons ?? []), `沿用源计划 r${plan.revision} 的 Agent 绑定`],
+          }
+        }
+        // A newly added task: the resolver may pick an Agent outside the user's grant. If an
+        // already-authorized Agent can do this role, use it instead of asking the user to widen
+        // authorization for work the envelope already covers.
+        if (authorizedAgentIds.size > 0 && task.agentId && !authorizedAgentIds.has(task.agentId)) {
+          const capability = roleCapability[task.role]
+          const candidate = [...authorizedAgentIds]
+            .map((agentId) => this.store.read.getAgent(agentId))
+            .find((agent) => agent && (!capability || agent.capabilities.includes(capability as never)))
+          if (candidate) {
+            return {
+              ...task,
+              agentId: candidate.id,
+              // Pinned: the revision already decided this assignment, and re-resolving it would
+              // pick an Agent outside the user's grant.
+              assignmentMode: 'explicit' as const,
+              assignmentBlocked: false,
+              assignmentReasons: [...(task.assignmentReasons ?? []), '复用当前执行授权范围内同能力 Agent'],
+            }
+          }
+        }
+        return task
+      })
       const diff = this.buildDiff(plan, assigned)
       const grantImpact = this.buildGrantImpact(plan, assigned, diff, grant)
       const timestamp = now()
@@ -217,6 +263,15 @@ export class ReplanService {
     if (proposal.status !== 'proposed') throw new AppError('CONFLICT', `重规划提案状态为 ${proposal.status}，不能应用`)
     const plan = this.orchestration.getPlan(proposal.planId)
     const assertFresh = (current: PlanDraft): void => {
+      if (current.status === 'superseded') {
+        // Applying a proposal against a plan that a previous revision already replaced is how a
+        // real run produced r2..r22 from the same source. The revision chain must move forward
+        // through the *newest* plan only.
+        throw new AppError('CONFLICT', '源计划已被新的 revision 替代，不能应用基于旧计划生成的修订提案')
+      }
+      if (current.status === 'rejected') {
+        throw new AppError('CONFLICT', '源计划已拒绝，不能应用修订提案')
+      }
       if (current.revision !== proposal.sourceRevision) {
         throw new AppError('CONFLICT', '源计划 revision 已变化，请重新生成修订提案')
       }

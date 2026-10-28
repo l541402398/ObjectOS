@@ -1,0 +1,133 @@
+====================================================================================================
+dataDir: C:\Users\ADMINI~1\AppData\Local\Temp\projectos-p287b-kolMWe  db=1777664B
+plans: 1
+  r1  approved   exec=paused   runs=3  mergedAt=None err=等待审批：run_command git grep -n "return a" -- src/sums.mjs（运行 run_01m61ndb4r968r87xrc3z16q5d）
+proposals: 
+policy replan applies: 0
+review artifacts: 0 (with snapshot: 0)
+  ev 20    plan.status.changed    {"planId": "pln_01m61n9dknr0f1mgxqmj8bs4fg", "revision": 1, "from": "approved", "to": "running", "reason": "policy.autoStart", "authorizedBy": "policy
+  ev 137   plan.status.changed    {"planId": "pln_01m61n9dknr0f1mgxqmj8bs4fg", "revision": 1, "from": "running", "to": "paused", "reason": "approval.waiting", "runId": "run_01m61ndb4r9
+  exit=0 x3  git status --porcelain
+  exit=0 x2  git diff --name-only
+  exit=0 x1  node -e "require('fs').writeFileSync('src/sums.notes.mjs',['
+  exit=0 x1  node -e "import('./src/sums.notes.mjs').then(function(m){con
+  exit=0 x1  node -e "console.log(process.cwd())"
+  exit=0 x1  node -e "console.log('中文'.length, process.argv.length)"
+  exit=0 x1  node --version
+  exit=0 x1  git diff --exit-code -- src/sums.mjs tests/sums.test.mjs
+  exit=1 x2  npm test
+  exit=1 x1  node --test tests/sums.test.mjs
+  exit=1 x1  node --test tests/*.test.mjs
+====================================================================================================
+dataDir: C:\Users\ADMINI~1\AppData\Local\Temp\projectos-p287b-gEbI3D  db=2007040B
+plans: 1
+  r1  approved   exec=paused   runs=3  mergedAt=None err=验证未通过：node --test tests/*.test.mjs（退出码 1）、npm test（退出码 1）、node --test tests/sums.test.mjs（退出码 1）；审查未通过：代码审查报告 
+proposals: proposed=1
+policy replan applies: 0
+review artifacts: 1 (with snapshot: 1)
+  ev 17    plan.status.changed    {"planId": "pln_01m61nhv4qs75aevvmbbjwtjgd", "revision": 1, "from": "approved", "to": "running", "reason": "policy.autoStart", "authorizedBy": "policy
+  exit=0 x2  git status --porcelain
+  exit=0 x1  node -e "require('fs').writeFileSync('src/sums.notes.mjs',['
+  exit=0 x1  node -e "import('./src/sums.notes.mjs').then(function(m){var
+  exit=0 x1  node -e "console.log(process.cwd())"
+  exit=0 x1  node -e "console.log('负数两个数相加'.length, '负数'.codePointAt(0).t
+  exit=0 x1  node --version
+  exit=0 x1  git diff --stat HEAD -- src/sums.mjs
+  exit=1 x1  npm test
+  exit=1 x1  node --test tests/sums.test.mjs
+  exit=1 x1  node --test tests/*.test.mjs
+====================================================================================================
+dataDir: C:\Users\ADMINI~1\AppData\Local\Temp\projectos-p287b-qJi5Qj  db=2252800B
+plans: 2
+  r1  superseded exec=paused   runs=3  mergedAt=None err=验证未通过：node --test tests/*.test.mjs（退出码 1）；审查未通过：验收报告：src/sums.notes.mjs（真实验证记录）（四条验收标准全部通过（inconclusive））、审查报告
+  r2  approved   exec=None     runs=0  mergedAt=None err=None
+proposals: applied=1
+policy replan applies: 1
+review artifacts: 3 (with snapshot: 3)
+  ev 17    plan.status.changed    {"planId": "pln_01m61p1vd6xrk60e88e8zdw2hb", "revision": 1, "from": "approved", "to": "running", "reason": "policy.autoStart", "authorizedBy": "policy
+  ev 187   plan.status.changed    {"planId": "pln_01m61p9gptt8ry122b0zemcgpy", "revision": 2, "from": "draft", "to": "approved", "reason": "policy.within-grant", "authorizedBy": "polic
+  exit=0 x4  git status --porcelain
+  exit=0 x2  node -e "require('fs').writeFileSync('src/sums.notes.mjs', [
+  exit=0 x2  node -e "import('./src/sums.notes.mjs').then(function(m){con
+  exit=0 x2  node --version
+  exit=0 x1  node -e "require('fs').readFileSync('src/sums.notes.mjs','ut
+  exit=0 x1  node -e "import('./src/sums.notes.mjs').then(function(m){if(
+  exit=0 x1  node -e "console.log(process.platform + ' ' + process.arch +
+  exit=0 x1  node -e "console.log('a b c')"
+  exit=1 x3  node --test tests/*.test.mjs
+====================================================================================================
+dataDir: C:\Users\ADMINI~1\AppData\Local\Temp\projectos-p287b-6zVuP9  db=2818048B
+plans: 2
+  r1  superseded exec=paused   runs=3  mergedAt=None err=验证未通过：npm test（退出码 1）、node --test tests/*.test.mjs（退出码 1）；审查未通过：代码审查 · src/sums.mjs 未使用第二个参数，测试证据可信（退出码 1 属实）（
+  r2  approved   exec=paused   runs=3  mergedAt=None err=审查未通过：当前内容缺少审查（只有针对旧内容的审查（1 份），当前内容没有审查，不能放行）
+proposals: applied=1
+policy replan applies: 1
+review artifacts: 2 (with snapshot: 2)
+  ev 17    plan.status.changed    {"planId": "pln_01m61pt8qee9f4fgeta8gcpmye", "revision": 1, "from": "approved", "to": "running", "reason": "policy.autoStart", "authorizedBy": "policy
+  ev 155   plan.status.changed    {"planId": "pln_01m61pzmjw4wb8r7fz2p6jg0hq", "revision": 2, "from": "draft", "to": "approved", "reason": "policy.within-grant", "authorizedBy": "polic
+  exit=0 x5  git diff --name-only
+  exit=0 x4  node -p "require('crypto').createHash('sha256').update(requi
+  exit=0 x2  npm test
+  exit=0 x2  node -p "require('fs').readdirSync('.').join(',')"
+  exit=0 x2  node -p "require('fs').existsSync('src/sums.notes.mjs')"
+  exit=0 x2  node --version
+  exit=0 x2  node --test tests/*.test.mjs
+  exit=0 x2  git status --porcelain
+  exit=0 x2  git rev-parse --show-toplevel
+  exit=0 x1  node -p "new Date().toISOString()"
+  exit=0 x1  node -e 'require("fs").writeFileSync("src/sums.notes.mjs","/
+  exit=0 x1  node -e 'console.log("argv-ok")'
+====================================================================================================
+dataDir: C:\Users\ADMINI~1\AppData\Local\Temp\projectos-p287b-sPhjtG  db=1523712B
+plans: 1
+  r1  approved   exec=paused   runs=1  mergedAt=None err=等待审批：run_command grep -rn sums.notes src tests（运行 run_01m61qdq5cfxt48bhz8wqedqv6）
+proposals: 
+policy replan applies: 0
+review artifacts: 0 (with snapshot: 0)
+  ev 17    plan.status.changed    {"planId": "pln_01m61qd16yg9mtc8nkq955y9r7", "revision": 1, "from": "approved", "to": "running", "reason": "policy.autoStart", "authorizedBy": "policy
+  ev 75    plan.status.changed    {"planId": "pln_01m61qd16yg9mtc8nkq955y9r7", "revision": 1, "from": "running", "to": "paused", "reason": "approval.waiting", "runId": "run_01m61qdq5cf
+  exit=0 x1  node -p "process.cwd()"
+  exit=0 x1  node -p "1 + 1"
+  exit=0 x1  node -e "require('fs').writeFileSync('src/sums.notes.mjs',['
+  exit=0 x1  node -e "require('fs').appendFileSync('src/sums.notes.mjs',[
+  exit=0 x1  node -e "import('./src/sums.notes.mjs').then(function(m){con
+  exit=0 x1  node -e "console.log(['x','y'].join('-'))"
+  exit=0 x1  git status --porcelain
+  exit=0 x1  git diff --stat -- src/sums.mjs tests/sums.test.mjs package.
+====================================================================================================
+dataDir: C:\Users\ADMINI~1\AppData\Local\Temp\projectos-p287b-2eDzSg  db=10887168B
+plans: 22
+  r1  superseded exec=paused   runs=3  mergedAt=None err=验证未通过：npm test（退出码 1）、node --test tests/sums.test.mjs（退出码 1）；审查未通过：审查报告 · src/sums.mjs 缺陷未修复且相对 HEAD c906a69 未
+  r2  superseded exec=paused   runs=1  mergedAt=None err=任务「修复 src/sums.mjs，使 sum 符合测试定义的必需行为」缺少有效完成依据：预期产物：自检命令输出摘录（标注为非测试证据）：缺少已验证测试报告、质量门禁通过或成功的 run_tests
+  r3  superseded exec=paused   runs=2  mergedAt=None err=任务「独立复跑真实测试并如实报告退出码」缺少有效完成依据：预期产物：测试报告（含命令、Node 版本、用例级结果、真实退出码）：缺少已验证测试报告、质量门禁通过或成功的 run_tests
+  r4  superseded exec=failed   runs=1  mergedAt=None err=没有可继续执行的任务：独立复跑真实测试并如实报告退出码（blocked）；只读复审修复 diff 与通过结果并产出复审 Artifact（backlog）
+  r5  approved   exec=failed   runs=1  mergedAt=None err=没有可继续执行的任务：独立复跑真实测试并如实报告退出码（blocked）；只读复审修复 diff 与通过结果并产出复审 Artifact（backlog）
+  r6  approved   exec=running  runs=0  mergedAt=None err=None
+  ... 16 more revisions
+proposals: applied=21, failed=50, proposed=23
+policy replan applies: 21
+review artifacts: 2 (with snapshot: 2)
+  ev 17    plan.status.changed    {"planId": "pln_01m61r285rjtwje1ksg83qawgz", "revision": 1, "from": "approved", "to": "running", "reason": "policy.autoStart", "authorizedBy": "policy
+  ev 164   plan.status.changed    {"planId": "pln_01m61r8xcqcb0mvnn24madjkg3", "revision": 2, "from": "draft", "to": "approved", "reason": "policy.within-grant", "authorizedBy": "polic
+  ev 225   plan.status.changed    {"planId": "pln_01m61rbjnmw2v9sdndgy7v1r6r", "revision": 3, "from": "draft", "to": "approved", "reason": "policy.within-grant", "authorizedBy": "polic
+  ev 352   plan.status.changed    {"planId": "pln_01m61rh685mvkk172a5mr5xjc9", "revision": 4, "from": "draft", "to": "approved", "reason": "policy.within-grant", "authorizedBy": "polic
+  ev 408   plan.status.changed    {"planId": "pln_01m61rh685mvkk172a5mr5xjc9", "revision": 4, "from": "approved", "to": "running", "reason": "policy.autoStart", "authorizedBy": "policy
+  ev 410   plan.status.changed    {"planId": "pln_01m61rh685mvkk172a5mr5xjc9", "revision": 4, "from": "approved", "to": "running", "reason": "policy.autoStart", "authorizedBy": "policy
+  ev 412   plan.status.changed    {"planId": "pln_01m61rh685mvkk172a5mr5xjc9", "revision": 4, "from": "approved", "to": "running", "reason": "policy.autoStart", "authorizedBy": "policy
+  ev 414   plan.status.changed    {"planId": "pln_01m61rh685mvkk172a5mr5xjc9", "revision": 4, "from": "approved", "to": "running", "reason": "policy.autoStart", "authorizedBy": "policy
+  ev 416   plan.status.changed    {"planId": "pln_01m61rh685mvkk172a5mr5xjc9", "revision": 4, "from": "approved", "to": "running", "reason": "policy.autoStart", "authorizedBy": "policy
+  ev 418   plan.status.changed    {"planId": "pln_01m61rh685mvkk172a5mr5xjc9", "revision": 4, "from": "approved", "to": "running", "reason": "policy.autoStart", "authorizedBy": "policy
+  ev 420   plan.status.changed    {"planId": "pln_01m61rh685mvkk172a5mr5xjc9", "revision": 4, "from": "approved", "to": "running", "reason": "policy.autoStart", "authorizedBy": "policy
+  ev 422   plan.status.changed    {"planId": "pln_01m61rh685mvkk172a5mr5xjc9", "revision": 4, "from": "approved", "to": "running", "reason": "policy.autoStart", "authorizedBy": "policy
+  exit=0 x8  node --version
+  exit=0 x5  node -e "console.log(new Date().toISOString())"
+  exit=0 x4  node --test tests/sums.test.mjs
+  exit=0 x3  node -e "console.log(process.cwd())"
+  exit=0 x3  git status --porcelain
+  exit=0 x2  npm test
+  exit=0 x1  node -p Date()
+  exit=0 x1  node -e "require('fs').writeFileSync('src/sums.notes.mjs','/
+  exit=0 x1  node -e "require('fs').writeFileSync('src/sums.mjs','export 
+  exit=0 x1  node -e "require('fs').writeFileSync('src/sums.mjs', 'export
+  exit=0 x1  node -e "console.log(require('node:fs').existsSync('src/sums
+  exit=0 x1  node -e "console.log(require('fs').realpathSync('.'))"

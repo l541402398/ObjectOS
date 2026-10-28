@@ -2,7 +2,6 @@ import { execFileSync } from 'node:child_process'
 import type { PlanDraft, PlannedTask, ReplanProposalView } from '@projectos/contracts'
 import { PROJECT_EVENT_TYPES } from '@projectos/domain'
 import {
-  countAutoReplans,
   evaluateReplanAuthorization,
   type ReplanAuthorization,
   type ReplanEnvelope,
@@ -314,6 +313,7 @@ export class ReplanAutopilot {
       // revision that needs a path outside the grant is stopped there, not silently allowed.
       pathsRequired: [],
       tasksToRun,
+      startsNeeded: 1,
       toolCallsNeeded: Math.max(1, tasksToRun * 6),
       downgradeNotes: this.preflight.downgradeNotes(source, proposal.proposedTasks),
     }
@@ -353,17 +353,33 @@ export class ReplanAutopilot {
     return { authorization, requirements, envelopeGrantId: grantId, preflightGaps }
   }
 
+  /**
+   * Exact count of policy-authorized revisions for this project in the last 24h.
+   *
+   * This MUST be a query, not `listEventViews(projectId, 500)`: a bounded window of the newest
+   * events silently forgets older applies as unrelated events churn, so the cap never triggers.
+   * A real run produced 21 policy applies against a cap of 3 because of exactly that window.
+   */
   private autoReplansUsed(projectId: string): number {
     const since = Date.now() - 24 * 60 * 60 * 1000
-    const events = this.store.read.listEventViews(projectId, 500)
-    return countAutoReplans(
-      events
-        .filter((event) => event.createdAt >= since)
-        .map((event) => ({
-          eventType: event.eventType,
-          payload: (event.payload ?? {}) as Record<string, unknown>,
-        })),
-    )
+    const row = this.store.db
+      .prepare(
+        "SELECT COUNT(*) AS value FROM project_events WHERE project_id = ? AND event_type = 'plan.replan.applied' AND json_extract(payload_json, '$.authorizedBy') = 'policy' AND created_at >= ?",
+      )
+      .get(projectId, since) as { value: number } | undefined
+    const count = Number(row?.value ?? 0)
+    if (count > 0) return count
+    // Fallback for stores that cannot evaluate the JSON path (defensive, still unbounded).
+    const events = this.store.db
+      .prepare("SELECT payload_json FROM project_events WHERE project_id = ? AND event_type = 'plan.replan.applied' AND created_at >= ?")
+      .all(projectId, since) as Array<{ payload_json: string }>
+    return events.filter((event) => {
+      try {
+        return JSON.parse(event.payload_json).authorizedBy === 'policy'
+      } catch {
+        return false
+      }
+    }).length
   }
 
   private async autoApplyReplans(
@@ -492,7 +508,21 @@ export class ReplanAutopilot {
       kind: basis,
       reasons: reasons.length > 0 ? reasons : [basis === 'policy' ? '授权范围内自动应用' : '用户批准应用'],
     })
-    const approved = this.orchestration.approvePlan(applied.plan.id)
+    let approved: { plan: PlanDraft; taskIds: string[] }
+    try {
+      approved = this.orchestration.approvePlan(applied.plan.id)
+    } catch (error) {
+      // The proposal is already applied, so this must be visible and actionable rather than an
+      // orphaned draft revision. Nothing is retried automatically.
+      this.record(source.projectId, applied.plan.id, PROJECT_EVENT_TYPES.custom, {
+        kind: 'plan.replan.applyFailed',
+        proposalId,
+        appliedPlanId: applied.plan.id,
+        stage: 'approvePlan',
+        error: error instanceof Error ? error.message : String(error),
+      })
+      throw error
+    }
     this.record(source.projectId, approved.plan.id, PROJECT_EVENT_TYPES.planStatusChanged, {
       planId: approved.plan.id,
       revision: approved.plan.revision,

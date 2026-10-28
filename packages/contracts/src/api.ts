@@ -1421,6 +1421,7 @@ export const ApiSchemas = {
         agentsRequired: z.array(z.string()),
         pathsRequired: z.array(z.string()),
         tasksToRun: z.number().int().nonnegative(),
+        startsNeeded: z.number().int().nonnegative(),
         toolCallsNeeded: z.number().int().nonnegative(),
         downgradeNotes: z.array(z.string()),
       }),

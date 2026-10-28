@@ -1,0 +1,27 @@
+dataDir: C:\Users\ADMINI~1\AppData\Local\Temp\projectos-p287b-4tUDuY
+exists: True
+db: C:\Users\ADMINI~1\AppData\Local\Temp\projectos-p287b-4tUDuY\projectos.db size=1892352
+
+== plan_revisions ==
+{"id": "pln_01m61mgsxf3te43x8y7c007ezq", "status": "approved", "ex": "paused", "err": "等待审批：run_command git hash-object src/sums.mjs tests/sums.test.mjs（运行 run_01m61mm06mkze2ht1ad4krf2gp）", "revision": 1, "updated_at": 1793204072831}
+
+== approvals (last 10) ==
+{"id": "apr_01m61mmxd7rsrxdksdjt6r2a3q", "tool_call_id": "tol_01m61mmxd5b4apf3dvqantgxwa", "status": "pending", "title": "授权 run_command", "requested_at": 1793204057511, "decided_at": null, "expires_at": 1793205857511}
+{"id": "apr_01m61mmsmjp3s5sd6dtcensegq", "tool_call_id": "tol_01m61mmsmfmk9xzma1zn4m88z0", "status": "approved", "title": "授权 run_tests", "requested_at": 1793204053650, "decided_at": 1793204054777, "expires_at": 1793205853650}
+{"id": "apr_01m61mmpjjm4gq47tcyrst64v3", "tool_call_id": "tol_01m61mmpje1atx4dzjzvr6t5se", "status": "approved", "title": "授权 run_command", "requested_at": 1793204050514, "decided_at": 1793204052036, "expires_at": 1793205850514}
+{"id": "apr_01m61mmkvq6hv6cgz9hhhzxbem", "tool_call_id": "tol_01m61mmkvngjqbqtj1s8kadncm", "status": "approved", "title": "授权 run_command", "requested_at": 1793204047735, "decided_at": 1793204049273, "expires_at": 1793205847735}
+{"id": "apr_01m61mmh5wpnv650kh038ch4e3", "tool_call_id": "tol_01m61mmh5va0wwj5v5mm8htrsy", "status": "approved", "title": "授权 run_command", "requested_at": 1793204044988, "decided_at": 1793204046526, "expires_at": 1793205844988}
+{"id": "apr_01m61mmef4a42f886a298p9ne4", "tool_call_id": "tol_01m61mmef282pm859pehzbnbbp", "status": "approved", "title": "授权 run_command", "requested_at": 1793204042212, "decided_at": 1793204043579, "expires_at": 1793205842212}
+{"id": "apr_01m61mmbvwc22ya4t4rk3p8jqv", "tool_call_id": "tol_01m61mmbvtf93bqpr5bnhvmz5b", "status": "approved", "title": "授权 run_command", "requested_at": 1793204039548, "decided_at": 1793204040488, "expires_at": 1793205839548}
+{"id": "apr_01m61mm9hrq3cba4z83nk9wtc2", "tool_call_id": "tol_01m61mm9hpna3shz4mzmrvp5er", "status": "approved", "title": "授权 run_command", "requested_at": 1793204037176, "decided_at": 1793204037889, "expires_at": 1793205837176}
+{"id": "apr_01m61mm4vhh6qkj02xm0wqw3hq", "tool_call_id": "tol_01m61mm4vf5qn4s1pby5da131h", "status": "approved", "title": "授权 run_tests", "requested_at": 1793204032369, "decided_at": 1793204034406, "expires_at": 1793205832369}
+{"id": "apr_01m61mkp8bst8zfschpn6wpgae", "tool_call_id": "tol_01m61mkp89m3dx1zex5hqfxnnt", "status": "approved", "title": "授权 run_tests", "requested_at": 1793204017419, "decided_at": 1793204018616, "expires_at": 1793205817419}
+
+== waiting_approval tool calls ==
+{"id": "tol_01m61mmxd5b4apf3dvqantgxwa", "run_id": "run_01m61mm06mkze2ht1ad4krf2gp", "tool_name": "run_command", "status": "waiting_approval", "cmd": "git hash-object src/sums.mjs tests/sums.test.mjs"}
+
+== plan.* events (last 25) ==
+{"seq": 127, "event_type": "plan.status.changed", "payload": "{\"planId\":\"pln_01m61mgsxf3te43x8y7c007ezq\",\"revision\":1,\"from\":\"running\",\"to\":\"paused\",\"reason\":\"approval.waiting\",\"runId\":\"run_01m61mm06mkze2ht1ad4krf2gp\",\"toolName\":\"run_command\",\"approvalId\":\"apr_01m61mmxd7rsrxdksdjt6r2a3q\",\"detail\":\"等待审批：run_command git hash-object src/sums.mjs tests/sums.test.m", "c
+{"seq": 20, "event_type": "plan.status.changed", "payload": "{\"planId\":\"pln_01m61mgsxf3te43x8y7c007ezq\",\"revision\":1,\"from\":\"approved\",\"to\":\"running\",\"reason\":\"policy.autoStart\",\"authorizedBy\":\"policy\",\"policy\":\"autoStartPlans\"}", "created_at": 1793203938603}
+{"seq": 15, "event_type": "plan.grant.issued", "payload": "{\"grantId\":\"pgr_01m61mh7pkxdkm4mqgqgjrw8wb\",\"planId\":\"pln_01m61mgsxf3te43x8y7c007ezq\",\"revision\":1,\"actor\":{\"kind\":\"user\",\"id\":\"local-user\",\"name\":\"你\"},\"actions\":[\"plan.start\",\"workspace-write\"],\"allowedPaths\":[\"src\",\"tests\"],\"allowedTaskIds\":[\"tsk_01m61mh7echwr31mnem6mz66yz\",\"tsk_01m61mh7ef8zn6rk65
+{"seq": 7, "event_type": "plan.generated", "payload": "{\"planId\":\"pln_01m61mgsxf3te43x8y7c007ezq\",\"revision\":1,\"goal\":\"目标：让 node --test 全部通过（tests/sums.test.mjs 描述 sum 的必需行为）。计划必须包含：1) 开发任务，先只新增 src/sums.notes.mjs 导出说明常量，不改 src/sums.mjs；2) 测试任务，运行真实测试并如实报告退出码；3) 审查任务，只读检查 src/sums.mjs 与测试结果并创建审查 Artifact。三个任务按依赖顺序排列。\",\"generatedBy\":\"provider\",\"mode\":\"pr", "created_at": 17932039364

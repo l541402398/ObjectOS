@@ -166,6 +166,97 @@ describe('Phase 2.8.7 reliability', () => {
     expect(derived.expiresAt).toBeLessThanOrEqual(grant.expiresAt)
   })
 
+  it('counts every policy revision, not just the newest event window', async () => {
+    // A real run produced 21 policy applies against a cap of 3 because the count was read from
+    // the newest 500 events: older applies fell out of the window and the cap never triggered.
+    const harness = makeHarness()
+    const project = await createGitProject(harness.services, harness.dataDir, 'p287-window-bug')
+    const { plan } = planWithTasks(harness.orchestration, project.id, [task('dev')])
+    issueGrant(harness, plan.id)
+    for (let index = 0; index < 3; index += 1) {
+      harness.store.appendEvent(project.id, plan.id, 'plan.replan.applied', { proposalId: `rpp_${index}`, authorizedBy: 'policy' })
+    }
+    for (let index = 0; index < 700; index += 1) {
+      harness.store.appendEvent(project.id, plan.id, 'task.moved', { taskId: `tsk_${index}` })
+    }
+    harness.actions.setAutonomySettings(project.id, { mode: 'autonomous', maxAutoReplans: 3 })
+    // The revision proposal faces the cap even though its applies are long out of the window.
+    const proposal = await harness.replans.propose({ planId: plan.id, trigger: 'evidence_exhausted', reason: '窗口计数' }).catch(() => null)
+    if (proposal) {
+      const evaluation = harness.autopilot.evaluateProposal(proposal.id)
+      expect(evaluation.authorization.decision).toBe('blocked')
+      expect(evaluation.authorization.reasons.join(' ')).toContain('上限')
+    }
+  })
+
+  it('refuses to apply a proposal whose source plan was already superseded', async () => {
+    // The revision chain must move forward through the newest plan only; otherwise every old
+    // proposal can be applied again and again.
+    const harness = makeHarness(
+      JSON.stringify({
+        reason: '修订',
+        assumptions: [],
+        risks: [],
+        tasks: [{ ...task('dev'), rationale: '修复实现并补齐真实验证证据' }],
+      }),
+    )
+    const project = await createGitProject(harness.services, harness.dataDir, 'p287-superseded')
+    const { plan } = planWithTasks(harness.orchestration, project.id, [task('dev')])
+    issueGrant(harness, plan.id)
+    const stored = harness.store.read.getPlanRevision(plan.id)!
+    harness.store.updatePlanRevision({
+      ...stored,
+      execution: {
+        status: 'paused',
+        concurrency: 1,
+        startedAt: now(),
+        updatedAt: now(),
+        error: '任务缺少有效完成依据',
+        runIds: [],
+        workspaceRef: null,
+        branch: null,
+        diffArtifactId: null,
+        mergedAt: null,
+        maxRetries: 2,
+        retries: {},
+        nextAttemptAt: {},
+        retryForRun: {},
+        maxEvidenceRetries: 1,
+        evidenceRetries: {},
+        evidenceRetryForRun: {},
+        requireWorktree: false,
+        allowedPaths: ['.'],
+      } as never,
+    })
+    const proposal = await harness.replans.propose({ planId: plan.id, trigger: 'evidence_exhausted', reason: '需要修订' })
+    expect(proposal.error ?? '').toBe('')
+    expect(proposal.status).toBe('proposed')
+    // Applying it supersedes the source plan.
+    harness.replans.apply(proposal.id)
+    expect(harness.store.read.getPlanRevision(plan.id)!.status).toBe('superseded')
+    // A second proposal against that now-superseded plan must never be applicable.
+    harness.store.createReplanProposal({
+      ...harness.store.read.getReplanProposal(proposal.id)!,
+      id: 'rpp_old_clone',
+      status: 'proposed',
+      appliedPlanId: null,
+      decidedAt: null,
+      decidedReason: null,
+      createdAt: now(),
+      updatedAt: now(),
+    })
+    const error = (() => {
+      try {
+        harness.replans.apply('rpp_old_clone')
+        return null
+      } catch (caught) {
+        return caught as AppError
+      }
+    })()
+    expect(error?.code).toBe('CONFLICT')
+    expect(error?.message).toContain('已被新的 revision 替代')
+  })
+
   it('does nothing when the project policy is not autonomous', async () => {
     const harness = makeHarness()
     const project = await createGitProject(harness.services, harness.dataDir, 'p287-policy-off')

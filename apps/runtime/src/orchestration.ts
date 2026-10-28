@@ -586,6 +586,13 @@ export class OrchestrationService {
       }
     }
     const revision = this.store.read.getNextPlanRevision(source.projectId)
+    // ADR-0026: a revision arrives with assignments that were already decided — by the user's
+    // approved plan, or by the product reusing an Agent inside the granted envelope. Re-resolving
+    // them here silently swaps Agents (and made an in-envelope repair look like a scope increase).
+    // Any task that arrives with an agentId is therefore pinned for this revision.
+    const pinnedKeys = new Set(
+      (input.tasks ?? source.tasks).filter((task) => Boolean(task.agentId)).map((task) => task.key),
+    )
     const assigned: PlanDraft = this.assignPlanAgents({
       id: newId('pln'),
       projectId: source.projectId,
@@ -611,7 +618,7 @@ export class OrchestrationService {
       supersededByPlanId: null,
       createdTaskIds: [],
       execution: null,
-    })
+    }, pinnedKeys)
     const reuse = this.reuseReferences(source, assigned.tasks)
     const next: PlanDraft = {
       ...assigned,

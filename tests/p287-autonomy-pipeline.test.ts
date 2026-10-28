@@ -263,6 +263,88 @@ describe('ADR-0026 product autonomy pipeline', () => {
   })
 })
 
+  it('keeps the approved Agent binding when a revision repairs the same task', async () => {
+    const holder = { text: '完成' }
+    const harness = makeHarness(new FakeProvider(() => ({ text: holder.text })))
+    const project = await createGitProject(harness.services, harness.dataDir, 'p287-agent-binding')
+    const agentId = harness.services.projects.listAgents(project.id).find((item) =>
+      item.agent.capabilities.includes('implement'),
+    )!.agent.id
+    const { plan } = planWithTasks(harness.orchestration, project.id, [task('dev', { agentId })])
+    issueGrant(harness, plan.id)
+    markEvidenceExhausted(harness, plan.id)
+    // The Replanner returns the same task key/role but no agentId: the product must not
+    // re-resolve it to a different Agent, or every legitimate repair would escalate.
+    holder.text = JSON.stringify({
+      reason: '补齐证据',
+      assumptions: [],
+      risks: [],
+      tasks: [task('dev'), task('verify', { role: 'developer', expectedArtifacts: ['测试报告'], dependsOn: ['dev'] })],
+    })
+    const proposal = await harness.replans.propose({
+      planId: plan.id,
+      trigger: 'evidence_exhausted',
+      reason: '缺少测试证据',
+    })
+    const kept = proposal.proposedTasks.find((item) => item.key === 'dev')
+    expect(kept?.agentId).toBe(agentId)
+    expect(proposal.diff.agentChanges).toHaveLength(0)
+    expect(proposal.grantImpact.newAgents).toHaveLength(0)
+    // ...and because the Agent scope did not change, the revision is auto-appliable.
+    const evaluation = harness.autopilot.evaluateProposal(proposal.id)
+    expect(evaluation.authorization.decision).toBe('auto-apply')
+  })
+
+  it('assigns a newly added repair task to an Agent the user already authorized', async () => {
+    const holder = { text: '完成' }
+    const harness = makeHarness(new FakeProvider(() => ({ text: holder.text })))
+    const project = await createGitProject(harness.services, harness.dataDir, 'p287-authorised-agent')
+    const implementAgent = harness.services.projects.listAgents(project.id).find((item) =>
+      item.agent.capabilities.includes('implement'),
+    )!.agent.id
+    const { plan } = planWithTasks(harness.orchestration, project.id, [task('dev', { agentId: implementAgent })])
+    issueGrant(harness, plan.id)
+    markEvidenceExhausted(harness, plan.id)
+    // The Replanner adds a repair task without an agentId; the resolver would pick a builtin
+    // Agent that is *not* in the grant. The product must reuse the authorized Agent instead of
+    // asking the user to widen authorization for work the envelope already covers.
+    holder.text = JSON.stringify({
+      reason: '修复实现',
+      assumptions: [],
+      risks: [],
+      tasks: [
+        task('dev'),
+        task('fix', { role: 'developer', expectedArtifacts: ['代码 diff'], dependsOn: ['dev'] }),
+      ],
+    })
+    const proposal = await harness.replans.propose({
+      planId: plan.id,
+      trigger: 'evidence_exhausted',
+      reason: '需要修复任务',
+    })
+    const added = proposal.proposedTasks.find((item) => item.key === 'fix')
+    expect(added?.agentId).toBe(implementAgent)
+    expect(proposal.grantImpact.newAgents).toHaveLength(0)
+    expect(harness.autopilot.evaluateProposal(proposal.id).authorization.decision).toBe('auto-apply')
+  })
+
+  it('counts plan starts, not task runs, against the Run budget', async () => {
+    // A revision with many tasks still needs exactly one plan start; measuring tasks against
+    // maxRuns (which bounds starts) would wrongly escalate every sizeable repair.
+    const harness = makeHarness(new FakeProvider(() => ({ text: '完成' })))
+    const project = await createGitProject(harness.services, harness.dataDir, 'p287-start-budget')
+    const { plan } = planWithTasks(harness.orchestration, project.id, [task('dev')])
+    issueGrant(harness, plan.id, { maxRuns: 2 })
+    markEvidenceExhausted(harness, plan.id)
+    const evaluation = harness.autopilot.evaluateProposal(
+      (
+        await harness.replans.propose({ planId: plan.id, trigger: 'evidence_exhausted', reason: '预算语义' })
+      ).id,
+    )
+    expect(evaluation.requirements.startsNeeded).toBe(1)
+    expect(evaluation.authorization.diffs.join(' ')).not.toContain('次计划启动')
+  })
+
 describe('ADR-0027 approval park is not "running"', () => {
   it('detects a run parked on an undecided approval and reports the exact object', async () => {
     const harness = makeHarness(new FakeProvider(() => ({ text: '完成' })))

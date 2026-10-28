@@ -36,8 +36,14 @@ export interface ReplanRequirements {
   agentsRequired: string[]
   /** Paths the revision needs to write; empty means "no new path requirement". */
   pathsRequired: string[]
-  /** Tasks that must start a Run in the revised revision. */
+  /** Tasks that must start a Run in the revised revision (informational). */
   tasksToRun: number
+  /**
+   * Plan starts the revision needs. `maxRuns` in a PlanExecutionGrant counts plan *starts*
+   * (one reservation per `orchestration.start`), not per-task Runs, so a revision always needs
+   * exactly one start and must never be measured against its task count.
+   */
+  startsNeeded: number
   /** Minimum tool calls the work needs (a plan with no tool budget cannot finish). */
   toolCallsNeeded: number
   /** Human-readable notes when the revision removed verification work. */
@@ -115,8 +121,8 @@ export function evaluateReplanAuthorization(input: ReplanAuthorizationInput): Re
   if (!envelope.actions.includes('workspace-write')) {
     diffs.push('原授权不包含 workspace-write')
   }
-  if (input.requirements.tasksToRun > envelope.remainingRuns) {
-    diffs.push(`需要启动 ${input.requirements.tasksToRun} 次 Run，剩余授权 ${envelope.remainingRuns} 次`)
+  if (input.requirements.startsNeeded > envelope.remainingRuns) {
+    diffs.push(`需要 ${input.requirements.startsNeeded} 次计划启动，剩余授权 ${envelope.remainingRuns} 次`)
   }
   if (input.requirements.toolCallsNeeded > envelope.remainingToolCalls) {
     diffs.push(`需要约 ${input.requirements.toolCallsNeeded} 次工具调用，剩余授权 ${envelope.remainingToolCalls} 次`)
