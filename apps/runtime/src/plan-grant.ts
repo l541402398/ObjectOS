@@ -265,14 +265,19 @@ export class PlanGrantService {
       )
       .get(planId, agentId, toolName, hash, now()) as { id: string; approval_id: string | null; context_hash: string | null } | undefined
     if (!row) return null
-    // Re-verify the execution context: a changed package.json script or entry file means
-    // the human approved different work than what would now run.
-    if (workspaceRoot) {
-      const current = this.executionContextFingerprint(workspaceRoot, toolName, command)
-      if (row.context_hash && row.context_hash !== current) {
-        this.store.db.prepare('DELETE FROM plan_command_approvals WHERE id=?').run(row.id)
-        return null
-      }
+    // Fail closed: reuse is only allowed when the execution context can be proven
+    // unchanged. Without a recorded fingerprint, or without a workspace to re-derive it,
+    // we cannot prove it, so the human is asked again instead of silently reusing.
+    if (!workspaceRoot || !row.context_hash) {
+      this.store.db.prepare('DELETE FROM plan_command_approvals WHERE id=?').run(row.id)
+      return null
+    }
+    const current = this.executionContextFingerprint(workspaceRoot, toolName, command)
+    if (row.context_hash !== current) {
+      // A changed package.json script or entry file means the approved command is not the
+      // command that would run now.
+      this.store.db.prepare('DELETE FROM plan_command_approvals WHERE id=?').run(row.id)
+      return null
     }
     return row
   }

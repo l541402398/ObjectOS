@@ -2143,6 +2143,14 @@ export class AgentRunner {
           args.metadata && typeof args.metadata === 'object' && !Array.isArray(args.metadata)
             ? (args.metadata as Record<string, unknown>)
             : {}
+        if (String(rawMetadata.artifactType ?? '').toLowerCase() === 'review') {
+          const errors = validateReviewArtifactMetadata(rawMetadata)
+          if (errors.length > 0) {
+            throw new AppError('BAD_REQUEST', `审查产物字段不合格，请补齐后重试：${errors.join('；')}`, {
+              details: { fields: errors },
+            })
+          }
+        }
         const artifact = this.services.projects.createArtifact(
           {
             projectId: project.id,
@@ -2152,7 +2160,7 @@ export class AgentRunner {
             title,
             body,
             uri,
-            metadata: normalizeReviewArtifactMetadata(rawMetadata, title, body, uri),
+            metadata: rawMetadata,
           },
           actor,
         )
@@ -3091,43 +3099,35 @@ export class AgentRunner {
  * unstructured document. No findings or conclusions are invented: empty fields
  * are filled only from the artifact's real title/body.
  */
-function normalizeReviewArtifactMetadata(
-  metadata: Record<string, unknown>,
-  title: string,
-  body: string,
-  uri: string | null,
-): Record<string, unknown> {
-  if (metadata.artifactType) return metadata
-  if (!/审查|评审|review/i.test(title)) return metadata
-  const lines = body
-    .split(/\r?\n/)
-    .map((line) => line.replace(/^[-*#>\s]+/, '').trim())
-    .filter(Boolean)
-  return {
-    ...metadata,
-    artifactType: 'review',
-    scope:
-      typeof metadata.scope === 'string' && metadata.scope.trim()
-        ? metadata.scope
-        : 'task workspace',
-    reviewedObjects: Array.isArray(metadata.reviewedObjects) && metadata.reviewedObjects.length
-      ? metadata.reviewedObjects
-      : [uri ?? 'workspace'],
-    findings: Array.isArray(metadata.findings) && metadata.findings.length
-      ? metadata.findings
-      : (lines.length ? lines.slice(0, 8) : [title]),
-    conclusion:
-      typeof metadata.conclusion === 'string' && metadata.conclusion.trim()
-        ? metadata.conclusion
-        : (body.trim().slice(0, 4000) || title),
-    blockers:
-      Array.isArray(metadata.blockers) && metadata.blockers.length
-        ? metadata.blockers
-        : ['无阻塞项'],
+/**
+ * ADR-0022: review evidence is never fabricated. The old normaliser invented
+ * `reviewedObjects`, `findings`, `conclusion` and `blockers` from the artifact title and
+ * body so the task would pass. That is exactly the "fake passed artifact" we must not do.
+ * Now a review artifact must carry real structured fields, and an invalid submission is
+ * rejected with field-level errors so the Agent can correct it inside its budget.
+ */
+function validateReviewArtifactMetadata(metadata: Record<string, unknown>): string[] {
+  const errors: string[] = []
+  if (!Array.isArray(metadata.reviewedObjects) || metadata.reviewedObjects.length === 0) {
+    errors.push('reviewedObjects: 需要至少一个真实被审查对象（文件路径、Diff、Commit 或 Artifact id）')
   }
+  if (typeof metadata.scope !== 'string' || !metadata.scope.trim()) {
+    errors.push('scope: 需要说明审查覆盖的范围')
+  }
+  if (!Array.isArray(metadata.findings) || metadata.findings.length === 0) {
+    errors.push('findings: 需要至少一条真实发现（确无问题时写 "无阻塞问题" 作为一条）')
+  }
+  if (typeof metadata.conclusion !== 'string' || !metadata.conclusion.trim()) {
+    errors.push('conclusion: 需要明确结论，例如 通过 / 需要修改 / 阻断交付')
+  }
+  if (!Array.isArray(metadata.blockers)) {
+    errors.push('blockers: 必须是字符串数组；无阻塞时写 []')
+  }
+  return errors
 }
 
-function hashArgs(args: Record<string, unknown>): string {  return createHash('sha256').update(stableStringify(args)).digest('hex')
+function hashArgs(args: Record<string, unknown>): string {
+  return createHash('sha256').update(stableStringify(args)).digest('hex')
 }
 
 function stableStringify(value: unknown): string {
