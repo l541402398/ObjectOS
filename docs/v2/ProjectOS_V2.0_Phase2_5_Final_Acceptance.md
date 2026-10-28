@@ -170,6 +170,28 @@ UI 侧：审批创建时携带 `fileSnapshot.fingerprint`；无法生成快照�
 
 状态语义明确区分：`待审批 / 待执行 / 执行中 / 待核对 / 服务已确认 / 制品已交付·未验证 / 失败 / 未知`。
 
+**真实 UI 实测**（在成功部署的数据目录上打开控制台）：
+
+```json
+{
+  "timelinePresent": true,
+  "operations": 1,
+  "steps": 10,
+  "firstSteps": [
+    "verify-local本地校验 2 个文件制品；跳过 1 个纯证据制品",
+    "connect169.58.112.111:22",
+    "connectSSH 连接建立，Host Key 已固定",
+    "upload已上传并校验 version…",
+    "upload已上传并校验 health…",
+    "container重建容器 projectos-delivery-test…"
+  ],
+  "hasRollback": true,
+  "statusTag": "服务已确认"
+}
+```
+
+即：时间线在真实界面中渲染了 10 步真实证据（含"跳过 1 个纯证据制品"这一修复后的语义），回滚入口可用，状态标签为 `服务已确认`。
+
 ### 7.4 开源组件
 
 本轮**未新增第三方依赖**（未安装 Monaco、react-resizable-panels）。原因与依据：
