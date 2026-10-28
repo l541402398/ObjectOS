@@ -16,7 +16,8 @@
 | 分支 | `v2.0-phase2.5` |
 | 恢复点 | tag `phase2.5-base`（`b7a1819`） |
 | 基线 | `491860e`（Phase 2.4 报告提交） |
-| 本轮提交 | `3278fee` → `2f513cb` → `4dd20ab` → 本报告提交（最终 HEAD 见 `git log -1`） |
+| 本轮提交 | `3278fee` → `2f513cb` → `4dd20ab` → `83d7fca` → `57fa3cd` |
+| **最终 HEAD** | **`57fa3cdc66c7b00c8ee00e3bde332dc551b8c697`**（工作树 clean） |
 | Schema | **V33**（additive；V27–V32 未修改） |
 
 V33 新增：
@@ -267,3 +268,11 @@ UI 侧：审批创建时携带 `fileSnapshot.fingerprint`；无法生成快照�
 - **P1-3 K8s/CI-CD：BLOCKED**（等待用户提供只读凭据）。
 
 **Phase 2.5 到此停止，不进入 Phase 3。**
+
+---
+
+## 11. 最终远程状态（本轮结束时）
+
+- 远端 release 目录累计 34 个（历史尝试全部保留，便于对账）。
+- 容器 `projectos-delivery-test` 当前服务 `projectos-phase2.5-v1` —— 即最后一次操作是把 v2 回滚到 v1，与数据库最后一条 `succeeded` 部署一致。
+- 该机器其余业务容器（1Panel / openviking / nezha / uptime-kuma 等）**未被触碰**。
