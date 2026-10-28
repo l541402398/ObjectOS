@@ -50,15 +50,18 @@ try {
   }
 
   // ---------- A. toast vs global header controls ----------
+  // A deterministic toast source: saving an unchanged resource always notifies.
   for (const theme of ['light', 'dark']) {
     await setTheme(theme)
-    await go(`#/projects/${project.id}/releases?version=${versionId}`)
-    await page.waitForSelector('.po-delivery-page', { timeout: 30_000 })
+    await go(`#/projects/${project.id}/connections`)
+    await page.waitForSelector('.rc-shell', { timeout: 30_000 })
     await page.waitForTimeout(600)
-    const candidateBtn = page.getByRole('button', { name: /生成候选/ })
-    if (await candidateBtn.count()) {
-      await candidateBtn.click()
-      await page.waitForTimeout(700)
+    const editButton = page.getByRole('button', { name: '编辑资源' })
+    if (await editButton.count()) {
+      await editButton.first().click()
+      await page.waitForSelector('.ant-modal:visible', { timeout: 10_000 })
+      await page.locator('.ant-modal:visible .ant-modal-footer button').last().click()
+      await page.waitForTimeout(900)
     }
     const geo = await page.evaluate(() => {
       const pick = (sel) => {
@@ -82,8 +85,9 @@ try {
       if (overlaps(message, geo.search)) add('toast-covers-search', 'HIGH', `${theme}: toast ${JSON.stringify(rect(message))} overlaps search ${JSON.stringify(rect(geo.search))} "${message.text}"`)
       if (overlaps(message, geo.breadcrumb)) add('toast-covers-breadcrumb', 'MEDIUM', `${theme}: toast overlaps breadcrumb ${JSON.stringify(rect(geo.breadcrumb))}`)
     }
-    if (!geo.messages.length) add('toast-not-observed', 'INFO', `${theme}: no toast captured (action did not produce one)`)
-    await page.screenshot({ path: join(shots, `p25-audit-release-${theme}.png`) })
+    if (!geo.messages.length) add('toast-not-observed', 'INFO', `${theme}: no toast captured`)
+    else add('toast-clears-header', 'INFO', `${theme}: toast ${JSON.stringify(rect(geo.messages[0]))} vs search ${JSON.stringify(rect(geo.search))}`)
+    await page.screenshot({ path: join(shots, `p25-audit-toast-${theme}.png`) })
   }
 
   // ---------- B. release workbench dead space ----------
