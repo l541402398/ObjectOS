@@ -12,6 +12,9 @@ const STATUS_LABEL: Record<string, string> = {
 const ASSURANCE_LABEL: Record<string, string> = {
   self_declared: '自我声明', source_observed: '来源观察', independently_reproduced: '独立复现', externally_confirmed: '外部确认',
 }
+const OPERATION_LABEL: Record<string, string> = {
+  prepared: '已登记意图', executing: '执行中', confirmed: '已确认', failed: '失败', unknown: '结果未知',
+}
 
 function deploymentStatusLabel(deployment: { status: string; assurance: string }): string {
   if (deployment.status === 'succeeded' && deployment.assurance === 'self_declared') return '制品已交付 · 未验证'
@@ -100,6 +103,34 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
         receipt: { recordedBy: 'local-user' }, notes: '人工记录，未验证',
       }),
     onSuccess: async () => { await invalidate(); message.success('已记录为人工结果，可信度见 Inspector') },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+  const operations = useQuery({
+    queryKey: ['deployment-operations', selectedDeploymentId],
+    queryFn: () => window.projectos.release.deploymentOperations(selectedDeploymentId!),
+    enabled: Boolean(selectedDeploymentId),
+    refetchInterval: (query) => (query.state.data?.operations.some((item) => item.state === 'prepared' || item.state === 'executing') ? 2000 : false),
+  })
+  const reconcile = useMutation({
+    mutationFn: (deploymentId: string) => window.projectos.release.reconcileDeployment(deploymentId, '用户在部署控制台发起远程对账'),
+    onSuccess: async () => {
+      await invalidate()
+      await operations.refetch()
+      message.success('已按远程事实对账')
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+  const rollback = useMutation({
+    mutationFn: (deploymentId: string) =>
+      window.projectos.release.createRollback({
+        sourceDeploymentId: deploymentId,
+        idempotencyKey: `rollback:${deploymentId}:${Date.now()}`,
+        notes: '从部署控制台创建回滚',
+      }),
+    onSuccess: async (created) => {
+      await invalidate()
+      message.success(`已创建回滚部署，等待独立审批（${created.releaseId.slice(-6)}）`)
+    },
     onError: (error) => message.error(errorMessage(error)),
   })
   const createTarget = useMutation({
@@ -228,6 +259,31 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
                   <span>完成</span><code>{selected.finishedAt ? formatRelative(selected.finishedAt) : '—'}</code>
                 </div>
               </div>
+              {operations.data && operations.data.operations.length > 0 ? (
+                <div className="dc-timeline">
+                  <h3>执行时间线 <span>{operations.data.operations.length} 次尝试 · {operations.data.steps.length} 步</span></h3>
+                  {operations.data.operations.map((operation) => (
+                    <div key={operation.id} className={`dc-op is-${operation.state}`}>
+                      <div className="dc-op-head">
+                        <strong>第 {operation.attempt} 次 · {operation.adapterType}</strong>
+                        <Tag>{OPERATION_LABEL[operation.state] ?? operation.state}</Tag>
+                        <small>{formatRelative(operation.createdAt)}</small>
+                      </div>
+                      {operations.data!.steps
+                        .filter((step) => step.operationId === operation.id)
+                        .map((step) => (
+                          <div key={step.id} className={`dc-op-step is-${step.status}`}>
+                            <i />
+                            <span className="dc-op-phase">{step.phase}</span>
+                            <span className="dc-op-detail">{step.detail || '—'}</span>
+                            {step.remoteRef ? <code className="dc-op-ref">{step.remoteRef}</code> : null}
+                          </div>
+                        ))}
+                      {operation.lastError ? <p className="dc-op-error">{operation.lastError}</p> : null}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
               <div className="dc-history">
                 <h3>部署历史 <span>{deployments.length}</span></h3>
                 {deployments.map((item) => (
@@ -255,6 +311,12 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
           <p className="dc-rail-copy">仅外部确认或独立观察的部署会成为环境运行版本。人工记录和文件交付不会。</p>
           <div className="dc-rail-divider" />
           <h3>操作</h3>
+          {selected && target?.adapterType === 'ssh-artifact' && ['needs_reconciliation', 'unknown', 'running', 'failed', 'pending'].includes(selected.status) ? (
+            <Button block onClick={() => reconcile.mutate(selected.id)} loading={reconcile.isPending}>对账远程事实</Button>
+          ) : null}
+          {selected?.status === 'succeeded' ? (
+            <Button block onClick={() => rollback.mutate(selected.id)} loading={rollback.isPending}>基于此版本创建回滚</Button>
+          ) : null}
           {selected?.status === 'failed' ? <Button block onClick={() => { setDeployReleaseId(selected.releaseId); setDeployOpen(true) }}>重新登记</Button> : null}
           <p className="dc-rail-copy">执行前必须完成独立审批；未知结果进入待核对，不自动重放。</p>
         </aside>

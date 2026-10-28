@@ -206,14 +206,22 @@ export async function executeSshDeployment(
   const address = parseTarget(context.targetRef)
   if (!context.profile.hostKeyFingerprint) throw new SshDeployError('SSH 目标未固定 Host Key', false, 'host-key')
   const releaseDir = posix.join(address.path, 'releases', context.deploymentId)
+  // Artifacts without a file are release evidence (test reports, approvals), not
+  // deliverables. They must not block the deployment, but they are reported.
+  const payload = context.artifacts.filter((artifact) => Boolean(artifact.uri))
+  const evidenceOnly = context.artifacts.filter((artifact) => !artifact.uri).map((artifact) => artifact.name)
+  if (payload.length === 0) throw new SshDeployError('发布中没有可部署的文件制品', false, 'verify-local')
+  if (!payload.some((artifact) => posix.basename(artifact.name) === 'health')) {
+    throw new SshDeployError('SSH 部署需要名为 health 的健康文件制品', false, 'verify-local')
+  }
   const hashes: Array<{ name: string; hash: string }> = []
-  for (const artifact of context.artifacts) {
-    if (!artifact.uri || !existsSync(artifact.uri)) throw new SshDeployError(`制品缺少真实文件：${artifact.name}`, false, 'verify-local')
-    const hash = createHash('sha256').update(readFileSync(artifact.uri)).digest('hex')
+  for (const artifact of payload) {
+    if (!existsSync(artifact.uri!)) throw new SshDeployError(`制品缺少真实文件：${artifact.name}`, false, 'verify-local')
+    const hash = createHash('sha256').update(readFileSync(artifact.uri!)).digest('hex')
     if (hash !== artifact.contentHash) throw new SshDeployError(`制品哈希不一致：${artifact.name}`, false, 'verify-local')
     hashes.push({ name: artifact.name, hash })
   }
-  step({ phase: 'verify-local', status: 'ok', detail: `本地校验 ${hashes.length} 个制品` })
+  step({ phase: 'verify-local', status: 'ok', detail: `本地校验 ${hashes.length} 个文件制品${evidenceOnly.length ? `；跳过 ${evidenceOnly.length} 个纯证据制品` : ''}` })
 
   const { client, ready, observedHostKey } = connect(context.profile, secret)
   let remoteMutated = false
@@ -225,7 +233,7 @@ export async function executeSshDeployment(
     phase = 'upload'
     const sftp = await openSftp(client)
     await mkdirRecursive(sftp, releaseDir)
-    for (const artifact of context.artifacts) {
+    for (const artifact of payload) {
       const safeName = posix.basename(artifact.name).replace(/[^A-Za-z0-9._-]/g, '_')
       const remotePath = posix.join(releaseDir, safeName)
       await upload(sftp, artifact.uri!, remotePath)
@@ -260,6 +268,7 @@ export async function executeSshDeployment(
         healthPort: address.healthPort,
         manifestHash,
         artifacts: hashes,
+        evidenceOnlyArtifacts: evidenceOnly,
         healthBody: health,
         hostKey: observedHostKey(),
       },

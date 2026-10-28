@@ -526,6 +526,19 @@ export function registerIpc(ctx: IpcContext): () => void {
               logger.warn('deployment step record failed', { operationId, phase: value.phase, error: String(error) })
             })
         }
+        // Steps are queued and flushed in order: fire-and-forget reporting lost the
+        // timeline whenever the adapter failed fast.
+        const pendingSteps: Array<Parameters<typeof recordStep>[0]> = []
+        const enqueueStep = (value: Parameters<typeof recordStep>[0]): void => {
+          pendingSteps.push(value)
+        }
+        const flushSteps = async (): Promise<void> => {
+          while (pendingSteps.length) {
+            const next = pendingSteps.shift()
+            if (!next) break
+            await recordStep(next)
+          }
+        }
         // A resumed operation means a previous attempt never settled. Replaying remote
         // side effects blindly is forbidden; a human must reconcile first.
         if (context.resumed) {
@@ -547,8 +560,9 @@ export function registerIpc(ctx: IpcContext): () => void {
             deploymentId: context.deployment.id, targetRef: context.target?.targetRef ?? '', profile: context.profile,
             artifacts: context.artifacts,
           }, secret, (step) => {
-            void recordStep({ ...step, remoteRef: step.remoteRef ?? null, durationMs: step.durationMs ?? null })
+            enqueueStep({ ...step, remoteRef: step.remoteRef ?? null, durationMs: step.durationMs ?? null })
           })
+          await flushSteps()
           await recordStep({ phase: 'receipt', status: 'ok', detail: `外部 ID ${result.externalId}`, remoteRef: result.externalId })
           return await supervisor.request('deployment.finish', {
             deploymentId: context.deployment.id, operationId, status: result.status,
@@ -559,6 +573,7 @@ export function registerIpc(ctx: IpcContext): () => void {
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error)
           const remoteMutated = error instanceof SshDeployError ? error.remoteMutated : false
+          await flushSteps().catch(() => undefined)
           await recordStep({ phase: 'error', status: 'failed', detail: message })
           if (remoteMutated) {
             // The target may already serve the new release: record the uncertainty
