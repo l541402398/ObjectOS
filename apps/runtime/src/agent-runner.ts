@@ -47,6 +47,7 @@ import { getToolDefinition, toolCatalogForAgent } from '@projectos/tools'
 import { RuntimeExecutionService } from './runtime-executor.js'
 import { collectUpstreamContext } from './upstream-context.js'
 import { AcpClient, acpTextFromEvent, acpTextFromResult } from './acp-client.js'
+import { assertApprovalSnapshotValid, persistWriteSnapshot, planWriteSnapshot } from './file-approval.js'
 import {
   getGitDiff,
   getGitStatus,
@@ -1866,6 +1867,20 @@ export class AgentRunner {
     }
     if (policy.decision === 'require_approval' && grantDecision?.decision !== 'allow') {
       this.store.updateToolCall(toolCall.id, { status: 'waiting_approval' })
+      // Capture the trusted file baseline BEFORE the approver sees anything, so the
+      // approved snapshot cannot be re-pointed at different content later. Path scope
+      // stays the policy layer's job: if a snapshot cannot be taken we still request
+      // approval, and record that the approval carries no trusted baseline.
+      let writePlan = null as ReturnType<typeof planWriteSnapshot>
+      let snapshotSkipReason: string | null = null
+      if (invocation.name === 'write_file') {
+        try {
+          writePlan = planWriteSnapshot(state.workspaceRoot, invocation.args)
+          if (!writePlan) snapshotSkipReason = '工具参数缺少 path/content'
+        } catch (error) {
+          snapshotSkipReason = error instanceof Error ? error.message : String(error)
+        }
+      }
       const approval = this.store.createApproval({
         projectId: state.projectId,
         runId: state.runId,
@@ -1879,9 +1894,21 @@ export class AgentRunner {
           reason: policy.reason,
           grantId: grantDecision?.grantId ?? null,
           grantReason: grantDecision?.reason ?? null,
+          ...(writePlan ? { fileSnapshot: writePlan.summary } : {}),
+          ...(snapshotSkipReason ? { fileSnapshotSkipped: snapshotSkipReason } : {}),
         },
         expiresAt: now() + 30 * 60 * 1000,
       })
+      if (writePlan) {
+        try {
+          persistWriteSnapshot(this.store, approval.id, state.workspaceRoot, writePlan)
+        } catch (error) {
+          this.store.appendEvent(state.projectId, state.runId, PROJECT_EVENT_TYPES.approvalRequested, {
+            approvalId: approval.id,
+            snapshotPersistFailed: error instanceof Error ? error.message : String(error),
+          })
+        }
+      }
       state.pendingApprovalId = approval.id
       this.transitionRun(state, 'waiting_approval')
       this.store.appendRunStep({
@@ -2296,6 +2323,33 @@ export class AgentRunner {
       )
     }
     if (decision === 'approved') this.assertRunLease(run)
+    // Re-verify the trusted snapshot at decision time: if the workspace moved after
+    // the approval was requested, the approval no longer describes what would be written.
+    if (decision === 'approved') {
+      // Use the same root the snapshot was captured against (the active run's
+      // workspace), falling back to the project root for recovered runs.
+      const projectRoot = this.active.get(run.id)?.workspaceRoot
+        ?? this.store.read.getProject(run.projectId)?.rootPath
+        ?? process.cwd()
+      try {
+        assertApprovalSnapshotValid(this.store, approvalId, projectRoot)
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        this.store.transaction(() => {
+          this.store.expireApproval(approvalId, message)
+          if (toolCall) {
+            this.store.updateToolCall(toolCall.id, { status: 'denied', error: message, finishedAt: now() })
+          }
+          this.store.appendEvent(run.projectId, approvalId, PROJECT_EVENT_TYPES.approvalDecided, {
+            decision: 'expired',
+            runId: run.id,
+            sessionId: run.sessionId,
+            reason: 'snapshot_drift',
+          })
+        })
+        throw new AppError('CONFLICT', message)
+      }
+    }
     if (decision === 'rejected' && !this.provider.isConfigured()) {
       const activeState = this.active.get(run.id)
       const decided = this.store.transaction(() => {
@@ -2415,6 +2469,11 @@ export class AgentRunner {
     }
     state.pendingApprovalId = null
     this.transitionRun(state, 'running')
+    // Final gate right before the side effect: the snapshot must still be valid.
+    {
+      const projectRoot = this.store.read.getProject(run.projectId)?.rootPath ?? state.workspaceRoot
+      assertApprovalSnapshotValid(this.store, approvalId, projectRoot)
+    }
     this.store.updateToolCall(toolCall.id, { status: 'running', startedAt: now() })
     let outcome: ToolOutcome
     try {

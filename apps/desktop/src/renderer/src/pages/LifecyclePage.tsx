@@ -159,6 +159,9 @@ export default function LifecyclePage() {
     onError: (error) => {
       setGateError(errorMessage(error))
       message.error(errorMessage(error))
+      // A rejected advance may still have written a gate evaluation; refresh so the
+      // status tag never contradicts the error shown underneath it.
+      void queryClient.invalidateQueries({ queryKey: ['gate-overview', projectId] })
     },
   })
 
@@ -428,8 +431,10 @@ export default function LifecyclePage() {
                     </Tag>
                     <span>{formatRelative(gates.data.evaluations[0].evaluatedAt)}</span>
                   </div>
+                ) : gateError ? (
+                  <div className="lc-gate-status is-failed"><Tag color="red">最近推进被门禁拒绝</Tag><span>见下方原因</span></div>
                 ) : (
-                  <div className="lc-gate-status"><Tag>尚未评估</Tag><span>推进阶段时自动写入评估</span></div>
+                  <div className="lc-gate-status"><Tag>暂时没有评估</Tag><span>推进阶段时自动写入评估</span></div>
                 )}
                 {gateError ? <div className="lc-gate-error">{gateError}</div> : null}
                 <div className="lc-gate-conditions">

@@ -63,6 +63,7 @@ export const ID_PREFIXES = {
   deployment: 'dep',
   deploymentOperation: 'dop',
   deploymentOperationStep: 'dos',
+  approvalFileTarget: 'aft',
   deploymentTarget: 'dtg',
   deploymentStrategy: 'dst',
   approvalRequest: 'apr',

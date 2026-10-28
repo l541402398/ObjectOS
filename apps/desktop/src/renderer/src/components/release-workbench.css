@@ -238,6 +238,10 @@
   min-width: 0;
   padding: 18px 20px;
   overflow-y: auto;
+  /* Measured defect: with a single record this panel stretched to the grid row and
+     left ~126px of empty space. Size to content, and only scroll when it must. */
+  align-self: start;
+  max-height: 100%;
 }
 
 .rw-detail-head {

@@ -1477,3 +1477,10 @@
 }
 .po-chat-context-hint { font-size: 10px; color: var(--color-text-tertiary); white-space: nowrap; }
 @media (max-width: 900px) { .po-chat-context-hint { display: none; } }
+
+/* Phase 2.5 measured defect: the Ant message toast rendered at top:8px covered the
+   global command search (search box at y=16, toast at y=6 in both themes), and the
+   message list container swallowed clicks aimed at header controls. */
+.ant-message { top: 60px !important; pointer-events: none !important; }
+.ant-message .ant-message-notice,
+.ant-message .ant-message-notice-content { pointer-events: auto; }
