@@ -16,8 +16,10 @@
 | 分支 | `v2.0-phase2.5` |
 | 恢复点 | tag `phase2.5-base`（`b7a1819`） |
 | 基线 | `491860e`（Phase 2.4 报告提交） |
-| 本轮提交 | `3278fee` → `2f513cb` → `4dd20ab` → `83d7fca` → `57fa3cd` |
-| **最终 HEAD** | **`57fa3cdc66c7b00c8ee00e3bde332dc551b8c697`**（工作树 clean） |
+| 本轮提交 | `3278fee` → `2f513cb` → `4dd20ab`（最后一个**代码**提交）→ 若干 docs 提交 |
+| **代码 HEAD（全部验证所对应的提交）** | **`4dd20ab`** |
+| 报告 HEAD | 本文件所在提交（`git log -1`，其后不再有代码变更） |
+| 工作树 | clean |
 | Schema | **V33**（additive；V27–V32 未修改） |
 
 V33 新增：
