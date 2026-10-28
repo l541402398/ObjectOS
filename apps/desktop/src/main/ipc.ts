@@ -502,18 +502,22 @@ export function registerIpc(ctx: IpcContext): () => void {
           return supervisor.request('deployment.execute.local', { deploymentId: input.deploymentId }, 180_000)
         }
         const context = await supervisor.request<any>('deployment.prepare', { deploymentId: input.deploymentId }, 30_000)
+        logger.info('deployment.execute prepared', { deploymentId: input.deploymentId, targetId: context.target?.id })
         const secret = context.profile?.credentialRef ? resourceSecrets.get(context.profile.credentialRef) : null
         try {
           const result = await executeSshDeployment({
             deploymentId: context.deployment.id, targetRef: context.target?.targetRef ?? '', profile: context.profile,
             artifacts: context.artifacts,
           }, secret)
-          return await supervisor.request('deployment.finish', {
+          logger.info('deployment.execute ssh result', { deploymentId: context.deployment.id, status: result.status, externalId: result.externalId })
+          const finished = await supervisor.request('deployment.finish', {
             deploymentId: context.deployment.id, status: result.status,
             assurance: result.health.ok ? 'externally_confirmed' : 'source_observed',
             externalId: result.externalId, artifactHash: result.artifactHash,
             receipt: { ...result.receipt, health: result.health }, notes: result.notes,
           }, 30_000)
+          logger.info('deployment.execute finish done', { deploymentId: context.deployment.id, status: (finished as any)?.status })
+          return finished
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error)
           await supervisor.request('deployment.finish', {
