@@ -134,7 +134,6 @@ describe('ADR-0039 a diagnostic task completes on real negative evidence', () =>
       artifacts: [],
       changedFiles: [],
       actorKind: 'agent',
-      reviewerName: null,
     })
     const diagnostic = decision.requirements.find((item) => item.id === 'diagnostic')
     expect(diagnostic?.satisfied).toBe(true)

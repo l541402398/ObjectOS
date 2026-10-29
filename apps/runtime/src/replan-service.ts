@@ -55,6 +55,56 @@ function failedVerificationSummary(
   return [...latest.values()].filter((item) => item.exitCode !== 0).map((item) => `${item.command}（exit ${item.exitCode}）`)
 }
 
+const PLAN_ROLE_KEYWORDS: Record<string, string[]> = {
+  developer: ['开发', '实现', '工程师', 'developer', 'engineer', 'implement'],
+  tester: ['测试', '质量', 'test', 'qa'],
+  reviewer: ['审查', '评审', 'review'],
+  architect: ['架构', 'architect'],
+  custom: [],
+}
+
+/**
+ * ADR-0040 — when a revision needs an Agent the resolver placed outside the user's grant, reuse an
+ * authorized Agent *of the right role*, not merely the first one that happens to list the
+ * capability.
+ *
+ * A real run assigned every new tester/reviewer task to the single "P288 Dev" Agent: all three
+ * E2E Agents declare the same broad capability set, so "first authorized Agent with `test`" hit the
+ * developer. Multi-Agent plans then collapsed onto one Agent, and the audit reason was overwritten
+ * so it even looked like a user choice.
+ *
+ * Order: an Agent already assigned to a same-role task in this revision → a role-name match →
+ * else the first authorized Agent with the capability (deterministic by id).
+ */
+export function pickAuthorizedAgentForRole(input: {
+  agents: Array<{ id: string; name: string; role: string; capabilities: string[] }>
+  role: string
+  capability: string | undefined
+  assignedTasks: Array<{ role: string; agentId?: string | null }>
+}): { id: string; name: string } | null {
+  const capable = input.agents.filter(
+    (agent) => !input.capability || agent.capabilities.includes(input.capability as never),
+  )
+  if (capable.length === 0) return null
+  const sameRole = new Set(
+    input.assignedTasks
+      .filter((task) => task.role === input.role && task.agentId)
+      .map((task) => task.agentId as string),
+  )
+  const keywords = PLAN_ROLE_KEYWORDS[input.role] ?? []
+  const scored = capable
+    .map((agent) => {
+      let score = 0
+      if (sameRole.has(agent.id)) score += 4
+      const roleText = agent.role.toLowerCase()
+      if (keywords.some((keyword) => roleText.includes(keyword.toLowerCase()))) score += 2
+      return { agent, score }
+    })
+    .sort((a, b) => (b.score !== a.score ? b.score - a.score : a.agent.id.localeCompare(b.agent.id)))
+  const best = scored[0]!
+  return { id: best.agent.id, name: best.agent.name }
+}
+
 const REPAIR_TITLE = /修复|修正|补全实现|改正|fix|repair/i
 const CODE_ARTIFACT = /diff|代码|实现|code/i
 
@@ -258,9 +308,16 @@ export class ReplanService {
         // authorization for work the envelope already covers.
         if (authorizedAgentIds.size > 0 && task.agentId && !authorizedAgentIds.has(task.agentId)) {
           const capability = roleCapability[task.role]
-          const candidate = [...authorizedAgentIds]
-            .map((agentId) => this.store.read.getAgent(agentId))
-            .find((agent) => agent && (!capability || agent.capabilities.includes(capability as never)))
+          const candidate = pickAuthorizedAgentForRole({
+            agents: [...authorizedAgentIds]
+              .map((agentId) => this.store.read.getAgent(agentId))
+              .filter((agent): agent is NonNullable<typeof agent> => Boolean(agent)),
+            role: task.role,
+            capability,
+            // The revision's own tasks are the strongest signal: if it keeps a tester that the user
+            // already authorized, a new tester task belongs to that same Agent.
+            assignedTasks: previewed,
+          })
           if (candidate) {
             return {
               ...task,
@@ -269,7 +326,7 @@ export class ReplanService {
               // pick an Agent outside the user's grant.
               assignmentMode: 'explicit' as const,
               assignmentBlocked: false,
-              assignmentReasons: [...(task.assignmentReasons ?? []), '复用当前执行授权范围内同能力 Agent'],
+              assignmentReasons: [...(task.assignmentReasons ?? []), `复用授权范围内的 ${candidate.name}（同角色）`],
             }
           }
         }

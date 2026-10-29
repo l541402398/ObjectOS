@@ -102,6 +102,37 @@ interface Row {
   [key: string]: unknown
 }
 
+/**
+ * ADR-0041 — one explicit mapping from the policy API payload to the persisted update.
+ *
+ * A pure function so the transport layer cannot quietly forward a subset again; the dispatcher and
+ * the test use exactly this.
+ */
+export function autonomyPolicyUpdate(input: {
+  mode: ProjectAutonomyMode
+  autoAdvancePhases?: string[]
+  autoStartPlans?: boolean
+  autoApplyReplans?: boolean
+  autoDeliver?: boolean
+  maxAutoReplans?: number
+}): {
+  mode: ProjectAutonomyMode
+  autoAdvancePhases?: string[]
+  autoStartPlans?: boolean
+  autoApplyReplans?: boolean
+  autoDeliver?: boolean
+  maxAutoReplans?: number
+} {
+  return {
+    mode: input.mode,
+    ...(input.autoAdvancePhases !== undefined ? { autoAdvancePhases: input.autoAdvancePhases } : {}),
+    ...(input.autoStartPlans !== undefined ? { autoStartPlans: input.autoStartPlans } : {}),
+    ...(input.autoApplyReplans !== undefined ? { autoApplyReplans: input.autoApplyReplans } : {}),
+    ...(input.autoDeliver !== undefined ? { autoDeliver: input.autoDeliver } : {}),
+    ...(input.maxAutoReplans !== undefined ? { maxAutoReplans: input.maxAutoReplans } : {}),
+  }
+}
+
 export class ActionCenter {
   constructor(
     private readonly store: SqliteStore,

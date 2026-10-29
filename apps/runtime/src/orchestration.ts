@@ -30,6 +30,28 @@ import { planGroupTitle, planSessionTitle } from '@projectos/session-manager'
 import { buildAssignmentCandidates as buildCandidateSnapshot } from './assignment-candidates.js'
 import type { PlannerService } from './planner.js'
 
+/**
+ * ADR-0040 — assignment reasons are audit evidence, so they are merged, not replaced.
+ *
+ * A revision records why it reused an authorized Agent ("复用授权范围内的 P288 QA（同角色）"). The
+ * resolver then re-derives its own reasons for the same Agent; replacing the list erased the
+ * revision's decision and made an automatic reuse look like a user choice.
+ */
+export function mergeAssignmentReasons(
+  prior: string[] | undefined,
+  next: string[] | undefined,
+  sameAgent: boolean,
+): string[] {
+  if (!sameAgent) return [...(next ?? [])].slice(0, 12)
+  const merged: string[] = []
+  for (const reason of [...(prior ?? []), ...(next ?? [])]) {
+    const text = reason.trim()
+    if (!text || merged.includes(text)) continue
+    merged.push(text)
+  }
+  return merged.slice(-12)
+}
+
 const LOCAL_RULES_PROMPT_VERSION = 'local-rules-v1'
 
 export interface AiPlanGenerationInput {
@@ -199,7 +221,10 @@ export class OrchestrationService {
           ...task,
           hardCapabilities,
           agentId: assignment.agentId,
-          assignmentReasons: assignment.reasons,
+          // ADR-0040: keep the reason a revision already recorded (e.g. "reuse the authorized QA")
+          // when the resolver agreed on the same Agent; the resolver's own reasons are appended
+          // rather than replacing the audit trail. A changed Agent gets fresh reasons only.
+          assignmentReasons: mergeAssignmentReasons(task.assignmentReasons, assignment.reasons, task.agentId === assignment.agentId),
           assignmentBlocked: assignment.blocked,
           assignmentMode: mode,
         }

@@ -78,7 +78,77 @@ try {
   )
   if (!control) throw new Error('activity control missing')
 
+  // Visual integration: the control must read as a quiet card action (tertiary text, no primary
+  // link), meet WCAG AA for 12px, and stay consistent in both themes.
+  const contrast = async () =>
+    await page.evaluate(() => {
+      const parse = (value) => {
+        const match = value.match(/rgba?\(([^)]+)\)/)
+        if (!match) return null
+        const parts = match[1].split(',').map((item) => Number(item.trim()))
+        return { r: parts[0], g: parts[1], b: parts[2], a: parts.length > 3 ? parts[3] : 1 }
+      }
+      const luminance = ({ r, g, b }) => {
+        const channel = (value) => {
+          const srgb = value / 255
+          return srgb <= 0.03928 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4
+        }
+        return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+      }
+      const flatten = (fg, bg) => ({
+        r: fg.r * fg.a + bg.r * (1 - fg.a),
+        g: fg.g * fg.a + bg.g * (1 - fg.a),
+        b: fg.b * fg.a + bg.b * (1 - fg.a),
+        a: 1,
+      })
+      const link = document.querySelector('.v16-card-link')
+      if (!link) return null
+      const card = link.closest('.v16-glass-card')
+      const style = getComputedStyle(link)
+      let background = null
+      let node = card
+      while (node && !background) {
+        const parsed = parse(getComputedStyle(node).backgroundColor)
+        if (parsed && parsed.a > 0.5) background = parsed
+        node = node.parentElement
+      }
+      background = background ?? { r: 13, g: 20, b: 36, a: 1 }
+      const fg = parse(style.color)
+      const solid = flatten(fg, background)
+      const light = luminance(solid)
+      const dark = luminance(background)
+      const ratio = (Math.max(light, dark) + 0.05) / (Math.min(light, dark) + 0.05)
+      return {
+        color: style.color,
+        fontSize: style.fontSize,
+        background: `rgb(${background.r}, ${background.g}, ${background.b})`,
+        ratio: Math.round(ratio * 100) / 100,
+        theme: document.documentElement.dataset.theme ?? 'dark',
+      }
+    })
+
+  const dark = await contrast()
+  record(
+    `暗色「全部」为低调卡片动作且对比度≥4.5`,
+    dark && dark.fontSize === '12px' && dark.ratio >= 4.5 ? 'PASS' : 'FAIL',
+    dark ? `color=${dark.color} bg=${dark.background} size=${dark.fontSize} contrast=${dark.ratio}` : '未找到控件',
+  )
   await page.screenshot({ path: join(shots, 'p288-activity-collapsed.png') })
+  await page.evaluate(() => {
+    document.documentElement.dataset.theme = 'light'
+  })
+  await page.waitForTimeout(600)
+  const light = await contrast()
+  record(
+    `亮色「全部」为低调卡片动作且对比度≥4.5`,
+    light && light.fontSize === '12px' && light.ratio >= 4.5 ? 'PASS' : 'FAIL',
+    light ? `color=${light.color} bg=${light.background} size=${light.fontSize} contrast=${light.ratio}` : '未找到控件',
+  )
+  await page.screenshot({ path: join(shots, 'p288-activity-light.png') })
+  await page.evaluate(() => {
+    document.documentElement.dataset.theme = 'dark'
+  })
+  await page.waitForTimeout(500)
   const beforeCount = initial.lines.length
   await page.locator('.v16-card-title .v16-card-link').click()
   await page.waitForTimeout(700)

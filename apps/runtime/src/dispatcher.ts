@@ -33,7 +33,7 @@ import { ExternalAgentRunner } from './external-runner.js'
 import { OperationsService, repairRunKey } from './operations.js'
 import { LifecycleService } from './lifecycle.js'
 import { ReleaseService } from './release-service.js'
-import { ActionCenter } from './action-center.js'
+import {ActionCenter, autonomyPolicyUpdate} from './action-center.js'
 import { AutonomyCoordinator } from './autonomy-coordinator.js'
 import { TaskContractPreflightService } from './task-contract-preflight.js'
 import { ReplanAutopilot } from './replan-autopilot.js'
@@ -985,7 +985,9 @@ export class RuntimeDispatcher {
       }
       case 'action.autonomy.set': {
         const input = this.parse('action.autonomy.set', rawInput)
-        return this.actions.setAutonomySettings(input.projectId, { mode: input.mode, autoAdvancePhases: input.autoAdvancePhases })
+        // ADR-0041: the contract accepts the whole policy; dropping fields here silently kept
+        // autoDeliver=false and no delivery ever ran even though the user enabled it.
+        return this.actions.setAutonomySettings(input.projectId, autonomyPolicyUpdate(input))
       }
       case 'action.autonomy.tick': {
         const input = this.parse('action.autonomy.tick', rawInput)
