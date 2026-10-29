@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { DownOutlined, RightOutlined, UpOutlined } from '@ant-design/icons'
 import type { JourneyStage } from '@projectos/contracts'
@@ -38,7 +38,16 @@ function useCompactJourney(): boolean {
 
 export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [expanded, setExpanded] = useState(false)
+  // ADR-0059: a stale-evidence pause gets a real recovery action — a verification-only Run through
+  // the same API the runs page uses. It never edits code and never marks anything done by itself.
+  const reverify = useMutation({
+    mutationFn: (taskId: string) => window.projectos.verification.request(projectId ?? '', taskId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['work', 'journey'] })
+    },
+  })
   const compact = useCompactJourney()
   const journey = useQuery({
     queryKey: ['work', 'journey', projectId ?? 'auto'],
@@ -152,7 +161,18 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
         <span className="po-journey-next-label" title={data?.nextAction.detail ?? ''}>
           {data?.nextAction.label}
         </span>
-        {data?.nextAction.route ? (
+        {data?.nextAction.action === 'reverify' && data?.nextAction.objectId ? (
+          <button
+            type="button"
+            className="po-journey-action"
+            onClick={() => reverify.mutate(data.nextAction.objectId!)}
+            disabled={reverify.isPending}
+            data-testid="journey-reverify"
+            title={`${data.nextAction.detail}（只跑测试与报告，不改代码）`}
+          >
+            {reverify.isPending ? '正在启动验证…' : '重新验证'}
+          </button>
+        ) : data?.nextAction.route ? (
           <button
             type="button"
             className="po-journey-action"

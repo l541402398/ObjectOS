@@ -1,0 +1,236 @@
+{
+  "planId": "pln_01m63d62hmpr8zzgad9yhfmb4q",
+  "projectId": "prj_01m63d61vatdkd0nphp7xh2q04",
+  "grantId": "pgr_01m63d68fkz0y4nfnxxqdc62aw",
+  "timeline": [
+    {
+      "at": "2026-10-29T08:42:26.831Z",
+      "execution": "running",
+      "delivery": "none",
+      "verify": "active",
+      "review": "pending",
+      "next": "AI 正在执行，无需你操作",
+      "tasks": ","
+    },
+    {
+      "at": "2026-10-29T08:43:47.284Z",
+      "execution": "completed",
+      "delivery": "none",
+      "verify": "done",
+      "review": "pending",
+      "next": "计划已完成，产品会在条件满足后自动交付",
+      "tasks": ","
+    }
+  ],
+  "finalExecution": {
+    "status": "completed",
+    "concurrency": 2,
+    "startedAt": 1793263346529,
+    "updatedAt": 1793263422629,
+    "error": null,
+    "runIds": [
+      "run_01m63d6b2vcj9y2n8wbjqe6e15",
+      "run_01m63d7g1awf0xkajmks3z67tp"
+    ],
+    "workspaceRef": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\p29-reaiai-1oovwH\\data\\worktrees\\prj_01m63d61vatdkd0nphp7xh2q04\\pln_01m63d62hmpr8zzgad9yhfmb4q",
+    "branch": "projectos/plan-pln_01m63d62hmpr8zzgad9yhfmb4q",
+    "allowedPaths": [
+      "."
+    ],
+    "diffArtifactId": "art_01m63d8ksyzj71pct61h2zsqvz",
+    "mergedAt": null,
+    "maxRetries": 2,
+    "retries": {},
+    "nextAttemptAt": {},
+    "retryForRun": {},
+    "maxEvidenceRetries": 1,
+    "evidenceRetries": {},
+    "evidenceRetryForRun": {},
+    "requireWorktree": false,
+    "maxWallClockMs": 7200000,
+    "deadlineAt": 1793270546529,
+    "budgetExhausted": null,
+    "baseBranch": "master",
+    "baseCommit": "e7ebe5bbe7d34c1b00a8e38d9cb741d6ff849077",
+    "reReview": null,
+    "mergeCommit": null,
+    "deliveryStatus": "none",
+    "deliveryVerifiedAt": null,
+    "deliveryEvidenceId": null,
+    "deliveryError": null
+  },
+  "stages": [
+    {
+      "key": "setup",
+      "label": "项目准备",
+      "state": "done",
+      "owner": "system",
+      "detail": "项目工作区就绪（C:\\Users\\Administrator\\AppData\\Local\\Temp\\p29-reaiai-1oovwH\\empty-project）",
+      "requirements": [
+        "项目目录可用",
+        "隔离 Worktree 有可用的基线提交"
+      ],
+      "satisfied": [
+        "基线提交存在"
+      ],
+      "objects": {},
+      "entry": null
+    },
+    {
+      "key": "requirement",
+      "label": "需求",
+      "state": "done",
+      "owner": "none",
+      "detail": "已提交需求：创建 hello.txt 并用 node --test 验证内容",
+      "requirements": [
+        "至少一条需求"
+      ],
+      "satisfied": [
+        "需求「创建 hello.txt 并用 node --test 验证内容」"
+      ],
+      "objects": {},
+      "entry": {
+        "label": "查看/新增需求",
+        "route": "/projects/prj_01m63d61vatdkd0nphp7xh2q04/work"
+      }
+    },
+    {
+      "key": "plan",
+      "label": "计划",
+      "state": "done",
+      "owner": "none",
+      "detail": "第 1 版计划（2 个任务）",
+      "requirements": [
+        "计划草案包含可执行任务与依赖"
+      ],
+      "satisfied": [
+        "任务 2 个"
+      ],
+      "objects": {
+        "planId": "pln_01m63d62hmpr8zzgad9yhfmb4q",
+        "revision": 1
+      },
+      "entry": {
+        "label": "查看计划",
+        "route": "/projects/prj_01m63d61vatdkd0nphp7xh2q04/orchestration?plan=pln_01m63d62hmpr8zzgad9yhfmb4q"
+      }
+    },
+    {
+      "key": "review",
+      "label": "审核",
+      "state": "done",
+      "owner": "none",
+      "detail": "计划已批准（第 1 版）",
+      "requirements": [
+        "计划已批准"
+      ],
+      "satisfied": [
+        "批准于 2026/10/29 01:42:25"
+      ],
+      "objects": {
+        "planId": "pln_01m63d62hmpr8zzgad9yhfmb4q",
+        "revision": 1
+      },
+      "entry": null
+    },
+    {
+      "key": "grant",
+      "label": "授权",
+      "state": "done",
+      "owner": "none",
+      "detail": "执行授权有效（最多 3 次启动 / 200 次工具调用，2026/10/29 03:42:26 前有效）",
+      "requirements": [
+        "存在有效且覆盖当前 revision 的执行授权"
+      ],
+      "satisfied": [
+        "授权有效"
+      ],
+      "objects": {
+        "planId": "pln_01m63d62hmpr8zzgad9yhfmb4q",
+        "grantId": "pgr_01m63d68fkz0y4nfnxxqdc62aw"
+      },
+      "entry": {
+        "label": "查看授权",
+        "route": "/projects/prj_01m63d61vatdkd0nphp7xh2q04/orchestration?plan=pln_01m63d62hmpr8zzgad9yhfmb4q"
+      }
+    },
+    {
+      "key": "execute",
+      "label": "执行",
+      "state": "done",
+      "owner": "none",
+      "detail": "计划执行完成",
+      "requirements": [
+        "所有任务执行完成"
+      ],
+      "satisfied": [
+        "计划执行完成"
+      ],
+      "objects": {
+        "planId": "pln_01m63d62hmpr8zzgad9yhfmb4q"
+      },
+      "entry": {
+        "label": "查看运行",
+        "route": "/projects/prj_01m63d61vatdkd0nphp7xh2q04/runs"
+      }
+    },
+    {
+      "key": "verify",
+      "label": "验证",
+      "state": "done",
+      "owner": "none",
+      "detail": "当前代码真实验证通过：node --test hello.test.js（exit 0）",
+      "requirements": [
+        "当前内容存在 exit 0 的真实测试/检查记录"
+      ],
+      "satisfied": [
+        "验证通过"
+      ],
+      "objects": {
+        "planId": "pln_01m63d62hmpr8zzgad9yhfmb4q"
+      },
+      "entry": {
+        "label": "查看验证记录",
+        "route": "/projects/prj_01m63d61vatdkd0nphp7xh2q04/runs"
+      }
+    },
+    {
+      "key": "code-review",
+      "label": "审查",
+      "state": "pending",
+      "owner": "ai",
+      "detail": "还没有针对当前内容的审查",
+      "requirements": [
+        "当前内容存在通过的 ReviewSnapshot"
+      ],
+      "satisfied": [],
+      "objects": {
+        "planId": "pln_01m63d62hmpr8zzgad9yhfmb4q"
+      },
+      "entry": {
+        "label": "查看审查任务",
+        "route": "/projects/prj_01m63d61vatdkd0nphp7xh2q04/runs"
+      }
+    },
+    {
+      "key": "delivery",
+      "label": "交付",
+      "state": "blocked",
+      "owner": "ai",
+      "detail": "计划已完成，产品会在条件满足后自动交付",
+      "requirements": [
+        "真实合并提交",
+        "合并后验证通过",
+        "交付证据工件"
+      ],
+      "satisfied": [],
+      "objects": {
+        "planId": "pln_01m63d62hmpr8zzgad9yhfmb4q"
+      },
+      "entry": {
+        "label": "查看交付",
+        "route": "/projects/prj_01m63d61vatdkd0nphp7xh2q04/releases"
+      }
+    }
+  ]
+}

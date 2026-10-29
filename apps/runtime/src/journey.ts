@@ -94,6 +94,7 @@ export function projectJourney(input: {
         label: '创建或打开一个项目',
         detail: '选择一个本地文件夹作为项目工作区，AI 才能开始规划。',
         route: '/',
+        action: null,
         objectId: null,
       },
       blockers: [],
@@ -350,9 +351,11 @@ export function projectJourney(input: {
           : delivery === 'merged'
             ? '已合并，等待合并后验证'
             : execution?.status === 'completed'
-              ? policy.autoDeliver
-                ? '计划已完成，产品会在条件满足后自动交付'
-                : '计划已完成，等待你确认交付'
+              ? reviewApproved
+                ? policy.autoDeliver
+                  ? '计划已完成且审查通过，产品将在条件满足后自动交付'
+                  : '计划已完成且审查通过，等待你确认交付'
+                : '计划已完成，但当前内容还没有通过的审查：审查通过后才能交付'
               : '尚未进入交付',
     requirements: ['真实合并提交', '合并后验证通过', '交付证据工件'],
     satisfied: delivery === 'verified' ? ['合并后验证通过'] : delivery === 'merged' ? ['已合并'] : [],
@@ -375,7 +378,7 @@ export function projectJourney(input: {
     actionable.find((stage) => stage.state === 'blocked') ??
     [...actionable].reverse().find((stage) => stage.state === 'active') ??
     null
-  const nextAction: ProjectJourney['nextAction'] = (() => {
+  const nextAction = ((): Omit<ProjectJourney['nextAction'], 'action'> & { action?: 'reverify' | null } => {
     if (delivery === 'verified') {
       return { owner: 'none', label: '已完成交付并验证', detail: `合并提交 ${execution?.mergeCommit?.slice(0, 10) ?? ''}`, route: plan?.versionId ? versionsRoute : releasesRoute, objectId: execution?.deliveryEvidenceId ?? null }
     }
@@ -406,12 +409,14 @@ export function projectJourney(input: {
       }
     }
     if (staleEvidencePause) {
+      const verifyTask = tasks.find((card) => card.status === 'review' || card.status === 'blocked' || card.status === 'running') ?? tasks[0]
       return {
         owner: 'user',
-        label: '验证证据已过期，需要重新验证',
-        detail: execution?.error?.slice(0, 200) ?? '最后一次修改晚于最后一次测试',
+        label: '验证证据已过期，重新验证',
+        detail: `${execution?.error?.slice(0, 160) ?? '最后一次修改晚于最后一次测试'}（重新验证只跑测试与报告，不改代码）`,
         route: runsRoute,
-        objectId: plan?.id ?? null,
+        action: 'reverify' as const,
+        objectId: verifyTask?.id ?? null,
       }
     }
     if (execution?.status === 'failed' || execution?.status === 'paused') {
@@ -441,7 +446,8 @@ export function projectJourney(input: {
         label: policy.autoApplyReplans ? 'AI 正在重新规划修复' : '测试未通过，需要处理',
         detail: testEvidence.reasons.join('；').slice(0, 200),
         route: runsRoute,
-        objectId: plan?.id ?? null,
+        action: policy.autoApplyReplans ? null : ('reverify' as const),
+        objectId: tasks.find((card) => card.status === 'review')?.id ?? tasks[0]?.id ?? null,
       }
     }
     if (reviewEvidence && !reviewApproved && (reviewCurrent > 0 || reviewEvidence.historical.length > 0)) {
@@ -468,6 +474,8 @@ export function projectJourney(input: {
     return { owner: 'none', label: '暂无需要处理的事项', detail: nextStage?.detail ?? '所有阶段都已满足', route: null, objectId: null }
   })()
 
+  const normalisedNextAction: ProjectJourney['nextAction'] = { ...nextAction, action: nextAction.action ?? null }
+
   return {
     projectId,
     projectName: project.name,
@@ -475,7 +483,7 @@ export function projectJourney(input: {
     projectStage: project.currentStage,
     selection: { kind, planId: plan?.id ?? null, revision: plan?.revision ?? null, reason },
     stages,
-    nextAction,
+    nextAction: normalisedNextAction,
     blockers,
     background,
     updatedAt: now(),

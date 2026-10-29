@@ -238,6 +238,9 @@ describe('ADR-0053 project journey projection', () => {
     expect(view.stages.find((stage) => stage.key === 'verify')!.state).toBe('blocked')
     expect(view.nextAction.owner).toBe('user')
     expect(view.nextAction.label).toContain('重新验证')
+    // The bar needs a real recovery action bound to the task, not just a page link.
+    expect(view.nextAction.action).toBe('reverify')
+    expect(view.nextAction.objectId).toBe(approved.createdTaskIds[0])
   })
 
   it('reports a delivered goal as done with its merge commit and evidence', async () => {

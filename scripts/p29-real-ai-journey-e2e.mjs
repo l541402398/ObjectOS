@@ -165,7 +165,17 @@ try {
     },
     { planId: plan.id, grantId: grant.id },
   )
-  record('真实启动计划', startResult.ok ? 'PASS' : 'FAIL', JSON.stringify(startResult).slice(0, 200))
+  const raceOutcome =
+    startResult.ok
+      ? 'started'
+      : /已经在执行中|已经在执行|重复启动/.test(String(startResult.error ?? ''))
+        ? 'already-running'
+        : 'failed'
+  record(
+    '真实启动计划（与自动启动竞争时不重复执行）',
+    raceOutcome === 'failed' ? 'FAIL' : 'PASS',
+    `${raceOutcome} ${JSON.stringify(startResult).slice(0, 160)}`,
+  )
 
   // 5) Watch the journey + plan until the run settles (hard cap ~28 min).
   let approvedTestRuns = 0
@@ -268,25 +278,32 @@ try {
 
   // 6) Evidence from the real workspace, not from our own bookkeeping.
   const evidence = await page.evaluate(
-    async ({ projectId }) => {
+    async ({ projectId, planId }) => {
       const overview = await window.projectos.projects.overview(projectId)
       const artifactsView = await window.projectos.artifacts.list(projectId)
       const artifacts = Array.isArray(artifactsView) ? artifactsView : (artifactsView.artifacts ?? [])
-      return { rootPath: overview.project.rootPath, artifacts: artifacts.map((artifact) => artifact.kind ?? 'unknown') }
+      const planView = await window.projectos.plans.get(planId)
+      return {
+        rootPath: overview.project.rootPath,
+        workspaceRef: planView.execution?.workspaceRef ?? null,
+        runIds: planView.execution?.runIds ?? [],
+        artifacts: artifacts.map((artifact) => artifact.kind ?? 'unknown'),
+      }
     },
-    { projectId },
+    { projectId, planId: plan.id },
   )
+  // Worktree isolation means the product files are not in the project root until merge.
   let files = []
   try {
     const { readdirSync } = await import('node:fs')
-    files = readdirSync(evidence.rootPath).slice(0, 20)
+    files = readdirSync(evidence.workspaceRef ?? evidence.rootPath).slice(0, 20)
   } catch {
     /* ignore */
   }
   record(
-    '真实工作目录留下产出（不靠界面状态）',
+    '真实产出存在于隔离 Worktree（不靠界面状态）',
     files.some((name) => name.includes('hello')) ? 'PASS' : 'FAIL',
-    `files=${files.join(',')} artifacts=${evidence.artifacts.join(',')}`,
+    `workspace=${evidence.workspaceRef ?? evidence.rootPath} files=${files.join(',')} runs=${evidence.runIds.length}`,
   )
 
   await page.screenshot({ path: join(root, 'docs', 'screenshots', 'p29-real-ai-journey.png') })

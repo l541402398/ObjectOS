@@ -667,7 +667,12 @@ export class PlanGrantService {
       throw new AppError('APPROVAL_REQUIRED', '计划执行授权的启动次数已用尽或正在启动，请稍后重试或重新授权')
     }
     if (plan.execution?.status === 'running' || plan.execution?.status === 'paused') {
-      throw new AppError('CONFLICT', '计划已经在执行中或暂停中；请使用继续执行')
+      throw new AppError(
+        'CONFLICT',
+        plan.execution.status === 'running'
+          ? '计划已经在执行中；重复启动已被阻止，不会产生第二次执行'
+          : '计划已暂停；请使用继续执行恢复，而不是重新启动',
+      )
     }
     if (plan.execution?.status === 'completed') {
       throw new AppError('CONFLICT', '计划已完成；如需新的执行范围，请创建新 revision 并重新授权')

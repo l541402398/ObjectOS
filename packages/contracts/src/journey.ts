@@ -84,6 +84,8 @@ export const ProjectJourneySchema = z.object({
     label: z.string().max(240),
     detail: z.string().max(600),
     route: z.string().max(500).nullable(),
+    /** Present when the bar can start a real, bounded recovery action itself. */
+    action: z.enum(['reverify']).nullable().default(null),
     objectId: z.string().max(120).nullable(),
   }),
   blockers: z.array(z.string().max(300)).default([]),

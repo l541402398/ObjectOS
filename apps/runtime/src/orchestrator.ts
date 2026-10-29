@@ -216,7 +216,9 @@ export class OrchestrationScheduler {
       }
     }
     if (!plan.createdTaskIds.length) throw new AppError('CONFLICT', '计划没有已创建的任务')
-    if (plan.execution?.status === 'running') throw new AppError('CONFLICT', '计划已经在执行中')
+    // ADR-0060: a manual click and the autonomous starter can race. Returning the plan that is
+    // already running is the idempotent answer — it starts nothing twice and tells the UI the truth.
+    if (plan.execution?.status === 'running') return plan
     const planWallClockMs = this.runner.getLimits().planWallClockMs
     const next = this.saveExecution(plan, {
       ...execution('running', concurrency, plan.execution),
@@ -1316,7 +1318,12 @@ export class OrchestrationScheduler {
           const execution = plan.execution!
           const latestRun = runDetails[0]?.run ?? null
           const used = execution.evidenceRetries?.[card.id] ?? 0
-          const max = execution.maxEvidenceRetries ?? 1
+          // A stale/missing test requirement needs a *verification* pass, not another write pass:
+          // the retry must run the tests after the last change and must not edit the code again.
+          const needsRealTestEvidence = decision.requirements.some(
+            (requirement) => requirement.id === 'test' && !requirement.satisfied,
+          )
+          const max = needsRealTestEvidence ? Math.max(execution.maxEvidenceRetries ?? 1, 2) : (execution.maxEvidenceRetries ?? 1)
           const retryFor = execution.evidenceRetryForRun?.[card.id]
           if (
             latestRun?.status === 'completed' &&
@@ -1340,12 +1347,23 @@ export class OrchestrationScheduler {
                 sessionId: session.id,
                 taskId: card.id,
                 workspaceRoot,
-                prompt: [
-                  `补证任务：${card.title}`,
-                  '上一次运行没有满足完成依据，不能直接标记完成。',
-                  `缺失项：${missing.join('；') || decision.reasons.join('；')}`,
-                  '请只补齐真实证据：创建结构化 Artifact、执行真实测试或提供实际文件；不得伪造，也不得仅用文本声明完成。',
-                ].join('\n\n'),
+                prompt: needsRealTestEvidence
+                  ? [
+                      `补证任务（只验证，不改代码）：${card.title}`,
+                      '上一次运行的测试证据不能描述当前内容（最后一次修改晚于最后一次测试），不能据此标记完成。',
+                      `缺失项：${missing.join('；') || decision.reasons.join('；')}`,
+                      '请按顺序执行，不要修改任何源码或测试文件：',
+                      '1. 现在重新执行真实测试（run_tests 或 run_command），命令必须真实运行；如果它失败，报告真实失败原因。',
+                      '2. 测试通过后创建 test-report Artifact，body 写入实际命令、退出码和输出摘要，metadata 记录 targetFiles 与结论。',
+                      '3. 如果你判断必须先改代码，请停止并说明原因，不要边改边测。',
+                      '不得伪造测试结果；没有真实 exit code 的证据一律不算通过。',
+                    ].join('\n\n')
+                  : [
+                      `补证任务：${card.title}`,
+                      '上一次运行没有满足完成依据，不能直接标记完成。',
+                      `缺失项：${missing.join('；') || decision.reasons.join('；')}`,
+                      '请只补齐真实证据：创建结构化 Artifact、执行真实测试或提供实际文件；不得伪造，也不得仅用文本声明完成。',
+                    ].join('\n\n'),
               })
               this.saveExecution(plan, {
                 ...execution,
