@@ -56,10 +56,10 @@
 
 ## Explicit FAIL / SKIP / BLOCKED
 
-- **FAIL**: none in the executed P0 E2E.
+- **FAIL**: none in the executed Electron E2E.
 - **BLOCKED**: permission-insufficient approval. This local app has no role/permission denial path to exercise; backend enforcement exists but cannot be honestly simulated from the UI.
 - **SKIP**: expired approval TTL, because the fixture does not create a short-TTL approval; not claimed.
-- **FAIL (known flake)**: latest full suite 494 passed / 1 failed (1-budgets timing) / 4 skipped; package smoke PASS on the final P1 tree.
+- **FAIL (known flake)**: latest full suite 494 passed / 1 failed (tests/r1-budgets.test.ts timing) / 4 skipped; package smoke PASS on the final P1 tree.
 - **PENDING USER REVIEW**: P1-C three visual masters are implemented as real routes and screenshots, but not yet approved or rolled out to every page.
 
 ## Known gaps
@@ -105,4 +105,3 @@ P1-C visual masters (same folder):
 - `studio-review-1440-125.png`
 
 P1-C checks in Electron E2E: project home renders real project/plan/pending approval; review room renders a real pending queue and request evidence. Both are screenshotted at 1440/1024, light/dark and 125%.
-
