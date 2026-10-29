@@ -220,7 +220,14 @@ try {
           const approvals = list.approvals ?? []
           for (const approval of approvals) {
             const subject = JSON.stringify(approval.subject ?? approval).slice(0, 1200)
-            if (!/node --version|node --test|npm test|npm run test|git status|git diff/.test(subject)) continue
+            // Benign inspection / test / index-refresh commands the agent actually needs. Anything
+            // that writes source, installs packages, commits or deploys still stays unapproved.
+            if (
+              !/node --version|node --test|npm test|npm run test|pnpm test|git status|git diff|git log|git rev-parse|git add|git update-index|readFileSync|existsSync|cat hello\.txt|^ls| dir /.test(
+                subject,
+              )
+            )
+              continue
             await window.projectos.approvals.decide({
               approvalId: approval.id,
               decision: 'approved',

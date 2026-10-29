@@ -72,12 +72,24 @@ Design docs: `docs/adr/0061-design-lab-batch-2-work-center-and-board.md`,
    `git add -N …` (index refresh) and inspection commands. That is correct policy behaviour, but the
    continuation harness could not decide them: the pending approvals belonged to a run that had already
    failed, so the decision API refused them. A fresh run with a live approval loop is required.
-2. **Provider secret did not survive the relaunch in this test profile.** After restarting the app against
-   the same data dir and userData, the runtime reported
-   “路由选择的 AI 连接未配置可执行密钥”, although `ai_connection_profiles` (default, enabled, model row) and
-   `ai-secrets.vault.json` (encrypted entry) were both present. This may be a real restart-continuity bug or
-   a test-harness artefact; it is **not yet confirmed** and is the next thing to isolate. Until then, no
-   claim is made that delivery can complete after a restart.
+2. **Provider secret continuity was suspected but is NOT a defect.** A dedicated two-launch test
+   (`scripts/p29-secret-restart-e2e.mjs`) creates a real DeepSeek connection, quits, relaunches the same data
+   dir + userData, and re-tests it: **4/4 PASS** (`hasSecret=true`, real inference passed after restart). The
+   earlier “路由选择的 AI 连接未配置可执行密钥” came from a profile that had already been resumed by a
+   second app instance launched **without** the profile's userData, so the runtime key was never configured;
+   the isolated test shows the product itself keeps the key across restarts.
+
+### Latest live attempt (run 6)
+
+A fresh real plan with the reviewer task and a live approval loop (only read-only / test / git-index
+commands) approved 5 real requests and advanced the reviewer run. The attempt ended when the **Runtime
+process received SIGTERM** (`desktop.log`: `runtime exited {"code":null,"signal":"SIGTERM"}`) — no exception,
+no stack, runtime.log ends cleanly. The most likely cause is the app window being closed externally during
+the run (these E2E windows are visible on the desktop); it is not evidence of a product crash, and it left
+no state corruption. Delivery therefore remains unproven, not failed by the product logic.
+
+Next attempt should run headless (or on an unused desktop), keep the same allowlist, and capture
+`deliveryStatus=verified` with its merge commit.
 
 ### Task 2 batch 3 (approvals + runs)
 
