@@ -10,6 +10,7 @@ export const qk = {
   runs: (projectId: string) => ['runs', projectId] as const,
   run: (runId: string) => ['run', runId] as const,
   collaboration: (projectId: string) => ['collaboration', projectId] as const,
+  collaborationOverview: (projectId: string) => ['collaboration-overview', projectId] as const,
   approvals: (projectId: string | null) => ['approvals', projectId ?? 'all'] as const,
   events: (projectId: string) => ['events', projectId] as const,
   workspace: (projectId: string) => ['workspace', projectId] as const,
@@ -146,6 +147,20 @@ export function useCollaboration(projectId: string | null | undefined) {
     queryKey: qk.collaboration(projectId ?? ''),
     queryFn: () => window.projectos.collaboration.snapshot(projectId!),
     enabled: Boolean(projectId),
+  })
+}
+
+/**
+ * Agent collaboration overview projection. Polling is a safety net only: the page also invalidates
+ * this query on Runtime events, and every value is read back from SQLite.
+ */
+export function useCollaborationOverview(projectId: string | null | undefined) {
+  return useQuery({
+    queryKey: qk.collaborationOverview(projectId ?? ''),
+    queryFn: () => window.projectos.collaboration.overview(projectId!),
+    enabled: Boolean(projectId),
+    refetchInterval: 4_000,
+    refetchIntervalInBackground: false,
   })
 }
 

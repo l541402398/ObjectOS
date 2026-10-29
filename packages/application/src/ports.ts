@@ -18,6 +18,7 @@ import type {
   LifecycleGate,
   Message,
   Milestone,
+  PlanDraft,
   Project,
   ProjectEvent,
   ProjectOverview,
@@ -67,6 +68,7 @@ export interface ReadPort {
   getAgentViews(projectId: string): AgentView[]
   getTask(id: string): Task | null
   listTasks(projectId: string): Task[]
+  listTaskCards(projectId: string): TaskCard[]
   listDependencies(projectId: string): Array<{ taskId: string; dependsOnId: string }>
   getTaskCard(taskId: string): TaskCard | null
   getTaskBoard(projectId: string): TaskBoard
@@ -77,6 +79,7 @@ export interface ReadPort {
   getSessionDetail(sessionId: string, messageLimit?: number): SessionDetail | null
   getMessages(sessionId: string, limit?: number, afterSeq?: number): Message[]
   listRunSummaries(projectId: string, limit?: number): RunSummary[]
+  listPlanRevisions(projectId: string): PlanDraft[]
   getRunDetail(runId: string): RunDetail | null
   listApprovalViews(projectId?: string | null, runId?: string | null): ApprovalView[]
   getCollaborationSnapshot(projectId: string): CollaborationSnapshot

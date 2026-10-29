@@ -1382,6 +1382,10 @@ export class RuntimeDispatcher {
         const input = this.parse('collaboration.snapshot', rawInput)
         return services.collaboration.snapshot(input.projectId)
       }
+      case 'collaboration.overview': {
+        const input = this.parse('collaboration.overview', rawInput)
+        return services.collaboration.overview(input.projectId)
+      }
       case 'inbox.list': {
         const input = this.parse('inbox.list', rawInput)
         return { items: services.collaboration.listInbox(input.projectId, input.sessionId) }

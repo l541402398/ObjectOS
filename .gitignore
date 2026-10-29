@@ -28,3 +28,7 @@ pnpm-install.log
 # A0 user-supplied implementation package (input material, not product code)
 ProjectOS_Organization_Upgrade_UIUX_Implementation_Package/
 ProjectOS_Organization_Upgrade_UIUX_Implementation_Package.zip
+
+# Agent overview user-supplied visual references (input material, not product code)
+ProjectOS_Agent_Overview_Visual_References/
+ProjectOS_Agent_Overview_Visual_References.zip

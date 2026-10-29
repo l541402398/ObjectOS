@@ -120,6 +120,13 @@ export class RuntimeSupervisor {
     child.on('error', (error) => {
       this.options.logger.error('runtime process error', { error: error.message })
     })
+    // A pipe write after the child exited emits an asynchronous EPIPE. Without this listener the
+    // stream error becomes an uncaught Main-process exception (Electron shows a fatal error box),
+    // which is exactly what a fast restart exposed. Fail the pending request / restart instead.
+    child.stdin.on('error', (error) => {
+      this.options.logger.warn('runtime stdin error', { error: error.message })
+      if (!this.stopping) this.killChild('stdin error')
+    })
     child.on('exit', (code, signal) => this.handleExit(code, signal))
   }
 
@@ -218,8 +225,22 @@ export class RuntimeSupervisor {
         reject,
         timer,
       })
+      const stdin = this.child?.stdin
+      if (!stdin || stdin.destroyed || !stdin.writable) {
+        clearTimeout(timer)
+        this.pending.delete(id)
+        reject(new AppError('RUNTIME_UNAVAILABLE', 'Runtime 进程已断开'))
+        return
+      }
       try {
-        this.child!.stdin.write(`${JSON.stringify({ kind: 'request', id, method, input })}\n`)
+        stdin.write(`${JSON.stringify({ kind: 'request', id, method, input })}\n`, (error) => {
+          if (!error) return
+          const entry = this.pending.get(id)
+          if (!entry) return
+          this.pending.delete(id)
+          clearTimeout(entry.timer)
+          entry.reject(new AppError('RUNTIME_UNAVAILABLE', '无法写入 Runtime 进程'))
+        })
       } catch {
         clearTimeout(timer)
         this.pending.delete(id)
@@ -232,6 +253,10 @@ export class RuntimeSupervisor {
     if (this.heartbeatTimer) clearInterval(this.heartbeatTimer)
     this.heartbeatTimer = setInterval(() => {
       if (!this.child || this.stopping) return
+      if (this.child.stdin.destroyed || !this.child.stdin.writable) {
+        this.killChild('stdin closed')
+        return
+      }
       try {
         this.child.stdin.write(
           `${JSON.stringify({ kind: 'ping', id: randomUUID(), sentAt: Date.now() })}\n`,
@@ -349,14 +374,16 @@ export class RuntimeSupervisor {
     }
     const child = this.child
     try {
-      child.stdin.write(
-        `${JSON.stringify({
-          kind: 'request',
-          id: randomUUID(),
-          method: 'runtime.shutdown',
-          input: {},
-        })}\n`,
-      )
+      if (!child.stdin.destroyed && child.stdin.writable) {
+        child.stdin.write(
+          `${JSON.stringify({
+            kind: 'request',
+            id: randomUUID(),
+            method: 'runtime.shutdown',
+            input: {},
+          })}\n`,
+        )
+      }
     } catch {
       // ignore
     }

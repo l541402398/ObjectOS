@@ -112,6 +112,7 @@ import {
   AgentViewSchema,
   ApprovalViewSchema,
   ArtifactSchema,
+  CollaborationOverviewSchema,
   CollaborationSnapshotSchema,
   CommandResultSchema,
   DecisionSchema,
@@ -1082,6 +1083,10 @@ export const ApiSchemas = {
   'collaboration.snapshot': {
     input: projectIdInput,
     output: CollaborationSnapshotSchema,
+  },
+  'collaboration.overview': {
+    input: projectIdInput,
+    output: CollaborationOverviewSchema,
   },
   'inbox.send': {
     input: SendCrossSessionInputSchema,

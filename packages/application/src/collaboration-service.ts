@@ -4,9 +4,11 @@ import {
   now,
   type Agent,
   type CollaborationSnapshot,
+  type CollaborationOverview,
   type HandoffView,
   type InboxItemView,
   type RequestHandoffInput,
+  type RunStatus,
   type SendCrossSessionInput,
   type Session,
 } from '@projectos/contracts'
@@ -37,6 +39,17 @@ export interface CollaboratorView {
 }
 
 const AUTO_ACTOR: ActionActor = { kind: 'system', id: 'handoff-auto', name: '自动交接' }
+
+/** Run states that still own an execution slot in the overview. Terminal states are excluded. */
+const ACTIVE_RUN_STATUSES = new Set<RunStatus>([
+  'created',
+  'queued',
+  'running',
+  'waiting_tool',
+  'waiting_approval',
+  'verifying',
+  'suspended',
+])
 
 function handoffTtlMs(): number {
   const raw = Number(process.env.PROJECTOS_HANDOFF_TTL_MS ?? 24 * 60 * 60 * 1000)
@@ -101,6 +114,96 @@ export class CollaborationService {
     this.getProject(projectId)
     this.expireStaleHandoffs(projectId)
     return this.store.read.getCollaborationSnapshot(projectId)
+  }
+
+  /**
+   * Read-only Agent collaboration overview (ADR-ORG-0101).
+   *
+   * It only composes persisted task/run/handoff/approval/artifact rows and the latest plan revision.
+   * No scheduler, timer or synthetic progress is involved: an Agent is "working" because an active
+   * Run row exists, and an artifact is displayed only because an artifact row exists.
+   */
+  overview(projectId: string): CollaborationOverview {
+    this.getProject(projectId)
+    this.expireStaleHandoffs(projectId)
+    const read = this.store.read
+    const views = read.getAgentViews(projectId)
+    const tasks = read.listTaskCards(projectId)
+    const runs = read.listRunSummaries(projectId, 60)
+    const sessions = read.listSessionSummaries(projectId)
+    const handoffs = read.listHandoffViews(projectId)
+    const approvals = read.listApprovalViews(projectId)
+    const artifacts = read.listArtifacts(projectId)
+    const activity = read.getProjectActivity(projectId, 16)
+    const planRevisions = read.listPlanRevisions(projectId)
+    const latestPlan = planRevisions[0] ?? null
+    const pendingApprovals = approvals.filter((approval) => approval.status === 'pending')
+
+    const agents = views.map((view) => {
+      const activeRun = (view.activeRunId ? runs.find((run) => run.id === view.activeRunId) : undefined)
+        ?? runs.find((run) => run.agentId === view.agent.id && ACTIVE_RUN_STATUSES.has(run.status))
+        ?? null
+      const task = activeRun?.taskId ? tasks.find((item) => item.id === activeRun.taskId) ?? null : null
+      const agentSessions = sessions.filter((session) => session.agentId === view.agent.id)
+      const agentRuns = runs.filter((run) => run.agentId === view.agent.id)
+      const lastSessionAt = agentSessions.reduce((latest, session) => Math.max(latest, session.lastMessageAt ?? session.updatedAt), 0)
+      const lastRunAt = agentRuns.reduce((latest, run) => Math.max(latest, run.finishedAt ?? run.startedAt ?? run.createdAt), 0)
+      const lastActivityAt = Math.max(lastSessionAt, lastRunAt)
+      return {
+        id: view.agent.id,
+        name: view.agent.name,
+        role: view.agent.role,
+        accent: view.agent.accent,
+        status: view.status,
+        activeRunId: activeRun?.id ?? null,
+        activeSessionId: activeRun?.sessionId ?? view.activeSessionId,
+        runStatus: activeRun?.status ?? null,
+        taskId: task?.id ?? null,
+        taskTitle: task?.title ?? null,
+        taskStatus: task?.status ?? null,
+        pendingApprovals: pendingApprovals.filter((approval) => approval.runId === activeRun?.id || approval.agentName === view.agent.name).length,
+        completedRuns: view.completedRuns,
+        sessionCount: view.sessionCount,
+        lastActivityAt: lastActivityAt > 0 ? lastActivityAt : null,
+      }
+    })
+
+    const metrics = {
+      workingAgents: agents.filter((agent) => agent.status === 'working').length,
+      activeTasks: tasks.filter((task) => task.status === 'running' || task.status === 'review').length,
+      blockedTasks: tasks.filter((task) => task.status === 'blocked' || (task.blockedBy.length > 0 && task.status !== 'done' && task.status !== 'cancelled')).length,
+      pendingApprovals: pendingApprovals.length,
+      pendingHandoffs: handoffs.filter((handoff) => handoff.status === 'requested').length,
+      artifacts: artifacts.length,
+      doneTasks: tasks.filter((task) => task.status === 'done').length,
+      totalTasks: tasks.filter((task) => task.status !== 'cancelled').length,
+    }
+
+    return {
+      projectId,
+      generatedAt: now(),
+      agents,
+      tasks,
+      runs,
+      handoffs,
+      approvals,
+      artifacts,
+      activity,
+      plan: latestPlan
+        ? {
+            id: latestPlan.id,
+            goal: latestPlan.goal,
+            status: latestPlan.status,
+            revision: latestPlan.revision,
+            approvedAt: latestPlan.approvedAt ?? null,
+            executionStatus: latestPlan.execution?.status ?? null,
+            taskCount: latestPlan.tasks.length,
+            taskIds: latestPlan.createdTaskIds ?? [],
+            createdAt: latestPlan.createdAt,
+          }
+        : null,
+      metrics,
+    }
   }
 
   listInbox(projectId: string, sessionId: string | null = null): InboxItemView[] {

@@ -561,6 +561,72 @@ export const CollaborationSnapshotSchema = z.object({
 })
 export type CollaborationSnapshot = z.infer<typeof CollaborationSnapshotSchema>
 
+/**
+ * Thin read-only projection for the Agent collaboration overview.
+ *
+ * It composes existing persisted state (agents, task cards, runs, handoffs, approvals, artifacts,
+ * activity, latest plan) and never schedules or mutates anything. Every status here is derived from
+ * persisted rows; the UI must not invent progress from timers.
+ */
+export const CollaborationOverviewAgentSchema = z.object({
+  id: IdSchema,
+  name: z.string(),
+  role: z.string(),
+  accent: z.string(),
+  status: z.enum(['idle', 'working', 'offline']),
+  activeRunId: IdSchema.nullable(),
+  activeSessionId: IdSchema.nullable(),
+  runStatus: RunStatusSchema.nullable(),
+  taskId: IdSchema.nullable(),
+  taskTitle: z.string().nullable(),
+  taskStatus: TaskStatusSchema.nullable(),
+  pendingApprovals: z.number().int().nonnegative(),
+  completedRuns: z.number().int().nonnegative(),
+  sessionCount: z.number().int().nonnegative(),
+  lastActivityAt: nullableTimestamp,
+})
+export type CollaborationOverviewAgent = z.infer<typeof CollaborationOverviewAgentSchema>
+
+export const CollaborationOverviewPlanSchema = z.object({
+  id: IdSchema,
+  goal: z.string(),
+  status: z.enum(['draft', 'approved', 'rejected', 'superseded']),
+  revision: z.number().int().positive(),
+  approvedAt: nullableTimestamp,
+  executionStatus: z.string().nullable(),
+  taskCount: z.number().int().nonnegative(),
+  taskIds: z.array(IdSchema),
+  createdAt: TimestampSchema,
+})
+export type CollaborationOverviewPlan = z.infer<typeof CollaborationOverviewPlanSchema>
+
+export const CollaborationOverviewMetricsSchema = z.object({
+  workingAgents: z.number().int().nonnegative(),
+  activeTasks: z.number().int().nonnegative(),
+  blockedTasks: z.number().int().nonnegative(),
+  pendingApprovals: z.number().int().nonnegative(),
+  pendingHandoffs: z.number().int().nonnegative(),
+  artifacts: z.number().int().nonnegative(),
+  doneTasks: z.number().int().nonnegative(),
+  totalTasks: z.number().int().nonnegative(),
+})
+export type CollaborationOverviewMetrics = z.infer<typeof CollaborationOverviewMetricsSchema>
+
+export const CollaborationOverviewSchema = z.object({
+  projectId: IdSchema,
+  generatedAt: TimestampSchema,
+  agents: z.array(CollaborationOverviewAgentSchema),
+  tasks: z.array(TaskCardSchema),
+  runs: z.array(RunSummarySchema),
+  handoffs: z.array(HandoffViewSchema),
+  approvals: z.array(ApprovalViewSchema),
+  artifacts: z.array(ArtifactSchema),
+  activity: z.array(ActivityItemSchema),
+  plan: CollaborationOverviewPlanSchema.nullable(),
+  metrics: CollaborationOverviewMetricsSchema,
+})
+export type CollaborationOverview = z.infer<typeof CollaborationOverviewSchema>
+
 export const WorkspaceEntrySchema = z.object({
   path: z.string(),
   name: z.string(),

@@ -1,5 +1,19 @@
 # ProjectOS UI Design Changelog
 
+## 2026-10-29 — A1 Agent 协作总览（全画布图，非三栏）
+
+- 用户否定了首版固定三栏（Agent/计划/成果），要求“整页都是图，点击图上的对象再加载信息”。
+  本版改为全宽可缩放协作画布：Agent、任务、审批、产物、交接都是真实节点/边，详情从右侧抽屉按需加载。
+- 保留现有 AppShell、GoalJourneyBar、Liquid Glass 外壳与 `[协作总览][专业编排]` 双向切换；页面内部使用
+  A0 Precision token（`.pw-theme`），未修改全局壳。
+- 新增只读投影 `collaboration.overview`：Agent 状态来自活动 Run，审批只展示 pending，产物显示
+  `verifiedAt`/`contentHash`/`gitCommit`，Handoff 只在真实行存在时连线；空项目不填充演示数据。
+- React Flow 12.12 在本机出现节点测量缺失（DOM 有 Handle、内部 `measured` 为空、原生边层为空），
+  因此节点/缩放/选择仍由 React Flow 负责，关系边改为同坐标系 SVG 层，由真实数据生成；作为已知限制记录。
+- 修复快速重启时 Runtime stdin `EPIPE` 未捕获导致 Main 进程错误框的真实缺陷。
+- 证据：`docs/agent-overview/reports/A1-agent-overview-report.md`、`docs/agent-overview/reference-comparison.md`、
+  `docs/agent-overview/evidence/`（16 PASS / 0 FAIL、9 张产品截图 + 参考拼图）。1024 仍是同一张图，不切成三栏。
+
 ## 2026-10-29 — A0 Precision Workspace 设计母版（独立原型路由，生产基线未变）
 
 - 新增 `#/precision-lab`（`DEV_ONLY`，不在产品菜单）：组织/项目总览、需求工作台、流程模板设计器三张母版，

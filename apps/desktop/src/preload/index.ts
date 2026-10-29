@@ -183,6 +183,7 @@ const api: ProjectOSDesktopApi = {
   },
   collaboration: {
     snapshot: (projectId) => call('collaboration.snapshot', { projectId }),
+    overview: (projectId) => call('collaboration.overview', { projectId }),
   },
   inbox: {
     send: (input) => call('inbox.send', input),

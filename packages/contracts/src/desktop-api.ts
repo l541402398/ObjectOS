@@ -159,6 +159,7 @@ export interface ProjectOSDesktopApi {
   }
   collaboration: {
     snapshot: (projectId: string) => Promise<Out<'collaboration.snapshot'>>
+    overview: (projectId: string) => Promise<Out<'collaboration.overview'>>
   }
   inbox: {
     send: (input: In<'inbox.send'>) => Promise<Out<'inbox.send'>>

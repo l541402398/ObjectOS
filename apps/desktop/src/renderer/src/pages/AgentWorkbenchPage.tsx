@@ -50,6 +50,7 @@ import {
 import { formatDateTime, formatRelative } from '../lib/format'
 import { runStatusLabel, taskStatusLabel } from '../lib/labels'
 import { AgentStudioModal } from '../components/AgentStudioModal'
+import { CollaborationOverview } from '../features/collaboration-overview/CollaborationOverview'
 import { errorMessage } from '../lib/errors'
 import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea, SheetShell } from '../next-ui/overlay/overlay-shell'
 import { useUiStore } from '../stores/ui'
@@ -112,6 +113,7 @@ export default function AgentWorkbenchPage() {
   const approvals = useApprovals(projectId)
   const runs = useRuns(projectId, 100)
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'overview' | 'pro'>(() => (searchParams.get('view') === 'pro' ? 'pro' : 'overview'))
   const sessionDetail = useSessionDetail(selectedSessionId)
   const [createOpen, setCreateOpen] = useState(false)
   const [studioOpen, setStudioOpen] = useState(false)
@@ -373,6 +375,30 @@ export default function AgentWorkbenchPage() {
     }
   }
 
+  const switchView = (mode: 'overview' | 'pro'): void => {
+    setViewMode(mode)
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current)
+      if (mode === 'pro') next.set('view', 'pro')
+      else next.delete('view')
+      return next
+    }, { replace: true })
+  }
+
+  if (viewMode === 'overview') {
+    return (
+      <CollaborationOverview
+        projectId={projectId}
+        onSwitchToPro={() => switchView('pro')}
+        onOpenSession={(sessionId) => {
+          setSelectedSessionId(sessionId)
+          switchView('pro')
+        }}
+        onManageAgents={() => setStudioOpen(true)}
+      />
+    )
+  }
+
   return (
     <div className="po-page po-agent-page">
       <PageHeader
@@ -380,6 +406,7 @@ export default function AgentWorkbenchPage() {
         title="Agent 工作台"
         actions={
           <>
+            <Button onClick={() => switchView('overview')}>协作总览</Button>
             <Button icon={<ReloadOutlined />} onClick={() => void invalidateSession()} loading={sessions.isRefetching}>
               刷新
             </Button>
