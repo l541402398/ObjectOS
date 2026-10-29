@@ -8,6 +8,8 @@
  *   3. the same holds at 1440x900, 1024x700 and 620px height (the short-window case).
  *
  * usage: node scripts/p288-pane-scroll-e2e.mjs <dataDir> <projectId>
+ *
+ * (资源与连接 has its own script because it needs a real sidebar click and real resource rows.)
  */
 import { _electron as electron } from 'playwright-core'
 import { mkdirSync } from 'node:fs'
@@ -39,7 +41,9 @@ delete env.ELECTRON_RUN_AS_NODE
 
 const pages = [
   { route: 'approvals', list: '.ap-list', pane: '.ap-detail', root: '.ap-shell', body: '.ap-body' },
-  { route: 'resources', list: '.rc-list', pane: '.rc-main', root: '.rc-shell', body: '.rc-body' },
+  // 资源与连接 is the real menu entry (/connections); it has its own script because it needs a real
+  // sidebar click and real resource rows. /resources is a different page and is not checked here.
+  { route: 'connections', list: '.rc-list', pane: '.rc-main', root: '.rc-shell', body: '.rc-body' },
 ]
 
 async function measure(page, spec) {
@@ -116,6 +120,7 @@ try {
     for (const size of [
       { label: '1440x900', width: 1440, height: 900 },
       { label: '1024x700', width: 1024, height: 700 },
+      { label: '1100x700', width: 1100, height: 700 },
       { label: '620h', width: 1440, height: 620 },
     ]) {
       await win.evaluate((w, dims) => w.setSize(dims.width, dims.height), size)

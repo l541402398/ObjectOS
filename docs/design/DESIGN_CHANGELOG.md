@@ -1,5 +1,25 @@
 # ProjectOS UI Design Changelog
 
+## 2026-10-29 — Pane-owned scrolling and readable activity copy (Phase 2.8.8)
+
+- 「审批」工作台与「交付 · 资源与连接」改为**栏内滚动**：页面根 `height:100%`、主区域
+  `flex:1 / min-height:0`、每个栏 `min-height:0` + `overflow-y:auto` + `overscroll-behavior:contain`。
+  长列表不再产生整页滚动条，620px 高窗口同样成立。纯布局改动，未改 token、材质、动效或业务状态；
+  普通页面仍由 `.po-main` 滚动。ADR-0037。
+- 真实 Electron 证据（56 条真实审批 / 12 条真实资源，1440×900、1100×700、1024×700、620h）：
+  `mainScrolls=0` 全部成立，列表 `4105/585|260|260|385`、`648/504|306|306|304`，
+  滚轮在栏内生效且页面不动；截图 `docs/screenshots/p288-scroll-*.png`。
+- 「项目中心 · 最近动态」把死文字「全部」改为真实按钮：`aria-expanded` 切换「全部/收起」，
+  展开后列表在卡片内 320px 内滚动（`docScrolls=0`），少于 6 条时显示「N 条」而非假控件；
+  bootstrap 每个项目取 20 条、总量 40 条，控件有真实内容。字号遵守 12px 下限。ADR-0038。
+- 动态与运行审计事件流不再显示 `run.status.changed` 等原始类型：`summarizeProjectEvent` 覆盖全部
+  已知事件并翻译内部枚举（`quality_gate` → 质量门禁未通过；`project.event` 按 kind 映射），
+  事件流徽标改为中文分类、原始类型只保留在 `title` tooltip。
+- 1100 宽与真实 125% 缩放（`webContents.setZoomFactor`）下：`overflowX=0`，「全部」可点，字号 12px；
+  截图 `docs/screenshots/p288-activity-1100x700.png`、`p288-activity-1440x900125.png`。
+- 未验证项：资源与连接的长度验收使用产品 API 在隔离测试档案中创建的 12 条真实资源记录（非用户数据）；
+  真实用户项目若资源更多，结论同样成立（同一 CSS 规则），但未在用户库上复测。
+
 ## 2026-10-22 — Design Lab accepted as visual baseline
 
 - User accepted `feature/v1.6-liquid-glass-design-lab` as the Premium Liquid Glass

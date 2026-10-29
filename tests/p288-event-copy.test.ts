@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { eventTypeLabel, PROJECT_EVENT_TYPES, summarizeProjectEvent } from '../packages/domain/src/events.js'
+import { PROJECT_EVENT_TYPES, summarizeProjectEvent } from '../packages/domain/src/events.js'
+import { eventTypeLabel } from '../apps/desktop/src/renderer/src/lib/labels.js'
 
 const CJK = /[\u4e00-\u9fa5]/
 

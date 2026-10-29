@@ -29,10 +29,9 @@ import {
   toneForStatus,
 } from '@projectos/ui'
 import { ApprovalCard, ToolTrace } from '@projectos/ai-ui'
-import { eventTypeLabel } from '@projectos/domain'
 import { useApprovals, useProjectEvents, useRunDetail, useRuns } from '../lib/queries'
 import { formatDateTime, formatDuration, formatRelative } from '../lib/format'
-import { runStatusLabel } from '../lib/labels'
+import { eventTypeLabel, runStatusLabel } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
 import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea, SheetShell } from '../next-ui/overlay/overlay-shell'
 

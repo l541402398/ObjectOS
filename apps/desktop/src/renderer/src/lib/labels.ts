@@ -116,3 +116,30 @@ export function riskLabel(risk: string): string {
       return risk
   }
 }
+
+/**
+ * A short, user-facing label for an event badge. The raw type stays available in the payload and
+ * as a tooltip; it must never be the visible text (a user does not know what `run.status.changed` is).
+ */
+/**
+ * Short Chinese badge for the run-audit event stream. The raw type stays in the tooltip; a user
+ * must never be shown `run.status.changed` as the visible label (ADR-0038).
+ */
+export function eventTypeLabel(eventType: string): string {
+  if (eventType.startsWith('run.')) return '运行'
+  if (eventType.startsWith('tool.')) return '工具'
+  if (eventType.startsWith('plan.')) return '计划'
+  if (eventType.startsWith('task.')) return '任务'
+  if (eventType.startsWith('approval.')) return '审批'
+  if (eventType.startsWith('artifact.')) return '交付物'
+  if (eventType.startsWith('handoff.')) return '交接'
+  if (eventType.startsWith('message.') || eventType.startsWith('inbox.')) return '消息'
+  if (eventType.startsWith('requirement.')) return '需求'
+  if (eventType.startsWith('milestone.')) return '里程碑'
+  if (eventType.startsWith('decision.')) return '决策'
+  if (eventType.startsWith('knowledge.')) return '知识'
+  if (eventType.startsWith('session.')) return '会话'
+  if (eventType.startsWith('project.')) return '项目'
+  return '事件'
+}
+

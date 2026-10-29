@@ -117,6 +117,37 @@ try {
     `label=${collapsed.label} rows=${collapsed.count}`,
   )
 
+  // 1100 宽 + 真实 125% 缩放（webContents.setZoomFactor），验证卡片与控件不溢出。
+  const win = await app.browserWindow(page)
+  for (const size of [
+    { label: '1100x700', width: 1100, height: 700, zoom: 1 },
+    { label: '1440x900@125%', width: 1440, height: 900, zoom: 1.25 },
+  ]) {
+    await win.evaluate((w, dims) => w.setSize(dims.width, dims.height), size)
+    await win.evaluate((w, factor) => w.webContents.setZoomFactor(factor), size.zoom)
+    await page.waitForTimeout(900)
+    const layout = await page.evaluate(() => {
+      const card = document.querySelector('.v16-activity-compact')
+      const link = document.querySelector('.v16-card-link')
+      const rect = link?.getBoundingClientRect()
+      return {
+        docOverflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        cardWidth: card?.clientWidth ?? null,
+        linkVisible: rect ? rect.width > 0 && rect.height >= 20 : false,
+        linkFontSize: link ? getComputedStyle(link).fontSize : null,
+        docScrolls: document.documentElement.scrollHeight - document.documentElement.clientHeight,
+      }
+    })
+    record(
+      `${size.label} 无横向溢出且「全部」可点`,
+      layout.docOverflowX === 0 && layout.linkVisible ? 'PASS' : 'FAIL',
+      `overflowX=${layout.docOverflowX} card=${layout.cardWidth} link=${layout.linkVisible} font=${layout.linkFontSize} docScrolls=${layout.docScrolls}`,
+    )
+    await page.screenshot({ path: join(shots, `p288-activity-${size.label.replace(/[^0-9a-z]/gi, '')}.png`) })
+  }
+  await win.evaluate((w) => w.webContents.setZoomFactor(1))
+  await win.evaluate((w) => w.setSize(1440, 900))
+
   // 运行审计 · 项目事件流：可见文字不能是原始事件类型（原始类型只作为 tooltip）。
   const projectId =
     process.argv[3] ||
