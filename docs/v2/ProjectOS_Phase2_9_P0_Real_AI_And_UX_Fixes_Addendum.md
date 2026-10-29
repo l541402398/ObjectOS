@@ -56,7 +56,10 @@ worktree 里的产物当成项目根目录产物、最终截图超时），因�
 
 ## 4. 仍未完成
 
-1. 真实 AI 链未走到 `deliveryStatus=verified`：需要 Agent 在最后一次写入后自动重跑测试（自动证据重采），
-   或允许一次显式"重新验证"后再走合并。本轮只把状态说清楚，没有伪造完成。
+1. ~~真实 AI 链未走到 `deliveryStatus=verified`~~ **已完成**（本轮补上）：自动证据重采 + 审查任务覆盖 +
+   旅程投影去掉同步 git 调用后，真实 DeepSeek 链路跑到 `deliveryStatus=verified`，merge commit
+   `8ced21b7d2975b85e169f902b569b0930619cd6f`、交付证据 `art_01m63ka6cprrck428aczpds5pq`、`node --test`
+   exit 0、审查通过、6 次真实审批、3 个 Run。证据：`docs/v2/p29-real-ai-timeline.json`、
+   `docs/screenshots/p29-real-ai-journey.png`、ADR-0059/0062/0064/0065。
 2. 页面主体（工作中心、看板、审批、运行、发布）仍是旧卡片样式，Design Lab 迁移只完成壳层（ADR-0054）。
 3. 旅程栏的事件驱动刷新已接入，但未做"多窗口/多项目并发"的专项压测。

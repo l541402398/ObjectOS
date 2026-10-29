@@ -151,8 +151,9 @@ describe('Phase 2B-1 AI Planner', () => {
     expect(draft.status).toBe('draft')
     expect(draft.generatedBy).toBe('provider')
     expect(draft.execution).toBeNull()
-    expect(draft.tasks).toHaveLength(3)
-    expect(draft.tasks.map((item) => item.key)).toEqual(['locate-button', 'apply-style', 'verify-style'])
+    expect(draft.tasks).toHaveLength(4)
+    expect(draft.tasks.some((task) => task.role === 'reviewer')).toBe(true)
+    expect(draft.tasks.map((item) => item.key)).toEqual(['locate-button', 'apply-style', 'verify-style', 'review'])
     expect(draft.tasks[1]!.dependsOn).toEqual(['locate-button'])
     expect(draft.tasks[0]!.requiredCapabilities).toEqual(['analyze', 'implement'])
     expect(draft.tasks.every((item) => Boolean(item.agentId) && !item.assignmentBlocked)).toBe(true)
@@ -244,8 +245,9 @@ describe('Phase 2B-1 AI Planner', () => {
       allowOverBudget: false,
     })
 
-    expect(draft.tasks).toHaveLength(5)
-    expect(draft.tasks.map((item) => item.role)).toEqual(['architect', 'developer', 'developer', 'developer', 'tester'])
+    expect(draft.tasks).toHaveLength(6)
+    expect(draft.tasks.some((task) => task.role === 'reviewer')).toBe(true)
+    expect(draft.tasks.map((item) => item.role)).toEqual(['architect', 'developer', 'developer', 'developer', 'tester', 'reviewer'])
     const parallel = draft.tasks.filter((item) => item.dependsOn.includes('scope-and-policy'))
     expect(parallel.map((item) => item.key)).toEqual(['data-model', 'api-guard'])
     expect(draft.tasks.find((item) => item.key === 'verify-rbac')?.dependsOn).toEqual(['data-model', 'frontend-admin'])
@@ -316,7 +318,8 @@ describe('Phase 2B-1 AI Planner', () => {
       allowOverBudget: false,
     })
 
-    expect(draft.tasks).toHaveLength(4)
+    expect(draft.tasks).toHaveLength(5)
+    expect(draft.tasks.some((task) => task.role === 'reviewer')).toBe(true)
     expect(draft.tasks[0]!.key).toBe('baseline')
     expect(draft.tasks[1]!.dependsOn).toContain('baseline')
     expect(draft.tasks[2]!.dependsOn).toContain('profile')

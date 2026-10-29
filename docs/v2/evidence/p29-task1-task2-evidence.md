@@ -127,11 +127,27 @@ killing runtime {"reason":"heartbeat timeout"}
 - The window was offscreen in attempt 8, ruling out "the user closed it".
 - `pendingRequests` climbing 27 → 56 while no pong is processed proves the runtime **event loop was
   blocked for ≥30s**, not merely slow to write a pong.
-- ADR-0064 fixes the false-kill half (tolerate one miss, restart after two) and adds a policy unit test.
-- The blocking work itself is **OPEN**: profile the runtime around `agent run finished` / completion
-  evidence collection for synchronous git/sqlite/hash work on the main loop.
+- ADR-0064 fixed the false-kill half (tolerate one miss, restart after two) and added a policy unit test.
+- The blocking work was then found and fixed: **ADR-0065** — the journey projection spawned a synchronous
+  `git rev-parse` on every read (bar polls every 5s + event refreshes), which starved the loop. It is now
+  cached for 20s and skipped entirely once a worktree exists.
+- With that fix the same real scenario completed end to end (run 9, **PASS=20 FAIL=0**):
+  `running → completed + verify done + review done → delivery verified`, no heartbeat misses, six real
+  approvals, three runs (developer, tester, reviewer).
 
-State at the end of this evidence update: `deliveryStatus=verified` still **not reached**; the business
-gates (approval → review artifact → merge → post-merge verify) were never exercised to completion because
-the runtime restarted first. No claim of delivery closure is made.
+### Verified delivery (final)
+
+| Fact | Value |
+|---|---|
+| deliveryStatus | `verified` |
+| merge commit | `8ced21b7d2975b85e169f902b569b0930619cd6f` |
+| mergedAt | 1793269764463 |
+| delivery evidence artifact | `art_01m63ka6cprrck428aczpds5pq` |
+| verification command | `node --test --test-reporter=tap` (exit 0) |
+| review | 当前内容已通过审查 (`done`) |
+| runs | 3 (`run_…pssy…`, `run_…tks4…`, `run_…8hk1…`) |
+| approvals (real user decisions) | 6, all recorded with ids |
+| journey stages | all nine `done`; next action “已完成交付并验证” |
+| evidence files | `docs/v2/p29-real-ai-timeline.json`, `docs/screenshots/p29-real-ai-journey.png` |
+
 

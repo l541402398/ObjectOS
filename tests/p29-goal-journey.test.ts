@@ -2,13 +2,14 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { now } from '@projectos/contracts'
 import { ActionCenter } from '../apps/runtime/src/action-center.js'
 import { PlanGrantService } from '../apps/runtime/src/plan-grant.js'
-import { projectJourney } from '../apps/runtime/src/journey.js'
+import { projectJourney, resetJourneyGitCache } from '../apps/runtime/src/journey.js'
 import { LifecycleService } from '../apps/runtime/src/lifecycle.js'
 import { createGitProject, logger, planWithTasks, setup } from './helpers/r1-fixture.js'
 
 const cleanups: Array<() => void> = []
 afterEach(() => {
   while (cleanups.length > 0) cleanups.pop()?.()
+  resetJourneyGitCache()
 })
 
 function task(key: string) {

@@ -22,14 +22,41 @@ import type { PlanGrantService } from './plan-grant.js'
  * It never infers success from a plan's status, a task count or execution existence.
  */
 
+/**
+ * ADR-0065 — the journey projection must not spawn git on every request.
+ *
+ * Every journey read used to run a *synchronous* `git rev-parse`. The bar polls every 5s and also
+ * refreshes on business events, so during a run dozens of these reads queued: each one blocked the
+ * runtime event loop for a full process spawn (worse on Windows with AV scanning). The desktop log from
+ * a real attempt shows the consequence — `pendingRequests` 27 → 56 while heartbeats were missed and the
+ * supervisor restarted the runtime.
+ *
+ * The result is cached briefly; a workspace's "has a commit" state changes at most once (the baseline
+ * commit, ADR-0050), so a short TTL is enough and a commit cannot be missed for long.
+ */
+const GIT_HEAD_TTL_MS = 20_000
+const gitHeadCache = new Map<string, { value: boolean | null; at: number }>()
+
+export function resetJourneyGitCache(): void {
+  gitHeadCache.clear()
+}
+
 function gitHasCommit(rootPath: string): boolean | null {
-  if (!existsSync(join(rootPath, '.git'))) return null
-  try {
-    execFileSync('git', ['rev-parse', '--verify', 'HEAD'], { cwd: rootPath, encoding: 'utf8', stdio: 'pipe' })
-    return true
-  } catch {
-    return false
+  const cached = gitHeadCache.get(rootPath)
+  if (cached && Date.now() - cached.at < GIT_HEAD_TTL_MS) return cached.value
+  let value: boolean | null
+  if (!existsSync(join(rootPath, '.git'))) {
+    value = null
+  } else {
+    try {
+      execFileSync('git', ['rev-parse', '--verify', 'HEAD'], { cwd: rootPath, encoding: 'utf8', stdio: 'pipe' })
+      value = true
+    } catch {
+      value = false
+    }
   }
+  gitHeadCache.set(rootPath, { value, at: Date.now() })
+  return value
 }
 
 function selectPlan(store: SqliteStore, projectId: string): { plan: PlanDraft | null; kind: ProjectJourney['selection']['kind']; reason: string } {
@@ -124,7 +151,8 @@ export function projectJourney(input: {
     (execution?.status === 'paused' || execution?.status === 'failed' ? (humanItems.find((item) => item.kind === 'tool_approval') ?? null) : null)
   const approvalRef = toolApproval?.approvalId ?? toolApproval?.id ?? null
   const approvalExpired = Boolean(toolApproval?.stale)
-  const commit = gitHasCommit(project.rootPath)
+  // A plan with a worktree already passed the git-readiness question; skip the check entirely.
+  const commit = execution?.workspaceRef ? true : gitHasCommit(project.rootPath)
 
   const tasks = plan ? plan.createdTaskIds.map((taskId) => store.read.getTaskCard(taskId)).filter((card): card is NonNullable<typeof card> => Boolean(card)) : []
   const activeRun = (() => {
