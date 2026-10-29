@@ -24,6 +24,8 @@ export interface SidebarNavigationProps {
   activeKey: string
   onSelect: (key: string) => void
   collapsed?: boolean
+  /** Group the current page *belongs to*, even when the page itself has no nav item. */
+  activeGroupTitle?: string
   footer?: ReactNode
 }
 
@@ -42,21 +44,34 @@ function readExpanded(): Record<string, boolean> {
   }
 }
 
-export function SidebarNavigation({ groups, activeKey, onSelect, collapsed = false, footer }: SidebarNavigationProps) {
+export function SidebarNavigation({ groups, activeKey, onSelect, collapsed = false, activeGroupTitle, footer }: SidebarNavigationProps) {
   const activeGroupKey = useMemo(
     () => groups.find((group) => group.items.some((item) => item.key === activeKey))?.key ?? '',
     [activeKey, groups],
   )
+  /**
+   * ADR-0052 — a page without a nav item must still show where it lives.
+   *
+   * 编排工作台、工作区、通知中心 are entered from a page link or the command palette, not the sidebar.
+   * For those, `activeGroupKey` is empty, so a fresh profile expanded *nothing* and the sidebar looked
+   * like an empty list of group headers. Fall back to the registry group of the current page.
+   */
+  const groupKeyForTitle = useMemo(
+    () => (activeGroupTitle ? (groups.find((group) => group.title === activeGroupTitle)?.key ?? '') : ''),
+    [groups, activeGroupTitle],
+  )
+  const effectiveGroupKey = activeGroupKey || groupKeyForTitle
+
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
     const restored = readExpanded()
     if (Object.keys(restored).length > 0) return restored
-    return activeGroupKey ? { [activeGroupKey]: true } : {}
+    return effectiveGroupKey ? { [effectiveGroupKey]: true } : {}
   })
 
   useEffect(() => {
-    if (!activeGroupKey) return
-    setExpanded((current) => (current[activeGroupKey] ? current : { ...current, [activeGroupKey]: true }))
-  }, [activeGroupKey])
+    if (!effectiveGroupKey) return
+    setExpanded((current) => (current[effectiveGroupKey] ? current : { ...current, [effectiveGroupKey]: true }))
+  }, [effectiveGroupKey])
 
   const toggle = (groupKey: string): void => {
     setExpanded((current) => {

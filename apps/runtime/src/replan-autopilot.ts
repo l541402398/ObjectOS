@@ -64,6 +64,7 @@ export type AutonomyOutcomeKind =
   | 'plan.auto-delivered'
   | 'delivery.blocked'
   | 'contract.rejected'
+  | 'plan.draft-created'
   | 'nothing'
 
 export interface AutonomyOutcome {
@@ -156,6 +157,8 @@ export class ReplanAutopilot {
 
     outcomes.push(...(await this.resumeApprovalPaused(projectId, policy)))
     if (policy.autoStartPlans) outcomes.push(...(await this.autoStartApproved(projectId, policy)))
+    // ADR-0051: autonomous mode drafts the plan itself; approval and authorization stay human.
+    outcomes.push(...(await this.autoDraftPlan(projectId, policy)))
 
     // ADR-0028: before inventing a new plan revision, try to finish with the plan we already have.
     // A stale review is a *verification gap*, not a planning gap, so the existing review task is
@@ -186,6 +189,84 @@ export class ReplanAutopilot {
     await this.recordReviewEvidence(projectId)
     if (policy.autoDeliver) outcomes.push(...(await this.autoDeliverCompleted(projectId, policy)))
     return outcomes
+  }
+
+  // ---------------------------------------------------------------- requirement -> draft
+
+  /**
+   * ADR-0051 — autonomous mode removes the "click 生成计划" step, nothing else.
+   *
+   * The user still approves the plan and issues the execution grant; those are the human
+   * authorization boundary (ADR-0026). Drafting is read-only, so the product can do it: when a
+   * requirement exists, no draft/approved plan is active, and this exact requirement was not drafted
+   * before, generate one draft and record why. Generating once per requirement (not once per pass)
+   * keeps a rejected draft from reappearing on every tick.
+   */
+  private async autoDraftPlan(projectId: string, policy: ProjectAutonomySettings): Promise<AutonomyOutcome[]> {
+    if (policy.mode !== 'autonomous') return []
+    const plans = this.store.read.listAllPlanRevisions().filter((plan) => plan.projectId === projectId)
+    if (plans.some((plan) => plan.status === 'draft' || plan.status === 'approved')) return []
+    const requirements = this.store.read
+      .listRequirements(projectId)
+      .filter((requirement) => requirement.status !== 'cancelled' && requirement.status !== 'implemented')
+      .sort((a, b) => b.createdAt - a.createdAt)
+    const requirement = requirements[0]
+    if (!requirement) return []
+    const alreadyDrafted = this.store.read
+      .listEventViews(projectId, 500, 0)
+      .some(
+        (event) =>
+          event.eventType === PROJECT_EVENT_TYPES.custom &&
+          (event as unknown as { payload?: { kind?: string; requirementId?: string } }).payload?.kind === 'plan.autoDrafted' &&
+          (event as unknown as { payload?: { requirementId?: string } }).payload?.requirementId === requirement.id,
+      )
+    if (alreadyDrafted) return []
+    const goal = `${requirement.title}${requirement.body ? `
+
+${requirement.body}` : ''}`.trim()
+    if (goal.length < 8) return []
+    try {
+      const draft = await this.orchestration.generateAIPlan({
+        projectId,
+        goal,
+        mode: 'ai',
+        allowRuleFallback: true,
+        maxTasks: 8,
+        allowOverBudget: false,
+      })
+      this.record(projectId, draft.id, PROJECT_EVENT_TYPES.custom, {
+        kind: 'plan.autoDrafted',
+        planId: draft.id,
+        requirementId: requirement.id,
+        goal: goal.slice(0, 200),
+        generator: draft.generation?.mode ?? null,
+        policy: 'autonomousDraft',
+      })
+      return [
+        {
+          kind: 'plan.draft-created',
+          projectId,
+          planId: draft.id,
+          reasons: [`自主模式已根据需求「${requirement.title.slice(0, 60)}」生成计划草案，等待你批准与授权`],
+        },
+      ]
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      this.record(projectId, requirement.id, PROJECT_EVENT_TYPES.custom, {
+        kind: 'plan.autoDraftFailed',
+        requirementId: requirement.id,
+        error: message.slice(0, 2000),
+        policy: 'autonomousDraft',
+      })
+      return [
+        {
+          kind: 'plan.draft-created',
+          projectId,
+          planId: null,
+          reasons: [`自动生成计划草案失败：${message.slice(0, 200)}`],
+        },
+      ]
+    }
   }
 
   // ---------------------------------------------------------------- approval resume

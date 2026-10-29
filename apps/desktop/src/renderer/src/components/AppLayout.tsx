@@ -574,6 +574,7 @@ export default function AppLayout() {
       <SidebarNavigation
         groups={navGroups}
         activeKey={activeKey}
+        activeGroupTitle={pageGroup(activeKey)}
         onSelect={handleNavigate}
         collapsed={collapsed}
         footer={

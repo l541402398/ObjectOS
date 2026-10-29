@@ -335,7 +335,7 @@ export default function OrchestrationWorkspace() {
   const { projectId = '' } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { message, notification } = AntApp.useApp()
+  const { message, notification, modal } = AntApp.useApp()
   const bootstrap = useBootstrap()
   const project = bootstrap.data?.projects.find((item) => item.id === projectId) ?? null
   const snapshotQuery = useProjectSnapshot(projectId)
@@ -808,6 +808,71 @@ export default function OrchestrationWorkspace() {
       await invalidate()
       await queryClient.invalidateQueries({ queryKey: qk.planGrant(result.plan.id) })
       message.success(`计划已批准，创建 ${result.taskIds.length} 个任务；请设置执行授权`)
+    } catch (error) {
+      message.error(errorMessage(error))
+    }
+  }
+
+  /**
+   * ADR-0051 — one action for "批准并授权": approve the plan, issue the execution grant with the
+   * scope shown in the confirmation, then start. The confirmation *is* the human authorization; the
+   * grant is never issued silently.
+   */
+  const approveAndGrant = async (): Promise<void> => {
+    if (!draft) return
+    const scope = {
+      paths: ['.'],
+      maxToolCalls: 150,
+      maxRuns: 1,
+      ttlHours: 24,
+    }
+    const confirmed = await new Promise<boolean>((resolve) => {
+      modal.confirm({
+        title: '批准并授权执行？',
+        content: (
+          <div style={{ fontSize: 12.5, lineHeight: 1.7 }}>
+            <p style={{ margin: '0 0 6px' }}>将一次完成：批准计划、签发执行授权、在授权范围内自动开始。</p>
+            <ul style={{ margin: '0 0 6px', paddingInlineStart: 18 }}>
+              <li>可写路径：整个项目目录（{scope.paths.join('、')}）</li>
+              <li>预算：最多 {scope.maxRuns} 次启动、{scope.maxToolCalls} 次工具调用</li>
+              <li>有效期：{scope.ttlHours} 小时</li>
+              <li>进程、Git 写、外部 Runtime 仍需逐次审批</li>
+            </ul>
+            <p style={{ margin: 0, color: 'var(--color-text-secondary)' }}>授权可随时在计划授权面板撤销。</p>
+          </div>
+        ),
+        okText: '批准并授权',
+        cancelText: '取消',
+        onOk: () => resolve(true),
+        onCancel: () => resolve(false),
+      })
+    })
+    if (!confirmed) return
+    try {
+      const updated = await window.projectos.plans.update({
+        planId: draft.id,
+        goal: draft.goal,
+        tasks: draft.tasks,
+        assumptions: draft.assumptions,
+        risks: draft.risks,
+      })
+      const approved = await window.projectos.plans.approve(updated.id)
+      setDraft(approved.plan)
+      const grant = await window.projectos.plans.grant.issue({
+        planId: approved.plan.id,
+        actions: ['plan.start', 'workspace-write'],
+        allowedPaths: scope.paths,
+        maxRuns: scope.maxRuns,
+        maxToolCalls: scope.maxToolCalls,
+        ttlHours: scope.ttlHours,
+        allowOverBudget: false,
+        note: '批准计划时一并授权（one-click approve + grant）',
+        confirm: true,
+      })
+      await invalidate()
+      await queryClient.invalidateQueries({ queryKey: qk.planGrant(approved.plan.id) })
+      await startPlan(approved.plan.id, grant.allowOverBudget, grant.id)
+      message.success(`已批准并授权，创建 ${approved.taskIds.length} 个任务并开始执行`)
     } catch (error) {
       message.error(errorMessage(error))
     }
@@ -1817,6 +1882,16 @@ export default function OrchestrationWorkspace() {
                 {hasPlanBlockingIssues(draft) ? <span className="po-plan-footer-blocker">存在阻塞性问题：展开“需复核”查看并修复后再批准。</span> : null}
                 <Button onClick={() => void reject()}>拒绝</Button>
                 <Button type="primary" icon={<CheckCircleOutlined />} disabled={hasPlanBlockingIssues(draft)} onClick={() => void approve()} data-testid="plan-approve">批准并创建任务</Button>
+                <Button
+                  type="primary"
+                  ghost
+                  icon={<SafetyCertificateOutlined />}
+                  disabled={hasPlanBlockingIssues(draft)}
+                  onClick={() => void approveAndGrant()}
+                  data-testid="plan-approve-and-grant"
+                >
+                  批准并授权
+                </Button>
               </div>
             </OverlayFooter>
           ) : null}
