@@ -56,7 +56,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 /** Which side initiated each business action. */
 const actions = {
-  product: { started: 0, replanApplied: 0, resumed: 0, delivered: 0, reviewEvidence: 0 },
+  product: { started: 0, replanApplied: 0, resumed: 0, delivered: 0, reviewEvidence: 0, reReviews: 0 },
   script: { starts: 0, replanApplies: 0, approves: 0, grants: 0, merges: 0, taskEdits: 0 },
   human: { planApprovals: 0, grants: 0, toolApprovals: 0, duplicateApprovals: 0, policyChanges: 0 },
   timeline: [],
@@ -148,6 +148,7 @@ async function attribute(projectId) {
     if (event.eventType === 'plan.replan.applied') actions.product.replanApplied += 1
     if (payload.kind === 'plan.autoDelivered') actions.product.delivered += 1
     if (payload.kind === 'plan.reviewEvidenceRecorded') actions.product.reviewEvidence += 1
+    if (event.eventType === 'plan.review.reopened') actions.product.reReviews += 1
   }
   return events
 }
@@ -354,13 +355,13 @@ async function main() {
         mode: 'autonomous',
         autoStartPlans: true,
         autoApplyReplans: true,
-        autoDeliver: false,
+        autoDeliver: true,
         maxAutoReplans: 3,
       }),
     { projectId: project.id },
   )
   actions.human.policyChanges += 1
-  note('policy.set', 'autoStart/autoApplyReplans enabled, autoDeliver off')
+  note('policy.set', '用户显式开启 autoStart / autoApplyReplans / autoDeliver（autoDeliver 是独立授权）')
 
   if (scriptMode) {
     await page.evaluate(
@@ -497,43 +498,62 @@ async function main() {
     }
   }
 
-  // The product may legitimately need more than one revision round: a fix makes the previous
-  // review stale, so a re-review of the *current* content is required before delivery. The script
-  // only observes while the product keeps applying revisions inside the grant.
+  // The product may legitimately need more than one round: a fix makes the previous review stale,
+  // and the product must re-review the *current* content before it can be delivered. The script only
+  // observes (plus the necessary tool approvals) while the product drives itself to delivery.
   let rounds = 0
+  let reReviews = 0
   let lastProgressAt = Date.now()
   let lastSignature = ''
-  const revisionPlan = await waitFor('revision plan settles', async () => {
+  const closure = await waitFor('product reaches delivery', async () => {
     await approveNecessary(project.id)
     const plans = await page.evaluate(async (id) => (await window.projectos.plans.list(id)).plans, project.id)
     const latest = plans.sort((a, b) => b.revision - a.revision)[0]
     const proposals = await page.evaluate(async (id) => (await window.projectos.plans.replan.list(id, null)).proposals, project.id)
-    const status = latest?.execution?.status ?? 'draft'
-    const signature = `${latest?.revision}:${status}:${proposals.map((p) => p.status).join(',')}`
+    const events = await page.evaluate(
+      async (id) => (await window.projectos.events.list({ projectId: id, limit: 300 })).events,
+      project.id,
+    )
+    const reopened = events.filter((event) => event.eventType === 'plan.review.reopened').length
+    reReviews = Math.max(reReviews, reopened)
+    const execution = latest?.execution ?? {}
+    const status = execution.status ?? 'draft'
+    const deliveryStatus = execution.deliveryStatus ?? 'none'
+    const signature = `${latest?.revision}:${status}:${deliveryStatus}:${execution.mergeCommit ?? ''}:${proposals.map((p) => p.status).join(',')}:${reopened}`
     if (signature !== lastSignature) {
       lastSignature = signature
       lastProgressAt = Date.now()
       if (proposals.some((p) => p.status === 'applied')) rounds = Math.max(rounds, latest?.revision ?? 1)
-      console.log(`        · round r${latest?.revision} ${status} proposals=${proposals.map((p) => p.status).join(',') || 'none'}`)
+      console.log(
+        `        · r${latest?.revision} ${status} delivery=${deliveryStatus} reopen=${reopened} proposals=${proposals.map((p) => p.status).join(',') || 'none'}`,
+      )
     }
-    const stalled = Date.now() - lastProgressAt > 240_000
-    const done =
-      (latest?.revision > 1 && status === 'completed') ||
-      stalled ||
-      (terminal.includes(status) && latest.revision > 1 && !proposals.some((p) => p.status === 'proposed') && Date.now() - lastProgressAt > 120_000)
+    const stalled = Date.now() - lastProgressAt > 300_000
+    const delivered = deliveryStatus === 'verified' || deliveryStatus === 'merged_verification_failed'
+    const failed = status === 'failed' || status === 'cancelled'
     return {
-      done,
-      value: { plan: latest, proposals, rounds },
-      hint: { revision: latest?.revision, status, proposals: proposals.map((p) => p.status) },
+      done: delivered || stalled || failed,
+      value: { plan: latest, proposals, rounds, reReviews },
+      hint: { revision: latest?.revision, status, deliveryStatus, reopened },
     }
-  }, { timeoutMs: 900_000, intervalMs: 3000 })
-  const latest = revisionPlan.value?.plan
+  }, { timeoutMs: 1_500_000, intervalMs: 3000 })
+  const latest = closure.value?.plan
+  const latestExecution = latest?.execution ?? {}
   record(
     '修订轮次（产品自动应用次数）',
-    (revisionPlan.value?.rounds ?? 0) >= 1 ? 'PASS' : 'FAIL',
-    `rounds=${revisionPlan.value?.rounds ?? 0} finalRevision=${latest?.revision} status=${latest?.execution?.status}`,
+    (closure.value?.rounds ?? 0) >= 1 ? 'PASS' : 'FAIL',
+    `rounds=${closure.value?.rounds ?? 0} finalRevision=${latest?.revision} status=${latestExecution.status}`,
   )
-  record('修订计划执行结束', latest ? 'PASS' : 'FAIL', `revision=${latest?.revision} status=${latest?.execution?.status} err=${String(latest?.execution?.error ?? '').slice(0, 160)}`)
+  record(
+    '**产品自动复审（内容变化后复用原审查任务）**',
+    (closure.value?.reReviews ?? 0) > 0 ? 'PASS' : 'FAIL',
+    `reopened=${closure.value?.reReviews ?? 0}`,
+  )
+  record(
+    '修订/复审后计划状态',
+    latestExecution.status === 'completed' ? 'PASS' : 'FAIL',
+    `revision=${latest?.revision} status=${latestExecution.status} delivery=${latestExecution.deliveryStatus} err=${String(latestExecution.error ?? '').slice(0, 160)}`,
+  )
 
   // ---- evidence: same test, exit code, review, delivery ---------------------------------
   const worktree = latest?.execution?.workspaceRef ?? workspace
@@ -563,22 +583,22 @@ async function main() {
   )
   record('审查证据来源（reviewer 身份）', snapshotReview?.metadata?.reviewerAgentId ? 'PASS' : 'FAIL', String(snapshotReview?.metadata?.reviewerName ?? 'none'))
 
-  // ---- delivery: the product merges under an explicit policy ---------------------------
-  let delivered = null
+  // ---- delivery: merge commit + post-merge verification (not just mergedAt) -----------
+  let delivered = { value: null }
   if (!scriptMode) {
-    await page.evaluate(
-      async ({ projectId }) =>
-        window.projectos.actions.setAutonomy({ projectId, mode: 'autonomous', autoDeliver: true, maxAutoReplans: 3 }),
-      { projectId: project.id },
-    )
-    actions.human.policyChanges += 1
-    note('policy.set', 'autoDeliver enabled by the user')
     delivered = await waitFor('product delivers', async () => {
       await approveNecessary(project.id)
-      const info = await page.evaluate(async (id) => window.projectos.worktrees.info(id), latest.id)
-      return { done: Boolean(info.mergedAt), value: info, hint: { mergedAt: info.mergedAt, branch: info.branch } }
-    }, { timeoutMs: 240_000, intervalMs: 3000 })
-    record('**产品自动交付（自动合并）**', delivered.value?.mergedAt ? 'PASS' : 'FAIL', `mergedAt=${delivered.value?.mergedAt ?? 'none'}`)
+      const plans = await page.evaluate(async (id) => (await window.projectos.plans.list(id)).plans, project.id)
+      const newest = plans.sort((a, b) => b.revision - a.revision)[0]
+      const execution = newest?.execution ?? {}
+      const info = await page.evaluate(async (id) => window.projectos.worktrees.info(id), newest.id).catch(() => null)
+      const done = execution.deliveryStatus === 'verified' || execution.deliveryStatus === 'merged_verification_failed'
+      return {
+        done,
+        value: { plan: newest, execution, info },
+        hint: { deliveryStatus: execution.deliveryStatus, mergeCommit: execution.mergeCommit, mergedAt: info?.mergedAt },
+      }
+    }, { timeoutMs: 420_000, intervalMs: 3000 })
   } else {
     try {
       await page.evaluate(async (id) => window.projectos.worktrees.merge(id), latest.id)
@@ -590,8 +610,18 @@ async function main() {
     }
   }
 
-  const mainAfter = npmTest(workspace)
-  record('目标分支 npm test 通过', mainAfter === 0 ? 'PASS' : 'FAIL', `exit=${mainAfter}`)
+  const finalExecution = delivered.value?.execution ?? latestExecution
+  const mergeCommit = finalExecution.mergeCommit ?? null
+  record(
+    '**产品自动交付（真实 Merge Commit）**',
+    mergeCommit ? 'PASS' : 'FAIL',
+    `mergeCommit=${mergeCommit ? String(mergeCommit).slice(0, 12) : 'none'} mergedAt=${finalExecution.mergedAt ?? delivered.value?.info?.mergedAt ?? 'none'}`,
+  )
+  record(
+    '**合并后验证（deliveryStatus=verified）**',
+    finalExecution.deliveryStatus === 'verified' ? 'PASS' : 'FAIL',
+    `deliveryStatus=${finalExecution.deliveryStatus ?? 'none'} evidence=${finalExecution.deliveryEvidenceId ?? 'none'} ${String(finalExecution.deliveryError ?? '').slice(0, 140)}`,
+  )
 
   const events = await attribute(project.id)
   record('自动恢复（审批后继续）', actions.product.resumed > 0 ? 'PASS' : 'SKIP', `autoResumed=${actions.product.resumed}`)
@@ -626,7 +656,7 @@ function summarise() {
   console.log(`\n===== PHASE 2.8.7 ${mode} =====`)
   for (const item of results) console.log(`${item.status}\t${item.name}${item.detail ? ` :: ${item.detail}` : ''}`)
   console.log(
-    `产品自主动作：start=${actions.product.started} replan=${actions.product.replanApplied} resume=${actions.product.resumed} deliver=${actions.product.delivered} reviewEvidence=${actions.product.reviewEvidence}`,
+    `产品自主动作：start=${actions.product.started} replan=${actions.product.replanApplied} reReview=${actions.product.reReviews} resume=${actions.product.resumed} deliver=${actions.product.delivered} reviewEvidence=${actions.product.reviewEvidence}`,
   )
   console.log(
     `脚本业务调用：start=${actions.script.starts} replanApply=${actions.script.replanApplies} approve=${actions.script.approves} grant=${actions.script.grants} merge=${actions.script.merges} taskEdit=${actions.script.taskEdits}`,
