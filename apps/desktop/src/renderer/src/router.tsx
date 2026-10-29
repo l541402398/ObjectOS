@@ -6,6 +6,8 @@ import AppLayout from './components/AppLayout'
 import ProjectCenterPage from './pages/ProjectCenterPage'
 import ProjectOverviewPage from './pages/ProjectOverviewPage'
 import WorkCenterPage from './pages/WorkCenterPage'
+import StudioProjectHome from './features/studio/StudioProjectHome'
+import StudioReviewRoom from './features/studio/StudioReviewRoom'
 import LifecyclePage from './pages/LifecyclePage'
 import ReleaseCenterPage from './pages/ReleaseCenterPage'
 import DeploymentCenterPage from './pages/DeploymentCenterPage'
@@ -68,7 +70,7 @@ export const router = createHashRouter([
       {
         path: 'projects/:projectId',
         children: [
-          { index: true, element: <WorkCenterPage /> },
+          { index: true, element: <StudioProjectHome /> },
           { path: 'work', element: <WorkCenterPage /> },
           { path: 'versions', element: <LifecyclePage /> },
           { path: 'releases', element: <ReleaseCenterPage /> },
@@ -83,7 +85,8 @@ export const router = createHashRouter([
           { path: 'knowledge', element: <KnowledgePage /> },
           { path: 'operations', element: <OperationsPage /> },
           { path: 'resources', element: <ResourcesPage /> },
-          { path: 'approvals', element: <ApprovalsPage /> },
+          { path: 'approvals', element: <StudioReviewRoom /> },
+          { path: 'approvals/center', element: <ApprovalsPage /> },
           { path: 'project-settings', element: <ProjectSettingsPage /> },
           { path: 'health', element: <ProjectHealthPage /> },
           { path: 'runs', element: <RunsPage /> },

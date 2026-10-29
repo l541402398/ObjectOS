@@ -1,33 +1,45 @@
-# Visual decisions and P1-C scope
+# Visual decisions — P0 recovery + P1-C masters
 
-## What P0-A/P0-B changed visually
+## P0 baseline
 
-- The agent graph remains one full canvas; idle agents are folded into a compact bottom-right dock instead of being scattered through the graph.
-- Edges are now visible above the canvas with a node mask, stronger 1.8px strokes and a closed arrowhead at the target. Handoff keeps a dashed, labeled treatment.
-- The approval sheet now keeps the decision block visible above the footer, with an explicit risk checkbox and real API submission.
-- No global color or shell rewrite was performed in P0. That is deliberate: visual exploration starts only after the P0 interaction defects are reviewable.
+The graph is one full canvas; idle agents are folded into a dock; edges are visible above the canvas with a node mask; node approval happens in-sheet with a real API and explicit risk confirmation.
 
-## P1-C direction (not implemented yet)
+## P1-C implemented masters
 
-The three production pages must use three different compositions, not a shared three-column card template:
+### 1. Agent collaboration — Command Deck canvas
 
-1. **Agent collaboration — Command Deck canvas**
-   - Graphite/deep neutral working surface with a warm paper inspector.
-   - Execution cluster is the visual centre; agents are identity capsules, tasks are small command cards, approvals are status tags attached to tasks, artifacts are file tokens.
-   - Bottom Activity Tape; inspector appears on demand; no permanent three columns.
-2. **Organization/project home — editorial dashboard**
-   - One dominant progress/focus area with a real current goal, plan status and recent run evidence.
-   - Supporting content as compact editorial rows/timeline, not six equal KPI cards.
-3. **Requirements and approvals — review room**
-   - Document-first reading column, diff/evidence in a contextual margin, decision rail only when a real approval is selected.
-   - The approval decision remains the same safe API path proven in P0-B.
+- Warm paper / graphite working surface with a copper accent, instead of Precision white panels.
+- Agent capsules, task command cards, artifact file tokens and approval tags keep their graph relationships.
+- No permanent three columns; the graph is the page, with the standby dock and on-demand inspector.
+- Both Light and Dark are first-class token sets (not a white page inverted).
+
+### 2. Project home — editorial dashboard
+
+- One dominant mission hero: current plan goal, stage, progress ring, live task/Run/approval counts.
+- Asymmetric “In flight” focus list + “Needs a human” ledger; recent execution as a horizontal tape.
+- Not six equal KPI cards, not the graph layout repeated.
+- Real sources: `useBootstrap`, `usePlans`, `useTaskBoard`, `useRuns`, `useApprovals`, `useAgents`.
+- `/work` keeps the previous WorkCenter page as an explicit legacy route.
+
+### 3. Requirements/approval — review room
+
+- Queue → document → decision rail; the document is the visual centre, not a table.
+- Request parameters, path/content, command and run/task/expiry metadata are the evidence.
+- Decision uses the same `approval.decide` API and risk checkbox as P0-B; no optimistic state.
+- `/approvals` is the new review room; `/approvals/center` retains the professional audit center.
 
 ## Reference use
 
-- `reference-ui/agent-command-deck.html` is the information-architecture and spatial reference. Its demo data is not product data, and its colors are not copied mechanically.
-- Eigent: agent run card hierarchy. Angy: compact agent status. Dify: trace panel interaction. All are reference-only; Dify is custom-licensed and no code/assets are copied.
-- ProjectOS keeps the approved Premium Liquid Glass shell outside the page; page-level visual masters may use a deeper working surface, but must not silently replace the whole shell.
+- `reference-ui/agent-command-deck.html` supplied the spatial and hierarchy direction; its demo data and exact colors were not copied.
+- Eigent: agent run card hierarchy. Angy: compact agent status. Dify: trace/evidence reading. Dify is custom-licensed; no code or assets copied.
+- ProjectOS Liquid Glass AppShell, GoalJourneyBar, navigation and design tokens remain; page surfaces are scoped to `.studio-theme` / `.aco-deck`.
+
+## Visual evidence
+
+- Agent: `overview-1440-light.png`, `overview-1440-dark.png`, `overview-1024-all.png`, `overview-1440-light-125.png`, `overview-1440-standby.png`
+- Project home: `studio-project-home-1440-light.png`, `studio-project-home-1440-dark.png`, `studio-project-home-1024-light.png`, `studio-project-home-1024-dark.png`, `studio-project-home-1440-125.png`
+- Review room: `studio-review-1440-light.png`, `studio-review-1440-dark.png`, `studio-review-1024-light.png`, `studio-review-1024-dark.png`, `studio-review-1440-125.png`
 
 ## Review gate
 
-P1-C is **not started** in this delivery. The next step is three real Electron visual masters at 1440/1024, light/dark/125%, followed by user visual review before any rollout. The P0 pages are the baseline those samples must improve.
+These three pages are the P1-C samples for visual review. They are not yet rolled out to every page. The next step is user review of these screenshots; only after approval should the visual language be propagated.

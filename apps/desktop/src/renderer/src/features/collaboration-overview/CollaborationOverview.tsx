@@ -244,7 +244,7 @@ export function CollaborationOverview({
 
   if (overview.isLoading) {
     return (
-      <div className="aco-root pw-theme" data-theme={theme}>
+      <div className="aco-root pw-theme aco-deck" data-theme={theme}>
         <div className="aco-loading">
           <div className="aco-loading-head" />
           <div className="aco-loading-canvas" />
@@ -255,7 +255,7 @@ export function CollaborationOverview({
 
   if (overview.isError || !data || !metrics) {
     return (
-      <div className="aco-root pw-theme" data-theme={theme}>
+      <div className="aco-root pw-theme aco-deck" data-theme={theme}>
         <div className="aco-state">
           <CircleAlert size={20} />
           <strong>Agent 协作数据读取失败</strong>
@@ -466,7 +466,7 @@ export function CollaborationOverview({
   ) : null
 
   return (
-    <div className="aco-root pw-theme" data-theme={theme}>
+    <div className="aco-root pw-theme aco-deck" data-theme={theme}>
       <header className="aco-head">
         <div className="aco-head-copy">
           <div className="aco-title-line">

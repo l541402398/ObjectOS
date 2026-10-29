@@ -8,11 +8,11 @@
   "scope": {
     "p0a": "visible relationship layer, focused active-agent layout, standby dock",
     "p0b": "in-node approval, default graph entry, session and plan-DAG return closure",
-    "p1c": "NOT STARTED"
+    "p1c": "PASS (awaiting visual review): Command Deck agent graph, editorial project home, document review room"
   },
   "checks": {
     "electronE2E": {
-      "pass": 28,
+      "pass": 30,
       "fail": 0,
       "skip": 0,
       "command": "node scripts/agent-overview-e2e.mjs",
@@ -21,7 +21,7 @@
     "typecheck": "PASS",
     "lint": "PASS (0 errors; existing warnings remain)",
     "build": "PASS",
-    "fullTest": "PASS — 495 passed / 0 failed / 4 skipped",
+    "fullTest": "FAIL (pre-existing r1-budgets flake) — 494 passed / 1 failed / 4 skipped; earlier run 495/0/4",
     "packageSmoke": "PASS on the final P0 tree"
   },
   "screenshots": [
@@ -37,7 +37,17 @@
     "docs/agent-overview/evidence/screenshots/overview-1440-approved.png",
     "docs/agent-overview/evidence/screenshots/agent-inspector-1440-light.png",
     "docs/agent-overview/evidence/screenshots/artifact-inspector-1440-light.png",
-    "docs/agent-overview/evidence/screenshots/overview-1440-restart-light.png"
+    "docs/agent-overview/evidence/screenshots/overview-1440-restart-light.png",
+    "docs/agent-overview/evidence/screenshots/studio-project-home-1440-light.png",
+    "docs/agent-overview/evidence/screenshots/studio-project-home-1440-dark.png",
+    "docs/agent-overview/evidence/screenshots/studio-project-home-1024-light.png",
+    "docs/agent-overview/evidence/screenshots/studio-project-home-1024-dark.png",
+    "docs/agent-overview/evidence/screenshots/studio-project-home-1440-125.png",
+    "docs/agent-overview/evidence/screenshots/studio-review-1440-light.png",
+    "docs/agent-overview/evidence/screenshots/studio-review-1440-dark.png",
+    "docs/agent-overview/evidence/screenshots/studio-review-1024-light.png",
+    "docs/agent-overview/evidence/screenshots/studio-review-1024-dark.png",
+    "docs/agent-overview/evidence/screenshots/studio-review-1440-125.png"
   ],
   "reports": [
     "docs/ui-recovery/SOURCE_AUDIT.md",

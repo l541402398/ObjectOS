@@ -19,7 +19,11 @@
       "from": "graph agent inspector / toolbar",
       "target": "/projects/:id/agents?workspace=sessions&session=:sessionId",
       "return": "返回协作总览 button",
-      "restores": ["selected agent", "filter", "viewport (sessionStorage)"],
+      "restores": [
+        "selected agent",
+        "filter",
+        "viewport (sessionStorage)"
+      ],
       "assertedBy": "Electron E2E",
       "status": "PASS"
     },
@@ -42,10 +46,10 @@
     {
       "id": "graph.approval.center",
       "from": "approval sheet 审批中心 / activity",
-      "target": "/projects/:id/approvals",
-      "return": "history back (no explicit graph-return button)",
+      "target": "/projects/:id/approvals (review room)",
+      "return": "返回协作图 button",
       "assertedBy": "Electron E2E route check",
-      "status": "PASS_WITH_GAP"
+      "status": "PASS"
     },
     {
       "id": "graph.artifact.run",
@@ -78,6 +82,14 @@
       "return": "refetch",
       "assertedBy": "no TTL fixture",
       "status": "SKIP"
+    },
+    {
+      "id": "graph.approvals.legacy",
+      "from": "review room 专业审批中心",
+      "target": "/projects/:id/approvals/center",
+      "return": "browser back / shell",
+      "assertedBy": "route only",
+      "status": "PARTIAL"
     }
   ]
 }

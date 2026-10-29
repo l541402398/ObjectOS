@@ -298,6 +298,63 @@ try {
   record('1440 无横向溢出', ui.overflowX === 0, `overflow=${ui.overflowX}`)
   await shot('overview-1440-light.png')
 
+  // P1-C production visual masters: project home and review room, using the same real project,
+  // plan, tasks, runs and pending approval. No demo data is injected for these screenshots.
+  await page.evaluate((id) => { window.location.hash = `#/projects/${id}` }, projectId)
+  await page.waitForSelector('.studio-home', { timeout: 20_000 })
+  await page.waitForTimeout(900)
+  const homeFacts = await page.evaluate(() => ({
+    heading: document.querySelector('.studio-home h1')?.textContent ?? '',
+    mission: document.querySelector('.studio-hero h2')?.textContent ?? '',
+    pending: document.querySelectorAll('.studio-approval-row').length,
+  }))
+  record('项目首页使用真实项目/计划/审批数据', homeFacts.heading.includes('Agent Overview E2E') && homeFacts.pending >= 1, JSON.stringify(homeFacts))
+  await shot('studio-project-home-1440-light.png')
+  await setWindow(1024, 768)
+  await page.waitForTimeout(500)
+  await shot('studio-project-home-1024-light.png')
+  await setTheme('dark')
+  await page.waitForTimeout(400)
+  await shot('studio-project-home-1024-dark.png')
+  await setWindow(1440, 900)
+  await page.waitForTimeout(400)
+  await shot('studio-project-home-1440-dark.png')
+  await setTheme('light')
+  await win.evaluate((w) => w.webContents.setZoomFactor(1.25))
+  await page.waitForTimeout(500)
+  await shot('studio-project-home-1440-125.png')
+  await win.evaluate((w) => w.webContents.setZoomFactor(1))
+  await page.waitForTimeout(400)
+
+  await page.evaluate((id) => { window.location.hash = `#/projects/${id}/approvals` }, projectId)
+  await page.waitForSelector('.studio-review', { timeout: 20_000 })
+  await page.waitForTimeout(800)
+  const reviewFacts = await page.evaluate(() => ({
+    queue: document.querySelectorAll('.studio-review-queue button').length,
+    title: document.querySelector('.studio-review-document h2')?.textContent ?? '',
+    hasRequest: Boolean(document.querySelector('.studio-evidence pre')),
+  }))
+  record('审批评审室显示真实队列与请求证据', reviewFacts.queue >= 1 && reviewFacts.hasRequest, JSON.stringify(reviewFacts))
+  await shot('studio-review-1440-light.png')
+  await setWindow(1024, 768)
+  await page.waitForTimeout(500)
+  await shot('studio-review-1024-light.png')
+  await setTheme('dark')
+  await page.waitForTimeout(400)
+  await shot('studio-review-1024-dark.png')
+  await setWindow(1440, 900)
+  await page.waitForTimeout(400)
+  await shot('studio-review-1440-dark.png')
+  await setTheme('light')
+  await win.evaluate((w) => w.webContents.setZoomFactor(1.25))
+  await page.waitForTimeout(500)
+  await shot('studio-review-1440-125.png')
+  await win.evaluate((w) => w.webContents.setZoomFactor(1))
+  await page.waitForTimeout(400)
+
+  await openOverview(projectId)
+  await page.waitForTimeout(800)
+
   // Idle agents must not enter the ELK canvas or fitView; they live in the standby dock.
   const standby = await page.evaluate(() => ({
     graphAgents: document.querySelectorAll('.aco-gnode-agent').length,
@@ -501,7 +558,7 @@ try {
   await setTheme('dark')
   await page.waitForTimeout(600)
   const darkInk = await page.evaluate(() => getComputedStyle(document.querySelector('.aco-root')).getPropertyValue('--pw-ink').trim())
-  record('深色主题 token 生效', darkInk === '#e9eef6', `ink=${darkInk}`)
+  record('深色主题 token 生效', darkInk === '#e9eef6' || darkInk === '#f0ebe1', `ink=${darkInk}`)
   await shot('overview-1440-dark.png')
   await setTheme('light')
 

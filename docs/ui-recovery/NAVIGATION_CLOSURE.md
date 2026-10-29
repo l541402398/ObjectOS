@@ -6,7 +6,7 @@
 - `?workspace=sessions` is the explicit, contextual **legacy session workspace** (chat, group chat, session creation, Agent Studio, Handoff). It is not a fixed mode switch: it is reached from an Agent node's “打开会话”, from the toolbar “会话工作台”, or a directly pasted URL.
 - `?view=pro` is no longer a product mode. An old bookmark is redirected to the graph (query removed) and the graph stays usable.
 - `/projects/:projectId/orchestration?return=agents` is the real plan DAG. It has a visible “返回协作图” button when opened from the graph.
-- `/approvals` remains the professional audit center; it is linked from the graph but is no longer the only way to decide a pending approval.
+- `/approvals` is the new document-first review room; `/approvals/center` retains the professional audit center. Approval can be decided in the graph, review room or center, all through the same API.
 
 ## Functional inventory of the old Agent workspace (not deleted)
 
@@ -40,7 +40,6 @@ The old page remains reachable until each capability has a graph-native replacem
 
 ## Remaining navigation gaps
 
-- `/approvals` has no explicit “返回协作图” button; it relies on history/back. This is listed as an open P0-B gap rather than claimed closed.
-- `/runs` and `/tasks` have no explicit graph-return control; browser history works but is not a designed control.
+- `/runs` and `/tasks` have no explicit graph-return control; browser history works but is not a designed control. `/approvals` now has a visible “返回协作图” control.
 - The graph restores selection/filter/viewport from sessionStorage for the current window; it is not persisted in the URL, so a new window does not restore viewport.
 - The old session page is a legacy explicit route, not yet fully migrated into a graph-native conversation drawer.

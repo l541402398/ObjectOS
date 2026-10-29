@@ -31,6 +31,6 @@
 
 - Approval is not yet executed inside the sheet (P0-B).
 - The misleading `[协作总览][专业编排]` switch is still present (P0-B).
-- The P1-C production visual master has not been built yet.
+- P1-C visual masters are implemented on the project home, review room and Command Deck graph; they await user review before rollout.
 - The full test-suite `r1-budgets` timing failure remains.
 - E2E uses a local fake OpenAI-compatible provider and seeded artifact/handoff fixtures; it does not prove real model delivery.

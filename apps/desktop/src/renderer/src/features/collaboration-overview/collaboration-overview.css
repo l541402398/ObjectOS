@@ -1387,3 +1387,84 @@
   max-height: 250px;
   overflow-y: auto;
 }
+/* P1-C Command Deck surface: a warmer, higher-contrast working canvas that keeps the
+   existing graph interactions and token contract. */
+.aco-deck.pw-theme {
+  --pw-canvas: #e7dfd1;
+  --pw-surface: #fbf6ed;
+  --pw-surface-2: #f3ecdf;
+  --pw-surface-3: #e7ddcc;
+  --pw-surface-hover: #f0e7d7;
+  --pw-ink: #1d232b;
+  --pw-ink-2: #494640;
+  --pw-muted: #776e60;
+  --pw-faint: #918678;
+  --pw-line: rgba(49, 41, 31, 0.14);
+  --pw-line-strong: rgba(49, 41, 31, 0.28);
+  --pw-divider: rgba(49, 41, 31, 0.10);
+  --pw-accent: #b4552d;
+  --pw-accent-strong: #984526;
+  --pw-accent-soft: rgba(180, 85, 45, 0.12);
+  --pw-accent-line: rgba(180, 85, 45, 0.28);
+  --pw-accent-ink: #8d3f20;
+  --pw-ok: #3c6b4f;
+  --pw-ok-soft: rgba(60, 107, 79, 0.10);
+  --pw-ok-line: rgba(60, 107, 79, 0.28);
+  --pw-warn: #9c6622;
+  --pw-warn-soft: rgba(156, 102, 34, 0.12);
+  --pw-warn-line: rgba(156, 102, 34, 0.32);
+  --pw-danger: #a23a34;
+  --pw-danger-soft: rgba(162, 58, 52, 0.10);
+  --pw-danger-line: rgba(162, 58, 52, 0.28);
+  --pw-grid-dot: rgba(49, 41, 31, 0.12);
+  background:
+    radial-gradient(900px 440px at 88% -10%, rgba(180, 85, 45, 0.10), transparent 60%),
+    var(--pw-canvas);
+}
+
+.aco-deck.pw-theme[data-theme='dark'] {
+  --pw-canvas: #0b1118;
+  --pw-surface: #131b24;
+  --pw-surface-2: #17212c;
+  --pw-surface-3: #1e2a36;
+  --pw-surface-hover: #1c2732;
+  --pw-ink: #f0ebe1;
+  --pw-ink-2: #c8c2b6;
+  --pw-muted: #96968f;
+  --pw-faint: #8b8b84;
+  --pw-line: rgba(222, 231, 240, 0.13);
+  --pw-line-strong: rgba(222, 231, 240, 0.26);
+  --pw-divider: rgba(222, 231, 240, 0.09);
+  --pw-accent: #e08a5b;
+  --pw-accent-strong: #ef9d6d;
+  --pw-accent-soft: rgba(224, 138, 91, 0.14);
+  --pw-accent-line: rgba(224, 138, 91, 0.32);
+  --pw-accent-ink: #f2b48e;
+  --pw-ok: #87b99a;
+  --pw-ok-soft: rgba(135, 185, 154, 0.10);
+  --pw-ok-line: rgba(135, 185, 154, 0.28);
+  --pw-warn: #d7a352;
+  --pw-warn-soft: rgba(215, 163, 82, 0.12);
+  --pw-warn-line: rgba(215, 163, 82, 0.32);
+  --pw-danger: #e08078;
+  --pw-danger-soft: rgba(224, 128, 120, 0.10);
+  --pw-danger-line: rgba(224, 128, 120, 0.28);
+  --pw-grid-dot: rgba(222, 231, 240, 0.12);
+  background:
+    radial-gradient(1000px 500px at 86% -12%, rgba(224, 138, 91, 0.14), transparent 62%),
+    radial-gradient(800px 420px at 8% 110%, rgba(127, 183, 168, 0.07), transparent 60%),
+    var(--pw-canvas);
+}
+
+.aco-deck .aco-title-line h1 { font-size: 32px; letter-spacing: -0.04em; }
+.aco-deck .aco-subtitle { font-size: 13px; }
+.aco-deck .aco-toolbar { background: color-mix(in srgb, var(--pw-surface) 90%, transparent); backdrop-filter: blur(8px); }
+.aco-deck .aco-canvas-wrap { border-radius: 14px; box-shadow: 0 16px 38px rgba(22, 17, 11, 0.10); }
+.aco-deck[data-theme='dark'] .aco-canvas-wrap { box-shadow: 0 20px 50px rgba(0, 0, 0, 0.36); }
+.aco-deck .aco-gnode { border-radius: 12px; background: var(--pw-raised, var(--pw-surface)); }
+.aco-deck .aco-gnode-agent { border-top-width: 3px; }
+.aco-deck .aco-gnode-agent .aco-avatar { border-radius: 9px; }
+.aco-deck .aco-gnode-title { font-size: 12.5px; }
+.aco-deck .aco-activity { border-radius: 11px; }
+.aco-deck .aco-head { padding-bottom: 2px; }
+.aco-deck .aco-mode { display: none; }
