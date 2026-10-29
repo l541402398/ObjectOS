@@ -9,8 +9,9 @@
 - 仓库：`l541402398/ObjectOS`
 - 分支：`v2.0-org-a0`
 - 基线：`v2.0-phase2.9` / `9e2f82ab0564cea7dabfdbaf0a620c191d7afc49`
-- 实现提交：本提交（完整 SHA 记录在推送后的 `evidence/A0/remote-verification.json` 与最终交付消息）
-- 远端 HEAD：推送后以 `git ls-remote origin refs/heads/v2.0-org-a0` 核对，结果写入同一 JSON
+- 实现提交：`524259e5501ecf9292f575534f9610e952cb227f`（已推送并核对远端 HEAD）
+- 远端 HEAD：`524259e5501ecf9292f575534f9610e952cb227f`；`git ls-remote origin refs/heads/v2.0-org-a0` 与本实现提交一致，
+  记录见 `evidence/A0/remote-verification.json`。其后的元数据回填提交只更新 SHA/证据索引，不改变实现内容，最终 HEAD 见交付消息。
 - 工作树：A0 开始前上一轮未提交的 settings 暗色修复与重生成截图已完整保存到本地分支
   `wip/phase2.9-settings-dark`（commit `4d44ddd`），未覆盖、未丢弃
 - 保护：未 reset、未强推、未删除任何 Worktree；未提交密钥、数据库、个人路径或真实账号

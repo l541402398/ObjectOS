@@ -1,0 +1,16 @@
+{
+  "branch": "v2.0-org-a0",
+  "baseBranch": "v2.0-phase2.9",
+  "baseSha": "9e2f82ab0564cea7dabfdbaf0a620c191d7afc49",
+  "implementationCommit": "524259e5501ecf9292f575534f9610e952cb227f",
+  "remoteHead": "524259e5501ecf9292f575534f9610e952cb227f",
+  "remoteVerified": true,
+  "verifiedAt": "2026-10-29T07:45:45.9060676-07:00",
+  "remoteCommand": "git ls-remote origin refs/heads/v2.0-org-a0",
+  "evidenceBoundToCommit": true,
+  "uiChecks": { "pass": 45, "fail": 0, "skip": 1 },
+  "tests": { "org": 31, "fullPassed": 491, "fullFailed": 1, "fullSkipped": 4, "knownFailure": "tests/r1-budgets.test.ts timing test: passes in isolation, also fails on baseline 9e2f82a under full parallel load" },
+  "packaging": { "packageDir": "PASS", "packageSmoke": "PASS" },
+  "preservedWork": { "branch": "wip/phase2.9-settings-dark", "commit": "4d44ddd", "note": "previous uncommitted settings-dark fix and regenerated screenshots preserved before A0" },
+  "note": "A metadata backfill commit follows this verification; implementation content is 524259e. The final branch HEAD is reported in the delivery message."
+}

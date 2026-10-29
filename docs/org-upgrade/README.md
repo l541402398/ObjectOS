@@ -44,6 +44,7 @@ pnpm package:dir && pnpm test:package   # 打包冒烟（如环境允许）
 - 截图：`evidence/A0/screenshots/`（1440×900 / 1024×768 / 125% / light / dark / 空态 / 错误 / 审批抽屉 / 命令面板 / 发布）
 - 检查 JSON：`evidence/A0/electron-ui-checks.json`
 - 构建清单：`evidence/A0/build-manifest.json`
+- 远端核对：`evidence/A0/remote-verification.json`（分支、实现提交、`git ls-remote` 结果）
 
 ## 边界
 
