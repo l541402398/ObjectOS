@@ -1,5 +1,17 @@
 # ProjectOS UI Design Changelog
 
+## 2026-10-29 — Overlays follow the app theme (task drawer readability)
+
+- 缺陷：任务详情抽屉面板是浅色（`data-theme` 缺失 → 走 light token），而抽屉内容用的是应用级主题 token；
+  暗色主题下浅灰字压白底，正文与字段名几乎不可读（用户报告截图）。
+- 修复（ADR-0044）：`next-ui/overlay` 的 Dialog / Sheet / Inspector 三种外壳在调用方未显式指定时，
+  默认使用 `useResolvedTheme()`，抽屉与弹窗跟随应用明暗主题；材质、token 与动效未变，只纠正主题归属。
+- 真实 Electron 证据（真实项目 6 个任务，真实点击任务卡）：
+  - 亮色：`data-theme=light`，背景 `rgb(251,253,255)`，标题 12.89:1 · 眉标/元信息 5.05:1 · 正文 16.04:1；
+  - 暗色：`data-theme=dark`，背景 `rgb(17,27,48)`，标题 15.58:1 · 眉标/元信息 6.33:1 · 正文 16.02:1；
+  - `scripts/p288-drawer-contrast-e2e.mjs` → `PASS=6 FAIL=0`，截图 `docs/screenshots/p288-drawer-{light,dark}.png`。
+- 未验证项：仅采样面板标题、眉标、元信息、正文 4 类节点；表格单元格与按钮悬浮态未逐一采样。
+
 ## 2026-10-29 — Pane-owned scrolling and readable activity copy (Phase 2.8.8)
 
 - 「审批」工作台与「交付 · 资源与连接」改为**栏内滚动**：页面根 `height:100%`、主区域

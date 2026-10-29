@@ -14,6 +14,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { X } from 'lucide-react'
 import { cn } from '../cn'
 import { useOverlayLayer } from './overlay-context'
+import { useResolvedTheme } from '../../stores/ui'
 
 const DismissContext = createContext<() => void>(() => undefined)
 
@@ -149,6 +150,11 @@ function ModalShell({
 }): ReactElement | null {
   const present = usePresence(open)
   const reduce = useReducedMotion()
+  // ADR-0044: an overlay must render in the app's theme. Without this the sheet/dialog fell back to
+  // light tokens while the content inside used dark-theme text tokens, so the task drawer was
+  // light-gray text on a white sheet (unreadable).
+  const appTheme = useResolvedTheme()
+  const surfaceTheme = theme ?? appTheme
   const { zIndex } = useOverlayLayer('modal')
   const guard = useDismissGuard(open, onOpenChange, dirty, onDiscard)
   const surfaceRef = useRef<HTMLDivElement>(null)
@@ -191,7 +197,7 @@ function ModalShell({
           <motion.div
             ref={surfaceRef}
             data-testid={testId}
-            data-theme={theme}
+            data-theme={surfaceTheme}
             className={cn('pui-overlay-surface', variant === 'sheet' ? 'pui-overlay-sheet' : 'pui-overlay-dialog', skin === 'projectos' && 'pdl-root', !open && 'is-closing')}
             data-side={side}
             style={{ zIndex: zIndex + 1, width: variant === 'dialog' ? `min(${width}px, calc(100vw - 32px))` : `min(${width}px, calc(100vw - 28px))` }}
@@ -204,7 +210,7 @@ function ModalShell({
           </motion.div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
-      <DiscardChangesDialog open={guard.confirm} onCancel={() => guard.setConfirm(false)} onConfirm={guard.discard} theme={theme} />
+      <DiscardChangesDialog open={guard.confirm} onCancel={() => guard.setConfirm(false)} onConfirm={guard.discard} theme={surfaceTheme} />
     </DialogPrimitive.Root>
   )
 }
@@ -244,6 +250,8 @@ export function InspectorShell({
 }): ReactElement | null {
   const present = usePresence(open)
   const reduce = useReducedMotion()
+  const appTheme = useResolvedTheme()
+  const surfaceTheme = theme ?? appTheme
   const { zIndex } = useOverlayLayer('inspector')
   const guard = useDismissGuard(open, onOpenChange, dirty, onDiscard)
   const requestClose = guard.requestClose
@@ -283,7 +291,7 @@ export function InspectorShell({
           <aside
             ref={panelRef}
             data-testid={testId}
-            data-theme={theme}
+            data-theme={surfaceTheme}
             className={cn('pui-overlay-surface pui-overlay-inspector', skin === 'projectos' && 'pdl-root', !open && 'is-closing', className)}
             style={{ zIndex, width: `min(${width}px, calc(100vw - 24px))` }}
           >
@@ -299,7 +307,7 @@ export function InspectorShell({
           </aside>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
-      <DiscardChangesDialog open={guard.confirm} onCancel={() => guard.setConfirm(false)} onConfirm={guard.discard} theme={theme} />
+      <DiscardChangesDialog open={guard.confirm} onCancel={() => guard.setConfirm(false)} onConfirm={guard.discard} theme={surfaceTheme} />
     </DialogPrimitive.Root>
   )
 }
