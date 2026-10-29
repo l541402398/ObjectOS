@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import type { PlanDraft, PlannedTask, ReplanProposalView } from '@projectos/contracts'
+import { now, type PlanDraft, type PlannedTask, type ReplanProposalView } from '@projectos/contracts'
 import { PROJECT_EVENT_TYPES } from '@projectos/domain'
 import {
   evaluateReplanAuthorization,
@@ -7,17 +7,25 @@ import {
   type ReplanEnvelope,
   type ReplanRequirements,
 } from '@projectos/application'
-import type { SqliteStore } from '@projectos/persistence'
+import { createArtifactRecord, type SqliteStore } from '@projectos/persistence'
 import type { OrchestrationService } from './orchestration.js'
 import type { OrchestrationScheduler } from './orchestrator.js'
 import type { PlanGrantService } from './plan-grant.js'
 import type { ReplanService } from './replan-service.js'
 import type { ActionCenter, ProjectAutonomySettings } from './action-center.js'
 import type { LifecycleService } from './lifecycle.js'
+import type { ReviewCoordinator } from './review-coordinator.js'
+import { replanBudgetOf } from './plan-lineage.js'
 import type { TaskContractPreflightService } from './task-contract-preflight.js'
 import { describeGaps } from './task-contract-preflight.js'
 import { failingVerifications, planReviewEvidence } from './review-evidence-runtime.js'
 import { recollectForReview } from './review-snapshot-collector.js'
+import {
+  baseCommitIsAncestor,
+  mergeWouldConflict,
+  recordedVerificationCommands,
+  verifyAfterMerge,
+} from './delivery-verifier.js'
 import { reviewRecordProvenance } from '@projectos/application'
 import type { Logger } from './logger.js'
 
@@ -51,6 +59,8 @@ export type AutonomyOutcomeKind =
   | 'replan.awaiting-approval'
   | 'replan.blocked'
   | 'plan.auto-resumed'
+  | 'plan.re-review-scheduled'
+  | 'plan.re-review-blocked'
   | 'plan.auto-delivered'
   | 'delivery.blocked'
   | 'contract.rejected'
@@ -79,6 +89,8 @@ export class ReplanAutopilot {
     private readonly actions: ActionCenter,
     private readonly preflight: TaskContractPreflightService,
     private readonly lifecycle: LifecycleService,
+    /** ADR-0028: re-review before falling back to a new plan revision. */
+    private readonly reviews: ReviewCoordinator,
     private readonly logger: Logger,
   ) {}
 
@@ -144,8 +156,32 @@ export class ReplanAutopilot {
 
     outcomes.push(...(await this.resumeApprovalPaused(projectId, policy)))
     if (policy.autoStartPlans) outcomes.push(...(await this.autoStartApproved(projectId, policy)))
-    outcomes.push(...(await this.autoApplyReplans(projectId, policy)))
-    this.recordReviewEvidence(projectId)
+
+    // ADR-0028: before inventing a new plan revision, try to finish with the plan we already have.
+    // A stale review is a *verification gap*, not a planning gap, so the existing review task is
+    // reused to review the current content.
+    const reReviews = this.reviews.reconcileProject(projectId)
+    const reReviewPlans = new Set<string>()
+    for (const outcome of reReviews) {
+      if (outcome.kind === 'scheduled') {
+        reReviewPlans.add(outcome.planId)
+        this.rejectMootProposals(projectId, outcome.planId)
+        outcomes.push({
+          kind: 'plan.re-review-scheduled',
+          projectId,
+          planId: outcome.planId,
+          reasons: [`${outcome.reasons.join('；')}（task=${outcome.taskId ?? 'n/a'} fingerprint=${(outcome.fingerprint ?? '').slice(0, 12)}）`],
+        })
+      } else if (outcome.kind === 'in-progress') {
+        reReviewPlans.add(outcome.planId)
+      } else if (outcome.kind === 'blocked') {
+        reReviewPlans.add(outcome.planId)
+        outcomes.push({ kind: 'plan.re-review-blocked', projectId, planId: outcome.planId, reasons: outcome.reasons })
+      }
+    }
+
+    outcomes.push(...(await this.autoApplyReplans(projectId, policy, reReviewPlans)))
+    await this.recordReviewEvidence(projectId)
     if (policy.autoDeliver) outcomes.push(...(await this.autoDeliverCompleted(projectId, policy)))
     return outcomes
   }
@@ -325,12 +361,14 @@ export class ReplanAutopilot {
     requirements: ReplanRequirements
     envelopeGrantId: string | null
     preflightGaps: string[]
+    /** ADR-0029: how much of the goal lineage's revision budget is used. */
+    lineage: { used: number; lineageRoot: string }
   } {
     const proposal = this.replans.get(proposalId)
     const source = this.orchestration.getPlan(proposal.planId)
     const { envelope, grantId } = this.envelopeFor(source.id)
     const policy = this.policy(source.projectId)
-    const autoReplansUsed = this.autoReplansUsed(source.projectId)
+    const autoReplansUsed = this.autoReplansUsed(source.projectId, source.id).used
     const budget = this.store.read.getProjectBudget(source.projectId)
     const spent = this.store.read.summarizeAIUsage(source.projectId).estimatedCost
     const requirements = this.requirementsFor(proposal, source)
@@ -350,46 +388,43 @@ export class ReplanAutopilot {
     const preflightGaps = preflight.tasks.flatMap((task) =>
       task.gaps.map((gap) => `${task.key}: ${gap.message}`),
     )
-    return { authorization, requirements, envelopeGrantId: grantId, preflightGaps }
+    return {
+      authorization,
+      requirements,
+      envelopeGrantId: grantId,
+      preflightGaps,
+      lineage: this.autoReplansUsed(source.projectId, source.id),
+    }
   }
 
   /**
-   * Exact count of policy-authorized revisions for this project in the last 24h.
-   *
-   * This MUST be a query, not `listEventViews(projectId, 500)`: a bounded window of the newest
-   * events silently forgets older applies as unrelated events churn, so the cap never triggers.
-   * A real run produced 21 policy applies against a cap of 3 because of exactly that window.
+   * ADR-0029 — the revision budget belongs to the goal lineage (plan chain), not to the project or
+   * a rolling time window. A new revision therefore inherits the count, a restart cannot refill it,
+   * an event flood cannot hide it, and two independent goals do not share a quota.
    */
-  private autoReplansUsed(projectId: string): number {
-    const since = Date.now() - 24 * 60 * 60 * 1000
-    const row = this.store.db
-      .prepare(
-        "SELECT COUNT(*) AS value FROM project_events WHERE project_id = ? AND event_type = 'plan.replan.applied' AND json_extract(payload_json, '$.authorizedBy') = 'policy' AND created_at >= ?",
-      )
-      .get(projectId, since) as { value: number } | undefined
-    const count = Number(row?.value ?? 0)
-    if (count > 0) return count
-    // Fallback for stores that cannot evaluate the JSON path (defensive, still unbounded).
-    const events = this.store.db
-      .prepare("SELECT payload_json FROM project_events WHERE project_id = ? AND event_type = 'plan.replan.applied' AND created_at >= ?")
-      .all(projectId, since) as Array<{ payload_json: string }>
-    return events.filter((event) => {
-      try {
-        return JSON.parse(event.payload_json).authorizedBy === 'policy'
-      } catch {
-        return false
-      }
-    }).length
+  private autoReplansUsed(projectId: string, planId: string): { used: number; lineageRoot: string } {
+    const plans = this.store.read.listAllPlanRevisions().filter((plan) => plan.projectId === projectId)
+    const budget = replanBudgetOf({
+      store: this.store,
+      projectId,
+      plans,
+      planId,
+      limit: Number.MAX_SAFE_INTEGER,
+    })
+    return { used: budget.used, lineageRoot: budget.lineageRoot }
   }
 
   private async autoApplyReplans(
     projectId: string,
     policy: ProjectAutonomySettings,
+    /** Plans that are already being re-reviewed: a new revision would duplicate that work. */
+    skipPlans: Set<string> = new Set(),
   ): Promise<AutonomyOutcome[]> {
     const outcomes: AutonomyOutcome[] = []
     const proposals = this.replans
       .list(projectId)
       .filter((proposal) => proposal.status === 'proposed')
+      .filter((proposal) => !skipPlans.has(proposal.planId))
       .sort((a, b) => a.createdAt - b.createdAt)
     for (const proposal of proposals) {
       let evaluation: ReturnType<ReplanAutopilot['evaluateProposal']>
@@ -507,6 +542,7 @@ export class ReplanAutopilot {
     const applied = this.replans.applyAuthorized(proposalId, {
       kind: basis,
       reasons: reasons.length > 0 ? reasons : [basis === 'policy' ? '授权范围内自动应用' : '用户批准应用'],
+      lineageRoot: this.autoReplansUsed(source.projectId, source.id).lineageRoot,
     })
     let approved: { plan: PlanDraft; taskIds: string[] }
     try {
@@ -621,6 +657,27 @@ export class ReplanAutopilot {
     }
   }
 
+  /**
+   * A proposal that only existed because the review went stale becomes moot once the product can
+   * re-review the existing plan. Rejecting it is safe and idempotent (it is not a human decision)
+   * and prevents a redundant revision from being applied later.
+   */
+  private rejectMootProposals(projectId: string, planId: string): void {
+    for (const proposal of this.replans.list(projectId, planId)) {
+      if (proposal.status !== 'proposed') continue
+      try {
+        this.replans.reject(proposal.id, '已改为复用原计划审查任务复审当前内容，无需新修订')
+        this.record(projectId, planId, PROJECT_EVENT_TYPES.replanRejected, {
+          proposalId: proposal.id,
+          reason: 'auto-review superseded the revision',
+          authorizedBy: 'policy',
+        })
+      } catch (error) {
+        this.logger.warn({ err: error, proposalId: proposal.id }, 'failed to reject moot replan proposal')
+      }
+    }
+  }
+
   // ---------------------------------------------------------------- delivery
 
   /**
@@ -640,33 +697,79 @@ export class ReplanAutopilot {
       .filter((plan) => Boolean(plan.execution?.branch && plan.execution.workspaceRef))
     for (const plan of completed) {
       const blocked: string[] = []
+      const project = this.store.read.getProject(plan.projectId)
+
+      // 1) The plan must be legally complete and not have unknown side effects pending.
+      const reconciling = plan.createdTaskIds
+        .map((taskId) => this.store.read.getActiveRunForTask(taskId))
+        .filter((run) => run?.status === 'needs_reconciliation')
+      if (reconciling.length > 0) blocked.push(`存在待对账的 Run：${reconciling.map((run) => run!.id).join('、')}`)
+
+      // 2) A real, current, approving review of the content that is about to be merged.
       const review = planReviewEvidence(this.store, plan)
       if (!review.performed) blocked.push('没有审查 Artifact')
       else if (!review.approved) blocked.push(`审查未通过：${review.reasons.join('；')}`)
+
+      // 3) Every necessary verification passed, and at least one real verification exists.
       const failing = failingVerifications(this.store, plan)
       if (failing.length > 0) {
         blocked.push(`仍有未通过的验证：${failing.map((item) => `${item.command.slice(0, 60)}(exit ${item.exitCode})`).join('、')}`)
       }
+      const verificationCommands = recordedVerificationCommands(this.store, plan)
+      if (verificationCommands.length === 0) {
+        blocked.push('计划没有记录任何已通过的真实验证，不能宣称质量通过')
+      }
+
+      // 4) The version gate, when the plan belongs to a version.
+      if (plan.versionId) {
+        try {
+          const gate = this.lifecycle.evaluateDeliveryGate(plan.projectId, plan.versionId)
+          if (gate && gate.status !== 'passed') {
+            const missing = gate.conditionResults.filter((item) => !item.satisfied).map((item) => item.reason)
+            blocked.push(`版本门禁未通过：${missing.join('；') || gate.status}`)
+          }
+        } catch (error) {
+          blocked.push(`无法评估版本门禁：${error instanceof Error ? error.message : String(error)}`)
+        }
+      }
+
+      // 5) The execution authorization must still be valid at merge time.
+      const grant = this.grants.get(plan.id)
+      if (!grant || !grant.valid || grant.status !== 'active') {
+        blocked.push('计划执行授权在交付时已无效/撤销/过期')
+      }
+
+      // 6) The diff must stay inside the authorized paths and contain no sensitive files.
       const info = await this.scheduler.info(plan.id).catch(() => null)
       if (!info?.available) blocked.push('Worktree 不可用')
       const outside = (info?.files ?? []).filter((file) => file.sensitive || !file.allowed)
       if (outside.length > 0) {
         blocked.push(`Worktree 包含敏感或越权文件：${outside.map((file) => file.path).join('、')}`)
       }
+
+      // 7) The target branch and the base commit relationship must be unchanged.
       if (plan.execution?.baseBranch) {
-        const project = this.store.read.getProject(plan.projectId)
         const current = project ? currentBranch(project.rootPath) : null
         if (current && current !== plan.execution.baseBranch) {
           blocked.push(`目标分支已从 ${plan.execution.baseBranch} 变为 ${current}`)
         }
       }
+      if (project && plan.execution?.baseCommit && plan.execution?.branch) {
+        if (!baseCommitIsAncestor(project.rootPath, plan.execution.baseCommit)) {
+          blocked.push(`基线提交 ${plan.execution.baseCommit.slice(0, 10)} 已不在目标分支历史中（可能被重写）`)
+        }
+        const dryRun = mergeWouldConflict(project.rootPath, plan.execution.branch)
+        if (!dryRun.clean) blocked.push(dryRun.detail)
+      }
+
+      // 8) The user's working tree must not be at risk.
+      if (project) {
+        const dirty = workingTreeChanges(project.rootPath)
+        if (dirty.length > 0) blocked.push(`目标工作区有未提交修改（${dirty.slice(0, 5).join('、')}），拒绝覆盖`)
+      }
+
       if (blocked.length > 0) {
-        outcomes.push({
-          kind: 'delivery.blocked',
-          projectId,
-          planId: plan.id,
-          reasons: blocked,
-        })
+        outcomes.push({ kind: 'delivery.blocked', projectId, planId: plan.id, reasons: blocked })
         this.record(projectId, plan.id, PROJECT_EVENT_TYPES.custom, {
           kind: 'plan.delivery.blocked',
           planId: plan.id,
@@ -675,31 +778,166 @@ export class ReplanAutopilot {
         })
         continue
       }
+
+      // Delivery snapshot before the merge: what exactly is being delivered.
+      const deliverySnapshot = {
+        planId: plan.id,
+        revision: plan.revision,
+        branch: plan.execution?.branch ?? null,
+        baseBranch: plan.execution?.baseBranch ?? null,
+        baseCommit: plan.execution?.baseCommit ?? null,
+        targetHead: project ? currentHead(project.rootPath) : null,
+        reviewSnapshotFingerprint:
+          (review.current[0]?.id ? this.reviewFingerprint(plan, review.current[0].id) : null) ?? null,
+        verificationCommands,
+        files: info?.files?.map((file) => file.path) ?? [],
+        diffPreview: (info?.diff ?? '').slice(0, 20_000),
+      }
+
+      let merged: Awaited<ReturnType<OrchestrationScheduler['merge']>>
       try {
-        const merged = await this.scheduler.merge(plan.id)
+        merged = await this.scheduler.merge(plan.id)
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        outcomes.push({ kind: 'delivery.blocked', projectId, planId: plan.id, reasons: [message] })
         this.record(projectId, plan.id, PROJECT_EVENT_TYPES.custom, {
-          kind: 'plan.autoDelivered',
+          kind: 'plan.delivery.mergeFailed',
           planId: plan.id,
-          branch: plan.execution?.branch,
-          baseBranch: plan.execution?.baseBranch ?? null,
-          mergedAt: merged.mergedAt,
-          reviewFingerprint: review.current[0]?.id ?? null,
-          authorizedBy: 'policy',
-          policy: 'autoDeliver',
+          error: message.slice(0, 2000),
         })
+        continue
+      }
+
+      // The merge happened: record the REAL merge commit before verification, so a failed
+      // verification can never be reported as "nothing merged".
+      const mergeCommit = project ? currentHead(project.rootPath) : null
+      const afterMerge = this.store.read.getPlanRevision(plan.id)
+      if (afterMerge?.execution) {
+        this.store.updatePlanRevision({
+          ...afterMerge,
+          execution: {
+            ...afterMerge.execution,
+            mergedAt: merged.mergedAt ?? now(),
+            mergeCommit,
+            deliveryStatus: 'merged',
+            deliveryError: null,
+          },
+          updatedAt: now(),
+        })
+      }
+
+      // Post-merge verification against the merged workspace.
+      const verification = await verifyAfterMerge({
+        rootPath: project?.rootPath ?? '',
+        commands: verificationCommands,
+        timeoutMs: 300_000,
+      })
+      const evidence = this.store.createArtifact(
+        createArtifactRecord({
+          projectId,
+          kind: 'test-report',
+          title: `交付验证 · 计划 r${plan.revision}`,
+          body: [
+            `合并提交：${mergeCommit ?? 'unknown'}`,
+            `目标分支：${plan.execution?.baseBranch ?? 'unknown'}`,
+            `审查指纹：${deliverySnapshot.reviewSnapshotFingerprint ?? 'unknown'}`,
+            `合并后验证：${verification.passed ? 'PASS' : 'FAIL'}（${verification.reason}）`,
+            '',
+            '## 验证命令',
+            ...verification.checks.map(
+              (check) => `### ${check.command} · exit ${check.exitCode ?? 'timeout'} · ${check.durationMs}ms\n${check.outputTail.slice(-1500)}`,
+            ),
+            '',
+            '## 合并前快照',
+            '```json',
+            JSON.stringify({ ...deliverySnapshot, diffPreview: undefined }, null, 2),
+            '```',
+          ].join('\n'),
+          verified: verification.passed && !verification.notApplicable,
+        }),
+      )
+
+      const finalPlan = this.store.read.getPlanRevision(plan.id)
+      if (finalPlan?.execution) {
+        this.store.updatePlanRevision({
+          ...finalPlan,
+          execution: {
+            ...finalPlan.execution,
+            deliveryStatus: verification.passed ? 'verified' : 'merged_verification_failed',
+            deliveryVerifiedAt: verification.passed ? now() : null,
+            deliveryEvidenceId: evidence.id,
+            deliveryError: verification.passed ? null : verification.reason,
+          },
+          updatedAt: now(),
+        })
+      }
+
+      this.record(projectId, plan.id, PROJECT_EVENT_TYPES.custom, {
+        kind: verification.passed ? 'plan.autoDelivered' : 'plan.mergedVerificationFailed',
+        planId: plan.id,
+        branch: plan.execution?.branch,
+        baseBranch: plan.execution?.baseBranch ?? null,
+        mergedAt: merged.mergedAt,
+        mergeCommit,
+        deliveryStatus: verification.passed ? 'verified' : 'merged_verification_failed',
+        verification: verification.reason,
+        evidenceId: evidence.id,
+        reviewFingerprint: deliverySnapshot.reviewSnapshotFingerprint,
+        authorizedBy: 'policy',
+        policy: 'autoDeliver',
+      })
+
+      if (verification.passed) {
         outcomes.push({
           kind: 'plan.auto-delivered',
           projectId,
           planId: plan.id,
-          reasons: ['全部交付条件成立，产品自动合并到目标分支'],
+          reasons: [`已合并 ${mergeCommit?.slice(0, 10) ?? ''} 并通过合并后验证（${verification.reason}）`],
         })
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error)
-        outcomes.push({ kind: 'delivery.blocked', projectId, planId: plan.id, reasons: [message] })
+      } else {
+        outcomes.push({
+          kind: 'delivery.blocked',
+          projectId,
+          planId: plan.id,
+          reasons: [`已合并 ${mergeCommit?.slice(0, 10) ?? ''}，但合并后验证失败：${verification.reason}`],
+        })
       }
     }
     void policy
     return outcomes
+  }
+
+  /** The review snapshot fingerprint an approved review is bound to (for the delivery record). */
+  private reviewFingerprint(plan: PlanDraft, artifactId: string): string | null {
+    const artifact = plan.createdTaskIds
+      .flatMap((taskId) => this.store.read.listArtifacts(plan.projectId, taskId))
+      .find((item) => item.id === artifactId)
+    if (!artifact) return null
+    const metadata = (artifact.metadata ?? {}) as Record<string, unknown>
+    const snapshot = metadata.reviewSnapshot as { fingerprint?: unknown } | undefined
+    return typeof snapshot?.fingerprint === 'string' ? snapshot.fingerprint : null
+  }
+}
+
+function currentHead(rootPath: string): string | null {
+  try {
+    return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: rootPath, encoding: 'utf8' }).trim() || null
+  } catch {
+    return null
+  }
+}
+
+/** Tracked/untracked changes in the target workspace (a delivery must never overwrite them). */
+function workingTreeChanges(rootPath: string): string[] {
+  try {
+    const out = execFileSync('git', ['status', '--porcelain=v1'], { cwd: rootPath, encoding: 'utf8' })
+    return out
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => line.slice(3))
+  } catch {
+    return []
   }
 }
 

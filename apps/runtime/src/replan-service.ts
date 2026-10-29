@@ -256,7 +256,7 @@ export class ReplanService {
    */
   applyAuthorized(
     proposalId: string,
-    basis: { kind: 'user' | 'policy'; reasons: string[] },
+    basis: { kind: 'user' | 'policy'; reasons: string[]; lineageRoot?: string },
   ): { proposal: ReplanProposalView; plan: PlanDraft } {
     const proposal = this.store.read.getReplanProposal(proposalId)
     if (!proposal) throw new AppError('NOT_FOUND', '重规划提案不存在')
@@ -336,6 +336,9 @@ export class ReplanService {
       revision: revised.revision,
       authorizedBy: basis.kind === 'policy' ? 'policy' : 'user',
       authorizationBasis: basis.reasons,
+      // ADR-0029: the lineage is persisted with the decision so the budget is auditable without
+      // reconstructing the whole plan chain later.
+      lineageRoot: basis.lineageRoot ?? plan.id,
     })
     return { proposal: this.view(next), plan: revised }
   }

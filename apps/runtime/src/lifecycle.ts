@@ -467,6 +467,19 @@ export class LifecycleService {
       })
   }
 
+  /**
+   * ADR-0030 — the gate that governs delivery of this version's work, evaluated read-only and
+   * persisted so the delivery record can cite a real decision. Returns null when the next hop has
+   * no gate (nothing to satisfy).
+   */
+  evaluateDeliveryGate(projectId: string, versionId: string): GateEvaluation | null {
+    const version = this.store.read.listProductVersions(projectId).find((item) => item.id === versionId)
+    if (!version) return null
+    const to = this.nextGatedPhase(version.phase)
+    if (!to) return null
+    return this.evaluateVersionGate(version, to)
+  }
+
   private computeVersionGate(version: ProductVersion, to: VersionPhase): GateEvaluation {
     const key = GATE_FOR_TARGET[to]
     if (!key) throw new AppError('CONFLICT', `没有为 ${to} 定义门禁`)

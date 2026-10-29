@@ -8,6 +8,7 @@ import { PlannerService } from '../apps/runtime/src/planner.js'
 import type { PlannerModelSource } from '../apps/runtime/src/planner-provider.js'
 import { ReplanService } from '../apps/runtime/src/replan-service.js'
 import { ReplanAutopilot } from '../apps/runtime/src/replan-autopilot.js'
+import { ReviewCoordinator } from '../apps/runtime/src/review-coordinator.js'
 import { TaskContractPreflightService } from '../apps/runtime/src/task-contract-preflight.js'
 import { AutonomyCoordinator } from '../apps/runtime/src/autonomy-coordinator.js'
 import { FakeProvider, createGitProject, logger, planWithTasks, setup } from './helpers/r1-fixture.js'
@@ -62,6 +63,7 @@ function makeHarness(text = '完成') {
     actions,
     preflight,
     lifecycle,
+    new ReviewCoordinator(harness.store, harness.services, grants, harness.scheduler, logger),
     logger,
   )
   cleanups.push(harness.close)

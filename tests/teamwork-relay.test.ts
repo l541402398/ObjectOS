@@ -549,6 +549,17 @@ describe('Agent teamwork relay', () => {
     })
     const { store, services, runner, orchestration, scheduler, dataDir } = setup(provider)
     const project = await createGitProject(services, dataDir, 'relay-reviewer-artifact')
+    // ADR-0028: a review may only name content that really exists. The fixture therefore writes
+    // the reviewed file instead of referring to a path that was never created.
+    mkdirSync(join(project.rootPath, 'src'), { recursive: true })
+    writeFileSync(join(project.rootPath, 'src', 'rbac.ts'), 'export const can = () => true\n')
+    // Commit it: the plan runs in an isolated worktree, so an uncommitted file would not exist
+    // there and the review would (correctly) be rejected as reviewing a non-existent path.
+    execFileSync('git', ['add', '-A'], { cwd: project.rootPath, stdio: 'ignore' })
+    execFileSync('git', ['-c', 'user.name=E2E', '-c', 'user.email=e2e@example.com', 'commit', '-qm', 'rbac'], {
+      cwd: project.rootPath,
+      stdio: 'ignore',
+    })
     const approved = planWithTasks(orchestration, project.id, [
       { key: 'review', title: '审查实现', description: '审查', role: 'reviewer', agentId: 'agt_reviewer', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: [], acceptanceCriteria: ['逐条核对'], expectedArtifacts: ['审查报告'], requiresApproval: false },
     ])

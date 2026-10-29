@@ -1417,11 +1417,13 @@ export const ApiSchemas = {
       reasons: z.array(z.string()),
       envelopeGrantId: IdSchema.nullable(),
       preflightGaps: z.array(z.string()),
+      lineage: z.object({ used: z.number().int().nonnegative(), lineageRoot: z.string(), limit: z.number().int().nonnegative() }),
       requirements: z.object({
         agentsRequired: z.array(z.string()),
         pathsRequired: z.array(z.string()),
         tasksToRun: z.number().int().nonnegative(),
         startsNeeded: z.number().int().nonnegative(),
+        lineageRoot: z.string().optional(),
         toolCallsNeeded: z.number().int().nonnegative(),
         downgradeNotes: z.array(z.string()),
       }),

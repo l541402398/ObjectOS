@@ -8,6 +8,7 @@ import { PlannerService } from '../apps/runtime/src/planner.js'
 import type { PlannerModelSource } from '../apps/runtime/src/planner-provider.js'
 import { ReplanService } from '../apps/runtime/src/replan-service.js'
 import { ReplanAutopilot } from '../apps/runtime/src/replan-autopilot.js'
+import { ReviewCoordinator } from '../apps/runtime/src/review-coordinator.js'
 import { TaskContractPreflightService } from '../apps/runtime/src/task-contract-preflight.js'
 import { detectApprovalPark } from '../apps/runtime/src/approval-park.js'
 import { FakeProvider, createGitProject, logger, planWithTasks, setup, waitFor } from './helpers/r1-fixture.js'
@@ -60,6 +61,13 @@ function makeHarness(fake: LlmProvider) {
     actions,
     preflight,
     new LifecycleService(harness.store),
+    new ReviewCoordinator(
+      harness.store,
+      harness.services,
+      grants,
+      harness.scheduler,
+      logger,
+    ),
     logger,
   )
   cleanups.push(harness.close)

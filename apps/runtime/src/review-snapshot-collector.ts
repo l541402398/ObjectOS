@@ -7,6 +7,8 @@ import {
   emptyChanges,
   emptyRefs,
   emptyScope,
+  integrityOf,
+  type ReviewFilePresence,
   type ReviewSnapshot,
   type ReviewSnapshotChanges,
   type ReviewSnapshotFile,
@@ -72,40 +74,93 @@ interface HashedFile {
   rejected: string | null
 }
 
-function hashFile(root: string, relativePath: string, untracked: boolean): HashedFile {
-  const absolute = resolve(root, relativePath)
-  const rejected = (reason: string): HashedFile => ({
-    file: { path: relativePath, sha256: null, state: untracked ? 'untracked' : 'tracked', size: null },
-    rejected: `${relativePath}（${reason}）`,
-  })
+/** Paths Git currently tracks in this worktree (index), used to tell deletion from invention. */
+function trackedPaths(root: string): Set<string> {
   try {
-    const stat = lstatSync(absolute)
-    if (stat.isSymbolicLink()) return rejected('符号链接不跟随')
-    if (!stat.isFile()) return rejected('不是普通文件')
+    const raw = execFileSync('git', ['ls-files', '-z'], {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+    return new Set(raw.split('\0').filter(Boolean).map(toPosix))
   } catch {
-    // Missing (deleted or never created) is a fact, not an error: record it as null bytes.
-    return {
-      file: { path: relativePath, sha256: null, state: untracked ? 'untracked' : 'tracked', size: null },
-      rejected: null,
+    return new Set()
+  }
+}
+
+/** True when Git has ever known this path, even if it is deleted from the working tree now. */
+function gitKnowsPath(root: string, relativePath: string): boolean {
+  try {
+    const out = execFileSync('git', ['log', '-1', '--format=%H', '--', relativePath], {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim()
+    return out.length > 0
+  } catch {
+    return false
+  }
+}
+
+function hashFile(
+  root: string,
+  relativePath: string,
+  options: { untracked: boolean; required: boolean; tracked: Set<string> },
+): HashedFile {
+  const absolute = resolve(root, relativePath)
+  const baseState: ReviewSnapshotFile['state'] = options.untracked ? 'untracked' : 'tracked'
+  const make = (
+    presence: ReviewFilePresence,
+    sha256: string | null,
+    extra: { size?: number | null; detail?: string | null; rejected?: string | null } = {},
+  ): HashedFile => ({
+    file: {
+      path: relativePath,
+      sha256,
+      state: baseState,
+      size: extra.size ?? null,
+      presence,
+      required: options.required,
+      detail: extra.detail ?? null,
+    },
+    rejected: extra.rejected ?? null,
+  })
+
+  let stat: ReturnType<typeof lstatSync>
+  try {
+    stat = lstatSync(absolute)
+  } catch {
+    // ADR-0028: "missing" is only a reviewable deletion when Git knows the path. A path that
+    // never existed is not reviewed content, and must not silently contribute `sha256: null`.
+    if (options.tracked.has(relativePath) || gitKnowsPath(root, relativePath)) {
+      return make('deleted', null, { detail: 'Git 中存在的文件，当前工作区已删除' })
     }
+    return make('never-existed', null, {
+      detail: '文件从未存在，不能作为已审查的代码内容',
+      rejected: `${relativePath}（文件从未存在）`,
+    })
+  }
+  if (stat.isSymbolicLink()) {
+    return make('rejected', null, { detail: '符号链接不跟随', rejected: `${relativePath}（符号链接不跟随）` })
+  }
+  if (!stat.isFile()) {
+    return make('unreadable', null, { detail: '不是普通文件', rejected: `${relativePath}（不是普通文件）` })
   }
   try {
     const resolved = realpathSync.native(absolute)
     if (resolved !== resolve(root) && !resolved.startsWith(resolve(root) + sep)) {
-      return rejected('真实路径越出工作区')
+      return make('rejected', null, {
+        detail: '真实路径越出工作区',
+        rejected: `${relativePath}（真实路径越出工作区）`,
+      })
     }
     const bytes = readFileSync(resolved)
-    return {
-      file: {
-        path: relativePath,
-        sha256: createHash('sha256').update(bytes).digest('hex'),
-        state: untracked ? 'untracked' : 'tracked',
-        size: bytes.length,
-      },
-      rejected: null,
-    }
+    return make('present', createHash('sha256').update(bytes).digest('hex'), { size: bytes.length })
   } catch (error) {
-    return rejected(`无法读取：${error instanceof Error ? error.message : String(error)}`)
+    return make('unreadable', null, {
+      detail: `无法读取：${error instanceof Error ? error.message : String(error)}`,
+      rejected: `${relativePath}（无法读取）`,
+    })
   }
 }
 
@@ -236,20 +291,31 @@ export function collectReviewSnapshot(options: CollectOptions): ReviewSnapshot {
   const expanded = PROJECT_WIDE.test(scopeText) || scopeRootsInput.length > 0
 
   const requested = [...reviewedObjects, ...(options.extraPaths ?? []), ...scopeRootsInput]
-  const paths = new Map<string, boolean>() // relative path -> untracked
+  // relative path -> { untracked, required }: the reviewer's own objects are required evidence,
+  // scope-expanded extras are context and may not invalidate the review on their own.
+  const paths = new Map<string, { untracked: boolean; required: boolean }>()
   const untrackedPaths = new Set(status.entries.filter((entry) => entry.state === 'untracked').map((entry) => entry.path))
+  const tracked = trackedPaths(root)
+  const reviewedSet = new Set(
+    reviewedObjects
+      .map((candidate) => safeRelativePath(root, candidate).relative)
+      .filter((value): value is string => Boolean(value)),
+  )
 
-  const addPath = (candidate: string): void => {
+  const addPath = (candidate: string, required: boolean): void => {
     const safe = safeRelativePath(root, candidate)
     if (safe.rejected) {
       rejected.push(safe.rejected)
       return
     }
     if (!safe.relative) return
-    paths.set(safe.relative, untrackedPaths.has(safe.relative))
+    paths.set(safe.relative, {
+      untracked: untrackedPaths.has(safe.relative),
+      required: required || reviewedSet.has(safe.relative),
+    })
   }
 
-  for (const candidate of requested) addPath(candidate)
+  for (const candidate of requested) addPath(candidate, true)
 
   // Widening the scope is explicit: include every changed file under the given roots (or the
   // whole worktree for a project-wide review), so cross-file impact cannot escape the hash.
@@ -262,20 +328,20 @@ export function collectReviewSnapshot(options: CollectOptions): ReviewSnapshot {
         return entry.path === safeRoot.relative || entry.path.startsWith(`${safeRoot.relative}/`)
       })
       if (!inScope) continue
-      if (entry.state === 'renamed' && entry.renamedFrom) if (entry.renamedFrom) paths.set(entry.renamedFrom, false)
-      paths.set(entry.path, untrackedPaths.has(entry.path))
+      if (entry.state === 'renamed' && entry.renamedFrom) addPath(entry.renamedFrom, false)
+      addPath(entry.path, false)
     }
   }
 
   const files: ReviewSnapshotFile[] = []
-  for (const [path, untracked] of [...paths.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1))) {
-    const hashed = hashFile(root, path, untracked)
-    if (hashed.rejected) {
-      rejected.push(hashed.rejected)
-      continue
-    }
+  for (const [path, meta] of [...paths.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1))) {
+    const hashed = hashFile(root, path, { untracked: meta.untracked, required: meta.required, tracked })
+    if (hashed.rejected) rejected.push(hashed.rejected)
+    // A rejected/unreadable *required* object must still appear in the snapshot: dropping it
+    // would let the remaining hashes look complete (ADR-0028).
     files.push(hashed.file)
   }
+  const integrity = integrityOf(files)
 
   const identity = worktreeIdentity(root)
   const changes = changesFrom(status.entries, rejected)
@@ -307,6 +373,7 @@ export function collectReviewSnapshot(options: CollectOptions): ReviewSnapshot {
         }
       : emptyRefs(),
     reviewer: options.reviewer ?? null,
+    integrity,
     capturedAt: Date.now(),
   })
 }

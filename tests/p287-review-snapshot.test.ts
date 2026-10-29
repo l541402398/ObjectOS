@@ -123,7 +123,12 @@ describe('ADR-0025 trusted review snapshot', () => {
       return // Windows without symlink privilege: the path-safety unit test below still runs.
     }
     const snapshot = collectReviewSnapshot({ workspaceRoot: root, reviewedObjects: ['src/link.mjs'] })
-    expect(snapshot.files).toEqual([])
+    // ADR-0028: a refused *required* object stays visible (as `rejected`) and makes the whole
+    // snapshot untrusted, instead of being dropped so the remaining hashes look complete.
+    expect(snapshot.files.map((file) => file.path)).toEqual(['src/link.mjs'])
+    expect(snapshot.files[0]?.presence).toBe('rejected')
+    expect(snapshot.integrity.complete).toBe(false)
+    expect(snapshot.integrity.problems.some((problem) => problem.path === 'src/link.mjs')).toBe(true)
     expect(snapshot.changes.rejected.join(' ')).toContain('src/link.mjs')
   })
 

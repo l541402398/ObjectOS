@@ -25,15 +25,54 @@ export const REVIEW_SNAPSHOT_SCHEMA_VERSION = 2
 
 export type ReviewSnapshotFileState = 'tracked' | 'untracked'
 
+/**
+ * ADR-0028 — why a reviewed path has (or lacks) content.
+ *
+ * `sha256: null` alone cannot distinguish "the reviewer reviewed a deletion" from "the reviewer
+ * named a file that never existed", and the previous model treated both as collectable. Each
+ * requested path now carries its real presence:
+ *
+ *   present        bytes were read
+ *   deleted        absent now, but Git knows the path (an real deletion is reviewable)
+ *   never-existed  absent now and Git has never seen it (cannot be reviewed content)
+ *   unreadable     exists but could not be read / is not a regular file
+ *   rejected       refused by the path-safety rules (escape, symlink, out of workspace)
+ *   unknown        legacy v2 record that did not record presence
+ */
+export type ReviewFilePresence = 'present' | 'deleted' | 'never-existed' | 'unreadable' | 'rejected' | 'unknown'
+
 export interface ReviewSnapshotFile {
   /** Path relative to the workspace root, using forward slashes. */
   path: string
-  /** SHA-256 of the file bytes, or null when the file does not exist (deleted/never created). */
+  /** SHA-256 of the file bytes, or null when the file has no readable bytes. */
   sha256: string | null
   /** Git tracking state at capture time; `untracked` files still count as reviewed content. */
   state?: ReviewSnapshotFileState
   /** Byte length, when the file existed. */
   size?: number | null
+  presence?: ReviewFilePresence
+  /** True when the path was explicitly listed by the reviewer (and not just scope-expanded). */
+  required?: boolean
+  /** Why the bytes are missing, for diagnostics and the UI. */
+  detail?: string | null
+}
+
+export interface ReviewIntegrityProblem {
+  path: string
+  kind: Exclude<ReviewFilePresence, 'present' | 'deleted' | 'unknown'>
+  detail: string
+  /** A problem on a reviewed object invalidates the whole review; on scope expansion it is advisory. */
+  required: boolean
+}
+
+/**
+ * ADR-0028 — a snapshot may only be trusted when every *required* reviewed object was legally
+ * collected. One rejected or unreadable required path cannot be compensated by the hashes of the
+ * remaining files.
+ */
+export interface ReviewSnapshotIntegrity {
+  complete: boolean
+  problems: ReviewIntegrityProblem[]
 }
 
 /** The trusted workspace identity a snapshot was taken in. */
@@ -92,6 +131,8 @@ export interface ReviewSnapshot {
   changes: ReviewSnapshotChanges
   refs: ReviewSnapshotRefs
   reviewer: ReviewReviewerIdentity | null
+  /** ADR-0028: false when a required reviewed object could not be legally collected. */
+  integrity: ReviewSnapshotIntegrity
   capturedAt: number
   fingerprint: string
 }
@@ -108,6 +149,7 @@ export interface ReviewSnapshotInput {
   changes?: ReviewSnapshotChanges | null
   refs?: ReviewSnapshotRefs | null
   reviewer?: ReviewReviewerIdentity | null
+  integrity?: ReviewSnapshotIntegrity | null
   capturedAt?: number
 }
 
@@ -118,6 +160,9 @@ function sortFiles(files: ReviewSnapshotFile[]): ReviewSnapshotFile[] {
       sha256: file.sha256 ?? null,
       ...(file.state ? { state: file.state } : {}),
       ...(file.size === undefined ? {} : { size: file.size }),
+      ...(file.presence ? { presence: file.presence } : {}),
+      ...(file.required === undefined ? {} : { required: file.required }),
+      ...(file.detail === undefined ? {} : { detail: file.detail }),
     }))
     .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
 }
@@ -136,6 +181,30 @@ export function snapshotFingerprint(files: ReviewSnapshotFile[]): string {
 
 export function emptyChanges(): ReviewSnapshotChanges {
   return { staged: [], unstaged: [], untracked: [], deleted: [], renamed: [], rejected: [] }
+}
+
+export function emptyIntegrity(): ReviewSnapshotIntegrity {
+  return { complete: true, problems: [] }
+}
+
+/**
+ * Aggregate integrity from the collected files: every required path that is not `present` or a
+ * real Git deletion makes the snapshot incomplete.
+ */
+export function integrityOf(files: ReviewSnapshotFile[]): ReviewSnapshotIntegrity {
+  const problems: ReviewIntegrityProblem[] = []
+  for (const file of files) {
+    const presence = file.presence ?? 'unknown'
+    if (presence === 'present' || presence === 'deleted' || presence === 'unknown') continue
+    if (presence === 'rejected' && file.required === false) continue
+    problems.push({
+      path: file.path,
+      kind: presence,
+      detail: file.detail ?? (presence === 'never-existed' ? '文件从未存在' : presence === 'unreadable' ? '无法读取' : '路径被拒绝'),
+      required: file.required !== false,
+    })
+  }
+  return { complete: problems.every((problem) => !problem.required), problems }
 }
 
 export function emptyRefs(): ReviewSnapshotRefs {
@@ -162,6 +231,7 @@ export function buildReviewSnapshot(input: ReviewSnapshotInput): ReviewSnapshot 
     changes: input.changes ?? emptyChanges(),
     refs: input.refs ?? emptyRefs(),
     reviewer: input.reviewer ?? null,
+    integrity: input.integrity ?? emptyIntegrity(),
     capturedAt: input.capturedAt ?? Date.now(),
     fingerprint: snapshotFingerprint(files),
   }
@@ -243,6 +313,9 @@ export function readSnapshot(value: unknown): ReviewSnapshot | null {
           sha256: typeof item.sha256 === 'string' ? item.sha256 : null,
           ...(item.state === 'tracked' || item.state === 'untracked' ? { state: item.state as ReviewSnapshotFileState } : {}),
           ...(typeof item.size === 'number' ? { size: item.size } : {}),
+          ...(isPresence(item.presence) ? { presence: item.presence } : { presence: 'unknown' as ReviewFilePresence }),
+          ...(typeof item.required === 'boolean' ? { required: item.required } : {}),
+          ...(typeof item.detail === 'string' ? { detail: item.detail } : {}),
         }))
         .filter((item) => item.path.length > 0)
     : []
@@ -259,9 +332,42 @@ export function readSnapshot(value: unknown): ReviewSnapshot | null {
     changes: readChanges(record.changes),
     refs: readRefs(record.refs),
     reviewer: readReviewer(record.reviewer),
+    // Legacy records have no integrity block: derive it from what the files actually say, so a
+    // stored snapshot that silently lost a required path cannot look complete.
+    integrity: readIntegrity(record.integrity) ?? integrityOf(files),
     capturedAt: typeof record.capturedAt === 'number' ? record.capturedAt : 0,
     fingerprint: record.fingerprint,
   }
+}
+
+const PRESENCES: readonly ReviewFilePresence[] = [
+  'present',
+  'deleted',
+  'never-existed',
+  'unreadable',
+  'rejected',
+  'unknown',
+]
+
+function isPresence(value: unknown): value is ReviewFilePresence {
+  return typeof value === 'string' && (PRESENCES as readonly string[]).includes(value)
+}
+
+function readIntegrity(value: unknown): ReviewSnapshotIntegrity | null {
+  if (!value || typeof value !== 'object') return null
+  const record = value as Record<string, unknown>
+  if (typeof record.complete !== 'boolean') return null
+  const problems = Array.isArray(record.problems)
+    ? record.problems
+        .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object')
+        .map((item) => ({
+          path: typeof item.path === 'string' ? item.path : '',
+          kind: (isPresence(item.kind) ? item.kind : 'unreadable') as ReviewIntegrityProblem['kind'],
+          detail: typeof item.detail === 'string' ? item.detail : '',
+          required: item.required !== false,
+        }))
+    : []
+  return { complete: record.complete, problems }
 }
 
 /**
@@ -271,7 +377,22 @@ export function readSnapshot(value: unknown): ReviewSnapshot | null {
 export function snapshotMatches(stored: unknown, current: ReviewSnapshot | null): boolean {
   const left = readSnapshot(stored)
   if (!left || !current) return false
+  // ADR-0028: a snapshot that could not legally collect a required reviewed object is not
+  // evidence, even if the hashes of the files it *did* read are unchanged.
+  if (!left.integrity.complete || !current.integrity.complete) return false
   return left.fingerprint === current.fingerprint
+}
+
+/** Why a snapshot cannot be trusted as complete evidence, or null when it can. */
+export function integrityProblem(snapshot: ReviewSnapshot | null): string | null {
+  if (!snapshot) return '没有内容快照'
+  if (snapshot.integrity.complete) return null
+  const required = snapshot.integrity.problems.filter((problem) => problem.required)
+  const list = (required.length > 0 ? required : snapshot.integrity.problems)
+    .slice(0, 5)
+    .map((problem) => `${problem.path}（${problem.detail}）`)
+    .join('；')
+  return `审查对象无法合法采集：${list}`
 }
 
 /**
@@ -282,6 +403,8 @@ export function snapshotMismatch(stored: unknown, current: ReviewSnapshot | null
   const left = readSnapshot(stored)
   if (!left) return '审查没有可校验的内容快照'
   if (!current) return '无法重新采集当前内容快照'
+  const integrity = integrityProblem(current) ?? integrityProblem(left)
+  if (integrity) return integrity
   if (left.fingerprint === current.fingerprint) return null
   const before = new Map(left.files.map((file) => [file.path, file.sha256]))
   const after = new Map(current.files.map((file) => [file.path, file.sha256]))
@@ -296,5 +419,6 @@ export function snapshotMismatch(stored: unknown, current: ReviewSnapshot | null
 export function describeSnapshot(snapshot: ReviewSnapshot | null): string {
   if (!snapshot) return '无快照'
   const dirty = snapshot.changes.untracked.length + snapshot.changes.unstaged.length + snapshot.changes.staged.length
-  return `${snapshot.files.length} files · ${snapshot.fingerprint.slice(0, 8)}${dirty > 0 ? ` · ${dirty} dirty` : ''}`
+  const integrity = snapshot.integrity.complete ? '' : ` · incomplete(${snapshot.integrity.problems.length})`
+  return `${snapshot.files.length} files · ${snapshot.fingerprint.slice(0, 8)}${dirty > 0 ? ` · ${dirty} dirty` : ''}${integrity}`
 }

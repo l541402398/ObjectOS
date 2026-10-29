@@ -95,6 +95,12 @@ function execution(status: PlanExecution['status'], concurrency: number, previou
     budgetExhausted: previous?.budgetExhausted ?? null,
     baseBranch: previous?.baseBranch ?? null,
     baseCommit: previous?.baseCommit ?? null,
+    reReview: previous?.reReview ?? null,
+    mergeCommit: previous?.mergeCommit ?? null,
+    deliveryStatus: previous?.deliveryStatus ?? 'none',
+    deliveryVerifiedAt: previous?.deliveryVerifiedAt ?? null,
+    deliveryEvidenceId: previous?.deliveryEvidenceId ?? null,
+    deliveryError: previous?.deliveryError ?? null,
   }
 }
 

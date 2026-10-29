@@ -118,6 +118,24 @@ export const PlanExecutionSchema = z.object({
    */
   baseBranch: z.string().max(240).nullable().default(null),
   baseCommit: z.string().max(120).nullable().default(null),
+  /**
+   * ADR-0028 — a pending autonomous re-review: which review task is being re-run and the content
+   * fingerprint it is about. Survives restarts and makes the re-review idempotent.
+   */
+  reReview: z
+    .object({ taskId: IdSchema, fingerprint: z.string().min(16).max(128), requestedAt: TimestampSchema })
+    .nullable()
+    .default(null),
+  /** ADR-0030: the real merge commit produced by delivery (null until a merge happened). */
+  mergeCommit: z.string().max(120).nullable().default(null),
+  /**
+   * ADR-0030: `mergedAt` only records the merge action. This records what was actually verified
+   * after it: merged -> verified, or merged_verification_failed when the checks did not pass.
+   */
+  deliveryStatus: z.enum(['none', 'merged', 'verified', 'merged_verification_failed']).default('none'),
+  deliveryVerifiedAt: TimestampSchema.nullable().default(null),
+  deliveryEvidenceId: IdSchema.nullable().default(null),
+  deliveryError: z.string().max(2000).nullable().default(null),
 })
 export type PlanExecution = z.infer<typeof PlanExecutionSchema>
 

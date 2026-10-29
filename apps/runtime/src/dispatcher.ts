@@ -37,6 +37,7 @@ import { ActionCenter } from './action-center.js'
 import { AutonomyCoordinator } from './autonomy-coordinator.js'
 import { TaskContractPreflightService } from './task-contract-preflight.js'
 import { ReplanAutopilot } from './replan-autopilot.js'
+import { ReviewCoordinator } from './review-coordinator.js'
 import { recollectForReview } from './review-snapshot-collector.js'
 import { AgentStudioService } from './agent-studio.js'
 import { RuntimeExecutionService } from './runtime-executor.js'
@@ -93,6 +94,7 @@ export class RuntimeDispatcher {
   private readonly autonomy: AutonomyCoordinator
   private readonly preflight: TaskContractPreflightService
   private readonly autopilot: ReplanAutopilot
+  private readonly reviews: ReviewCoordinator
   private readonly resources: ResourceService
   private readonly agentStudio: AgentStudioService
   private readonly runtimeExecutor: RuntimeExecutionService
@@ -154,6 +156,7 @@ export class RuntimeDispatcher {
       },
     )
     this.preflight = new TaskContractPreflightService(deps.store)
+    this.reviews = new ReviewCoordinator(deps.store, deps.services, this.planGrants, this.scheduler, deps.logger)
     this.autopilot = new ReplanAutopilot(
       deps.store,
       this.replans,
@@ -163,6 +166,7 @@ export class RuntimeDispatcher {
       this.actions,
       this.preflight,
       this.lifecycle,
+      this.reviews,
       deps.logger,
     )
     this.autonomy = new AutonomyCoordinator(
@@ -1659,6 +1663,13 @@ export class RuntimeDispatcher {
           reasons: evaluation.authorization.reasons,
           envelopeGrantId: evaluation.envelopeGrantId,
           preflightGaps: evaluation.preflightGaps,
+          lineage: {
+            used: evaluation.lineage.used,
+            lineageRoot: evaluation.lineage.lineageRoot,
+            limit: this.actions.autonomySettings(
+              this.replans.get(input.proposalId).projectId,
+            ).maxAutoReplans,
+          },
           requirements: evaluation.requirements,
         }
       }
