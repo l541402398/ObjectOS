@@ -1,6 +1,8 @@
 # Acceptance report — Agent overview P0 recovery
 
 - Branch: `fix/agent-overview-ux-recovery`
+- Implementation commit: `58e8c2845f675a1e4c5f8634243080ca0b466b71`
+- Remote verification: `git ls-remote` returned the same SHA at push time
 - Base: `v2.0-agent-overview` / `b4d400330819390a8876683b57e108136024cd34`
 - Scope of this report: **P0-A and P0-B**. P1-C visual masters are not marked complete here.
 - Evidence root: `docs/agent-overview/evidence/`, `docs/ui-recovery/`

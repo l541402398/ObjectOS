@@ -4,7 +4,7 @@
     "branch": "v2.0-agent-overview",
     "commit": "b4d400330819390a8876683b57e108136024cd34"
   },
-  "head": "filled by the P0 commit and verified with git ls-remote",
+  "head": "58e8c2845f675a1e4c5f8634243080ca0b466b71 (implementation; remote verified)",
   "scope": {
     "p0a": "visible relationship layer, focused active-agent layout, standby dock",
     "p0b": "in-node approval, default graph entry, session and plan-DAG return closure",
