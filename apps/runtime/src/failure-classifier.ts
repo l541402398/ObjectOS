@@ -84,6 +84,15 @@ const RULES: Array<{
     reason: '真实实施/测试失败可能需要调整实现任务或依赖；先保留重试与补证记录。',
   },
   {
+    class: 'implementation',
+    // A real review that asks for changes is a defect report about the *implementation*, not an
+    // unclassifiable pause: the fix belongs in a refined revision.
+    pattern: /审查未通过|审查不通过|审查要求修改|复审未通过|review.*(?:changes?\s*requested|reject)/i,
+    replan: true,
+    action: 'reassign_or_replan',
+    reason: '真实审查要求修改，当前成果不能放行；应通过精炼修订补齐修复与复审。',
+  },
+  {
     class: 'tool_error',
     pattern: /tool|工具|审批拒绝|denied|approval/i,
     replan: false,

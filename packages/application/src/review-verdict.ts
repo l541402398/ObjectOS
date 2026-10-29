@@ -43,12 +43,38 @@ export interface ReviewFreshnessResult {
 }
 
 const NON_BLOCKING = /^(无|none|no blockers?|没有|-|—|n\/a)$/i
-const REJECTION = /阻断|不通过|拒绝|需要修改|不可放行|必须修改|打回|reject|blocking|blocked|fail|changes? requested/i
+
+/**
+ * ADR-0033 — real reviews are prose, so the verdict parser must read prose without inventing one.
+ *
+ * Two defects were found by a real run:
+ *   1. rejection matched "fail" inside "tests 2 / pass 2 / fail 0", so a clean review became
+ *      `inconclusive`;
+ *   2. approval was anchored at the start (`^通过`), so "根据…当前工作区…判定为通过（PASS）" was not
+ *      recognised even though the reviewer clearly approved.
+ *
+ * Rejection now ignores *zero counts* ("fail 0", "0 failures", "no errors") and recognises explicit
+ * negative verdict words; approval accepts an explicit positive verdict token at a word boundary
+ * anywhere in the conclusion. A conclusion containing both is still `inconclusive`.
+ */
+const ZERO_COUNT =
+  /\b(?:fail(?:ed|ure|ing|s)?|errors?)\b\s*[:：=]?\s*0\b|\b0\s*(?:fail(?:ed|ure|ing|s)?|errors?)\b|no\s+(?:failures?|errors?)|0\s*个?\s*(?:失败|错误)/gi
+
+const REJECTION =
+  /阻断|不可放行|必须修改|打回|拒绝|需要修改|不通过|未通过|没有通过|changes?\s*requested|reject(?:ed)?|blocking|blocked/i
+
+/** Explicit positive verdict, at a word boundary (start, punctuation or whitespace). */
 const APPROVAL_TOKENS =
-  /^(通过|放行|批准|同意|未发现问题|无问题|没有问题|审核通过|审查通过|approve|approved|pass|passed|lgtm|conditionally passed|no issues)/i
+  /(?:^|[\s：:（(【\[])(通过|放行|批准|同意|审核通过|审查通过|approve(?:d)?|pass(?:ed)?|lgtm|conditionally passed|no issues)/i
 const POSITIVE_FIELD = /^(approved|pass|passed|通过|放行)$/i
 const REJECT_FIELD = /^(changes_requested|changes-requested|reject|rejected|需要修改|不通过)$/i
 const BLOCK_FIELD = /^(blocked|block|阻断)$/i
+
+/** Rejection signal, ignoring zero-count phrases such as "fail 0" or "0 failures". */
+function hasRejection(text: string): boolean {
+  if (!text) return false
+  return REJECTION.test(text.replace(ZERO_COUNT, ' '))
+}
 
 function asString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
@@ -131,12 +157,13 @@ export function reviewVerdictOf(
 export function statedVerdictOf(metadata: Record<string, unknown>): ReviewVerdict {
   const conclusion = asString(metadata.conclusion)
   const explicit = asString(metadata.verdict ?? metadata.reviewVerdict)
+  const rejectedText = hasRejection(conclusion)
 
   // 3. An explicit structured verdict field is authoritative when it is one we understand.
   if (explicit) {
     if (POSITIVE_FIELD.test(explicit)) {
       // ...but it may not contradict a rejection written into the conclusion.
-      return REJECTION.test(conclusion) ? 'inconclusive' : 'approved'
+      return rejectedText ? 'inconclusive' : 'approved'
     }
     if (BLOCK_FIELD.test(explicit)) return 'blocked'
     if (REJECT_FIELD.test(explicit)) return 'changes_requested'
@@ -146,7 +173,6 @@ export function statedVerdictOf(metadata: Record<string, unknown>): ReviewVerdic
   // 4. Free-text conclusion. Both directions present at once is contradictory.
   if (!conclusion) return 'inconclusive'
   const approvedText = APPROVAL_TOKENS.test(conclusion)
-  const rejectedText = REJECTION.test(conclusion)
   if (approvedText && rejectedText) return 'inconclusive'
   if (rejectedText) return 'changes_requested'
   if (!approvedText) return 'inconclusive'
