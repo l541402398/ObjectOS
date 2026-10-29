@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type ReactElement } from 'react'
 import ELK from 'elkjs/lib/elk.bundled.js'
 import '@xyflow/react/dist/style.css'
 import {
@@ -18,6 +18,7 @@ import {
   FileText,
   GitBranch,
   Handshake,
+  ChevronDown,
   ShieldAlert,
 } from 'lucide-react'
 import type {
@@ -167,6 +168,7 @@ function RelationshipLayer({
   selectedId: string | null
   onSelectHandoff: (id: string) => void
 }): ReactElement {
+  const uid = useId().replace(/:/g, '')
   const shapes = relationships.flatMap((edge) => {
     const source = positions[edge.source]
     const target = positions[edge.target]
@@ -199,10 +201,18 @@ function RelationshipLayer({
   return (
     <svg className="aco-edge-layer" width="100%" height="100%" aria-hidden="true">
       <defs>
+        <mask id={`${uid}-mask`} maskUnits="userSpaceOnUse" x="-20000" y="-20000" width="40000" height="40000">
+          <rect x="-20000" y="-20000" width="40000" height="40000" fill="white" />
+          {[...sizeById.entries()].map(([id, size]) => {
+            const position = positions[id]
+            if (!position) return null
+            return <rect key={id} x={position.x - 2} y={position.y - 2} width={size.width + 4} height={size.height + 4} rx="10" fill="black" />
+          })}
+        </mask>
         {Object.entries(EDGE_COLORS).map(([kind, color]) => (
           <marker
             key={kind}
-            id={`aco-arrow-${kind}`}
+            id={`${uid}-arrow-${kind}`}
             viewBox="0 0 10 10"
             refX="8"
             refY="5"
@@ -214,7 +224,7 @@ function RelationshipLayer({
           </marker>
         ))}
       </defs>
-      <g transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.zoom})`}>
+      <g transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.zoom})`} mask={`url(#${uid}-mask)`}>
         {shapes.map(({ edge, d, color, highlighted, dimmed, isHandoff, midpoint }) => (
           <g
             key={edge.id}
@@ -226,9 +236,9 @@ function RelationshipLayer({
               d={d}
               fill="none"
               stroke={color}
-              strokeWidth={highlighted ? 2.2 : isHandoff ? 1.7 : 1.5}
+              strokeWidth={highlighted ? 2.4 : isHandoff ? 2 : 1.8}
               strokeDasharray={edge.kind === 'artifact' ? '4 4' : isHandoff ? '6 4' : undefined}
-              markerEnd={`url(#aco-arrow-${edge.kind})`}
+              markerEnd={`url(#${uid}-arrow-${edge.kind})`}
             />
             {isHandoff ? (
               <g transform={`translate(${midpoint.x}, ${midpoint.y})`}>
@@ -256,6 +266,9 @@ export function CollaborationGraph({
   showAgents,
   showTasks,
   showOutputs,
+  standbyAgents,
+  initialViewport,
+  onViewportChange,
 }: {
   agents: CollaborationOverviewAgent[]
   tasks: TaskCard[]
@@ -269,11 +282,17 @@ export function CollaborationGraph({
   showAgents: boolean
   showTasks: boolean
   showOutputs: boolean
+  standbyAgents: CollaborationOverviewAgent[]
+  initialViewport?: { x: number; y: number; zoom: number } | null
+  onViewportChange?: (viewport: { x: number; y: number; zoom: number }) => void
 }): ReactElement {
   const canvasRef = useRef<HTMLDivElement | null>(null)
+  const lastLayoutKey = useRef('')
+  const lastFitKey = useRef('')
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({})
-  const [viewport, setViewport] = useState({ x: 0, y: 0, zoom: 0.8 })
+  const [viewport, setViewport] = useState(initialViewport ?? { x: 0, y: 0, zoom: 0.8 })
   const [instance, setInstance] = useState<ReactFlowInstance | null>(null)
+  const [standbyOpen, setStandbyOpen] = useState(false)
 
   const visibleAgents = useMemo(() => (showAgents ? agents : []), [agents, showAgents])
   const visibleTasks = useMemo(() => (showTasks ? tasks.filter((task) => task.status !== 'cancelled') : []), [showTasks, tasks])
@@ -331,10 +350,21 @@ export function CollaborationGraph({
     const taskIds = new Set(visibleTasks.map((task) => task.id))
     const approvalIds = new Set(visibleApprovals.map((item) => item.id))
 
+    const assignmentKeys = new Set<string>()
     for (const agent of visibleAgents) {
       if (agent.taskId && taskIds.has(agent.taskId)) {
+        assignmentKeys.add(`${agent.id}:${agent.taskId}`)
         list.push({ id: `assign-${agent.id}-${agent.taskId}`, source: agent.id, target: agent.taskId, kind: 'assignment' })
       }
+    }
+    // A persisted task assignment is a real relationship even when the task has no active Run yet.
+    // It only participates when the assigned agent is in the focused working set.
+    for (const task of visibleTasks) {
+      if (!task.assigneeAgentId || !agentIds.has(task.assigneeAgentId)) continue
+      const key = `${task.assigneeAgentId}:${task.id}`
+      if (assignmentKeys.has(key)) continue
+      assignmentKeys.add(key)
+      list.push({ id: `assign-${task.assigneeAgentId}-${task.id}`, source: task.assigneeAgentId, target: task.id, kind: 'assignment' })
     }
     for (const task of visibleTasks) {
       for (const dep of task.dependencyIds) {
@@ -367,23 +397,19 @@ export function CollaborationGraph({
   ].join('|')
 
   useEffect(() => {
+    if (lastLayoutKey.current === layoutKey) return
+    lastLayoutKey.current = layoutKey
     let cancelled = false
     const graph = new ELK()
     const children = [
-      { id: 'aco-layout-anchor', width: 1, height: 1 },
       ...orderedAgents.map((agent) => ({ id: agent.id, ...AGENT_SIZE })),
       ...orderedTasks.map((task) => ({ id: task.id, ...TASK_SIZE })),
       ...visibleArtifacts.map((item) => ({ id: item.id, ...ARTIFACT_SIZE })),
       ...visibleApprovals.map((item) => ({ id: item.id, ...APPROVAL_SIZE })),
     ]
-    const layoutEdges = [
-      ...relationships
-        .filter((edge) => edge.kind !== 'handoff')
-        .map((edge) => ({ id: edge.id, sources: [edge.source], targets: [edge.target] })),
-      // Layout-only spokes keep every agent in the first executable layer instead of letting
-      // idle agents drift between task rows. They are never drawn as product relationships.
-      ...visibleAgents.map((agent) => ({ id: `anchor-${agent.id}`, sources: ['aco-layout-anchor'], targets: [agent.id] })),
-    ]
+    const layoutEdges = relationships
+      .filter((edge) => edge.kind !== 'handoff')
+      .map((edge) => ({ id: edge.id, sources: [edge.source], targets: [edge.target] }))
     void graph.layout({
       id: 'aco-collaboration-graph',
       layoutOptions: {
@@ -410,6 +436,14 @@ export function CollaborationGraph({
 
   useEffect(() => {
     if (!instance || Object.keys(positions).length === 0) return undefined
+    if (lastFitKey.current === '' && initialViewport) {
+      lastFitKey.current = layoutKey
+      void instance.setViewport(initialViewport)
+      setViewport(initialViewport)
+      return undefined
+    }
+    if (lastFitKey.current === layoutKey) return undefined
+    lastFitKey.current = layoutKey
     const fit = (): void => {
       const element = canvasRef.current
       if (!element) return
@@ -433,7 +467,7 @@ export function CollaborationGraph({
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => fit())
     if (canvasRef.current) observer?.observe(canvasRef.current)
     return () => { window.clearTimeout(timer); observer?.disconnect() }
-  }, [instance, positions, sizeById])
+  }, [initialViewport, instance, layoutKey, positions, sizeById])
 
   const related = useMemo(() => {
     const ids = new Set<string>()
@@ -506,7 +540,7 @@ export function CollaborationGraph({
         nodes={nodes}
         nodeTypes={nodeTypes}
         onInit={(flow) => { setInstance(flow) }}
-        onMove={(_event, next) => setViewport(next)}
+        onMove={(_event, next) => { setViewport(next); onViewportChange?.(next) }}
         onNodeClick={(_event, node) => {
           const nodeType = String(node.type)
           onSelect({
@@ -544,8 +578,8 @@ export function CollaborationGraph({
       {isEmpty ? (
         <div className="aco-canvas-empty">
           <GitBranch size={22} />
-          <strong>这张协作图还没有真实对象</strong>
-          <span>批准计划后，Agent、任务、审批与成果会作为真实节点出现。</span>
+          <strong>{standbyAgents.length > 0 ? '当前没有执行中的工作' : '这张协作图还没有真实对象'}</strong>
+          <span>{standbyAgents.length > 0 ? '待命 Agent 已收起；批准计划或启动运行后，执行节点会出现在这里。' : '批准计划后，Agent、任务、审批与成果会作为真实节点出现。'}</span>
         </div>
       ) : null}
       {taskCount === 0 && !isEmpty ? (
@@ -553,6 +587,44 @@ export function CollaborationGraph({
       ) : null}
       {handoffs.length > 0 ? (
         <div className="aco-canvas-hint is-handoff"><Handshake size={12} /> {handoffs.length} 条真实交接 <ArrowRight size={11} /></div>
+      ) : null}
+      {standbyAgents.length > 0 ? (
+        <div className={`aco-standby${standbyOpen ? ' is-open' : ''}`} data-testid="standby-agents">
+          <button
+            type="button"
+            className="aco-standby-toggle"
+            aria-expanded={standbyOpen}
+            onClick={() => setStandbyOpen((open) => !open)}
+          >
+            <span className="aco-standby-avatars" aria-hidden="true">
+              {standbyAgents.slice(0, 3).map((agent) => (
+                <i key={agent.id} style={{ color: agent.accent || undefined, borderColor: agent.accent ? `${agent.accent}55` : undefined }}>{agent.name.slice(0, 1)}</i>
+              ))}
+            </span>
+            <span>待命 Agent · {standbyAgents.length}</span>
+            <ChevronDown size={13} className="aco-standby-chevron" />
+          </button>
+          {standbyOpen ? (
+            <div className="aco-standby-list">
+              {standbyAgents.map((agent) => (
+                <button
+                  key={agent.id}
+                  type="button"
+                  className="aco-standby-row"
+                  data-testid={`standby-agent-${agent.id}`}
+                  onClick={() => {
+                    onSelect({ kind: 'agent', id: agent.id })
+                    setStandbyOpen(false)
+                  }}
+                >
+                  <i style={{ color: agent.accent || undefined }}>{agent.name.slice(0, 1)}</i>
+                  <span><strong>{agent.name}</strong><small>{agent.role}</small></span>
+                  <em>{agent.status === 'offline' ? '离线' : '空闲'}</em>
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
       ) : null}
     </div>
   )

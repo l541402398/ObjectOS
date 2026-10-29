@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   App as AntApp,
   Button,
@@ -334,6 +334,7 @@ function buildLayout(
 export default function OrchestrationWorkspace() {
   const { projectId = '' } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const queryClient = useQueryClient()
   const { message, notification, modal } = AntApp.useApp()
   const bootstrap = useBootstrap()
@@ -1461,6 +1462,7 @@ export default function OrchestrationWorkspace() {
             <div><span>Blocked</span><strong className={counts.blocked ? 'is-danger' : ''}>{counts.blocked}</strong></div>
           </div>
           <div className="po-orch-actions">
+            {searchParams.get('return') === 'agents' ? <Button onClick={() => navigate('/projects/' + projectId + '/agents')}>返回协作图</Button> : null}
             <Button icon={<FileSearchOutlined />} onClick={() => void scan()} loading={snapshotQuery.isFetching}>扫描</Button>
             <Button icon={<SettingOutlined />} onClick={() => navigate(`/projects/${projectId}/agents`)}>Agent</Button>
             <Button type="primary" icon={<PlusOutlined />} onClick={openPlanModal}>

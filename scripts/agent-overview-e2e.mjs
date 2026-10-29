@@ -298,6 +298,151 @@ try {
   record('1440 无横向溢出', ui.overflowX === 0, `overflow=${ui.overflowX}`)
   await shot('overview-1440-light.png')
 
+  // Idle agents must not enter the ELK canvas or fitView; they live in the standby dock.
+  const standby = await page.evaluate(() => ({
+    graphAgents: document.querySelectorAll('.aco-gnode-agent').length,
+    standbyDock: Boolean(document.querySelector('[data-testid="standby-agents"]')),
+    standbyLabel: document.querySelector('.aco-standby-toggle')?.textContent ?? '',
+    idleInGraph: Boolean(document.querySelector('[data-testid="collaboration-agent-agt_product"]')),
+  }))
+  record('空闲 Agent 退出主图并收进待命区', standby.graphAgents === 4 && standby.standbyDock && standby.idleInGraph === false,
+    JSON.stringify(standby))
+  await page.locator('.aco-standby-toggle').click()
+  await page.waitForSelector('.aco-standby-list', { timeout: 5_000 })
+  const standbyRows = await page.locator('.aco-standby-row').count()
+  record('待命 Agent 区域可展开且仍可查看', standbyRows >= 1, `rows=${standbyRows}`)
+  await shot('overview-1440-standby.png')
+  await page.locator('.aco-standby-toggle').click()
+
+  // Pixel proof: screenshot once with the relationship layer and once without it. DOM path count
+  // alone is not accepted; the diff must contain visible edge pixels inside the canvas.
+  const canvasBox = await page.locator('.aco-canvas').boundingBox()
+  if (!canvasBox) throw new Error('collaboration canvas not visible')
+  const withEdges = await page.screenshot({ clip: canvasBox, animations: 'disabled' })
+  const hideEdges = await page.addStyleTag({ content: '.aco-edge-layer{display:none!important}' })
+  const withoutEdges = await page.screenshot({ clip: canvasBox, animations: 'disabled' })
+  await hideEdges.evaluate((node) => node.remove())
+  const pixelDiff = await page.evaluate(async ({ a, b }) => {
+    const decode = async (base64) => {
+      const binary = atob(base64)
+      const bytes = new Uint8Array(binary.length)
+      for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index)
+      return createImageBitmap(new Blob([bytes], { type: 'image/png' }))
+    }
+    const [first, second] = await Promise.all([decode(a), decode(b)])
+    const canvas = document.createElement('canvas')
+    canvas.width = first.width
+    canvas.height = first.height
+    const context = canvas.getContext('2d')
+    if (!context) return { visiblePixels: 0, total: 0 }
+    context.drawImage(first, 0, 0)
+    const firstData = context.getImageData(0, 0, canvas.width, canvas.height).data
+    context.clearRect(0, 0, canvas.width, canvas.height)
+    context.drawImage(second, 0, 0)
+    const secondData = context.getImageData(0, 0, canvas.width, canvas.height).data
+    let visiblePixels = 0
+    for (let index = 0; index < firstData.length; index += 4) {
+      const delta = Math.abs(firstData[index] - secondData[index])
+        + Math.abs(firstData[index + 1] - secondData[index + 1])
+        + Math.abs(firstData[index + 2] - secondData[index + 2])
+      if (delta > 40) visiblePixels += 1
+    }
+    return { visiblePixels, total: canvas.width * canvas.height }
+  }, { a: withEdges.toString('base64'), b: withoutEdges.toString('base64') })
+  record('连线在真实截图像素中可见', pixelDiff.visiblePixels > 500, JSON.stringify(pixelDiff))
+
+  const edgeAlignment = await page.evaluate(() => {
+    const nodes = [...document.querySelectorAll('.react-flow__node')].map((node) => {
+      const rect = node.getBoundingClientRect()
+      return { id: node.getAttribute('data-id') ?? '', left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom }
+    })
+    const distance = (x, y, rect) => {
+      const dx = Math.max(rect.left - x, 0, x - rect.right)
+      const dy = Math.max(rect.top - y, 0, y - rect.bottom)
+      return Math.hypot(dx, dy)
+    }
+    let aligned = 0
+    const edges = [...document.querySelectorAll('.aco-edge path')]
+    const records = []
+    for (const path of edges) {
+      const matrix = path.getScreenCTM()
+      if (!matrix) continue
+      const start = path.getPointAtLength(0).matrixTransform(matrix)
+      const end = path.getPointAtLength(path.getTotalLength()).matrixTransform(matrix)
+      const startDistance = Math.min(...nodes.map((node) => distance(start.x, start.y, node)))
+      const endDistance = Math.min(...nodes.map((node) => distance(end.x, end.y, node)))
+      if (startDistance <= 28 && endDistance <= 28) aligned += 1
+      records.push({ startDistance: Math.round(startDistance), endDistance: Math.round(endDistance) })
+    }
+    return { edges: edges.length, aligned, sample: records.slice(0, 4) }
+  })
+  record('边端点与节点边界对齐', edgeAlignment.edges >= 8 && edgeAlignment.aligned >= edgeAlignment.edges - 1, JSON.stringify(edgeAlignment))
+
+  await page.mouse.move(canvasBox.x + canvasBox.width / 2, canvasBox.y + canvasBox.height / 2)
+  await page.mouse.wheel(0, -320)
+  await page.waitForTimeout(500)
+  const zoomedAlignment = await page.evaluate(() => {
+    const nodes = [...document.querySelectorAll('.react-flow__node')].map((node) => {
+      const rect = node.getBoundingClientRect()
+      return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom }
+    })
+    const distance = (x, y, rect) => {
+      const dx = Math.max(rect.left - x, 0, x - rect.right)
+      const dy = Math.max(rect.top - y, 0, y - rect.bottom)
+      return Math.hypot(dx, dy)
+    }
+    let aligned = 0
+    const edges = [...document.querySelectorAll('.aco-edge path')]
+    for (const path of edges) {
+      const matrix = path.getScreenCTM()
+      if (!matrix) continue
+      const start = path.getPointAtLength(0).matrixTransform(matrix)
+      const end = path.getPointAtLength(path.getTotalLength()).matrixTransform(matrix)
+      if (Math.min(...nodes.map((node) => distance(start.x, start.y, node))) <= 28
+        && Math.min(...nodes.map((node) => distance(end.x, end.y, node))) <= 28) aligned += 1
+    }
+    return { edges: edges.length, aligned, zoom: new DOMMatrix(getComputedStyle(document.querySelector('.react-flow__viewport')).transform).a }
+  })
+  record('缩放后连线端点仍对齐', zoomedAlignment.edges >= 8 && zoomedAlignment.aligned >= zoomedAlignment.edges - 1, JSON.stringify(zoomedAlignment))
+  await shot('overview-1440-zoom.png')
+  await page.locator('.react-flow__controls-fitview').click({ timeout: 3_000 }).catch(() => undefined)
+  await page.waitForTimeout(400)
+
+  // In-node approval uses the real decision API, requires explicit risk confirmation and rejects
+  // a duplicate decision after the persisted status changes.
+  const pendingApproval = projection.approvals.find((approval) => approval.status === 'pending')
+  if (pendingApproval) {
+    await page.locator(`[data-testid="collaboration-approval-${pendingApproval.id}"]`).click()
+    await page.waitForSelector('[data-testid="collaboration-inspector"]', { timeout: 10_000 })
+    const approvalRequest = await page.locator('[data-testid="approval-request"]').textContent()
+    record('点击审批节点加载真实请求参数', Boolean(approvalRequest?.includes('run_command') && approvalRequest.includes('command')), (approvalRequest ?? '').slice(0, 160))
+    await page.getByRole('button', { name: '允许本次' }).click()
+    await page.waitForSelector('[data-testid="approval-confirm"]', { timeout: 5_000 })
+    const confirmDisabledBeforeRisk = await page.getByRole('button', { name: '确认允许本次' }).isDisabled()
+    record('未确认风险范围时禁止批准', confirmDisabledBeforeRisk === true, `disabled=${confirmDisabledBeforeRisk}`)
+    await shot('approval-inline-confirm.png')
+    await page.getByRole('checkbox').check()
+    await page.getByRole('button', { name: '确认允许本次' }).click()
+    await page.waitForSelector('[data-testid="collaboration-inspector"]', { state: 'detached', timeout: 15_000 })
+    await page.waitForTimeout(1_200)
+    const afterApproval = await page.evaluate(async (id) => window.projectos.collaboration.overview(id), projectId)
+    const stillPending = afterApproval.approvals.some((approval) => approval.id === pendingApproval.id && approval.status === 'pending')
+    record('节点审批真实写入并刷新 Run 状态', stillPending === false,
+      `pending=${stillPending} status=${afterApproval.approvals.find((approval) => approval.id === pendingApproval.id)?.status ?? 'removed'}`)
+    const duplicateDecision = await page.evaluate(async (approvalId) => {
+      try {
+        await window.projectos.approvals.decide({ approvalId, decision: 'approved', note: 'duplicate probe' })
+        return 'accepted'
+      } catch (error) {
+        return error instanceof Error ? error.message : String(error)
+      }
+    }, pendingApproval.id)
+    record('重复审批被服务端拒绝', duplicateDecision !== 'accepted', duplicateDecision.slice(0, 160))
+    await shot('overview-1440-approved.png')
+  } else {
+    record('点击审批节点加载真实请求参数', 'SKIP', 'fixture 没有 pending approval')
+  }
+
   // Artifact node opens the inspector with the real persisted body.
   await page.locator('.aco-gnode-artifact').filter({ hasText: '协作总览对象关系' }).first().click()
   await page.waitForSelector('[data-testid="collaboration-inspector"]', { timeout: 10_000 })
@@ -312,7 +457,8 @@ try {
   await page.waitForTimeout(350)
 
   // Agent node → inspector → existing professional workspace with the real session.
-  const workingAgentId = projection.agents.find((agent) => agent.activeSessionId)?.id ?? projection.agents[0]?.id
+  const currentOverview = await page.evaluate(async (id) => window.projectos.collaboration.overview(id), projectId)
+  const workingAgentId = currentOverview.agents.find((agent) => agent.activeSessionId)?.id ?? currentOverview.agents[0]?.id
   await page.locator(`[data-testid="collaboration-agent-${workingAgentId}"]`).click()
   await page.waitForSelector('[data-testid="collaboration-inspector"]', { timeout: 10_000 })
   const agentInspector = await page.evaluate(() => document.querySelector('[data-testid="collaboration-inspector"]')?.textContent ?? '')
@@ -322,14 +468,26 @@ try {
   if (await sessionButton.count()) {
     await sessionButton.first().click()
     await page.waitForSelector('.po-agent-workspace', { timeout: 15_000 })
-    const proMode = await page.evaluate(() => ({ hash: window.location.hash, workspace: Boolean(document.querySelector('.po-agent-workspace')) }))
-    record('从 Agent 节点下钻到专业编排并保留真实会话', proMode.workspace && proMode.hash.includes('view=pro'), JSON.stringify(proMode))
-    await page.getByRole('button', { name: '协作总览' }).first().click()
+    const sessionWorkspace = await page.evaluate(() => ({ hash: window.location.hash, workspace: Boolean(document.querySelector('.po-agent-workspace')), back: Boolean([...document.querySelectorAll('button')].find((button) => button.textContent?.includes('返回协作总览'))) }))
+    record('Agent 会话工作台可从节点打开且有明确返回', sessionWorkspace.workspace && sessionWorkspace.hash.includes('workspace=sessions') && sessionWorkspace.back, JSON.stringify(sessionWorkspace))
+    await page.getByRole('button', { name: '返回协作总览' }).first().click()
     await page.waitForSelector('.aco-root', { timeout: 15_000 })
+    const restoredSelection = await page.evaluate(() => document.querySelector('[data-testid="collaboration-inspector"]')?.textContent ?? '')
+    record('会话工作台返回后恢复选中节点', restoredSelection.includes('活动 Run') || restoredSelection.includes('等待审批'), restoredSelection.slice(0, 140))
+    await page.keyboard.press('Escape')
+    await page.waitForSelector('[data-testid="collaboration-inspector"]', { state: 'detached', timeout: 5_000 }).catch(() => undefined)
   } else {
-    record('从 Agent 节点下钻到专业编排并保留真实会话', 'SKIP', '该 Agent 当前没有活动会话')
+    record('Agent 会话工作台可从节点打开且有明确返回', 'SKIP', '该 Agent 当前没有活动会话')
     await page.keyboard.press('Escape')
   }
+
+  await page.getByRole('button', { name: '计划 DAG' }).click()
+  await page.waitForSelector('.po-orchestration-page', { timeout: 20_000 })
+  const planReturn = await page.getByRole('button', { name: '返回协作图' }).count()
+  record('计划 DAG 有返回协作图入口', planReturn === 1, `buttons=${planReturn}`)
+  await page.getByRole('button', { name: '返回协作图' }).click()
+  await page.waitForSelector('.aco-root', { timeout: 15_000 })
+  record('计划 DAG 返回协作图', true, 'returned to .aco-root')
 
   // Activity drill-down to the real approval/run route.
   const activityButton = page.locator('.aco-activity .aco-btn')
@@ -405,8 +563,9 @@ try {
     artifacts: document.querySelectorAll('.aco-gnode-artifact').length,
     waiting: [...document.querySelectorAll('.aco-pill')].filter((node) => node.textContent?.includes('等待审批')).length,
   }))
-  record('Runtime 重启后真实状态恢复', restored.agents >= 4 && restored.artifacts >= 2 && projectionAfter.tasks.length >= 4 && projectionAfter.metrics.pendingApprovals >= 1,
-    JSON.stringify({ restored, approvals: projectionAfter.metrics.pendingApprovals }))
+  const approvalPersisted = projectionAfter.approvals.some((approval) => approval.id === pendingApproval?.id && approval.status === 'approved')
+  record('Runtime 重启后真实状态恢复', restored.agents >= 4 && restored.artifacts >= 2 && projectionAfter.tasks.length >= 4 && (approvalPersisted || projectionAfter.metrics.pendingApprovals >= 1),
+    JSON.stringify({ restored, approvals: projectionAfter.metrics.pendingApprovals, approvedPersisted: approvalPersisted }))
   await shot('overview-1440-restart-light.png')
 
   writeFileSync(join(evidenceDir, 'electron-checks.json'), `${JSON.stringify({

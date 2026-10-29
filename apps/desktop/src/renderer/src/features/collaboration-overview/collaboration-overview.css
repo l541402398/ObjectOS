@@ -317,7 +317,7 @@
 .aco-edge-layer {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 3;
   overflow: visible;
   pointer-events: none;
 }
@@ -1156,4 +1156,234 @@
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* Standby dock: idle agents stay reachable but never enter ELK layout or fitView. */
+.aco-standby {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: 300px;
+}
+
+.aco-standby-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--pw-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--pw-surface) 92%, transparent);
+  color: var(--pw-ink-2);
+  font-size: 11.5px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(16, 24, 40, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.aco-standby-toggle:hover {
+  border-color: var(--pw-line-strong);
+  background: var(--pw-surface);
+}
+
+.aco-standby-avatars {
+  display: inline-flex;
+  align-items: center;
+  padding-left: 3px;
+}
+
+.aco-standby-avatars i {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-left: -4px;
+  border: 1.5px solid var(--pw-surface);
+  border-radius: 50%;
+  background: var(--pw-surface-3);
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.aco-standby-chevron {
+  transition: transform 160ms ease;
+}
+
+.aco-standby.is-open .aco-standby-chevron {
+  transform: rotate(180deg);
+}
+
+.aco-standby-list {
+  width: 268px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 5px;
+  border: 1px solid var(--pw-line);
+  border-radius: 9px;
+  background: var(--pw-surface);
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.12);
+}
+
+.aco-standby-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 7px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+}
+
+.aco-standby-row:hover {
+  background: var(--pw-surface-2);
+}
+
+.aco-standby-row > i {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: 7px;
+  background: var(--pw-surface-3);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 650;
+}
+
+.aco-standby-row > span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.aco-standby-row strong {
+  color: var(--pw-ink);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.aco-standby-row small {
+  color: var(--pw-faint);
+  font-size: 10px;
+}
+
+.aco-standby-row em {
+  color: var(--pw-faint);
+  font-size: 10px;
+  font-style: normal;
+}
+
+@media (max-width: 1180px) {
+  .aco-standby {
+    right: 8px;
+    bottom: 8px;
+  }
+  .aco-standby-list {
+    width: 240px;
+  }
+}
+/* In-node approval: real decision, explicit risk confirmation, no optimistic state. */
+.aco-approval-block {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--pw-divider);
+}
+
+.aco-approval-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.aco-approval-head strong {
+  color: var(--pw-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.aco-approval-detail {
+  margin: 0 0 10px;
+  color: var(--pw-ink-2);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.aco-decision {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid var(--pw-warn-line);
+  border-radius: 8px;
+  background: var(--pw-warn-soft);
+}
+
+.aco-decision > strong {
+  color: var(--pw-ink);
+  font-size: 12.5px;
+}
+
+.aco-decision > p {
+  margin: 0;
+  color: var(--pw-ink-2);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.aco-decision textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 7px 8px;
+  border: 1px solid var(--pw-line-strong);
+  border-radius: 6px;
+  background: var(--pw-surface);
+  color: var(--pw-ink);
+  font-family: var(--pw-font);
+  font-size: 12px;
+}
+
+.aco-risk-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  color: var(--pw-ink-2);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.aco-risk-check input {
+  margin-top: 2px;
+  accent-color: var(--pw-warn);
+}
+
+.aco-decision-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.aco-decision-error {
+  margin: 0;
+  color: var(--pw-danger);
+  font-size: 11.5px;
+}
+.aco-decision-docked {
+  flex: none;
+  margin: 0;
+  border-width: 1px 0 0;
+  border-radius: 0;
+  max-height: 250px;
+  overflow-y: auto;
 }

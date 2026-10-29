@@ -1,0 +1,83 @@
+{
+  "baseline": {
+    "repository": "l541402398/ObjectOS",
+    "branch": "fix/agent-overview-ux-recovery",
+    "baseBranch": "v2.0-agent-overview",
+    "baseCommit": "b4d400330819390a8876683b57e108136024cd34"
+  },
+  "entries": [
+    {
+      "id": "graph.default",
+      "from": "sidebar Agent / /projects/:id/agents",
+      "target": "collaboration graph",
+      "return": "none required",
+      "assertedBy": "Electron E2E",
+      "status": "PASS"
+    },
+    {
+      "id": "graph.agent.session",
+      "from": "graph agent inspector / toolbar",
+      "target": "/projects/:id/agents?workspace=sessions&session=:sessionId",
+      "return": "返回协作总览 button",
+      "restores": ["selected agent", "filter", "viewport (sessionStorage)"],
+      "assertedBy": "Electron E2E",
+      "status": "PASS"
+    },
+    {
+      "id": "graph.plan.dag",
+      "from": "graph toolbar 计划 DAG",
+      "target": "/projects/:id/orchestration?return=agents",
+      "return": "返回协作图 button",
+      "assertedBy": "Electron E2E",
+      "status": "PASS"
+    },
+    {
+      "id": "graph.approval.inline",
+      "from": "pending approval node / waiting agent / waiting task",
+      "target": "in-page approval sheet",
+      "return": "sheet close / decision completes",
+      "assertedBy": "Electron E2E + real approval.decide",
+      "status": "PASS"
+    },
+    {
+      "id": "graph.approval.center",
+      "from": "approval sheet 审批中心 / activity",
+      "target": "/projects/:id/approvals",
+      "return": "history back (no explicit graph-return button)",
+      "assertedBy": "Electron E2E route check",
+      "status": "PASS_WITH_GAP"
+    },
+    {
+      "id": "graph.artifact.run",
+      "from": "artifact inspector 运行审计",
+      "target": "/projects/:id/runs?run=:runId",
+      "return": "shell/history",
+      "assertedBy": "route only",
+      "status": "PARTIAL"
+    },
+    {
+      "id": "legacy.view-pro.redirect",
+      "from": "old ?view=pro bookmark",
+      "target": "graph without view=pro",
+      "return": "none required",
+      "assertedBy": "code path + typecheck",
+      "status": "PASS_CODE_ONLY"
+    },
+    {
+      "id": "approval.permission-denied",
+      "from": "approval sheet",
+      "target": "server rejection",
+      "return": "error remains visible",
+      "assertedBy": "not simulated (no role model in local app)",
+      "status": "BLOCKED"
+    },
+    {
+      "id": "approval.expired",
+      "from": "approval sheet",
+      "target": "expired read-only",
+      "return": "refetch",
+      "assertedBy": "no TTL fixture",
+      "status": "SKIP"
+    }
+  ]
+}

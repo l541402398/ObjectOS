@@ -112,8 +112,22 @@ export default function AgentWorkbenchPage() {
   const openSettings = useUiStore((state) => state.openSettings)
   const approvals = useApprovals(projectId)
   const runs = useRuns(projectId, 100)
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<'overview' | 'pro'>(() => (searchParams.get('view') === 'pro' ? 'pro' : 'overview'))
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(() => searchParams.get('session'))
+  const legacySessions = searchParams.get('workspace') === 'sessions'
+
+  useEffect(() => {
+    if (legacySessions || searchParams.get('view') !== 'pro') return
+    const next = new URLSearchParams(searchParams)
+    next.delete('view')
+    const query = next.toString()
+    navigate('/projects/' + projectId + '/agents' + (query ? '?' + query : ''), { replace: true })
+  }, [legacySessions, navigate, projectId, searchParams])
+
+  useEffect(() => {
+    const sessionId = searchParams.get('session')
+    if (sessionId) setSelectedSessionId(sessionId)
+  }, [searchParams])
+
   const sessionDetail = useSessionDetail(selectedSessionId)
   const [createOpen, setCreateOpen] = useState(false)
   const [studioOpen, setStudioOpen] = useState(false)
@@ -375,24 +389,15 @@ export default function AgentWorkbenchPage() {
     }
   }
 
-  const switchView = (mode: 'overview' | 'pro'): void => {
-    setViewMode(mode)
-    setSearchParams((current) => {
-      const next = new URLSearchParams(current)
-      if (mode === 'pro') next.set('view', 'pro')
-      else next.delete('view')
-      return next
-    }, { replace: true })
-  }
-
-  if (viewMode === 'overview') {
+  if (!legacySessions) {
     return (
       <CollaborationOverview
         projectId={projectId}
-        onSwitchToPro={() => switchView('pro')}
         onOpenSession={(sessionId) => {
-          setSelectedSessionId(sessionId)
-          switchView('pro')
+          navigate(`/projects/${projectId}/agents?workspace=sessions&session=${encodeURIComponent(sessionId)}`)
+        }}
+        onOpenSessions={() => {
+          navigate(`/projects/${projectId}/agents?workspace=sessions`)
         }}
         onManageAgents={() => setStudioOpen(true)}
       />
@@ -403,10 +408,10 @@ export default function AgentWorkbenchPage() {
     <div className="po-page po-agent-page">
       <PageHeader
         compact
-        title="Agent 工作台"
+        title="Agent 会话工作台"
         actions={
           <>
-            <Button onClick={() => switchView('overview')}>协作总览</Button>
+            <Button onClick={() => navigate(`/projects/${projectId}/agents`)}>返回协作总览</Button>
             <Button icon={<ReloadOutlined />} onClick={() => void invalidateSession()} loading={sessions.isRefetching}>
               刷新
             </Button>

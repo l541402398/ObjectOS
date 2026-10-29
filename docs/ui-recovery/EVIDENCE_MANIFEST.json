@@ -1,0 +1,57 @@
+{
+  "branch": "fix/agent-overview-ux-recovery",
+  "base": {
+    "branch": "v2.0-agent-overview",
+    "commit": "b4d400330819390a8876683b57e108136024cd34"
+  },
+  "head": "filled by the P0 commit and verified with git ls-remote",
+  "scope": {
+    "p0a": "visible relationship layer, focused active-agent layout, standby dock",
+    "p0b": "in-node approval, default graph entry, session and plan-DAG return closure",
+    "p1c": "NOT STARTED"
+  },
+  "checks": {
+    "electronE2E": {
+      "pass": 28,
+      "fail": 0,
+      "skip": 0,
+      "command": "node scripts/agent-overview-e2e.mjs",
+      "raw": "docs/agent-overview/evidence/electron-checks.json"
+    },
+    "typecheck": "PASS",
+    "lint": "PASS (0 errors; existing warnings remain)",
+    "build": "PASS",
+    "fullTest": "PASS — 495 passed / 0 failed / 4 skipped",
+    "packageSmoke": "PASS on the final P0 tree"
+  },
+  "screenshots": [
+    "docs/agent-overview/evidence/screenshots/overview-1440-light.png",
+    "docs/agent-overview/evidence/screenshots/overview-1440-dark.png",
+    "docs/agent-overview/evidence/screenshots/overview-1440-standby.png",
+    "docs/agent-overview/evidence/screenshots/overview-1440-zoom.png",
+    "docs/agent-overview/evidence/screenshots/overview-1440-light-125.png",
+    "docs/agent-overview/evidence/screenshots/overview-1024-all.png",
+    "docs/agent-overview/evidence/screenshots/overview-1024-agents.png",
+    "docs/agent-overview/evidence/screenshots/overview-1024-tasks.png",
+    "docs/agent-overview/evidence/screenshots/approval-inline-confirm.png",
+    "docs/agent-overview/evidence/screenshots/overview-1440-approved.png",
+    "docs/agent-overview/evidence/screenshots/agent-inspector-1440-light.png",
+    "docs/agent-overview/evidence/screenshots/artifact-inspector-1440-light.png",
+    "docs/agent-overview/evidence/screenshots/overview-1440-restart-light.png"
+  ],
+  "reports": [
+    "docs/ui-recovery/SOURCE_AUDIT.md",
+    "docs/ui-recovery/EDGE_VISIBILITY.md",
+    "docs/ui-recovery/NAVIGATION_CLOSURE.md",
+    "docs/ui-recovery/ACCEPTANCE_REPORT.md",
+    "docs/ui-recovery/VISUAL_DECISIONS.md",
+    "docs/ui-recovery/navigation-closure-manifest.json"
+  ],
+  "blocked": [
+    "permission-insufficient approval: local app has no role denial path to exercise"
+  ],
+  "skipped": [
+    "expired approval TTL fixture",
+    "P1-C visual masters"
+  ]
+}

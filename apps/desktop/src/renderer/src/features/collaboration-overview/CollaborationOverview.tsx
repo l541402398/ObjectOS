@@ -10,6 +10,7 @@ import {
   RefreshCw,
   ShieldAlert,
   Workflow,
+  MessagesSquare,
 } from 'lucide-react'
 import type {
   CollaborationOverviewAgent,
@@ -23,6 +24,7 @@ import { runStatusLabel, taskStatusLabel } from '../../lib/labels'
 import { qk, useCollaborationOverview } from '../../lib/queries'
 import { OverlayFooter, OverlayHeader, OverlayScrollArea, SheetShell } from '../../next-ui/overlay/overlay-shell'
 import { CollaborationGraph, type GraphSelection } from './CollaborationGraph'
+import { projectCollaborationFocus } from './focus-projection'
 import '@projectos/design-tokens/precision.css'
 import './collaboration-overview.css'
 
@@ -37,6 +39,27 @@ const ACTIVE_RUN_STATUSES: RunStatus[] = [
 ]
 
 type Filter = 'all' | 'agents' | 'tasks' | 'outputs'
+
+interface SavedGraphState {
+  selection: GraphSelection | null
+  filter: Filter
+  viewport: { x: number; y: number; zoom: number } | null
+}
+
+function readSavedGraphState(projectId: string): SavedGraphState | null {
+  try {
+    const raw = sessionStorage.getItem('aco:graph:' + projectId)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<SavedGraphState>
+    return {
+      selection: parsed.selection ?? null,
+      filter: parsed.filter ?? 'all',
+      viewport: parsed.viewport ?? null,
+    }
+  } catch {
+    return null
+  }
+}
 
 const ARTIFACT_LABELS: Record<string, string> = {
   document: '文档',
@@ -65,22 +88,37 @@ function handoffStatusLabel(status: HandoffView['status']): string {
 
 export function CollaborationOverview({
   projectId,
-  onSwitchToPro,
   onOpenSession,
+  onOpenSessions,
   onManageAgents,
 }: {
   projectId: string
-  onSwitchToPro: () => void
   onOpenSession: (sessionId: string) => void
+  onOpenSessions: () => void
   onManageAgents: () => void
 }): ReactElement {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const theme = useResolvedTheme()
   const overview = useCollaborationOverview(projectId)
-  const [selection, setSelection] = useState<GraphSelection | null>(null)
-  const [filter, setFilter] = useState<Filter>('all')
+  const savedGraphState = useMemo(() => readSavedGraphState(projectId), [projectId])
+  const [selection, setSelection] = useState<GraphSelection | null>(savedGraphState?.selection ?? null)
+  const [filter, setFilter] = useState<Filter>(savedGraphState?.filter ?? 'all')
+  const [savedViewport, setSavedViewport] = useState<{ x: number; y: number; zoom: number } | null>(savedGraphState?.viewport ?? null)
   const [pageActive, setPageActive] = useState(true)
+  const [decision, setDecision] = useState<'approved' | 'rejected' | null>(null)
+  const [decisionNote, setDecisionNote] = useState('')
+  const [riskAccepted, setRiskAccepted] = useState(false)
+  const [deciding, setDeciding] = useState(false)
+  const [decisionError, setDecisionError] = useState<string | null>(null)
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('aco:graph:' + projectId, JSON.stringify({ selection, filter, viewport: savedViewport }))
+    } catch {
+      // Session storage is a convenience only; graph state is never the source of truth.
+    }
+  }, [filter, projectId, savedViewport, selection])
 
   useEffect(() => {
     const unsubscribe = window.projectos.runtime.onEvent(({ event }) => {
@@ -113,6 +151,10 @@ export function CollaborationOverview({
   const pendingApprovals = useMemo(() => approvals.filter((approval) => approval.status === 'pending'), [approvals])
   const plan = data?.plan ?? null
   const metrics = data?.metrics ?? null
+  const focus = useMemo(
+    () => projectCollaborationFocus({ agents, tasks, artifacts, approvals, handoffs, plan }),
+    [agents, approvals, artifacts, handoffs, plan, tasks],
+  )
   const taskById = useMemo(() => new Map(tasks.map((task) => [task.id, task])), [tasks])
   const agentById = useMemo(() => new Map(agents.map((agent) => [agent.id, agent])), [agents])
 
@@ -136,6 +178,41 @@ export function CollaborationOverview({
   const selectedArtifact = selection?.kind === 'artifact' ? artifacts.find((item) => item.id === selection.id) ?? null : null
   const selectedApproval = selection?.kind === 'approval' ? approvals.find((item) => item.id === selection.id) ?? null : null
   const selectedHandoff = selection?.kind === 'handoff' ? handoffs.find((item) => item.id === selection.id) ?? null : null
+  const approvalForSelection = selectedApproval
+    ?? (selectedTask ? pendingApprovals.find((approval) => approval.taskId === selectedTask.id) ?? null : null)
+    ?? (selectedAgent ? pendingApprovals.find((approval) => approval.runId === selectedAgent.activeRunId || approval.agentName === selectedAgent.name) ?? null : null)
+
+  useEffect(() => {
+    setDecision(null)
+    setDecisionNote('')
+    setRiskAccepted(false)
+    setDecisionError(null)
+  }, [selection?.id])
+
+  const decideApproval = async (value: 'approved' | 'rejected'): Promise<void> => {
+    if (!approvalForSelection || deciding) return
+    if (value === 'approved' && !riskAccepted) {
+      setDecisionError('请先确认本次授权的实际范围。')
+      return
+    }
+    setDeciding(true)
+    setDecisionError(null)
+    try {
+      await window.projectos.approvals.decide({
+        approvalId: approvalForSelection.id,
+        decision: value,
+        note: decisionNote.trim(),
+      })
+      await queryClient.invalidateQueries({ queryKey: qk.collaborationOverview(projectId) })
+      await queryClient.invalidateQueries({ queryKey: qk.approvals(projectId) })
+      setDecision(null)
+      setSelection(null)
+    } catch (error) {
+      setDecisionError(errorMessage(error))
+    } finally {
+      setDeciding(false)
+    }
+  }
 
   const openRun = (runId: string): void => {
     void navigate(`/projects/${projectId}/runs?run=${runId}`)
@@ -147,7 +224,7 @@ export function CollaborationOverview({
     void navigate(`/projects/${projectId}/approvals`)
   }
   const openOrchestration = (): void => {
-    void navigate(`/projects/${projectId}/orchestration`)
+    void navigate('/projects/' + projectId + '/orchestration?return=agents')
   }
 
   const changeFilter = (next: Filter): void => {
@@ -308,7 +385,7 @@ export function CollaborationOverview({
           </div>
           <div className="aco-detail-section">
             <span>请求参数（持久化）</span>
-            <pre className="aco-detail-pre">{JSON.stringify(selectedApproval.request, null, 2).slice(0, 4000)}</pre>
+            <pre className="aco-detail-pre" data-testid="approval-request">{JSON.stringify(selectedApproval.request, null, 2).slice(0, 4000)}</pre>
           </div>
         </>
       )
@@ -340,6 +417,54 @@ export function CollaborationOverview({
     return null
   })()
 
+  const approvalPanel = approvalForSelection ? (
+    <div className="aco-approval-block" data-testid="node-approval">
+      <div className="aco-approval-head">
+        <span className="aco-pill is-warn"><i />待审批</span>
+        <strong>{approvalForSelection.title}</strong>
+      </div>
+      <dl className="aco-detail-list">
+        <div><dt>请求方</dt><dd>{approvalForSelection.agentName}</dd></div>
+        <div><dt>任务</dt><dd>{approvalForSelection.taskTitle ?? '—'}</dd></div>
+        <div><dt>Run</dt><dd className="aco-mono">{approvalForSelection.runId}</dd></div>
+        <div><dt>请求时间</dt><dd>{formatDateTime(approvalForSelection.requestedAt)}</dd></div>
+        <div><dt>过期时间</dt><dd>{approvalForSelection.expiresAt ? formatDateTime(approvalForSelection.expiresAt) : '未设置'}</dd></div>
+      </dl>
+      {approvalForSelection.detail ? <p className="aco-approval-detail">{approvalForSelection.detail}</p> : null}
+      <div className="aco-detail-section">
+        <span>实际请求参数（持久化）</span>
+        <pre className="aco-detail-pre" data-testid="approval-request">{JSON.stringify(approvalForSelection.request, null, 2).slice(0, 6000)}</pre>
+      </div>
+    </div>
+  ) : null
+
+  const decisionPanel = decision ? (
+    <div className="aco-decision aco-decision-docked" data-testid="approval-confirm">
+      <strong>{decision === 'approved' ? '确认允许本次执行？' : '确认拒绝本次执行？'}</strong>
+      <p>{decision === 'approved' ? '服务端仍会校验权限、过期时间和审批状态；批准只对本次请求生效。' : '拒绝会写入审批事实；Run 不会继续执行此工具。'}</p>
+      <textarea
+        value={decisionNote}
+        onChange={(event) => setDecisionNote(event.target.value)}
+        placeholder="处理备注（会写入审计）"
+        maxLength={2000}
+        rows={2}
+      />
+      {decision === 'approved' ? (
+        <label className="aco-risk-check">
+          <input type="checkbox" checked={riskAccepted} onChange={(event) => setRiskAccepted(event.target.checked)} />
+          我已核对工具、参数、路径与影响范围，并确认只允许本次
+        </label>
+      ) : null}
+      {decisionError ? <p className="aco-decision-error" role="alert">{decisionError}</p> : null}
+      <div className="aco-decision-actions">
+        <button type="button" className="aco-btn is-primary" disabled={deciding || (decision === 'approved' && !riskAccepted)} onClick={() => void decideApproval(decision)}>
+          {deciding ? '提交中…' : decision === 'approved' ? '确认允许本次' : '确认拒绝'}
+        </button>
+        <button type="button" className="aco-btn" disabled={deciding} onClick={() => { setDecision(null); setDecisionError(null) }}>取消</button>
+      </div>
+    </div>
+  ) : null
+
   return (
     <div className="aco-root pw-theme" data-theme={theme}>
       <header className="aco-head">
@@ -353,10 +478,6 @@ export function CollaborationOverview({
           </p>
         </div>
         <div className="aco-head-actions">
-          <div className="aco-mode" role="tablist" aria-label="Agent 工作台视图">
-            <button type="button" role="tab" aria-selected="true" className="is-active">协作总览</button>
-            <button type="button" role="tab" aria-selected="false" onClick={onSwitchToPro}>专业编排</button>
-          </div>
           <button
             type="button"
             className="aco-icon-btn"
@@ -396,21 +517,25 @@ export function CollaborationOverview({
           <span><i className="is-neutral" />{metrics.pendingHandoffs} 交接</span>
         </div>
         <span className="aco-toolbar-spacer" />
-        <button type="button" className="aco-link" onClick={openOrchestration}><Workflow size={12} /> 编排工作台</button>
+        <button type="button" className="aco-link" onClick={openOrchestration}><Workflow size={12} /> 计划 DAG</button>
+        <button type="button" className="aco-link" onClick={onOpenSessions}><MessagesSquare size={12} /> 会话工作台</button>
         <button type="button" className="aco-link" onClick={onManageAgents}><Bot size={12} /> Agent 管理</button>
       </div>
 
       <div className="aco-canvas-wrap">
         <CollaborationGraph
-          agents={agents}
-          tasks={tasks}
+          agents={focus.primaryAgents}
+          standbyAgents={focus.standbyAgents}
+          tasks={focus.primaryTasks}
           runs={runs}
-          artifacts={artifacts}
-          approvals={pendingApprovals}
-          handoffs={handoffs}
+          artifacts={focus.primaryArtifacts}
+          approvals={focus.primaryApprovals}
+          handoffs={focus.primaryHandoffs}
           planTaskIds={plan?.taskIds ?? []}
           selected={selection}
           onSelect={setSelection}
+          initialViewport={savedViewport}
+          onViewportChange={setSavedViewport}
           showAgents={filter === 'all' || filter === 'agents'}
           showTasks={filter === 'all' || filter === 'tasks'}
           showOutputs={filter === 'all' || filter === 'outputs'}
@@ -465,12 +590,20 @@ export function CollaborationOverview({
           meta={selectedTask ? <span>{taskStatusLabel(selectedTask.status)} · {selectedTask.assigneeName ?? '未分配'}</span> : selectedAgent ? <span>{selectedAgent.role}</span> : null}
           onClose={() => setSelection(null)}
         />
-        <OverlayScrollArea>{inspectorBody}</OverlayScrollArea>
-        <OverlayFooter meta={selectedApproval?.status === 'pending' ? '需要人工决定' : '真实持久化对象'}>
+        <OverlayScrollArea>{inspectorBody}{selectedApproval ? null : approvalPanel}</OverlayScrollArea>
+        {decisionPanel}
+        <OverlayFooter meta={approvalForSelection?.status === 'pending' ? '需要人工决定 · 服务端校验' : '真实持久化对象'}>
+          {approvalForSelection?.status === 'pending' && !decision ? (
+            <>
+              <button type="button" className="aco-btn is-primary" onClick={() => setDecision('approved')}>允许本次</button>
+              <button type="button" className="aco-btn" onClick={() => setDecision('rejected')}>拒绝</button>
+              <button type="button" className="aco-btn" onClick={() => { openApprovals(); setSelection(null) }}>审批中心</button>
+            </>
+          ) : null}
           {selectedAgent ? (
             <>
               {selectedAgent.activeSessionId ? (
-                <button type="button" className="aco-btn is-primary" onClick={() => { onOpenSession(selectedAgent.activeSessionId!); setSelection(null) }}>
+                <button type="button" className="aco-btn is-primary" onClick={() => { onOpenSession(selectedAgent.activeSessionId!) }}>
                   打开会话 <ArrowRight size={12} />
                 </button>
               ) : null}
@@ -494,12 +627,7 @@ export function CollaborationOverview({
             </>
           ) : null}
           {selectedApproval ? (
-            <>
-              {selectedApproval.status === 'pending' ? (
-                <button type="button" className="aco-btn is-primary" onClick={() => { openApprovals(); setSelection(null) }}>处理审批 <ArrowRight size={12} /></button>
-              ) : null}
-              <button type="button" className="aco-btn" onClick={() => openRun(selectedApproval.runId)}>运行审计</button>
-            </>
+            <button type="button" className="aco-btn" onClick={() => openRun(selectedApproval.runId)}>运行审计</button>
           ) : null}
           {selectedHandoff ? (
             <>
