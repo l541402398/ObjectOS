@@ -1,7 +1,8 @@
-# Acceptance report — Agent overview P0 recovery
+# Acceptance report — Agent overview P0 + P1-C visual masters
 
 - Branch: `fix/agent-overview-ux-recovery`
-- Implementation commit: `58e8c2845f675a1e4c5f8634243080ca0b466b71`
+- P0 implementation commit: `58e8c2845f675a1e4c5f8634243080ca0b466b71`
+- P1-C visual commit: `4bc1997b240b5ffa1d11bb4c9ab5ccccfacfd03d`
 - Remote verification: `git ls-remote` returned the same SHA at push time
 - Base: `v2.0-agent-overview` / `b4d400330819390a8876683b57e108136024cd34`
 - Scope: **P0-A, P0-B and P1-C visual masters**. P1-C awaits user visual review before rollout.
