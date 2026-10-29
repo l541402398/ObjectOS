@@ -1536,6 +1536,17 @@ export class OrchestrationScheduler {
               `执行计划任务：${card.title}`,
               card.description || '',
               card.acceptanceCriteria.length ? `验收标准：\n- ${card.acceptanceCriteria.join('\n- ')}` : '',
+              // ADR-0025/0028/0032: make the review subject and the write path explicit, so the
+              // reviewer judges the same content the product does and the developer stops writing
+              // files through `node -e` (which needs a fresh approval every time).
+              card.labels.includes('reviewer')
+                ? [
+                    '审查对象是**当前工作区内容**（包含未提交修改），不是某个 Git 提交。',
+                    '请用受控只读工具核对：`git diff HEAD`、被审查文件内容、以及测试命令的真实退出码。',
+                    '"改动尚未提交"本身不是缺陷：交付阶段由产品负责提交与合并；只有内容本身的问题才算 findings。',
+                    '必须创建审查 Artifact（artifactType="review"），reviewedObjects 写真实文件路径，conclusion/findings/blockers 如实填写。',
+                  ].join('\n')
+                : '写入文件请使用 write_file（在授权路径内无需逐次审批）；不要用 node -e 之类的方式写文件，那会逐次触发人工审批。',
               '请使用工具完成实际工作并创建必要的交付物。完成后如任务仍未进入 review，请调用 update_task_status 将其标记为完成；编排器会进行自动验收。',
             ]
               .filter(Boolean)

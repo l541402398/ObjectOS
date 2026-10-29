@@ -132,6 +132,44 @@ function resolveGrantTarget(workspaceRoot: string, rawPath: string): string {
   return relative(workspaceRoot, resolved).replace(/\\/g, '/') || '.'
 }
 
+/**
+ * ADR-0032 — read-only inspection is not the same risk as arbitrary shell.
+ *
+ * A plan can require dozens of look-only commands (`git status`, `git diff`, `grep`, …). Asking the
+ * user to approve each one is friction without a security gain: none of them can write, delete or
+ * reach the network. Once one command of a family has been approved inside a plan, the *same family*
+ * may reuse that decision while the plan grant is alive. Anything that can write, execute arbitrary
+ * code or reach the network stays on the per-call approval path.
+ */
+const READ_ONLY_FAMILIES: Array<{ family: string; pattern: RegExp }> = [
+  { family: 'git-status', pattern: /^git status(\s|$)/ },
+  { family: 'git-diff', pattern: /^git diff(\s|$)/ },
+  { family: 'git-log', pattern: /^git log(\s|$)/ },
+  { family: 'git-show', pattern: /^git show(\s|$)/ },
+  { family: 'git-rev-parse', pattern: /^git rev-parse(\s|$)/ },
+  { family: 'git-ls-files', pattern: /^git ls-files(\s|$)/ },
+  { family: 'git-ls-tree', pattern: /^git ls-tree(\s|$)/ },
+  { family: 'git-grep', pattern: /^git grep(\s|$)/ },
+  { family: 'git-blame', pattern: /^git blame(\s|$)/ },
+  { family: 'git-hash-object', pattern: /^git hash-object(\s|$)/ },
+  { family: 'git-cat-file', pattern: /^git cat-file(\s|$)/ },
+  { family: 'git-merge-base', pattern: /^git merge-base(\s|$)/ },
+  { family: 'grep', pattern: /^(grep|rg)(\s|$)/ },
+  { family: 'list-dir', pattern: /^(ls|dir|find)(\s|$)/ },
+  { family: 'read-text', pattern: /^(cat|head|tail|wc)(\s|$)/ },
+  { family: 'node-check', pattern: /^node --check(\s|$)/ },
+  { family: 'node-version', pattern: /^(node --version|node -v|npm --version|npm -v|pnpm --version)(\s|$)/ },
+]
+
+/** Family of a strictly read-only command, or null when the command may have side effects. */
+export function readOnlyCommandFamily(command: string): string | null {
+  const normalized = command.trim()
+  if (!normalized) return null
+  // Shell chaining, redirection or substitution can turn a read into a write.
+  if (/[;&|><`$]|\n/.test(normalized)) return null
+  return READ_ONLY_FAMILIES.find((entry) => entry.pattern.test(normalized))?.family ?? null
+}
+
 export interface PlanToolGrantDecision {
   decision: 'allow' | 'approval' | 'deny'
   reason: string
@@ -288,6 +326,33 @@ export class PlanGrantService {
          DO UPDATE SET approval_id=excluded.approval_id, expires_at=excluded.expires_at, context_hash=excluded.context_hash`,
       )
       .run(newId('pca'), input.projectId, input.planId, input.agentId, input.toolName, hash, command.slice(0, 4000), input.approvalId, timestamp, timestamp + ttl, context)
+  }
+
+  /**
+   * An approval for any command of the same read-only family, decided inside this plan and still
+   * within the grant's lifetime. Returns the approval id (for the audit trail) or null.
+   */
+  private readOnlyFamilyApproval(planId: string, family: string, grantExpiresAt: number): string | null {
+    const plan = this.store.read.getPlanRevision(planId)
+    if (!plan) return null
+    const rows = this.store.db
+      .prepare(
+        `SELECT a.id AS approval_id, json_extract(a.request_json, '$.args.command') AS command, a.decided_at
+         FROM approvals a
+         JOIN agent_runs r ON r.id = a.run_id
+         WHERE a.project_id = ? AND a.status = 'approved' AND a.decided_at IS NOT NULL AND a.decided_at <= ?
+           AND r.task_id IN (SELECT value FROM json_each(?))
+         ORDER BY a.decided_at DESC LIMIT 200`,
+      )
+      .all(plan.projectId, Math.min(now(), grantExpiresAt), JSON.stringify(plan.createdTaskIds)) as Array<{
+      approval_id: string
+      command: string | null
+      decided_at: number
+    }>
+    for (const row of rows) {
+      if (row.command && readOnlyCommandFamily(row.command) === family) return String(row.approval_id)
+    }
+    return null
   }
 
   private commandApproval(
@@ -913,12 +978,42 @@ export class PlanGrantService {
       return { decision: 'deny', reason: `计划执行授权状态为 ${statusText(view.status)}，已停止新的副作用`, grantId: grant.id }
     }
     if (input.toolName !== 'write_file') {
+      // ADR-0032: a read-only family approved once in this plan covers the same family.
+      const command = typeof input.args.command === 'string' ? input.args.command.trim() : ''
+      const family = command ? readOnlyCommandFamily(command) : null
+      if (family) {
+        const reuse = this.readOnlyFamilyApproval(plan.id, family, grant.expiresAt)
+        if (reuse) {
+          this.store.appendEvent(plan.projectId, plan.id, PROJECT_EVENT_TYPES.planGrantConsumed, {
+            grantId: grant.id,
+            planId: plan.id,
+            taskId: input.taskId ?? null,
+            runId: input.runId,
+            toolCallId: input.toolCallId,
+            agentId: input.agentId,
+            toolName: input.toolName,
+            path: null,
+            readOnlyFamily: family,
+            reusedApprovalId: reuse,
+            command: command.slice(0, 300),
+          })
+          return {
+            decision: 'allow',
+            reason: `只读检查家族 ${family} 已在本计划内获批（审批 ${reuse}），复用该决定`,
+            grantId: grant.id,
+          }
+        }
+        return {
+          decision: 'approval',
+          reason: `只读检查 ${family} 首次需要审批；本计划内同家族只读命令随后可复用（不可写入/联网）`,
+          grantId: grant.id,
+        }
+      }
       // Process tools are never covered by the grant itself. A human may, however, have
       // already approved this exact command inside this plan: re-asking for the same
       // `npm test` five times is product friction, not safety. Reuse is keyed on the
       // exact normalized command plus plan/agent/tool and a short TTL, so any change to
       // the command needs a fresh decision.
-      const command = typeof input.args.command === 'string' ? input.args.command.trim() : ''
       if (command && (input.toolName === 'run_command' || input.toolName === 'run_tests')) {
         const reused = this.commandApproval(plan.id, input.agentId, input.toolName, command, input.workspaceRoot)
         if (reused) {

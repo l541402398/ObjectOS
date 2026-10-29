@@ -434,6 +434,39 @@ export const ApiSchemas = {
     input: projectIdInput,
     output: ActionCenterSchema,
   },
+  'work.goalStatus': {
+    input: projectIdInput,
+    output: z.object({
+      projectId: IdSchema,
+      planId: IdSchema.nullable(),
+      revision: z.number().int().positive().nullable(),
+      goal: z.string(),
+      execution: z
+        .object({ status: z.string(), error: z.string().nullable(), updatedAt: z.number().nullable() })
+        .nullable(),
+      verification: z.object({ state: z.string(), failing: z.array(z.string()), detail: z.string() }),
+      review: z.object({ state: z.string(), fingerprint: z.string().nullable(), detail: z.string() }),
+      delivery: z.object({
+        state: z.string(),
+        mergedAt: z.number().nullable(),
+        mergeCommit: z.string().nullable(),
+        evidenceId: z.string().nullable(),
+        detail: z.string(),
+      }),
+      nextAction: z.object({ owner: z.enum(['product', 'human', 'none']), title: z.string(), detail: z.string() }),
+      productSteps: z.array(z.object({ title: z.string(), detail: z.string() })),
+      humanDecisions: z.array(
+        z.object({ id: z.string(), kind: z.string(), title: z.string(), reason: z.string(), route: z.string() }),
+      ),
+      policy: z.object({
+        mode: z.string(),
+        autoStartPlans: z.boolean(),
+        autoApplyReplans: z.boolean(),
+        autoDeliver: z.boolean(),
+        maxAutoReplans: z.number().int().nonnegative(),
+      }),
+    }),
+  },
   'action.autonomy.get': {
     input: projectIdInput,
     output: ProjectAutonomySettingsSchema,

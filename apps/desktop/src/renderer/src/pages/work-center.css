@@ -722,3 +722,112 @@
 
 .wc-next-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wc-next-row:hover { border-color: color-mix(in srgb, var(--color-accent, #4c6ef5) 45%, var(--color-divider)); }
+
+/* Phase 2.8.8 / ADR-0031 — goal-driven status band: execution, verification, review, delivery.
+   Uses the frozen Premium Liquid Glass tokens; no new visual language, no global backdrop-filter. */
+.wc-goal-states {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(196px, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-4) 0 var(--space-3);
+}
+
+.wc-goal-state {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
+}
+
+.wc-goal-state-label {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.wc-goal-state-value {
+  font-size: 15px;
+  color: var(--color-text-primary);
+}
+
+.wc-goal-state-detail {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.wc-goal-state-active {
+  border-color: color-mix(in srgb, var(--color-accent) 34%, var(--color-border));
+}
+
+.wc-goal-state-success {
+  border-color: color-mix(in srgb, var(--color-success, #2f9e6b) 32%, var(--color-border));
+}
+
+.wc-goal-state-warning {
+  border-color: color-mix(in srgb, var(--color-warning, #c98a1f) 36%, var(--color-border));
+}
+
+.wc-goal-state-danger {
+  border-color: color-mix(in srgb, var(--color-danger, #c0463f) 36%, var(--color-border));
+}
+
+.wc-goal-state-link {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-accent);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.wc-goal-state-link:hover {
+  text-decoration: underline;
+}
+
+.wc-goal-autopilot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
+  border: 1px dashed color-mix(in srgb, var(--color-accent) 32%, var(--color-border));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-accent) 5%, var(--color-surface));
+}
+
+.wc-goal-autopilot-kicker {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.wc-goal-autopilot ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wc-goal-autopilot li {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.wc-goal-autopilot li strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}

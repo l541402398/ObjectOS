@@ -103,6 +103,9 @@ const api: ProjectOSDesktopApi = {
     createTarget: (input) => call('deployment.target.create', input),
     createStrategy: (input) => call('deployment.strategy.create', input),
   },
+  work: {
+    goalStatus: (projectId) => call('work.goalStatus', { projectId }),
+  },
   actions: {
     center: (projectId) => call('action.center', { projectId }),
     autonomy: (projectId) => call('action.autonomy.get', { projectId }),

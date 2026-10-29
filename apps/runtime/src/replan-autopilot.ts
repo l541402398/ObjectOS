@@ -165,7 +165,9 @@ export class ReplanAutopilot {
     for (const outcome of reReviews) {
       if (outcome.kind === 'scheduled') {
         reReviewPlans.add(outcome.planId)
-        this.rejectMootProposals(projectId, outcome.planId)
+        // A re-review is in flight, so a revision would duplicate the verification work. The
+        // proposal is NOT rejected: if the re-review comes back negative, that revision (or a new
+        // one) is exactly what the fix path needs.
         outcomes.push({
           kind: 'plan.re-review-scheduled',
           projectId,
@@ -654,27 +656,6 @@ export class ReplanAutopilot {
         reviewArtifactId: artifact.id,
         snapshotFingerprint: snapshot.fingerprint,
       })
-    }
-  }
-
-  /**
-   * A proposal that only existed because the review went stale becomes moot once the product can
-   * re-review the existing plan. Rejecting it is safe and idempotent (it is not a human decision)
-   * and prevents a redundant revision from being applied later.
-   */
-  private rejectMootProposals(projectId: string, planId: string): void {
-    for (const proposal of this.replans.list(projectId, planId)) {
-      if (proposal.status !== 'proposed') continue
-      try {
-        this.replans.reject(proposal.id, '已改为复用原计划审查任务复审当前内容，无需新修订')
-        this.record(projectId, planId, PROJECT_EVENT_TYPES.replanRejected, {
-          proposalId: proposal.id,
-          reason: 'auto-review superseded the revision',
-          authorizedBy: 'policy',
-        })
-      } catch (error) {
-        this.logger.warn({ err: error, proposalId: proposal.id }, 'failed to reject moot replan proposal')
-      }
     }
   }
 

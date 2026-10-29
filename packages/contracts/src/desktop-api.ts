@@ -77,6 +77,9 @@ export interface ProjectOSDesktopApi {
     createTarget: (input: In<'deployment.target.create'>) => Promise<Out<'deployment.target.create'>>
     createStrategy: (input: In<'deployment.strategy.create'>) => Promise<Out<'deployment.strategy.create'>>
   }
+  work: {
+    goalStatus: (projectId: string) => Promise<Out<'work.goalStatus'>>
+  }
   actions: {
     center: (projectId: string) => Promise<Out<'action.center'>>
     autonomy: (projectId: string) => Promise<Out<'action.autonomy.get'>>

@@ -87,9 +87,13 @@ export class ReviewCoordinator {
     if (activeRuns.length > 0) return { ...base, kind: 'in-progress', reasons: ['仍有活动 Run，暂不安排复审'] }
 
     const resolution = planReviewEvidence(this.store, plan)
-    if (resolution.approved) return { ...base, reasons: ['当前内容已有通过的审查'] }
+    const reReviewMark = this.reReviewMarker(plan)
     if (resolution.current.length > 0) {
-      // A current, non-approving review exists: that is a fix request, i.e. the Replanner's job.
+      // The re-review produced a review of the current content, so the intent is satisfied. Clear
+      // the marker either way: an approval continues to delivery, a rejection must go to the fix
+      // path (Replanner) instead of triggering yet another review of the same content.
+      if (reReviewMark) this.clearMarker(plan.id, reReviewMark.taskId)
+      if (resolution.approved) return { ...base, reasons: ['当前内容已有通过的审查'] }
       return { ...base, reasons: [`当前审查结论为 ${resolution.verdict}，应进入修复而不是复审`] }
     }
 
@@ -148,7 +152,7 @@ export class ReviewCoordinator {
     }
 
     // Idempotency: the same content fingerprint is never re-reviewed twice.
-    const mark = this.reReviewMarker(plan)
+    const mark = reReviewMark
     if (mark && mark.taskId === chosen.card.id && mark.fingerprint === chosen.fingerprint) {
       return {
         ...base,

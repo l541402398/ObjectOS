@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { NextStepPanel } from '../components/NextStepPanel'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { App as AntApp, Button, Input, Modal } from 'antd'
 import {
   ArrowRightOutlined,
@@ -58,6 +58,57 @@ const PLAN_TONES: Record<string, 'neutral' | 'warning' | 'success' | 'danger' | 
   superseded: 'neutral',
 }
 
+const GOAL_VERIFICATION_LABELS: Record<string, string> = {
+  unknown: '未验证',
+  passing: '通过',
+  failing: '未通过',
+}
+
+const GOAL_REVIEW_LABELS: Record<string, string> = {
+  none: '尚无审查',
+  stale: '需要复审',
+  current_negative: '审查未通过',
+  approved: '已通过',
+}
+
+const GOAL_DELIVERY_LABELS: Record<string, string> = {
+  none: '尚未交付',
+  blocked: '等待交付条件',
+  merged: '已合并，待验证',
+  verified: '已验证交付',
+  merged_verification_failed: '已合并但验证失败',
+}
+
+type GoalStateTone = 'neutral' | 'active' | 'success' | 'warning' | 'danger'
+
+function GoalState({
+  label,
+  value,
+  tone,
+  detail,
+  onOpen,
+}: {
+  label: string
+  value: string
+  tone: GoalStateTone
+  detail: string
+  href?: string
+  onOpen?: () => void
+}): React.JSX.Element {
+  return (
+    <div className={`wc-goal-state wc-goal-state-${tone}`}>
+      <span className="wc-goal-state-label">{label}</span>
+      <strong className="wc-goal-state-value">{value}</strong>
+      {detail ? <span className="wc-goal-state-detail">{detail}</span> : null}
+      {onOpen ? (
+        <button type="button" className="wc-goal-state-link" onClick={onOpen}>
+          打开对象
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
 const EXECUTION_LABELS: Record<string, string> = {
   running: '执行中',
   paused: '已暂停',
@@ -110,6 +161,15 @@ export default function WorkCenterPage() {
   const artifacts = useArtifacts(projectId)
   const agents = useAgents(projectId)
   const lifecycle = useLifecycle(projectId)
+  // ADR-0031: the primary status is derived by the runtime from persisted facts, so the page
+  // cannot show "tasks 100%" next to an undelivered goal, and it cannot turn work the product is
+  // about to do itself into a user todo.
+  const goalStatus = useQuery({
+    queryKey: ['work', 'goalStatus', projectId],
+    queryFn: () => window.projectos.work.goalStatus(projectId),
+    enabled: Boolean(projectId),
+    refetchInterval: 4_000,
+  })
 
   const [goal, setGoal] = useState('')
   const [requirementOpen, setRequirementOpen] = useState(false)
@@ -309,7 +369,21 @@ export default function WorkCenterPage() {
   const execution = activePlan?.execution ?? null
   const grantReady = Boolean(grant.data?.valid)
   const planStatus = activePlan?.status ?? 'none'
-  const focus = !requirements.length
+  const serverGoal = goalStatus.data
+  const focus = serverGoal?.nextAction
+    ? {
+        kicker:
+          serverGoal.nextAction.owner === 'human'
+            ? '需要你决定'
+            : serverGoal.nextAction.owner === 'product'
+              ? 'AI 正在自主推进'
+              : '当前状态',
+        title: serverGoal.nextAction.title,
+        description: serverGoal.nextAction.detail,
+        action: '',
+        run: () => undefined,
+      }
+    : !requirements.length
     ? { kicker: '从目标开始', title: '先记录一条真实需求', description: '写清背景、边界和验收标准，计划才有可靠输入。', action: '记录需求', run: () => setRequirementOpen(true) }
     : !activePlan
       ? { kicker: '下一步', title: '把需求变成可审核的计划', description: 'AI 会生成 DAG、Agent 分工与验收节点；批准后再单独授权执行。', action: '生成计划', run: () => document.getElementById('work-goal')?.focus() }
@@ -364,6 +438,61 @@ export default function WorkCenterPage() {
           <p>{focus.description}</p>
         </div>
       </div>
+
+      {serverGoal ? (
+        <div className="wc-goal-states" data-testid="wc-goal-states">
+          <GoalState
+            label="执行"
+            value={EXECUTION_LABELS[serverGoal.execution?.status ?? ''] ?? (serverGoal.execution ? serverGoal.execution.status : '未启动')}
+            tone={serverGoal.execution?.status === 'running' ? 'active' : serverGoal.execution?.status === 'paused' ? 'warning' : 'neutral'}
+            detail={String(serverGoal.execution?.error ?? '').slice(0, 160)}
+          />
+          <GoalState
+            label="真实测试"
+            value={GOAL_VERIFICATION_LABELS[serverGoal.verification.state] ?? serverGoal.verification.state}
+            tone={serverGoal.verification.state === 'passing' ? 'success' : serverGoal.verification.state === 'failing' ? 'warning' : 'neutral'}
+            detail={serverGoal.verification.detail}
+            href={
+              serverGoal.verification.failing.length > 0
+                ? `#/projects/${projectId}/runs`
+                : undefined
+            }
+            onOpen={serverGoal.verification.failing.length > 0 ? () => navigate(`/projects/${projectId}/runs`) : undefined}
+          />
+          <GoalState
+            label="当前审查"
+            value={GOAL_REVIEW_LABELS[serverGoal.review.state] ?? serverGoal.review.state}
+            tone={serverGoal.review.state === 'approved' ? 'success' : serverGoal.review.state === 'current_negative' ? 'warning' : 'neutral'}
+            detail={serverGoal.review.detail}
+          />
+          <GoalState
+            label="交付"
+            value={GOAL_DELIVERY_LABELS[serverGoal.delivery.state] ?? serverGoal.delivery.state}
+            tone={
+              serverGoal.delivery.state === 'verified'
+                ? 'success'
+                : ['merged_verification_failed', 'blocked'].includes(serverGoal.delivery.state)
+                  ? 'warning'
+                  : 'neutral'
+            }
+            detail={serverGoal.delivery.detail}
+          />
+        </div>
+      ) : null}
+
+      {serverGoal && serverGoal.productSteps.length > 0 ? (
+        <div className="wc-goal-autopilot" data-testid="wc-goal-autopilot">
+          <span className="wc-goal-autopilot-kicker">AI 下一步（无需你操作）</span>
+          <ul>
+            {serverGoal.productSteps.map((step) => (
+              <li key={step.title}>
+                <strong>{step.title}</strong>
+                <span>{step.detail}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <NextStepPanel projectId={projectId} navigate={navigate} />
 
