@@ -25,6 +25,8 @@ const PACKAGE_RULES = {
   'design-tokens': [],
   ui: ['contracts', 'design-tokens'],
   'ai-ui': ['contracts', 'design-tokens', 'ui'],
+  // Organization control-plane contracts are platform-neutral; the server is the only consumer.
+  'organization-contracts': [],
 }
 
 const RENDERER_ALLOWED = new Set(['contracts', 'design-tokens', 'ui', 'ai-ui'])
@@ -36,6 +38,7 @@ const NO_NODE_PACKAGES = new Set([
   'ui',
   'ai-ui',
   'session-manager',
+  'organization-contracts',
 ])
 
 const errors = []
@@ -108,13 +111,22 @@ for (const file of walk(runtimeDir)) {
   checkFile(file, { package: 'runtime' })
 }
 
+// A0: the organization control plane must not reach into local execution packages.
+const serverDir = join(repoRoot, 'apps', 'server', 'src')
+for (const file of walk(serverDir)) {
+  checkFile(file, {
+    package: 'server',
+    allowed: new Set(['organization-contracts', 'contracts']),
+  })
+}
+
 if (errors.length > 0) {
   console.error('Dependency boundary check failed:')
   for (const error of errors) console.error(` - ${error}`)
   process.exit(1)
 }
 
-console.log('Dependency boundaries OK (packages, runtime, renderer).')
+console.log('Dependency boundaries OK (packages, runtime, renderer, server).')
 
 
 

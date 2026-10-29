@@ -1,5 +1,23 @@
 # ProjectOS UI Design Changelog
 
+## 2026-10-29 — A0 Precision Workspace 设计母版（独立原型路由，生产基线未变）
+
+- 新增 `#/precision-lab`（`DEV_ONLY`，不在产品菜单）：组织/项目总览、需求工作台、流程模板设计器三张母版，
+  以及组织资产/成员/运行等次级视图；全部标注 `DESIGN PROTOTYPE`，使用演示数据，不写 SQLite、不启动 Agent。
+- 新增候选 token 层 `packages/design-tokens/src/precision.css`（仅 `.pw-theme` 作用域，生产仍用 Liquid Glass）。
+  内容字号下限 12px，正文 13px；主文字/辅助文字在亮暗两套主题下均 ≥4.5:1（`scripts/a0-contrast.mjs` 实测）。
+- 真实技术实现：React Flow 12 + ELK 分层纵向 DAG（9 节点/10 连线）、Radix Dialog/Popover、真实校验
+  （起点数量、交付节点、门禁角色、循环依赖）、真实发布版本状态。
+- 修正参考原型的缺陷：组织选择器 caption 与标题同行碰撞；移除标题上方装饰性眉标；流程从绝对定位假图改为真实 DAG。
+- 真实 Electron 证据：`docs/org-upgrade/evidence/A0/`，45 项 PASS / 0 FAIL / 1 SKIP；截图覆盖 1440×900、1024×768、
+  125%、亮/暗、空态、错误、审批抽屉、命令面板、发布对话框。采集脚本 `scripts/a0-precision-shots.mjs`。
+- 过程中发现并修复两个真实缺陷：① Radix Portal 在 `.pw-root` 之外导致 light token 丢失，弹层无背景/无遮罩；
+  ② 创建需求弹窗 `projects` 数组每次渲染都变引用，`useEffect` 反复清空输入。二者均有 Electron 复测。
+- 参考来源与限制：使用 Radix 1.3.1 / React Flow 12.12 / ELK 0.12 / Lucide 1.61（均已安装，许可证见设计文档）；
+  ui-ux-pro-max 的 landing 模式与紫色调色板被拒绝（与资料包 Precision 方向冲突）；Motion 未在本原型使用；
+  Sim Studio / Liquid Glass / React Bits 本轮未检查，不作为已参考来源。详见 `docs/org-upgrade/design/PRECISION_DESIGN_SYSTEM.md`。
+- 未验证：1024 覆盖式流程检查器的自动化开关、拖拽连线 E2E、axe 全量审计、reduced-motion 开启后的截图。
+
 ## 2026-10-29 — Breadcrumb navigation with history back
 
 - 缺陷：内页之间无法回到上一个内页；标题栏的路径看起来像装饰（三级色、无层级语义），也没有返回控件。

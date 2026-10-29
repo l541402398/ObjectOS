@@ -19,6 +19,7 @@
     "baseUrl": ".",
     "paths": {
       "@projectos/contracts": ["packages/contracts/src/index.ts"],
+      "@projectos/organization-contracts": ["packages/organization-contracts/src/index.ts"],
       "@projectos/domain": ["packages/domain/src/index.ts"],
       "@projectos/application": ["packages/application/src/index.ts"],
       "@projectos/persistence": ["packages/persistence/src/index.ts"],

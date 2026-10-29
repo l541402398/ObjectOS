@@ -1,0 +1,12 @@
+{
+  "commit": "9e2f82ab0564cea7dabfdbaf0a620c191d7afc49",
+  "branch": "v2.0-org-a0",
+  "build": "electron-vite build",
+  "entry": "apps/desktop/out/main/index.js",
+  "renderer": "apps/desktop/out/renderer/index.html",
+  "electron": "43.8.2",
+  "node": "v24.22.0",
+  "capturedAt": "2026-10-29T14:35:06.112Z",
+  "prototypeRoute": "#/precision-lab",
+  "screenshotDir": "docs/org-upgrade/evidence/A0/screenshots"
+}

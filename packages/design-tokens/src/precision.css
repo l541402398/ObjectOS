@@ -1,0 +1,276 @@
+/**
+ * Precision Workspace tokens — A0 candidate design system.
+ *
+ * Scoped to `.pw-root` on purpose: the production shell still uses the approved Liquid Glass tokens
+ * in `tokens.css`. Nothing here changes existing pages; the prototype route opts in. Promotion to the
+ * global token layer is an explicit A1 decision with its own visual-regression evidence.
+ *
+ * Rules encoded here (see docs/org-upgrade/design/PRECISION_DESIGN_SYSTEM.md):
+ * - Neutral, paper-like surfaces; 1px hairlines carry structure, shadows only lift overlays.
+ * - One low-saturation indigo accent. Status always pairs colour with an icon or label.
+ * - 12px minimum content text; 13px base; tabular numerals for ids, counts, hashes and times.
+ * - No decorative glass/blur; no gradients used as filler.
+ */
+.pw-theme,
+.pw-theme[data-theme='light'] {
+  color-scheme: light;
+
+  --pw-canvas: #f4f6f9;
+  --pw-surface: #ffffff;
+  --pw-surface-2: #f8fafc;
+  --pw-surface-3: #eef2f7;
+  --pw-surface-hover: #f5f8fb;
+  --pw-rail: #fbfcfe;
+
+  --pw-ink: #18212f;
+  --pw-ink-2: #455365;
+  --pw-muted: #556274;
+  --pw-faint: #667386;
+  --pw-inverse: #ffffff;
+
+  --pw-accent: #4f60d4;
+  --pw-accent-strong: #3d4ec2;
+  --pw-accent-soft: #eef0fe;
+  --pw-accent-line: rgba(79, 96, 212, 0.26);
+  --pw-accent-ink: #3745ad;
+
+  --pw-ok: #137a63;
+  --pw-ok-soft: #e6f5f0;
+  --pw-ok-line: rgba(19, 122, 99, 0.22);
+  --pw-warn: #8d6212;
+  --pw-warn-soft: #fdf3e1;
+  --pw-warn-line: rgba(160, 111, 18, 0.24);
+  --pw-danger: #b33c4b;
+  --pw-danger-soft: #fdecef;
+  --pw-danger-line: rgba(179, 60, 75, 0.24);
+  --pw-info: #2d6c99;
+  --pw-info-soft: #e9f3fa;
+  --pw-info-line: rgba(45, 108, 153, 0.22);
+
+  --pw-line: #e2e7ee;
+  --pw-line-strong: #cfd7e2;
+  --pw-line-faint: #edf1f6;
+  --pw-divider: #eef1f5;
+
+  --pw-focus: rgba(79, 96, 212, 0.42);
+  --pw-selection: rgba(79, 96, 212, 0.16);
+  --pw-scrim: rgba(20, 28, 42, 0.34);
+
+  --pw-shadow-hairline: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --pw-shadow-pop: 0 1px 2px rgba(16, 24, 40, 0.05), 0 14px 34px -18px rgba(16, 24, 40, 0.26);
+  --pw-shadow-drawer: -18px 0 48px -24px rgba(16, 24, 40, 0.28);
+  --pw-shadow-toast: 0 10px 30px -14px rgba(16, 24, 40, 0.35);
+
+  --pw-grid-dot: rgba(88, 105, 130, 0.18);
+  --pw-edge: #a7b3c4;
+  --pw-edge-active: #6a79a8;
+  --pw-scrollbar: rgba(24, 33, 47, 0.18);
+  --pw-scrollbar-hover: rgba(24, 33, 47, 0.3);
+}
+
+.pw-theme[data-theme='dark'] {
+  color-scheme: dark;
+
+  --pw-canvas: #0c1119;
+  --pw-surface: #121a25;
+  --pw-surface-2: #16202c;
+  --pw-surface-3: #1b2635;
+  --pw-surface-hover: #18222f;
+  --pw-rail: #0f1620;
+
+  --pw-ink: #e9eef6;
+  --pw-ink-2: #b9c4d2;
+  --pw-muted: #9aa6b6;
+  --pw-faint: #8a96a7;
+  --pw-inverse: #0c1119;
+
+  --pw-accent: #9aa6ff;
+  --pw-accent-strong: #b8c0ff;
+  --pw-accent-soft: rgba(118, 132, 255, 0.16);
+  --pw-accent-line: rgba(154, 166, 255, 0.32);
+  --pw-accent-ink: #c3caff;
+
+  --pw-ok: #66cdb1;
+  --pw-ok-soft: rgba(78, 199, 168, 0.13);
+  --pw-ok-line: rgba(102, 205, 177, 0.28);
+  --pw-warn: #e2b46d;
+  --pw-warn-soft: rgba(226, 180, 109, 0.14);
+  --pw-warn-line: rgba(226, 180, 109, 0.3);
+  --pw-danger: #f1939f;
+  --pw-danger-soft: rgba(241, 147, 159, 0.13);
+  --pw-danger-line: rgba(241, 147, 159, 0.3);
+  --pw-info: #86bde2;
+  --pw-info-soft: rgba(134, 189, 226, 0.13);
+  --pw-info-line: rgba(134, 189, 226, 0.28);
+
+  --pw-line: #233044;
+  --pw-line-strong: #33445c;
+  --pw-line-faint: #1a2533;
+  --pw-divider: #1c2837;
+
+  --pw-focus: rgba(154, 166, 255, 0.45);
+  --pw-selection: rgba(154, 166, 255, 0.22);
+  --pw-scrim: rgba(3, 7, 13, 0.62);
+
+  --pw-shadow-hairline: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --pw-shadow-pop: 0 1px 0 rgba(255, 255, 255, 0.03), 0 18px 44px -20px rgba(0, 0, 0, 0.7);
+  --pw-shadow-drawer: -22px 0 60px -26px rgba(0, 0, 0, 0.75);
+  --pw-shadow-toast: 0 14px 38px -18px rgba(0, 0, 0, 0.8);
+
+  --pw-grid-dot: rgba(146, 164, 190, 0.2);
+  --pw-edge: #40516a;
+  --pw-edge-active: #8796ba;
+  --pw-scrollbar: rgba(233, 238, 246, 0.16);
+  --pw-scrollbar-hover: rgba(233, 238, 246, 0.3);
+}
+
+.pw-theme {
+  --pw-font: Inter, 'Segoe UI Variable Text', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei',
+    system-ui, sans-serif;
+  --pw-mono: 'Cascadia Mono', 'Cascadia Code', Consolas, 'SFMono-Regular', Menlo, monospace;
+
+  --pw-text-micro: 12px;
+  --pw-text-caption: 12px;
+  --pw-text-sm: 12.5px;
+  --pw-text-body: 13px;
+  --pw-text-title: 14px;
+  --pw-text-h3: 16px;
+  --pw-text-h2: 20px;
+  --pw-text-h1: 25px;
+  --pw-text-metric: 27px;
+
+  --pw-space-1: 2px;
+  --pw-space-2: 4px;
+  --pw-space-3: 6px;
+  --pw-space-4: 8px;
+  --pw-space-5: 12px;
+  --pw-space-6: 16px;
+  --pw-space-7: 20px;
+  --pw-space-8: 24px;
+  --pw-space-9: 32px;
+
+  --pw-radius-control: 8px;
+  --pw-radius-panel: 12px;
+  --pw-radius-pill: 999px;
+
+  --pw-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --pw-motion-fast: 140ms;
+  --pw-motion-base: 190ms;
+
+  --pw-rail-width: 236px;
+  --pw-topbar-height: 52px;
+  --pw-journey-height: 58px;
+  --pw-status-height: 26px;
+  --pw-inspector-width: 300px;
+}
+
+.pw-root {
+  box-sizing: border-box;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--pw-canvas);
+  color: var(--pw-ink);
+  font-family: var(--pw-font);
+  font-size: var(--pw-text-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Portal wrapper: carries theme tokens into Radix portals without affecting layout. */
+.pw-portal {
+  display: contents;
+}
+
+.pw-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pw-root *,
+.pw-root *::before,
+.pw-root *::after {
+  box-sizing: border-box;
+}
+
+.pw-root button,
+.pw-root input,
+.pw-root select,
+.pw-root textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.pw-root button {
+  cursor: pointer;
+}
+
+.pw-root button:disabled {
+  cursor: not-allowed;
+}
+
+.pw-root :focus-visible {
+  outline: 2px solid var(--pw-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.pw-root ::selection {
+  background: var(--pw-selection);
+}
+
+.pw-root ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.pw-root ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pw-root ::-webkit-scrollbar-thumb {
+  background: var(--pw-scrollbar);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: var(--pw-radius-pill);
+}
+
+.pw-root ::-webkit-scrollbar-thumb:hover {
+  background: var(--pw-scrollbar-hover);
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.pw-root .pw-mono {
+  font-family: var(--pw-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.pw-root .pw-num {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pw-root *,
+  .pw-root *::before,
+  .pw-root *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .pw-root {
+    forced-color-adjust: none;
+  }
+}

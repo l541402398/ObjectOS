@@ -24,3 +24,7 @@ test-results/
 pnpm-install.log
 
 # Phase 2.8.8 UI acceptance scratch data/.p288-ui/
+
+# A0 user-supplied implementation package (input material, not product code)
+ProjectOS_Organization_Upgrade_UIUX_Implementation_Package/
+ProjectOS_Organization_Upgrade_UIUX_Implementation_Package.zip
