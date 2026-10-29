@@ -1,0 +1,77 @@
+r1 status=superseded exec=paused delivery=none mergeCommit=None mergedAt=None verifiedAt=None evidence=None
+r2 status=approved exec=completed delivery=verified mergeCommit=8d3665f83b6749c71312fb47f5c8af8e5908c4fa mergedAt=1793247408923 verifiedAt=1793247411255 evidence=art_01m62xzz1pq0ygra4pj86cc93g
+
+== autoDelivered events: 1 ==
+== deliveryClaimedAt in plan_json: 1 ==
+== merge commits in git log ==
+*   8d3665f Merge ProjectOS plan pln_01m62xvppc9paa9ff32grrxknj: 目标：让 node --test 全部通过（tests/sums.test.mjs 描述 sum 的必需行为）。计划必须包含：1) 开发任务，先只新增 src/sums.notes.mjs 导出说明常量，不改 src/sums.mjs；2)
+|\  
+| * face12f Merge ProjectOS plan pln_01m62xvppc9paa9ff32grrxknj: 目标：让 node --test 全部通过（tests/sums.test.mjs 描述 sum 的必需行为）。计划必须包含：1) 开发任务，先只新增 src/sums.notes.mjs 导出说明常量，不改 src/sums.mjs；2)
+|/  
+* 26356d6 fixture
+
+merge commit count on HEAD: 1
+merged src/sums.mjs:
+export function sum(a, b) {
+  // FIXED: both arguments are required, result is a + b
+  return a + b
+}
+
+== evidence artifact: 交付验证 · 计划 r2 ==
+合并提交：8d3665f83b6749c71312fb47f5c8af8e5908c4fa
+目标分支：master
+审查指纹：c3484a7587feec67bad6fe58a60d1a04301b5e0c610dce9e9309a382e13ce1c1
+合并后验证：PASS（合并后 3 条验证命令全部通过）
+
+## 验证命令
+### npm test · exit 0 · 1104ms
+
+> test
+> node --test tests/*.test.mjs
+
+✔ sum adds two numbers (1.4926ms)
+✔ sum handles negatives (0.4037ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 157.8622
+
+### node --test tests/sums.test.mjs · exit 0 · 327ms
+✔ sum adds two numbers (1.7781ms)
+✔ sum handles negatives (0.3161ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 143.5103
+
+### node --test · exit 0 · 354ms
+✔ sum adds two numbers (1.6279ms)
+✔ sum handles negatives (0.3131ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 169.9708
+
+
+## 合并前快照
+```json
+{
+  "planId": "pln_01m62xvppc9paa9ff32grrxknj",
+  "revision": 2,
+  "branch": "projectos/plan-pln_01m62xvppc9paa9ff32grrxknj",
+  "baseBranch": "master",
+  "baseCommit": "26356d66d203a9f584d351c67a7925e0a7a62691",
+  "targetHead": "26356d66d203a9f584d351c67a7925e0a7a62691",
+  "reviewSnapshotFingerprint": "c3484a7587feec67bad6fe58a60d1a04301b5e0c610dce9e9309a38

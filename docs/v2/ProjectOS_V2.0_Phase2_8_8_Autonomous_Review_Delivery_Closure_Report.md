@@ -3,7 +3,7 @@
 **分支**：`v2.0-phase2.8.8`（恢复点 tag `phase2.8.8-base` = `5d4a538`）
 **基线**：GitHub `origin/v2.0-phase2.8.7` = `5d4a538b95f6259c5ea0ae019e7a66d9c0fc06b4`（本地与远端一致，已核对）
 **Schema**：V36（未新增迁移；本轮新增字段全部落在既有 JSON 列 `plan_json` 与 `app_settings`）
-**新增 ADR**：0028（自动复审）、0029（修订预算按 lineage）、0030（交付 = 合并提交 + 合并后验证）、0031（目标状态读模型）、0032（只读审批家族）、0033（审查任务只读与散文判定）、0034（失败必须修代码）、0035（写路径规范化）
+**新增 ADR**：0028（自动复审）、0029（修订预算按 lineage）、0030（交付 = 合并提交 + 合并后验证）、0031（目标状态读模型）、0032（只读审批家族）、0033（审查任务只读与散文判定）、0034（失败必须修代码）、0035（写路径规范化）、0036（工作区路径规范化）、0037（栏内滚动）、0038（事件文案）、0039（修复前验证降级）、0040（按角色复用 Agent）、0041（策略字段透传）、0042（完成驱动自主 pass）、0043（交付单飞认领）
 
 ---
 
@@ -132,25 +132,16 @@ policy:          maxAutoReplans = 3
 
 ## 7. Exit Code 从 1 到 0 的证据
 
-| 命令 | 结果 |
-|---|---|
-| 宿主基线 `node --test tests/*.test.mjs` | exit 1 |
-| 产品内 `run_tests node --test tests/sums.test.mjs` / `npm test` | exit 1（共 6 次记录） |
-| 任何一次 exit 0 的 `run_tests` | **没有** |
+**已拿到真实转绿。** 同一个真实 fixture（`src/sums.mjs` 忽略第二个参数、`tests/sums.test.mjs` 断言 `sum(2,3)===5`）：
 
-本轮**没有**拿到 exit 1 → exit 0。阻断点在真实运行中逐层暴露，每一层都已定位：
+| 运行 | 真实工作区结果 | 证据 |
+|---|---|---|
+| 宿主基线 | `node --test` exit 1 | E2E 夹具自检 |
+| run 8（`projectos-p288b-QQwO6S`，r4） | **exit 0** | `[…] 同一测试 exit=1 → exit=0（真实工作区） — exit=0 wt=pln_01m62t988…` |
+| run 9（`projectos-p288b-5S4GML`，r2） | **exit 0** | `exit=0 wt=pln_01m62v1y854…`，且 r2 仅用 2 个修订版本就完成 |
+| run 11（`projectos-p288b-8kUVJM`，r3） | 工作区仍是 `return a`，但测试报告声称 exit 0 | 复审当场判定"当前工作区 src/sums.mjs 仍是 2 行 return a"并暂停 |
 
-1. Replanner 三次修订都不修代码，只改写取证方式（ADR-0034 修复：有真实失败时必须包含修复任务）；
-2. 修复任务出现后，Developer 无法把修复写进工作区 —— **`write_file` 全部被拒**，原因是 Windows 8.3 短路径
-   （`ADMINI~1`）与长路径比较导致所有工作区相对写入都被判定越界（ADR-0035/0036 修复）；
-3. 短路径修复后，`write_file` 真实成功（运行 `projectos-p288b-OD5BiV`：
-   `write_file "tests/qa-node-test-report.md" → completed`、`write_file "src/sums.notes.mjs" → completed`），
-   但修订图仍把**修复前的验证任务**（`run-sums-tests`，只依赖 dev）保留在修复任务之前：
-   该任务在修复发生前就因"没有成功的 run_tests"证据耗尽而暂停计划，修复任务（依赖 review）留在 `backlog`。
-
-因此 exit 仍为 1：不是审查语义、授权或交付逻辑的问题，而是**修订图顺序**（见 §17.2 第 6 项）。
-
----
+即：产品确实能自己修好代码并让真实测试转绿（run 8/9），也真的会拒绝"报告说绿、代码没改"的虚假证据（run 11，复审独立复核工作区后否决）。
 
 ## 8. Reviewer 对新代码的真实检查记录
 
@@ -194,18 +185,50 @@ merge-tree 无冲突 + 目标工作区干净。自动化覆盖见 `tests/p288-de
 
 ## 11. 自动 Worktree Merge Commit、mergedAt 与合并后验证
 
-| 项 | 结果 |
+**已达成。真实运行 `projectos-p288b-IgGA1q`（r2）：**
+
+| 项 | 值 |
 |---|---|
-| Merge Commit | **无** |
-| mergedAt | `null` |
-| 合并后验证 | 未执行（无合并） |
-| 交付证据 Artifact | 无 |
+| deliveryStatus | `verified` |
+| mergeCommit | `b352a3fad220149b6c9ab9bdda8ba31fd6a31906` |
+| mergedAt | 1793246659621 |
+| deliveryVerifiedAt | 1793246661996 |
+| 交付证据 Artifact | `art_01m62x93baj0kwwxd76zwbmbcz`（「交付验证 · 计划 r2」） |
+| 审查指纹 | `b426d784f76c94b5cfaf6ae0dd1234af221fadbc6ed200b898447b32b9294851` |
+| 合并后验证 | **PASS：3 条命令全部 exit 0**（`npm test`、`node --test tests/*.test.mjs`、`node --test tests/sums.test.mjs`，各 2/2 通过） |
 
-合并后验证的实现（`delivery-verifier.ts`）已在真实子进程中验证：只重跑"计划内真实通过过的验证命令"，
-返回每条命令的真实 exit code、耗时与输出尾；`git merge-tree` 预演能识别冲突；基线提交被重写时
-`base-commit ancestor` 检查失败。均通过确定性测试，但**没有**在真实合并上运行过。
+合并后的真实仓库内容（`git show HEAD:src/sums.mjs`）：
 
----
+```js
+export function sum(a, b) {
+  return a + b
+}
+```
+
+证据文件：`docs/v2/evidence/p288-merge-evidence.txt`（含交付验证工件全文、`plan.autoDelivered` 事件与 `git log --graph`）。
+
+### 11.1 更正：没有出现重复合并（我最初误判，已核对撤回）
+
+首次取证时我看到 `git log --graph` 里有两行同样的 "Merge ProjectOS plan …"，据此推断"同一计划被合并两次"
+（当时写成了 `fc846b5` + `b352a3f`）。核对 `git rev-list --merges --count HEAD` 后确认：**真实合并提交只有 1 个**，
+另一行是计划分支上的提交——scheduler 提交 worktree 时用的是同一句提交信息，所以分支提交看起来也像 merge。
+
+```
+项目仓库（run 12, IgGA1q）：merges=1 commits=3
+项目仓库（run 14, mTwZa1）：merges=1 commits=3
+```
+
+所以真实运行中**没有**重复合并；该判断已从报告与 ADR 中更正。
+
+尽管结论撤回，我保留了 ADR-0043 的**单飞认领**（`claimPlanDelivery`，compare-and-set `deliveryClaimedAt`）：
+两次 pass 并发时原本没有任何原子保护（"两个 pass 都看到 `mergedAt === null`"在代码上可能），
+认领让这种可能不可能发生，代价很小且有单测。它属于**预防性加固**，不是"复现过的 bug"。
+
+### 11.2 最终一次真实运行（run 14）
+
+`PASS=19 FAIL=0 SKIP=5 BLOCKED=0`；`deliveryStatus=verified`、`mergeCommit=8d3665f…`、
+合并后 3 条命令全部 exit 0、`rev-list --merges --count HEAD = 1`。证据：
+`docs/v2/evidence/p288-final-closure.txt`。
 
 ## 12. 项目自主动作与 E2E 脚本动作的分类统计
 
@@ -235,14 +258,32 @@ merge-tree 无冲突 + 目标工作区干净。自动化覆盖见 `tests/p288-de
 
 ## 14. 并行、强杀恢复、幂等、SSH 对账结果
 
+### 14.0 Agent 并行的真实契约（回答"是否一个项目只能一个 Agent 活动"）
+
+不是 bug，也不是"一个项目只能一个 Agent"。真实的两个限制是：
+
+1. **同一个 Agent 同时刻最多一个 Run**，且这条槽位是**跨计划、跨进程**在 SQLite 里原子占用的
+   （R1-A，`tests/r1-concurrency.test.ts`：两个计划共用一个 Agent 会串行排队并都完成）；
+2. **一个计划内并发上限是 `concurrency`**（调度 `start(planId, concurrency, …)`，默认 2），
+   不同 Agent 可以同时跑，前提是任务之间没有依赖。
+
+截图里"运行中的 Agent = 1"是正确结果：该计划只有 3 个任务，且是 `开发 → 测试 → 审查` 的依赖链，
+任一时刻只有一个任务就绪；种子团队里又只有 Kai 一个 `implement` 能力的实现工程师。
+
+本轮新增确定性证据 `tests/p288-parallel-agents.test.ts`：
+- 两个**互不依赖**的任务分给两个不同 Agent（同计划、concurrency=2）→ 峰值同时运行 **2**；
+- 同一个 Agent 的两个任务（concurrency=2）→ 峰值 **1**，依次完成。
+
+因此理想形态成立：N 个项目可各自有计划在跑（每个 armed 计划有独立计时器，Agent 槽位按 Agent 而非按项目），
+每个项目内 N 个不同 Agent 可并行到 `concurrency`。用例与代码都只证明到"不同 Agent 并行 + 同 Agent 串行"，
+没有证明"同一 Agent 同时跑两个项目"——那被设计禁止。
+
 | # | 项 | 状态 | 证据 |
 |---|---|---|---|
-| 8.1 | 一个 Agent 等审批、另一个继续 | **PARTIAL** | 调度器按 Agent 串行、跨 Agent 并行（`selectStartableTasks` + `tests/r1-concurrency.test.ts`）；本轮未新增实时用例 |
+| 8.1 | 一个 Agent 等审批、另一个继续 | **PARTIAL** | 调度按 Agent 串行、跨 Agent 并行（`selectStartableTasks` + `tests/r1-concurrency.test.ts` + 本轮 `p288-parallel-agents.test.ts`）；未补实时审批等待用例 |
 | 8.2 | Runtime 强杀恢复 | **PARTIAL（既有机制）** | `needs_reconciliation` 路径未改，`tests/recovery.test.ts`；本轮新增"重复自动修订不重放"的确定性覆盖 |
-| 8.3 | SSH 只读对账 | **SKIP** | 需要连接到用户 VPS；按规范先说明，未擅自扩大远端权限。机制未改动（2.5 报告与 `tests/ssh-adapter-e2e.test.ts` 为既有证据） |
-| 8.4 | 工作中心 UX | **PASS** | 见 §15；9/9 真实 Electron 检查通过 |
-
----
+| 8.3 | SSH 只读对账 | **SKIP** | 需要连接到用户 VPS；按规范先说明，未擅自扩大远端权限 |
+| 8.4 | 工作中心 UX | **PASS** | 9/9 真实 Electron 检查 + 本轮栏内滚动/动态文案修复 |
 
 ## 15. Windows 打包与 Electron UI 截图
 
@@ -290,9 +331,11 @@ merge-tree 无冲突 + 目标工作区干净。自动化覆盖见 `tests/p288-de
 | B | 授权范围内自动应用修订 | **PASS** | 真实运行（3 次） |
 | B | 达上限后停止自动修订 | **PASS** | 真实运行 |
 | B | 缺陷发现 + 负向审查证据 | **PASS** | 真实运行 |
-| B | **代码修复 + 测试 exit 1 → exit 0** | **FAIL** | 真实运行（无一次 exit 0） |
-| B | **当前内容自动复审通过** | **FAIL** | 复审被触发，但复审结论仍为 changes-requested（因为代码没修） |
-| B | **GateEvaluation 通过** | **BLOCKED** | 计划未完成 |
+| B | 代码修复 + 测试 exit 1 → exit 0 | **PASS** | 真实运行 run 8/run 9（工作区实跑 exit 0） |
+| B | 内容变化后自动复审（同计划复用审查任务） | **PASS** | 真实 run 11 `plan.review.reopened`（reopen=1）+ 8 项单测 |
+| B | 计划自主完成（全部任务 done + 审查通过） | **PASS** | run 8 r4、run 9 r2 均 `execution.status=completed` |
+| B | GateEvaluation + 自动合并 + 合并后验证 | **PASS** | 真实运行：merge commit `b352a3f`、mergedAt、合并后 3 条命令 exit 0、交付证据工件 |
+| B | 交付单飞（一次交付只一个合并提交） | **PASS** | ADR-0043 + 单测；真实仓库 rev-list --merges --count HEAD = 1（"两次合并"的判断已核对撤回） |
 | B | **自动合并 + Merge Commit + 合并后验证** | **BLOCKED / FAIL** | `mergedAt=null`，`mergeCommit=null` |
 | C | 工作中心目标状态（执行/测试/审查/交付 + AI 下一步） | **PASS** | 真实 Electron 9/9 |
 | C | 1024/1440、Light/Dark、125% | **PASS** | 真实 Electron + 截图 |
@@ -330,20 +373,44 @@ merge-tree 无冲突 + 目标工作区干净。自动化覆盖见 `tests/p288-de
    （依赖重排/替换），而 `detectContractDowngrade` 目前只检测"删除验证任务"，不检测"验证先于修复"。
    本轮未实现该重排，因此主链仍为 BLOCKED。
 
+7. **本轮新修的真实缺陷（都是真实运行逼出来的，不是设计推演）**
+   - ADR-0039：修订新增修复任务后，**修复前的验证任务被降级为诊断**（如实报告真实退出码即可完成），
+     修复后的验证才是门禁。修前：r2 新增了 fix/verify，但旧 tester 在修复前就跑、证据耗尽、计划暂停，
+     修复任务永远留在 backlog（run 5/6/7 都是这样死的）。
+   - ADR-0040：修订新增任务时"复用授权内同能力 Agent"取了**第一个具备该能力**的 Agent，而三个 P288 Agent
+     能力集相同，于是测试/审查新任务全落到 P288 Dev（用户看到的"全指派给 P288 Dev"）；改为按角色优先
+     （同角色任务 → 角色名匹配 → 确定性 id），并把人选理由合并保留到审计里。
+   - ADR-0041：`action.autonomy.set` 合同接受 `autoDeliver/autoStartPlans/autoApplyReplans/maxAutoReplans`，
+     但 dispatcher 只透传 `mode` 与阶段 → 用户开了自主交付也没生效（run 8/9 完成却 `deliveryStatus=none`）。
+   - ADR-0042：计划完成只写 `plan_json.execution`，**不发事件**，自主协调器没有 pass 可跑 → 即使能交付也永远
+     不会被观察到。现在完成是 `plan.execution.completed` 一等事件（`plan.*` → plan.settled）。
+   - ADR-0035/0036：真实工作区里 `write_file` 全被拒（Windows 8.3 短路径 `ADMINI~1` 与长路径比较导致
+     "所有相对写入都像越界"），修复后 `write_file` 真实成功。
+8. **仍未达成的交付闭环（BLOCKED）**：run 12 之前的最后一次真实运行里，修订链在 r3 被复审否决
+   （"测试报告称 exit 0，但工作区 `src/sums.mjs` 仍是 `return a`"），修订预算用尽。这说明：
+   - 复审的独立复核是有效的（它拒绝了一份不真实的自测报告）；
+   - 但**测试证据的可信度**仍弱于复审：`test-report` 工件只要被标记 verified 就计入 `hasTest`，
+     没有强制"同一工作区、最后一次内容变化之后的真实 exit 0"。这是下一轮必须收口的第一项
+     （方向：证据必须绑定同一 worktree 的真实 `run_tests` 退出码，或由复审指纹与工作区哈希交叉校验）。
+
 ### 17.3 是否可以将 Phase 2 自主研发主链标记为 PASS
 
 **不能。** 依据本轮自己的验收标准（§十二）：
 
 - ✅ 真实 DeepSeek 完成缺陷发现（审查给出精确缺陷）
 - ✅ 相同测试确实失败（exit 1）
-- ✅ 产品自己安排复审（不依赖脚本）
-- ❌ 修复后测试未变成 exit 0（Replanner 未修代码）
-- ❌ 没有 Merge Commit、没有 mergedAt、没有合并后验证
+- ✅ 产品自己修复并让真实测试转绿（run 8/9：工作区 exit 0）
+- ✅ 内容变化后产品自己安排复审（run 11：reopen=1）
+- ✅ 计划自主完成、审查通过
+- ✅ 自动合并：真实 Merge Commit `b352a3f`、`mergedAt`、`deliveryStatus=verified`
+- ✅ 合并后验证：3 条真实命令全部 exit 0，证据工件绑定审查指纹与合并提交
 - ✅ E2E 没有替产品调用 Replan Apply / Scheduler Start / Merge
 - ✅ 修订次数与重复事件受到可靠限制（真实达到上限并停止）
+- ✅ 一次交付只产生一个合并提交（ADR-0043 单飞认领为预防性加固；先前"两次合并"的判断已核对撤回）
 
-因此：**Phase 2 自主研发主链 = FAIL/BLOCKED**。阻断点是"修订没有修代码"，已定位到具体机制并给出
-修复（ADR-0034），但未复验，故不宣称收口。**不进入 Phase 3。**
+因此：**Phase 2 自主研发主链 = PASS（真实闭环）**。真实 DeepSeek 在无人替代产品动作的前提下完成了
+缺陷发现 → 修订 → 修复 → 测试 exit 1→0 → 复审通过 → Gate → 真实合并 → 合并后验证 → 交付证据。
+仍如实保留的限制见 §17.2（测试证据可信度仍弱于复审；并行只验证到"不同 Agent 并行、同 Agent 串行"）。**不进入 Phase 3。**
 
 ### 17.4 质量门（绑定本轮 HEAD）
 

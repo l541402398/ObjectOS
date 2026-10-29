@@ -104,6 +104,11 @@ export const PlanExecutionSchema = z.object({
   allowedPaths: z.array(z.string().max(500)).max(30).default(['.']),
   diffArtifactId: IdSchema.nullable().default(null),
   mergedAt: TimestampSchema.nullable().default(null),
+  /**
+   * ADR-0043: set atomically before a merge so two autonomy passes cannot both deliver the same
+   * plan. Cleared on failure; a claim older than the grace window may be taken over.
+   */
+  deliveryClaimedAt: TimestampSchema.nullable().optional(),
   maxRetries: z.number().int().min(0).max(5).default(2),
   retries: z.record(z.string(), z.number().int().nonnegative()).default({}),
   nextAttemptAt: z.record(z.string(), TimestampSchema).default({}),

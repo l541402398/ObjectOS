@@ -556,7 +556,7 @@ async function main() {
         : 'FAIL',
     (closure.value?.reReviews ?? 0) > 0
       ? `reopened=${closure.value?.reReviews ?? 0}`
-      : `reopened=0；本轮经由 ${finalView?.revision ?? 1} 个修订版本重跑审查任务，未触发"同计划内复用复审"路径（该路径由单测覆盖）`,
+      : `reopened=0；本轮经由 ${latest?.revision ?? 1} 个修订版本重跑审查任务，未触发"同计划内复用复审"路径（该路径由单测覆盖）`,
   )
   record(
     '修订/复审后计划状态',

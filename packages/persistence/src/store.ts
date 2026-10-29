@@ -2501,6 +2501,42 @@ export class SqliteStore {
     })
   }
 
+  /**
+   * ADR-0043 — single-flight delivery claim.
+   *
+   * A real run produced two merge commits in the same second for one plan: two autonomy passes both
+   * saw `mergedAt === null` and merged. The claim is a compare-and-set in SQLite, so exactly one pass
+   * wins; a claim older than `staleMs` may be taken over by a later pass (a crashed process must not
+   * block delivery forever).
+   */
+  claimPlanDelivery(planId: string, at = now(), staleMs = 10 * 60_000): boolean {
+    return this.write(() => {
+      const result = this.db
+        .prepare(
+          `UPDATE plan_revisions
+              SET plan_json = json_set(plan_json, '$.execution.deliveryClaimedAt', ?), updated_at = ?
+            WHERE id = ?
+              AND json_extract(plan_json, '$.execution.mergedAt') IS NULL
+              AND COALESCE(json_extract(plan_json, '$.execution.deliveryClaimedAt'), 0) < ?`,
+        )
+        .run(at, at, planId, at - staleMs)
+      return Number(result.changes) === 1
+    })
+  }
+
+  /** Release a delivery claim so a later pass may retry (e.g. the merge or verification failed). */
+  releasePlanDelivery(planId: string, at = now()): void {
+    this.write(() => {
+      this.run(
+        `UPDATE plan_revisions
+            SET plan_json = json_set(plan_json, '$.execution.deliveryClaimedAt', NULL), updated_at = ?
+          WHERE id = ? AND json_extract(plan_json, '$.execution.mergedAt') IS NULL`,
+        at,
+        planId,
+      )
+    })
+  }
+
   updatePlanExecutionGrantAgentIds(id: string, agentIds: string[], at = now()): boolean {
     return this.write(() => {
       const result = this.db

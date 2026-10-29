@@ -675,6 +675,11 @@ export class ReplanAutopilot {
       .listAllPlanRevisions()
       .filter((plan) => plan.projectId === projectId)
       .filter((plan) => plan.execution?.status === 'completed' && !plan.execution.mergedAt)
+      // A pass that already claimed this plan owns it; a stale claim is taken over in SQL.
+      .filter((plan) => {
+        const claimedAt = plan.execution?.deliveryClaimedAt ?? 0
+        return !claimedAt || Date.now() - claimedAt > 10 * 60_000
+      })
       .filter((plan) => Boolean(plan.execution?.branch && plan.execution.workspaceRef))
     for (const plan of completed) {
       const blocked: string[] = []
@@ -775,11 +780,16 @@ export class ReplanAutopilot {
         diffPreview: (info?.diff ?? '').slice(0, 20_000),
       }
 
+      // ADR-0043: exactly one pass may deliver this plan. Two passes both saw `mergedAt === null`
+      // in a real run and produced two merge commits in the same second.
+      if (!this.store.claimPlanDelivery(plan.id)) continue
+
       let merged: Awaited<ReturnType<OrchestrationScheduler['merge']>>
       try {
         merged = await this.scheduler.merge(plan.id)
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
+        this.store.releasePlanDelivery(plan.id)
         outcomes.push({ kind: 'delivery.blocked', projectId, planId: plan.id, reasons: [message] })
         this.record(projectId, plan.id, PROJECT_EVENT_TYPES.custom, {
           kind: 'plan.delivery.mergeFailed',

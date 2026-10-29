@@ -1,0 +1,108 @@
+dataDir: C:\Users\ADMINI~1\AppData\Local\Temp\projectos-p288b-IgGA1q
+revision: 2
+{
+  "deliveryStatus": "verified",
+  "mergeCommit": "b352a3fad220149b6c9ab9bdda8ba31fd6a31906",
+  "mergedAt": 1793246659621,
+  "deliveryVerifiedAt": 1793246661996,
+  "deliveryEvidenceId": "art_01m62x93baj0kwwxd76zwbmbcz",
+  "deliveryError": null,
+  "branch": "projectos/plan-pln_01m62x3m6tb842x3acha2x9seh",
+  "baseBranch": "master",
+  "baseCommit": "75a726a07b1c87765dee3118726adad8861cc5b6"
+}
+
+== delivery evidence artifact ==
+title: 交付验证 · 计划 r2
+verifiedAt: 1793246661994
+合并提交：b352a3fad220149b6c9ab9bdda8ba31fd6a31906
+目标分支：master
+审查指纹：b426d784f76c94b5cfaf6ae0dd1234af221fadbc6ed200b898447b32b9294851
+合并后验证：PASS（合并后 3 条验证命令全部通过）
+
+## 验证命令
+### npm test · exit 0 · 1166ms
+
+> test
+> node --test tests/*.test.mjs
+
+✔ sum adds two numbers (1.4919ms)
+✔ sum handles negatives (0.2826ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 170.7373
+
+### node --test tests/*.test.mjs · exit 0 · 324ms
+✔ sum adds two numbers (1.3106ms)
+✔ sum handles negatives (0.2793ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 155.898
+
+### node --test tests/sums.test.mjs · exit 0 · 326ms
+✔ sum adds two numbers (1.5179ms)
+✔ sum handles negatives (0.3136ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 154.0485
+
+
+## 合并前快照
+```json
+{
+  "planId": "pln_01m62x3m6tb842x3acha2x9seh",
+  "revision": 2,
+  "branch": "projectos/plan-pln_01m62x3m6tb842x3acha2x9seh",
+  "baseBranch": "master",
+  "baseCommit": "75a726a07b1c87765dee3118726adad8861cc5b6",
+  "targetHead": "75a726a07b1c87765dee3118726adad8861cc5b6",
+  "reviewSnapshotFingerprint": "b426d784f76c94b5cfaf6ae0dd1234af221fadbc6ed200b898447b32b9294851",
+  "verificationCommands": [
+    "npm test",
+    "node --test tests/*.test.mjs",
+    "node --test tests/sums.test.mjs"
+  ],
+  "files": [
+    "src/sums.mjs"
+  ]
+}
+```
+
+== delivery events ==
+285 project.event {"kind":"plan.autoDelivered","planId":"pln_01m62x3m6tb842x3acha2x9seh","branch":"projectos/plan-pln_01m62x3m6tb842x3acha2x9seh","baseBranch":"master","mergedAt":1793246659621,"mergeCommit":"b352a3fad220149b6c9ab9bdda8ba31fd6a31906","deliveryStatus":"verified","verification":"合并后 3 条验证命令全部通过","evidenceId":"art_01m62x93baj0kwwxd76zwbmbcz","reviewFingerprint":"b426d784f76c94b5cfaf6ae0dd1234af221fadbc
+
+== review artifacts (current content) ==
+{"id": "art_01m62x8jmd6pnxfs1y1w8xfbyf", "title": "审查报告 · src/sums.mjs 修复 diff 与修复后复跑测试结果（最小改动、仅改实现、未改测试，结论：通过）", "verdict": null, "fp": "b426d784f76c94b5cfaf6ae0dd1234af221fadbc6ed200b898447b32b9294851"}
+{"id": "art_01m62x2rrwya6tgn11cty2rzt2", "title": "审查报告 · src/sums.mjs 缺陷定位与测试证据对应（只读审查，结论与退出码 1 一致）", "verdict": null, "fp": "c3dae25a5b1d8f67019625264c084fb80491dcce03b76bbb0eec260c0ea39ed0"}
+
+== git log of the project repo (real merge) ==
+*   b352a3f Merge ProjectOS plan pln_01m62x3m6tb842x3acha2x9seh: 目标：让 node --test 全部通过（tests/sums.test.mjs 描述 sum 的必需行为）。计划必须包含：1) 开发任务，先只新增 src/sums.notes.mjs 导出说明常量，不改 src/sums.mjs；2)
+|\  
+| * fc846b5 Merge ProjectOS plan pln_01m62x3m6tb842x3acha2x9seh: 目标：让 node --test 全部通过（tests/sums.test.mjs 描述 sum 的必需行为）。计划必须包含：1) 开发任务，先只新增 src/sums.notes.mjs 导出说明常量，不改 src/sums.mjs；2)
+|/  
+* 75a726a fixture
+
+b352a3f Merge ProjectOS plan pln_01m62x3m6tb842x3acha2x9seh: 目标：让 node --test 全部通过（tests/sums.test.mjs 描述 sum 的必需行为）。计划必须包含：1) 开发任务，先只新增 src/sums.notes.mjs 导出说明常量，不改 src/sums.mjs；2)
+
+ src/sums.mjs | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+merged src/sums.mjs:
+export function sum(a, b) {
+  return a + b
+}
