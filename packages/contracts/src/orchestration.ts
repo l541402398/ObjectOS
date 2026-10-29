@@ -75,6 +75,13 @@ export const PlannedTaskSchema = z.object({
    */
   reuseFromTaskId: IdSchema.nullable().optional(),
   reuseArtifactIds: z.array(IdSchema).optional(),
+  /**
+   * ADR-0039: the task's declared work type, carried onto the materialized Task.
+   * `diagnostic` means "run the check and report the real result" — a failing result is
+   * correct negative evidence and must not gate the plan. The Planner may leave it empty;
+   * a revision may set it when it supersedes a verification task.
+   */
+  workType: z.string().trim().min(1).max(40).optional(),
 })
 export type PlannedTask = z.infer<typeof PlannedTaskSchema>
 

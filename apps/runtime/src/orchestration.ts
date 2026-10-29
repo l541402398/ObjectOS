@@ -723,6 +723,7 @@ export class OrchestrationService {
           iterationId: plan.iterationId ?? null,
           dependsOn,
           dueAt: null,
+          ...(planned.workType ? { workType: planned.workType } : {}),
         })
         taskIdByKey.set(planned.key, task.id)
         ids.push(task.id)

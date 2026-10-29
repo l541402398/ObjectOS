@@ -55,6 +55,80 @@ function failedVerificationSummary(
   return [...latest.values()].filter((item) => item.exitCode !== 0).map((item) => `${item.command}（exit ${item.exitCode}）`)
 }
 
+const REPAIR_TITLE = /修复|修正|补全实现|改正|fix|repair/i
+const CODE_ARTIFACT = /diff|代码|实现|code/i
+
+/**
+ * ADR-0039 — when a revision introduces the repair, the verification it supersedes becomes a
+ * diagnostic record.
+ *
+ * A kept verification task (same key as the source plan, tester/reviewer role) that still runs
+ * *before* the new repair task cannot pass: it observes the un-repaired content. Gating on it stops
+ * the plan before the fix ever runs (the exact failure of the Phase 2.8.8 real run). The revision's
+ * own post-repair verification remains the authoritative gate, so demoting the superseded one to
+ * `diagnostic` keeps the audit trail and the real (failing) evidence without blocking the repair.
+ *
+ * Only *kept* tasks are demoted, only when a repair task was actually added, and never a task that
+ * already depends on the repair (that one legitimately verifies the new content).
+ */
+export function demoteSupersededVerifications(plan: PlanDraft, tasks: PlannedTask[]): PlannedTask[] {
+  const sourceByKey = new Map(plan.tasks.map((task) => [task.key, task]))
+  const fixes = tasks.filter((task) => {
+    if (task.role !== 'developer') return false
+    if (sourceByKey.has(task.key)) return false
+    return REPAIR_TITLE.test(task.title) || REPAIR_TITLE.test(task.description) || task.expectedArtifacts.some((item) => CODE_ARTIFACT.test(item))
+  })
+  if (fixes.length === 0) return tasks
+  const fixKeys = new Set(fixes.map((task) => task.key))
+  const downstream = downstreamKeys(tasks)
+  const demoted = new Set<string>()
+  const result = tasks.map((task) => {
+    const source = sourceByKey.get(task.key)
+    if (!source || source.role !== 'tester') return task
+    if (task.role !== 'tester') return task
+    if (task.workType === 'diagnostic') return task
+    // Still upstream of the repair: it verifies the *old* content.
+    const waitsForFix = [...fixKeys].some((key) => downstream.get(key)?.has(task.key))
+    if (waitsForFix) return task
+    demoted.add(task.key)
+    return {
+      ...task,
+      workType: 'diagnostic',
+      rationale: [
+        task.rationale,
+        `本次修订新增修复任务后，本任务是修复前的验证，降级为诊断记录：如实报告真实退出码即可完成，门禁以修复后的验证为准（ADR-0039）。`,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .slice(0, 2000),
+    }
+  })
+  if (demoted.size === 0) return tasks
+  return result
+}
+
+/** key → keys reachable from it through dependsOn edges. */
+function downstreamKeys(tasks: PlannedTask[]): Map<string, Set<string>> {
+  const byKey = new Map(tasks.map((task) => [task.key, task]))
+  const cache = new Map<string, Set<string>>()
+  const walk = (key: string, seen: Set<string>): Set<string> => {
+    const cached = cache.get(key)
+    if (cached) return cached
+    const out = new Set<string>()
+    for (const task of tasks) {
+      if (!task.dependsOn.includes(key)) continue
+      if (seen.has(task.key)) continue
+      seen.add(task.key)
+      out.add(task.key)
+      for (const nested of walk(task.key, seen)) out.add(nested)
+    }
+    cache.set(key, out)
+    return out
+  }
+  for (const key of byKey.keys()) walk(key, new Set([key]))
+  return cache
+}
+
 const MAX_PROPOSALS_PER_PLAN = 3
 const MAX_MODEL_CALLS_PER_PLAN = 5
 
@@ -201,8 +275,13 @@ export class ReplanService {
         }
         return task
       })
-      const diff = this.buildDiff(plan, assigned)
-      const grantImpact = this.buildGrantImpact(plan, assigned, diff, grant)
+      // ADR-0039: a revision that adds the repair must not keep a *pre-repair* verification as a
+      // blocking gate. Real runs died here: r2 added `fix …` and `verify …`, but the kept tester
+      // task (depending only on the developer note) ran first, could not produce a passing test
+      // report because the fix had not run yet, exhausted evidence and paused the whole plan.
+      const normalized = demoteSupersededVerifications(plan, assigned)
+      const diff = this.buildDiff(plan, normalized)
+      const grantImpact = this.buildGrantImpact(plan, normalized, diff, grant)
       const timestamp = now()
       const proposal: ReplanProposal = {
         id: proposalId,
@@ -216,7 +295,7 @@ export class ReplanService {
         reason: (revised.reason || input.reason).slice(0, 4000),
         contextChars: context.chars,
         contextSources: context.sources,
-        proposedTasks: assigned,
+        proposedTasks: normalized,
         proposedAssumptions: revised.assumptions,
         proposedRisks: revised.risks,
         diff,
