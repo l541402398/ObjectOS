@@ -110,3 +110,28 @@ Screenshots added in this commit: `p29-sweep-approvals-{1440,1024,1440-dark,1024
    and add a regression test.
 2. Then run a fresh real plan with a live approval loop (approve index refresh + inspection commands) and
    capture the first `deliveryStatus=verified` with its merge commit and post-merge verification.
+
+
+## Delivery attempts 6–8: the real blocker is a runtime stall (OPEN)
+
+Three attempts with a fresh real plan (3 tasks, including the reviewer) and a live approval loop were cut
+short by the runtime being restarted. The desktop log gives the causal chain:
+
+```
+runtime heartbeat slow; extending grace {"missed":1,"pendingRequests":27}
+runtime heartbeat slow; extending grace {"missed":1,"pendingRequests":56}
+runtime heartbeat missed twice; restarting {"missed":2,"pendingRequests":39}
+killing runtime {"reason":"heartbeat timeout"}
+```
+
+- The window was offscreen in attempt 8, ruling out "the user closed it".
+- `pendingRequests` climbing 27 → 56 while no pong is processed proves the runtime **event loop was
+  blocked for ≥30s**, not merely slow to write a pong.
+- ADR-0064 fixes the false-kill half (tolerate one miss, restart after two) and adds a policy unit test.
+- The blocking work itself is **OPEN**: profile the runtime around `agent run finished` / completion
+  evidence collection for synchronous git/sqlite/hash work on the main loop.
+
+State at the end of this evidence update: `deliveryStatus=verified` still **not reached**; the business
+gates (approval → review artifact → merge → post-merge verify) were never exercised to completion because
+the runtime restarted first. No claim of delivery closure is made.
+

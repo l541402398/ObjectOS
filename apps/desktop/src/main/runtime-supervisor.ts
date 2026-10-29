@@ -28,6 +28,20 @@ interface PendingRequest {
   timer: NodeJS.Timeout
 }
 
+/**
+ * ADR-0064 — a busy runtime must not be killed as if it were dead.
+ *
+ * A real first-run delivery attempt was interrupted by
+ * `runtime heartbeat missed; restarting` → `killing runtime {reason: "heartbeat timeout"}` while the
+ * runtime was working through git/diff/sqlite work. One slow pong (12s) is not a hang: the supervisor
+ * now tolerates a missed pong (especially with requests in flight) and only restarts after two in a row.
+ */
+export function shouldRestartOnMissedPong(input: { missed: number; pendingRequests: number }): boolean {
+  if (input.missed <= 0) return false
+  if (input.missed >= 2) return true
+  return false
+}
+
 export class RuntimeSupervisor {
   private child: ChildProcessWithoutNullStreams | null = null
   private status: RuntimeStatus = {
@@ -46,6 +60,7 @@ export class RuntimeSupervisor {
   private stopping = false
   private readonly failures: number[] = []
   private providerReady: Promise<void> | null = null
+  private missedPongs = 0
 
   constructor(private readonly options: RuntimeSupervisorOptions) {}
 
@@ -68,6 +83,7 @@ export class RuntimeSupervisor {
       this.setStatus('failed', `Runtime bundle 不存在：${this.options.entryPath}。请先运行 pnpm build:runtime。`)
       return
     }
+    this.missedPongs = 0
     this.setStatus('starting', null, this.status.restartCount)
     this.options.logger.info('starting runtime', { entryPath: this.options.entryPath })
     const child = spawn(process.execPath, [this.options.entryPath], {
@@ -175,6 +191,7 @@ export class RuntimeSupervisor {
     if (frame.kind === 'pong') {
       if (this.pongTimer) clearTimeout(this.pongTimer)
       this.pongTimer = null
+      this.missedPongs = 0
     }
   }
 
@@ -225,8 +242,21 @@ export class RuntimeSupervisor {
       }
       if (this.pongTimer) clearTimeout(this.pongTimer)
       this.pongTimer = setTimeout(() => {
-        this.options.logger.warn('runtime heartbeat missed; restarting')
-        this.killChild('heartbeat timeout')
+        this.pongTimer = null
+        this.missedPongs += 1
+        const pendingRequests = this.pending.size
+        if (shouldRestartOnMissedPong({ missed: this.missedPongs, pendingRequests })) {
+          this.options.logger.warn('runtime heartbeat missed twice; restarting', {
+            missed: this.missedPongs,
+            pendingRequests,
+          })
+          this.killChild('heartbeat timeout')
+          return
+        }
+        this.options.logger.warn('runtime heartbeat slow; extending grace', {
+          missed: this.missedPongs,
+          pendingRequests,
+        })
       }, 12_000)
     }, 15_000)
   }
@@ -238,6 +268,7 @@ export class RuntimeSupervisor {
     if (this.heartbeatTimer) clearInterval(this.heartbeatTimer)
     if (this.pongTimer) clearTimeout(this.pongTimer)
     if (this.stabilityTimer) clearTimeout(this.stabilityTimer)
+    this.missedPongs = 0
     for (const [id, pending] of this.pending) {
       clearTimeout(pending.timer)
       pending.reject(new AppError('RUNTIME_UNAVAILABLE', 'Runtime 进程已退出', { retryable: true }))

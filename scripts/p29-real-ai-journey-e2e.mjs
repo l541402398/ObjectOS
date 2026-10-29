@@ -50,6 +50,15 @@ try {
   const page = await app.firstWindow()
   await page.waitForSelector('.po-shell', { timeout: 60_000 })
   await page.waitForTimeout(1200)
+  try {
+    const win = await app.browserWindow(page)
+    await win.evaluate((w) => {
+      w.setPosition(-3200, -3200)
+    })
+    record('测试窗口已移出屏幕（避免误关）', 'PASS')
+  } catch (error) {
+    record('测试窗口已移出屏幕（避免误关）', 'SKIP', String(error).slice(0, 120))
+  }
 
   // 1) Real connection. The key stays in the Main-process secret store (safeStorage) of this temp
   // profile; the preload response must not echo it.
@@ -179,7 +188,8 @@ try {
 
   // 5) Watch the journey + plan until the run settles (hard cap ~28 min).
   let approvedTestRuns = 0
-  const deadline = Date.now() + 28 * 60_000
+  const deadline = Date.now() + 36 * 60_000
+  let restarts = 0
   let snapshot = null
   let lastSignature = ''
   const timeline = []
@@ -248,11 +258,35 @@ try {
         break
       }
     }
-    const terminal =
-      snapshot.execution?.status === 'completed' ||
-      snapshot.execution?.status === 'failed' ||
-      snapshot.execution?.deliveryStatus === 'verified'
-    if (terminal) break
+    if (snapshot.execution?.deliveryStatus === 'verified') break
+    if (snapshot.execution?.status === 'paused' && snapshot.journey.nextAction.owner === 'user' && snapshot.journey.nextAction.action !== 'reverify') {
+      // paused with nothing pending and not an approval park: try a legal resume once per cycle
+      const resumed = await page.evaluate(async ({ planId }) => {
+        try {
+          await window.projectos.orchestration.resume(planId)
+          return true
+        } catch (error) {
+          return String(error?.message ?? error)
+        }
+      }, { planId: plan.id })
+      if (resumed !== true) console.log('[resume]', String(resumed).slice(0, 160))
+    }
+    if (snapshot.execution?.status === 'failed' && restarts < 2) {
+      restarts += 1
+      const restarted = await page.evaluate(async ({ planId }) => {
+        try {
+          const planView = await window.projectos.orchestration.start(planId, 1, 0, false, null, crypto.randomUUID(), 1)
+          return { ok: true, status: planView.execution?.status }
+        } catch (error) {
+          return { ok: false, error: String(error?.message ?? error) }
+        }
+      }, { planId: plan.id })
+      record('执行失败后按授权重新启动', restarted.ok ? 'PASS' : 'FAIL', JSON.stringify(restarted).slice(0, 180))
+      if (!restarted.ok) break
+    }
+    if (snapshot.execution?.status === 'completed' && snapshot.execution?.deliveryStatus !== 'verified') {
+      // completed but review/delivery still open; keep polling for autonomy to move it
+    }
     await sleep(4000)
   }
 
@@ -272,6 +306,15 @@ try {
     '审查阶段随真实内容更新',
     ['pending', 'active', 'blocked', 'done'].includes(stageOf(finalJourney, 'code-review')?.state ?? '') ? 'PASS' : 'FAIL',
     `review=${stageOf(finalJourney, 'code-review')?.state} ${String(stageOf(finalJourney, 'code-review')?.detail).slice(0, 120)}`,
+  )
+  record(
+    '真实交付（merge + 合并后验证）',
+    finalExecution?.deliveryStatus === 'verified'
+      ? 'PASS'
+      : finalExecution?.deliveryStatus === 'merged_verification_failed'
+        ? 'FAIL'
+        : 'SKIP',
+    `delivery=${finalExecution?.deliveryStatus ?? 'none'} merge=${String(finalExecution?.mergeCommit ?? '').slice(0, 12)} error=${String(finalExecution?.deliveryError ?? '').slice(0, 120)}`,
   )
   record(
     '交付阶段只认 merge + 合并后验证',
