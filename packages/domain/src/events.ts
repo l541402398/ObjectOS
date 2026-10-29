@@ -61,6 +61,82 @@ export const PROJECT_EVENT_TYPES = {
 
 export type ProjectEventType = (typeof PROJECT_EVENT_TYPES)[keyof typeof PROJECT_EVENT_TYPES]
 
+const RUN_STATUS_COPY: Record<string, string> = {
+  created: '已创建',
+  queued: '排队等待执行',
+  running: '开始执行',
+  waiting_tool: '等待工具返回',
+  waiting_approval: '等待你的审批',
+  verifying: '正在验证结果',
+  completed: '已完成',
+  failed: '失败',
+  cancelled: '已取消',
+  needs_reconciliation: '待人工对账',
+  timed_out: '超时终止',
+  budget_exhausted: '预算用尽',
+}
+
+const PLAN_STATUS_COPY: Record<string, string> = {
+  draft: '草案待批准',
+  approved: '已批准',
+  rejected: '已拒绝',
+  superseded: '已被新版本替代',
+  running: '执行中',
+  paused: '已暂停',
+  completed: '已完成',
+  failed: '执行失败',
+  cancelled: '已取消',
+}
+
+/** Why a plan changed state, in user language (never the internal reason code). */
+const PLAN_REASON_COPY: Record<string, string> = {
+  'policy.autoStart': '由授权策略自动开始',
+  'approval.waiting': '等待审批期间暂停',
+  'approval.settled': '审批完成后自动恢复',
+  'policy.within-grant': '授权范围内自动应用修订',
+  'user.approvedScopeDelta': '你批准范围差异后应用修订',
+}
+
+const FAILURE_CLASS_COPY: Record<string, string> = {
+  quality_gate: '质量门禁未通过',
+  verification_failed: '真实验证未通过',
+  implementation: '实现存在缺陷',
+  evidence: '完成证据不足',
+  task_design: '任务设计需要调整',
+  provider_protocol: '模型服务协议异常',
+  provider_auth: '模型服务鉴权失败',
+  provider_unavailable: '模型服务暂不可用',
+  environment: '执行环境有问题',
+  tool_error: '工具执行出错',
+  agent_unavailable: 'Agent 不可用',
+  unknown: '原因尚未归类',
+}
+
+/** Internal kinds written as `project.event` payloads. */
+const CUSTOM_KIND_COPY: Record<string, string> = {
+  'plan.autoDelivered': '成果已自动合并交付',
+  'plan.mergedVerificationFailed': '成果已合并，但合并后验证未通过',
+  'plan.delivery.blocked': '交付暂被阻断',
+  'plan.delivery.mergeFailed': '合并失败',
+  'plan.reviewEvidenceRecorded': '已记录审查通过证据',
+  'plan.review.reopened': '已安排复审当前内容',
+  'plan.replan.authorization': '已评估修订授权范围',
+  'plan.replan.contractRejected': '修订未通过任务契约预检',
+  'plan.replan.applyFailed': '应用修订失败',
+  'plan.contract.rejected': '计划未通过任务契约预检',
+  'project.autonomyPolicyChanged': '项目自主策略已更新',
+}
+
+const RUN_TRIGGER_COPY: Record<string, string> = {
+  evidence_exhausted: '证据不足',
+  retry_exhausted: '重试次数用尽',
+  quality_gate_failed: '质量门禁未通过',
+  agent_unavailable: 'Agent 不可用',
+  artifact_invalid: '交付物不合格',
+  user_requested: '你要求调整',
+  constraints_changed: '约束发生变化',
+}
+
 const TASK_STATUS_COPY: Record<TaskStatus, string> = {
   backlog: '移入待规划',
   ready: '标记为就绪',
@@ -69,6 +145,33 @@ const TASK_STATUS_COPY: Record<TaskStatus, string> = {
   done: '完成',
   blocked: '标记为受阻',
   cancelled: '取消',
+}
+
+function toolNameOf(payload: Record<string, unknown>): string {
+  const name = typeof payload.toolName === 'string' ? payload.toolName : typeof payload.name === 'string' ? payload.name : ''
+  return name
+}
+
+/**
+ * A short, user-facing label for an event badge. The raw type stays available in the payload and
+ * as a tooltip; it must never be the visible text (a user does not know what `run.status.changed` is).
+ */
+export function eventTypeLabel(eventType: string): string {
+  if (eventType.startsWith('run.')) return '运行'
+  if (eventType.startsWith('tool.')) return '工具'
+  if (eventType.startsWith('plan.')) return '计划'
+  if (eventType.startsWith('task.')) return '任务'
+  if (eventType.startsWith('approval.')) return '审批'
+  if (eventType.startsWith('artifact.')) return '交付物'
+  if (eventType.startsWith('handoff.')) return '交接'
+  if (eventType.startsWith('message.') || eventType.startsWith('inbox.')) return '消息'
+  if (eventType.startsWith('requirement.')) return '需求'
+  if (eventType.startsWith('milestone.')) return '里程碑'
+  if (eventType.startsWith('decision.')) return '决策'
+  if (eventType.startsWith('knowledge.')) return '知识'
+  if (eventType.startsWith('session.')) return '会话'
+  if (eventType.startsWith('project.')) return '项目'
+  return '事件'
 }
 
 export interface EventPresentation {
@@ -224,12 +327,15 @@ export function summarizeProjectEvent(event: Pick<ProjectEvent, 'eventType' | 'p
         tone: 'success',
         actorName,
       }
-    case PROJECT_EVENT_TYPES.replanProposed:
+    case PROJECT_EVENT_TYPES.replanProposed: {
+      const trigger = String(payload.trigger ?? '')
+      const triggerLabel = RUN_TRIGGER_COPY[trigger] ?? '需要调整计划'
       return {
-        summary: `提出动态重规划：${String(payload.reason ?? payload.trigger ?? '')}`.slice(0, 180),
+        summary: `${triggerLabel}，AI 提出修订方案，等待应用或你的决定`,
         tone: 'warning',
         actorName,
       }
+    }
     case PROJECT_EVENT_TYPES.replanApplied:
       return {
         summary: `重规划已应用，新计划 r${String(payload.revision ?? '?')}`,
@@ -244,14 +350,73 @@ export function summarizeProjectEvent(event: Pick<ProjectEvent, 'eventType' | 'p
         tone: 'danger',
         actorName,
       }
-    case PROJECT_EVENT_TYPES.planExecutionFailureClassified:
+    case PROJECT_EVENT_TYPES.planExecutionFailureClassified: {
+      const failureClass = String(payload.failureClass ?? 'unknown')
+      const label = FAILURE_CLASS_COPY[failureClass] ?? '原因尚未归类'
       return {
-        summary: `执行失败分类：${String(payload.failureClass ?? 'unknown')}（${payload.replan ? '可重规划' : '不重规划'}）`,
+        summary: `执行受阻：${label}${payload.replan ? '（AI 可以尝试修订计划）' : ''}`,
         tone: payload.replan ? 'warning' : 'neutral',
         actorName,
       }
+    }
+    case PROJECT_EVENT_TYPES.runStatusChanged: {
+      const runStatus = String(payload.status ?? '')
+      const label = RUN_STATUS_COPY[runStatus] ?? '状态更新'
+      return {
+        summary: `Agent 运行${label}${title ? `：${title}` : ''}`,
+        tone:
+          runStatus === 'failed' || runStatus === 'needs_reconciliation'
+            ? 'danger'
+            : runStatus === 'completed'
+              ? 'success'
+              : runStatus === 'waiting_approval'
+                ? 'warning'
+                : 'neutral',
+        actorName,
+      }
+    }
+    case PROJECT_EVENT_TYPES.toolRequested:
+      return { summary: `请求使用工具${toolNameOf(payload) ? `：${toolNameOf(payload)}` : ''}`, tone: 'warning', actorName }
+    case PROJECT_EVENT_TYPES.toolCompleted:
+      return { summary: `工具执行完成${toolNameOf(payload) ? `：${toolNameOf(payload)}` : ''}`, tone: 'neutral', actorName }
+    case PROJECT_EVENT_TYPES.toolFailed:
+      return {
+        summary: `工具执行失败${toolNameOf(payload) ? `：${toolNameOf(payload)}` : ''}`,
+        tone: 'danger',
+        actorName,
+      }
+    case PROJECT_EVENT_TYPES.planStatusChanged: {
+      const planStatus = String(payload.to ?? payload.status ?? '')
+      const label = PLAN_STATUS_COPY[planStatus] ?? '状态更新'
+      const reasonCode = String(payload.reason ?? '')
+      const reasonLabel = PLAN_REASON_COPY[reasonCode] ?? ''
+      const revision = payload.revision ? `第 ${String(payload.revision)} 版` : ''
+      return {
+        summary: `计划${revision}${label}${reasonLabel ? `（${reasonLabel}）` : ''}`,
+        tone:
+          planStatus === 'failed' || planStatus === 'rejected'
+            ? 'danger'
+            : planStatus === 'paused'
+              ? 'warning'
+              : planStatus === 'completed' || planStatus === 'approved'
+                ? 'success'
+                : 'neutral',
+        actorName,
+      }
+    }
+    case PROJECT_EVENT_TYPES.custom: {
+      const kind = typeof payload.kind === 'string' ? payload.kind : ''
+      const label = CUSTOM_KIND_COPY[kind]
+      if (label) {
+        const detail = typeof payload.verification === 'string' ? `：${payload.verification}` : ''
+        return { summary: `${label}${detail}`.slice(0, 200), tone: kind.includes('blocked') || kind.includes('Failed') ? 'warning' : 'accent', actorName }
+      }
+      return { summary: title ?? '项目有一条新的记录', tone: 'neutral', actorName }
+    }
     default:
-      return { summary: event.eventType, tone: 'neutral', actorName }
+      // Never show a raw dotted event type to a user; the exact type stays available in the
+      // event payload for audit and in the events tab's tooltip.
+      return { summary: '项目有新的更新', tone: 'neutral', actorName }
   }
 }
 

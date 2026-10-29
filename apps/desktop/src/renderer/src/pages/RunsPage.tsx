@@ -29,6 +29,7 @@ import {
   toneForStatus,
 } from '@projectos/ui'
 import { ApprovalCard, ToolTrace } from '@projectos/ai-ui'
+import { eventTypeLabel } from '@projectos/domain'
 import { useApprovals, useProjectEvents, useRunDetail, useRuns } from '../lib/queries'
 import { formatDateTime, formatDuration, formatRelative } from '../lib/format'
 import { runStatusLabel } from '../lib/labels'
@@ -441,7 +442,9 @@ export default function RunsPage() {
                     {events.data!.events.map((event) => (
                       <div className="po-event-row" key={event.id}>
                         <span className="po-event-seq">#{event.seq}</span>
-                        <span className="po-event-type">{event.eventType}</span>
+                        {/* The raw type stays available as a tooltip for debugging; the visible text is
+                            a Chinese category a user can understand. */}
+                        <span className="po-event-type" title={event.eventType}>{eventTypeLabel(event.eventType)}</span>
                         <span className="po-event-summary">{event.summary}</span>
                         <span className="po-event-time">{formatRelative(event.createdAt)}</span>
                       </div>

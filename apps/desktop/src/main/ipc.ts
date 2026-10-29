@@ -256,12 +256,15 @@ export function registerIpc(ctx: IpcContext): () => void {
           supervisor.request<{ approvals: ApprovalView[] }>('approval.list', {}),
         ])
         const projects = projectResult.projects
+        // The dashboard shows the newest 6 inline and expands to the rest behind「全部」, so the
+        // bootstrap has to carry more than the widget renders. 20 per project (10 projects max)
+        // keeps the payload small while giving 「全部」something real to show.
         const activities = await Promise.all(
-          projects.slice(0, 6).map(async (project) => {
+          projects.slice(0, 10).map(async (project) => {
             try {
               const result = await supervisor.request<{ events: Array<{ createdAt: number }> }>(
                 'project.activity',
-                { projectId: project.id, limit: 6 },
+                { projectId: project.id, limit: 20 },
               )
               return result.events
             } catch {
@@ -272,7 +275,7 @@ export function registerIpc(ctx: IpcContext): () => void {
         const recentActivity = activities
           .flat()
           .sort((a, b) => b.createdAt - a.createdAt)
-          .slice(0, 10)
+          .slice(0, 40)
         return {
           projects,
           stats: aggregateStats(projects),

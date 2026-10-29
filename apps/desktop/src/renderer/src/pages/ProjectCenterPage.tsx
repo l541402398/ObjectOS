@@ -73,6 +73,8 @@ export default function ProjectCenterPage() {
   const bootstrap = useBootstrap()
   const [createOpen, setCreateOpen] = useState(false)
   const [importMode, setImportMode] = useState(false)
+  /** "全部" expands the widget in place (global activity has no dedicated page). */
+  const [activityExpanded, setActivityExpanded] = useState(false)
   const [form] = Form.useForm<CreateFormValues>()
 
   const createProject = useMutation({
@@ -310,13 +312,27 @@ export default function ProjectCenterPage() {
             </section>
 
             <section className="v16-glass-card v16-chart-card">
-              <div className="v16-card-title"><strong>最近动态</strong><span>全部</span></div>
-              <div className="v16-activity-compact">
-                {activity.slice(0, 6).map((item) => (
+              <div className="v16-card-title">
+                <strong>最近动态</strong>
+                {activity.length > 6 ? (
+                  <button
+                    type="button"
+                    className="v16-card-link"
+                    aria-expanded={activityExpanded}
+                    onClick={() => setActivityExpanded((value) => !value)}
+                  >
+                    {activityExpanded ? '收起' : '全部'}
+                  </button>
+                ) : (
+                  <span>{activity.length} 条</span>
+                )}
+              </div>
+              <div className={`v16-activity-compact${activityExpanded ? ' is-expanded' : ''}`}>
+                {activity.slice(0, activityExpanded ? activity.length : 6).map((item) => (
                   <div className="v16-activity-line" key={item.id}>
                     <span className={`po-activity-mark is-${item.tone}`} />
                     <div>
-                      <strong>{item.summary}</strong>
+                      <strong title={item.summary}>{item.summary}</strong>
                       <span>{item.actorName ? `${item.actorName} · ` : ''}{formatRelative(item.createdAt)}</span>
                     </div>
                   </div>

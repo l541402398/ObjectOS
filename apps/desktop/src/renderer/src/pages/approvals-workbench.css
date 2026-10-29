@@ -2,6 +2,9 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  /* ADR-0037: the page owns the viewport it is given, so the queue/detail panes scroll instead of
+     the whole inner page. Without this the page grows with the list and `.po-main` scrolls. */
+  height: 100%;
   min-height: 0;
   color: var(--color-text-primary);
 }
@@ -43,7 +46,10 @@
 .ap-body {
   display: grid;
   grid-template-columns: 270px minmax(0, 1fr) 280px;
-  min-height: 480px;
+  /* ADR-0037: fill the remaining height and allow shrinking (`min-height: 0`) so a long queue or a
+     tall diff scrolls inside its pane — including in a 620px-high window. */
+  flex: 1 1 auto;
+  min-height: 0;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--color-surface) 72%, transparent);
@@ -53,6 +59,7 @@
 .ap-queue {
   display: flex;
   flex-direction: column;
+  min-height: 0;
   border-right: 1px solid var(--color-divider);
   background: color-mix(in srgb, var(--color-surface-sunken) 55%, transparent);
 }
@@ -91,7 +98,10 @@
 
 .ap-list {
   flex: 1;
+  /* ADR-0037: this is the scroll owner for the queue; it needs a shrinkable box to scroll in. */
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 4px 6px;
 }
 
@@ -139,8 +149,11 @@
   flex-direction: column;
   gap: 10px;
   min-width: 0;
+  /* ADR-0037: the detail pane owns its own scrolling (a tall diff must not scroll the page). */
+  min-height: 0;
   padding: 18px 20px;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .ap-detail-head {
@@ -210,6 +223,10 @@
   display: flex;
   flex-direction: column;
   gap: 7px;
+  /* ADR-0037: the decision column scrolls independently in a short window. */
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 16px 14px;
   border-left: 1px solid var(--color-divider);
   background: color-mix(in srgb, var(--color-surface) 55%, transparent);

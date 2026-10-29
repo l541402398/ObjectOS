@@ -2,6 +2,9 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  /* ADR-0037: same master-detail scroll ownership as the approvals desk — the page fills the
+     viewport it is given and the panes scroll, so a long resource list never scrolls the page. */
+  height: 100%;
   min-height: 0;
   padding: 18px 22px 22px;
   color: var(--color-text-primary);
@@ -22,7 +25,9 @@
 .rc-body {
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr) 270px;
-  min-height: 480px;
+  /* ADR-0037: fill remaining height and allow shrinking; panes own their scrolling. */
+  flex: 1 1 auto;
+  min-height: 0;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--color-surface) 72%, transparent);
@@ -33,6 +38,7 @@
   display: flex;
   flex-direction: column;
   gap: 7px;
+  min-height: 0;
   padding: 10px;
   border-right: 1px solid var(--color-divider);
   background: color-mix(in srgb, var(--color-surface-sunken) 55%, transparent);
@@ -46,7 +52,7 @@
 .rc-tabs button.is-active { background: var(--color-surface); color: var(--color-text-primary); box-shadow: var(--shadow-xs); }
 .rc-tabs span { opacity: 0.7; margin-left: 2px; }
 
-.rc-list { flex: 1; overflow-y: auto; margin-top: 2px; }
+.rc-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin-top: 2px; }
 
 .rc-row {
   display: flex;
@@ -75,8 +81,11 @@
   flex-direction: column;
   gap: 9px;
   min-width: 0;
+  /* ADR-0037: the detail pane is the scroll owner for long profile/detail content. */
+  min-height: 0;
   padding: 18px 20px;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .rc-detail-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
@@ -123,6 +132,10 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  /* ADR-0037: the inspector cannot force the page taller than the window. */
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 16px 14px;
   border-left: 1px solid var(--color-divider);
   background: color-mix(in srgb, var(--color-surface) 55%, transparent);
