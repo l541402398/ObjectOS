@@ -93,3 +93,12 @@ pnpm test:package             # packaged EXE smoke (after package:dir)
 
 A task is not complete if a test was not run and that fact is hidden. UI tasks also need the
 screenshots and visual checks in `docs/design-system.md`.
+
+### Evidence travels with the commit (mandatory)
+
+Every commit that changes product behaviour or UI must include its audit evidence **in the same
+commit**: real screenshots (1440/1024, light/dark, 125% where the change is visual), the ADR or report
+that explains it, and the actual command/E2E output summarised in `docs/v2/evidence/` (or the phase
+report). Evidence kept only in a chat, a local temp folder or a throwaway script is not acceptance.
+Record the exact HEAD, the commands run, PASS/FAIL/SKIP per check and any remaining gap next to the
+screenshots, then push so the evidence can be reviewed at the same commit id.

@@ -80,7 +80,16 @@ export function goalStatusOf(input: {
   const { store, projectId } = input
   const plan = latestPlan(store, projectId)
   const policy: ProjectAutonomySettings = input.actions.autonomySettings(projectId)
-  const humanItems = input.actions.items(projectId).filter((item) => !item.stale)
+  const executionForItems = input.store.read
+    .listAllPlanRevisions()
+    .filter((plan) => plan.projectId === projectId)
+    .map((plan) => plan.execution)
+    .find((execution) => execution?.status === 'paused' || execution?.status === 'failed')
+  // ADR-0057: an expired approval is stale, but while the run is parked on it the user still owns the
+  // next move — hiding it made the work center say "无需操作" next to a paused execution.
+  const humanItems = input.actions
+    .items(projectId)
+    .filter((item) => !item.stale || (item.kind === 'tool_approval' && Boolean(executionForItems)))
 
   if (!plan) {
     return {

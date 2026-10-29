@@ -452,7 +452,15 @@ export default function WorkCenterPage() {
           <GoalState
             label="真实测试"
             value={GOAL_VERIFICATION_LABELS[serverGoal.verification.state] ?? serverGoal.verification.state}
-            tone={serverGoal.verification.state === 'passing' ? 'success' : serverGoal.verification.state === 'failing' ? 'warning' : 'neutral'}
+            tone={
+              serverGoal.verification.state === 'passed'
+                ? 'success'
+                : serverGoal.verification.state === 'failed' || serverGoal.verification.state === 'stale'
+                  ? 'warning'
+                  : serverGoal.verification.state === 'verifying'
+                    ? 'active'
+                    : 'neutral'
+            }
             detail={serverGoal.verification.detail}
             href={
               serverGoal.verification.failing.length > 0

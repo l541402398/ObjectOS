@@ -60,6 +60,21 @@ try {
   const page = await app.firstWindow()
   await page.waitForSelector('.po-shell', { timeout: 60_000 })
   await page.waitForTimeout(1200)
+  const theme = process.env.P29_THEME === 'dark' ? 'dark' : 'light'
+  if (theme === 'dark') {
+    // Apply the same attribute the UI store uses (useUiEffects), then prove the tokens really flipped.
+    await page.evaluate(() => {
+      document.documentElement.dataset.theme = 'dark'
+      document.documentElement.style.colorScheme = 'dark'
+    })
+    await page.waitForTimeout(500)
+    const ink = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue('--pdl-ink').trim(),
+    )
+    record('深色主题令牌已生效', ink === '#eff4ff' ? 'PASS' : 'FAIL', `--pdl-ink=${ink}`)
+  }
+  const screenshotName = (key, size) =>
+    `p29-sweep-${key}-${size}${theme === 'dark' ? '-dark' : ''}.png`
   const window = await app.browserWindow(page)
 
   for (const size of [
@@ -101,7 +116,7 @@ try {
       })
       const pass = metrics.overflowX === 0 && metrics.tiny === 0 && metrics.journey > 0 && metrics.notFound === false && Boolean(metrics.heading)
       record(`${size.label} ${target.label}`, pass ? 'PASS' : 'FAIL', JSON.stringify(metrics))
-      await page.screenshot({ path: join(root, 'docs', 'screenshots', `p29-sweep-${target.key}-${size.label}.png`) })
+      await page.screenshot({ path: join(root, 'docs', 'screenshots', screenshotName(target.key, size.label)) })
     }
   }
 } catch (error) {
@@ -116,6 +131,7 @@ try {
   console.log('\n===== P29 VISUAL SWEEP =====')
   for (const item of results) console.log(`${item.status}\t${item.name}${item.detail ? ` :: ${item.detail}` : ''}`)
   console.log(`PASS=${results.filter((i) => i.status === 'PASS').length} FAIL=${failed.length}`)
+  console.log(`theme: ${process.env.P29_THEME ?? 'light'}`)
   console.log(`workdir: ${work}`)
   if (failed.length) process.exitCode = 1
 }

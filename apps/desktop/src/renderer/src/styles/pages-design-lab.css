@@ -1,0 +1,236 @@
+/* ADR-0061 — Design Lab material, batch 2: 研发工作中心 + 任务看板.
+ *
+ * Only materials/surfaces change; structure, information hierarchy and behaviour stay identical.
+ * All values come from the Design Lab tokens declared at :root in shell-design-lab.css.
+ */
+
+/* ---------- shared card primitives used by both pages ---------- */
+.po-card {
+  border: 1px solid color-mix(in srgb, #fff 52%, transparent);
+  border-radius: 18px;
+  background: linear-gradient(
+    148deg,
+    color-mix(in srgb, var(--pdl-surface-2) 88%, transparent),
+    color-mix(in srgb, var(--pdl-surface) 70%, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 62%, transparent), var(--pdl-shadow);
+}
+
+:root[data-theme='dark'] .po-card {
+  border-color: var(--pdl-line-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), var(--pdl-shadow);
+}
+
+.po-card-header {
+  border-bottom: 1px solid var(--pdl-line);
+}
+
+.po-card-title {
+  color: var(--pdl-ink);
+  letter-spacing: -0.012em;
+}
+
+.po-card-subtitle {
+  color: var(--pdl-muted);
+}
+
+.po-metric {
+  border: 1px solid color-mix(in srgb, #fff 48%, transparent);
+  border-radius: 16px;
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--pdl-surface-2) 76%, transparent),
+    color-mix(in srgb, var(--pdl-surface) 56%, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 55%, transparent);
+}
+
+:root[data-theme='dark'] .po-metric {
+  border-color: var(--pdl-line);
+}
+
+.po-metric-label {
+  color: var(--pdl-muted);
+}
+
+.po-metric-value {
+  color: var(--pdl-ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.po-metric-hint {
+  color: var(--pdl-muted);
+}
+
+/* ---------- 研发工作中心 ---------- */
+.wc-focus {
+  border: 1px solid color-mix(in srgb, var(--pdl-accent) 22%, var(--pdl-line));
+  border-radius: 20px;
+  background:
+    radial-gradient(60% 120% at 0% 0%, color-mix(in srgb, var(--pdl-violet) 14%, transparent), transparent 62%),
+    linear-gradient(142deg, color-mix(in srgb, var(--pdl-surface-2) 92%, transparent), color-mix(in srgb, var(--pdl-surface) 70%, transparent));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 66%, transparent), var(--pdl-shadow);
+}
+
+.wc-focus-kicker {
+  color: var(--pdl-accent);
+}
+
+.wc-focus h2 {
+  color: var(--pdl-ink);
+  letter-spacing: -0.028em;
+}
+
+.wc-focus p {
+  color: var(--pdl-ink-2);
+}
+
+.wc-goal-state {
+  border: 1px solid var(--pdl-line);
+  border-radius: 16px;
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--pdl-surface-2) 82%, transparent),
+    color-mix(in srgb, var(--pdl-surface) 62%, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 52%, transparent);
+}
+
+.wc-goal-state-label {
+  color: var(--pdl-muted);
+}
+
+.wc-goal-state-value {
+  color: var(--pdl-ink);
+}
+
+.wc-goal-state-detail {
+  color: var(--pdl-ink-2);
+}
+
+.wc-goal-state-active {
+  border-color: color-mix(in srgb, var(--pdl-accent) 42%, var(--pdl-line));
+}
+
+.wc-goal-state-success {
+  border-color: color-mix(in srgb, var(--pdl-ok) 44%, var(--pdl-line));
+}
+
+.wc-goal-state-warning {
+  border-color: color-mix(in srgb, var(--pdl-warn) 46%, var(--pdl-line));
+}
+
+.wc-goal-state-link {
+  color: var(--pdl-accent);
+}
+
+.wc-goal-autopilot {
+  border: 1px solid color-mix(in srgb, var(--pdl-cyan) 30%, var(--pdl-line));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--pdl-cyan) 8%, transparent);
+}
+
+.wc-goal-autopilot-kicker {
+  color: color-mix(in srgb, var(--pdl-cyan) 72%, var(--pdl-ink));
+}
+
+.wc-callout {
+  border: 1px solid var(--pdl-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--pdl-surface-2) 58%, transparent);
+  color: var(--pdl-ink-2);
+}
+
+.wc-callout.is-warning {
+  border-color: color-mix(in srgb, var(--pdl-warn) 46%, var(--pdl-line));
+  background: color-mix(in srgb, var(--pdl-warn) 9%, transparent);
+}
+
+.wc-callout.is-danger {
+  border-color: color-mix(in srgb, var(--pdl-danger) 46%, var(--pdl-line));
+  background: color-mix(in srgb, var(--pdl-danger) 9%, transparent);
+}
+
+.wc-task-row,
+.wc-agent {
+  border: 1px solid var(--pdl-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--pdl-surface-2) 68%, transparent);
+}
+
+.wc-task-row:hover,
+.wc-agent:hover {
+  border-color: var(--pdl-line-strong);
+  background: color-mix(in srgb, var(--pdl-surface-2) 88%, transparent);
+}
+
+.wc-task-title {
+  color: var(--pdl-ink);
+}
+
+.wc-task-meta,
+.wc-label {
+  color: var(--pdl-muted);
+}
+
+/* ---------- 任务看板 ---------- */
+.po-board-column {
+  border: 1px solid color-mix(in srgb, #fff 50%, transparent);
+  border-radius: 18px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--pdl-surface-2) 72%, transparent),
+    color-mix(in srgb, var(--pdl-surface) 52%, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 50%, transparent);
+}
+
+:root[data-theme='dark'] .po-board-column {
+  border-color: var(--pdl-line);
+}
+
+.po-board-column-head {
+  border-bottom: 1px solid var(--pdl-line);
+  color: var(--pdl-ink-2);
+}
+
+.po-task-tile {
+  border: 1px solid color-mix(in srgb, #fff 46%, transparent);
+  border-radius: 14px;
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--pdl-solid) 96%, transparent),
+    color-mix(in srgb, var(--pdl-surface-2) 90%, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 60%, transparent), 0 10px 24px -22px rgba(30, 52, 92, 0.45);
+}
+
+:root[data-theme='dark'] .po-task-tile {
+  border-color: var(--pdl-line);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 26px -20px rgba(0, 0, 0, 0.8);
+}
+
+.po-task-tile:hover {
+  border-color: var(--pdl-line-strong);
+}
+
+.po-task-tile-title {
+  color: var(--pdl-ink);
+}
+
+.po-task-tile-desc,
+.po-task-meta {
+  color: var(--pdl-muted);
+}
+
+/* next-step banners keep their semantics, adopt the optical surface */
+.v17-next-step-banner {
+  border: 1px solid var(--pdl-line);
+  border-radius: 16px;
+  background: linear-gradient(140deg, color-mix(in srgb, var(--pdl-surface-2) 84%, transparent), color-mix(in srgb, var(--pdl-surface) 62%, transparent));
+}
+
+.v17-next-step-banner.is-error {
+  border-color: color-mix(in srgb, var(--pdl-danger) 42%, var(--pdl-line));
+}

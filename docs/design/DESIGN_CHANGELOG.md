@@ -199,6 +199,21 @@ skill catalog; this session verified both after installation.
 - Motion walkthrough: 8 real frames in
   `docs/next-ui/screens/projectos-next-ui-tour.gif`; raw MP4 still open.
 
+## 2026-10-29 — Design Lab material, batch 2 (work center + task board)
+
+- `apps/desktop/src/renderer/src/styles/pages-design-lab.css` applies the approved
+  Design Lab optical recipe to the shared card primitives (`po-card`, `po-metric`)
+  and to 研发工作中心 (`wc-focus`, `wc-goal-state`, callouts, task/agent rows) and
+  任务看板 (columns, tiles, next-step banners). Structure, hierarchy and behaviour
+  are unchanged; the Design Lab page keeps its own `.pdl-root` scope.
+- 真实测试 tile now maps `passed/failed/stale/verifying` (was the retired
+  `passing/failing` strings) to success/warning/active/neutral.
+- Work center no longer says "无需操作" while a paused run is parked on an expired
+  approval.
+- Evidence: `docs/screenshots/p29-sweep-work-1440.png`, `p29-sweep-tasks-1440.png`
+  (plus 1024 variants), `docs/adr/0061-design-lab-batch-2-work-center-and-board.md`,
+  `docs/v2/evidence/p29-task1-task2-evidence.md`.
+
 ## 2026-10-22 — Stage journey follows contract fix 2
 
 - Stage route displays only the four designed icons (Layers/Code/Eye/Flask) on
