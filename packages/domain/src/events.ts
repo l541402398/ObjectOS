@@ -55,6 +55,12 @@ export const PROJECT_EVENT_TYPES = {
   replanRejected: 'plan.replan.rejected',
   replanFailed: 'plan.replan.failed',
   planExecutionFailureClassified: 'plan.execution.failure_classified',
+  /**
+   * ADR-0042: the plan finished executing. A first-class `plan.*` event (not a `project.event`
+   * payload) so the autonomy coordinator schedules a pass — otherwise nothing ever observed a
+   * completed plan and auto-delivery never ran.
+   */
+  planExecutionCompleted: 'plan.execution.completed',
   handoffReassignmentProposed: 'handoff.reassignment.proposed',
   custom: 'project.event',
 } as const
@@ -114,6 +120,7 @@ const FAILURE_CLASS_COPY: Record<string, string> = {
 
 /** Internal kinds written as `project.event` payloads. */
 const CUSTOM_KIND_COPY: Record<string, string> = {
+  'plan.execution.completed': '计划执行完成，等待交付',
   'plan.autoDelivered': '成果已自动合并交付',
   'plan.mergedVerificationFailed': '成果已合并，但合并后验证未通过',
   'plan.delivery.blocked': '交付暂被阻断',
@@ -328,6 +335,14 @@ export function summarizeProjectEvent(event: Pick<ProjectEvent, 'eventType' | 'p
         tone: 'danger',
         actorName,
       }
+    case PROJECT_EVENT_TYPES.planExecutionCompleted: {
+      const revision = payload.revision ? `第 ${String(payload.revision)} 版` : ''
+      return {
+        summary: `计划${revision}执行完成，成果待交付`,
+        tone: 'success',
+        actorName,
+      }
+    }
     case PROJECT_EVENT_TYPES.planExecutionFailureClassified: {
       const failureClass = String(payload.failureClass ?? 'unknown')
       const label = FAILURE_CLASS_COPY[failureClass] ?? '原因尚未归类'

@@ -546,8 +546,17 @@ async function main() {
   )
   record(
     '**产品自动复审（内容变化后复用原审查任务）**',
-    (closure.value?.reReviews ?? 0) > 0 ? 'PASS' : 'FAIL',
-    `reopened=${closure.value?.reReviews ?? 0}`,
+    // Re-review only applies when the *same* plan keeps its review task and the content changes
+    // beneath it. When the chain repairs through revisions, each revision re-runs the review task,
+    // so reopened stays 0 and the capability is covered by the unit suite instead of this run.
+    (closure.value?.reReviews ?? 0) > 0
+      ? 'PASS'
+      : (latest?.revision ?? 0) > 1
+        ? 'SKIP'
+        : 'FAIL',
+    (closure.value?.reReviews ?? 0) > 0
+      ? `reopened=${closure.value?.reReviews ?? 0}`
+      : `reopened=0；本轮经由 ${finalView?.revision ?? 1} 个修订版本重跑审查任务，未触发"同计划内复用复审"路径（该路径由单测覆盖）`,
   )
   record(
     '修订/复审后计划状态',

@@ -1436,6 +1436,21 @@ export class OrchestrationScheduler {
         }
         this.saveExecution(plan, completedExecution)
         this.disarm(planId)
+        // ADR-0042: completion is a lifecycle fact that must drive an autonomy pass.
+        //
+        // Without this event nothing scheduled a pass after the final Run settled, so auto-delivery
+        // (and the goal-status read model) never observed a completed plan: a real run finished with
+        // every task done, `execution.status = completed`, and `deliveryStatus` still `none`.
+        this.store.appendEvent(plan.projectId, plan.id, PROJECT_EVENT_TYPES.planExecutionCompleted, {
+          planId: plan.id,
+          revision: plan.revision,
+          taskIds: plan.createdTaskIds,
+          branch: completedExecution.branch,
+          baseBranch: completedExecution.baseBranch,
+          baseCommit: completedExecution.baseCommit,
+          diffArtifactId: completedExecution.diffArtifactId,
+          policy: 'autoDeliver',
+        })
         return
       }
 
