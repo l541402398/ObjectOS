@@ -41,7 +41,8 @@ interface CreateFormValues {
 const CATEGORY_GRADIENTS = ['violet', 'amber', 'blue', 'teal', 'rose'] as const
 
 function ProjectVisualCard({ project, index, onOpen }: { project: ProjectSummary; index: number; onOpen: () => void }) {
-  const percent = Math.round(project.stats.progress * 100)
+  const taskPercent =
+    project.stats.tasksTotal === 0 ? 0 : Math.round((project.stats.tasksDone / project.stats.tasksTotal) * 100)
   return (
     <button type="button" className={`v16-project-visual is-${CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length]}`} onClick={onOpen}>
       <div className="v16-project-cover">
@@ -57,9 +58,9 @@ function ProjectVisualCard({ project, index, onOpen }: { project: ProjectSummary
             <ClockCircleOutlined /> {project.stats.tasksDone}/{project.stats.tasksTotal}
           </span>
         </div>
-        <div className="v16-project-progress">
-          <ProgressBar value={project.stats.progress} height={4} />
-          <span>{percent}%</span>
+        <div className="v16-project-progress" title="按任务完成数计算">
+          <ProgressBar value={taskPercent / 100} height={4} />
+          <span>{taskPercent}% 任务</span>
         </div>
       </div>
     </button>
@@ -175,18 +176,27 @@ export default function ProjectCenterPage() {
             <p>{recentProject.description ? truncate(recentProject.description, 120) : '尚未填写项目描述'}</p>
             <div className="nx-hero-meta">
               <StatusPill tone={toneForStatus(recentProject.status)}>{stageLabel(recentProject.currentStage)}</StatusPill>
-              <span>{recentProject.stats.tasksDone}/{recentProject.stats.tasksTotal} 任务完成</span>
               <span>{workingAgents.length} 个 Agent 运行中</span>
               <span>最近活动 {formatRelative(recentProject.lastActivityAt)}</span>
             </div>
           </div>
           <div className="nx-hero-side">
-            <div className="nx-hero-progress">
-              <strong>{Math.round(recentProject.stats.progress * 100)}%</strong>
-              <span>生命周期进度</span>
-              <ProgressBar value={recentProject.stats.progress} height={5} />
+            <div className="nx-hero-tasks">
+              <div className="nx-hero-tasks-head">
+                <strong>{recentProject.stats.tasksDone}/{recentProject.stats.tasksTotal}</strong>
+                <span>任务完成</span>
+              </div>
+              <ProgressBar
+                value={recentProject.stats.tasksTotal === 0 ? 0 : recentProject.stats.tasksDone / recentProject.stats.tasksTotal}
+                height={4}
+              />
+              <span className="nx-hero-tasks-note">
+                {recentProject.stats.tasksTotal === 0
+                  ? '还没有任务，先生成计划'
+                  : `${recentProject.stats.tasksDone} 个已完成 · ${recentProject.stats.tasksTotal - recentProject.stats.tasksDone} 个未完成`}
+              </span>
             </div>
-            <Button type="primary" icon={<ArrowRightOutlined />} onClick={() => navigate(`/projects/${recentProject.id}`)}>打开工作台</Button>
+            <Button type="primary" icon={<ArrowRightOutlined />} className="nx-hero-open" onClick={() => navigate(`/projects/${recentProject.id}`)}>打开工作台</Button>
           </div>
         </section>
       ) : null}

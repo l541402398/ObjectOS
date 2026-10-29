@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { DownOutlined, RightOutlined, UpOutlined } from '@ant-design/icons'
-import type { JourneyStage, ProjectJourney } from '@projectos/contracts'
+import type { JourneyStage } from '@projectos/contracts'
+import { JOURNEY_OWNER_LABEL, JOURNEY_STATE_LABEL, currentJourneyStage, journeyProgress } from '../lib/journey'
 import './goal-journey.css'
 
 /**
@@ -14,20 +15,8 @@ import './goal-journey.css'
  * the plan full-screen workspace, where the titlebar is hidden.
  */
 
-const STATE_LABEL: Record<JourneyStage['state'], string> = {
-  done: '已完成',
-  active: '进行中',
-  blocked: '需要处理',
-  pending: '未开始',
-  skipped: '不适用',
-}
-
-const OWNER_LABEL: Record<ProjectJourney['nextAction']['owner'], string> = {
-  user: '需要你操作',
-  ai: 'AI 正在处理',
-  system: '系统处理中',
-  none: '无需操作',
-}
+const STATE_LABEL = JOURNEY_STATE_LABEL
+const OWNER_LABEL = JOURNEY_OWNER_LABEL
 
 function useCompactJourney(): boolean {
   const [compact, setCompact] = useState(() => window.innerWidth < 1180)
@@ -59,15 +48,9 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
   })
   const data = journey.data
   const stages = data?.stages ?? []
-  const doneCount = stages.filter((stage) => stage.state === 'done').length
-  const current = useMemo(
-    () =>
-      [...stages].reverse().find((stage) => stage.state === 'blocked') ??
-      [...stages].reverse().find((stage) => stage.state === 'active') ??
-      stages[stages.length - 1] ??
-      null,
-    [stages],
-  )
+  const progress = journeyProgress(stages)
+  const doneCount = progress.done
+  const current = useMemo(() => currentJourneyStage(stages), [stages])
   const owner = data?.nextAction.owner ?? 'none'
 
   if (!data && journey.isLoading) {

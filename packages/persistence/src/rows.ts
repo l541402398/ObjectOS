@@ -1024,8 +1024,10 @@ export function toPlanExecutionGrant(row: PlanExecutionGrantRow): PlanExecutionG
     planRevision: Number(row.plan_revision),
     planFingerprint: row.plan_fingerprint,
     actor,
-    actions: (JSON.parse(row.actions_json) as PlanGrantAction[]).filter(
-      (action) => action === 'plan.start' || action === 'workspace-write',
+    // ADR-0056 added run-tests; unknown values are still dropped so a hand-edited row cannot widen
+    // the grant beyond the schema.
+    actions: (JSON.parse(row.actions_json) as PlanGrantAction[]).filter((action) =>
+      action === 'plan.start' || action === 'workspace-write' || action === 'run-tests',
     ),
     allowedPaths: JSON.parse(row.allowed_paths_json) as string[],
     allowedTaskIds: JSON.parse(row.allowed_task_ids_json) as string[],

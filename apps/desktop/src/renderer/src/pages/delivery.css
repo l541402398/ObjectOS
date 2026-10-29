@@ -16,7 +16,7 @@
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-lg);
   color: var(--color-text-tertiary);
-  font-size: 11.5px;
+  font-size: 12px;
   text-align: center;
 }
 
@@ -36,9 +36,9 @@
   background: var(--color-surface-sunken);
 }
 
-.delivery-summary-item span { color: var(--color-text-tertiary); font-size: 10.5px; }
+.delivery-summary-item span { color: var(--color-text-tertiary); font-size: 12px; }
 .delivery-summary-item strong { color: var(--color-text-primary); font-size: 15px; }
-.delivery-summary-item small { color: var(--color-text-tertiary); font-size: 9.5px; line-height: 1.4; }
+.delivery-summary-item small { color: var(--color-text-tertiary); font-size: 12px; line-height: 1.4; }
 .delivery-summary-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
 @media (max-width: 1080px) {

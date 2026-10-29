@@ -836,7 +836,7 @@ export default function OrchestrationWorkspace() {
               <li>可写路径：整个项目目录（{scope.paths.join('、')}）</li>
               <li>预算：最多 {scope.maxRuns} 次启动、{scope.maxToolCalls} 次工具调用</li>
               <li>有效期：{scope.ttlHours} 小时</li>
-              <li>进程、Git 写、外部 Runtime 仍需逐次审批</li>
+              <li>测试与只读检查命令按白名单放行，其余进程、Git 写、外部 Runtime 仍需逐次审批</li>
             </ul>
             <p style={{ margin: 0, color: 'var(--color-text-secondary)' }}>授权可随时在计划授权面板撤销。</p>
           </div>
@@ -860,7 +860,7 @@ export default function OrchestrationWorkspace() {
       setDraft(approved.plan)
       const grant = await window.projectos.plans.grant.issue({
         planId: approved.plan.id,
-        actions: ['plan.start', 'workspace-write'],
+        actions: ['plan.start', 'workspace-write', 'run-tests'],
         allowedPaths: scope.paths,
         maxRuns: scope.maxRuns,
         maxToolCalls: scope.maxToolCalls,

@@ -40,7 +40,7 @@
 .pui-overlay-surface[data-theme='dark'] { box-shadow: var(--pui-ov-shadow), inset 0 1px 0 rgba(255, 255, 255, .1); }
 .pui-overlay-header { display: flex; flex: 0 0 auto; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 16px 18px 13px; border-bottom: 1px solid var(--pui-ov-line); }
 .pui-overlay-heading { min-width: 0; }
-.pui-overlay-eyebrow { color: var(--pui-ov-muted); font-size: 11px; font-weight: 620; letter-spacing: .09em; line-height: 1.3; text-transform: uppercase; }
+.pui-overlay-eyebrow { color: var(--pui-ov-muted); font-size: 12px; font-weight: 620; letter-spacing: .09em; line-height: 1.3; text-transform: uppercase; }
 .pui-overlay-title { margin: 4px 0 0; color: var(--pui-ov-ink); font-size: 20px; font-weight: 650; letter-spacing: -.025em; line-height: 1.35; }
 .pui-overlay-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 7px; color: var(--pui-ov-muted); font-size: 12px; }
 .pui-overlay-header-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 5px; }
@@ -50,7 +50,7 @@
 .pui-overlay-body { min-height: 0; flex: 1; overflow: auto; padding: 0 18px; }
 .pui-overlay-copy { margin: 14px 0; color: var(--pui-ov-ink-2); font-size: 14px; line-height: 1.6; }
 .pui-overlay-footer { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 18px 14px; border-top: 1px solid var(--pui-ov-line); }
-.pui-overlay-footer-meta { color: var(--pui-ov-muted); font-size: 11.5px; }
+.pui-overlay-footer-meta { color: var(--pui-ov-muted); font-size: 12px; }
 .pui-overlay-footer-actions { display: flex; align-items: center; gap: 7px; margin-left: auto; }
 .pui-overlay-button { display: inline-flex; height: 32px; align-items: center; justify-content: center; gap: 5px; padding: 0 12px; border: 1px solid var(--pui-ov-line); border-radius: 8px; color: var(--pui-ov-ink-2); background: color-mix(in srgb, var(--pui-ov-solid) 55%, transparent); font-size: 12.5px; font-weight: 580; }
 .pui-overlay-button:hover { border-color: var(--pui-ov-line-strong); color: var(--pui-ov-ink); }

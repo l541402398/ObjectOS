@@ -181,6 +181,65 @@ describe('ADR-0053 project journey projection', () => {
     expect(view.nextAction.detail).toContain('Worktree')
   })
 
+  it('never claims verification while the run is paused on stale evidence', async () => {
+    const { harness, project, grants, journey } = await setupJourney()
+    harness.services.projects.createRequirement({
+      projectId: project.id,
+      title: '真实 AI 测试证据过期',
+      body: '',
+      acceptanceCriteria: [],
+      source: 'local',
+    })
+    const { plan } = planWithTasks(harness.orchestration, project.id, [task('impl')])
+    grants.issue({
+      planId: plan.id,
+      actions: ['plan.start'],
+      allowedPaths: [],
+      maxRuns: 1,
+      maxToolCalls: 40,
+      ttlHours: 1,
+      allowOverBudget: false,
+      note: 'fixture',
+      confirm: true,
+    })
+    const approved = harness.store.read.getPlanRevision(plan.id)!
+    harness.store.updatePlanRevision({
+      ...approved,
+      execution: {
+        ...(approved.execution ?? {}),
+        status: 'paused',
+        concurrency: 1,
+        startedAt: now(),
+        updatedAt: now(),
+        error: '任务「创建 hello.txt」缺少有效完成依据：测试证据已过期：存在历史测试证据，但它不描述当前内容',
+        runIds: [],
+        workspaceRef: '/tmp/ws',
+        branch: 'projectos/plan-x',
+        baseBranch: 'master',
+        baseCommit: 'abc',
+        allowedPaths: ['.'],
+        diffArtifactId: null,
+        mergedAt: null,
+        maxRetries: 1,
+        retries: {},
+        nextAttemptAt: {},
+        retryForRun: {},
+        maxEvidenceRetries: 1,
+        evidenceRetries: {},
+        deadlineAt: 0,
+        budgetExhausted: null,
+        maxWallClockMs: 0,
+        deliveryStatus: 'none',
+      },
+      updatedAt: now(),
+    } as never)
+
+    const view = journey()
+    expect(view.stages.find((stage) => stage.key === 'verify')!.state).toBe('blocked')
+    expect(view.nextAction.owner).toBe('user')
+    expect(view.nextAction.label).toContain('重新验证')
+  })
+
   it('reports a delivered goal as done with its merge commit and evidence', async () => {
     const { harness, project, grants, journey } = await setupJourney()
     harness.services.projects.createRequirement({

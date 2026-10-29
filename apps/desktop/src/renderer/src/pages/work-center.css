@@ -40,7 +40,7 @@
 }
 
 .wc-focus-kicker {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -58,7 +58,7 @@
 .wc-focus p {
   max-width: 760px;
   margin: 0;
-  font-size: 11.5px;
+  font-size: 12px;
   line-height: 1.55;
   color: var(--color-text-secondary);
 }
@@ -111,7 +111,7 @@
   gap: 8px;
   flex-wrap: wrap;
   margin-top: 8px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-text-tertiary);
 }
 
@@ -143,7 +143,7 @@
 }
 
 .wc-label {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -250,7 +250,7 @@
   gap: 9px;
   flex-wrap: wrap;
   margin-top: 3px;
-  font-size: 10.5px;
+  font-size: 12px;
   color: var(--color-text-tertiary);
 }
 
@@ -294,7 +294,7 @@
 }
 
 .wc-agent strong {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--color-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -302,7 +302,7 @@
 }
 
 .wc-agent small {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--color-text-tertiary);
 }
 
@@ -355,7 +355,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 550;
 }
 
@@ -363,7 +363,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 10.5px;
+  font-size: 12px;
   color: var(--color-text-tertiary);
 }
 
@@ -393,7 +393,7 @@
 }
 
 .wc-artifact strong {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -401,7 +401,7 @@
 }
 
 .wc-artifact span {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--color-text-tertiary);
 }
 
@@ -418,7 +418,7 @@
   gap: 8px;
   align-items: center;
   padding: 5px 2px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-text-secondary);
 }
 
@@ -478,7 +478,7 @@
 }
 
 .wc-need strong {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--color-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -486,7 +486,7 @@
 }
 
 .wc-need small {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--color-text-tertiary);
 }
 
@@ -502,7 +502,7 @@
   align-items: center;
   gap: 8px;
   padding: 5px 2px;
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--color-text-tertiary);
 }
 
@@ -517,7 +517,7 @@
   height: 19px;
   border-radius: 50%;
   border: 1px solid var(--color-border);
-  font-size: 9px;
+  font-size: 12px;
   background: var(--color-surface);
 }
 
@@ -546,7 +546,7 @@
   color: var(--color-text-primary);
   text-align: left;
   cursor: pointer;
-  font-size: 11.5px;
+  font-size: 12px;
 }
 
 .wc-requirement > span:first-child {
@@ -565,7 +565,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--color-text-secondary);
 }
@@ -584,7 +584,7 @@
 }
 
 .wc-muted {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-text-tertiary);
 }
 
@@ -668,13 +668,13 @@
 }
 
 .wc-next-kicker {
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.09em;
   color: var(--color-text-tertiary);
 }
 
 .wc-next-head strong { font-size: 12px; font-weight: 600; }
-.wc-next-count { margin-left: auto; font-size: 9px; line-height: 16px; }
+.wc-next-count { margin-left: auto; font-size: 12px; line-height: 16px; }
 
 .wc-next-body {
   display: flex;
@@ -688,7 +688,7 @@
 .wc-next-title { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
 .wc-next-title h3 { margin: 0; font-size: 12.5px; font-weight: 600; }
 
-.wc-next-risk { font-size: 9px; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--color-divider); color: var(--color-text-tertiary); }
+.wc-next-risk { font-size: 12px; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--color-divider); color: var(--color-text-tertiary); }
 .wc-next-risk.is-high { color: var(--color-danger); border-color: color-mix(in srgb, var(--color-danger) 45%, transparent); }
 .wc-next-risk.is-medium { color: var(--color-warning, #d08700); border-color: color-mix(in srgb, var(--color-warning, #d08700) 45%, transparent); }
 
@@ -696,7 +696,7 @@
 .wc-next-decision,
 .wc-next-resume {
   margin: 0;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.5;
   color: var(--color-text-tertiary);
   overflow-wrap: anywhere;
@@ -716,7 +716,7 @@
   background: transparent;
   text-align: left;
   cursor: pointer;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--color-text-secondary);
 }
 

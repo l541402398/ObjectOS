@@ -84,7 +84,7 @@
   background: transparent;
   border-radius: 6px;
   padding: 5px 4px;
-  font-size: 9.5px;
+  font-size: 12px;
   color: var(--color-text-tertiary);
   cursor: pointer;
 }
@@ -128,15 +128,15 @@
   gap: 8px;
 }
 
-.ap-row-title strong { font-size: 11px; color: var(--color-text-primary); font-weight: 600; }
-.ap-row-title em { font-style: normal; font-size: 9px; color: var(--color-text-tertiary); }
-.ap-row-meta { font-size: 9px; color: var(--color-text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ap-row-title strong { font-size: 12px; color: var(--color-text-primary); font-weight: 600; }
+.ap-row-title em { font-style: normal; font-size: 12px; color: var(--color-text-tertiary); }
+.ap-row-meta { font-size: 12px; color: var(--color-text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .ap-kind {
   align-self: flex-start;
   padding: 1px 5px;
   border-radius: 999px;
-  font-size: 8.5px;
+  font-size: 12px;
   letter-spacing: 0.02em;
   background: var(--color-surface-sunken);
   color: var(--color-text-tertiary);
@@ -172,13 +172,13 @@
   padding: 8px 0;
   border-top: 1px solid var(--color-divider);
   border-bottom: 1px solid var(--color-divider);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--color-text-secondary);
 }
 
-.ap-facts b { display: block; margin-bottom: 2px; font-size: 9px; font-weight: 500; color: var(--color-text-tertiary); }
+.ap-facts b { display: block; margin-bottom: 2px; font-size: 12px; font-weight: 500; color: var(--color-text-tertiary); }
 
-.ap-section { margin: 6px 0 0; font-size: 10.5px; color: var(--color-text-tertiary); }
+.ap-section { margin: 6px 0 0; font-size: 12px; color: var(--color-text-tertiary); }
 
 .ap-code {
   width: 100%;
@@ -188,7 +188,7 @@
   border-radius: var(--radius-sm);
   background: var(--color-surface-sunken);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.55;
   color: var(--color-text-secondary);
 }
@@ -200,24 +200,24 @@
   padding: 8px 10px;
   border-left: 2px solid var(--color-accent);
   background: var(--color-accent-soft);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.5;
 }
 
 .ap-callout.warn { border-color: var(--color-warning); background: color-mix(in srgb, var(--color-warning) 8%, transparent); }
-.ap-callout strong { font-size: 10.5px; }
+.ap-callout strong { font-size: 12px; }
 .ap-callout span { color: var(--color-text-tertiary); }
 
 .ap-kv-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px 16px;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--color-text-secondary);
 }
 
-.ap-kv-grid b { display: block; margin-bottom: 2px; font-size: 9px; font-weight: 500; color: var(--color-text-tertiary); }
-.ap-kv-grid code { font-family: var(--font-mono); font-size: 9.5px; }
+.ap-kv-grid b { display: block; margin-bottom: 2px; font-size: 12px; font-weight: 500; color: var(--color-text-tertiary); }
+.ap-kv-grid code { font-family: var(--font-mono); font-size: 12px; }
 
 .ap-action {
   display: flex;
@@ -232,7 +232,7 @@
   background: color-mix(in srgb, var(--color-surface) 55%, transparent);
 }
 
-.ap-action h3 { margin: 0 0 2px; font-size: 10px; color: var(--color-text-tertiary); }
+.ap-action h3 { margin: 0 0 2px; font-size: 12px; color: var(--color-text-tertiary); }
 
 .ap-risk {
   display: flex;
@@ -240,7 +240,7 @@
   gap: 8px;
   padding: 7px 0;
   border-bottom: 1px solid var(--color-divider);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--color-text-tertiary);
 }
 
@@ -248,7 +248,7 @@
 
 .ap-muted {
   margin: 0;
-  font-size: 9.5px;
+  font-size: 12px;
   line-height: 1.5;
   color: var(--color-text-tertiary);
 }
@@ -258,7 +258,7 @@
   flex-direction: column;
   gap: 4px;
   margin-top: 4px;
-  font-size: 9.5px;
+  font-size: 12px;
   color: var(--color-text-tertiary);
 }
 
@@ -270,7 +270,7 @@
 
 .ap-actions .ant-btn { flex: 1; }
 .ap-rail-divider { height: 1px; margin: 7px 0; background: var(--color-divider); }
-.ap-scope-copy { display: flex; gap: 6px; font-size: 9px; line-height: 1.5; color: var(--color-text-tertiary); }
+.ap-scope-copy { display: flex; gap: 6px; font-size: 12px; line-height: 1.5; color: var(--color-text-tertiary); }
 
 .ap-detail-empty {
   display: flex;
@@ -281,7 +281,7 @@
 
 .ap-empty {
   padding: 24px 10px;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--color-text-tertiary);
 }
 
@@ -324,7 +324,7 @@
   border-radius: var(--radius-sm);
   background: var(--color-surface-sunken);
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 12px;
   line-height: 1.55;
 }
 

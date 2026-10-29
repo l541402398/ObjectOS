@@ -16,6 +16,7 @@ import { isProtectedPath, redactSecrets } from '@projectos/policy'
 import { resolveWorkspacePath } from '@projectos/workspace'
 import type { SqliteStore } from '@projectos/persistence'
 import type { Logger } from './logger.js'
+import { classifyGrantedCommand } from '@projectos/application'
 
 const LOCAL_USER: PlanGrantActor = { kind: 'user', id: 'local-user', name: '你' }
 const SYSTEM_AUTOMATION: PlanGrantActor = { kind: 'system', id: 'automation', name: '自动化运营' }
@@ -1028,6 +1029,19 @@ export class PlanGrantService {
       }
     }
 
+    // ADR-0056: an explicit `run-tests` grant covers only test runners and read-only inspections.
+    // It is checked before the read-only-family path, because a family still needs a first approval.
+    if (command && view.actions.includes('run-tests')) {
+      const verdict = classifyGrantedCommand(command)
+      if (verdict.allowed) {
+        return {
+          decision: 'allow',
+          reason: `计划授权包含 run-tests：${verdict.reason}，命令 ${command.slice(0, 120)}`,
+          grantId: grant.id,
+        }
+      }
+    }
+
     if (input.toolName !== 'write_file') {
       // ADR-0032: a read-only family approved once in this plan covers the same family.
       const family = command ? readOnlyCommandFamily(command) : null
@@ -1059,7 +1073,7 @@ export class PlanGrantService {
           grantId: grant.id,
         }
       }
-      // Process tools are never covered by the grant itself. A human may, however, have
+      // Process tools are otherwise not covered by the grant itself. A human may, however, have
       // already approved this exact command inside this plan: re-asking for the same
       // `npm test` five times is product friction, not safety. Reuse is keyed on the
       // exact normalized command plus plan/agent/tool and a short TTL, so any change to

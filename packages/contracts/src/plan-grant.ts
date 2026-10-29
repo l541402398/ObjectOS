@@ -12,7 +12,7 @@ import { IdSchema, TimestampSchema } from './common.js'
  * Process, Git-write, external Runtime and sensitive paths always keep their
  * existing per-call Approval. The grant can never authorize those.
  */
-export const PlanGrantActionSchema = z.enum(['plan.start', 'workspace-write'])
+export const PlanGrantActionSchema = z.enum(['plan.start', 'workspace-write', 'run-tests'])
 export type PlanGrantAction = z.infer<typeof PlanGrantActionSchema>
 
 export const PlanGrantActorSchema = z.object({
@@ -68,7 +68,7 @@ export type PlanExecutionGrantView = z.infer<typeof PlanExecutionGrantViewSchema
 
 export const PlanExecutionGrantIssueInputSchema = z.object({
   planId: IdSchema,
-  actions: z.array(PlanGrantActionSchema).min(1).max(2),
+  actions: z.array(PlanGrantActionSchema).min(1).max(3),
   allowedPaths: z.array(z.string().trim().min(1).max(500)).max(20).default([]),
   /** Omit to cover every task created by this plan revision. */
   allowedTaskIds: z.array(IdSchema).max(200).optional(),

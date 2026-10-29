@@ -116,8 +116,13 @@ export function projectJourney(input: {
   const grantActive = Boolean(grant?.valid && grant.status === 'active')
   const testEvidence = plan ? planTestEvidence(store, plan) : null
   const reviewEvidence = plan ? planReviewEvidence(store, plan) : null
-  const humanItems = actions.items(projectId).filter((item) => !item.stale)
-  const toolApproval = humanItems.find((item) => item.kind === 'tool_approval') ?? null
+  const humanItems = actions.items(projectId)
+  const toolApproval =
+    humanItems.find((item) => item.kind === 'tool_approval' && !item.stale) ??
+    // A pending approval whose TTL passed is hidden as stale, but the run is still parked on it.
+    (execution?.status === 'paused' || execution?.status === 'failed' ? (humanItems.find((item) => item.kind === 'tool_approval') ?? null) : null)
+  const approvalRef = toolApproval?.approvalId ?? toolApproval?.id ?? null
+  const approvalExpired = Boolean(toolApproval?.stale)
   const commit = gitHasCommit(project.rootPath)
 
   const tasks = plan ? plan.createdTaskIds.map((taskId) => store.read.getTaskCard(taskId)).filter((card): card is NonNullable<typeof card> => Boolean(card)) : []
@@ -248,7 +253,9 @@ export function projectJourney(input: {
           : '已授权，等待开始执行'
         : '尚未开始执行'
       : waitingApproval
-        ? `执行暂停：等待你批准一次工具调用（审批 ${waitingApproval.id}）`
+        ? approvalExpired
+          ? `执行停在一条已过期的审批上（${approvalRef}）；该审批不能继续，需要重新发起`
+          : `执行暂停：等待你批准一次工具调用（审批 ${approvalRef}）`
         : execution.status === 'running'
           ? activeRun
             ? `${activeRun.card.assigneeAgentId ? 'Agent' : '执行者'} 正在处理「${activeRun.card.title.slice(0, 40)}」`
@@ -263,10 +270,10 @@ export function projectJourney(input: {
     objects: {
       ...(plan ? { planId: plan.id } : {}),
       ...(activeRun ? { taskId: activeRun.card.id, runId: activeRun.run.id } : {}),
-      ...(waitingApproval ? { approvalId: waitingApproval.id } : {}),
+      ...(waitingApproval ? { approvalId: approvalRef ?? undefined } : {}),
     },
     entry: waitingApproval
-      ? { label: '处理审批', route: `/projects/${projectId}/approvals?approval=${waitingApproval.id}` }
+      ? { label: approvalExpired ? '重新发起审批' : '处理审批', route: `/projects/${projectId}/approvals?approval=${approvalRef}` }
       : execution
         ? { label: '查看运行', route: runsRoute }
         : null,
@@ -274,14 +281,27 @@ export function projectJourney(input: {
 
   // 7) 验证（真实测试证据）
   const verifyState = testEvidence?.state ?? 'unverified'
+  // A pause caused by stale evidence means the last write came after the last test run: the stage
+  // cannot be "passed" even if an older trusted run exists (ADR-0047), and a human must re-verify.
+  const staleEvidencePause = execution?.status === 'paused' && /测试证据已过期/.test(execution.error ?? '')
   push({
     key: 'verify',
     label: '验证',
-    state:
-      verifyState === 'passed' ? 'done' : verifyState === 'failed' ? 'blocked' : verifyState === 'stale' ? 'blocked' : execution?.status === 'running' ? 'active' : 'pending',
-    owner: verifyState === 'passed' ? 'none' : verifyState === 'failed' || verifyState === 'stale' ? 'ai' : execution?.status === 'running' ? 'ai' : 'none',
-    detail:
-      verifyState === 'passed'
+    state: staleEvidencePause
+      ? 'blocked'
+      : verifyState === 'passed'
+        ? 'done'
+        : verifyState === 'failed'
+          ? 'blocked'
+          : verifyState === 'stale'
+            ? 'blocked'
+            : execution?.status === 'running'
+              ? 'active'
+              : 'pending',
+    owner: staleEvidencePause ? 'user' : verifyState === 'passed' ? 'none' : verifyState === 'failed' || verifyState === 'stale' ? 'ai' : execution?.status === 'running' ? 'ai' : 'none',
+    detail: staleEvidencePause
+      ? `验证证据已过期：最后一次修改晚于最后一次通过的测试，需要重新验证（${execution?.error?.slice(0, 140) ?? ''}）`
+      : verifyState === 'passed'
         ? `当前代码真实验证通过：${testEvidence?.lastSuccess?.command ?? '已记录的验证命令'}（exit 0）`
         : verifyState === 'failed'
           ? `真实测试未通过：${testEvidence?.lastFailure?.command ?? ''}（exit ${testEvidence?.lastFailure?.exitCode ?? '?'}）`
@@ -363,7 +383,15 @@ export function projectJourney(input: {
       return { owner: 'ai', label: 'AI 正在执行，无需你操作', detail: activeRun ? `正在处理「${activeRun.card.title.slice(0, 40)}」` : '计划正在运行', route: runsRoute, objectId: activeRun?.run.id ?? null }
     }
     if (waitingApproval) {
-      return { owner: 'user', label: '等待你批准一次工具调用', detail: `审批 ${waitingApproval.id}：${waitingApproval.title}`, route: `/projects/${projectId}/approvals?approval=${waitingApproval.id}`, objectId: waitingApproval.id }
+      return {
+        owner: 'user',
+        label: approvalExpired ? '审批已过期，需要重新发起' : '等待你批准一次工具调用',
+        detail: approvalExpired
+          ? `审批 ${approvalRef} 已过期，运行停在这里；重新开始或让 AI 重新申请授权`
+          : `审批 ${approvalRef}：${waitingApproval.title}`,
+        route: `/projects/${projectId}/approvals?approval=${approvalRef}`,
+        objectId: approvalRef,
+      }
     }
     if (planDraft) {
       return { owner: 'user', label: '等待你审核计划', detail: `第 ${plan!.revision} 版计划：${plan!.goal.slice(0, 80)}`, route: planRoute, objectId: plan!.id }
@@ -375,6 +403,15 @@ export function projectJourney(input: {
         detail: grant ? `${grant.status}：重新签发后 AI 才能开始` : '批准计划不会启动 Agent；先授权范围与预算',
         route: planRoute,
         objectId: grant?.id ?? plan.id,
+      }
+    }
+    if (staleEvidencePause) {
+      return {
+        owner: 'user',
+        label: '验证证据已过期，需要重新验证',
+        detail: execution?.error?.slice(0, 200) ?? '最后一次修改晚于最后一次测试',
+        route: runsRoute,
+        objectId: plan?.id ?? null,
       }
     }
     if (execution?.status === 'failed' || execution?.status === 'paused') {

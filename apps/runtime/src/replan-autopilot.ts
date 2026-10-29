@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { now, type PlanDraft, type PlannedTask, type ReplanProposalView } from '@projectos/contracts'
 import { PROJECT_EVENT_TYPES } from '@projectos/domain'
+import { expireStaleApprovals } from './approval-expiry.js'
 import {
   evaluateReplanAuthorization,
   type ReplanAuthorization,
@@ -151,7 +152,11 @@ export class ReplanAutopilot {
   }
 
   /** Runs one pass synchronously-awaited; exposed for tests and diagnostics. */
-  async runPass(projectId: string): Promise<AutonomyOutcome[]> {    const outcomes: AutonomyOutcome[] = []
+  async runPass(projectId: string): Promise<AutonomyOutcome[]> {
+    // ADR-0057: settle approvals whose TTL passed before deciding anything else, otherwise the pass
+    // reports "waiting for approval" for a decision nobody can make any more.
+    expireStaleApprovals(this.store, this.logger)
+    const outcomes: AutonomyOutcome[] = []
     const policy = this.policy(projectId)
     if (policy.mode !== 'autonomous') return outcomes
 

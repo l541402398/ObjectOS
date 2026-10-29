@@ -274,19 +274,19 @@
 
 .pui-detail-sheet { background: linear-gradient(160deg, color-mix(in srgb, var(--pui-surface-strong) 95%, transparent), color-mix(in srgb, var(--pui-surface) 84%, transparent)); border: 1px solid color-mix(in srgb, var(--pui-border) 70%, var(--pui-glass-edge)); box-shadow: inset 0 1px 0 var(--pui-glass-edge), 0 34px 80px -40px rgba(10, 30, 60, .65); backdrop-filter: blur(30px) saturate(1.2); -webkit-backdrop-filter: blur(30px) saturate(1.2); }
 .pui-detail-section { border-bottom: 1px solid var(--pui-border); padding: 14px 0; }
-.pui-detail-label { color: var(--pui-ink-muted); font-size: 11.5px; letter-spacing: .02em; }
+.pui-detail-label { color: var(--pui-ink-muted); font-size: 12px; letter-spacing: .02em; }
 .pui-detail-value { color: var(--pui-ink); font-size: 12.5px; line-height: 1.5; }
 .pui-detail-input { width: 100%; border: 1px solid transparent; border-radius: 8px; background: transparent; padding: 5px 7px; color: var(--pui-ink); font-size: 12.5px; line-height: 1.5; transition: background 160ms, border-color 160ms; }
 .pui-detail-input:hover { background: color-mix(in srgb, var(--pui-ink-muted) 6%, transparent); }
 .pui-detail-input:focus { background: var(--pui-surface-strong); border-color: color-mix(in srgb, var(--pui-accent) 45%, var(--pui-border)); outline: none; box-shadow: 0 0 0 3px var(--pui-accent-soft); }
 
-.pui-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border: 1px solid var(--pui-border); border-radius: 8px; background: color-mix(in srgb, var(--pui-surface-strong) 72%, transparent); color: var(--pui-ink-secondary); font-size: 11.5px; line-height: 1.2; }
+.pui-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border: 1px solid var(--pui-border); border-radius: 8px; background: color-mix(in srgb, var(--pui-surface-strong) 72%, transparent); color: var(--pui-ink-secondary); font-size: 12px; line-height: 1.2; }
 .pui-chip button { display: inline-flex; align-items: center; color: var(--pui-ink-muted); }
 .pui-chip button:hover { color: var(--pui-danger); }
 .pui-chip-add { border-style: dashed; color: var(--pui-ink-muted); }
 .pui-chip-add:hover { border-color: color-mix(in srgb, var(--pui-accent) 45%, var(--pui-border)); color: var(--pui-accent); background: var(--pui-accent-soft); }
 
-.pui-role-option { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 9px; border: 1px solid var(--pui-border); border-radius: 8px; background: color-mix(in srgb, var(--pui-surface-strong) 64%, transparent); color: var(--pui-ink-secondary); font-size: 11.5px; }
+.pui-role-option { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 9px; border: 1px solid var(--pui-border); border-radius: 8px; background: color-mix(in srgb, var(--pui-surface-strong) 64%, transparent); color: var(--pui-ink-secondary); font-size: 12px; }
 .pui-role-option[data-active='true'] { border-color: color-mix(in srgb, var(--pui-accent) 56%, var(--pui-border)); background: var(--pui-accent-soft); color: var(--pui-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pui-accent) 7%, transparent); }
 
 .pui-agent-list { position: absolute; z-index: 4000; left: 0; right: 0; top: calc(100% + 6px); padding: 5px; border-radius: 12px; background: var(--pui-surface-strong); border: 1px solid var(--pui-border); box-shadow: 0 22px 50px -28px rgba(15, 35, 65, .55); backdrop-filter: blur(24px); }
@@ -346,14 +346,14 @@
 .pui-route-track { fill: none; stroke-width: 2; stroke-linecap: round; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--pui-accent) 28%, transparent)); }
 .pui-route-stops { position: absolute; inset: 0; display: grid; align-items: start; padding: 18px 12px 0; }
 .pui-stop { position: relative; display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 3px; border: 0; background: transparent; padding: 0; color: var(--pui-ink-secondary); text-align: center; }
-.pui-stop-count { position: absolute; right: calc(50% - 42px); top: -5px; z-index: 2; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: .08em; color: var(--pui-ink-muted); }
+.pui-stop-count { position: absolute; right: calc(50% - 42px); top: -5px; z-index: 2; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; letter-spacing: .08em; color: var(--pui-ink-muted); }
 .pui-stop-orb { position: relative; z-index: 1; display: grid; width: 62px; height: 62px; place-items: center; border-radius: 20px; border: 1px solid color-mix(in srgb, var(--pui-border) 64%, var(--pui-glass-edge)); background: radial-gradient(120% 120% at 20% 0%, color-mix(in srgb, var(--pui-accent) 18%, transparent), transparent 54%), linear-gradient(150deg, color-mix(in srgb, var(--pui-surface-strong) 86%, transparent), color-mix(in srgb, var(--pui-surface) 58%, transparent)); color: var(--pui-accent); box-shadow: inset 0 1px 0 var(--pui-glass-edge), 0 16px 30px -24px rgba(20, 45, 88, .6); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); transition: border-color 200ms var(--pui-ease), box-shadow 200ms var(--pui-ease), background 200ms var(--pui-ease); }
 .pui-stop:hover .pui-stop-orb { border-color: color-mix(in srgb, var(--pui-accent) 52%, var(--pui-border)); box-shadow: inset 0 1px 0 var(--pui-glass-edge), 0 20px 34px -24px rgba(20, 45, 88, .65); }
 .pui-stop.is-active .pui-stop-orb { border-color: color-mix(in srgb, var(--pui-accent) 62%, var(--pui-border)); background: radial-gradient(120% 120% at 20% 0%, color-mix(in srgb, var(--pui-accent) 30%, transparent), transparent 56%), linear-gradient(150deg, color-mix(in srgb, var(--pui-surface-strong) 90%, transparent), color-mix(in srgb, var(--pui-accent) 10%, var(--pui-surface))); box-shadow: var(--pui-focus-ring), inset 0 1px 0 var(--pui-glass-edge), 0 20px 38px -26px rgba(20, 45, 88, .6); }
 .pui-stop.is-risk .pui-stop-orb { border-color: color-mix(in srgb, var(--pui-danger) 48%, var(--pui-border)); }
 .pui-stop-risk { position: absolute; right: -2px; top: -2px; width: 9px; height: 9px; border-radius: 50%; background: var(--pui-danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pui-danger) 14%, transparent); }
 .pui-stop-title { margin-top: 4px; font-size: 13.5px; font-weight: 650; line-height: 1.3; color: var(--pui-ink); letter-spacing: -.01em; }
-.pui-stop-small { max-width: 150px; font-size: 10.5px; line-height: 1.35; color: var(--pui-ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pui-stop-small { max-width: 150px; font-size: 12px; line-height: 1.35; color: var(--pui-ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pui-stop.is-active .pui-stop-title { color: var(--pui-accent); }
 .pui-dag-wrap { background: radial-gradient(70% 90% at 20% 0%, color-mix(in srgb, var(--pui-accent) 5%, transparent), transparent 70%), color-mix(in srgb, var(--pui-surface-muted) 60%, transparent); }
 .pui-dag-wrap .react-flow__node { cursor: pointer; }

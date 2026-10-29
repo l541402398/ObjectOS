@@ -439,8 +439,30 @@ export class OrchestrationService {
    * Phase 2B-1 entry point. It builds exactly one validated draft; it never
    * approves it, creates Tasks, starts the Scheduler or executes a tool.
    */
+  /**
+   * ADR-0051 exposed a real race: the autonomous draft pass and an explicit 生成计划 both call
+   * `getNextPlanRevision` before inserting, so both could claim the same revision and one insert failed
+   * with `UNIQUE constraint failed: plan_revisions.project_id, plan_revisions.revision`.
+   * Plan revisions for one project are now allocated inside a per-project queue.
+   */
+  private readonly planWriteChains = new Map<string, Promise<unknown>>()
+
+  private withPlanLock<T>(projectId: string, action: () => Promise<T> | T): Promise<T> {
+    const previous = this.planWriteChains.get(projectId) ?? Promise.resolve()
+    const next = previous.then(action, action)
+    this.planWriteChains.set(
+      projectId,
+      next.catch(() => undefined),
+    )
+    return next
+  }
+
   async generateAIPlan(input: AiPlanGenerationInput): Promise<PlanDraft> {
     if (!this.store.read.getProject(input.projectId)) throw new AppError('NOT_FOUND', '项目不存在')
+    return this.withPlanLock(input.projectId, () => this.generateAIPlanLocked(input))
+  }
+
+  private async generateAIPlanLocked(input: AiPlanGenerationInput): Promise<PlanDraft> {
     const goal = input.goal.trim()
     if (goal.length < 3) throw new AppError('BAD_REQUEST', '计划目标至少需要 3 个字符')
 

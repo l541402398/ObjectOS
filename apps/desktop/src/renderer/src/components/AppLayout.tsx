@@ -176,6 +176,8 @@ export default function AppLayout() {
       if (event.type === 'runtime.log' || event.type === 'run.delta') return
       if (event.type === 'provider.changed') {
         void queryClient.invalidateQueries({ queryKey: ['providerSettings'] })
+        // A new/changed model connection changes what the journey can do next.
+        void queryClient.invalidateQueries({ queryKey: ['work', 'journey'] })
         return
       }
       void queryClient.invalidateQueries({ queryKey: ['bootstrap'] })
@@ -193,6 +195,8 @@ export default function AppLayout() {
         void queryClient.invalidateQueries({ queryKey: ['action-center', eventProjectId] })
         void queryClient.invalidateQueries({ queryKey: ['lifecycle', eventProjectId] })
         void queryClient.invalidateQueries({ queryKey: ['gate-overview', eventProjectId] })
+        // ADR-0053: the journey bar follows real business events, not only the 5s fallback poll.
+        void queryClient.invalidateQueries({ queryKey: ['work', 'journey'] })
       }
       void queryClient.invalidateQueries({ queryKey: ['task'] })
       void queryClient.invalidateQueries({ queryKey: ['run'] })

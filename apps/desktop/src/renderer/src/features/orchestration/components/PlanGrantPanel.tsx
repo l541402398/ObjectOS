@@ -66,6 +66,8 @@ export function PlanGrantPanel({
   onResume,
 }: PlanGrantPanelProps) {
   const [workspaceWrite, setWorkspaceWrite] = useState(false)
+  // ADR-0056: test/read-only commands can be authorized up front instead of one approval each.
+  const [runTests, setRunTests] = useState(true)
   const [allowedPaths, setAllowedPaths] = useState<string[]>([])
   const [maxToolCalls, setMaxToolCalls] = useState(40)
   const [maxRuns, setMaxRuns] = useState(1)
@@ -76,6 +78,7 @@ export function PlanGrantPanel({
 
   const resetSafeDefaults = useCallback((): void => {
     setWorkspaceWrite(false)
+    setRunTests(true)
     setAllowedPaths([])
     setMaxToolCalls(40)
     setMaxRuns(1)
@@ -113,7 +116,11 @@ export function PlanGrantPanel({
     await onIssue(
       {
         planId: plan.id,
-        actions: workspaceWriteSelected ? ['plan.start', 'workspace-write'] : ['plan.start'],
+        actions: [
+          'plan.start',
+          ...(workspaceWriteSelected ? (['workspace-write'] as const) : []),
+          ...(runTests ? (['run-tests'] as const) : []),
+        ],
         allowedPaths: workspaceWriteSelected ? allowedPaths : [],
         maxRuns,
         maxToolCalls,
@@ -235,6 +242,25 @@ export function PlanGrantPanel({
               <span>启动已批准计划</span>
               <Tag color="blue">plan.start（必选）</Tag>
             </div>
+            <div className="po-grant-form-row">
+              <span>测试与只读检查</span>
+              <Checkbox
+                checked={runTests}
+                disabled={busy}
+                onChange={(event) => setRunTests(event.target.checked)}
+                data-testid="plan-grant-run-tests"
+              >
+                允许测试与只读检查命令（白名单）
+              </Checkbox>
+            </div>
+            {runTests ? (
+              <div className="po-grant-form-field">
+                <em>
+                  仅覆盖 node --test、npm/pnpm/yarn test、vitest、jest、pytest、go/cargo test、git status/diff/log/rev-parse/ls-files
+                  以及 node --version；含 && ; | $() 等组合的命令一律仍需逐次审批。
+                </em>
+              </div>
+            ) : null}
             <div className="po-grant-form-row">
               <span>写文件范围</span>
               <Checkbox

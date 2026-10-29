@@ -194,3 +194,94 @@
   border-color: color-mix(in srgb, var(--pdl-ok) 55%, transparent);
   color: var(--pdl-ok);
 }
+
+/* Project center journey summary (ADR-0053): the always-on bar's answer, one line, in the hero. */
+.nx-hero-journey {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--pdl-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--pdl-surface-2) 76%, transparent);
+  font-size: 12.5px;
+  color: var(--pdl-ink-2);
+}
+
+.nx-hero-journey-kicker {
+  color: var(--pdl-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.nx-hero-journey-state {
+  border-radius: 999px;
+  padding: 2px 8px;
+  border: 1px solid var(--pdl-line);
+  color: var(--pdl-ink-2);
+  white-space: nowrap;
+}
+
+.nx-hero-journey-state.is-blocked {
+  border-color: color-mix(in srgb, var(--pdl-warn) 55%, transparent);
+  color: var(--pdl-warn);
+}
+
+.nx-hero-journey-state.is-done {
+  border-color: color-mix(in srgb, var(--pdl-ok) 55%, transparent);
+  color: var(--pdl-ok);
+}
+
+.nx-hero-journey-state.is-active {
+  border-color: color-mix(in srgb, var(--pdl-accent) 55%, transparent);
+  color: var(--pdl-accent);
+}
+
+.nx-hero-journey strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--pdl-ink);
+  font-size: 13px;
+}
+
+.nx-hero-journey-owner {
+  color: var(--pdl-muted);
+  white-space: nowrap;
+}
+
+/* A decided approval is evidence, not a form (ADR-0055). */
+.ap-decided {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 6px 10px;
+  margin: 10px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--pdl-line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--pdl-surface-2) 70%, transparent);
+  font-size: 12px;
+}
+
+.ap-decided span {
+  color: var(--pdl-muted);
+}
+
+.ap-decided strong {
+  color: var(--pdl-ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.ap-decided strong.is-approved {
+  color: var(--pdl-ok);
+}
+
+.ap-decided strong.is-rejected {
+  color: var(--pdl-danger);
+}

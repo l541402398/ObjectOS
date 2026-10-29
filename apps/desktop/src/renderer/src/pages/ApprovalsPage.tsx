@@ -132,15 +132,18 @@ export default function ApprovalsPage() {
     items.find((item) => `${item.kind}:${item.id}` === selectedKey) ?? null
   const toolApproval = selected?.kind === 'tool' ? approvals.data?.approvals.find((item) => item.id === selected.id) ?? null : null
   const deliveryApproval = selected?.kind === 'delivery' ? delivery.data?.approvals.find((item) => item.id === selected.id) ?? null : null
+  // A decided approval is read-only evidence: show the persisted decision, never the form (ADR-0055).
+  const decidedApproval = selected?.kind === 'tool' ? toolApproval : deliveryApproval
+  const decidedAt = decidedApproval && 'decidedAt' in decidedApproval ? decidedApproval.decidedAt : null
+  const decidedAgent = decidedApproval && 'agentName' in decidedApproval ? decidedApproval.agentName : null
+  const decisionText = decidedApproval && 'decision' in decidedApproval ? decidedApproval.decision : null
   const toolArgs = ((toolApproval?.request as { args?: Record<string, unknown> } | undefined)?.args ?? {})
   const toolPath = typeof toolArgs.path === 'string' ? toolArgs.path : null
   const toolContent = typeof toolArgs.content === 'string' ? toolArgs.content : null
   const currentFile = useFileContent(projectId, toolPath)
-  const diff = useMemo(() => {
-    if (!toolContent) return null
-    const before = (currentFile.data as { content?: string } | undefined)?.content ?? ''
-    return lineDiff(before, toolContent)
-  }, [currentFile.data, toolContent])
+  const beforeContent = (currentFile.data as { content?: string } | undefined)?.content ?? ''
+  // Diffing a single file is cheap; a manual memo here trips the React Compiler (mutable request args).
+  const diff = toolContent ? lineDiff(beforeContent, toolContent) : null
 
   const decideTool = useMutation({
     mutationFn: ({ decision }: { decision: 'approved' | 'rejected' }) =>
@@ -203,7 +206,7 @@ export default function ApprovalsPage() {
             <>
               <div className="ap-detail-head">
                 <div><span className="rw-kicker">{selected.kind === 'tool' ? 'TOOL PERMISSION' : 'DELIVERY DECISION'}</span><h2>{selected.title}</h2></div>
-                <Tag>{statusLabel(selected.status)}</Tag>
+                <Tag color={selected.status === 'approved' ? 'green' : selected.status === 'rejected' ? 'red' : 'gold'}>{statusLabel(selected.status)}</Tag>
               </div>
               <div className="ap-facts">
                 <span><b>申请</b>{selected.kind === 'tool' ? toolApproval?.agentName ?? '—' : 'ProjectOS 交付'}</span>
@@ -242,7 +245,40 @@ export default function ApprovalsPage() {
 
         <aside className="ap-action">
           <h3>决策</h3>
-          {selected ? (
+          {selected && selected.status !== 'pending' ? (
+            <>
+              <div className="ap-risk"><span>结论</span><strong>{statusLabel(selected.status)}</strong></div>
+              <p className="ap-muted">
+                该审批已完成，不能再次决策。已批准的记录仅作为可追溯证据保留；需要新的动作时请从计划或交付入口重新发起。
+              </p>
+              <div className="ap-decided" data-testid="approval-decided">
+                <span>状态</span>
+                <strong className={`is-${selected.status}`}>{statusLabel(selected.status)}</strong>
+                <span>申请时间</span>
+                <strong>{formatRelative(selected.requestedAt)}</strong>
+                {decidedAt ? (
+                  <>
+                    <span>处理时间</span>
+                    <strong>{formatRelative(decidedAt)}</strong>
+                  </>
+                ) : null}
+                {decidedAgent ? (
+                  <>
+                    <span>关联 Agent</span>
+                    <strong>{decidedAgent}</strong>
+                  </>
+                ) : null}
+                {decisionText ? (
+                  <>
+                    <span>决策记录</span>
+                    <strong>{decisionText}</strong>
+                  </>
+                ) : null}
+              </div>
+              <div className="ap-rail-divider" />
+              <div className="ap-scope-copy"><SafetyCertificateOutlined /> 审批结论已绑定当时的内容指纹，内容变化会使旧结论失效。</div>
+            </>
+          ) : selected ? (
             <>
               <div className="ap-risk"><span>风险</span><strong>{selected.kind === 'tool' ? '写入/权限' : '发布/部署'}</strong></div>
               <p className="ap-muted">批准会记录操作者、备注与时间；不会自动执行危险动作。</p>
