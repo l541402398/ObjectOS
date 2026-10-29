@@ -1,5 +1,20 @@
 # ProjectOS UI Design Changelog
 
+## 2026-10-29 — Breadcrumb navigation with history back
+
+- 缺陷：内页之间无法回到上一个内页；标题栏的路径看起来像装饰（三级色、无层级语义），也没有返回控件。
+- 修复（ADR-0045）：标题栏路径升级为 `项目中心 › 项目名 › 分组 › 当前页`（`<nav aria-label="导航路径">`，
+  当前页 `aria-current="page"`），前两级可点击；新增「返回上一页」按钮（应用内历史存在时可用，`navigate(-1)`）；
+  字号 12.5px，分组改用二级文字色（三级色实测 3.86:1 不达标）。
+- 位置保持标题栏内，不占页面高度：避免把 `height:100%` 页面（审批 / 资源与连接）重新撑出整页滚动条（ADR-0037）。
+- 真实 Electron 证据（真实项目，1440×900；1100×700 与 1440@125% 复核）：
+  - 亮色：返回/层级/分组 6.57:1，当前页 13.96:1；
+  - 暗色：返回/层级/分组 12.75:1，当前页 18.42:1；
+  - 侧栏 运行审计 → 审批 →「返回」→ 运行审计；点项目层级回到项目页；标题栏高度保持 45px，无横向溢出。
+  - `scripts/p288-breadcrumb-e2e.mjs` → `PASS=11 FAIL=0`。
+- 截图：`docs/screenshots/p288-breadcrumb-{runs,light,dark,1100x700,1440x125}.png`。
+- 未验证项：`#/settings`、`#/design-lab` 等非项目路由下退化为 `项目中心 › 当前页`，未单列验收。
+
 ## 2026-10-29 — Overlays follow the app theme (task drawer readability)
 
 - 缺陷：任务详情抽屉面板是浅色（`data-theme` 缺失 → 走 light token），而抽屉内容用的是应用级主题 token；

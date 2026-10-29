@@ -15,6 +15,7 @@ import {
   ExpandOutlined,
   FolderOpenOutlined,
   HistoryOutlined,
+  ArrowLeftOutlined,
   MinusOutlined,
   MoonOutlined,
   ProjectOutlined,
@@ -148,6 +149,32 @@ export default function AppLayout() {
     const segment = location.pathname.split('/')[3] ?? 'work'
     return segment in PAGE_LABELS ? segment : 'work'
   }, [location.pathname])
+
+  /**
+   * ADR-0045 — hierarchy + history navigation.
+   *
+   * The app had a titlebar path, but it read as decoration (tertiary 11px text) and offered no way
+   * back to the previously visited inner page: 运行审计 → 审批 meant going through the sidebar again.
+   * The breadcrumb now carries the nav group, marks the current page, and a back control walks the
+   * in-app history.
+   */
+  const NAV_GROUP_OF: Record<string, string> = {
+    work: '研发',
+    tasks: '研发',
+    agents: '研发',
+    approvals: '研发',
+    runs: '研发',
+    releases: '交付',
+    deployments: '交付',
+    connections: '交付',
+    overview: '项目',
+    versions: '项目',
+    knowledge: '项目',
+    'project-settings': '项目',
+  }
+  const activeGroup = NAV_GROUP_OF[activeKey] ?? ''
+  const historyIndex = (window.history.state as { idx?: number } | null)?.idx ?? 0
+  const canGoBack = historyIndex > 0
 
   useEffect(() => {
     if (projectId) setLastProjectId(projectId)
@@ -424,30 +451,37 @@ export default function AppLayout() {
         <button type="button" className="po-icon-button" onClick={toggleSidebar} aria-label="切换侧边栏">
           {collapsed ? <ExpandOutlined /> : <CompressOutlined />}
         </button>
-        <div className="po-crumbs">
+        <button
+          type="button"
+          className="po-crumb-back"
+          onClick={() => navigate(-1)}
+          disabled={!canGoBack}
+          aria-label="返回上一页"
+          title={canGoBack ? '返回上一页' : '没有可返回的上一页'}
+        >
+          <ArrowLeftOutlined />
+        </button>
+        <nav className="po-crumbs" aria-label="导航路径">
           <button type="button" className="po-crumb-link" onClick={() => navigate('/')}>
-            ProjectOS
+            项目中心
           </button>
           {currentProject ? (
             <>
-              <span className="po-crumb-sep">/</span>
-              <button
-                type="button"
-                className="po-crumb-link is-current"
-                onClick={() => navigate(`/projects/${currentProject.id}`)}
-              >
+              <span className="po-crumb-sep" aria-hidden>›</span>
+              <button type="button" className="po-crumb-link" onClick={() => navigate(`/projects/${currentProject.id}`)}>
                 {truncate(currentProject.name, 30)}
               </button>
-              <span className="po-crumb-sep">/</span>
-              <span className="po-crumb-page">{PAGE_LABELS[activeKey] ?? ''}</span>
             </>
-          ) : (
+          ) : null}
+          {currentProject && activeGroup ? (
             <>
-              <span className="po-crumb-sep">/</span>
-              <span className="po-crumb-page">{PAGE_LABELS[activeKey] ?? ''}</span>
+              <span className="po-crumb-sep" aria-hidden>›</span>
+              <span className="po-crumb-group">{activeGroup}</span>
             </>
-          )}
-        </div>
+          ) : null}
+          <span className="po-crumb-sep" aria-hidden>›</span>
+          <span className="po-crumb-page" aria-current="page">{PAGE_LABELS[activeKey] ?? ''}</span>
+        </nav>
       </div>
       <button type="button" className="po-command-trigger" onClick={() => setCommandOpen(true)}>
         <SearchOutlined />
