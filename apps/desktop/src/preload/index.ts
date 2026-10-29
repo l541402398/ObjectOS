@@ -104,6 +104,7 @@ const api: ProjectOSDesktopApi = {
     createStrategy: (input) => call('deployment.strategy.create', input),
   },
   work: {
+    journey: (projectId) => call('work.journey', { projectId }),
     goalStatus: (projectId) => call('work.goalStatus', { projectId }),
   },
   actions: {

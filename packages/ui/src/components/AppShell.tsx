@@ -4,6 +4,8 @@ export interface AppShellProps {
   header: ReactNode
   sidebar: ReactNode
   footer: ReactNode
+  /** Persistent row under the titlebar (global goal journey, ADR-0053). */
+  subheader?: ReactNode
   children: ReactNode
   inspector?: ReactNode
   inspectorOpen?: boolean
@@ -15,6 +17,7 @@ export function AppShell({
   header,
   sidebar,
   footer,
+  subheader,
   children,
   inspector,
   inspectorOpen = true,
@@ -27,6 +30,7 @@ export function AppShell({
         跳到主内容
       </a>
       <header className="po-titlebar">{header}</header>
+      {subheader ? <div className="po-subheader">{subheader}</div> : null}
       <div className="po-shell-body">
         <aside className="po-sidebar glass-panel" aria-label="主导航">
           {sidebar}

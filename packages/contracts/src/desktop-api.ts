@@ -78,6 +78,7 @@ export interface ProjectOSDesktopApi {
     createStrategy: (input: In<'deployment.strategy.create'>) => Promise<Out<'deployment.strategy.create'>>
   }
   work: {
+    journey: (projectId: string | null) => Promise<Out<'work.journey'>>
     goalStatus: (projectId: string) => Promise<Out<'work.goalStatus'>>
   }
   actions: {

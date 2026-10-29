@@ -39,6 +39,7 @@ import { TaskContractPreflightService } from './task-contract-preflight.js'
 import { ReplanAutopilot } from './replan-autopilot.js'
 import { ReviewCoordinator } from './review-coordinator.js'
 import { goalStatusOf } from './goal-status.js'
+import { projectJourney } from './journey.js'
 import { recollectForReview } from './review-snapshot-collector.js'
 import { AgentStudioService } from './agent-studio.js'
 import { RuntimeExecutionService } from './runtime-executor.js'
@@ -969,6 +970,10 @@ export class RuntimeDispatcher {
       case 'action.center': {
         const input = this.parse('action.center', rawInput)
         return { items: this.actions.items(input.projectId), summary: this.actions.summary(input.projectId) }
+      }
+      case 'work.journey': {
+        const input = this.parse('work.journey', rawInput)
+        return projectJourney({ store: this.deps.store, actions: this.actions, grants: this.planGrants, projectId: input.projectId })
       }
       case 'work.goalStatus': {
         const input = this.parse('work.goalStatus', rawInput)

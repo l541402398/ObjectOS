@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { ProjectJourneySchema } from './journey.js'
 import {
   ApprovalStatusSchema,
   ArtifactKindSchema,
@@ -433,6 +434,10 @@ export const ApiSchemas = {
   'action.center': {
     input: projectIdInput,
     output: ActionCenterSchema,
+  },
+  'work.journey': {
+    input: z.object({ projectId: IdSchema.nullable().default(null) }),
+    output: ProjectJourneySchema,
   },
   'work.goalStatus': {
     input: projectIdInput,

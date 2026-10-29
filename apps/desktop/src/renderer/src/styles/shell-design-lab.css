@@ -1,0 +1,196 @@
+/* ADR-0054 — shell-level adoption of the approved Design Lab material and composition.
+ *
+ * The user explicitly prefers the Design Lab (0686c41) materials/composition over the previous shell
+ * look and asked to replace the system style with it. This file is batch 1: the ambient canvas, the
+ * sidebar, the titlebar and the goal journey bar. Page bodies migrate in later batches, each with a
+ * side-by-side screenshot, so nothing is restyled without visual acceptance.
+ *
+ * Tokens are declared at :root so the whole shell shares one optical palette; the Design Lab page
+ * keeps its own .pdl-root scope and is unaffected.
+ */
+
+:root {
+  --pdl-ink: #22304d;
+  --pdl-ink-2: #5f6e89;
+  --pdl-muted: #5f6e89;
+  --pdl-line: rgba(77, 98, 140, 0.16);
+  --pdl-line-strong: rgba(77, 98, 140, 0.26);
+  --pdl-surface: rgba(255, 255, 255, 0.48);
+  --pdl-surface-2: rgba(251, 253, 255, 0.62);
+  --pdl-solid: rgba(249, 251, 255, 0.88);
+  --pdl-accent: #5061dc;
+  --pdl-accent-soft: rgba(88, 107, 229, 0.1);
+  --pdl-violet: #8b7cf2;
+  --pdl-cyan: #43b8ce;
+  --pdl-danger: #b45462;
+  --pdl-warn: #86621f;
+  --pdl-ok: #1d7460;
+  --pdl-shadow: 0 32px 90px -52px rgba(38, 62, 106, 0.55);
+  --pdl-canvas: linear-gradient(132deg, #e7ecf9 0%, #e8f4f4 44%, #e4ecf9 74%, #e9e2f7 100%);
+}
+
+:root[data-theme='dark'] {
+  --pdl-ink: #eff4ff;
+  --pdl-ink-2: #b5c2d9;
+  --pdl-muted: #8e9eb9;
+  --pdl-line: rgba(174, 194, 231, 0.14);
+  --pdl-line-strong: rgba(184, 203, 239, 0.24);
+  --pdl-surface: rgba(24, 36, 64, 0.5);
+  --pdl-surface-2: rgba(28, 42, 73, 0.62);
+  --pdl-solid: rgba(18, 29, 52, 0.9);
+  --pdl-accent: #9badff;
+  --pdl-accent-soft: rgba(116, 138, 255, 0.15);
+  --pdl-violet: #a595ff;
+  --pdl-cyan: #6dd4e2;
+  --pdl-danger: #e5919c;
+  --pdl-warn: #d8ae73;
+  --pdl-ok: #7ad4b7;
+  --pdl-shadow: 0 34px 95px -42px rgba(0, 0, 0, 0.78);
+  --pdl-canvas: linear-gradient(132deg, #0b1222 0%, #101a2e 43%, #171b38 76%, #0d212b 100%);
+}
+
+/* Ambient canvas: the Design Lab gradient replaces the previous radial-only field. */
+.po-shell {
+  background: var(--pdl-canvas);
+  color: var(--pdl-ink);
+}
+
+.po-shell::before {
+  background:
+    radial-gradient(46% 38% at 6% -6%, color-mix(in srgb, var(--pdl-violet) 26%, transparent), transparent 68%),
+    radial-gradient(38% 32% at 96% 2%, color-mix(in srgb, var(--pdl-cyan) 16%, transparent), transparent 70%),
+    radial-gradient(40% 36% at 52% 108%, color-mix(in srgb, var(--pdl-accent) 12%, transparent), transparent 74%);
+  opacity: 1;
+}
+
+:root[data-theme='dark'] .po-shell::before {
+  background:
+    radial-gradient(46% 40% at 4% -8%, rgba(100, 116, 218, 0.34), transparent 68%),
+    radial-gradient(38% 34% at 96% 0%, rgba(65, 183, 196, 0.18), transparent 70%),
+    radial-gradient(40% 34% at 56% 108%, rgba(138, 104, 212, 0.14), transparent 74%);
+}
+
+/* Sidebar: same optical glass recipe as .pdl-side (solid-ish gradient, strong inner highlight). */
+.po-sidebar.glass-panel {
+  border: 1px solid color-mix(in srgb, #fff 62%, transparent);
+  border-radius: 22px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--pdl-surface-2) 92%, transparent),
+    color-mix(in srgb, var(--pdl-surface) 78%, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 72%, transparent), var(--pdl-shadow);
+}
+
+:root[data-theme='dark'] .po-sidebar.glass-panel {
+  border-color: var(--pdl-line-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), var(--pdl-shadow);
+}
+
+/* Main sheet: optical panel rather than a flat card. */
+.po-main {
+  border: 1px solid color-mix(in srgb, #fff 58%, transparent);
+  border-radius: 24px;
+  background: linear-gradient(
+    148deg,
+    color-mix(in srgb, var(--pdl-surface-2) 86%, transparent),
+    color-mix(in srgb, var(--pdl-surface) 68%, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 66%, transparent), var(--pdl-shadow);
+}
+
+:root[data-theme='dark'] .po-main {
+  border-color: var(--pdl-line-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), var(--pdl-shadow);
+}
+
+/* Titlebar and status bar stay transparent over the ambient canvas. */
+.po-titlebar,
+.po-statusbar {
+  background: transparent;
+}
+
+.po-crumb-page,
+.po-crumb-link.is-current {
+  color: var(--pdl-ink);
+}
+
+.po-crumb-link {
+  color: var(--pdl-ink-2);
+}
+
+.po-crumb-back {
+  border-color: var(--pdl-line);
+  background: color-mix(in srgb, var(--pdl-surface-2) 70%, transparent);
+  color: var(--pdl-ink-2);
+}
+
+.po-crumb-back:hover:not(:disabled) {
+  color: var(--pdl-ink);
+  border-color: var(--pdl-line-strong);
+}
+
+/* The journey bar speaks the same optical language as the Design Lab panels. */
+.po-journey {
+  border: 1px solid color-mix(in srgb, #fff 58%, transparent);
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--pdl-surface-2) 94%, transparent),
+    color-mix(in srgb, var(--pdl-surface) 74%, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 70%, transparent), var(--pdl-shadow);
+  color: var(--pdl-ink);
+}
+
+:root[data-theme='dark'] .po-journey {
+  border-color: var(--pdl-line-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), var(--pdl-shadow);
+}
+
+.po-journey-goal,
+.po-journey-step.is-active .po-journey-step-label,
+.po-journey-current {
+  color: var(--pdl-ink);
+}
+
+.po-journey-eyebrow,
+.po-journey-project,
+.po-journey-progress,
+.po-journey-current-detail,
+.po-journey-panel-state,
+.po-journey-step.is-pending .po-journey-step-label,
+.po-journey-step.is-skipped .po-journey-step-label {
+  color: var(--pdl-muted);
+}
+
+.po-journey-dot {
+  background: var(--pdl-muted);
+}
+
+.po-journey-dot.is-done {
+  background: var(--pdl-ok);
+}
+
+.po-journey-dot.is-active {
+  background: var(--pdl-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pdl-accent) 22%, transparent);
+}
+
+.po-journey-dot.is-blocked {
+  background: var(--pdl-warn);
+}
+
+.po-journey-action {
+  background: linear-gradient(140deg, var(--pdl-accent), var(--pdl-violet));
+  color: #fff;
+}
+
+.po-journey-owner.is-user {
+  border-color: color-mix(in srgb, var(--pdl-accent) 55%, transparent);
+  color: var(--pdl-accent);
+}
+
+.po-journey-owner.is-ai {
+  border-color: color-mix(in srgb, var(--pdl-ok) 55%, transparent);
+  color: var(--pdl-ok);
+}

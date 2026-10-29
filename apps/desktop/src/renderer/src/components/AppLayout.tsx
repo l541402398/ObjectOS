@@ -43,6 +43,7 @@ import {
   type SidebarNavGroup,
 } from '@projectos/ui'
 import { BootError, BootScreen } from './BootScreen'
+import { GoalJourneyBar } from './GoalJourneyBar'
 import { CommandPalette, type PaletteCommand } from './CommandPalette'
 import { SettingsModal } from '../features/settings/SettingsModal'
 import { ActionCenterButton } from './ActionCenterPanel'
@@ -627,7 +628,13 @@ export default function AppLayout() {
 
   return (
     <>
-      <AppShell header={titlebar} sidebar={sidebar} footer={statusbar} collapsed={collapsed}>
+      <AppShell
+        header={titlebar}
+        sidebar={sidebar}
+        footer={statusbar}
+        collapsed={collapsed}
+        subheader={<GoalJourneyBar projectId={projectId} />}
+      >
         {projectId && !currentProject ? (
           <div className="po-page">
             <EmptyState
