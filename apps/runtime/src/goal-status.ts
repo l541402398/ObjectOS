@@ -1,6 +1,6 @@
 import { now, type PlanDraft } from '@projectos/contracts'
 import type { SqliteStore } from '@projectos/persistence'
-import { failingVerifications, planReviewEvidence } from './review-evidence-runtime.js'
+import { planReviewEvidence, planTestEvidence } from './review-evidence-runtime.js'
 import type { ActionCenter, ProjectAutonomySettings } from './action-center.js'
 import type { PlanGrantService } from './plan-grant.js'
 
@@ -17,7 +17,15 @@ import type { PlanGrantService } from './plan-grant.js'
  * output, deliveryStatus/mergeCommit, action-center items).
  */
 
-export type GoalVerificationState = 'unknown' | 'passing' | 'failing'
+/**
+ * ADR-0048 — verification has more than three truth values.
+ *
+ * Phase 2.8.8 could show `passing` for any plan that had an execution and no recorded failure, which
+ * displayed "通过" for a plan nobody had verified. The states below are the ones a user actually
+ * needs, and each maps to a persisted fact (real checks, their order against mutations, the content
+ * fingerprint a report claimed, and the delivery record).
+ */
+export type GoalVerificationState = 'unverified' | 'verifying' | 'failed' | 'passed' | 'stale'
 export type GoalReviewState = 'none' | 'stale' | 'current_negative' | 'approved'
 export type GoalDeliveryState = 'none' | 'blocked' | 'merged' | 'verified' | 'merged_verification_failed'
 
@@ -27,7 +35,17 @@ export interface GoalStatusView {
   revision: number | null
   goal: string
   execution: { status: string; error: string | null; updatedAt: number | null } | null
-  verification: { state: GoalVerificationState; failing: string[]; detail: string }
+  verification: {
+    state: GoalVerificationState
+    failing: string[]
+    detail: string
+    evidence: {
+      lastSuccess: { command: string; runId: string; at: number } | null
+      lastFailure: { command: string; exitCode: number; runId: string; at: number } | null
+      staleReasons: string[]
+      trusted: boolean
+    }
+  }
   review: { state: GoalReviewState; fingerprint: string | null; detail: string }
   delivery: {
     state: GoalDeliveryState
@@ -71,7 +89,12 @@ export function goalStatusOf(input: {
       revision: null,
       goal: '',
       execution: null,
-      verification: { state: 'unknown', failing: [], detail: '尚未有计划' },
+      verification: {
+        state: 'unverified',
+        failing: [],
+        detail: '尚未有计划',
+        evidence: { lastSuccess: null, lastFailure: null, staleReasons: [], trusted: false },
+      },
       review: { state: 'none', fingerprint: null, detail: '尚未有审查' },
       delivery: { state: 'none', mergedAt: null, mergeCommit: null, evidenceId: null, detail: '尚未交付' },
       nextAction: {
@@ -92,7 +115,10 @@ export function goalStatusOf(input: {
   }
 
   const execution = plan.execution ?? null
-  const failing = failingVerifications(store, plan)
+  const evidence = planTestEvidence(store, plan)
+  const failing = evidence.state === 'failed' && evidence.lastFailure
+    ? [{ command: evidence.lastFailure.command, exitCode: evidence.lastFailure.exitCode }]
+    : []
   const resolution = planReviewEvidence(store, plan)
   const deliveryStatus = (execution?.deliveryStatus ?? 'none') as GoalDeliveryState
 
@@ -117,13 +143,33 @@ export function goalStatusOf(input: {
       })()
     : null
 
-  const verificationState: GoalVerificationState = failing.length > 0 ? 'failing' : execution ? 'passing' : 'unknown'
+  // "Verifying" must be a real in-flight check, not merely an execution record (ADR-0048).
+  const verifyingTasks = plan.createdTaskIds.filter((taskId) => {
+    const active = store.read.getActiveRunForTask(taskId)
+    if (!active) return false
+    const card = store.read.getTaskCard(taskId)
+    return Boolean(card?.labels.some((label) => label === 'tester' || label === 'reviewer'))
+  })
+  const verificationState: GoalVerificationState =
+    verifyingTasks.length > 0
+      ? 'verifying'
+      : evidence.state === 'passed'
+        ? 'passed'
+        : evidence.state === 'failed'
+          ? 'failed'
+          : evidence.state === 'stale'
+            ? 'stale'
+            : 'unverified'
   const verificationDetail =
-    failing.length > 0
-      ? `真实验证未通过：${failing.map((item) => `${item.command.slice(0, 60)}(exit ${item.exitCode})`).join('、')}`
-      : execution
-        ? '最近一次记录的检查没有失败退出码'
-        : '尚未执行'
+    verificationState === 'passed'
+      ? `当前代码真实通过：${evidence.lastSuccess?.command ?? '已记录的验证命令'}（run ${evidence.lastSuccess?.runId ?? 'n/a'}）`
+      : verificationState === 'verifying'
+        ? `正在执行真实验证（${verifyingTasks.length} 个任务进行中）`
+        : verificationState === 'failed'
+          ? `真实验证未通过：${failing.map((item) => `${item.command.slice(0, 60)}(exit ${item.exitCode})`).join('、')}`
+          : verificationState === 'stale'
+            ? `测试证据已过期：${evidence.reasons.join('；') || '不描述当前内容'}`
+            : '尚未执行任何带真实退出码的验证'
 
   const deliveryDetail =
     deliveryStatus === 'verified'
@@ -157,6 +203,17 @@ export function goalStatusOf(input: {
   if (reviewState === 'stale' && failing.length === 0 && policy.autoApplyReplans && grantValid) {
     productSteps.push({ title: '自动复审当前内容', detail: '代码已变化，产品会复用原审查任务复审，而不是新建计划' })
   }
+  if (
+    (verificationState === 'unverified' || verificationState === 'stale') &&
+    execution?.status !== 'running' &&
+    policy.autoApplyReplans &&
+    grantValid
+  ) {
+    productSteps.push({
+      title: verificationState === 'stale' ? '重新验证当前代码' : '补做真实验证',
+      detail: '交付前需要针对当前内容的真实测试执行记录，产品会安排复跑',
+    })
+  }
   if (execution?.status === 'completed' && reviewState !== 'approved' && policy.autoApplyReplans && grantValid) {
     productSteps.push({ title: '安排复审', detail: '交付前需要针对当前内容的审查，产品会自行安排' })
   }
@@ -189,7 +246,26 @@ export function goalStatusOf(input: {
     execution: execution
       ? { status: execution.status, error: execution.error ?? null, updatedAt: execution.updatedAt ?? null }
       : null,
-    verification: { state: verificationState, failing: failing.map((item) => `${item.command} (exit ${item.exitCode})`), detail: verificationDetail },
+    verification: {
+      state: verificationState,
+      failing: failing.map((item) => `${item.command} (exit ${item.exitCode})`),
+      detail: verificationDetail,
+      evidence: {
+        lastSuccess: evidence.lastSuccess
+          ? { command: evidence.lastSuccess.command, runId: evidence.lastSuccess.runId, at: evidence.lastSuccess.at }
+          : null,
+        lastFailure: evidence.lastFailure
+          ? {
+              command: evidence.lastFailure.command,
+              exitCode: evidence.lastFailure.exitCode,
+              runId: evidence.lastFailure.runId,
+              at: evidence.lastFailure.at,
+            }
+          : null,
+        staleReasons: evidence.reasons,
+        trusted: evidence.trusted,
+      },
+    },
     review: {
       state: reviewState,
       fingerprint: reviewFingerprint,

@@ -59,9 +59,11 @@ const PLAN_TONES: Record<string, 'neutral' | 'warning' | 'success' | 'danger' | 
 }
 
 const GOAL_VERIFICATION_LABELS: Record<string, string> = {
-  unknown: '未验证',
-  passing: '通过',
-  failing: '未通过',
+  unverified: '尚未验证',
+  verifying: '验证中',
+  failed: '验证未通过',
+  passed: '当前代码验证通过',
+  stale: '证据已过期',
 }
 
 const GOAL_REVIEW_LABELS: Record<string, string> = {

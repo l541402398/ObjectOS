@@ -1,0 +1,60 @@
+{
+  "id": "02b-ai-fresh",
+  "order": 21,
+  "title": "附：全新安装时的 AI 连接空状态",
+  "intro": "本流程在另一个完全干净的隔离数据目录里录制，用来展示“从未配置过模型”时真实看到的界面。它与主流程不是同一次会话。",
+  "steps": [
+    {
+      "id": "2b.1",
+      "title": "空连接列表",
+      "do": [
+        { "press": "Control+," },
+        { "waitFor": "text=暂无 AI 连接" },
+        { "sleep": 900 }
+      ],
+      "shot": "02b-01-empty-connections",
+      "focus": ["text=暂无 AI 连接", "role=button[name=新增连接]"],
+      "text": {
+        "prerequisite": "全新安装，或删除了全部连接。",
+        "action": "打开「设置 → AI 连接」。列表为空时，页面提示「添加 OpenAI-compatible 服务后，Agent 才能执行真实任务」，并给出「新增连接」按钮。",
+        "expected": "空状态与「新增连接」按钮。",
+        "faq": "空状态下 Agent 工作台会显示「未配置 AI 连接」，计划按钮旁的「无模型时生成规则草案」仍然可用，但生成结果标记为规则生成，不是 AI 生成。"
+      }
+    },
+    {
+      "id": "2b.2",
+      "title": "新增连接表单",
+      "do": [
+        { "click": "role=button[name=新增连接]" },
+        { "waitFor": "text=OpenAI-compatible" },
+        { "sleep": 800 }
+      ],
+      "shot": "02b-02-new-connection-form",
+      "focus": ["label=名称", "label=服务商", "label=Base URL", "label=API Key", "label=默认模型"],
+      "text": {
+        "prerequisite": "AI 连接列表为空。",
+        "action": "点击「新增连接」，填写五个必填或关键字段：名称（自己认得即可）、服务商（DeepSeek / OpenAI / Anthropic / 自定义 OpenAI-compatible）、Base URL（服务商的 /v1 地址）、API Key（只保存到本机密钥库）、默认模型（例如 deepseek-chat）。",
+        "expected": "进入「新增连接」内联表单，字段为空，API Key 为密码输入框。",
+        "faq": "Base URL 必须带协议头；Anthropic 协议会自动切换为 anthropic-messages。保存前建议先确认服务商控制台里该密钥可调用目标模型。"
+      }
+    },
+    {
+      "id": "2b.3",
+      "title": "填写示例值（不保存）",
+      "do": [
+        { "fill": { "label": "名称", "value": "DeepSeek 主账号" } },
+        { "fill": { "label": "Base URL", "value": "https://api.deepseek.com/v1" } },
+        { "fill": { "label": "默认模型", "value": "deepseek-chat" } },
+        { "sleep": 500 }
+      ],
+      "shot": "02b-03-new-connection-filled",
+      "focus": ["label=Base URL", "label=默认模型"],
+      "text": {
+        "prerequisite": "已打开新增连接表单。",
+        "action": "按服务商文档填写 Base URL 与默认模型。截图中的 API Key 留空，实际使用时填入你自己的密钥；本手册不会展示、也不会记录任何真实密钥。",
+        "expected": "字段值符合服务商文档。",
+        "faq": "如果保存时提示 URL 不合法，检查是否漏了 https:// 或多了结尾斜杠。"
+      }
+    }
+  ]
+}

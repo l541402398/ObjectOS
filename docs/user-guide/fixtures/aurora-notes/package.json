@@ -1,0 +1,11 @@
+{
+  "name": "aurora-notes",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "本地优先的 Markdown 笔记应用（ProjectOS 演示项目）",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check src/notes.mjs && node --check src/search.mjs && node --check src/graph.mjs"
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "id": "06-tasks-results",
+  "order": 6,
+  "title": "第六章 查看任务、测试与成果",
+  "intro": "执行结束后，ProjectOS 留下四类可核对的东西：任务与验收状态、运行与工具调用记录、测试与证据、以及工作区里的真实代码差异。它们都来自本地数据库与真实文件，不是界面装饰。",
+  "steps": [
+    {
+      "id": "6.1",
+      "title": "回到研发工作中心看结论",
+      "do": [
+        { "click": "role=button[name=研发工作中心]" },
+        { "waitFor": ".wc-grid" },
+        { "sleep": 1500 }
+      ],
+      "shot": "06-01-work-center-done",
+      "focus": [".wc-plan-state", ".wc-task-list"],
+      "text": {
+        "prerequisite": "执行已完成（或已停止）。",
+        "action": "回到研发工作中心，先看「执行状态」「执行授权」「项目完成度」三个值，再看任务列表里每个任务的状态与执行者。",
+        "expected": "执行状态显示已完成，完成度大于 0，任务列表里的任务变为已完成或待验收。",
+        "faq": "若停在「等待授权」，说明还有审批没处理；若显示失败，展开计划区的失败原因，处理后再继续。"
+      }
+    },
+    {
+      "id": "6.2",
+      "title": "打开任务看板",
+      "do": [
+        { "click": "role=button[name=任务与验收]" },
+        { "waitFor": ".po-board-column" },
+        { "sleep": 1200 }
+      ],
+      "shot": "06-02-task-board",
+      "focus": [".po-board-toolbar", ".po-task-tile"],
+      "text": {
+        "prerequisite": "计划已批准并执行过。",
+        "action": "点左侧「任务与验收」。看板按状态分列，顶部可搜索、筛选与新建任务；卡片上显示优先级、执行者、依赖与阻塞数。",
+        "expected": "看板出现任务卡片，已完成任务在对应列，卡片带执行者头像与状态。",
+        "faq": "拖拽卡片可以改状态，但会写入真实任务状态；演示环境里建议用详情面板里的操作。"
+      }
+    },
+    {
+      "id": "6.3",
+      "title": "打开任务详情与验收",
+      "do": [
+        { "click": ".po-task-tile" },
+        { "waitFor": ".po-drawer-actions" },
+        { "sleep": 1200 }
+      ],
+      "shot": "06-03-task-detail",
+      "focus": [".po-drawer-actions"],
+      "text": {
+        "prerequisite": "看板上至少一个任务。",
+        "action": "点任意任务卡片，右侧打开详情抽屉。这里能看到描述、验收标准、依赖、执行者、运行记录、成果与证据。",
+        "expected": "抽屉打开，底部有任务操作按钮；验收标准与运行/成果分区可见。",
+        "faq": "抽屉打不开时先确认点的是卡片本身，而不是卡片上的链接；Esc 可关闭。"
+      }
+    },
+    {
+      "id": "6.4",
+      "title": "查看运行审计",
+      "do": [
+        { "click": "role=button[name=运行审计]" },
+        { "waitFor": "text=运行记录" },
+        { "sleep": 1200 }
+      ],
+      "shot": "06-04-run-audit",
+      "focus": [".po-page"],
+      "text": {
+        "prerequisite": "至少完成过一次运行。",
+        "action": "点左侧「运行审计」。上半是运行列表（状态、Agent、任务、耗时、token），下半是项目事件流。点任意运行可以看工具调用与产物。",
+        "expected": "运行列表出现记录，状态为完成或失败；事件流按时间倒序列出关键动作。",
+        "faq": "运行显示 needs_reconciliation 表示执行期间 Runtime 退出、外部副作用未知；按提示人工核对后重跑，系统不会自动重试。"
+      }
+    },
+    {
+      "id": "6.5",
+      "title": "查看知识与成果",
+      "do": [
+        { "click": "role=button[name=知识与成果]" },
+        { "waitFor": "text=知识库" },
+        { "sleep": 1500 }
+      ],
+      "shot": "06-05-knowledge-artifacts",
+      "focus": [".po-page"],
+      "text": {
+        "prerequisite": "Agent 已产出设计文档、代码或测试结果。",
+        "action": "点左侧「知识与成果」。这里汇总项目索引、决策、成果与项目记忆，可搜索；「重新扫描项目」会重建本地索引。",
+        "expected": "出现成果/知识条目（设计文档、测试报告、代码变更摘要等）。",
+        "faq": "没有成果时先确认任务是否真的完成；只写了标题没有产物的任务不会被当作完成。"
+      }
+    },
+    {
+      "id": "6.6",
+      "title": "核对工作区真实改动",
+      "do": [
+        { "eval": "() => { location.hash = location.hash.replace(/(\\/projects\\/[^/]+).*/, '$1/workspace') }" },
+        { "waitFor": "text=Git 差异" },
+        { "sleep": 2000 }
+      ],
+      "shot": "06-06-workspace-diff",
+      "focus": [".po-page"],
+      "text": {
+        "prerequisite": "Agent 在任务范围内写过文件。",
+        "action": "打开「工作区」。左侧是文件树，右侧是编辑器与「Git 差异 / 只读终端」。Git 差异显示的是磁盘上真实的未提交改动。",
+        "expected": "能看到被修改文件的 Diff；文件内容与任务描述一致。",
+        "faq": "工作区是只读预览，不提供提交按钮；提交与合并走交付流程，需要单独授权。"
+      }
+    }
+  ]
+}

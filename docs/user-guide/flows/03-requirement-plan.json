@@ -1,0 +1,114 @@
+{
+  "id": "03-requirement-plan",
+  "order": 3,
+  "title": "第三章 提交需求并生成 AI 计划",
+  "intro": "ProjectOS 的研发入口是「研发工作中心」。一条真实需求 + 一个目标句，会被规划器展开成可审核的任务 DAG；计划本身不授予执行权，批准与授权是两步。",
+  "steps": [
+    {
+      "id": "3.1",
+      "title": "回到研发工作中心",
+      "do": [
+        { "clickIfVisible": ".v16-project-visual" },
+        { "waitFor": ".wc-grid" },
+        { "sleep": 1200 }
+      ],
+      "skipIf": ".wc-grid",
+      "shot": "03-01-work-center",
+      "focus": ["text=记录需求", ".wc-main"],
+      "text": {
+        "prerequisite": "项目已创建，AI 连接已配置。",
+        "action": "从项目中心点开项目卡片，或点击左侧「研发 → 研发工作中心」。顶部「当前状态」会告诉你下一步该做什么。",
+        "expected": "页面显示项目名、阶段（构思）、Git 分支与「0/0 任务完成」，并出现「提交目标并批准计划」。",
+        "faq": "如果卡片提示「项目不存在或已被移除」，回到项目中心重新选择项目。"
+      }
+    },
+    {
+      "id": "3.2",
+      "title": "打开「记录需求」",
+      "do": [
+        { "click": "role=button[name=记录需求]" },
+        { "waitFor": "text=背景与验收标准" },
+        { "sleep": 700 }
+      ],
+      "shot": "03-02-requirement-modal",
+      "focus": ["placeholder=要解决什么问题？", "placeholder=现状、边界、如何判定完成"],
+      "text": {
+        "prerequisite": "已在研发工作中心。",
+        "action": "点击右上角「+ 记录需求」。需求不是聊天消息，它会写进真实数据库，并成为 AI 规划的目标上下文。",
+        "expected": "弹出「记录需求」对话框，含「需求标题」与「背景与验收标准」两个字段。",
+        "faq": "标题为空时「保存」按钮不可点；需求正文建议写清现状、边界与判定标准。"
+      }
+    },
+    {
+      "id": "3.3",
+      "title": "填写需求与验收标准",
+      "do": [
+        { "fill": { "placeholder": "要解决什么问题？", "value": "为搜索增加标签过滤与命中高亮摘要" } },
+        {
+          "fill": {
+            "placeholder": "现状、边界、如何判定完成",
+            "value": "现状：searchNotes 只做标题/正文子串匹配，没有标签过滤，也没有高亮摘要。\n期望：1) searchNotes 支持 { tags } 选项，多标签取交集；2) 新增 summarizeHits，返回 <mark> 高亮摘要；3) 补充 node:test 单元测试。\n边界：只改 src/search.mjs 与 tests/search.test.mjs。\n验收：npm test 全绿。"
+          }
+        },
+        { "sleep": 500 }
+      ],
+      "shot": "03-03-requirement-filled",
+      "focus": ["placeholder=现状、边界、如何判定完成"],
+      "text": {
+        "prerequisite": "已打开需求对话框。",
+        "action": "填写标题与验收标准。写得越具体，计划里的任务越可执行、越容易被验证。",
+        "expected": "两个字段都有内容，保存按钮可点。",
+        "faq": "不要把密钥、服务器地址、客户数据写进需求；需求会进入项目数据库与计划上下文。"
+      }
+    },
+    {
+      "id": "3.4",
+      "title": "保存需求",
+      "do": [
+        { "click": "role=button[name=保存]" },
+        { "waitFor": "text=条已记录" },
+        { "sleep": 1000 }
+      ],
+      "shot": "03-04-requirement-saved",
+      "focus": ["text=条已记录"],
+      "text": {
+        "prerequisite": "需求内容已填写。",
+        "action": "点击「保存」。需求会出现在右侧「需求」区域，并带有状态标记。",
+        "expected": "对话框关闭，右侧显示「1 条已记录」与新需求标题。",
+        "faq": "保存后仍可继续补充需求；规划时使用当前需求与目标句。"
+      }
+    },
+    {
+      "id": "3.5",
+      "title": "生成 AI 计划",
+      "do": [
+        { "fill": { "selector": "#work-goal", "value": "为 Aurora Notes 的搜索增加标签过滤与命中高亮摘要，并补齐单元测试" } },
+        { "sleep": 300 },
+        { "click": "role=button[name=生成 AI 计划]" },
+        { "waitFor": "text=个节点", "timeout": 900000 },
+        { "sleep": 1500 }
+      ],
+      "shot": "03-05-plan-generated",
+      "focus": [".wc-plan-head", ".wc-plan-meta"],
+      "text": {
+        "prerequisite": "需求已保存，AI 连接测试通过。",
+        "action": "在「当前计划」的输入框写一句目标，点「生成 AI 计划」。规划器会读取仓库结构与需求，产出任务与依赖。生成期间按钮显示加载状态，不要重复点击。",
+        "expected": "出现计划头：目标句、状态「草稿」、节点数、「AI 生成」标记与模型名；任务列表列出每个节点与依赖数。",
+        "faq": "若显示「规则生成」，说明没有可用模型或调用失败；先回到设置测试连接。生成超过 15 分钟仍未返回时，检查网络与模型余额。"
+      }
+    },
+    {
+      "id": "3.6",
+      "title": "检查计划内容",
+      "do": [{ "scrollTo": ".wc-task-list" }, { "sleep": 600 }],
+      "shot": "03-06-plan-tasks",
+      "focus": [".wc-task-list"],
+      "text": {
+        "prerequisite": "计划已生成。",
+        "action": "逐个看任务标题、执行者与依赖数量。计划是 DAG：有依赖的任务不会提前执行。需要改结构时去「完整编排工作台」查看依赖图。",
+        "expected": "任务列表非空，每个任务显示状态、执行者与依赖数。",
+        "faq": "任务明显跑偏时不要批准，回到目标句改写需求后重新生成；已批准的计划不会自动改结构。"
+      }
+    }
+  ]
+}

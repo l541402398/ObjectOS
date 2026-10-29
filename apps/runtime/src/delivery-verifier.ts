@@ -16,7 +16,13 @@ import type { SqliteStore } from '@projectos/persistence'
 const VERIFICATION_PATTERN =
   /^(npm|pnpm|yarn)\s+(run\s+)?(test|build|typecheck|lint)\b|^(npx\s+)?(vitest|jest|mocha)\b|^node\s+--test\b|^(npx\s+)?tsc\b/i
 
-/** Commands this plan really executed and that reported a real exit code. */
+/**
+ * Commands this plan really executed, with a real exit code, that are worth re-running after a merge.
+ *
+ * ADR-0047 keeps this a pure projection (pattern + real exit code). Whether the evidence still
+ * describes the *current* content is decided by the shared resolver and enforced by the delivery
+ * gate in `replan-autopilot.ts`, so there is one judgment rather than two.
+ */
 export function recordedVerificationCommands(store: SqliteStore, plan: PlanDraft): string[] {
   const runs = store.db
     .prepare("SELECT id FROM agent_runs WHERE task_id IN (SELECT value FROM json_each(?)) ORDER BY created_at ASC")

@@ -121,6 +121,7 @@ const FAILURE_CLASS_COPY: Record<string, string> = {
 /** Internal kinds written as `project.event` payloads. */
 const CUSTOM_KIND_COPY: Record<string, string> = {
   'plan.execution.completed': '计划执行完成，等待交付',
+  'project.baseline.created': '已为项目目录建立首个基线提交',
   'plan.autoDelivered': '成果已自动合并交付',
   'plan.mergedVerificationFailed': '成果已合并，但合并后验证未通过',
   'plan.delivery.blocked': '交付暂被阻断',

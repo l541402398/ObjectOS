@@ -46,7 +46,7 @@ import {
   redactSecrets,
 } from '@projectos/policy'
 import { getToolDefinition, toolCatalogForAgent } from '@projectos/tools'
-import { collectReviewSnapshot } from './review-snapshot-collector.js'
+import { collectReviewSnapshot, recollectForReview } from './review-snapshot-collector.js'
 import { RuntimeExecutionService } from './runtime-executor.js'
 import { collectUpstreamContext } from './upstream-context.js'
 import { AcpClient, acpTextFromEvent, acpTextFromResult } from './acp-client.js'
@@ -2130,6 +2130,11 @@ export class AgentRunner {
             fileExists: (relativePath) => existsSync(join(state.workspaceRoot, relativePath)),
             actorKind: actor.kind,
             humanNote: note,
+            // ADR-0047: reports are bound to the content they describe; a stale one cannot complete.
+            verification: {
+              currentFingerprintFor: (artifact) =>
+                artifact.metadata ? (recollectForReview(state.workspaceRoot, artifact.metadata)?.fingerprint ?? null) : null,
+            },
           })
           if (!decision.ok) {
             throw new AppError('CONFLICT', `任务缺少有效完成依据：${decision.reasons.join('；')}`, {

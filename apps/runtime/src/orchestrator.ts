@@ -25,7 +25,9 @@ import { PROJECT_EVENT_TYPES } from '@projectos/domain'
 import { getGitStatus } from '@projectos/workspace'
 import { createArtifactRecord } from '@projectos/persistence'
 import type { SqliteStore } from '@projectos/persistence'
-import { WorktreeManager } from '@projectos/worktree'
+import { WorktreeManager,
+  ensureBaselineCommit,
+  WorktreeBaseMissingError } from '@projectos/worktree'
 import { join } from 'node:path'
 import { existsSync } from 'node:fs'
 import {
@@ -995,6 +997,23 @@ export class OrchestrationScheduler {
     }
     const worktreePath = join(this.dataDir, 'worktrees', plan.projectId, plan.id)
     const branch = `projectos/plan-${plan.id}`
+    // ADR-0050: a project folder can be a git repository with no commit yet. Worktrees need a base,
+    // so create the baseline commit once, record it as a real project fact, then proceed.
+    try {
+      const baseline = await ensureBaselineCommit(project.rootPath)
+      if (baseline) {
+        this.store.appendEvent(project.id, plan.id, PROJECT_EVENT_TYPES.custom, {
+          kind: 'project.baseline.created',
+          projectId: project.id,
+          commit: baseline.commit,
+          files: baseline.files,
+          reason: '项目目录还没有任何提交，创建基线提交后才能创建隔离 Worktree',
+        })
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      throw new AppError('CONFLICT', `无法建立项目基线提交：${message}`)
+    }
     try {
       const ref = await this.worktrees.create(project.rootPath, worktreePath, branch)
       const current = plan.execution ?? execution('running', 2)
@@ -1020,7 +1039,11 @@ export class OrchestrationScheduler {
       // A Git project must never fall back to writing the main workspace; only non-Git V1.3 plans may.
       if (plan.execution?.requireWorktree || existsSync(join(project.rootPath, '.git'))) {
         const reason = error instanceof Error ? error.message : String(error)
-        throw new AppError('CONFLICT', `无法创建隔离 Worktree，已停止执行：${reason}`)
+        const hint =
+          error instanceof WorktreeBaseMissingError
+            ? '（ProjectOS 已尝试自动建立基线提交；仍失败说明该目录被 Git 拒绝，请手动提交一次后重试）'
+            : ''
+        throw new AppError('CONFLICT', `无法创建隔离 Worktree，已停止执行：${reason}${hint}`)
       }
       this.logger.warn({ err: error, planId: plan.id }, 'non-git project; using project root')
       return project.rootPath
@@ -1278,6 +1301,12 @@ export class OrchestrationScheduler {
           reviewContext: {
             currentRevision: this.workspaceRevision(plan),
             snapshotFor: (metadata) => recollectForReview(workspaceRoot, metadata),
+          },
+          // ADR-0047: a test report only proves anything when its own scope still hashes to what it
+          // claimed, so stale reports cannot unlock completion after the code changed.
+          verification: {
+            currentFingerprintFor: (artifact) =>
+              artifact.metadata ? (recollectForReview(workspaceRoot, artifact.metadata)?.fingerprint ?? null) : null,
           },
         })
         if (!decision.ok) {

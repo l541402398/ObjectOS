@@ -1,0 +1,105 @@
+{
+  "id": "02-ai-setup",
+  "order": 2,
+  "title": "第二章 配置 AI 连接",
+  "intro": "ProjectOS 本身不内置模型。它通过 OpenAI-compatible 连接调用你已有的模型服务；没有连接时 Agent 只能空转，规划会退化为规则草案。本章把连接配置、连通性测试与保存做成可复核的动作。",
+  "steps": [
+    {
+      "id": "2.1",
+      "title": "打开设置中心",
+      "do": [
+        { "press": "Control+," },
+        { "waitFor": "text=AI 连接" },
+        { "sleep": 900 }
+      ],
+      "shot": "02-01-settings-ai",
+      "focus": [".po-settings-nav", ".po-ai-connections"],
+      "text": {
+        "prerequisite": "应用已启动，任一页面均可。",
+        "action": "按 Ctrl + ,（macOS 为 ⌘ + ,），或滚动左侧导航到底部「全局 → 设置」。设置是全局弹窗，不是独立页面；左侧是分区导航，本次停在「AI 连接」。",
+        "expected": "弹出「设置」弹窗，左侧显示 13 个分区：设置概览、AI 连接、模型目录、运行时、通用与限制、工具与插件、Skills 管理、工具权限、存储与安全、用量与价格、OpenSpec、偏好设置、关于。",
+        "faq": "如果快捷键无反应，说明焦点在某个输入框里；先点一下空白处再按。"
+      }
+    },
+    {
+      "id": "2.2",
+      "title": "认识连接卡片",
+      "do": [{ "sleep": 500 }],
+      "shot": "02-02-connection-card",
+      "focus": [".po-ai-connection-card"],
+      "text": {
+        "prerequisite": "已打开「设置 → AI 连接」。",
+        "action": "连接卡片显示五类信息：连接名称与「默认」标记、服务商与协议、连通状态、默认模型与模型数量、「密钥已保存 / 无密钥」。下方一排操作是：测试连接、同步模型、设为默认、编辑。",
+        "expected": "至少存在一条连接，显示「密钥已保存」，模型数量大于 0。",
+        "faq": "如果显示「无密钥」，点「编辑」重新输入并保存；密钥只写入系统密钥库，不会进入项目文件。"
+      }
+    },
+    {
+      "id": "2.3",
+      "title": "进入编辑连接",
+      "do": [
+        { "click": ".po-ai-connection-actions button:nth-child(4)" },
+        { "waitFor": "text=编辑连接" },
+        { "sleep": 600 }
+      ],
+      "shot": "02-03-connection-editor",
+      "focus": ["label=名称", "label=Base URL", "label=默认模型", "label=API Key"],
+      "text": {
+        "prerequisite": "存在一条可编辑的连接。",
+        "action": "点卡片右侧的铅笔图标进入「编辑连接」。表单分三段：基础（名称、服务商）、认证（Base URL、API Key）、模型（默认模型）。API Key 显示「已保存，留空保持不变」，不需要重新粘贴密钥。",
+        "expected": "进入内联编辑视图（不是嵌套弹窗），字段带出当前值，顶部有「AI 连接 / 取消 / 保存」。",
+        "faq": "高级设置里可改协议、超时、Temperature、启用与设为默认；不确定时保持默认。"
+      }
+    },
+    {
+      "id": "2.4",
+      "title": "改名并保存",
+      "do": [
+        { "fill": { "label": "名称", "value": "DeepSeek 演示" } },
+        { "sleep": 300 },
+        { "click": ".po-ai-editor-actions button:nth-child(2)" },
+        { "waitText": "连接已更新", "timeout": 30000 },
+        { "waitFor": ".po-ai-connection-card" },
+        { "sleep": 900 }
+      ],
+      "shot": "02-04-connection-saved",
+      "focus": [".po-ai-connection-card"],
+      "text": {
+        "prerequisite": "已进入连接编辑视图。",
+        "action": "把名称改成自己认得的名字（本手册用「DeepSeek 演示」），点「保存」。连接元数据写入本地 SQLite，密钥写入系统密钥库（Windows 使用 DPAPI 加密）。",
+        "expected": "回到连接列表，卡片名称已更新，仍显示「密钥已保存」。",
+        "faq": "保存失败时检查 Base URL 是否为合法 https 地址；不要把密钥粘贴到需求、任务或截图里。"
+      }
+    },
+    {
+      "id": "2.5",
+      "title": "测试连接（真实推理）",
+      "do": [
+        { "click": "role=button[name=测试连接]" },
+        { "waitText": "连接测试通过", "timeout": 180000 },
+        { "sleep": 1500 }
+      ],
+      "shot": "02-05-connection-test-passed",
+      "focus": [".po-ai-connection-card"],
+      "text": {
+        "prerequisite": "连接已保存密钥，且本机能访问模型服务地址。",
+        "action": "点击「测试连接」。ProjectOS 分三段验证：配置是否完整（L1）、网络是否可达（L2）、模型是否真的返回推理结果（L3）。三段都通过才显示通过。",
+        "expected": "卡片下方出现通过标记与分段耗时，右上角弹出「连接测试通过」。",
+        "faq": "只有 /models 能通不等于推理可用；若停在 L3，多半是模型名错误、余额不足或密钥无该模型权限。"
+      }
+    },
+    {
+      "id": "2.6",
+      "title": "确认默认连接",
+      "do": [{ "sleep": 400 }],
+      "shot": "02-06-connection-default",
+      "focus": [".po-ai-default-tag"],
+      "text": {
+        "prerequisite": "连接测试通过。",
+        "action": "确认卡片上有「默认」标记。Agent 运行时使用默认连接；有多条连接时，可在其他卡片上点「设为默认」切换。",
+        "expected": "默认标记出现在刚要用的那条连接上。",
+        "faq": "切换默认连接不会热切换正在运行的任务；等当前运行结束后再生效。"
+      }
+    }
+  ]
+}

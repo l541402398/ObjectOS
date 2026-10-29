@@ -18,7 +18,7 @@ import type { ReviewCoordinator } from './review-coordinator.js'
 import { replanBudgetOf } from './plan-lineage.js'
 import type { TaskContractPreflightService } from './task-contract-preflight.js'
 import { describeGaps } from './task-contract-preflight.js'
-import { failingVerifications, planReviewEvidence } from './review-evidence-runtime.js'
+import { failingVerifications, planReviewEvidence, planTestEvidence } from './review-evidence-runtime.js'
 import { recollectForReview } from './review-snapshot-collector.js'
 import {
   baseCommitIsAncestor,
@@ -704,6 +704,14 @@ export class ReplanAutopilot {
       const verificationCommands = recordedVerificationCommands(this.store, plan)
       if (verificationCommands.length === 0) {
         blocked.push('计划没有记录任何已通过的真实验证，不能宣称质量通过')
+      }
+      // ADR-0047: the passing commands must still describe the current content. A historical pass
+      // followed by a code change is not delivery evidence.
+      const testEvidence = planTestEvidence(this.store, plan)
+      if (!testEvidence.trusted) {
+        blocked.push(
+          `当前测试证据不可用于交付（${testEvidence.state}）：${testEvidence.reasons.join('；') || '没有可核对的真实执行记录'}`,
+        )
       }
 
       // 4) The version gate, when the plan belongs to a version.

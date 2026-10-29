@@ -89,6 +89,65 @@ function runGit(args: string[], cwd: string): Promise<{ code: number; stdout: st
   })
 }
 
+/**
+ * ADR-0050 — a repository without any commit cannot host a worktree.
+ *
+ * Real failure: `git worktree add -b <branch> <path> HEAD` fails on an unborn HEAD, and the old
+ * fallback then ran `git worktree add <path> <branch>` with a branch that was never created, so the
+ * user saw `fatal: invalid reference: projectos/plan-…` — a git internal that names neither the cause
+ * nor the fix.
+ */
+export class WorktreeBaseMissingError extends Error {
+  constructor(readonly repoRoot: string) {
+    super(
+      `项目仓库还没有任何提交，无法创建隔离 Worktree。请在 ${repoRoot} 完成一次 git commit，或让 ProjectOS 自动建立基线提交（基线提交只包含当前目录内容）。`,
+    )
+    this.name = 'WorktreeBaseMissingError'
+  }
+}
+
+/** The commit id a repository's worktrees can start from, or null when HEAD is unborn. */
+export async function resolveBaseCommit(repoRoot: string): Promise<string | null> {
+  const head = await runGit(['rev-parse', '--verify', 'HEAD'], repoRoot)
+  return head.code === 0 ? head.stdout.trim() || null : null
+}
+
+/**
+ * Create the first commit of a repository that has none, so isolated worktrees become possible.
+ *
+ * Returns the new commit id, or null when the repository already had a commit (no-op). The commit is
+ * only created for an unborn HEAD; existing history is never rewritten.
+ */
+export async function ensureBaselineCommit(
+  repoRoot: string,
+  options: { message?: string; authorName?: string; authorEmail?: string } = {},
+): Promise<{ commit: string; files: number } | null> {
+  const existing = await resolveBaseCommit(repoRoot)
+  if (existing) return null
+  const status = await runGit(['status', '--porcelain=v1', '-uall'], repoRoot)
+  if (status.code !== 0) throw new Error(status.stderr.trim() || '无法读取仓库状态')
+  const files = status.stdout.split(/\r?\n/).filter((line) => line.trim()).length
+  if (files > 0) {
+    const add = await runGit(['add', '-A'], repoRoot)
+    if (add.code !== 0) throw new Error(add.stderr.trim() || '无法暂存初始文件')
+  }
+  const args = [
+    '-c',
+    `user.name=${options.authorName ?? 'ProjectOS'}`,
+    '-c',
+    `user.email=${options.authorEmail ?? 'projectos@local'}`,
+    'commit',
+    '--no-verify',
+    '-m',
+    options.message ?? 'chore: initial commit (ProjectOS baseline)',
+  ]
+  if (files === 0) args.splice(args.length - 2, 0, '--allow-empty')
+  const commit = await runGit(args, repoRoot)
+  if (commit.code !== 0) throw new Error(commit.stderr.trim() || '无法创建基线提交')
+  const head = await runGit(['rev-parse', 'HEAD'], repoRoot)
+  return { commit: head.stdout.trim(), files }
+}
+
 export class WorktreeManager {
   async create(repoRoot: string, worktreePath: string, branch: string): Promise<WorktreeRef> {
     if (!existsSync(`${repoRoot}/.git`)) {
@@ -104,9 +163,15 @@ export class WorktreeManager {
     const existing = await reuse()
     if (existing) return existing
     mkdirSync(dirname(worktreePath), { recursive: true })
+    if (!(await resolveBaseCommit(repoRoot))) throw new WorktreeBaseMissingError(repoRoot)
     let result = await runGit(['worktree', 'add', '-b', branch, worktreePath, 'HEAD'], repoRoot)
     if (result.code !== 0) {
-      result = await runGit(['worktree', 'add', worktreePath, branch], repoRoot)
+      // Only adopt an *existing* branch; passing a name that was never created is what produced
+      // "invalid reference: projectos/plan-…" and hid the real cause.
+      const branchExists = await runGit(['rev-parse', '--verify', `refs/heads/${branch}`], repoRoot)
+      if (branchExists.code === 0) {
+        result = await runGit(['worktree', 'add', worktreePath, branch], repoRoot)
+      }
     }
     if (result.code === 0) return { path: worktreePath, branch, baseHead: await this.head(worktreePath) }
     // Two plan starts (or a restart racing a tick) can both reach `worktree add`.

@@ -1,5 +1,12 @@
 import type { Artifact, RunDetail, TaskCard } from '@projectos/contracts'
 import { resolveReviewEvidence, type ReviewEvidenceContext } from './review-evidence.js'
+import {
+  isVerificationCommand,
+  resolveTestEvidence,
+  type EvidenceArtifactInput,
+  type MutationMark,
+  type VerificationCheck,
+} from './test-evidence.js'
 
 export type CompletionRequirementId = 'design' | 'code' | 'test' | 'review' | 'artifact' | 'human' | 'diagnostic'
 
@@ -43,6 +50,17 @@ export interface CompletionEvidenceInput {
    * approving: an unverifiable review must not unlock anything.
    */
   reviewContext?: ReviewEvidenceContext
+  /**
+   * ADR-0047 — trusted test evidence. The runtime passes the persisted checks/mutations and the
+   * current content fingerprint so a claim cannot stand in for a real execution, and an old pass
+   * cannot prove new code. When omitted, only real ToolCalls in `runs` are considered (never a bare
+   * `verifiedAt`).
+   */
+  verification?: {
+    mutations?: MutationMark[]
+    /** Recompute the fingerprint of an artifact's own scope against the current workspace. */
+    currentFingerprintFor?: (artifact: EvidenceArtifactInput) => string | null
+  }
 }
 
 export interface CompletionDecision {
@@ -53,6 +71,13 @@ export interface CompletionDecision {
   reasons: string[]
   /** Review outcome exposed separately from task completion (ADR-0022). */
   review?: { performed: boolean; approved: boolean; blockingFindings: number }
+  /** ADR-0047: trusted test evidence, shared with GoalStatus and the delivery gate. */
+  verification?: {
+    state: 'unverified' | 'stale' | 'failed' | 'passed'
+    trusted: boolean
+    failures: Array<{ command: string; exitCode: number; runId: string }>
+    reasons: string[]
+  }
 }
 
 function roleOf(task: TaskCard): string {
@@ -162,9 +187,8 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
   const runtimeTool = completedTools.filter(
     (item) => item.name === 'runtime.execute' || item.name === 'runtime.acp',
   )
-  const runTestsOk = input.runs.some((run) =>
-    run.toolCalls.some((call) => call.toolName === 'run_tests' && call.status === 'completed' && toolExitOk(call.result)),
-  )
+  // ADR-0047: `run_tests` alone is not "test evidence" any more — resolveTestEvidence below decides,
+  // using the real exit codes, ordering against failures and the content fingerprint.
   const codeArtifacts = [
     ...hasKind(artifacts, ['diff', 'code']),
     ...matchesText(artifacts, /(代码|实现|diff|变更|code|implement)/i),
@@ -185,10 +209,80 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
   const verifiedTestArtifacts = artifacts.filter(
     (artifact) => artifact.kind === 'test-report' && artifact.verifiedAt !== null,
   )
-  const hasTest =
-    input.qualityGate?.outcome === 'passed' ||
-    verifiedTestArtifacts.length > 0 ||
-    runTestsOk
+  // ADR-0047: a report or a `run_tests` result is only trusted with a real execution behind it.
+  const recordedChecks: VerificationCheck[] = []
+  for (const run of input.runs) {
+    for (const call of run.toolCalls) {
+      if (call.status !== 'completed') continue
+      if (call.toolName !== 'run_tests' && call.toolName !== 'run_command') continue
+      const command = typeof call.args?.command === 'string' ? call.args.command : ''
+      if (!command || !isVerificationCommand(call.toolName, command)) continue
+      const exitCode = toolExitCode(call.result)
+      if (exitCode === null) continue
+      recordedChecks.push({
+        id: call.id,
+        runId: run.run.id,
+        toolName: call.toolName as VerificationCheck['toolName'],
+        command,
+        exitCode,
+        at: (call.finishedAt ?? call.startedAt ?? call.createdAt ?? 0) as number,
+      })
+    }
+  }
+  // A later passing check cannot vouch for code that was written after it.
+  const recordedMutations: MutationMark[] =
+    input.verification?.mutations ??
+    input.runs.flatMap((run) =>
+      run.toolCalls
+        .filter((call) => call.toolName === 'write_file' && call.status === 'completed')
+        .map((call) => ({
+          kind: 'write' as const,
+          at: (call.finishedAt ?? call.startedAt ?? call.createdAt ?? 0) as number,
+          detail: typeof call.args?.path === 'string' ? call.args.path : undefined,
+        })),
+    )
+  const artifactInputs: EvidenceArtifactInput[] = artifacts.map((artifact) => {
+    const metadata = metadataOf(artifact)
+    const snapshot = metadata.reviewSnapshot as { fingerprint?: unknown } | undefined
+    const fingerprint =
+      typeof snapshot?.fingerprint === 'string'
+        ? snapshot.fingerprint
+        : typeof metadata.contentFingerprint === 'string'
+          ? metadata.contentFingerprint
+          : null
+    const declaredBy =
+      metadata.createdBy === 'user'
+        ? 'user'
+        : metadata.createdBy === 'model' || metadata.declaredBy === 'model'
+          ? 'model'
+          : metadata.createdBy === 'system' || artifact.runId
+            ? 'execution'
+            : 'unknown'
+    const commands = Array.isArray(metadata.commands)
+      ? metadata.commands.filter((item): item is string => typeof item === 'string')
+      : typeof metadata.command === 'string'
+        ? [metadata.command]
+        : []
+    return {
+      id: artifact.id,
+      kind: artifact.kind,
+      runId: artifact.runId,
+      verifiedAt: artifact.verifiedAt,
+      createdAt: artifact.createdAt,
+      contentFingerprint: fingerprint,
+      declaredBy: declaredBy as EvidenceArtifactInput['declaredBy'],
+      commands,
+      metadata,
+    }
+  })
+  const testEvidence = resolveTestEvidence({
+    checks: recordedChecks,
+    mutations: recordedMutations,
+    artifacts: artifactInputs,
+    currentFingerprintFor: input.verification?.currentFingerprintFor,
+    qualityGate: input.qualityGate ? { outcome: input.qualityGate.outcome } : null,
+  })
+  const hasTest = testEvidence.trusted
 
   // Negative evidence: a test/command that really ran and reported a real exit code.
   // This satisfies a *diagnostic* task's duty (it detected and reported the failure)
@@ -310,11 +404,19 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
             hasTest
               ? [
                   ...(input.qualityGate?.outcome === 'passed' ? ['质量门禁 passed'] : []),
-                  ...verifiedTestArtifacts.map((artifact) => `已验证测试报告：${artifact.title}`),
-                  ...(runTestsOk ? ['run_tests 退出码 0'] : []),
+                  ...testEvidence.reasons,
+                  ...verifiedTestArtifacts.map((artifact) => `测试报告：${artifact.title}`),
                 ]
               : [],
-            hasTest ? [] : ['缺少已验证测试报告、质量门禁通过或成功的 run_tests'],
+            hasTest
+              ? []
+              : [
+                  testEvidence.state === 'failed'
+                    ? `真实测试未通过：${testEvidence.failures.map((item) => `${item.command}(exit ${item.exitCode})`).join('、')}`
+                    : testEvidence.state === 'stale'
+                      ? `测试证据已过期：${testEvidence.reasons.join('；') || '不描述当前内容'}`
+                      : '缺少带真实退出码的测试执行记录（报告不能代替执行）',
+                ],
           ),
         )
         }
@@ -401,6 +503,12 @@ export function evaluateCompletion(input: CompletionEvidenceInput): CompletionDe
   const ok = requirements.every((item) => item.satisfied)
   return {
     ok,
+    verification: {
+      state: testEvidence.state,
+      trusted: testEvidence.trusted,
+      failures: testEvidence.failures.map((item) => ({ command: item.command, exitCode: item.exitCode, runId: item.runId })),
+      reasons: testEvidence.reasons,
+    },
     role,
     requirements,
     toolOutcomes,

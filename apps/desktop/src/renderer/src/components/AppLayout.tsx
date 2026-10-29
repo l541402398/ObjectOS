@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { App as AntApp, Badge, Button, Dropdown, Tooltip, type MenuProps } from 'antd'
 import {
@@ -50,50 +50,34 @@ import { useBootstrap, useProjectOverview } from '../lib/queries'
 import { useResolvedTheme, useUiStore } from '../stores/ui'
 import { stageLabel } from '../lib/labels'
 import { truncate } from '../lib/format'
+import { pageGroup, pageLabel, pagePath, palettePages, PAGES, pageByKey } from '../page-registry'
 
-const PAGE_LABELS: Record<string, string> = {
-  work: '研发工作中心',
-  versions: '版本与迭代',
-  releases: '发布中心',
-  deployments: '部署中心',
-  connections: '资源与连接',
-  overview: '项目姿态',
-  orchestration: '编排工作台',
-  tasks: '任务看板',
-  knowledge: '知识库',
-  operations: '自主运营',
-  agents: 'Agent 工作台',
-  collaboration: '跨会话中心',
-  workspace: '工作区',
-  runs: '运行审计',
-  center: '项目中心',
-  notifications: '通知中心',
-  resources: '资源中心',
-  approvals: '审批中心',
-  health: '项目健康',
-  'project-settings': '项目设置',
-  settings: '设置',
-}
+const PAGE_LABELS: Record<string, string> = Object.fromEntries(PAGES.map((page) => [page.key, page.label]))
 
-const NAV_PATHS: Record<string, string> = {
-  work: '',
-  versions: '/versions',
-  releases: '/releases',
-  deployments: '/deployments',
-  connections: '/connections',
-  overview: '/overview',
-  orchestration: '/orchestration',
-  tasks: '/tasks',
-  knowledge: '/knowledge',
-  operations: '/operations',
-  agents: '/agents',
-  collaboration: '/collaboration',
-  workspace: '/workspace',
-  runs: '/runs',
-  'project-settings': '/project-settings',
-  health: '/health',
-  resources: '/resources',
-  approvals: '/approvals',
+const NAV_PATHS: Record<string, string> = Object.fromEntries(
+  PAGES.filter((page) => page.key !== 'center' && page.key !== 'design-lab').map((page) => [page.key, page.path]),
+)
+
+/** Registry order + icon per page; the nav itself still decides which pages belong in the sidebar. */
+const PAGE_ICONS: Record<string, ReactNode> = {
+  work: <ThunderboltOutlined />,
+  tasks: <UnorderedListOutlined />,
+  agents: <RobotOutlined />,
+  approvals: <SafetyCertificateOutlined />,
+  runs: <HistoryOutlined />,
+  orchestration: <ApartmentOutlined />,
+  releases: <RocketOutlined />,
+  deployments: <CloudUploadOutlined />,
+  connections: <CloudServerOutlined />,
+  overview: <AppstoreOutlined />,
+  versions: <ApartmentOutlined />,
+  knowledge: <ReadOutlined />,
+  'project-settings': <SettingOutlined />,
+  workspace: <CodeOutlined />,
+  collaboration: <SendOutlined />,
+  operations: <SafetyCertificateOutlined />,
+  health: <SafetyCertificateOutlined />,
+  notifications: <BellOutlined />,
 }
 
 function Logo() {
@@ -158,21 +142,7 @@ export default function AppLayout() {
    * The breadcrumb now carries the nav group, marks the current page, and a back control walks the
    * in-app history.
    */
-  const NAV_GROUP_OF: Record<string, string> = {
-    work: '研发',
-    tasks: '研发',
-    agents: '研发',
-    approvals: '研发',
-    runs: '研发',
-    releases: '交付',
-    deployments: '交付',
-    connections: '交付',
-    overview: '项目',
-    versions: '项目',
-    knowledge: '项目',
-    'project-settings': '项目',
-  }
-  const activeGroup = NAV_GROUP_OF[activeKey] ?? ''
+  const activeGroup = pageGroup(activeKey)
   const historyIndex = (window.history.state as { idx?: number } | null)?.idx ?? 0
   const canGoBack = historyIndex > 0
 
@@ -302,6 +272,14 @@ export default function AppLayout() {
         openSettings('ai-connections')
         return
       }
+      if (key === 'design-lab') {
+        navigate('/design-lab')
+        return
+      }
+      if (key === 'notifications') {
+        navigate('/notifications')
+        return
+      }
       if (!projectId) return
       const versionId = new URLSearchParams(location.search).get('version')
       const suffix = (key === 'releases' || key === 'deployments') && versionId ? `?version=${versionId}` : ''
@@ -313,25 +291,18 @@ export default function AppLayout() {
   const commands = useMemo<PaletteCommand[]>(() => {
     const list: PaletteCommand[] = []
     if (projectId) {
+      // ADR-0049: the palette is generated from the page registry, so a page cannot be shipped
+      // without an entry (and a deleted page cannot leave a dead command behind).
+      for (const page of palettePages()) {
+        list.push({
+          id: page.key,
+          label: page.label,
+          group: page.group === '全局' ? '全局' : (currentProject?.name ?? '项目'),
+          icon: PAGE_ICONS[page.key] ?? <AppstoreOutlined />,
+          run: () => handleNavigate(page.key),
+        })
+      }
       list.push(
-        { id: 'work', label: '研发工作中心', group: currentProject?.name ?? '项目', icon: <ThunderboltOutlined />, run: () => handleNavigate('work') },
-        { id: 'overview', label: '项目姿态', group: currentProject?.name ?? '项目', icon: <AppstoreOutlined />, run: () => handleNavigate('overview') },
-        { id: 'versions', label: '版本与迭代', group: currentProject?.name ?? '项目', icon: <ApartmentOutlined />, run: () => handleNavigate('versions') },
-        { id: 'releases', label: '发布中心', group: '交付', icon: <RocketOutlined />, run: () => handleNavigate('releases') },
-        { id: 'deployments', label: '部署中心', group: '交付', icon: <CloudUploadOutlined />, run: () => handleNavigate('deployments') },
-    { id: 'connections', label: '资源与连接', group: '交付', icon: <CloudServerOutlined />, run: () => handleNavigate('connections') },
-        { id: 'orchestration', label: '编排工作台', group: currentProject?.name ?? '项目', icon: <ApartmentOutlined />, run: () => handleNavigate('orchestration') },
-        { id: 'tasks', label: '任务看板', group: currentProject?.name ?? '项目', icon: <UnorderedListOutlined />, run: () => handleNavigate('tasks') },
-        { id: 'knowledge', label: '知识库', group: currentProject?.name ?? '项目', icon: <ReadOutlined />, run: () => handleNavigate('knowledge') },
-        { id: 'operations', label: '自主运营', group: currentProject?.name ?? '项目', icon: <SafetyCertificateOutlined />, run: () => handleNavigate('operations') },
-        { id: 'agents', label: 'Agent 工作台', group: currentProject?.name ?? '项目', icon: <RobotOutlined />, run: () => handleNavigate('agents') },
-        { id: 'resources', label: '资源中心', group: currentProject?.name ?? '项目', icon: <FolderOpenOutlined />, run: () => handleNavigate('resources') },
-        { id: 'approvals', label: '审批中心', group: currentProject?.name ?? '项目', icon: <SafetyCertificateOutlined />, run: () => handleNavigate('approvals') },
-        { id: 'collaboration', label: '跨会话中心', group: currentProject?.name ?? '项目', icon: <SendOutlined />, run: () => handleNavigate('collaboration') },
-        { id: 'workspace', label: '工作区', group: currentProject?.name ?? '项目', icon: <CodeOutlined />, run: () => handleNavigate('workspace') },
-        { id: 'runs', label: '运行审计', group: currentProject?.name ?? '项目', icon: <HistoryOutlined />, run: () => handleNavigate('runs') },
-        { id: 'health', label: '项目健康', group: currentProject?.name ?? '项目', icon: <SafetyCertificateOutlined />, run: () => handleNavigate('health') },
-        { id: 'project-settings', label: '项目设置', group: currentProject?.name ?? '项目', icon: <SettingOutlined />, run: () => handleNavigate('project-settings') },
         {
           id: 'new-task',
           label: '新建任务',
@@ -379,11 +350,11 @@ export default function AppLayout() {
       title: '研发',
       collapsible: true,
       items: [
-        { key: 'work', label: '研发工作中心', icon: <ThunderboltOutlined /> },
-        { key: 'tasks', label: '任务与验收', icon: <UnorderedListOutlined />, badge: taskBadge || null },
-        { key: 'agents', label: 'Agent 协作', icon: <RobotOutlined />, badge: approvalBadge || null },
-        { key: 'approvals', label: '审批', icon: <SafetyCertificateOutlined />, badge: approvalBadge || null },
-        { key: 'runs', label: '运行审计', icon: <HistoryOutlined /> },
+        { key: 'work', label: pageLabel('work'), icon: <ThunderboltOutlined /> },
+        { key: 'tasks', label: pageLabel('tasks'), icon: <UnorderedListOutlined />, badge: taskBadge || null },
+        { key: 'agents', label: pageLabel('agents'), icon: <RobotOutlined />, badge: approvalBadge || null },
+        { key: 'approvals', label: pageLabel('approvals'), icon: <SafetyCertificateOutlined />, badge: approvalBadge || null },
+        { key: 'runs', label: pageLabel('runs'), icon: <HistoryOutlined /> },
       ],
     })
     navGroups.push({
@@ -391,9 +362,9 @@ export default function AppLayout() {
       title: '交付',
       collapsible: true,
       items: [
-        { key: 'releases', label: '发布中心', icon: <RocketOutlined /> },
-        { key: 'deployments', label: '部署中心', icon: <CloudUploadOutlined /> },
-        { key: 'connections', label: '资源与连接', icon: <CloudServerOutlined /> },
+        { key: 'releases', label: pageLabel('releases'), icon: <RocketOutlined /> },
+        { key: 'deployments', label: pageLabel('deployments'), icon: <CloudUploadOutlined /> },
+        { key: 'connections', label: pageLabel('connections'), icon: <CloudServerOutlined /> },
       ],
     })
     navGroups.push({
@@ -408,10 +379,10 @@ export default function AppLayout() {
       title: '项目',
       collapsible: true,
       items: [
-        { key: 'overview', label: '项目姿态', icon: <AppstoreOutlined /> },
-        { key: 'versions', label: '版本与迭代', icon: <ApartmentOutlined /> },
-        { key: 'knowledge', label: '知识与成果', icon: <ReadOutlined /> },
-        { key: 'project-settings', label: '项目设置', icon: <SettingOutlined /> },
+        { key: 'overview', label: pageLabel('overview'), icon: <AppstoreOutlined /> },
+        { key: 'versions', label: pageLabel('versions'), icon: <ApartmentOutlined /> },
+        { key: 'knowledge', label: pageLabel('knowledge'), icon: <ReadOutlined /> },
+        { key: 'project-settings', label: pageLabel('project-settings'), icon: <SettingOutlined /> },
       ],
     })
   }

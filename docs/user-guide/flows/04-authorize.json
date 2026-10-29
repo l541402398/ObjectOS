@@ -1,0 +1,152 @@
+{
+  "id": "04-authorize",
+  "order": 4,
+  "title": "第四章 审核计划、授权执行与启动",
+  "intro": "ProjectOS 把「计划批准」与「执行授权」拆成两步：批准只创建任务与依赖，授权才允许 Agent 在明确范围内调用工具、写工作区。任何一步都不该被跳过。",
+  "steps": [
+    {
+      "id": "4.1",
+      "title": "打开完整编排工作台",
+      "do": [
+        { "clickIfVisible": ".v16-project-visual" },
+        { "waitFor": ".wc-grid" },
+        { "click": "role=button[name=完整编排工作台]" },
+        { "waitFor": ".react-flow__node" },
+        { "sleep": 2000 }
+      ],
+      "shot": "04-01-orchestration",
+      "focus": [".po-orch-metrics", ".react-flow__node"],
+      "text": {
+        "prerequisite": "计划已生成（草稿状态）。",
+        "action": "在研发工作中心点「完整编排工作台」。这里显示 Agent 拓扑与任务 DAG：顶部四个计数是 Agents / Tasks / Active / Blocked，右下角图例解释节点颜色。",
+        "expected": "进入编排工作台，能看到 ORCHESTRATOR 与 5 个角色节点；Tasks 计数在批准前为 0。",
+        "faq": "如果节点重叠，点右上「适配」重新布局；布局只是视图，不改依赖。"
+      }
+    },
+    {
+      "id": "4.2",
+      "title": "从检查器打开计划审核",
+      "do": [
+        { "click": ".react-flow__node" },
+        { "waitFor": ".po-inspector-panel" },
+        { "sleep": 600 },
+        { "click": ".po-plan-row" },
+        { "waitFor": "[data-testid=plan-review-workspace]" },
+        { "sleep": 1200 }
+      ],
+      "shot": "04-02-plan-review",
+      "focus": [".pdl-footer-actions", ".pdl-route"],
+      "text": {
+        "prerequisite": "计划为草稿状态。",
+        "action": "点任意节点打开右侧检查器，在「最近计划」里点这条草稿，进入 PLAN REVIEW。左栏是阶段路线（架构 → 开发 → 测试 → 审查），右栏是待复核风险。",
+        "expected": "进入「PLAN REVIEW」，显示阶段数、工作项数、「04 待复核」与底部「拒绝计划 / 批准计划」。",
+        "faq": "工作中心里的「打开 Plan Review」只跳转到编排工作台，仍需通过检查器里的计划行进入审核界面；这是当前版本的交互路径。"
+      }
+    },
+    {
+      "id": "4.3",
+      "title": "检查任务依赖图",
+      "do": [
+        { "click": "text=任务依赖" },
+        { "waitFor": ".pdl-dag-view" },
+        { "sleep": 1200 }
+      ],
+      "shot": "04-03-dependency-map",
+      "focus": [".pdl-dag-view"],
+      "text": {
+        "prerequisite": "已进入 PLAN REVIEW。",
+        "action": "切到「任务依赖」。图上的箭头是真实依赖：没有依赖的节点是起点，下游必须等上游完成。选择节点可以在检查器里看上下游路径。",
+        "expected": "显示 DEPENDENCY MAP、起点数量与依赖条数，节点按阶段分层。",
+        "faq": "依赖图来自数据库里的任务与依赖，不是画布状态；改画布不会改依赖。"
+      }
+    },
+    {
+      "id": "4.4",
+      "title": "批准计划",
+      "do": [
+        { "click": ".pdl-primary" },
+        { "waitText": "计划已批准", "timeout": 120000 },
+        { "sleep": 1500 }
+      ],
+      "shot": "04-04-plan-approved",
+      "focus": [".po-orch-metrics"],
+      "text": {
+        "prerequisite": "计划已复核，没有阻塞项。",
+        "action": "点击底部「批准计划」。系统在一个事务里创建任务与依赖，并回到编排视图；此时 Tasks 计数变为任务数量。",
+        "expected": "右上角提示「计划已批准，创建 N 个任务；请设置执行授权」，Tasks 计数大于 0。",
+        "faq": "存在阻塞项时「批准计划」不可点，按提示修复后重新批准；批准不会自动启动 Agent。"
+      }
+    },
+    {
+      "id": "4.5",
+      "title": "回到工作中心授权",
+      "do": [
+        { "click": "text=研发工作中心" },
+        { "waitFor": ".wc-grid" },
+        { "sleep": 1200 },
+        { "click": "role=button[name=授权执行]" },
+        { "waitFor": ".ant-modal-confirm" },
+        { "sleep": 700 }
+      ],
+      "shot": "04-05-grant-scope",
+      "focus": [".ant-modal-confirm"],
+      "text": {
+        "prerequisite": "计划已批准。",
+        "action": "回到「研发工作中心」，点「授权执行」。确认框会列出授权范围：当前 revision、计划任务、当前 Agent、工作区写入，以及次数与时限（1 次启动 / 80 次工具调用 / 24 小时）。",
+        "expected": "弹出「授权执行此计划？」确认框，正文写清授权范围与上限。",
+        "faq": "授权范围是可审计的边界，不是一次性开关；超出范围的动作会再次请求审批。"
+      }
+    },
+    {
+      "id": "4.6",
+      "title": "确认授权",
+      "do": [
+        { "click": ".ant-modal-confirm-btns button.ant-btn-primary" },
+        { "waitText": "授权", "timeout": 60000 },
+        { "sleep": 1500 }
+      ],
+      "shot": "04-06-grant-issued",
+      "focus": [".wc-plan-state"],
+      "text": {
+        "prerequisite": "已阅读授权范围。",
+        "action": "点确认框里的「授权执行」。授权签发后，「执行授权」状态从「未授权」变为「有效」。",
+        "expected": "确认框关闭，计划区显示授权有效，并出现「启动执行」。",
+        "faq": "如果按钮仍是「授权执行」，说明签发失败；看右上角错误提示或运行审计里的失败原因。"
+      }
+    },
+    {
+      "id": "4.7",
+      "title": "启动执行",
+      "do": [
+        { "clickIfVisible": "role=button[name=启动执行]" },
+        { "sleep": 800 },
+        { "clickIfVisible": ".ant-modal-confirm-btns button.ant-btn-primary" },
+        { "sleep": 2500 }
+      ],
+      "shot": "04-07-execution-started",
+      "focus": [".wc-plan-state"],
+      "text": {
+        "prerequisite": "执行授权有效。",
+        "action": "点「启动执行」并在确认框里确认。启动后调度器按依赖顺序派发任务，Agent 开始工作；每个写文件或执行命令的动作都会生成工具审批。",
+        "expected": "「执行状态」变为「运行中」；任务列表出现运行状态；顶部「运行中」计数增加。",
+        "faq": "部分版本在签发授权后自动启动；若没有「启动执行」按钮，直接看执行状态是否已是运行中。"
+      }
+    },
+    {
+      "id": "4.8",
+      "title": "观察执行",
+      "do": [
+        { "waitFunction": "() => /运行中|已完成|等待授权/.test(document.querySelector('.wc-plan-state')?.innerText ?? '')", "timeout": 180000 },
+        { "sleep": 1500 }
+      ],
+      "shot": "04-08-running",
+      "focus": [".wc-task-list"],
+      "text": {
+        "prerequisite": "执行已启动。",
+        "action": "盯住三处：计划区「执行状态」、任务列表的状态与执行者、顶部「运行中」计数。出现「等待授权」时去审批中心处理。",
+        "expected": "任务状态从待执行变为运行中/已完成，执行者显示具体 Agent。",
+        "faq": "长时间没有进展时先看审批中心是否有待处理项；被审批卡住时执行会停在等待授权。"
+      }
+    }
+  ]
+}
