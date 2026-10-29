@@ -18,6 +18,7 @@ import {
   agentForPlannedTask,
   criticalPathTasks,
   generateLocalPlan,
+  ensureReviewTask,
   mergeHardCapabilities,
   resolveAgentAssignment,
   topologicalPlanTasks,
@@ -529,7 +530,8 @@ export class OrchestrationService {
         revision,
         status: 'draft',
         goal,
-        tasks: generated.tasks,
+        // Model plans may omit the reviewer; without it the delivery gate can never be satisfied.
+        tasks: ensureReviewTask(goal, generated.tasks),
         assumptions: generated.assumptions,
         risks: generated.risks,
         generatedBy: 'provider',

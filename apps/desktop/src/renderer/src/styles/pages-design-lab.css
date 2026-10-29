@@ -234,3 +234,163 @@
 .v17-next-step-banner.is-error {
   border-color: color-mix(in srgb, var(--pdl-danger) 42%, var(--pdl-line));
 }
+
+/* ---------- 审批工作台（batch 3） ---------- */
+.ap-shell {
+  border: 1px solid color-mix(in srgb, #fff 50%, transparent);
+  border-radius: 20px;
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--pdl-surface-2) 80%, transparent),
+    color-mix(in srgb, var(--pdl-surface) 58%, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 56%, transparent), var(--pdl-shadow);
+  overflow: hidden;
+}
+
+:root[data-theme='dark'] .ap-shell {
+  border-color: var(--pdl-line-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), var(--pdl-shadow);
+}
+
+.ap-head {
+  border-bottom: 1px solid var(--pdl-line);
+}
+
+.ap-queue {
+  border-right: 1px solid var(--pdl-line);
+  background: color-mix(in srgb, var(--pdl-surface) 42%, transparent);
+}
+
+.ap-filters,
+.ap-scopes {
+  border-bottom: 1px solid var(--pdl-line);
+}
+
+.ap-filters button.is-active,
+.ap-scopes button.is-active {
+  background: color-mix(in srgb, var(--pdl-solid) 92%, transparent);
+  color: var(--pdl-ink);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 60%, transparent);
+}
+
+.ap-row {
+  border-bottom: 1px solid var(--pdl-line);
+}
+
+.ap-row:hover {
+  background: color-mix(in srgb, var(--pdl-surface-2) 64%, transparent);
+}
+
+.ap-row.is-selected {
+  background: color-mix(in srgb, var(--pdl-accent) 10%, transparent);
+}
+
+.ap-row-title strong {
+  color: var(--pdl-ink);
+}
+
+.ap-row-title em,
+.ap-row-meta {
+  color: var(--pdl-muted);
+}
+
+.ap-kind {
+  border: 1px solid var(--pdl-line);
+  background: color-mix(in srgb, var(--pdl-surface) 70%, transparent);
+  color: var(--pdl-muted);
+}
+
+.ap-kind.delivery {
+  border-color: color-mix(in srgb, var(--pdl-accent) 42%, var(--pdl-line));
+  color: var(--pdl-accent);
+  background: color-mix(in srgb, var(--pdl-accent) 10%, transparent);
+}
+
+.ap-detail {
+  background: color-mix(in srgb, var(--pdl-solid) 42%, transparent);
+}
+
+.ap-detail-head h2 {
+  color: var(--pdl-ink);
+}
+
+.ap-facts {
+  border: 1px solid var(--pdl-line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--pdl-surface-2) 54%, transparent);
+}
+
+.ap-facts b {
+  color: var(--pdl-muted);
+}
+
+.ap-code {
+  border: 1px solid var(--pdl-line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--pdl-surface) 52%, transparent);
+  color: var(--pdl-ink-2);
+}
+
+.ap-action {
+  border-left: 1px solid var(--pdl-line);
+  background: color-mix(in srgb, var(--pdl-surface) 40%, transparent);
+}
+
+.ap-risk strong {
+  color: var(--pdl-ink);
+}
+
+.ap-muted {
+  color: var(--pdl-muted);
+}
+
+/* ---------- 运行审计（batch 3） ---------- */
+.po-runs-page .po-table {
+  border: 1px solid color-mix(in srgb, #fff 48%, transparent);
+  border-radius: 18px;
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--pdl-surface-2) 76%, transparent),
+    color-mix(in srgb, var(--pdl-surface) 54%, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 52%, transparent), var(--pdl-shadow);
+}
+
+:root[data-theme='dark'] .po-runs-page .po-table {
+  border-color: var(--pdl-line);
+}
+
+.po-runs-page .po-table th {
+  color: var(--pdl-muted);
+  border-bottom: 1px solid var(--pdl-line);
+}
+
+.po-runs-page .po-table td {
+  border-bottom: 1px solid var(--pdl-line);
+  color: var(--pdl-ink-2);
+}
+
+.po-runs-page .po-table tr:hover td {
+  background: color-mix(in srgb, var(--pdl-surface-2) 58%, transparent);
+}
+
+.po-run-detail {
+  border: 1px solid var(--pdl-line);
+  border-radius: 18px;
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--pdl-surface-2) 82%, transparent),
+    color-mix(in srgb, var(--pdl-surface) 60%, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 52%, transparent);
+}
+
+.po-run-detail-head {
+  border-bottom: 1px solid var(--pdl-line);
+}
+
+.po-run-detail-title {
+  color: var(--pdl-ink);
+  letter-spacing: -0.012em;
+}

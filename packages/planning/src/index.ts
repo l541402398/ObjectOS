@@ -23,6 +23,47 @@ export function agentForPlannedTask(task: Pick<PlannedTask, 'role' | 'agentId'>)
   return task.agentId ?? agentForPlanRole(task.role)
 }
 
+/**
+ * ADR-0062 — a code plan must contain a review task, or delivery can never be legal.
+ *
+ * Model-generated plans sometimes skip the reviewer (a real DeepSeek plan had 2 tasks: developer +
+ * tester). Delivery requires review evidence for the current content (ADR-0033), so such a plan could
+ * complete and verify but never deliver. This adds the missing reviewer task deterministically, with
+ * the review-artifact contract written into the task description.
+ */
+export function ensureReviewTask(goal: string, tasks: PlannedTask[]): PlannedTask[] {
+  const hasReviewer = tasks.some((task) => task.role === 'reviewer')
+  const developers = tasks.filter((task) => task.role === 'developer')
+  if (hasReviewer || developers.length === 0) return tasks
+  const keys = new Set(tasks.map((task) => task.key))
+  let key = 'review'
+  let suffix = 2
+  while (keys.has(key)) {
+    key = `review-${suffix}`
+    suffix += 1
+  }
+  return [
+    ...tasks,
+    {
+      key,
+      title: `审查「${goal}」的实现`,
+      description: [
+        '只读审查当前内容：核对验收标准、风险与缺失测试，不得修改被审查的代码。',
+        '完成后创建 review Artifact，metadata 必须包含：',
+        '{"artifactType":"review","reviewedObjects":["实际审查的文件或提交"],"findings":["发现"],"conclusion":"通过或需修改","blockers":[],"changedFiles":["涉及文件"]}。',
+        '结论为"通过"才表示审查通过；有阻塞项时如实写入 blockers。',
+      ].join("\n"),
+      role: 'reviewer',
+      assignmentReasons: [],
+      assignmentBlocked: false,
+      dependsOn: developers.map((task) => task.key),
+      acceptanceCriteria: ['逐条核对验收标准', '指出具体风险与缺失测试', '创建 review Artifact 并给出结论'],
+      expectedArtifacts: ['审查报告'],
+      requiresApproval: false,
+    },
+  ]
+}
+
 export function generateLocalPlan(input: {
   projectId: string
   goal: string

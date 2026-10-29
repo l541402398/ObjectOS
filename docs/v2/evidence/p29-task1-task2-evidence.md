@@ -53,3 +53,48 @@ Design docs: `docs/adr/0061-design-lab-batch-2-work-center-and-board.md`,
    版本与迭代、发布/部署、资源与连接、设置弹层 remain on the old card style (batch 3+).
 3. `pnpm package:dir` + `pnpm test:package` were re-run for this commit; see the job log in the commit
    message / this evidence file (PACKAGE SMOKE PASS).
+
+
+## Continuation — review coverage (ADR-0062) and real delivery attempt
+
+| Check | Evidence | Result |
+|---|---|---|
+| Code plan always gets a reviewer task | `tests/p29-review-coverage.test.ts` | PASS (2 tests) |
+| Model plan really carries it | real DeepSeek run `%TEMP%\p29-real-ai-run5.log`: `AI 生成真实计划草案 … tasks=3 generation=provider` | PASS |
+| Real run reaches completed + verified tests | run 5 log: `status=completed`, `verify=done` (`node --test tests/greet.test.mjs` exit 0) | PASS |
+| Test-command approvals now bounded | ADS-0056 grant action + run log shows one approval then execution continues | PASS |
+| Delivery reaches `verified` | not reached | **BLOCKED** (two causes below) |
+| Start idempotency in the real race | run 5: `already-running` — no second execution | PASS |
+
+### Why delivery is still blocked (honest)
+
+1. **Review task execution needs further approvals.** The appended reviewer runs and the agent asks for
+   `git add -N …` (index refresh) and inspection commands. That is correct policy behaviour, but the
+   continuation harness could not decide them: the pending approvals belonged to a run that had already
+   failed, so the decision API refused them. A fresh run with a live approval loop is required.
+2. **Provider secret did not survive the relaunch in this test profile.** After restarting the app against
+   the same data dir and userData, the runtime reported
+   “路由选择的 AI 连接未配置可执行密钥”, although `ai_connection_profiles` (default, enabled, model row) and
+   `ai-secrets.vault.json` (encrypted entry) were both present. This may be a real restart-continuity bug or
+   a test-harness artefact; it is **not yet confirmed** and is the next thing to isolate. Until then, no
+   claim is made that delivery can complete after a restart.
+
+### Task 2 batch 3 (approvals + runs)
+
+| Check | Result |
+|---|---|
+| Visual sweep light (9 pages, 1440/1024) | 18/18 PASS |
+| Visual sweep dark (same pages, incl. `--pdl-ink` assertion) | 19/19 PASS |
+| No content text below 12px / no horizontal overflow | PASS |
+| Package smoke | see the commit job log (PACKAGE SMOKE PASS) |
+
+Screenshots added in this commit: `p29-sweep-approvals-{1440,1024,1440-dark,1024-dark}.png`,
+`p29-sweep-runs-{1440,1024,1440-dark,1024-dark}.png`, plus refreshed light/dark shots of the other pages.
+
+### Next actions (in order)
+
+1. Isolate the restart secret-continuity question with a minimal two-launch test (create connection → quit →
+   relaunch → `settings.test` / real inference). If it fails, fix `ConnectionSecretStore` / provider activation
+   and add a regression test.
+2. Then run a fresh real plan with a live approval loop (approve index refresh + inspection commands) and
+   capture the first `deliveryStatus=verified` with its merge commit and post-merge verification.
