@@ -199,6 +199,19 @@ skill catalog; this session verified both after installation.
 - Motion walkthrough: 8 real frames in
   `docs/next-ui/screens/projectos-next-ui-tour.gif`; raw MP4 still open.
 
+## 2026-10-29 — Design Lab material, batch 4 (lifecycle / release / deploy / resources / settings)
+
+- `pages-design-lab.css` completes the page migration: lifecycle metrics and version cards,
+  release columns/rows, release workbench and deployment console shells, resource center, and the
+  global Settings dialog (`.po-settings-dialog` + antd modal surface).
+- antd v6 controls inside these surfaces (default/outlined buttons, `ant-select` root and selector)
+  now follow the dark optical tokens; a computed-style probe had shown a white select root on the dark
+  canvas, which is fixed.
+- Sweep expanded to 13 pages + Settings: light 28/28, dark 29/29 (1440/1024, computed font-size floor,
+  no overflow, journey bar present, real heading assertions).
+- Evidence: `docs/adr/0066-…`, `docs/v2/evidence/p29-task1-task2-evidence.md`,
+  `docs/screenshots/p29-sweep-{versions,releases,deployments,connections,resources,settings}-*.png`.
+
 ## 2026-10-29 — Design Lab material, batch 2 (work center + task board)
 
 - `apps/desktop/src/renderer/src/styles/pages-design-lab.css` applies the approved

@@ -51,6 +51,10 @@ const PAGES = [
   { key: 'approvals', label: '审批' },
   { key: 'runs', label: '运行审计' },
   { key: 'versions', label: '版本与迭代' },
+  { key: 'releases', label: '发布中心' },
+  { key: 'deployments', label: '部署中心' },
+  { key: 'connections', label: '交付资源' },
+  { key: 'resources', label: '资源与连接' },
   { key: 'collaboration', label: 'Agent 协作' },
   { key: 'agents', label: 'Agent 工作台' },
   { key: 'overview', label: '项目概览' },
@@ -117,6 +121,27 @@ try {
       const pass = metrics.overflowX === 0 && metrics.tiny === 0 && metrics.journey > 0 && metrics.notFound === false && Boolean(metrics.heading)
       record(`${size.label} ${target.label}`, pass ? 'PASS' : 'FAIL', JSON.stringify(metrics))
       await page.screenshot({ path: join(root, 'docs', 'screenshots', screenshotName(target.key, size.label)) })
+    }
+
+    // Settings is a global modal, not a route: open it with the product's own shortcut (⌘,/Ctrl+,).
+    await page.locator('body').click({ position: { x: 5, y: 5 } })
+    await page.keyboard.press('Control+,')
+    await page.waitForTimeout(900)
+    {
+      const modal = await page.evaluate(() => {
+        const root = document.querySelector('.po-settings-dialog')
+        const nodes = [...(root?.querySelectorAll('*') ?? [])].filter(
+          (node) => node.children.length === 0 && (node.textContent ?? '').trim().length > 1,
+        )
+        return {
+          open: Boolean(root),
+          tiny: nodes.map((node) => parseFloat(getComputedStyle(node).fontSize)).filter((size) => size < 12).length,
+        }
+      })
+      record(`${size.label} 设置弹层`, modal.open && modal.tiny === 0 ? 'PASS' : 'FAIL', JSON.stringify(modal))
+      await page.screenshot({ path: join(root, 'docs', 'screenshots', screenshotName('settings', size.label)) })
+      await page.keyboard.press('Escape')
+      await page.waitForTimeout(400)
     }
   }
 } catch (error) {

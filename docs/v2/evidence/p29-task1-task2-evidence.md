@@ -151,3 +151,23 @@ killing runtime {"reason":"heartbeat timeout"}
 | evidence files | `docs/v2/p29-real-ai-timeline.json`, `docs/screenshots/p29-real-ai-journey.png` |
 
 
+
+
+## Design Lab batch 4 — completes the page migration
+
+| Check | Result |
+|---|---|
+| Light sweep (13 pages × 1440/1024 + Settings) | **28/28 PASS** |
+| Dark sweep (same matrix + `--pdl-ink` assertion) | **29/29 PASS** |
+| Content text below 12px | 0 on every page |
+| Horizontal overflow | 0 |
+| Journey bar present | every page |
+| Settings modal opens via the product shortcut and renders | PASS (both sizes, both themes) |
+| Real headings asserted (guards against silently landing on 404) | PASS |
+| `pnpm test` | **461 passed / 4 skipped / 0 failed** |
+
+Screenshots: `docs/screenshots/p29-sweep-{versions,releases,deployments,connections,resources,settings}-{1440,1024}.png`
+and the `-dark` variants. ADR: `docs/adr/0066-design-lab-batch-4-lifecycle-release-deploy-resources-settings.md`.
+
+Remaining UI work: none for the page-level migration. Optional polish items would be recorded as new
+ADRs rather than folded into this batch.
