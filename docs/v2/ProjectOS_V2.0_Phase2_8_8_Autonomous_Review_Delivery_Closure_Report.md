@@ -418,9 +418,9 @@ export function sum(a, b) {
 |---|---|
 | `pnpm typecheck` | PASS |
 | `pnpm lint` | PASS（0 error / 22 warning，边界 OK） |
-| `pnpm test` | PASS（403 passed / 4 skipped；8 个新增 2.8.8 测试文件）。注：一次在全量测试与 Electron E2E 并行时 `r1-budgets` 出现计时抖动，单独及清洁环境下均 PASS |
+| `pnpm test` | PASS（**427 passed / 4 skipped**，81 个测试文件；含 12 个新增 2.8.8 测试文件）。注：一次在全量测试与 Electron E2E 并行时 `r1-budgets` 出现计时抖动，单独及清洁环境下均 PASS |
 | `pnpm build` | PASS |
 | `pnpm package:dir` | PASS |
 | `pnpm test:package` | PASS |
-| 真实 Electron + DeepSeek PRODUCT_AUTONOMOUS | **FAIL（未达最终交付）**，证据见 §6/§7/§17.2 |
+| 真实 Electron + DeepSeek PRODUCT_AUTONOMOUS | **PASS**：run 14 `PASS=19 FAIL=0 SKIP=5 BLOCKED=0`，`deliveryStatus=verified`、merge commit `8d3665f`、合并后 3 条命令 exit 0；证据 `docs/v2/evidence/p288-final-closure.txt` |
 | 工作中心 UI（真实 Electron 9/9） | PASS |
