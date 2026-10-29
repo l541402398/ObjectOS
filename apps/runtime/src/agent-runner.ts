@@ -1,7 +1,8 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { isAbsolute, join, normalize, relative, resolve } from 'node:path'
+import { canonicalWorkspaceRoot } from './plan-grant.js'
 import {
   AppError,
   TASK_STATUSES,
@@ -123,6 +124,51 @@ interface ExecBudget {
   stepsUsed: number
   toolCallsUsed: number
   deadlineAt: number
+}
+
+/**
+ * ADR-0035 — a workspace-relative write path is the only accepted form, but an *absolute* path that
+ * points inside the same workspace is normalized instead of being treated as an escape.
+ *
+ * A real run failed here: the developer passed the absolute worktree path back to write_file, the
+ * grant (correctly) refused a path that resolves outside the authorized scope, and the task went
+ * straight to `blocked`, failing the whole plan at the last step. Escapes still fail — but with a
+ * retryable, self-explanatory error so the Agent can correct the call inside its budget.
+ */
+export function normalizeWorkspaceWritePath(workspaceRoot: string, raw: string): string {
+  const cleaned = raw.trim()
+  if (!cleaned) throw new AppError('BAD_REQUEST', 'write_file 需要工作区相对路径（例如 src/sums.mjs）')
+  const root = canonicalWorkspaceRoot(workspaceRoot)
+  if (isAbsolute(cleaned) || /^[a-zA-Z]:[\\/]/.test(cleaned)) {
+    const absolute = resolve(cleaned)
+    const relative = relativeOf(root, absolute)
+    if (relative === null) {
+      throw new AppError(
+        'BAD_REQUEST',
+        `write_file 的 path 必须是工作区相对路径；绝对路径 ${cleaned} 不在当前工作区内（工作区：${root}）`,
+      )
+    }
+    return relative
+  }
+  const normalized = normalize(cleaned).replace(/\\/g, '/')
+  if (normalized.split('/').some((segment) => segment === '..')) {
+    throw new AppError(
+      'BAD_REQUEST',
+      `write_file 的 path 必须是工作区相对路径，不能使用 .. 越界：${cleaned}（例如 src/sums.mjs）`,
+    )
+  }
+  return normalized.replace(/^\.\//, '')
+}
+
+/** Workspace-relative form of an absolute path inside `root`, or null when it escapes. */
+function relativeOf(root: string, absolute: string): string | null {
+  // Both sides are canonical: a Windows 8.3 root would otherwise make every relative path look
+  // like an escape (ADR-0036).
+  const canonicalRoot = canonicalWorkspaceRoot(root)
+  const canonicalTarget = canonicalWorkspaceRoot(absolute)
+  const rel = relative(canonicalRoot, canonicalTarget)
+  if (!rel || rel.startsWith('..') || isAbsolute(rel)) return null
+  return rel.replace(/\\/g, '/')
 }
 
 interface ActiveRun {
@@ -2010,7 +2056,7 @@ export class AgentRunner {
         return readTextFile(state.workspaceRoot, path)
       }
       case 'write_file': {
-        const path = requiredString(args, 'path')
+        const path = normalizeWorkspaceWritePath(state.workspaceRoot, requiredString(args, 'path'))
         const content = requiredString(args, 'content', { allowEmpty: true })
         const result = writeTextFile(state.workspaceRoot, path, content)
         return { ok: true, ...result }

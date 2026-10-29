@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, realpathSync } from 'node:fs'
 import { createHash } from 'node:crypto'
-import { isAbsolute, join, relative } from 'node:path'
+import { isAbsolute, join, relative, resolve } from 'node:path'
 import {
   AppError,
   newId,
@@ -117,19 +117,44 @@ function normalizeAllowedPath(projectRoot: string, input: string): string {
   return relativePath
 }
 
+/**
+ * ADR-0036 — Windows short (8.3) paths break containment checks.
+ *
+ * A real run could never write a file in its worktree: the workspace root arrived as
+ * `C:\Users\ADMINI~1\…\worktrees\…` while `path.resolve` produced the long form
+ * `C:\Users\Administrator\…`, so `path.relative(root, target)` returned `../../..` and every
+ * workspace-relative write looked like an escape. Canonicalizing both sides through `realpath`
+ * before comparing them fixes it; the containment rule itself is unchanged.
+ */
+export function canonicalWorkspaceRoot(workspaceRoot: string): string {
+  const absolute = resolve(workspaceRoot)
+  try {
+    return realpathSync.native(absolute)
+  } catch {
+    try {
+      return realpathSync(absolute)
+    } catch {
+      return absolute
+    }
+  }
+}
+
 function resolveGrantTarget(workspaceRoot: string, rawPath: string): string {
   const raw = rawPath.trim()
   if (!raw) throw new AppError('BAD_REQUEST', '写入路径不能为空')
+  const root = canonicalWorkspaceRoot(workspaceRoot)
   let resolved: string
   try {
-    resolved = resolveWorkspacePath(workspaceRoot, raw, { forWrite: true })
+    resolved = resolveWorkspacePath(root, raw, { forWrite: true })
   } catch (error) {
     throw new AppError(
       'POLICY_DENIED',
       `路径不在授权工作区内：${error instanceof Error ? error.message : String(error)}`,
     )
   }
-  return relative(workspaceRoot, resolved).replace(/\\/g, '/') || '.'
+  const canonicalTarget = canonicalWorkspaceRoot(resolved)
+  const candidate = existsSync(canonicalTarget) ? canonicalTarget : resolved
+  return relative(root, candidate).replace(/\\/g, '/') || '.'
 }
 
 /**
@@ -977,9 +1002,34 @@ export class PlanGrantService {
     if (view.status !== 'active') {
       return { decision: 'deny', reason: `计划执行授权状态为 ${statusText(view.status)}，已停止新的副作用`, grantId: grant.id }
     }
+    const command = typeof input.args.command === 'string' ? input.args.command.trim() : ''
+    const taskCard = input.taskId ? this.store.read.getTaskCard(input.taskId) : null
+    const isReviewTask = Boolean(taskCard?.labels?.some((label) => /^reviewer$/i.test(label.trim())))
+
+    // ADR-0033: a review must never mutate the content it is reviewing. A reviewer that "fixes"
+    // the code invalidates its own snapshot on every pass, which turns autonomous re-review into an
+    // endless loop of stale reviews. Writes are therefore denied for review tasks, and any process
+    // execution beyond a strictly read-only inspection needs an explicit human decision.
+    if (isReviewTask) {
+      if (input.toolName === 'write_file') {
+        return {
+          decision: 'deny',
+          reason: '审查任务不得修改被审查内容：请只读检查并创建审查 Artifact（ADR-0033）',
+          grantId: grant.id,
+        }
+      }
+      const reviewFamily = command ? readOnlyCommandFamily(command) : null
+      if (input.toolName !== 'run_tests' && !reviewFamily) {
+        return {
+          decision: 'approval',
+          reason: '审查任务只允许只读检查（git diff/status/log、grep、read_file）；其它命令需逐次审批',
+          grantId: grant.id,
+        }
+      }
+    }
+
     if (input.toolName !== 'write_file') {
       // ADR-0032: a read-only family approved once in this plan covers the same family.
-      const command = typeof input.args.command === 'string' ? input.args.command.trim() : ''
       const family = command ? readOnlyCommandFamily(command) : null
       if (family) {
         const reuse = this.readOnlyFamilyApproval(plan.id, family, grant.expiresAt)
@@ -1041,7 +1091,7 @@ export class PlanGrantService {
     if (!view.allowedAgentIds.includes(input.agentId)) {
       return { decision: 'deny', reason: '当前 Agent 不在计划执行授权范围内（可能已重新分配）', grantId: grant.id }
     }
-    const card = this.store.read.getTaskCard(taskId)
+    const card = taskCard
     if (!card || card.assigneeAgentId !== input.agentId) {
       return { decision: 'deny', reason: '任务当前执行 Agent 与授权不一致，已停止写入', grantId: grant.id }
     }

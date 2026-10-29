@@ -22,3 +22,5 @@ Thumbs.db
 .tmp/
 test-results/
 pnpm-install.log
+
+# Phase 2.8.8 UI acceptance scratch data/.p288-ui/

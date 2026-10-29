@@ -26,6 +26,35 @@ import type { PlannerService } from './planner.js'
 import { buildReplanContext } from './replan-context.js'
 import { PROJECT_EVENT_TYPES } from '@projectos/domain'
 
+/** Failing verification commands (newest per command) with their real exit codes. */
+function failedVerificationSummary(
+  store: Parameters<typeof buildReplanContext>[0]['store'],
+  plan: PlanDraft,
+): string[] {
+  const runs = store.db
+    .prepare("SELECT id, created_at FROM agent_runs WHERE task_id IN (SELECT value FROM json_each(?)) ORDER BY created_at ASC")
+    .all(JSON.stringify(plan.createdTaskIds)) as Array<{ id: string; created_at: number }>
+  const latest = new Map<string, { command: string; exitCode: number }>()
+  for (const run of runs) {
+    for (const call of store.read.getToolCalls(run.id)) {
+      if (call.status !== 'completed') continue
+      if (call.toolName !== 'run_tests' && call.toolName !== 'run_command') continue
+      const command = typeof call.args?.command === 'string' ? call.args.command.trim() : ''
+      if (!command) continue
+      const isVerification =
+        call.toolName === 'run_tests' ||
+        /^(npm|pnpm|yarn)\s+(run\s+)?(test|build|typecheck|lint)\b/i.test(command) ||
+        /^(npx\s+)?(vitest|jest|mocha)\b|^node\s+--test\b|^(npx\s+)?tsc\b/i.test(command)
+      if (!isVerification) continue
+      const result = (call.result ?? {}) as Record<string, unknown>
+      const exitCode = typeof result.exitCode === 'number' ? result.exitCode : typeof result.code === 'number' ? result.code : null
+      if (exitCode === null) continue
+      latest.set(command, { command, exitCode })
+    }
+  }
+  return [...latest.values()].filter((item) => item.exitCode !== 0).map((item) => `${item.command}（exit ${item.exitCode}）`)
+}
+
 const MAX_PROPOSALS_PER_PLAN = 3
 const MAX_MODEL_CALLS_PER_PLAN = 5
 
@@ -88,6 +117,20 @@ export class ReplanService {
         grant,
       })
       const maxTasks = Math.max(1, Math.min(20, plan.tasks.length + 4))
+      // ADR-0034: when a real verification is failing, the revision must *fix the code*. Real runs
+      // showed the Replanner repeatedly reshaping how evidence is collected (test-report artifacts,
+      // task splitting) while the failing `npm test` stayed failing, until the revision budget ran
+      // out. The directive makes the required shape explicit; the contract preflight still validates it.
+      const failing = failedVerificationSummary(this.store, plan)
+      const directive = failing.length
+        ? [
+            '',
+            '## 本次修订的硬性要求（来自真实失败记录）',
+            `当前存在真实失败的验证：${failing.join('、')}。`,
+            '修订必须包含一个能修改被测试源代码的修复任务（role=developer，expectedArtifacts 含代码 diff），',
+            '并在其后保留一次真实复跑。不得只调整测试报告/取证任务或拆分取证步骤；不得降低验收标准。',
+          ].join('\n')
+        : ''
       const revised = await this.planner.generateRevision({
         projectId: plan.projectId,
         planId: proposalId,
@@ -96,14 +139,15 @@ export class ReplanService {
         maxTasks,
         allowOverBudget: Boolean(input.allowOverBudget),
         system: replanSystemPrompt(),
-        user: buildReplanUserPrompt({
-          goal: plan.goal,
-          sourceRevision: plan.revision,
-          trigger: input.trigger,
-          reason: input.reason,
-          context: context.text,
-          maxTasks,
-        }),
+        user:
+          buildReplanUserPrompt({
+            goal: plan.goal,
+            sourceRevision: plan.revision,
+            trigger: input.trigger,
+            reason: input.reason,
+            context: context.text,
+            maxTasks,
+          }) + directive,
         promptVersion: REPLAN_PROMPT_VERSION,
         contextChars: context.chars,
         contextSources: context.sources,
