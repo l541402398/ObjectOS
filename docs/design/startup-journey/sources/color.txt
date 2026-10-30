@@ -1,0 +1,24 @@
+## UI Pro Max Search Results
+**Domain:** color | **Query:** glass cool productivity
+**Source:** colors.csv | **Found:** 1 results
+
+### Result 1
+- **Product Type:** Productivity Tool
+- **Primary:** #0D9488
+- **On Primary:** #000000
+- **Secondary:** #14B8A6
+- **On Secondary:** #0F172A
+- **Accent:** #EA580C
+- **On Accent:** #000000
+- **Background:** #F0FDFA
+- **Foreground:** #134E4A
+- **Card:** #FFFFFF
+- **Card Foreground:** #134E4A
+- **Muted:** #E8F1F4
+- **Muted Foreground:** #475569
+- **Border:** #99F6E4
+- **Destructive:** #DC2626
+- **On Destructive:** #FFFFFF
+- **Ring:** #0D9488
+- **Notes:** Teal focus + action orange [Accent adjusted from #F97316]
+

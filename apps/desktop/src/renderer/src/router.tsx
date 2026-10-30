@@ -4,6 +4,7 @@ import { createHashRouter, Navigate, useLocation, useNavigate } from 'react-rout
 import { Button } from 'antd'
 import { EmptyState, LoadingBlock } from '@projectos/ui'
 import AppLayout from './components/AppLayout'
+import { BootScreen } from './components/BootScreen'
 import ProjectCenterPage from './pages/ProjectCenterPage'
 import ProjectOverviewPage from './pages/ProjectOverviewPage'
 import WorkCenterPage from './pages/WorkCenterPage'
@@ -65,7 +66,7 @@ export const router = createHashRouter([
   {
     path: '/',
     element: <AppLayout />,
-    hydrateFallbackElement: <div className="po-boot" role="status">正在打开工作区…</div>,
+    hydrateFallbackElement: <BootScreen />,
     children: [
       { index: true, loader: projectPageLoader('project-center'), element: <ProjectCenterPage /> },
       { path: 'notifications', element: <NotificationsPage /> },

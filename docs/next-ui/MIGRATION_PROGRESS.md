@@ -1,5 +1,9 @@
 # ProjectOS Next UI — Migration Progress
 
+2026-10-30 follow-up: the user's startup animation and collapsed `3/9` journey feedback is addressed
+in [startup-journey/REPORT.md](../design/startup-journey/REPORT.md). Its separate eight-state native
+evidence supersedes only these surfaces. The protected Lab route and previous system evidence remain.
+
 2026-10-30 current implementation: ADR-0070/0071 applies the user-confirmed DAG aesthetic to the real
 product shell, routes and overlays, resolves the five Lab implementation prerequisites, and adds
 guided work, mode controls, responsive delivery setup and interruptible graph pulses. The latest

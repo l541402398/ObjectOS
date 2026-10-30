@@ -1,0 +1,3 @@
+V1.2 E2E PASS — modal settings, connection CRUD/test/discovery, default sync, native run, restart, external detection and collapsed rail.
+  connection: V1.2 E2E Connection (fake-second)
+  stream requests: 1

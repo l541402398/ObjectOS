@@ -1,0 +1,7 @@
+
+> projectos@1.7.0 test:package C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4
+> node scripts/package-smoke.mjs
+
+PACKAGE SMOKE PASS — packaged EXE creates a project, writes starter files and recovers after restart.
+  executable: C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\release\win-unpacked\ProjectOS.exe
+  runtime: C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\release\win-unpacked\resources\runtime\index.mjs

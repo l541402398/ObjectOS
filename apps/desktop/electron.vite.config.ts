@@ -1,4 +1,5 @@
 import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -8,7 +9,11 @@ const repoRoot = resolve(root, '../..')
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin({ exclude: ['@projectos/contracts', '@projectos/organization-contracts', 'zod', 'ulid', 'ssh2'] })],
+    plugins: [
+      externalizeDepsPlugin({
+        exclude: ['@projectos/contracts', '@projectos/organization-contracts', 'zod', 'ulid', 'ssh2'],
+      }),
+    ],
     resolve: {
       alias: {
         '@main': resolve(root, 'src/main'),
@@ -35,7 +40,19 @@ export default defineConfig({
   },
   renderer: {
     root: resolve(root, 'src/renderer'),
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      {
+        name: 'projectos-startup-composition',
+        // Early HTML and React fallbacks share one trusted, local fragment.
+        transformIndexHtml: (html) =>
+          html.replace(
+            '<!-- projectos-boot -->',
+            readFileSync(resolve(root, 'src/renderer/src/startup/boot-content.html'), 'utf8'),
+          ),
+      },
+    ],
     resolve: {
       alias: {
         '@': resolve(root, 'src/renderer/src'),

@@ -1,0 +1,156 @@
+[PASS] 1440-light full startup animates
+[PASS] 1440-light saved theme before React
+[PASS] startup-1440-light actual local Chinese font
+[PASS] Startup animation frame rate 64.0 fps
+[PASS] startup-1440-light accessibility []
+[PASS] startup-1440-light native text contrast min=6.30, samples=4
+[PASS] 1440-light live reduced motion
+[PASS] 1440-light complete boot until complete product
+[PASS] 1440-light no theme flash
+[PASS] 1440-light all nine stage names visible ["项目准备","需求","计划","审核","授权","执行","验证","审查","交付"]
+[PASS] 1440-light current stage identified without expansion
+[PASS] 1440-light workspace fits {"graphHeight":475.8125,"viewport":[1440,900]}
+[PASS] journey-1440-light actual local Chinese font
+[PASS] journey-1440-light accessibility []
+[PASS] journey-1440-light native text contrast min=5.05, samples=16
+[PASS] 1440-light explicit completed count in details
+[PASS] details-1440-light accessibility []
+[PASS] details-1440-light native text contrast min=5.90, samples=41
+[PASS] 1440-light keyboard closes details and restores focus
+[PASS] 1440-light-125 full startup animates
+[PASS] 1440-light-125 saved theme before React
+[PASS] startup-1440-light-125 actual local Chinese font
+[PASS] startup-1440-light-125 accessibility []
+[PASS] startup-1440-light-125 native text contrast min=6.31, samples=4
+[PASS] 1440-light-125 live reduced motion
+[PASS] 1440-light-125 complete boot until complete product
+[PASS] 1440-light-125 no theme flash
+[PASS] 1440-light-125 all nine stage names visible ["项目准备","需求","计划","审核","授权","执行","验证","审查","交付"]
+[PASS] 1440-light-125 current stage identified without expansion
+[PASS] 1440-light-125 workspace fits {"graphHeight":302.8000183105469,"viewport":[1152,720]}
+[PASS] journey-1440-light-125 actual local Chinese font
+[PASS] journey-1440-light-125 accessibility []
+[PASS] journey-1440-light-125 native text contrast min=5.05, samples=16
+[PASS] 1440-light-125 explicit completed count in details
+[PASS] details-1440-light-125 accessibility []
+[PASS] details-1440-light-125 native text contrast min=5.89, samples=41
+[PASS] 1440-light-125 keyboard closes details and restores focus
+[PASS] 1440-dark full startup animates
+[PASS] 1440-dark saved theme before React
+[PASS] startup-1440-dark actual local Chinese font
+[PASS] startup-1440-dark accessibility []
+[PASS] startup-1440-dark native text contrast min=9.66, samples=4
+[PASS] 1440-dark live reduced motion
+[PASS] 1440-dark complete boot until complete product
+[PASS] 1440-dark no theme flash
+[PASS] 1440-dark all nine stage names visible ["项目准备","需求","计划","审核","授权","执行","验证","审查","交付"]
+[PASS] 1440-dark current stage identified without expansion
+[PASS] 1440-dark workspace fits {"graphHeight":475.8125,"viewport":[1440,900]}
+[PASS] journey-1440-dark actual local Chinese font
+[PASS] journey-1440-dark accessibility []
+[PASS] journey-1440-dark native text contrast min=7.19, samples=16
+[PASS] 1440-dark explicit completed count in details
+[PASS] details-1440-dark accessibility []
+[PASS] details-1440-dark native text contrast min=8.52, samples=41
+[PASS] 1440-dark keyboard closes details and restores focus
+[PASS] 1440-dark-125 full startup animates
+[PASS] 1440-dark-125 saved theme before React
+[PASS] startup-1440-dark-125 actual local Chinese font
+[PASS] startup-1440-dark-125 accessibility []
+[PASS] startup-1440-dark-125 native text contrast min=9.66, samples=4
+[PASS] 1440-dark-125 live reduced motion
+[PASS] 1440-dark-125 complete boot until complete product
+[PASS] 1440-dark-125 no theme flash
+[PASS] 1440-dark-125 all nine stage names visible ["项目准备","需求","计划","审核","授权","执行","验证","审查","交付"]
+[PASS] 1440-dark-125 current stage identified without expansion
+[PASS] 1440-dark-125 workspace fits {"graphHeight":302.8000183105469,"viewport":[1152,720]}
+[PASS] journey-1440-dark-125 actual local Chinese font
+[PASS] journey-1440-dark-125 accessibility []
+[PASS] journey-1440-dark-125 native text contrast min=7.31, samples=16
+[PASS] 1440-dark-125 explicit completed count in details
+[PASS] details-1440-dark-125 accessibility []
+[PASS] details-1440-dark-125 native text contrast min=8.52, samples=41
+[PASS] 1440-dark-125 keyboard closes details and restores focus
+[PASS] 1024-light full startup animates
+[PASS] 1024-light saved theme before React
+[PASS] startup-1024-light actual local Chinese font
+[PASS] startup-1024-light accessibility []
+[PASS] startup-1024-light native text contrast min=6.30, samples=4
+[PASS] 1024-light live reduced motion
+[PASS] 1024-light complete boot until complete product
+[PASS] 1024-light no theme flash
+[PASS] 1024-light all nine stage names visible ["项目准备","需求","计划","审核","授权","执行","验证","审查","交付"]
+[PASS] 1024-light current stage identified without expansion
+[PASS] 1024-light workspace fits {"graphHeight":481.8125,"viewport":[1024,900]}
+[PASS] journey-1024-light actual local Chinese font
+[PASS] journey-1024-light accessibility []
+[PASS] journey-1024-light native text contrast min=5.05, samples=16
+[PASS] 1024-light explicit completed count in details
+[PASS] details-1024-light accessibility []
+[PASS] details-1024-light native text contrast min=5.85, samples=41
+[PASS] 1024-light keyboard closes details and restores focus
+[PASS] 1024-light-125 full startup animates
+[PASS] 1024-light-125 saved theme before React
+[PASS] startup-1024-light-125 actual local Chinese font
+[PASS] startup-1024-light-125 accessibility []
+[PASS] startup-1024-light-125 native text contrast min=6.26, samples=4
+[PASS] 1024-light-125 live reduced motion
+[PASS] 1024-light-125 complete boot until complete product
+[PASS] 1024-light-125 no theme flash
+[PASS] 1024-light-125 all nine stage names visible ["项目准备","需求","计划","审核","授权","执行","验证","审查","交付"]
+[PASS] 1024-light-125 current stage identified without expansion
+[PASS] 1024-light-125 workspace fits {"graphHeight":265.8000183105469,"viewport":[819,720]}
+[PASS] journey-1024-light-125 actual local Chinese font
+[PASS] journey-1024-light-125 accessibility []
+[PASS] journey-1024-light-125 native text contrast min=5.05, samples=13
+[PASS] 1024-light-125 explicit completed count in details
+[PASS] details-1024-light-125 accessibility []
+[PASS] details-1024-light-125 native text contrast min=5.28, samples=41
+[PASS] 1024-light-125 keyboard closes details and restores focus
+[PASS] 1024-dark full startup animates
+[PASS] 1024-dark saved theme before React
+[PASS] startup-1024-dark actual local Chinese font
+[PASS] startup-1024-dark accessibility []
+[PASS] startup-1024-dark native text contrast min=9.66, samples=4
+[PASS] 1024-dark live reduced motion
+[PASS] 1024-dark complete boot until complete product
+[PASS] 1024-dark no theme flash
+[PASS] 1024-dark all nine stage names visible ["项目准备","需求","计划","审核","授权","执行","验证","审查","交付"]
+[PASS] 1024-dark current stage identified without expansion
+[PASS] 1024-dark workspace fits {"graphHeight":481.8125,"viewport":[1024,900]}
+[PASS] journey-1024-dark actual local Chinese font
+[PASS] journey-1024-dark accessibility []
+[PASS] journey-1024-dark native text contrast min=7.32, samples=16
+[PASS] 1024-dark explicit completed count in details
+[PASS] details-1024-dark accessibility []
+[PASS] details-1024-dark native text contrast min=8.54, samples=41
+[PASS] 1024-dark keyboard closes details and restores focus
+[PASS] 1024-dark-125 full startup animates
+[PASS] 1024-dark-125 saved theme before React
+[PASS] startup-1024-dark-125 actual local Chinese font
+[PASS] startup-1024-dark-125 accessibility []
+[PASS] startup-1024-dark-125 native text contrast min=9.66, samples=4
+[PASS] 1024-dark-125 live reduced motion
+[PASS] 1024-dark-125 complete boot until complete product
+[PASS] 1024-dark-125 no theme flash
+[PASS] 1024-dark-125 all nine stage names visible ["项目准备","需求","计划","审核","授权","执行","验证","审查","交付"]
+[PASS] 1024-dark-125 current stage identified without expansion
+[PASS] 1024-dark-125 workspace fits {"graphHeight":265.8000183105469,"viewport":[819,720]}
+[PASS] journey-1024-dark-125 actual local Chinese font
+[PASS] journey-1024-dark-125 accessibility []
+[PASS] journey-1024-dark-125 native text contrast min=7.41, samples=13
+[PASS] 1024-dark-125 explicit completed count in details
+[PASS] details-1024-dark-125 accessibility []
+[PASS] details-1024-dark-125 native text contrast min=6.83, samples=41
+[PASS] 1024-dark-125 keyboard closes details and restores focus
+[PASS] Current stage uses persisted journey projection
+[PASS] Stage entry 需求 navigates
+[PASS] Stage entry 计划 navigates
+[PASS] Stage entry 审核 navigates
+[PASS] Stage entry 执行 navigates
+[PASS] Stage entry 验证 navigates
+[PASS] Stage entry 审查 navigates
+[PASS] Stage entry 交付 navigates
+[PASS] Next action retains its real destination
+[PASS] Saved reduced motion applies before React
+[PASS] No Renderer or CSP errors

@@ -1,0 +1,67 @@
+/* Loaded by HTML before the app bundle; the same composition covers every startup gate. */
+@import '@projectos/design-tokens/unified.css';
+@import './fonts.css';
+
+.po-boot {
+  position: fixed; inset: 0; z-index: 1000;
+  display: grid; place-items: center; overflow: auto;
+  padding: 48px 24px 72px; box-sizing: border-box;
+  background: var(--ui-ambient); color: var(--ui-ink);
+  font: 400 14px/1.6 var(--ui-font);
+}
+.po-boot *, .po-boot *::before, .po-boot *::after { box-sizing: border-box; }
+.po-boot-frame {
+  position: absolute; inset: 22px; pointer-events: none;
+  border: 1px solid var(--ui-glass-border); border-radius: 28px;
+  background: var(--ui-optical-frame); box-shadow: inset 0 1px 0 var(--ui-glass-highlight);
+}
+.po-boot-card {
+  position: relative; display: flex; flex-direction: column; align-items: center;
+  width: min(100%, 400px); padding: 36px 36px 40px;
+  border: 1px solid var(--ui-glass-border); border-radius: 28px;
+  background: var(--ui-optical-frame);
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-lg);
+  text-align: center;
+}
+.po-boot-artwork { position: relative; display: grid; place-items: center; width: 160px; height: 160px; margin-bottom: 18px; }
+.po-boot-mark {
+  position: relative; display: grid; place-items: center; width: 72px; height: 72px;
+  border: 1px solid var(--ui-glass-highlight); border-radius: 22px;
+  background: var(--ui-brand-fill); color: var(--ui-inverse);
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-md);
+}
+.po-boot-orbit {
+  position: absolute; inset: 4px; border: 1px solid var(--ui-accent-line); border-radius: 50%;
+  animation: po-boot-orbit 8s linear infinite;
+}
+.po-boot-orbit i {
+  position: absolute; width: 8px; height: 8px; top: -4px; left: calc(50% - 4px);
+  border: 2px solid var(--ui-surface-raised); border-radius: 50%; background: var(--ui-accent);
+}
+.po-boot-orbit-inner { inset: 20px; border-color: var(--ui-border); animation-duration: 6s; animation-direction: reverse; }
+.po-boot-orbit-inner i { top: auto; bottom: -4px; background: var(--ui-teal); }
+.po-boot-title { margin: 0; color: var(--ui-ink); font: 600 30px/1.3 var(--ui-font); letter-spacing: -.025em; }
+.po-boot-subtitle { margin: 8px 0 0; color: var(--ui-ink-2); font-size: 14px; }
+.po-boot-status { margin-top: 28px; color: var(--ui-ink-2); font-size: 13px; }
+.po-boot-foot { position: absolute; bottom: 42px; display: flex; align-items: center; gap: 8px; color: var(--ui-ink-2); font-size: 12px; }
+.po-boot-foot > span { width: 6px; height: 6px; border-radius: 50%; background: var(--ui-teal); }
+.po-boot-error { margin: 20px 0; max-width: 100%; overflow-wrap: anywhere; text-align: left; color: var(--ui-danger); font-size: 14px; }
+.po-boot-card.is-error { width: min(100%, 520px); }
+.po-boot-card.is-error .po-boot-title { font-size: 24px; }
+.po-boot-card.is-error .po-boot-mark { margin-bottom: 24px; }
+.po-boot-card button {
+  padding: 8px 18px; border: 0; border-radius: var(--ui-control-radius); cursor: pointer;
+  background: var(--ui-accent); color: var(--ui-inverse); font: 500 14px/1.5 var(--ui-font);
+}
+.po-boot-card button:hover { background: var(--ui-accent-strong); }
+.po-boot-card button:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 4px; }
+@keyframes po-boot-orbit { to { transform: rotate(360deg); } }
+:root[data-reduce-motion='true'] .po-boot-orbit { animation: none; }
+@media (prefers-reduced-motion: reduce) { .po-boot-orbit { animation: none; } }
+:root[data-reduce-transparency='true'] :is(.po-boot-frame, .po-boot-card) { background: var(--ui-surface); }
+@media (max-height: 560px) {
+  .po-boot { padding-block: 30px 56px; }
+  .po-boot-card { padding: 20px 28px 24px; }
+  .po-boot-artwork { width: 124px; height: 124px; margin-bottom: 12px; }
+  .po-boot-foot { bottom: 24px; }
+}

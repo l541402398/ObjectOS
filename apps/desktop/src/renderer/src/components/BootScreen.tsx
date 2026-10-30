@@ -1,42 +1,45 @@
-import { Spin } from 'antd'
+import { Sparkles } from 'lucide-react'
 import { errorMessage } from '../lib/errors'
+import bootContent from '../startup/boot-content.html?raw'
 
 export function BootScreen() {
+  // Authored static HTML, also inserted into index.html at build time. Never interpolates data.
   return (
-    <div className="po-boot">
-      <div className="po-boot-glow" />
-      <div className="po-logo po-logo-lg" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-      </div>
-      <div className="po-boot-title">ProjectOS</div>
-      <div className="po-boot-subtitle">AI Native 项目全生命周期工作台</div>
-      <div className="po-boot-status">
-        <Spin size="small" />
-        <span>正在启动本地 Runtime 与 SQLite…</span>
-      </div>
-      <div className="po-boot-foot">本地优先 · 无网络端口 · 所有状态可恢复</div>
-    </div>
+    <main
+      className="po-boot"
+      aria-label="启动 ProjectOS"
+      aria-busy="true"
+      dangerouslySetInnerHTML={{ __html: bootContent }}
+    />
   )
 }
 
-export function BootError({ error, onRetry }: { error: unknown; onRetry: () => void }) {
+export function BootError({
+  error,
+  onRetry,
+  title = '无法启动 ProjectOS',
+  retryLabel = '重试启动',
+}: {
+  error: unknown
+  onRetry: () => void
+  title?: string
+  retryLabel?: string
+}) {
   return (
-    <div className="po-boot">
-      <div className="po-logo po-logo-lg" aria-hidden="true">
-        <i />
-        <i />
-        <i />
+    <main className="po-boot" aria-label={title}>
+      <div className="po-boot-frame" aria-hidden="true" />
+      <div className="po-boot-card is-error">
+        <div className="po-boot-mark" aria-hidden="true">
+          <Sparkles size={36} strokeWidth={1.5} />
+        </div>
+        <h1 className="po-boot-title">{title}</h1>
+        <div className="po-boot-error" role="alert">
+          {errorMessage(error)}
+        </div>
+        <button type="button" onClick={onRetry}>
+          {retryLabel}
+        </button>
       </div>
-      <div className="po-boot-title">无法启动 ProjectOS</div>
-      <div className="po-boot-error">{errorMessage(error)}</div>
-      <button type="button" className="po-primary-button" onClick={onRetry}>
-        重试启动
-      </button>
-      <div className="po-boot-foot">
-        请确认已运行 <code>pnpm build:runtime</code>，或查看日志目录中的 desktop.log。
-      </div>
-    </div>
+    </main>
   )
 }

@@ -45,21 +45,6 @@
   border: 0; border-bottom: 1px solid var(--ui-border); border-radius: 0;
   background: transparent; box-shadow: none; backdrop-filter: none;
 }
-.po-shell .po-journey-action { background: var(--ui-accent); color: var(--ui-inverse); border-color: transparent; filter: none; }
-.po-shell .po-journey-action:hover { background: var(--ui-accent-strong); filter: none; }
-.po-shell .po-journey-left { flex: 0 1 310px; max-width: 30%; align-items: center; }
-.po-shell .po-journey-project, .po-shell .po-journey-next-label { display: none; }
-.po-shell .po-journey-track { justify-content: center; }
-.po-shell .po-journey-step { flex: none; }
-.po-shell .po-journey-step-button { padding: 6px 4px; min-height: 32px; }
-.po-shell .po-journey-connector { width: 10px; }
-.po-shell .po-journey-next { flex: none; gap: 8px; }
-.po-shell .po-journey-toggle { width: 32px; height: 32px; }
-.po-shell .po-journey-dot.is-active { animation: none; }
-.po-shell .po-journey.is-compact .po-journey-left { flex: 1; max-width: none; }
-.po-shell .po-journey.is-compact .po-journey-eyebrow,
-.po-shell .po-journey.is-compact .po-journey-current-detail { display: none; }
-.po-shell .po-journey-track-compact { flex: 0 0 auto; min-height: 32px; }
 .po-shell .po-statusbar {
   height: 28px; flex-basis: 28px; margin: 0; padding: 0 26px; gap: 14px;
   border: 0; border-radius: 0; background: transparent; box-shadow: none;
@@ -244,12 +229,7 @@
 :root .dc-start-icon { width: 48px; height: 48px; border-radius: 14px; margin-bottom: 18px; }
 :root .dc-readiness-item { box-shadow: none; }
 :root .dc-map-node, :root .dc-map-destination { box-shadow: var(--ui-shadow-sm); }
-.po-shell .po-journey-left { flex: 1 1 360px; max-width: 52%; }
-.po-shell .po-journey-track-compact { flex: 0 0 auto; gap: 8px; border: 0; background: transparent; color: var(--ui-ink-2); padding: 6px 8px; }
-.po-shell .po-journey-progress { color: var(--ui-ink-2); background: var(--ui-surface); font-variant-numeric: tabular-nums; }
-.po-shell .po-journey-next { margin-left: auto; }
-.po-shell .po-journey-dot.is-active { animation: none; }
-@media (max-width: 900px) { .po-shell .po-journey-left { max-width: 42%; } .po-shell .po-journey-bg { display: none; } .wc-next-body { flex-wrap: wrap; } }
+@media (max-width: 900px) { .wc-next-body { flex-wrap: wrap; } }
 
 :root[data-theme] :is(.v16-glass-card, .po-operations-card) { min-width: 0; background: var(--ui-surface); border: 1px solid var(--ui-border); box-shadow: var(--ui-shadow-sm); backdrop-filter: none; -webkit-backdrop-filter: none; }
 :root .v16-team-row > div { min-width: 0; }

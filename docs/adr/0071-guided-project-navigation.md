@@ -51,3 +51,24 @@ content. Show pending status while retaining the previous surface. Latest choice
 invalidates an outstanding opening, errors remain errors, and no read gate performs mutations.
 Required route keys must match mounted views, including dependent queries. Validate delayed reads
 separately from real native cold-frame/font inspection; cached-only navigation is insufficient.
+
+## Follow-up: restore the startup composition and a visible lifecycle path
+
+The user explicitly rejects the plain startup text and the overly compressed global `3/9` journey.
+This supersedes the earlier decision to collapse the global journey to only its current stage.
+It does not alter the protected Design Lab's separate four-icon stage route.
+
+- Keep all nine real project stages visible by default, with a named current phase, its real state,
+  and the existing next action. Use an ordered list, `aria-current="step"`, completed checkmarks and
+  numbered future stages. Completion count belongs in details and is labelled as completed stages.
+- Reflow the global path for narrow/zoomed windows without hiding stage names. Detailed reasons
+  remain on demand. Stage entry buttons only navigate to the existing projection's routes.
+- Early HTML, router hydration and bootstrap use one authored loading composition. A build-time
+  local HTML fragment and common CSS prevent the old plain-text fallback from returning. This
+  static fragment never interpolates business data or external HTML.
+- Read the saved theme and accessibility preferences through a small external startup script before
+  first paint. Keep the production CSP and preload/process boundaries unchanged. No inline script.
+- Preserve the local font-ready gate and wait for its font set to settle; do not add a minimum
+  loading duration, a fabricated percentage, or a claim that startup stages completed.
+- Pre-React loading motion uses CSS; React detail choreography uses the installed Motion library.
+  Honor OS/app reduced motion. Runtime, policy, approvals, autonomy modes and persistence are unchanged.

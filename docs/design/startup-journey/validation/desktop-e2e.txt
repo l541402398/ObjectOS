@@ -1,0 +1,2 @@
+E2E PASS — create project through the desktop UI and recover it after restart (T-001).
+  project root: C:\Users\ADMINI~1\AppData\Local\Temp\projectos-e2e-y100px\my-project

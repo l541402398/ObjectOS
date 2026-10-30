@@ -1,0 +1,110 @@
+[
+  {
+    "name": "lint",
+    "command": "pnpm lint",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T11:55:44.5734227Z",
+    "durationSeconds": 49.8,
+    "log": "lint.txt"
+  },
+  {
+    "name": "typecheck",
+    "command": "pnpm typecheck",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T11:56:34.4572636Z",
+    "durationSeconds": 47.31,
+    "log": "typecheck.txt"
+  },
+  {
+    "name": "test",
+    "command": "pnpm test",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T11:57:21.7753737Z",
+    "durationSeconds": 162.77,
+    "log": "test.txt"
+  },
+  {
+    "name": "build",
+    "command": "pnpm build",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T12:00:04.5523106Z",
+    "durationSeconds": 20.96,
+    "log": "build.txt"
+  },
+  {
+    "name": "desktop-e2e",
+    "command": "node scripts/e2e.mjs",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T12:00:25.5127604Z",
+    "durationSeconds": 9.65,
+    "log": "desktop-e2e.txt"
+  },
+  {
+    "name": "agent-e2e",
+    "command": "node scripts/agent-e2e.mjs",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T12:00:35.1713176Z",
+    "durationSeconds": 11.9,
+    "log": "agent-e2e.txt"
+  },
+  {
+    "name": "v12-e2e",
+    "command": "node scripts/v12-e2e.mjs",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T12:00:47.0813207Z",
+    "durationSeconds": 17.2,
+    "log": "v12-e2e.txt"
+  },
+  {
+    "name": "v13-e2e",
+    "command": "node scripts/v13-e2e.mjs",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T12:01:04.2890092Z",
+    "durationSeconds": 12.22,
+    "log": "v13-e2e.txt"
+  },
+  {
+    "name": "startup-journey",
+    "command": "node scripts/startup-journey-e2e.mjs",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T12:01:16.5140919Z",
+    "durationSeconds": 63.97,
+    "log": "startup-journey.txt"
+  },
+  {
+    "name": "startup-recording",
+    "command": "node scripts/startup-journey-recording.mjs",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T12:02:20.4940014Z",
+    "durationSeconds": 20.6,
+    "log": "startup-recording.txt"
+  },
+  {
+    "name": "package-dir",
+    "command": "pnpm package:dir",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T12:02:41.1024878Z",
+    "durationSeconds": 68.86,
+    "log": "package-dir.txt"
+  },
+  {
+    "name": "package-smoke",
+    "command": "pnpm test:package",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T12:03:49.9655907Z",
+    "durationSeconds": 7.53,
+    "log": "package-smoke.txt"
+  }
+]

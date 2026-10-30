@@ -7,7 +7,6 @@ import { XProvider } from '@ant-design/x'
 import { RouterProvider } from 'react-router-dom'
 import { createAntdTheme } from '@projectos/ui'
 import 'antd/dist/reset.css'
-import './styles/fonts.css'
 import '@projectos/design-tokens/tokens.css'
 import '@projectos/ui/styles.css'
 import '@projectos/ai-ui/styles.css'
@@ -25,6 +24,7 @@ import { router } from './router'
 import { ProductDialogs } from './next-ui/overlay/ProductDialogs'
 import { OverlayRoot } from './next-ui/overlay/overlay-context'
 import { useResolvedTheme, useUiEffects } from './stores/ui'
+import { BootError } from './components/BootScreen'
 
 interface ErrorBoundaryState {
   error: Error | null
@@ -44,13 +44,7 @@ class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, Er
   override render(): React.ReactNode {
     if (this.state.error) {
       return (
-        <div className="po-boot">
-          <div className="po-boot-title">界面渲染出错</div>
-          <div className="po-boot-error">{this.state.error.message}</div>
-          <button type="button" className="po-primary-button" onClick={() => window.location.reload()}>
-            重新加载
-          </button>
-        </div>
+        <BootError error={this.state.error} onRetry={() => window.location.reload()} title="界面渲染出错" retryLabel="重新加载" />
       )
     }
     return this.props.children
@@ -92,6 +86,7 @@ async function startRenderer(): Promise<void> {
   // rendering boxes first and swapping their Chinese text/font metrics afterwards.
   try {
     await Promise.all([400, 500, 600].map((weight) => document.fonts.load(`${weight} 14px "ProjectOS Sans"`, '项目设置 Aa012')))
+    await document.fonts.ready
     document.documentElement.dataset.typeface = 'ready'
   } catch {
     document.documentElement.dataset.typeface = 'fallback'

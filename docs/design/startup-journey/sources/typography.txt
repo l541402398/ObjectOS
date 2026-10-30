@@ -1,0 +1,16 @@
+## UI Pro Max Search Results
+**Domain:** typography | **Query:** Chinese Noto sans
+**Source:** typography.csv | **Found:** 1 results
+
+### Result 1
+- **Font Pairing Name:** Chinese Simplified
+- **Category:** Sans + Sans
+- **Heading Font:** Noto Sans SC
+- **Body Font:** Noto Sans SC
+- **Mood/Style Keywords:** chinese, simplified, modern, professional, multilingual, readable
+- **Best For:** Simplified Chinese sites, mainland China market, business apps
+- **Google Fonts URL:** https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap
+- **CSS Import:** @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+- **Tailwind Config:** fontFamily: { sans: ['Noto Sans SC', 'sans-serif'] }
+- **Notes:** Simplified Chinese support. Clean modern look.
+

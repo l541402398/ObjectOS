@@ -1,0 +1,3 @@
+AGENT E2E PASS — real approval pause, approved write, resumed loop and completed run.
+  provider requests: 2
+  run: run_01m66ay2sv8zkrg2tb63kvf4kp (completed)

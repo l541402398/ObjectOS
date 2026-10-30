@@ -1,5 +1,29 @@
 # ProjectOS UI Design Changelog
 
+## 2026-10-30 — restore optical startup and the visible global journey
+
+- User feedback supersedes the overly compact global journey: nine named stages are visible, the
+  current phase and state are explicit, and the completed count is labelled in details. Native
+  resize/zoom uses a compact node-above-label path, with wrapping only below the supported narrow
+  viewport. The protected Design Lab icon route is unchanged.
+- Reuse one authored static boot fragment in early HTML and React fallbacks. Restore the complete
+  brand/orbit composition in the approved cool optical material. Saved theme/motion preferences
+  apply before React; no plain dark text screen, forced delay, fake progress or backend change.
+- Keep local typography readiness. The font is defined once by the early stylesheet; React waits
+  for real loading and FontFaceSet readiness. Native checks inspect actual Noto Sans SC glyphs.
+- Consulted UI UX Pro Max typography/color/layout/accessibility/motion sources, Vercel composition
+  and React hydration/performance rules, Impeccable craft/animate/audit, and installed Motion.
+  Query outputs are in `startup-journey/sources/`. Reject the generic teal/orange palette and online
+  font imports because the frozen screenshot and local font baseline take precedence. Use an external
+  preference script instead of Vercel's inline-script example to preserve the production CSP.
+- Existing Sim/Liquid Glass/Aurora source and compatibility evidence remains in the previous report;
+  graph composition and shader integration are not changed. Static optical material remains the
+  default under the recorded 7/8 fps constraints. No new source adoption or performance claim for them.
+- No dedicated skill loading tool is exposed; SKILL files were read directly. Impeccable source
+  detection returns `[]`; native axe/contrast/frame checks are separate. No PRODUCT.md is invented.
+- Evidence and exact command status: [startup/journey report](startup-journey/REPORT.md). Tests and
+  screenshots support review, not a claim of the user's subjective aesthetic approval.
+
 ## 2026-10-30 — follow-up: actual font fallback and complete first frames
 
 - User specifically identified sharp, inconsistent type beside flat white surfaces and separate

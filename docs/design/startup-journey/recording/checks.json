@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "steps": [
+    "Full optical startup; font gate held for 4 seconds by the recording only",
+    "Complete product with all nine stages and explicit current phase",
+    "Journey details and keyboard dismissal",
+    "Dark theme and 1024 / 125% readable stage path",
+    "Actual next action destination"
+  ],
+  "errors": []
+}

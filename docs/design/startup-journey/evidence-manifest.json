@@ -1,0 +1,468 @@
+{
+  "baseHead": "710f83a0580c68842309aabd97dc1851db168918",
+  "testedState": "Working tree based on baseHead; raw SHA256 and normalized gitBlob identify tested source. Code and evidence are committed together.",
+  "generatedAt": "2026-10-30T12:13:12.731Z",
+  "commands": [
+    {
+      "name": "lint",
+      "command": "pnpm lint",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T11:55:44.5734227Z",
+      "durationSeconds": 49.8,
+      "log": "lint.txt"
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm typecheck",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T11:56:34.4572636Z",
+      "durationSeconds": 47.31,
+      "log": "typecheck.txt"
+    },
+    {
+      "name": "test",
+      "command": "pnpm test",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T11:57:21.7753737Z",
+      "durationSeconds": 162.77,
+      "log": "test.txt"
+    },
+    {
+      "name": "build",
+      "command": "pnpm build",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T12:00:04.5523106Z",
+      "durationSeconds": 20.96,
+      "log": "build.txt"
+    },
+    {
+      "name": "desktop-e2e",
+      "command": "node scripts/e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T12:00:25.5127604Z",
+      "durationSeconds": 9.65,
+      "log": "desktop-e2e.txt"
+    },
+    {
+      "name": "agent-e2e",
+      "command": "node scripts/agent-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T12:00:35.1713176Z",
+      "durationSeconds": 11.9,
+      "log": "agent-e2e.txt"
+    },
+    {
+      "name": "v12-e2e",
+      "command": "node scripts/v12-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T12:00:47.0813207Z",
+      "durationSeconds": 17.2,
+      "log": "v12-e2e.txt"
+    },
+    {
+      "name": "v13-e2e",
+      "command": "node scripts/v13-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T12:01:04.2890092Z",
+      "durationSeconds": 12.22,
+      "log": "v13-e2e.txt"
+    },
+    {
+      "name": "startup-journey",
+      "command": "node scripts/startup-journey-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T12:06:34.5197053Z",
+      "durationSeconds": 70.23,
+      "log": "final-startup-journey.txt"
+    },
+    {
+      "name": "startup-recording",
+      "command": "node scripts/startup-journey-recording.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T12:07:44.7640978Z",
+      "durationSeconds": 20.74,
+      "log": "final-startup-recording.txt"
+    },
+    {
+      "name": "package-dir",
+      "command": "pnpm package:dir",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T12:05:40.3400476Z",
+      "durationSeconds": 54.05,
+      "log": "final-package-dir.txt"
+    },
+    {
+      "name": "package-smoke",
+      "command": "pnpm test:package",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T12:08:05.5126901Z",
+      "durationSeconds": 7.16,
+      "log": "final-package-smoke.txt"
+    }
+  ],
+  "ui": {
+    "pass": 164,
+    "fail": 0,
+    "screenshotCount": 25,
+    "fps": {
+      "name": "Startup animation frame rate",
+      "status": "PASS",
+      "detail": "64.0 fps"
+    }
+  },
+  "skipped": [
+    "4 existing opt-in external Harness/SSH tests",
+    "manual screen reader",
+    "other OS rendering",
+    "startup error fault-injection capture",
+    "full prior 645-image system sweep"
+  ],
+  "sources": [
+    {
+      "path": "apps/desktop/electron.vite.config.ts",
+      "sha256": "c5e8e9ec3976e76ac76481385835aee11bf84cee7a58165a464ec5949ec66da7",
+      "gitBlob": "cd19f6a064e3d140498e02b971fb8143f4aedb47"
+    },
+    {
+      "path": "apps/desktop/src/renderer/index.html",
+      "sha256": "57e09ffc868b476f240ba0907d3b263d91e5685f2ec64bc6f8cecd43f98288af",
+      "gitBlob": "de54b745a9212fdb0d6bc578eae4b2ca0fb9eac7"
+    },
+    {
+      "path": "apps/desktop/src/renderer/public/startup-preferences.js",
+      "sha256": "09a56e395144611e43aa37baecb1e75a26444604856e3cad28698d15fd39af40",
+      "gitBlob": "5e8d12688295f093a6d4e5b624b0f26b5875c15e"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/components/BootScreen.tsx",
+      "sha256": "92dcbcb721e082cabe61061f01166f5847763d45e647db282c97cb3fa9351e8a",
+      "gitBlob": "561a5b4c10c421088ca473d595e4d62dfbd0a784"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/components/GoalJourneyBar.tsx",
+      "sha256": "96cfe2ee6ea1cb52f557f36bf5627e30c14babc75c1f31ece000fced3bea6f3d",
+      "gitBlob": "f777914808257b380300eb01fbbc62b44ff6ed5f"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/components/goal-journey.css",
+      "sha256": "58b04eb8846981468530e1798461d5eda8118139de99a3ea8e9563a434cbbc56",
+      "gitBlob": "ca4654e36ae1dabdbcc5adde770a82b253e9131d"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/startup/boot-content.html",
+      "sha256": "816e8f3e66e4bda69003982dd91e4407e52d698ed56bafcd68bf1710e574c678",
+      "gitBlob": "c647cbc392f593be64833f8f77afc41b00e909ec"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/styles/boot.css",
+      "sha256": "0489a0a512f608f214862af6c8826f2a7ef98d941e158d10e2c60fb4f2787e04",
+      "gitBlob": "1ad7b8d44207cb0f37d763d0eb18f201afdbbe18"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/styles/app.css",
+      "sha256": "4eb1d180aaf5d4542bfa8679c1be0ced343bd77351d20e3aacd3d676d309f610",
+      "gitBlob": "80e7e579b26f61a57feb0aa77f22df6ad8ed38c6"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/styles/system-premium.css",
+      "sha256": "1af8de382a96e111de5903faf4b2e0912df39f4319b0ddec76bd7e26fb7f08cb",
+      "gitBlob": "a3038dcdca5c683c936ec4a0100bdd3a8ecf99e6"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/main.tsx",
+      "sha256": "e8a34ae8ad6524f4f432320841f949a9069e4844faabb4240664fb486d0e80b8",
+      "gitBlob": "352e4f820debe69a1d9e270d024fbdf1cc7b4cf2"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/router.tsx",
+      "sha256": "110593a4a656b7669723b2b0d3acfe062710ca4bc5d95b2523b2737d2396ccca",
+      "gitBlob": "2f8b1665e712b5314d863cff50df2ae71f06413a"
+    },
+    {
+      "path": "scripts/startup-journey-e2e.mjs",
+      "sha256": "fb6bb45018d3c3ea8dbb03e42143d9bb5f672b17850d3ac6a45a0b78c31bfe45",
+      "gitBlob": "ed3a4d6b829ff40b31e3ce419e9e05968ace13a1"
+    },
+    {
+      "path": "scripts/startup-journey-recording.mjs",
+      "sha256": "599a20c844b1c61a5608089dc93f7da7294afcf25d3f15f7b179e825eab9f14a",
+      "gitBlob": "28720ef5db80de29f3280a517fc1272ee2b01e8a"
+    },
+    {
+      "path": "scripts/startup-journey-verify.ps1",
+      "sha256": "4df4eaabeb1cbacfa6ba00ff1f40474c57e19aa4c74b265552ac91469e91cff2",
+      "gitBlob": "4a8eb72ef7177dadfc2112504a476b371f254170"
+    },
+    {
+      "path": "scripts/startup-journey-manifest.mjs",
+      "sha256": "4cc092467b67b40934db8ac128c40842f7de62505d8ddfc2029fd5ca52c5e28b",
+      "gitBlob": "f63393bd9e04685bbfb1fa48ce1d1f1194fbb8a6"
+    }
+  ],
+  "files": [
+    {
+      "path": "after/checks.json",
+      "sha256": "7cda3468670b6dc30bbc71b6e2c439de67f95a6b92a615042949bbbff293c411"
+    },
+    {
+      "path": "after/details-1024-dark-125.png",
+      "sha256": "e3cf4658f7d1b42ffa69bdedb726d53913f067e20549bae439eb4019fb7c14a1"
+    },
+    {
+      "path": "after/details-1024-dark.png",
+      "sha256": "90f14abeff7b6a5bda106467c1b095503ade6666af6c6606bb8f5093072c1aa9"
+    },
+    {
+      "path": "after/details-1024-light-125.png",
+      "sha256": "74a91764757c5a3ad07ad10a50e5e5c109dd7a9b464af96e5f4e18921639e5fe"
+    },
+    {
+      "path": "after/details-1024-light.png",
+      "sha256": "8dea7f81aff82b41c800c31c5a710eb93a55ec78e40dec70b57fab36430abd02"
+    },
+    {
+      "path": "after/details-1440-dark-125.png",
+      "sha256": "8c65fd1ff3ff8d4eb0ddff3c13f9856bd4bebf326b3aa90f67862e35910c0a9d"
+    },
+    {
+      "path": "after/details-1440-dark.png",
+      "sha256": "0d0913158fad66db5be9ea8a9f52a8ba6dee0a9865f3dfabf87d175612529713"
+    },
+    {
+      "path": "after/details-1440-light-125.png",
+      "sha256": "fbf21a2afd7d0cc7a4a4818b2c67ef1c66bcf6270d57617dec5cc9326b6ab481"
+    },
+    {
+      "path": "after/details-1440-light.png",
+      "sha256": "cc18b5b484269957051cdb6207094d9d07def671e51636cf8cdd684ec4c8f7dd"
+    },
+    {
+      "path": "after/journey-1024-dark-125.png",
+      "sha256": "dac46cb30a879dfb8bc618ed253a7489b57fed2793d3b61c7c42ab3d8c4a860d"
+    },
+    {
+      "path": "after/journey-1024-dark.png",
+      "sha256": "2ab2080391b49b441256847e4817cc0f9ce5bb976832562b267447c24f8aa4bb"
+    },
+    {
+      "path": "after/journey-1024-light-125.png",
+      "sha256": "78502f195ab58968ee1c3c55e1efa9cb21d4d85a7f9811762ff465bc84069545"
+    },
+    {
+      "path": "after/journey-1024-light.png",
+      "sha256": "d3f51c28afc6c2bf8d185ad52440db870740edaed2956a05b913c75f121d4052"
+    },
+    {
+      "path": "after/journey-1440-dark-125.png",
+      "sha256": "e3149c1379b17e5a99e766cdda36a715d3d27027e0f638d95fdb17b0c76316ad"
+    },
+    {
+      "path": "after/journey-1440-dark.png",
+      "sha256": "7e0ca2f2ec750cd041985df6c96173cdf504eab5254346f6108774f898d26e3b"
+    },
+    {
+      "path": "after/journey-1440-light-125.png",
+      "sha256": "d837b8816de728020a85fa803ef4b6cb2979cd424dbbbdc7fb2b21010b80b723"
+    },
+    {
+      "path": "after/journey-1440-light.png",
+      "sha256": "7fb449f30adcb52f54c530213aadfc2fa756048dc9e24e6a34983c23dd70fad5"
+    },
+    {
+      "path": "after/startup-1024-dark-125.png",
+      "sha256": "df293eb2c344fd491d57cbbff5e1288723b8f844426f37180b825681bf91cab2"
+    },
+    {
+      "path": "after/startup-1024-dark.png",
+      "sha256": "baef2b718912ef1c0c551d10dd65a4b3cdb0dcccf2f8803cb1602a02a63f78ce"
+    },
+    {
+      "path": "after/startup-1024-light-125.png",
+      "sha256": "e0d32f147738cd3b01ac3f5fbb193450a908e02898a70663d69315b986acc6f2"
+    },
+    {
+      "path": "after/startup-1024-light.png",
+      "sha256": "c70694dd420626a42dfd83307a07fe9add4b7f143142ae88df47ca17f3e0f403"
+    },
+    {
+      "path": "after/startup-1440-dark-125.png",
+      "sha256": "e0614607c7a52020205fed4952161bfb1a50691e2a959b30ec757aa378b3aa1c"
+    },
+    {
+      "path": "after/startup-1440-dark.png",
+      "sha256": "4d3c5efe4aeca9e4fed1429bd5a5d558f5c2badac1c109e86473472ff3b29cb7"
+    },
+    {
+      "path": "after/startup-1440-light-125.png",
+      "sha256": "8c09d2b46960371db4ed2a7433fcb1d02e80643e547bf20c7ee11661633efb9f"
+    },
+    {
+      "path": "after/startup-1440-light.png",
+      "sha256": "6c3e3af24c95dc39b7c2bf0aff5650579f21eacb1faf0d23bc97c189e3676919"
+    },
+    {
+      "path": "after/startup-reduced-motion.png",
+      "sha256": "1501c4ffbd1cc6adc06cce16bb503e7632fd56b77c606535a90c31324b5581cc"
+    },
+    {
+      "path": "before/journey.png",
+      "sha256": "9b64acd62e7f926151ed497be68acf86c3f3a4831e220955b38246bc5f415a64"
+    },
+    {
+      "path": "before/startup.png",
+      "sha256": "82ac3ef2cb3fd99efefa8e219d7273c3bf1c784d9fbd564aa382a3ba2802c9df"
+    },
+    {
+      "path": "diagnostics/details-before-layer-fix.png",
+      "sha256": "68992d7b3ea89d79202fe7da22d663843b6a3e587d8ffb90e29812d07d3c875d"
+    },
+    {
+      "path": "diagnostics/first-full-ui-checks.json",
+      "sha256": "584fdd49329b69e8d24da775d03c99d2fed7ba6b53bd4e9d450a1300e4ac173e"
+    },
+    {
+      "path": "recording/checks.json",
+      "sha256": "6659afdf4840c43df2fc21be510ac64ce6e7982c8cd8ab6aec3bbcefd557a5af"
+    },
+    {
+      "path": "recording/startup-and-journey.webm",
+      "sha256": "7f77b1aaf73271d8675aa76b797d4bf891abf1692d52d07deec61404987a97dd"
+    },
+    {
+      "path": "REPORT.md",
+      "sha256": "3dfa7707e2608010d4b40f22291914cf125fe25bda88a96416865e095121eb74"
+    },
+    {
+      "path": "sources/accessibility.txt",
+      "sha256": "6b41d640f274bc02cf2a432dd888809f195051c34982bcc0bbe2e390e9c9e111"
+    },
+    {
+      "path": "sources/color.txt",
+      "sha256": "001400a951cf4961210858a1eb0652e73a71083a35c12f3bd68238d3b34ba1e2"
+    },
+    {
+      "path": "sources/layout.txt",
+      "sha256": "960c874998a82a60ce61474ad713d4d95e0ed304a39aee4fa9dad418efaec66e"
+    },
+    {
+      "path": "sources/motion.txt",
+      "sha256": "3501c124b1997fa437d7f0a77a98ef915df7a28a639d528a003ce7c71073eeea"
+    },
+    {
+      "path": "sources/typography.txt",
+      "sha256": "f625cd88d3f051505e825e8b3346c88d2b5d9da36254cce494cf748d26406fa8"
+    },
+    {
+      "path": "validation/agent-e2e.txt",
+      "sha256": "01ffbdec185ad95d96224615dfc00838111ec82bae23f417f29fdaf2f8e14fc2"
+    },
+    {
+      "path": "validation/build-preview-2.txt",
+      "sha256": "1270102fd56077eea5d81ae44675327c6eeadb77b34d1f1537472139e4e68620"
+    },
+    {
+      "path": "validation/build-preview-3.txt",
+      "sha256": "88e80dcfbaa0c992efe6685e3e9bf802354d2970a1b920b26384ddb3f38227c4"
+    },
+    {
+      "path": "validation/build-preview.txt",
+      "sha256": "02fb3d54f872f3c644ea1f9aced8d850f5dcf3e7494c41cf135c64f996129e38"
+    },
+    {
+      "path": "validation/build.txt",
+      "sha256": "fddad50fa4969e8ab564b6c330eeaca3c65fd3511bcba2fc617ad5353136e8bd"
+    },
+    {
+      "path": "validation/checks.json",
+      "sha256": "1e96be623b0c233c429f58879b8be76f6550b396e84751db5d8f1d2e7ae21dc0"
+    },
+    {
+      "path": "validation/desktop-e2e.txt",
+      "sha256": "72002a0e884fd58c3eb342711635bb9dc4b80c5600e28083e4749a2012955f67"
+    },
+    {
+      "path": "validation/final-package-dir.txt",
+      "sha256": "668c71259b87af167804df08ed694d10cc24522b51187b09f00475f815686787"
+    },
+    {
+      "path": "validation/final-package-smoke.txt",
+      "sha256": "3f628e7e9f6a2e33dfded658bf84d88752cefc0b3cf677df9b476b99735a74b7"
+    },
+    {
+      "path": "validation/final-startup-journey.txt",
+      "sha256": "acfc22946d8d245d3e15aa9acd99327528d8ec036428837bbc3f12a6c902b293"
+    },
+    {
+      "path": "validation/final-startup-recording.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "validation/lint.txt",
+      "sha256": "531c7026c7af587207716e13bbac219d21abeb30524fcea83fa0c02238b6eaaf"
+    },
+    {
+      "path": "validation/package-dir.txt",
+      "sha256": "a422861360a7c83b7895c05b341e70bcc8e4d2bdc03aac1c70653dea4b3440af"
+    },
+    {
+      "path": "validation/package-smoke.txt",
+      "sha256": "3f628e7e9f6a2e33dfded658bf84d88752cefc0b3cf677df9b476b99735a74b7"
+    },
+    {
+      "path": "validation/rechecks.json",
+      "sha256": "457307483b3ff30c7d9cfd853601140b3f4777bc5674ce03342b5b5d806c96ef"
+    },
+    {
+      "path": "validation/source-detector.json",
+      "sha256": "a5338d955b09046ec0b16f3a9625b7955c763aae07dc722e474e6078745f932f"
+    },
+    {
+      "path": "validation/startup-journey.txt",
+      "sha256": "1d8bcaef2e0639d539850e44601f620b97e813012a4d927c92759a48b3d43c33"
+    },
+    {
+      "path": "validation/startup-recording.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "validation/test.txt",
+      "sha256": "f05354410f3b526e6fbd0eb5a7664012c7481856938fa903a9fd4f9ea8f00e92"
+    },
+    {
+      "path": "validation/typecheck.txt",
+      "sha256": "2c91cbfb819ee4d0864ee0cec9cc4d9ff779454a82535ef0935d3077b2fc0688"
+    },
+    {
+      "path": "validation/ui-preview-2.txt",
+      "sha256": "b4ee904607eb53463867acd14d8d8c25500d9c1725472a4493863356199ebfed"
+    },
+    {
+      "path": "validation/ui-preview-3.txt",
+      "sha256": "a0a9d4019c94abe8094278a35a85317ad430f382207006ae3ccfd11ac11d58cd"
+    },
+    {
+      "path": "validation/ui-preview.txt",
+      "sha256": "5737f91c4750dfa9e60901b6e9de6beb6d7bcf2865db894ab793e35e36cf9299"
+    },
+    {
+      "path": "validation/v12-e2e.txt",
+      "sha256": "75d7c76d8923aab25c11a2a3b0e2120c04ff8ad5036231c59cbf99219276b81a"
+    },
+    {
+      "path": "validation/v13-e2e.txt",
+      "sha256": "9060dfb3e2d2bf70fa92f8d91916818551c5d22d9ecd42d49120440627d87512"
+    }
+  ]
+}

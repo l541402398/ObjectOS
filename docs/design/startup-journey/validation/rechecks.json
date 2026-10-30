@@ -1,0 +1,38 @@
+[
+  {
+    "name": "package-dir",
+    "command": "pnpm package:dir",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T12:05:40.3400476Z",
+    "durationSeconds": 54.05,
+    "log": "final-package-dir.txt"
+  },
+  {
+    "name": "startup-journey",
+    "command": "node scripts/startup-journey-e2e.mjs",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T12:06:34.5197053Z",
+    "durationSeconds": 70.23,
+    "log": "final-startup-journey.txt"
+  },
+  {
+    "name": "startup-recording",
+    "command": "node scripts/startup-journey-recording.mjs",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T12:07:44.7640978Z",
+    "durationSeconds": 20.74,
+    "log": "final-startup-recording.txt"
+  },
+  {
+    "name": "package-smoke",
+    "command": "pnpm test:package",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T12:08:05.5126901Z",
+    "durationSeconds": 7.16,
+    "log": "final-package-smoke.txt"
+  }
+]
