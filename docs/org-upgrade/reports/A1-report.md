@@ -1,9 +1,10 @@
 # A1 foundation and graph-only Agent workspace — acceptance record
 
 Date: 2026-10-29 (America/Los_Angeles). Branch: `codex/org-a1-foundation`.
-Starting HEAD: `ec97824d7751cc3d443ae1cdac4793e9170ed1ec`. The implementation and evidence are
-committed together; the exact implementation SHA is recorded in the adjacent evidence manifest
-after commit. No merge to `main`, production deployment or local-project import is performed.
+Starting HEAD: `ec97824d7751cc3d443ae1cdac4793e9170ed1ec`.
+Implementation and evidence commit: `a7718e67f50f407cbc563e2e661b0c6083ba044d`.
+The subsequent metadata-only commit records that exact SHA here and in the adjacent evidence
+manifest. No merge to `main`, production deployment or local-project import is performed.
 
 ## Delivered scope
 
