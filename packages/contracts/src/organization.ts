@@ -1,5 +1,8 @@
 import { z } from 'zod'
 import { DesktopSessionSchema, OrgRoleSchema, ProjectRoleSchema, ProjectSchema } from '@projectos/organization-contracts'
+import { SharedAssetListSchema, SharedAssetDetailSchema, SharedAssetCreateSchema, SharedAssetVersionInputSchema, SharedAssetDraftSchema, SharedAssetTransitionSchema, SharedAssetBindingInputSchema, SharedAssetUnbindInputSchema } from '@projectos/organization-contracts'
+export { SharedAssetDefinitionSchema, canonicalAssetDefinition, SharedAssetCreateSchema, SharedAssetVersionInputSchema } from '@projectos/organization-contracts'
+export type { SharedAsset, SharedAssetVersion, SharedAssetDetail, SharedAssetDefinition } from '@projectos/organization-contracts'
 
 /** Renderer-safe views: the bearer token is deliberately absent from every IPC output. */
 export const OrganizationSessionViewSchema = DesktopSessionSchema.omit({ token: true })
@@ -47,5 +50,13 @@ export const OrganizationApiSchemas = {
   'organization.changeMember': { input: z.object({ memberId: id, role: z.enum(['admin','member']) }).strict(), output: ok },
   'organization.removeMember': { input: z.object({ memberId: id }).strict(), output: ok },
   'organization.setProjectMember': { input: z.object({ projectId: id, accountId: id, role: ProjectRoleSchema.exclude(['owner']) }).strict(), output: ok },
+  'organization.assets': { input: empty, output: SharedAssetListSchema },
+  'organization.assetDetail': { input: z.object({ assetId: id }).strict(), output: SharedAssetDetailSchema },
+  'organization.createAsset': { input: SharedAssetCreateSchema, output: SharedAssetDetailSchema },
+  'organization.createAssetVersion': { input: SharedAssetVersionInputSchema.extend({ assetId: id }).strict(), output: SharedAssetDetailSchema },
+  'organization.updateAssetDraft': { input: SharedAssetDraftSchema.extend({ assetId: id, versionId: id }).strict(), output: SharedAssetDetailSchema },
+  'organization.transitionAsset': { input: SharedAssetTransitionSchema.extend({ assetId: id, versionId: id }).strict(), output: SharedAssetDetailSchema },
+  'organization.bindAsset': { input: SharedAssetBindingInputSchema, output: SharedAssetDetailSchema },
+  'organization.unbindAsset': { input: SharedAssetUnbindInputSchema, output: SharedAssetDetailSchema },
 } as const
 export const ORGANIZATION_MAIN_METHODS = Object.keys(OrganizationApiSchemas) as Array<keyof typeof OrganizationApiSchemas>

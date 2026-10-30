@@ -1,5 +1,22 @@
 # ProjectOS UI Design Changelog
 
+## 2026-10-29 — A2.1 organization asset catalog
+
+- Extended A1's actual Settings tab with searchable Agent/Skill/MCP/Tool rows, inline drafts,
+  immutable publication confirmation, version differences, deprecation/revocation and explicit
+  project pins. No new page, nested modal, palette, shader or graph composition.
+- Kept the approved semantic tokens, common organization controls, shared Settings scroll/focus
+  system and bounded/reduced Motion. MCP labels separate registered definition from verified use.
+- Project reads now distinguish loading/failure from missing permission, with an explicit retry;
+  a one-shot 503 fixture exercises recovery. Read-only controls and forged IPC denial are verified.
+- Sources, skill-tool limitation and UI UX search decisions: `docs/org-upgrade/design/A2_ASSET_UI.md`.
+  Real command results, screenshots and remaining A2.2 boundaries: `docs/org-upgrade/reports/A2.1-report.md`.
+  The protected Lab's five-fix inconsistency remains separate; no claim that those fixes were completed.
+- Actual results: 551 tests PASS / 4 external cases SKIP, lint 0 errors / 29 existing warnings,
+  typecheck/build/package smoke and all four required E2Es PASS; organization asset journey 77/77.
+  Source detector `[]`; rendered CDP detector SKIP. Body text measured 12.89:1 on the actual opaque
+  light Settings surface; this is not an all-label or full WCAG acceptance claim.
+
 ## 2026-10-29 — A1 organization settings and approved palette correction
 
 - User explicitly selected the approved Premium Liquid Glass direction. Semantic palette values in

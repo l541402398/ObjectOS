@@ -1,0 +1,594 @@
+{
+  "schemaVersion": 1,
+  "phase": "A2.1 organization asset catalog and project version pins",
+  "branch": "codex/org-a2-assets",
+  "baselineCommit": "d5c99e245d4262e2f02b81df94791c818141e68c",
+  "generatedAtUtc": "2026-10-30T04:57:45.193Z",
+  "userDate": "2026-10-29",
+  "userTimeZone": "America/Los_Angeles",
+  "implementationCommit": {
+    "sha": null,
+    "status": "PENDING_COMMIT",
+    "note": "Code and evidence are committed together; a later metadata-only commit records the exact implementation SHA."
+  },
+  "result": "PASS_ENGINEERING_CHECKS_VISUAL_REVIEW_PENDING",
+  "checks": [
+    {
+      "command": "pnpm lint",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm test",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm build (also run by package:dir)",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm package:dir",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm test:package",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/e2e.mjs",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/agent-e2e.mjs",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/v12-e2e.mjs",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/v13-e2e.mjs",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "node --import tsx scripts/org-server-artifact-smoke.mts",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "node --import tsx scripts/org-a2-e2e.mjs",
+      "result": "PASS",
+      "exitCode": 0
+    }
+  ],
+  "unitTests": {
+    "passed": 551,
+    "skipped": 4,
+    "failed": 0,
+    "windowsMaxWorkers": 4
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 29,
+    "boundaries": "PASS"
+  },
+  "organizationJourney": {
+    "pass": 77,
+    "fail": 0
+  },
+  "focusedPostgresTests": {
+    "passed": 24,
+    "failed": 0
+  },
+  "compiledServerSmoke": {
+    "passed": 2,
+    "failed": 0
+  },
+  "audit": {
+    "source": "PASS",
+    "rendered": {
+      "tool": "Impeccable rendered CDP detector",
+      "result": "SKIP",
+      "findings": null,
+      "note": "detector execution could not complete (1); source detection and focused Electron checks remain separate evidence."
+    }
+  },
+  "schemaMigration": {
+    "version": 2,
+    "originalApplicationSqlUnchanged": true,
+    "originalApplicationSqlSha256": "dc6cce053a6e6cc3b01f1c57883d8953c5e7dbe732c205d175654cdc3e00ede1",
+    "upgradePreservesV1DataAndChecksum": "PASS (real PostgreSQL test)"
+  },
+  "preservedSources": [
+    {
+      "path": "apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationGraph.tsx",
+      "result": "UNCHANGED",
+      "utf8LfSha256": "4f4b1a93d8afd12c9cdd2736164e7f1cdd3df4750557265b61b06ea69648cfcd"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/collaboration-overview/focus-projection.ts",
+      "result": "UNCHANGED",
+      "utf8LfSha256": "9ab96e4acddf53860ef385cbad24d9c0baf64913d8d11df60743d102ac9889b4"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/AgentWorkbenchPage.tsx",
+      "result": "UNCHANGED",
+      "utf8LfSha256": "602b84c0e48d2577467b726dd8af2483304a6bfc351ad5524606543fb95e0550"
+    },
+    {
+      "path": "packages/design-tokens/src/unified.css",
+      "result": "UNCHANGED",
+      "utf8LfSha256": "8f9e801dddb4cc6b357a670b916c2be5e6a3e58068344c6f0f26b6a130556665"
+    }
+  ],
+  "structuredEvidence": [
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/electron-checks.json",
+      "bytes": 8577,
+      "sha256": "55abef30782d950828ac4f28cc275bed3d7179ecdf6bd7827b0d763f7c8a3666"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/rendered-audit.json",
+      "bytes": 216,
+      "sha256": "37b270abed3c9366fdcccfa5449554d5a6c8ec718573f5943c104f922c928082"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/source-audit.json",
+      "bytes": 81,
+      "sha256": "4f45840cf728df55223c1705c20de9acb7f8bf4314417ac40d6b47a53920165e"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/diagnostics/intermediate-assertion-failure.png",
+      "bytes": 257207,
+      "sha256": "6d06eb3f1fb3740853381f3e7cc11bca045d3623e0588bb0609912d85ce9ba81",
+      "width": 1440,
+      "height": 891,
+      "classification": "historical-diagnostic"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-agent-editor-1024-dark.png",
+      "bytes": 147321,
+      "sha256": "b4c2cf6cf22ae181cfbafd806993623fb2b1f90c24a1c06550686a62f3ee3274",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-agent-editor-1024-light.png",
+      "bytes": 141996,
+      "sha256": "1653a568ac13e5585ac89a97d10132f9ed4450071f0bc6cf2f65e1d0f1a7439e",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-agent-editor-1440-dark.png",
+      "bytes": 235681,
+      "sha256": "027fb2dc59ccfe19560c7b7c07fdcdf8013361aefcbec7306cb1da651867ed4e",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-agent-editor-1440-light-125.png",
+      "bytes": 155499,
+      "sha256": "0e5ebc2608e32051a44186d49521fdc2a49f57544e774376c6dd7a2ca588ab50",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-agent-editor-1440-light.png",
+      "bytes": 246851,
+      "sha256": "8bf20eb1de044d69d700603bbf1e9034b974a0f9ffe37e13a54e058af4809ddd",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-detail-1024-dark.png",
+      "bytes": 150838,
+      "sha256": "f5b6b3bd336e81e769c194d2b4c87acec23c437fe777fa92d656effd3699f712",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-detail-1024-light.png",
+      "bytes": 145138,
+      "sha256": "e27e43f51259b763c9feba86538510e9f74921a16a83ad8cb790cfaa812cb536",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-detail-1440-dark.png",
+      "bytes": 249189,
+      "sha256": "49d7461337fa1a0498261b687473430f303612cb5e28f4a0166ac643b149e2e5",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-detail-1440-light-125.png",
+      "bytes": 168902,
+      "sha256": "baa9579356ff1c7c06e772a7e1884bb6b125271e3d823b0151cb246e908c388e",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-detail-1440-light.png",
+      "bytes": 260328,
+      "sha256": "c3cffdbbcf943d5238dfb4ee2c2d2b5649a950ddf27eb6cbbdbea31a143d2441",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-mcp-registered.png",
+      "bytes": 252899,
+      "sha256": "bbfeb1542a9c4232d51f5b61a0f4274cfcf57f42e2350beb2acabf9a13f56aad",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-publication-confirmation.png",
+      "bytes": 255668,
+      "sha256": "008948925559cc38da9639b2122a29dd32111933d280b597b2d7e8d307b73bd8",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-readonly-1024-dark.png",
+      "bytes": 157319,
+      "sha256": "5381da8858027fd9bf959a4c510fcf376c8526a9ebfd87801eb215eea4d90aa7",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-readonly-1024-light.png",
+      "bytes": 151758,
+      "sha256": "6d17e035df9b269dd20ffba52e6de60b614f92fe65113e3e290cff9f10a40533",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-readonly-1440-dark.png",
+      "bytes": 247020,
+      "sha256": "539c77ab80acebfb9ad40734f0596806ffd7f15e0c1ad47f33478daf3d108a4b",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-readonly-1440-light-125.png",
+      "bytes": 171636,
+      "sha256": "682d360851276b149b9b6be82356a483e7d2929d21b0947b87329cdb6e154944",
+      "width": 1440,
+      "height": 891,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-readonly-1440-light.png",
+      "bytes": 259096,
+      "sha256": "4f9cbb27d28b0fb62c768ace46ef17430beda93721f583a15a170142de051271",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-revoked-1024-dark.png",
+      "bytes": 155548,
+      "sha256": "914c93c4e10db7b1d3c4ac9f621e4b729880d3bd0e13c056b5a27f1d393f9a61",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-revoked-1024-light.png",
+      "bytes": 149923,
+      "sha256": "e5e313c6dc13a7f61516862b178df6453eb514118e06d958fdf78009f1c82327",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-revoked-1440-dark.png",
+      "bytes": 246162,
+      "sha256": "9fa2c565a4e3219bd1e5e60ea28b0d2c5f67d506a2104e37774fdce56f0977de",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-revoked-1440-light-125.png",
+      "bytes": 173734,
+      "sha256": "b27854f5aa287d89605986a99cb73fd986b077751f225a8ad1c018e8a26a0af6",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/asset-revoked-1440-light.png",
+      "bytes": 257970,
+      "sha256": "1969d8c49112eb47f21bca207e72795398ae57828f8c6a4231454434a6c18449",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/assets-empty-1440-light.png",
+      "bytes": 276106,
+      "sha256": "2a7b829b2baa681af01c377c11c104e04872514110e8599928c09af3898019e7",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/assets-list-1024-dark.png",
+      "bytes": 163990,
+      "sha256": "062ba45bdd6670d53e54253807c70653acd518be4e5cde8ef423038e60e15db0",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/assets-list-1024-light.png",
+      "bytes": 158463,
+      "sha256": "f6e26d17f544f0f5ea0488997a78f0c0cf9a4cec66e4ec1b964c3fee62a9bf69",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/assets-list-1440-dark.png",
+      "bytes": 253149,
+      "sha256": "fb1d5054721c75861cf9eb24e685759a54e4d203f4220aea355076a32aa9234e",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/assets-list-1440-light-125.png",
+      "bytes": 179024,
+      "sha256": "f0c34c4c3da0f465566235ade57205eedc0da9b8c046d3553dca3ea72e2bab16",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/assets-list-1440-light.png",
+      "bytes": 266002,
+      "sha256": "2bf4c0c8ded43f447accc779cdb892cca99131568211b2e398c52c427916206f",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/assets-project-read-error.png",
+      "bytes": 260297,
+      "sha256": "92d4ba53eb83d98652f045eab6b9ab4b36d08a88e5b1cfdecab143703a997df9",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/browser-consent-light.png",
+      "bytes": 189539,
+      "sha256": "568c505815a5990f8fced649512aa6ed4c475a22083c5dc07d04c2fc006e36c3",
+      "width": 1084,
+      "height": 853,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/browser-registration-light.png",
+      "bytes": 166292,
+      "sha256": "5cb82101632baf6a0655e3efb630aafbe5d028d9bf7c26908b0ab69721270140",
+      "width": 1084,
+      "height": 853,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/connection-1024-dark.png",
+      "bytes": 245138,
+      "sha256": "592b7da475af9d06b5fda671bf038f40588dc24f3666e5b1710539cd259175e5",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/connection-1024-light.png",
+      "bytes": 211172,
+      "sha256": "b8efcf4fe2fd41d01f2ab4317259c46826c8221d3ed538195e1303f5fef03a51",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/connection-1440-dark.png",
+      "bytes": 325114,
+      "sha256": "6bf2f34356763c3914ff1fc8b1f953f3e81717d20f05207121c80f3c25fb2f23",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/connection-1440-light-125.png",
+      "bytes": 218716,
+      "sha256": "b0ff73502b1e42372b06ffec4ba43d0cc0998a6fee38db345f67fbf8f76edcbe",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/connection-1440-light.png",
+      "bytes": 308103,
+      "sha256": "a62736d2504d4e742102cd7715d50ed74115f2563425fc794effc908c27539eb",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/members-1024-dark.png",
+      "bytes": 178971,
+      "sha256": "79256ae67eb1d33b82919d19f8766a5b9ca33ad5fe108245648cb4e5e2697888",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/members-1024-light.png",
+      "bytes": 172574,
+      "sha256": "536ab27f7e34a54ae58f1fead3013dab8c9cff20dd23fad1efaac996cad37c1c",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/members-1440-dark.png",
+      "bytes": 277272,
+      "sha256": "4d86b38b9f792c1b17a70450d3b6b26bff603adc11621dd89975bfd0b0381c81",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/members-1440-light-125.png",
+      "bytes": 178866,
+      "sha256": "8c922379869982e3d0aaff7ef6a2e47220cd01f5edca8befce7e90a6485b5b0e",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/members-1440-light.png",
+      "bytes": 282520,
+      "sha256": "fa0452acb1b83c35e153ae7c4e001513fa4b92a2f66bd589467ac5eecdbc2638",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/projects-1024-dark.png",
+      "bytes": 179596,
+      "sha256": "9caa56a1bf7a174658c1b93e910d0b313094af43d76d913ba98de0bd60d0b692",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/projects-1024-light.png",
+      "bytes": 172557,
+      "sha256": "de99439ff20559a2d8cdaaa93e3e943ff1b0ec833864df3e21363a433c432003",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/projects-1440-dark.png",
+      "bytes": 277501,
+      "sha256": "f25907dae709f0fa3f1e23fd16d2ebe30cd550dabb9b854cb862635abeec21b9",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/projects-1440-light-125.png",
+      "bytes": 180099,
+      "sha256": "f3e7b2c8de9894cf557810bbc7942f69ea0cae8a91270ce59d3a8732909e3305",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.1/screenshots/projects-1440-light.png",
+      "bytes": 281697,
+      "sha256": "40b2d632c6f01b8634cb693b5309be50d915afa83073224f667757f80f46e5b7",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    }
+  ],
+  "buildArtifacts": [
+    {
+      "path": "apps/server/dist/index.js",
+      "bytes": 97457,
+      "sha256": "69c501679f9a6e257c8c1b4aed50253969a57ffe6d2af0fa6ffd86c629ac5f47"
+    },
+    {
+      "path": "apps/runtime/dist/index.mjs",
+      "bytes": 2545648,
+      "sha256": "7692d551b86dbc33bed6b8e47c1bda25a91937e3023b20dba2f6f85f9a5dd960"
+    },
+    {
+      "path": "apps/desktop/out/main/index.js",
+      "bytes": 1030448,
+      "sha256": "3aabc899f79656703aec0e37f9d52ee351bc0b22fb9610bafe02d2223433b3d6"
+    },
+    {
+      "path": "apps/desktop/out/preload/index.js",
+      "bytes": 19245,
+      "sha256": "2c24384fcad8407b2858d59b7e76ef699055f91a2a59538dcb6dd43577857f3f"
+    },
+    {
+      "path": "apps/desktop/out/renderer/index.html",
+      "bytes": 880,
+      "sha256": "e82cfe55412dd81934c622023cb35302b863b269fa091d940fe27e48fad6ccb1"
+    },
+    {
+      "path": "release/win-unpacked/ProjectOS.exe",
+      "bytes": 239400448,
+      "sha256": "29c2a31df099bd59696c9a46b0021998708504a2123b88b50d9c37c15052f988",
+      "authenticodeStatus": "NotSigned"
+    },
+    {
+      "path": "release/win-unpacked/resources/app.asar",
+      "bytes": 35813321,
+      "sha256": "e0d747f4f43275749cb1c4049c51064d46d27a09f2b95f36d69826e3ca7152ec"
+    },
+    {
+      "path": "release/win-unpacked/resources/runtime/index.mjs",
+      "bytes": 2545648,
+      "sha256": "7692d551b86dbc33bed6b8e47c1bda25a91937e3023b20dba2f6f85f9a5dd960"
+    }
+  ],
+  "skippedChecks": [
+    "External model/CLI Harness and SSH/VPS (4 tests)",
+    "Full axe/WCAG and screen-reader",
+    "Foreground FPS/memory benchmark",
+    "Physical touch-device testing",
+    "User aesthetic acceptance"
+  ],
+  "boundaries": [
+    "Shared definitions/pins do not install or execute local capabilities",
+    "Worker grants, leases, local links, AssetBindingResolver and frozen Run snapshots remain A2.2",
+    "No production deployment or signing; A1 production identity limitations remain",
+    "Global Settings unsaved-close protection is not introduced; save drafts explicitly",
+    "100 versions, 200 catalog rows, 200 visible binding rows; no unlimited pagination"
+  ],
+  "privacy": {
+    "privateReferenceVideosCopied": false,
+    "rawCredentialsOrLogsIncluded": false,
+    "paths": "Repository relative; generated demo identities only in captures"
+  }
+}

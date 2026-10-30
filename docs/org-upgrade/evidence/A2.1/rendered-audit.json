@@ -1,0 +1,6 @@
+{
+  "tool": "Impeccable rendered CDP detector",
+  "result": "SKIP",
+  "findings": null,
+  "note": "detector execution could not complete (1); source detection and focused Electron checks remain separate evidence."
+}

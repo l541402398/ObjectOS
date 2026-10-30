@@ -15,5 +15,8 @@ export default defineConfig({
     testTimeout: 20_000,
     hookTimeout: 20_000,
     pool: 'forks',
+    // Native Git/PostgreSQL/SQLite fixtures compete for Windows process and disk handles.
+    // Keep assertions/timeouts intact; bound concurrency instead of saturating the host.
+    maxWorkers: process.platform === 'win32' ? 4 : undefined,
   },
 })

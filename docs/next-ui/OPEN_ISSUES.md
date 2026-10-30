@@ -1,5 +1,12 @@
 # ProjectOS Next UI — Open Issues
 
+Current organization extension (2026-10-29): A2.1's Settings asset catalog is independently
+reviewable; Worker grants/leases, local linking and Run binding resolver remain A2.2. Rendered
+Impeccable CDP detection did not complete; source `[]` and focused Electron keyboard/label/contrast/
+overflow checks are separate evidence. Full axe/screen-reader and final aesthetic acceptance are
+not claimed. Historical five-fix completion notes below conflict with current Lab source; see the
+A1/A2 UI reports and preserve the user-approved screenshot authority.
+
 Last updated: 2026-10-22  
 Severity: P0 data/business loss, P1 migration blocker, P2 quality, P3 polish.
 

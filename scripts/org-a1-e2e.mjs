@@ -9,7 +9,7 @@ import { migrateOrganizationDatabase } from '../apps/server/src/postgres-store.t
 import { buildOrganizationServer } from '../apps/server/src/persistent-server.ts'
 import { runDesktopLogin } from '../apps/desktop/src/main/auth/desktop-login-core.ts'
 
-const root=process.cwd(), evidence=resolve('docs/org-upgrade/evidence/A1'), shots=join(evidence,'screenshots')
+const root=process.cwd(), evidence=resolve(process.env.PROJECTOS_ORG_EVIDENCE_DIR || 'docs/org-upgrade/evidence/A1'), shots=join(evidence,'screenshots')
 mkdirSync(shots,{recursive:true})
 const profile=mkdtempSync(join(tmpdir(),'projectos-org-ui-')),dataDir=join(profile,'data'),userData=join(profile,'user')
 const results=[],errors=[]
@@ -21,7 +21,7 @@ const secret=randomBytes(32).toString('hex')
 let serverUrl,serverOptions
 async function launch(){
  const env={...process.env,PROJECTOS_DATA_DIR:dataDir,PROJECTOS_WINDOW_WIDTH:'1440',PROJECTOS_WINDOW_HEIGHT:'900'};delete env.ELECTRON_RUN_AS_NODE
- app=await electron.launch({executablePath:resolve('node_modules/electron/dist/electron.exe'),cwd:resolve('apps/desktop'),args:['.',`--user-data-dir=${userData}`],env,timeout:60_000})
+ app=await electron.launch({executablePath:resolve('node_modules/electron/dist/electron.exe'),cwd:resolve('apps/desktop'),args:['.',`--user-data-dir=${userData}`,...(process.env.PROJECTOS_ASSET_E2E==='1'?['--remote-debugging-address=127.0.0.1','--remote-debugging-port=0']:[])],env,timeout:60_000})
  page=await app.firstWindow();win=await app.browserWindow(page)
  page.on('pageerror',error=>errors.push(error.message))
  await page.waitForSelector('.po-shell',{timeout:60_000})
@@ -32,6 +32,8 @@ async function launch(){
 async function theme(mode){await page.emulateMedia({colorScheme:mode});await page.waitForFunction(mode=>document.documentElement.dataset.theme===mode,mode,{timeout:5000})}
 async function capture(name){
  await page.mouse.move(5,5)
+ await page.waitForFunction(()=>[...document.querySelectorAll('.pui-overlay-surface:not(.is-closing)')].every(el=>Number(getComputedStyle(el).opacity)>=.999))
+ await page.waitForTimeout(400)
  const bytes=await win.evaluate(async w=>(await w.webContents.capturePage()).toPNG().toString('base64'))
  writeFileSync(join(shots,name+'.png'),Buffer.from(bytes,'base64'))
 }
@@ -64,7 +66,15 @@ try{
  database=await startOrganizationTestDatabase();await migrateOrganizationDatabase(database.pool)
  serverUrl=`http://127.0.0.1:${await reserveOrganizationTestPort()}`
  serverOptions={databaseUrl:database.databaseUrl,secret,baseURL:serverUrl}
- server=await buildOrganizationServer(serverOptions);await server.listen({host:'127.0.0.1',port:Number(new URL(serverUrl).port)})
+ let rejectNextProjectRead=false
+ server=await buildOrganizationServer(serverOptions)
+ server.addHook('onRequest',async(request,reply)=>{
+  if(rejectNextProjectRead && request.method==='GET' && request.url.endsWith('/projects')){
+   rejectNextProjectRead=false;return reply.code(503).send({error:{code:'TEMPORARY_UNAVAILABLE',message:'Isolated one-shot recovery fixture'}})
+  }
+ })
+ server.addHook('onError',async(request,_reply,error)=>{console.error('ORG FIXTURE ERROR',request.method,request.url.split('?')[0],error.code,error.message)})
+ await server.listen({host:'127.0.0.1',port:Number(new URL(serverUrl).port)})
  await launch()
  check('Local mode remains available',(await page.evaluate(()=>window.projectos.organization.status())).status==='local')
  check('Organization form controls have labels',await page.getByTestId('organization-panel').locator('input,select,textarea').evaluateAll(elements=>elements.every(el=>el.labels?.length||el.getAttribute('aria-label'))))
@@ -115,13 +125,22 @@ try{
  await matrix('members')
  const allowed=await fetch(`${serverUrl}/v1/organizations/${orgId}/projects`,{headers:memberHeaders})
  check('Organization membership does not grant project access',(await allowed.json()).projects.length===0)
+ rejectNextProjectRead=process.env.PROJECTOS_ASSET_E2E==='1'
+ const assetEvidence=process.env.PROJECTOS_ASSET_E2E==='1' ? await (await import('./org-asset-ui.mjs')).exerciseAssets({page,matrix,capture,check,waitFor}) : null
  await server.close();server=await buildOrganizationServer(serverOptions);await server.listen({host:'127.0.0.1',port:Number(new URL(serverUrl).port)})
  check('Server restart preserves session and shared project',(await page.evaluate(()=>window.projectos.organization.status({refresh:true}))).status==='connected'&&(await page.evaluate(()=>window.projectos.organization.projects())).projects.length===1)
  await app.close();app=null;await launch()
  check('Desktop restart restores encrypted organization session',(await page.evaluate(()=>window.projectos.organization.status({refresh:true}))).session.account.email===email)
+ if(assetEvidence){
+  const restored=await page.evaluate(id=>window.projectos.organization.assetDetail({assetId:id}),assetEvidence.assetId)
+  check('Asset version and revoked pin survive server and desktop restart',restored.bindings[0]?.status==='revoked'&&restored.bindings[0]?.versionId===assetEvidence.pinnedVersionId)
+ }
  await page.getByTestId('org-disconnect').click();await page.getByTestId('org-disconnect-confirm').click()
  await waitFor(async()=> (await page.evaluate(()=>window.projectos.organization.status())).status==='local','local sign-out')
  check('Sign-out returned to local mode',true)
+ if(assetEvidence){
+  await (await import('./org-asset-ui.mjs')).exerciseReadonlyAssets({page,app,serverUrl,password,matrix,check,waitFor,audit:async()=> (await import('./org-asset-audit.mjs')).auditAssetRenderer({app,evidence,userData})})
+ }
  check('Renderer has no Node API',await page.evaluate(()=>typeof window.process==='undefined'&&typeof window.require==='undefined'))
  check('No renderer exceptions',errors.length===0,errors.join(' | '))
 }catch(error){

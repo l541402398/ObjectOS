@@ -437,6 +437,44 @@ describe('Main organization connection — real HTTP login and safe session stat
     await fixture.connection.execute('organization.disconnect', {})
   })
 
+  it('rejects oversized asset Content-Length and cancels its body before reading', async () => {
+    const cancel = vi.fn()
+    const fixture = setup({ fetchImpl: async (input, init) => String(input).endsWith('/assets')
+      ? new Response(new ReadableStream({ cancel }), { headers: { 'content-length': String(8 * 1024 * 1024 + 1) } })
+      : fetch(input, init) })
+    await connect(fixture.connection)
+    await expect(fixture.connection.execute('organization.assets', {})).rejects.toMatchObject({ code: 'BAD_REQUEST' })
+    expect(cancel).toHaveBeenCalledOnce()
+    expect((await fixture.connection.status()).status).toBe('connected')
+  })
+
+  it('enforces the asset streaming limit even without a Content-Length header', async () => {
+    const cancel = vi.fn(), chunk = new Uint8Array(256 * 1024).fill(120)
+    const fixture = setup({ fetchImpl: async (input, init) => String(input).endsWith('/assets')
+      ? new Response(new ReadableStream({ start(controller) { for (let index = 0; index < 36; index++) controller.enqueue(chunk); controller.close() }, cancel }))
+      : fetch(input, init) })
+    await connect(fixture.connection)
+    await expect(fixture.connection.execute('organization.assets', {})).rejects.toMatchObject({ code: 'BAD_REQUEST' })
+    expect(cancel).toHaveBeenCalledOnce()
+  })
+
+  it('offers retry for a service 503 without reflecting the response or expiring the account', async () => {
+    const fixture = setup({ fetchImpl: async (input, init) => String(input).endsWith('/assets')
+      ? Response.json({ error: { message: 'unsafe-server-detail' } }, { status: 503 })
+      : fetch(input, init) })
+    await connect(fixture.connection)
+    await expect(fixture.connection.execute('organization.assets', {})).rejects.toMatchObject({ code: 'RUNTIME_UNAVAILABLE', retryable: true, message: '组织服务暂时无法完成请求，请稍后重试。' })
+    expect((await fixture.connection.status()).status).toBe('connected')
+  })
+
+  it('does not forward an untrusted asset catalog exceeding the renderer row bound', async () => {
+    const asset = { id: 'asset-test', organizationId: firstOrg, name: 'Bounded asset', kind: 'skill', visibility: 'organization', projectId: null, createdAt: Date.now(), canManage: false, latestVersion: '1.0.0', latestStatus: 'published', versionCount: 1, publishedVersionId: 'version-test', publishedVersion: '1.0.0' }
+    const fixture = setup({ fetchImpl: async (input, init) => String(input).endsWith('/assets')
+      ? Response.json({ assets: Array.from({ length: 201 }, () => asset) }) : fetch(input, init) })
+    await connect(fixture.connection)
+    await expect(fixture.connection.execute('organization.assets', {})).rejects.toMatchObject({ code: 'BAD_REQUEST' })
+  })
+
   it('reports elapsed sessions as expired without a network request', async () => {
     const fixture = setup()
     const view = await connect(fixture.connection)

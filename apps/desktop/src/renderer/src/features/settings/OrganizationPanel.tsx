@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { Building2, Cloud, LogOut, Plus, RefreshCw, ShieldCheck } from 'lucide-react'
 import { ConnectOrganizationForm, CreateOrganizationForm } from './organization/OrganizationForms'
 import { OrganizationProjects } from './organization/OrganizationProjects'
+import { OrganizationAssets } from './organization/OrganizationAssets'
 import { OrganizationMembers } from './organization/OrganizationMembers'
 import { OrganizationInvitations } from './organization/OrganizationInvitations'
 import { OrganizationError, OrganizationLoading, organizationRoleLabel } from './organization/OrganizationPrimitives'
@@ -11,7 +12,7 @@ import { useOrganization } from './organization/useOrganization'
 import './organization/organization.css'
 
 const STATUS = { local: '本地模式', connected: '组织已连接', offline: '服务离线', expired: '登录已失效' } as const
-const VIEWS = [{ key: 'projects', label: '共享项目' }, { key: 'members', label: '组织成员' }, { key: 'invitations', label: '待接受邀请' }] as const
+const VIEWS = [{ key: 'projects', label: '共享项目' }, { key: 'assets', label: '组织资产' }, { key: 'members', label: '组织成员' }, { key: 'invitations', label: '待接受邀请' }] as const
 type View = (typeof VIEWS)[number]['key']
 
 export function OrganizationPanel() {
@@ -41,7 +42,7 @@ export function OrganizationPanel() {
           {creating ? <CreateOrganizationForm onCreate={createOrganization} onCancel={() => setCreating(false)} pending={pending} error={change.error} /> : null}
           <nav className="org-view-nav" aria-label="组织工作区视图">{VIEWS.filter((item) => data.activeOrganizationId || item.key === 'invitations').map((item) => <button type="button" key={item.key} aria-current={(view === item.key || (!data.activeOrganizationId && item.key === 'invitations')) ? 'page' : undefined} onClick={() => setView(item.key)} disabled={pending}>{item.label}</button>)}</nav>
           {pending ? <OrganizationLoading /> : <motion.div key={`${data.activeOrganizationId}:${view}`} initial={reduce ? false : { y: 5 }} animate={{ y: 0 }} transition={{ duration: .18, ease: [.22, 1, .36, 1] }}>
-            {!data.activeOrganizationId || view === 'invitations' ? <OrganizationInvitations connection={data} onChanged={refresh} /> : view === 'members' ? <OrganizationMembers key={data.activeOrganizationId} connection={data} /> : <OrganizationProjects key={data.activeOrganizationId} connection={data} />}
+            {!data.activeOrganizationId || view === 'invitations' ? <OrganizationInvitations connection={data} onChanged={refresh} /> : view === 'assets' ? <OrganizationAssets key={data.activeOrganizationId} connection={data} /> : view === 'members' ? <OrganizationMembers key={data.activeOrganizationId} connection={data} /> : <OrganizationProjects key={data.activeOrganizationId} connection={data} />}
           </motion.div>}
         </> : null}
       </>}

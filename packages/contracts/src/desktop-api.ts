@@ -37,6 +37,14 @@ export interface ProjectOSDesktopApi {
     changeMember: (input: In<'organization.changeMember'>) => Promise<Out<'organization.changeMember'>>
     removeMember: (input: In<'organization.removeMember'>) => Promise<Out<'organization.removeMember'>>
     setProjectMember: (input: In<'organization.setProjectMember'>) => Promise<Out<'organization.setProjectMember'>>
+    assets: () => Promise<Out<'organization.assets'>>
+    assetDetail: (input: In<'organization.assetDetail'>) => Promise<Out<'organization.assetDetail'>>
+    createAsset: (input: In<'organization.createAsset'>) => Promise<Out<'organization.createAsset'>>
+    createAssetVersion: (input: In<'organization.createAssetVersion'>) => Promise<Out<'organization.createAssetVersion'>>
+    updateAssetDraft: (input: In<'organization.updateAssetDraft'>) => Promise<Out<'organization.updateAssetDraft'>>
+    transitionAsset: (input: In<'organization.transitionAsset'>) => Promise<Out<'organization.transitionAsset'>>
+    bindAsset: (input: In<'organization.bindAsset'>) => Promise<Out<'organization.bindAsset'>>
+    unbindAsset: (input: In<'organization.unbindAsset'>) => Promise<Out<'organization.unbindAsset'>>
   }
   app: {
     bootstrap: (input?: In<'app.bootstrap'>) => Promise<Out<'app.bootstrap'>>

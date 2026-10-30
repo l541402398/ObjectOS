@@ -1,7 +1,8 @@
-# ProjectOS 组织升级 · A0 交付索引
+# ProjectOS 组织升级 · 实施索引
 
-> A0 历史交付索引。A1 已按用户授权在 `codex/org-a1-foundation` 开始，当前实施范围见
-> [A1_IMPLEMENTATION.md](A1_IMPLEMENTATION.md)，验收结果以 A1 报告为准。以下 A0 证据不代表 A1 已通过。
+> A1 已完成并推送，见 [A1 报告](reports/A1-report.md)。用户已授权继续 A2，当前独立子阶段
+> 是 [组织资产与版本绑定 A2.1](A2_IMPLEMENTATION.md)，结果见 [A2.1 报告](reports/A2.1-report.md)。
+> 以下 A0 是历史审计和原型索引，不代表后续阶段已交付。
 
 ## 文档
 

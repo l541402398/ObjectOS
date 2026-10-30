@@ -1,5 +1,11 @@
 # ProjectOS Next UI — Migration Progress
 
+Current additive work (2026-10-29): A1 organization Settings and graph-only Agent workspace are
+committed. A2.1 adds real organization asset versions/pins inside that same Settings surface.
+See `docs/org-upgrade/reports/A2.1-report.md` for actual checks/screenshots and A2.2 boundaries.
+The historical migration checklist below does not establish that the current protected Lab's
+five-fix inconsistencies are resolved, nor does it supersede the user-approved screenshot.
+
 Last updated: 2026-10-22  
 Branch: `feature/projectos-next-ui-full-migration`  
 Base: `fa75923` (accepted Design Lab + overlay system)  

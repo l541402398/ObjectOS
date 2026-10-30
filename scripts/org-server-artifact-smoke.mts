@@ -31,7 +31,7 @@ try {
     try {
       const r = await fetch(`http://127.0.0.1:${port}/health`)
       const h = await r.json()
-      if (r.ok && h.storage === 'postgresql' && h.schemaVersion === 1) {
+      if (r.ok && h.storage === 'postgresql' && h.schemaVersion === 2) {
         healthy = true
         break
       }

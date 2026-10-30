@@ -14,12 +14,14 @@ import {
 } from '@projectos/organization-contracts'
 import { mountBetterAuth } from './app.js'
 import { registerDesktopAuth } from './desktop-auth.js'
+import { AssetScopeError, registerOrganizationAssets } from './assets-api.js'
 import {
   assertOrganizationSchema,
   audit,
   inTransaction,
   postgresDirectory,
   postgresTokens,
+  ORGANIZATION_SCHEMA_VERSION,
 } from './postgres-store.js'
 
 export interface OrganizationServerOptions {
@@ -124,7 +126,8 @@ export async function buildOrganizationServer(options: OrganizationServerOptions
     await pool.end()
   })
   app.setErrorHandler((error, _request, reply) => {
-    if (error instanceof ScopeError) return fail(reply, error.status, error.code, error.message)
+    if (error instanceof ScopeError || error instanceof AssetScopeError) return fail(reply, error.status, error.code, error.message)
+    if (error instanceof z.ZodError) return fail(reply, 400, 'BAD_REQUEST', '资产内容不符合要求，请检查字段、可见范围及密钥引用。')
     const databaseError = error as { code?: string }
     if (databaseError.code === '23505') return fail(reply, 409, 'CONFLICT', '该标识已存在，请使用其他名称。')
     if ((error as { statusCode?: number }).statusCode === 400)
@@ -251,7 +254,7 @@ export async function buildOrganizationServer(options: OrganizationServerOptions
     ok: true,
     service: 'projectos-organization-server',
     storage: 'postgresql',
-    schemaVersion: 1,
+    schemaVersion: ORGANIZATION_SCHEMA_VERSION,
   }))
   app.post('/v1/organizations', async (request, reply) => {
     const account = await accountFor(request.headers.authorization, reply)
@@ -553,5 +556,6 @@ export async function buildOrganizationServer(options: OrganizationServerOptions
     })
     return { ok: true }
   })
+  registerOrganizationAssets(app, pool, accountFor)
   return app
 }

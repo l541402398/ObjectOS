@@ -1,0 +1,394 @@
+{
+  "fixture": "real PostgreSQL + real Electron + browser PKCE, isolated demo identities",
+  "summary": {
+    "pass": 77,
+    "fail": 0
+  },
+  "results": [
+    {
+      "name": "Local mode remains available",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Organization form controls have labels",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Connection action is reachable by keyboard",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Browser request has PKCE and no token",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "IPC session is sanitized",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Credentials are encrypted on disk",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Shared project persisted",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Real invitation created",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Second account accepts invitation",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Organization membership does not grant project access",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Project read failure has an explicit recovery action",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Asset creation is keyboard reachable",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Asset form labels are explicit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Draft persisted without automatic publication",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Comma-delimited tools retain separate typed values",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Publication requires an explicit confirmation",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Version comparison shows previous and current fields",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "New publication preserves the explicit previous project pin",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Published version cannot be edited in place",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-detail 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-detail 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-detail 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-detail 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-detail 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-agent-editor 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-agent-editor 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-agent-editor 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-agent-editor 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-agent-editor 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "MCP definition distinguishes registration from actual availability",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Four asset kinds persist through typed IPC",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "assets-list 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "assets-list 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "assets-list 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "assets-list 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "assets-list 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Asset search filters actual records",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "A published replacement version can be chosen explicitly",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Deprecated versions disable new binding in UI",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Revocation preserves a visible revoked pin and its immutable hash",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-revoked 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-revoked 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-revoked 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-revoked 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-revoked 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Asset body contrast exceeds AA on the opaque settings surface",
+      "status": "PASS",
+      "detail": "12.89:1"
+    },
+    {
+      "name": "Reduced motion preference reaches shared Motion controls",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Version history above 1MiB remains readable within the explicit 8MiB bound",
+      "status": "PASS",
+      "detail": "1378383 bytes"
+    },
+    {
+      "name": "Server restart preserves session and shared project",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Desktop restart restores encrypted organization session",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Asset version and revoked pin survive server and desktop restart",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Sign-out returned to local mode",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Read-only member sees scoped assets without publishing controls",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Read-only detail hides version management",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Forged renderer publication still fails server authorization",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-readonly 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-readonly 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-readonly 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-readonly 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "asset-readonly 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Renderer has no Node API",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "No renderer exceptions",
+      "status": "PASS",
+      "detail": ""
+    }
+  ]
+}

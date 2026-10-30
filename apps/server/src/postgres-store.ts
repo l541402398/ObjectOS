@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { Pool, type PoolClient } from 'pg'
 import type { AuthDirectory, DesktopTokenStore } from './desktop-auth.js'
 import { AUTH_SCHEMA_SQL } from './postgres-auth-schema.js'
+import { ASSETS_SCHEMA_SQL } from './assets-schema.js'
 import { OrgRoleSchema } from '@projectos/organization-contracts'
 
 export function createOrganizationPool(databaseUrl: string): Pool {
@@ -65,33 +66,34 @@ export async function inTransaction<T>(pool: Pool, action: (client: PoolClient) 
 }
 
 /** Explicit, checksum-checked migrations. Never run from a Renderer or implicitly on a request. */
-export async function migrateOrganizationDatabase(pool: Pool): Promise<void> {
+const organizationMigrations = [AUTH_SCHEMA_SQL + APPLICATION_SCHEMA_SQL, ASSETS_SCHEMA_SQL]
+export const ORGANIZATION_SCHEMA_VERSION = organizationMigrations.length
+const migrationChecksum = (sql: string) => createHash('sha256').update(sql).digest('hex')
+
+export async function migrateOrganizationDatabase(pool: Pool, targetVersion = ORGANIZATION_SCHEMA_VERSION): Promise<void> {
+  if (!Number.isInteger(targetVersion) || targetVersion < 1 || targetVersion > organizationMigrations.length)
+    throw new Error('Unsupported organization migration target')
   await inTransaction(pool, async (client) => {
     await client.query('SELECT pg_advisory_xact_lock(541402398, 1)')
-    const checksum = createHash('sha256')
-      .update(AUTH_SCHEMA_SQL + APPLICATION_SCHEMA_SQL)
-      .digest('hex')
     const exists = await client.query("SELECT to_regclass('public.organization_schema_migrations') AS name")
+    let applied = 0
     if (exists.rows[0]?.name) {
       const previous = await client.query(
         'SELECT version, checksum FROM organization_schema_migrations ORDER BY version',
       )
-      if (
-        previous.rows.length !== 1 ||
-        previous.rows[0].version !== 1 ||
-        previous.rows[0].checksum !== checksum
-      ) {
+      if (previous.rows.length > targetVersion || previous.rows.some((row, index) =>
+        row.version !== index + 1 || row.checksum !== migrationChecksum(organizationMigrations[index]!))) {
         throw new Error(
           'Organization migration checksum/version mismatch; restore a compatible build before continuing',
         )
       }
-      return
+      applied = previous.rows.length
     }
-    await client.query(AUTH_SCHEMA_SQL)
-    await client.query(APPLICATION_SCHEMA_SQL)
-    await client.query('INSERT INTO organization_schema_migrations(version,checksum) VALUES(1,$1)', [
-      checksum,
-    ])
+    for (let index = applied; index < targetVersion; index++) {
+      const sql = organizationMigrations[index]!
+      await client.query(sql)
+      await client.query('INSERT INTO organization_schema_migrations(version,checksum) VALUES($1,$2)', [index + 1, migrationChecksum(sql)])
+    }
   })
 }
 
@@ -99,10 +101,8 @@ export async function assertOrganizationSchema(pool: Pool): Promise<void> {
   const result = await pool.query(
     'SELECT version, checksum FROM organization_schema_migrations ORDER BY version',
   )
-  const checksum = createHash('sha256')
-    .update(AUTH_SCHEMA_SQL + APPLICATION_SCHEMA_SQL)
-    .digest('hex')
-  if (result.rows.length !== 1 || result.rows[0].version !== 1 || result.rows[0].checksum !== checksum) {
+  if (result.rows.length !== organizationMigrations.length || result.rows.some((row,index) =>
+    row.version !== index + 1 || row.checksum !== migrationChecksum(organizationMigrations[index]!))) {
     throw new Error('Organization database requires the matching explicit migration')
   }
 }

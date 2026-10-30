@@ -218,9 +218,11 @@ export class OrganizationConnection {
     }
   }
 
-  private async readJson(response: Response): Promise<unknown> {
-    if (Number(response.headers.get('content-length')) > 1024 * 1024)
+  private async readJson(response: Response, maxBytes = 1024 * 1024): Promise<unknown> {
+    if (Number(response.headers.get('content-length')) > maxBytes) {
+      await response.body?.cancel().catch(() => undefined)
       throw new AppError('BAD_REQUEST', '组织服务返回的数据过大。')
+    }
     const reader = response.body?.getReader()
     if (!reader) throw new AppError('BAD_REQUEST', '组织服务返回了无效的数据。')
     const decoder = new TextDecoder()
@@ -231,7 +233,7 @@ export class OrganizationConnection {
         const chunk = await reader.read()
         if (chunk.done) break
         size += chunk.value.length
-        if (size > 1024 * 1024) {
+        if (size > maxBytes) {
           await reader.cancel()
           throw new Error('oversized')
         }
@@ -245,7 +247,7 @@ export class OrganizationConnection {
     }
   }
 
-  private async request(snapshot: Snapshot, path: string, method = 'GET', body?: unknown): Promise<unknown> {
+  private async request(snapshot: Snapshot, path: string, method = 'GET', body?: unknown, maxResponseBytes = 1024 * 1024): Promise<unknown> {
     this.assertCurrent(snapshot)
     const connection = snapshot.connection
     let response: Response
@@ -277,9 +279,11 @@ export class OrganizationConnection {
       if (response.status === 409) throw new AppError('CONFLICT', '当前对象已改变或已处理，请刷新后重试。')
       if (response.status === 429)
         throw new AppError('BAD_REQUEST', '操作过于频繁，请稍后重试。', { retryable: true })
+      if (response.status >= 500)
+        throw new AppError('RUNTIME_UNAVAILABLE', '组织服务暂时无法完成请求，请稍后重试。', { retryable: true })
       throw new AppError('BAD_REQUEST', '组织服务未能完成操作，请检查输入或稍后重试。')
     }
-    const result = await this.readJson(response)
+    const result = await this.readJson(response, maxResponseBytes)
     this.assertCurrent(snapshot)
     return this.publicValue(result, connection.session.token)
   }
@@ -435,7 +439,30 @@ export class OrganizationConnection {
       }
     }
     const snapshot = this.snapshot()
+    // Up to 100 immutable versions of a 64KiB request; still a strict streaming bound.
+    const assetRequest = (suffix = '', method = 'GET', body?: unknown) => this.request(snapshot, `${this.orgPath(snapshot)}/assets${suffix}`, method, body, 8 * 1024 * 1024)
     switch (method) {
+      case 'organization.assets':
+        result = await assetRequest()
+        break
+      case 'organization.assetDetail':
+        result = await assetRequest(`/${encodeURIComponent(String(input.assetId))}`)
+        break
+      case 'organization.createAsset':
+        result = await assetRequest('', 'POST', input)
+        break
+      case 'organization.createAssetVersion':
+      case 'organization.updateAssetDraft':
+      case 'organization.transitionAsset': {
+        const { assetId, versionId, ...body } = input
+        const path = `/${encodeURIComponent(String(assetId))}/versions`
+        result = await assetRequest(method === 'organization.createAssetVersion' ? path : `${path}/${encodeURIComponent(String(versionId))}${method === 'organization.transitionAsset' ? '/transition' : ''}`, method === 'organization.updateAssetDraft' ? 'PATCH' : 'POST', body)
+        break
+      }
+      case 'organization.bindAsset':
+      case 'organization.unbindAsset':
+        result = await assetRequest('/bindings', method === 'organization.bindAsset' ? 'PUT' : 'DELETE', input)
+        break
       case 'organization.projects':
         result = await this.request(snapshot, `${this.orgPath(snapshot)}/projects`)
         break
