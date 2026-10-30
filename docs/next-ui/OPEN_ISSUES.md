@@ -1,5 +1,16 @@
 # ProjectOS Next UI — Open Issues
 
+2026-10-30 current system migration: the five Lab fixes and shared shell/page/overlay implementation
+are in this working branch. See the current [report and validation](../design/system-premium/REPORT.md)
+for actual PASS/FAIL/SKIP, including defects found by the full native matrix and their rechecks.
+Latest typography feedback uses packaged Noto Sans SC and explicit legacy/code font aliases;
+cold route/detail/settings readiness now has separate frame and platform-font evidence. See the
+report's font-fallback reproduction and Electron test-launch investigation rather than inferring
+the Windows popup was a confirmed product runtime crash.
+Remaining acceptance boundaries: user aesthetic approval, manual screen-reader listening, other OS
+renderers, external-service deployment and newly logged-in organization state combinations. The
+organization execution work (A2.2b) remains separate; this UI change does not enable it.
+
 2026-10-29: A2.2a adds real registered devices / expiring native-confirmed local consent. Job leases,
 Run asset adoption and execution are still A2.2b. Its ten axe states report 0 violations / 2 manual
 review items; native OS dialog pixels/input and final aesthetic acceptance are unverified. The

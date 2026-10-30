@@ -1,0 +1,32 @@
+{
+  "domain": "typography",
+  "query": "Chinese Simplified readable desktop interface",
+  "file": "typography.csv",
+  "count": 2,
+  "results": [
+    {
+      "Font Pairing Name": "Chinese Simplified",
+      "Category": "Sans + Sans",
+      "Heading Font": "Noto Sans SC",
+      "Body Font": "Noto Sans SC",
+      "Mood/Style Keywords": "chinese, simplified, modern, professional, multilingual, readable",
+      "Best For": "Simplified Chinese sites, mainland China market, business apps",
+      "Google Fonts URL": "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap",
+      "CSS Import": "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');",
+      "Tailwind Config": "fontFamily: { sans: ['Noto Sans SC', 'sans-serif'] }",
+      "Notes": "Simplified Chinese support. Clean modern look."
+    },
+    {
+      "Font Pairing Name": "Chinese Traditional",
+      "Category": "Serif + Sans",
+      "Heading Font": "Noto Serif TC",
+      "Body Font": "Noto Sans TC",
+      "Mood/Style Keywords": "chinese, traditional, elegant, cultural, multilingual, readable",
+      "Best For": "Traditional Chinese sites, cultural content, Taiwan/Hong Kong markets",
+      "Google Fonts URL": "https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap",
+      "CSS Import": "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap');",
+      "Tailwind Config": "fontFamily: { serif: ['Noto Serif TC', 'serif'], sans: ['Noto Sans TC', 'sans-serif'] }",
+      "Notes": "Traditional Chinese character support. Elegant pairing."
+    }
+  ]
+}

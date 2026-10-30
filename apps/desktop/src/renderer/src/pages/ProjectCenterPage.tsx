@@ -38,16 +38,15 @@ interface CreateFormValues {
   initGit: boolean
 }
 
-const CATEGORY_GRADIENTS = ['violet', 'amber', 'blue', 'teal', 'rose'] as const
 
-function ProjectVisualCard({ project, index, onOpen }: { project: ProjectSummary; index: number; onOpen: () => void }) {
+function ProjectVisualCard({ project, onOpen }: { project: ProjectSummary; index: number; onOpen: () => void }) {
   const taskPercent =
     project.stats.tasksTotal === 0 ? 0 : Math.round((project.stats.tasksDone / project.stats.tasksTotal) * 100)
   return (
-    <button type="button" className={`v16-project-visual is-${CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length]}`} onClick={onOpen}>
+    <button type="button" className="v16-project-visual" onClick={onOpen}>
       <div className="v16-project-cover">
         <span className="v16-project-avatar">{project.name.slice(0, 1).toUpperCase()}</span>
-        <span className="v16-project-more">•••</span>
+        <ArrowRightOutlined aria-hidden className="v16-project-more" />
       </div>
       <div className="v16-project-body">
         <strong title={project.name}>{project.name}</strong>
@@ -120,7 +119,7 @@ export default function ProjectCenterPage() {
   const runningPct = taskTotal > 0 ? ((stats?.tasksRunning ?? 0) / taskTotal) * 100 : 0
   const reviewPct = taskTotal > 0 ? ((stats?.tasksReview ?? 0) / taskTotal) * 100 : 0
   const cancelledPct = taskTotal > 0 ? ((stats?.tasksCancelled ?? 0) / taskTotal) * 100 : 0
-  const donut = `conic-gradient(#41e6b1 0 ${donePct}%, #4d8dff ${donePct}% ${donePct + runningPct}%, #c084fc ${donePct + runningPct}% ${donePct + runningPct + reviewPct}%, #ff7897 ${donePct + runningPct + reviewPct}% ${donePct + runningPct + reviewPct + cancelledPct}%, rgba(140,160,200,.18) ${donePct + runningPct + reviewPct + cancelledPct}% 100%)`
+  const donut = `conic-gradient(var(--ui-ok) 0 ${donePct}%, var(--ui-accent) ${donePct}% ${donePct + runningPct}%, var(--ui-warn) ${donePct + runningPct}% ${donePct + runningPct + reviewPct}%, var(--ui-danger) ${donePct + runningPct + reviewPct}% ${donePct + runningPct + reviewPct + cancelledPct}%, var(--ui-border) ${donePct + runningPct + reviewPct + cancelledPct}% 100%)`
 
   const pickDirectory = async (): Promise<void> => {
     try {
@@ -313,10 +312,10 @@ export default function ProjectCenterPage() {
                   <div className="v16-donut-center"><strong>{taskTotal}</strong><span>总任务</span></div>
                 </div>
                 <div className="v16-legend">
-                  <span><i style={{ background: '#41e6b1' }} />已完成 {stats?.tasksDone ?? 0}</span>
-                  <span><i style={{ background: '#4d8dff' }} />执行中 {stats?.tasksRunning ?? 0}</span>
-                  <span><i style={{ background: '#c084fc' }} />待评审 {stats?.tasksReview ?? 0}</span>
-                  <span><i style={{ background: '#ff7897' }} />已取消 {stats?.tasksCancelled ?? 0}</span>
+                  <span><i style={{ background: 'var(--ui-ok)' }} />已完成 {stats?.tasksDone ?? 0}</span>
+                  <span><i style={{ background: 'var(--ui-accent)' }} />执行中 {stats?.tasksRunning ?? 0}</span>
+                  <span><i style={{ background: 'var(--ui-warn)' }} />待评审 {stats?.tasksReview ?? 0}</span>
+                  <span><i style={{ background: 'var(--ui-danger)' }} />已取消 {stats?.tasksCancelled ?? 0}</span>
                 </div>
               </div>
             </section>

@@ -1,3 +1,4 @@
+import { useProductDialogs } from '../../next-ui/overlay/ProductDialogs'
 import { useState } from 'react'
 import { App, Button, Form, Input, Select, Tag, Tooltip } from 'antd'
 import { PlusOutlined, ReloadOutlined, ThunderboltOutlined } from '@ant-design/icons'
@@ -11,7 +12,8 @@ import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '..
 
 export function RuntimeSettingsPanel() {
   const settingsOpen = useUiStore((state) => state.settingsOpen)
-  const { message, modal } = App.useApp()
+  const { message } = App.useApp()
+  const modal = useProductDialogs()
   const queryClient = useQueryClient()
   const preferences = useQuery({ queryKey: ['appPreferences'], queryFn: () => window.projectos.app.preferences() })
   const health = useQuery({ queryKey: ['runtimeHealth'], queryFn: () => window.projectos.runtime.health(), refetchInterval: 10_000, retry: false })

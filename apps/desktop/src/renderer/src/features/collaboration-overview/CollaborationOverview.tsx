@@ -21,7 +21,7 @@ import { errorMessage } from '../../lib/errors'
 import { formatDateTime, formatRelative } from '../../lib/format'
 import { runStatusLabel, taskStatusLabel } from '../../lib/labels'
 import { qk, useCollaborationOverview } from '../../lib/queries'
-import { OverlayFooter, OverlayHeader, OverlayScrollArea, SheetShell } from '../../next-ui/overlay/overlay-shell'
+import { OverlayFooter, OverlayHeader, OverlayScrollArea, InspectorShell } from '../../next-ui/overlay/overlay-shell'
 import { CollaborationGraph, type GraphSelection } from './CollaborationGraph'
 import { projectCollaborationFocus } from './focus-projection'
 import { AgentContextActions } from './AgentContextActions'
@@ -587,7 +587,7 @@ export function CollaborationOverview({
         <span className="aco-activity-time"><Clock size={11} /> {formatRelative(data.generatedAt)}</span>
       </footer>
 
-      <SheetShell
+      <InspectorShell
         open={Boolean(selection)}
         onOpenChange={(open) => { if (!open) setSelection(null) }}
         ariaLabel="协作对象详情"
@@ -644,7 +644,7 @@ export function CollaborationOverview({
           ) : null}
           <button type="button" className="aco-btn" onClick={() => setSelection(null)}>关闭</button>
         </OverlayFooter>
-      </SheetShell>
+      </InspectorShell>
 
       <AnimatePresence>
         {overview.isFetching ? (

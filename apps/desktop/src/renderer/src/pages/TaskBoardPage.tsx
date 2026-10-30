@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -127,7 +127,7 @@ function TaskTile({
   dragging: boolean
 }) {
   return (
-    <article
+    <div
       className={`po-task-tile ${dragging ? 'is-dragging' : ''}`.trim()}
       draggable
       onDragStart={(event) => {
@@ -194,7 +194,7 @@ function TaskTile({
           <span className="po-unassigned"><UserOutlined /></span>
         )}
       </div>
-    </article>
+    </div>
   )
 }
 
@@ -212,6 +212,9 @@ export default function TaskBoardPage() {
   const approvals = useApprovals(projectId)
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [detailPending, setDetailPending] = useState(false)
+  const detailRequest = useRef(0)
+  useEffect(() => () => { detailRequest.current++ }, [])
   const [drawerWidth, setDrawerWidth] = useState(700)
   useEffect(() => {
     const update = (): void => setDrawerWidth(window.innerWidth < 1250 ? 560 : 700)
@@ -423,8 +426,16 @@ export default function TaskBoardPage() {
   }))
 
   const openTask = (task: TaskCard): void => {
-    setSelectedTaskId(task.id)
-    setDrawerOpen(true)
+    const request = ++detailRequest.current
+    setDetailPending(true)
+    void queryClient.ensureQueryData({ queryKey: qk.task(task.id), queryFn: () => window.projectos.tasks.detail(task.id) })
+      .then(() => {
+        if (request !== detailRequest.current) return
+        setSelectedTaskId(task.id)
+        setDrawerOpen(true)
+      })
+      .catch((error: unknown) => { if (request === detailRequest.current) message.error(errorMessage(error)) })
+      .finally(() => { if (request === detailRequest.current) setDetailPending(false) })
   }
 
   const openEdit = (task: TaskCard): void => {
@@ -614,6 +625,7 @@ export default function TaskBoardPage() {
 
   return (
     <div className="po-page po-page-wide po-tasks-page">
+      {detailPending ? <div className="po-route-progress" role="status" aria-live="polite">正在读取任务详情…</div> : null}
       <PageHeader
         title="任务看板"
         actions={
@@ -671,7 +683,7 @@ export default function TaskBoardPage() {
         />
         <Select
           allowClear
-          placeholder="按 Agent 过滤"
+          aria-label="按 Agent 过滤" placeholder="按 Agent 过滤"
           value={assigneeFilter}
           onChange={(value) => setAssigneeFilter(value ?? null)}
           options={agentOptions}
@@ -679,7 +691,7 @@ export default function TaskBoardPage() {
         />
         <Select
           allowClear
-          placeholder="按版本过滤"
+          aria-label="按版本过滤" placeholder="按版本过滤"
           value={versionFilter}
           onChange={(value) => setVersionFilter(value ?? null)}
           options={(lifecycle.data?.versions ?? []).map((version) => ({
@@ -690,7 +702,7 @@ export default function TaskBoardPage() {
         />
         <Select
           allowClear
-          placeholder="按迭代过滤"
+          aria-label="按迭代过滤" placeholder="按迭代过滤"
           value={iterationFilter}
           onChange={(value) => setIterationFilter(value ?? null)}
           options={(lifecycle.data?.iterations ?? [])
@@ -700,7 +712,7 @@ export default function TaskBoardPage() {
         />
         <Select
           allowClear
-          placeholder="优先级"
+          aria-label="优先级" placeholder="优先级"
           value={priorityFilter}
           onChange={(value) => setPriorityFilter(value ?? null)}
           options={[1, 2, 3, 4].map((value) => ({ value, label: PRIORITY_LABELS[value] }))}
@@ -898,7 +910,7 @@ export default function TaskBoardPage() {
 
       <InspectorShell
         open={drawerOpen}
-        onOpenChange={(open) => { setDrawerOpen(open); if (!open) window.setTimeout(() => setSelectedTaskId(null), 320) }}
+        onOpenChange={(open) => { setDrawerOpen(open); if (!open) { detailRequest.current++; setDetailPending(false) } }}
         ariaLabel="任务详情"
         width={drawerWidth}
         testId="task-detail-inspector"
@@ -965,7 +977,7 @@ export default function TaskBoardPage() {
                             size="small"
                             allowClear
                             showSearch
-                            placeholder="选择 Agent"
+                            aria-label="选择 Agent" placeholder="选择 Agent"
                             value={taskDetail.data.task.assigneeAgentId ?? undefined}
                             options={agentOptions}
                             style={{ width: 250 }}
@@ -1024,7 +1036,7 @@ export default function TaskBoardPage() {
                           <Select
                             size="small"
                             showSearch
-                            placeholder="添加依赖"
+                            aria-label="添加依赖" placeholder="添加依赖"
                             value={undefined}
                             options={taskOptions}
                             style={{ width: 180 }}

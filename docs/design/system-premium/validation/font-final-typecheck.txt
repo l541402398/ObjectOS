@@ -1,0 +1,7 @@
+
+> projectos@1.7.0 typecheck C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4
+> tsc -p tsconfig.json --noEmit
+
+tests/ui-readiness.test.ts(98,48): error TS2352: Conversion of type '{ params: { projectId: string; }; request: Request; }' to type 'LoaderFunctionArgs<any>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ params: { projectId: string; }; request: Request; }' is missing the following properties from type 'LoaderFunctionArgs<any>': url, pattern, context
+ ELIFECYCLE  Command failed with exit code 2.

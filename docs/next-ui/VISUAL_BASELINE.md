@@ -1,5 +1,11 @@
 # Premium Liquid Glass Approved Baseline
 
+2026-10-30 implementation evidence: [system-wide report](../design/system-premium/REPORT.md).
+The user reaffirmed this DAG direction for all product UI on 2026-10-29 and requested actual product
+menus. The preserved user PNG is `docs/design/baselines/2026-10-29-user-confirmed-DAG.png`.
+Current source uses shared type/material tokens and native comparison matrices; these are engineering
+checks, not a replacement screenshot approval. The rejected formal R1 Modal remains rejected.
+
 状态：**受保护视觉基线（以用户提供的 APPROVED_design_lab_DAG.jpeg 为唯一事实）**  
 批准日期：2026-10-23  
 已认可 Commit：`0686c41 feat(design-lab): premium liquid glass desktop workspace`  

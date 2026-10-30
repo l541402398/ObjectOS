@@ -1,0 +1,17 @@
+{
+  "source": "https://github.com/google/fonts/blob/6157dfaa640ca5738b4d1a7070fe389c3036d7fc/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf",
+  "license": "OFL-1.1",
+  "conversion": "fontTools 4.68.0 / Brotli 1.2.1, WOFF2 compression, no glyph subsetting",
+  "sourceSha256": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
+  "woff2Sha256": "aef8c34277afad81ecd0227138a830263c0caea65b7aea66d1195395f097b55a",
+  "bytes": 7782072,
+  "axes": [
+    {
+      "tag": "wght",
+      "min": 100.0,
+      "default": 100.0,
+      "max": 900.0
+    }
+  ],
+  "unicodeCodepoints": 30890
+}

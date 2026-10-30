@@ -33,8 +33,8 @@ export function PreferencesSettingsPanel() {
             ]}
           />
         </div>
-        <div className="po-setting-row"><div><strong>减少透明度</strong><span>关闭玻璃模糊，提升低性能设备可读性</span></div><Switch checked={reduceTransparency} onChange={setReduceTransparency} /></div>
-        <div className="po-setting-row"><div><strong>减少动效</strong><span>减少面板滑入、渐变与过渡动画</span></div><Switch checked={reduceMotion} onChange={setReduceMotion} /></div>
+        <div className="po-setting-row"><div><strong>减少透明度</strong><span>关闭玻璃模糊，提升低性能设备可读性</span></div><Switch aria-label="减少透明度" checked={reduceTransparency} onChange={setReduceTransparency} /></div>
+        <div className="po-setting-row"><div><strong>减少动效</strong><span>减少面板滑入、渐变与过渡动画</span></div><Switch aria-label="减少动效" checked={reduceMotion} onChange={setReduceMotion} /></div>
         <div className="po-setting-row"><div><strong>侧边栏</strong><span>恢复展开的全局导航</span></div><Button onClick={() => setSidebarCollapsed(false)}>展开侧边栏</Button></div>
       </div>
 

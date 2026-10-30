@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
-import { App as AntApp, Button, Empty, Input, Tag } from 'antd'
+import { App as AntApp, Button, Empty, Input } from 'antd'
+import { StatusPill } from '@projectos/ui'
 import { CheckOutlined, CloseOutlined, SafetyCertificateOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useApprovals, useFileContent } from '../lib/queries'
@@ -62,7 +63,7 @@ function lineDiff(before: string, after: string): DiffLine[] {
 
 function InlineDiff({ lines }: { lines: DiffLine[] }) {
   return (
-    <div className="ap-diff">
+    <div className="ap-diff" role="region" tabIndex={0} aria-label="申请修改差异">
       {lines.map((line, index) => (
         <div key={`${line.type}-${index}`} className={`ap-diff-line ${line.type}`}>
           <span className="ap-diff-num">{line.oldLine ?? ''}</span>
@@ -175,7 +176,7 @@ export default function ApprovalsPage() {
       </header>
 
       <div className="ap-body">
-        <aside className="ap-queue">
+        <aside className="ap-queue" aria-label="审批队列">
           <div className="ap-filters">
             <button className={filter === 'pending' ? 'is-active' : ''} onClick={() => setFilter('pending')}>待处理</button>
             <button className={filter === 'all' ? 'is-active' : ''} onClick={() => setFilter('all')}>历史</button>
@@ -206,7 +207,7 @@ export default function ApprovalsPage() {
             <>
               <div className="ap-detail-head">
                 <div><span className="rw-kicker">{selected.kind === 'tool' ? 'TOOL PERMISSION' : 'DELIVERY DECISION'}</span><h2>{selected.title}</h2></div>
-                <Tag color={selected.status === 'approved' ? 'green' : selected.status === 'rejected' ? 'red' : 'gold'}>{statusLabel(selected.status)}</Tag>
+                <StatusPill tone={selected.status === 'approved' ? 'success' : selected.status === 'rejected' ? 'danger' : 'warning'}>{statusLabel(selected.status)}</StatusPill>
               </div>
               <div className="ap-facts">
                 <span><b>申请</b>{selected.kind === 'tool' ? toolApproval?.agentName ?? '—' : 'ProjectOS 交付'}</span>
@@ -243,7 +244,7 @@ export default function ApprovalsPage() {
           ) : null}
         </section>
 
-        <aside className="ap-action">
+        <aside className="ap-action" aria-label="审批决策">
           <h3>决策</h3>
           {selected && selected.status !== 'pending' ? (
             <>

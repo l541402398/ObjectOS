@@ -1,4 +1,16 @@
-# ProjectOS Overlay Audit — 2026-10-22
+# ProjectOS Overlay Audit
+
+## Current migration — 2026-10-30
+
+The system migration uses shared DialogShell/SheetShell/InspectorShell, FormDialog and
+ProductDialogs for the remaining declarative forms and imperative confirmations. Settings
+connection editing remains inline. Agent collaboration detail now uses a non-modal Inspector,
+retaining canvas interaction and avoiding full-window blur during pulse animation. Open-layer
+registration, topmost focus ownership, one backdrop and return focus are covered by the native
+overlay journeys in `system-premium/REPORT.md`. The historical inventory below is retained as
+the migration origin; its old “No” values are not the current implementation status.
+
+## Historical inventory — 2026-10-22
 
 Scope: every renderer `Modal`, `Drawer`, `Dialog`, `Popover`, `Sheet` and custom fixed/portal
 surface under `apps/desktop/src/renderer/src`. Planner, Scheduler, Runtime, Teamwork and backend

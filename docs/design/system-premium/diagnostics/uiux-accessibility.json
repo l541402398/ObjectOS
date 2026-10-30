@@ -1,0 +1,30 @@
+{
+  "domain": "ux",
+  "query": "keyboard focus modal contrast accessibility",
+  "file": "ux-guidelines.csv",
+  "count": 2,
+  "results": [
+    {
+      "Category": "Interaction",
+      "Issue": "Focus States",
+      "Platform": "All",
+      "Description": "Keyboard focus, including controls inside a modal, needs a visible indicator",
+      "Do": "Use a visible focus ring on every interactive control, including modal controls",
+      "Don't": "Remove focus outline without replacement",
+      "Code Example Good": "focus:ring-2 focus:ring-blue-500",
+      "Code Example Bad": "outline-none without alternative",
+      "Severity": "High"
+    },
+    {
+      "Category": "Accessibility",
+      "Issue": "Focus Appearance",
+      "Platform": "Web",
+      "Description": "WCAG 2.2 AAA defines minimum area and contrast for focus indicators",
+      "Do": "Use an indicator at least as large as a 2 CSS px perimeter with 3:1 state contrast",
+      "Don't": "Present this enhanced AAA criterion as an AA requirement or use a thin low-contrast outline",
+      "Code Example Good": "outline: 2px solid currentColor; outline-offset: 2px",
+      "Code Example Bad": "box-shadow: 0 0 1px low-contrast",
+      "Severity": "Medium"
+    }
+  ]
+}

@@ -18,6 +18,17 @@ Agent sample: `features/design-lab/AgentInspector.tsx`.
 Approval sample: `features/design-lab/ApprovalDialog.tsx`.
 Primitives: `next-ui/overlay/overlay-context.tsx`, `overlay-shell.tsx`, `overlay.css`.
 
+## Current implementation notes — 2026-10-30
+
+- Only mounted/open surfaces register; stable callbacks keep edit focus intact.
+- A nested modal reuses the existing page backdrop instead of stacking more dimming/blur.
+- Ant dropdowns are hosted inside their owning overlay; Escape closes their menu first.
+- Modal close restores its invoking control when that control still exists.
+- FormDialog reuses page-owned mutations; ProductDialogs routes imperative confirm/info through
+  the same visual and focus primitives. It does not evaluate or approve policies by itself.
+- Collaboration details use the non-modal InspectorShell; Settings remains a global modal
+  presentation with its existing manual focus guard and inline connection editor.
+
 ## Components
 
 ### OverlayRoot / OverlayProvider

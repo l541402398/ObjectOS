@@ -30,7 +30,7 @@ export default function ReleaseCenterPage() {
           versionControl={
             <div className="rw-version-control-inner">
               <Select
-                value={selected.id}
+                aria-label="发布版本" value={selected.id}
                 options={versions.map((version) => ({ value: version.id, label: `v${version.version}` }))}
                 onChange={(versionId) => navigate(`/projects/${projectId}/releases?version=${versionId}`)}
                 style={{ width: 140 }}

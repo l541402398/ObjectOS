@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { App as AntApp, Badge, Button, Dropdown, Tooltip, type MenuProps } from 'antd'
+import { Outlet, useLocation, useNavigate, useParams, useNavigation } from 'react-router-dom'
+import { App as AntApp, Button, Dropdown, Tooltip, type MenuProps } from 'antd'
 import {
   ApartmentOutlined,
   AppstoreOutlined,
@@ -32,6 +32,10 @@ import {
   UnorderedListOutlined,
 } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
+import { Sparkles } from 'lucide-react'
+import { productNavigation } from './product-navigation'
+import { useCompactNavigation } from '../hooks/useCompactNavigation'
+import { PopoverShell } from '../next-ui/overlay/overlay-shell'
 import type { RuntimeStatus } from '@projectos/contracts'
 import {
   AppShell,
@@ -40,7 +44,6 @@ import {
   SidebarNavigation,
   StatusPill,
   toneForStatus,
-  type SidebarNavGroup,
 } from '@projectos/ui'
 import { BootError, BootScreen } from './BootScreen'
 import { GoalJourneyBar } from './GoalJourneyBar'
@@ -51,7 +54,7 @@ import { useBootstrap, useProjectOverview } from '../lib/queries'
 import { useResolvedTheme, useUiStore } from '../stores/ui'
 import { stageLabel } from '../lib/labels'
 import { truncate } from '../lib/format'
-import { pageGroup, pageLabel, pagePath, palettePages, PAGES, pageByKey } from '../page-registry'
+import { pageLabel, currentPageKey, pageGroup, palettePages, PAGES } from '../page-registry'
 
 const PAGE_LABELS: Record<string, string> = Object.fromEntries(PAGES.map((page) => [page.key, page.label]))
 
@@ -84,26 +87,14 @@ const PAGE_ICONS: Record<string, ReactNode> = {
 function Logo() {
   return (
     <span className="po-logo" aria-hidden="true">
-      <svg viewBox="0 0 64 64">
-        <rect x="2" y="2" width="60" height="60" rx="14" fill="#0A1220" />
-        <g fill="none" stroke="#E8F6FF" strokeWidth="2.4">
-          <ellipse cx="32" cy="32" rx="22" ry="8" />
-          <ellipse cx="32" cy="32" rx="22" ry="8" transform="rotate(60 32 32)" />
-          <ellipse cx="32" cy="32" rx="22" ry="8" transform="rotate(120 32 32)" />
-        </g>
-        <g fill="#5DC8FF">
-          <circle cx="10" cy="32" r="1.9" />
-          <circle cx="54" cy="32" r="1.9" />
-        </g>
-        <circle cx="32" cy="32" r="4.2" fill="#F5FAFF" />
-        <circle cx="32" cy="32" r="1.8" fill="#2F8CFF" />
-      </svg>
+      <Sparkles size={18} strokeWidth={1.65} />
     </span>
   )
 }
 
 export default function AppLayout() {
   const navigate = useNavigate()
+  const navigation = useNavigation()
   const location = useLocation()
   const queryClient = useQueryClient()
   const { notification } = AntApp.useApp()
@@ -117,10 +108,14 @@ export default function AppLayout() {
   const setThemeMode = useUiStore((state) => state.setThemeMode)
   const setLastProjectId = useUiStore((state) => state.setLastProjectId)
   const openSettings = useUiStore((state) => state.openSettings)
+  const settingsPending = useUiStore((state) => state.settingsPendingSection)
   const resolvedTheme = useResolvedTheme()
   const [runtimeStatus, setRuntimeStatus] = useState<RuntimeStatus | null>(null)
   const [commandOpen, setCommandOpen] = useState(false)
   const [maximized, setMaximized] = useState(false)
+  const [navigationOpen, setNavigationOpen] = useState(false)
+  const narrow = useCompactNavigation()
+  const compact = collapsed || narrow
   const isMac = window.projectos.system.platform === 'darwin'
 
   const currentProject = useMemo(
@@ -128,12 +123,7 @@ export default function AppLayout() {
     [bootstrap.data, projectId],
   )
 
-  const activeKey = useMemo(() => {
-    if (location.pathname === '/settings') return 'settings'
-    if (location.pathname === '/') return 'center'
-    const segment = location.pathname.split('/')[3] ?? 'work'
-    return segment in PAGE_LABELS ? segment : 'work'
-  }, [location.pathname])
+  const activeKey = currentPageKey(location.pathname)
 
   /**
    * ADR-0045 — hierarchy + history navigation.
@@ -332,14 +322,14 @@ export default function AppLayout() {
     }
     list.push(
       { id: 'center', label: '项目中心', group: '全局', icon: <AppstoreOutlined />, shortcut: 'G', run: () => navigate('/') },
-      { id: 'settings', label: '设置', group: '全局', icon: <SettingOutlined />, shortcut: '⌘,', run: () => openSettings('ai-connections') },
+      { id: 'settings', label: '设置', group: '全局', icon: <SettingOutlined />, shortcut: isMac ? '⌘,' : 'Ctrl+,', run: () => openSettings('ai-connections') },
       { id: 'organization', label: '账号与组织', group: '全局', icon: <ApartmentOutlined aria-hidden />, run: () => openSettings('organization') },
       { id: 'theme-light', label: '切换到浅色主题', group: '外观', icon: <SunOutlined />, run: () => setThemeMode('light') },
       { id: 'theme-dark', label: '切换到深色主题', group: '外观', icon: <MoonOutlined />, run: () => setThemeMode('dark') },
       { id: 'theme-system', label: '跟随系统主题', group: '外观', icon: <SwapOutlined />, run: () => setThemeMode('system') },
     )
     return list
-  }, [currentProject, handleNavigate, navigate, openSettings, projectId, setThemeMode])
+  }, [currentProject, handleNavigate, isMac, navigate, openSettings, projectId, setThemeMode])
 
   if (bootstrap.isLoading) return <BootScreen />
   if (bootstrap.isError) {
@@ -353,59 +343,7 @@ export default function AppLayout() {
   const taskBadge = currentProject ? currentProject.stats.tasksReview || currentProject.stats.tasksRunning : 0
   const approvalBadge = pendingApprovals.filter((approval) => !projectId || approval.projectId === projectId).length
 
-  const navGroups: SidebarNavGroup[] = []
-  if (projectId && currentProject) {
-    navGroups.push({
-      key: '研发',
-      title: '研发',
-      collapsible: true,
-      items: [
-        { key: 'work', label: pageLabel('work'), icon: <ThunderboltOutlined /> },
-        { key: 'tasks', label: pageLabel('tasks'), icon: <UnorderedListOutlined />, badge: taskBadge || null },
-        { key: 'agents', label: pageLabel('agents'), icon: <RobotOutlined />, badge: approvalBadge || null },
-        { key: 'approvals', label: pageLabel('approvals'), icon: <SafetyCertificateOutlined />, badge: approvalBadge || null },
-        { key: 'runs', label: pageLabel('runs'), icon: <HistoryOutlined /> },
-      ],
-    })
-    navGroups.push({
-      key: '交付',
-      title: '交付',
-      collapsible: true,
-      items: [
-        { key: 'releases', label: pageLabel('releases'), icon: <RocketOutlined /> },
-        { key: 'deployments', label: pageLabel('deployments'), icon: <CloudUploadOutlined /> },
-        { key: 'connections', label: pageLabel('connections'), icon: <CloudServerOutlined /> },
-      ],
-    })
-    navGroups.push({
-      key: '运维',
-      title: '运维',
-      note: 'Phase 3',
-      disabled: true,
-      items: [],
-    })
-    navGroups.push({
-      key: '项目',
-      title: '项目',
-      collapsible: true,
-      items: [
-        { key: 'overview', label: pageLabel('overview'), icon: <AppstoreOutlined /> },
-        { key: 'versions', label: pageLabel('versions'), icon: <ApartmentOutlined /> },
-        { key: 'knowledge', label: pageLabel('knowledge'), icon: <ReadOutlined /> },
-        { key: 'project-settings', label: pageLabel('project-settings'), icon: <SettingOutlined /> },
-      ],
-    })
-  }
-  navGroups.push({
-    key: '全局',
-    title: '全局',
-    collapsible: true,
-    items: [
-      { key: 'center', label: '项目中心', icon: <ProjectOutlined /> },
-      { key: 'organization', label: '账号与组织', icon: <ApartmentOutlined aria-hidden /> },
-      { key: 'settings', label: '设置', icon: <SettingOutlined /> },
-    ],
-  })
+  const navGroups = productNavigation(Boolean(projectId && currentProject), taskBadge, approvalBadge)
 
   const projectMenuItems: MenuProps['items'] = [
     ...projects.map((project) => ({
@@ -430,8 +368,15 @@ export default function AppLayout() {
   const titlebar = (
     <div className={`po-titlebar-inner ${isMac ? 'is-mac' : ''}`.trim()}>
       <div className="po-titlebar-left">
-        <button type="button" className="po-icon-button" onClick={toggleSidebar} aria-label="切换侧边栏">
-          {collapsed ? <ExpandOutlined /> : <CompressOutlined />}
+        <PopoverShell ariaLabel="主导航" open={narrow && navigationOpen} onOpenChange={(open) => { if (narrow) setNavigationOpen(open) }} className="po-navigation-menu" align="start" trigger={
+          <button type="button" className="po-icon-button" onClick={() => { if (!narrow) toggleSidebar() }} aria-label="切换侧边栏" aria-expanded={narrow ? navigationOpen : !collapsed}>
+            {compact ? <ExpandOutlined aria-hidden /> : <CompressOutlined aria-hidden />}
+          </button>
+        }>
+          <SidebarNavigation groups={navGroups.map((group) => ({ ...group, placement: 'main', collapsible: false }))} activeKey={activeKey} onSelect={(key) => { setNavigationOpen(false); handleNavigate(key) }} />
+        </PopoverShell>
+        <button type="button" className="po-titlebar-brand" onClick={() => navigate('/')} aria-label="ProjectOS 项目中心">
+          <Logo /><span>PROJECTOS</span>
         </button>
         <button
           type="button"
@@ -444,12 +389,8 @@ export default function AppLayout() {
           <ArrowLeftOutlined />
         </button>
         <nav className="po-crumbs" aria-label="导航路径">
-          <button type="button" className="po-crumb-link" onClick={() => navigate('/')}>
-            项目中心
-          </button>
           {currentProject ? (
             <>
-              <span className="po-crumb-sep" aria-hidden>›</span>
               <button type="button" className="po-crumb-link" onClick={() => navigate(`/projects/${currentProject.id}`)}>
                 {truncate(currentProject.name, 30)}
               </button>
@@ -461,14 +402,14 @@ export default function AppLayout() {
               <span className="po-crumb-group">{activeGroup}</span>
             </>
           ) : null}
-          <span className="po-crumb-sep" aria-hidden>›</span>
-          <span className="po-crumb-page" aria-current="page">{PAGE_LABELS[activeKey] ?? ''}</span>
+          {currentProject ? <span className="po-crumb-sep" aria-hidden>›</span> : null}
+          <span className="po-crumb-page" aria-current="page">{PAGE_LABELS[activeKey] ?? '页面不存在'}</span>
         </nav>
       </div>
-      <button type="button" className="po-command-trigger" onClick={() => setCommandOpen(true)}>
-        <SearchOutlined />
+      <button type="button" className="po-command-trigger" onClick={() => setCommandOpen(true)} aria-label="搜索或跳转">
+        <SearchOutlined aria-hidden />
         <span>搜索或跳转</span>
-        <kbd>⌘ K</kbd>
+        <kbd>{isMac ? '⌘ K' : 'Ctrl K'}</kbd>
       </button>
       <div className="po-titlebar-right">
         <Tooltip
@@ -481,14 +422,14 @@ export default function AppLayout() {
           <span className="po-runtime-indicator">
             <StatusPill tone={runtimeTone} dot>
               {runtime?.status === 'ready'
-                ? 'Runtime 就绪'
+                ? '本机就绪'
                 : runtime?.status === 'restarting'
-                  ? 'Runtime 重启中'
+                  ? '正在重启'
                   : runtime?.status === 'starting'
-                    ? 'Runtime 启动中'
+                    ? '正在启动'
                     : runtime?.status === 'failed'
-                      ? 'Runtime 失败'
-                      : 'Runtime 未就绪'}
+                      ? '服务异常'
+                      : '尚未就绪'}
             </StatusPill>
           </span>
         </Tooltip>
@@ -542,13 +483,6 @@ export default function AppLayout() {
 
   const sidebar = (
     <div className="po-sidebar-inner">
-      <button type="button" className="po-brand" onClick={() => navigate('/')}>
-        <Logo />
-        <span className="po-brand-text">
-          <strong>ProjectOS</strong>
-          <span>AI Project OS</span>
-        </span>
-      </button>
       <div className="po-project-switcher">
         <Dropdown
           menu={{
@@ -561,9 +495,9 @@ export default function AppLayout() {
           trigger={['click']}
           placement="bottomLeft"
         >
-          <button type="button" className="po-project-button">
-            <span className="po-project-button-icon">
-              {currentProject ? <span className="po-project-dot" /> : <ProjectOutlined />}
+          <button type="button" className="po-project-button" aria-label={`切换项目：${currentProject?.name ?? '所有项目'}`} title={currentProject?.name ?? '选择项目'}>
+            <span className="po-project-button-icon" aria-hidden>
+              {currentProject ? currentProject.name.slice(0, 1).toUpperCase() : <ProjectOutlined />}
             </span>
             <span className="po-project-button-text">
               <strong>{currentProject ? truncate(currentProject.name, 22) : projects.length ? '所有项目' : '选择项目'}</strong>
@@ -587,21 +521,7 @@ export default function AppLayout() {
         activeKey={activeKey}
         activeGroupTitle={pageGroup(activeKey)}
         onSelect={handleNavigate}
-        collapsed={collapsed}
-        footer={
-          <div className="po-sidebar-footer">
-            <div className="po-sidebar-runtime">
-              <span className={`po-status-dot is-${runtime?.status ?? 'unknown'}`} />
-              <span>本地优先</span>
-              <span className="po-sidebar-runtime-version">v{bootstrap.data ? '1.7.0' : '—'}</span>
-            </div>
-            <Tooltip title="项目中心">
-              <button type="button" className="po-icon-button" onClick={() => navigate('/')} aria-label="项目中心">
-                <AppstoreOutlined />
-              </button>
-            </Tooltip>
-          </div>
-        }
+        collapsed={compact}
       />
     </div>
   )
@@ -627,12 +547,7 @@ export default function AppLayout() {
         </span>
       ) : null}
       <span className="po-status-spacer" />
-      <span className="po-status-item">
-        <span className={`po-status-dot is-${runtime?.status ?? 'unknown'}`} />
-        {runtime?.status ?? 'unknown'}
-        {runtime?.pid ? ` · pid ${runtime.pid}` : ''}
-      </span>
-      <span className="po-status-item">本地 · 无监听端口</span>
+      <span className="po-status-item">本地工作区</span>
     </>
   )
 
@@ -642,9 +557,11 @@ export default function AppLayout() {
         header={titlebar}
         sidebar={sidebar}
         footer={statusbar}
-        collapsed={collapsed}
+        collapsed={compact}
         subheader={<GoalJourneyBar projectId={projectId} />}
       >
+        {navigation.state === 'loading' ? <div className="po-route-progress" role="status" aria-live="polite">正在打开{pageLabel(currentPageKey(navigation.location?.pathname ?? ''))}…</div> : null}
+        {settingsPending ? <div className="po-route-progress" role="status">正在读取设置…</div> : null}
         {projectId && !currentProject ? (
           <div className="po-page">
             <EmptyState

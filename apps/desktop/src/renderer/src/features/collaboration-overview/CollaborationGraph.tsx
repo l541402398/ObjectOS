@@ -1,4 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState, type ReactElement } from 'react'
+import { motion } from 'motion/react'
+import { useReducedMotionPreference } from '../../hooks/useReducedMotionPreference'
 import ELK from 'elkjs/lib/elk.bundled.js'
 import '@xyflow/react/dist/style.css'
 import {
@@ -12,7 +14,7 @@ import {
   type ReactFlowInstance,
 } from '@xyflow/react'
 import {
-  ArrowRight,
+  Waves,
   Check,
   CircleAlert,
   FileText,
@@ -47,17 +49,17 @@ type ApprovalData = { approval: ApprovalView; selected: boolean; related: boolea
 type RelationshipKind = 'assignment' | 'dependency' | 'artifact' | 'approval' | 'handoff'
 type Relationship = { id: string; source: string; target: string; kind: RelationshipKind; handoffId?: string }
 
-const AGENT_SIZE = { width: 224, height: 88 }
-const TASK_SIZE = { width: 212, height: 94 }
-const ARTIFACT_SIZE = { width: 204, height: 80 }
-const APPROVAL_SIZE = { width: 214, height: 88 }
+const AGENT_SIZE = { width: 248, height: 108 }
+const TASK_SIZE = { width: 228, height: 108 }
+const ARTIFACT_SIZE = { width: 228, height: 100 }
+const APPROVAL_SIZE = { width: 240, height: 108 }
 
 const EDGE_COLORS: Record<RelationshipKind, string> = {
-  assignment: '#a38f78',
-  dependency: '#8d9b8d',
-  artifact: '#5f8f78',
-  approval: '#b07b38',
-  handoff: '#b4552d',
+  assignment: 'var(--ui-edge)',
+  dependency: 'var(--ui-edge)',
+  artifact: 'var(--ui-teal)',
+  approval: 'var(--ui-warn)',
+  handoff: 'var(--ui-accent)',
 }
 
 function AgentNode({ data }: NodeProps<Node<AgentData, 'aco-agent'>>): ReactElement {
@@ -159,6 +161,8 @@ function RelationshipLayer({
   sizeById,
   viewport,
   selectedId,
+  runningIds,
+  flowEnabled,
   onSelectHandoff,
 }: {
   relationships: Relationship[]
@@ -166,9 +170,12 @@ function RelationshipLayer({
   sizeById: Map<string, { width: number; height: number }>
   viewport: { x: number; y: number; zoom: number }
   selectedId: string | null
+  runningIds: Set<string>
+  flowEnabled: boolean
   onSelectHandoff: (id: string) => void
 }): ReactElement {
   const uid = useId().replace(/:/g, '')
+  const reduceMotion = useReducedMotionPreference()
   const shapes = relationships.flatMap((edge) => {
     const source = positions[edge.source]
     const target = positions[edge.target]
@@ -186,7 +193,7 @@ function RelationshipLayer({
       : `M ${sx} ${sy} C ${sx + bend} ${sy}, ${tx - bend} ${ty}, ${tx} ${ty}`
     const highlighted = Boolean(selectedId) && (edge.source === selectedId || edge.target === selectedId)
     const dimmed = Boolean(selectedId) && !highlighted
-    const color = highlighted ? '#b4552d' : EDGE_COLORS[edge.kind]
+    const color = highlighted ? `url(#${uid}-focus)` : EDGE_COLORS[edge.kind]
     return [{
       edge,
       d,
@@ -198,11 +205,20 @@ function RelationshipLayer({
     }]
   })
 
+  const flowing = new Set(flowEnabled && !reduceMotion ? shapes.filter(({ edge, highlighted, dimmed }) => !dimmed && (highlighted || runningIds.has(edge.source) || runningIds.has(edge.target))).slice(0, 12).map(({ edge }) => edge.id) : [])
+  // The former 40,000px mask forced a huge offscreen repaint on every moving pulse.
+  // Cover the actual graph plus its curved handoff paths, in the same world coordinates.
+  const occupied = [...sizeById].flatMap(([id, size]) => positions[id] ? [{ ...positions[id], ...size }] : [])
+  const maskX = Math.min(0, ...occupied.map((item) => item.x)) - 128
+  const maskY = Math.min(0, ...occupied.map((item) => item.y)) - 128
+  const maskWidth = Math.max(0, ...occupied.map((item) => item.x + item.width)) + 128 - maskX
+  const maskHeight = Math.max(0, ...occupied.map((item) => item.y + item.height)) + 128 - maskY
   return (
     <svg className="aco-edge-layer" width="100%" height="100%" aria-hidden="true">
       <defs>
-        <mask id={`${uid}-mask`} maskUnits="userSpaceOnUse" x="-20000" y="-20000" width="40000" height="40000">
-          <rect x="-20000" y="-20000" width="40000" height="40000" fill="white" />
+        <linearGradient id={`${uid}-focus`}><stop stopColor="var(--ui-accent)" /><stop offset="1" stopColor="var(--ui-teal)" /></linearGradient>
+        <mask id={`${uid}-mask`} maskUnits="userSpaceOnUse" x={maskX} y={maskY} width={maskWidth} height={maskHeight}>
+          <rect x={maskX} y={maskY} width={maskWidth} height={maskHeight} fill="white" />
           {[...sizeById.entries()].map(([id, size]) => {
             const position = positions[id]
             if (!position) return null
@@ -220,7 +236,7 @@ function RelationshipLayer({
             markerHeight="7"
             orient="auto-start-reverse"
           >
-            <path d="M 0 0 L 10 5 L 0 10 z" fill={selectedId ? '#b4552d' : color} />
+            <path d="M 0 0 L 10 5 L 0 10 z" fill={color} />
           </marker>
         ))}
       </defs>
@@ -236,14 +252,23 @@ function RelationshipLayer({
               d={d}
               fill="none"
               stroke={color}
-              strokeWidth={highlighted ? 2.4 : isHandoff ? 2 : 1.8}
-              strokeDasharray={edge.kind === 'artifact' ? '4 4' : isHandoff ? '6 4' : undefined}
+              strokeWidth={highlighted ? 2 : 1.5}
               markerEnd={`url(#${uid}-arrow-${edge.kind})`}
             />
+            {flowing.has(edge.id) ? (
+              <motion.g className="aco-flow-pulse" data-edge-id={edge.id}
+                style={{ offsetPath: `path('${d}')`, offsetRotate: '0deg', pointerEvents: 'none' }}
+                initial={{ offsetDistance: '0%', opacity: 0 }}
+                animate={{ offsetDistance: ['0%', '100%'], opacity: [0, 0.9, 0.9, 0] }}
+                transition={{ duration: 3.2, repeat: Infinity, repeatDelay: 0.7, ease: 'linear', opacity: { times: [0, 0.12, 0.85, 1] } }}>
+                <circle r="8" fill="var(--ui-accent)" opacity="0.14" />
+                <circle r="3.5" fill="var(--ui-accent)" stroke="var(--ui-surface)" strokeWidth="1.25" />
+              </motion.g>
+            ) : null}
             {isHandoff ? (
               <g transform={`translate(${midpoint.x}, ${midpoint.y})`}>
                 <rect x="-20" y="-10" width="40" height="20" rx="4" fill="var(--pw-surface)" stroke="var(--pw-warn-line)" />
-                <text textAnchor="middle" dominantBaseline="middle" fill="var(--pw-warn)" fontSize="10.5" fontWeight="600">交接</text>
+                <text textAnchor="middle" dominantBaseline="middle" fill="var(--pw-accent-ink)" fontSize="12" fontWeight="600">交接</text>
               </g>
             ) : null}
           </g>
@@ -332,6 +357,12 @@ export function CollaborationGraph({
     return map
   }, [runs])
 
+  const [flowEnabled, setFlowEnabled] = useState(true)
+  const reduceMotion = useReducedMotionPreference()
+  const runningIds = useMemo(() => new Set([
+    ...agents.filter((agent) => agent.runStatus === 'running').map((agent) => agent.id),
+    ...[...runByTask.entries()].filter(([, run]) => run.status === 'running').map(([id]) => id),
+  ]), [agents, runByTask])
   const agentNames = useMemo(() => Object.fromEntries(agents.map((agent) => [agent.id, agent.name])), [agents])
   const selectedId = selected?.id ?? null
 
@@ -535,7 +566,28 @@ export function CollaborationGraph({
   const isEmpty = visibleAgents.length === 0 && visibleTasks.length === 0 && visibleArtifacts.length === 0 && visibleApprovals.length === 0
 
   return (
-    <div className="aco-canvas" data-testid="collaboration-graph" ref={canvasRef}>
+    <div className="aco-canvas" data-testid="collaboration-graph">
+      <div className="aco-canvas-bar">
+        {taskCount === 0 && !isEmpty ? (
+          <span className="aco-canvas-hint"><CircleAlert size={12} /> 计划尚未关联任务</span>
+        ) : null}
+        {handoffs.length > 0 ? (
+          <span className="aco-canvas-hint is-handoff"><Handshake size={12} /> {handoffs.length} 条交接</span>
+        ) : null}
+        <div className="aco-legend" aria-hidden="true">
+          <span><i className="is-agent" />Agent</span>
+          <span><i className="is-task" />任务</span>
+          <span><i className="is-output" />成果</span>
+          <span><i className="is-handoff" />交接</span>
+          <span><i className="is-approval" />审批</span>
+        </div>
+        <button type="button" className="aco-flow-toggle" aria-pressed={flowEnabled && !reduceMotion}
+          aria-label={reduceMotion ? '流向脉冲已随减少动效关闭' : flowEnabled ? '暂停流向脉冲' : '开启流向脉冲'}
+          disabled={reduceMotion} title="展示关联方向；节点标签表示执行状态" onClick={() => setFlowEnabled((value) => !value)}>
+          <Waves size={14} aria-hidden />流向
+        </button>
+      </div>
+      <div className="aco-canvas-viewport" ref={canvasRef}>
       <ReactFlow
         nodes={nodes}
         nodeTypes={nodeTypes}
@@ -566,27 +618,16 @@ export function CollaborationGraph({
         sizeById={sizeById}
         viewport={viewport}
         selectedId={selectedId}
+        runningIds={runningIds}
+        flowEnabled={flowEnabled}
         onSelectHandoff={(handoffId) => onSelect({ kind: 'handoff', id: handoffId })}
       />
-      <div className="aco-legend" aria-hidden="true">
-        <span><i className="is-agent" />Agent</span>
-        <span><i className="is-task" />任务</span>
-        <span><i className="is-output" />成果</span>
-        <span><i className="is-handoff" />交接</span>
-        <span><i className="is-approval" />审批</span>
-      </div>
       {isEmpty ? (
         <div className="aco-canvas-empty">
           <GitBranch size={22} />
           <strong>{standbyAgents.length > 0 ? '当前没有执行中的工作' : '这张协作图还没有真实对象'}</strong>
           <span>{standbyAgents.length > 0 ? '待命 Agent 已收起；批准计划或启动运行后，执行节点会出现在这里。' : '批准计划后，Agent、任务、审批与成果会作为真实节点出现。'}</span>
         </div>
-      ) : null}
-      {taskCount === 0 && !isEmpty ? (
-        <div className="aco-canvas-hint"><CircleAlert size={12} /> 计划尚未关联任务</div>
-      ) : null}
-      {handoffs.length > 0 ? (
-        <div className="aco-canvas-hint is-handoff"><Handshake size={12} /> {handoffs.length} 条真实交接 <ArrowRight size={11} /></div>
       ) : null}
       {standbyAgents.length > 0 ? (
         <div className={`aco-standby${standbyOpen ? ' is-open' : ''}`} data-testid="standby-agents">
@@ -626,6 +667,7 @@ export function CollaborationGraph({
           ) : null}
         </div>
       ) : null}
+      </div>
     </div>
   )
 }

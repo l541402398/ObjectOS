@@ -1,3 +1,4 @@
+import { useProductDialogs } from '../../next-ui/overlay/ProductDialogs'
 import { useState } from 'react'
 import { App, Button, Tag } from 'antd'
 import { DownloadOutlined, ReloadOutlined } from '@ant-design/icons'
@@ -6,7 +7,8 @@ import type { RuntimeRegistryEntry } from '@projectos/contracts'
 import { errorMessage } from '../../lib/errors'
 
 export function AcpRegistryPanel() {
-  const { message, modal } = App.useApp()
+  const { message } = App.useApp()
+  const modal = useProductDialogs()
   const queryClient = useQueryClient()
   const [entries, setEntries] = useState<RuntimeRegistryEntry[]>([])
   const [loading, setLoading] = useState(false)

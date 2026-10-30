@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { DownOutlined, RightOutlined, UpOutlined } from '@ant-design/icons'
 import type { JourneyStage } from '@projectos/contracts'
-import { JOURNEY_OWNER_LABEL, JOURNEY_STATE_LABEL, currentJourneyStage, journeyProgress } from '../lib/journey'
+import { journeyActionLabel, JOURNEY_OWNER_LABEL, JOURNEY_STATE_LABEL, currentJourneyStage, journeyProgress } from '../lib/journey'
 import './goal-journey.css'
 
 /**
@@ -18,21 +18,22 @@ import './goal-journey.css'
 const STATE_LABEL = JOURNEY_STATE_LABEL
 const OWNER_LABEL = JOURNEY_OWNER_LABEL
 
-function useCompactJourney(): boolean {
+function useCompactJourney(element: RefObject<HTMLElement | null>): boolean {
   const [compact, setCompact] = useState(() => window.innerWidth < 1180)
   useEffect(() => {
-    const onResize = (): void => setCompact(window.innerWidth < 1180)
-    window.addEventListener('resize', onResize)
+    const onResize = (): void => setCompact((element.current?.clientWidth ?? window.innerWidth) < 1180 || document.body.classList.contains('po-plan-workspace-open'))
+    const resize = new ResizeObserver(onResize)
+    if (element.current) resize.observe(element.current)
     // The plan workspace hides the titlebar for a full-screen DAG; the bar must compact there but
     // must never unmount (it is rendered outside `.po-titlebar`).
-    const observer = new MutationObserver(() => setCompact(window.innerWidth < 1180 || document.body.classList.contains('po-plan-workspace-open')))
+    const observer = new MutationObserver(onResize)
     observer.observe(document.body, { attributes: true, attributeFilter: ['class'] })
     onResize()
     return () => {
-      window.removeEventListener('resize', onResize)
+      resize.disconnect()
       observer.disconnect()
     }
-  }, [])
+  }, [element])
   return compact
 }
 
@@ -40,6 +41,7 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [expanded, setExpanded] = useState(false)
+  const journeyRef = useRef<HTMLElement>(null)
   // ADR-0059: a stale-evidence pause gets a real recovery action — a verification-only Run through
   // the same API the runs page uses. It never edits code and never marks anything done by itself.
   const reverify = useMutation({
@@ -48,7 +50,7 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
       await queryClient.invalidateQueries({ queryKey: ['work', 'journey'] })
     },
   })
-  const compact = useCompactJourney()
+  const compact = useCompactJourney(journeyRef)
   const journey = useQuery({
     queryKey: ['work', 'journey', projectId ?? 'auto'],
     queryFn: () => window.projectos.work.journey(projectId),
@@ -64,7 +66,7 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
 
   if (!data && journey.isLoading) {
     return (
-      <section className="po-journey is-loading" data-testid="goal-journey" aria-label="全局目标旅程">
+      <section ref={journeyRef} className="po-journey is-loading" data-testid="goal-journey" aria-label="全局目标旅程">
         <span className="po-journey-loading">正在读取目标状态…</span>
       </section>
     )
@@ -72,7 +74,7 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
 
   if (data && !data.projectId) {
     return (
-      <section className="po-journey" data-testid="goal-journey" data-owner="user" aria-label="全局目标旅程">
+      <section ref={journeyRef} className="po-journey" data-testid="goal-journey" data-owner="user" aria-label="全局目标旅程">
         <div className="po-journey-left">
           <span className="po-journey-eyebrow">目标旅程</span>
           <strong className="po-journey-goal">还没有项目</strong>
@@ -93,6 +95,7 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
 
   return (
     <section
+      ref={journeyRef}
       className={`po-journey ${compact ? 'is-compact' : ''}`.trim()}
       data-testid="goal-journey"
       data-owner={owner}
@@ -128,33 +131,11 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
         ) : null}
       </div>
 
-      {compact ? (
-        <button type="button" className="po-journey-track-compact" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}>
-          <span className="po-journey-progress">{doneCount}/{stages.length || 9}</span>
-          <span className={`po-journey-dot is-${current?.state ?? 'pending'}`} aria-hidden />
-          <span className="po-journey-current">{current?.label ?? '准备中'}</span>
-          <span className="po-journey-current-detail">{current?.detail?.slice(0, 40)}</span>
-        </button>
-      ) : (
-        <ol className="po-journey-track">
-          {stages.map((stage, index) => (
-            <li key={stage.key} className={`po-journey-step is-${stage.state}`} data-stage={stage.key} data-state={stage.state}>
-              {index > 0 ? <span className="po-journey-connector" aria-hidden /> : null}
-              <button
-                type="button"
-                className="po-journey-step-button"
-                onClick={() => openStage(stage)}
-                disabled={!stage.entry?.route}
-                title={`${stage.label} · ${STATE_LABEL[stage.state]}：${stage.detail}`}
-                aria-current={stage.key === current?.key ? 'step' : undefined}
-              >
-                <span className={`po-journey-dot is-${stage.state}`} aria-hidden />
-                <span className="po-journey-step-label">{stage.label}</span>
-              </button>
-            </li>
-          ))}
-        </ol>
-      )}
+      <button type="button" className="po-journey-track-compact" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded} aria-label={`查看流程：当前${current?.label ?? '准备中'}`}>
+        <span className={`po-journey-dot is-${current?.state ?? 'pending'}`} aria-hidden />
+        <span className="po-journey-current">{current?.label ?? '准备中'}</span>
+        <span className="po-journey-progress">{doneCount}/{stages.length || 9}</span>
+      </button>
 
       <div className="po-journey-next">
         <span className={`po-journey-owner is-${owner}`}>{OWNER_LABEL[owner]}</span>
@@ -180,7 +161,7 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
             data-testid="journey-next"
             title={data.nextAction.detail}
           >
-            去处理 <RightOutlined />
+            {journeyActionLabel(data.nextAction)} <RightOutlined />
           </button>
         ) : null}
         <button

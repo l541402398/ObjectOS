@@ -1,0 +1,1120 @@
+{
+  "head": "7746a49b53875ce33107f99623da0409dc1137f5",
+  "fixture": "fresh isolated persisted demo; cold query cache, 4x CPU throttling, actual platform-font inspection; delayed read ordering separately exercised by ui-readiness.test.ts",
+  "checks": [
+    {
+      "name": "First product frame has its local typeface",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Fonts load from the packaged app only",
+      "status": "FAIL",
+      "detail": "[]"
+    },
+    {
+      "name": "Cold task route mounts complete content",
+      "status": "PASS",
+      "detail": "{\"frames\":33,\"destinationFrames\":16,\"partialFrames\":0}"
+    },
+    {
+      "name": "Task title uses packaged Noto Sans SC",
+      "status": "PASS",
+      "detail": "[{\"familyName\":\"Noto Sans SC Thin\",\"postScriptName\":\"NotoSansSC-SemiBold\",\"isCustomFont\":true,\"glyphCount\":10}]"
+    },
+    {
+      "name": "Cold task inspector mounts complete content",
+      "status": "PASS",
+      "detail": "{\"frames\":20,\"destinationFrames\":16,\"partialFrames\":0}"
+    },
+    {
+      "name": "Inspector heading uses packaged Noto Sans SC",
+      "status": "PASS",
+      "detail": "[{\"familyName\":\"Noto Sans SC Thin\",\"postScriptName\":\"NotoSansSC-SemiBold\",\"isCustomFont\":true,\"glyphCount\":10}]"
+    },
+    {
+      "name": "Cold settings tab mounts its runtime records",
+      "status": "PASS",
+      "detail": "{\"frames\":27,\"destinationFrames\":4,\"partialFrames\":0}"
+    },
+    {
+      "name": "Settings runtime title uses packaged Noto Sans SC",
+      "status": "PASS",
+      "detail": "[{\"familyName\":\"Noto Sans SC Thin\",\"postScriptName\":\"NotoSansSC-Bold\",\"isCustomFont\":true,\"glyphCount\":16}]"
+    },
+    {
+      "name": "Cold run route mounts populated records",
+      "status": "PASS",
+      "detail": "{\"frames\":29,\"destinationFrames\":15,\"partialFrames\":0}"
+    },
+    {
+      "name": "Cold run sheet mounts complete content",
+      "status": "PASS",
+      "detail": "{\"frames\":23,\"destinationFrames\":16,\"partialFrames\":0}"
+    },
+    {
+      "name": "No Renderer exceptions",
+      "status": "PASS",
+      "detail": ""
+    }
+  ],
+  "fontSamples": [
+    {
+      "name": "Task title",
+      "computed": {
+        "text": "设计同步冲突合并策略",
+        "family": "\"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "weight": "570",
+        "size": "12.5px",
+        "lineHeight": "18.125px"
+      },
+      "fonts": [
+        {
+          "familyName": "Noto Sans SC Thin",
+          "postScriptName": "NotoSansSC-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "name": "Inspector heading",
+      "computed": {
+        "text": "设计同步冲突合并策略",
+        "family": "\"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "weight": "550",
+        "size": "20px",
+        "lineHeight": "28px"
+      },
+      "fonts": [
+        {
+          "familyName": "Noto Sans SC Thin",
+          "postScriptName": "NotoSansSC-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "name": "Settings runtime title",
+      "computed": {
+        "text": "ProjectOS Native",
+        "family": "\"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "weight": "700",
+        "size": "14px",
+        "lineHeight": "23.1px"
+      },
+      "fonts": [
+        {
+          "familyName": "Noto Sans SC Thin",
+          "postScriptName": "NotoSansSC-Bold",
+          "isCustomFont": true,
+          "glyphCount": 16
+        }
+      ]
+    }
+  ],
+  "traces": [
+    {
+      "name": "startup",
+      "frames": [
+        {
+          "time": 115,
+          "shell": false,
+          "fonts": "loaded"
+        },
+        {
+          "time": 199,
+          "shell": false,
+          "fonts": "loading"
+        },
+        {
+          "time": 246,
+          "shell": false,
+          "fonts": "loaded"
+        },
+        {
+          "time": 387,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 403,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 405,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 575,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 906,
+          "shell": true,
+          "typeface": "ready",
+          "fonts": "loaded"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "name": "Cold task route mounts complete content",
+      "frames": [
+        {
+          "time": 1065,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1107,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1111,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1122,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1138,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1153,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1218,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1247,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1268,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1281,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1291,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1311,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1343,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1351,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1377,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1387,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1394,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1569,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1776,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1784,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1800,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1810,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1831,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1844,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1858,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1871,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1887,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1903,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1919,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1934,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1950,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1966,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1981,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "Cold task inspector mounts complete content",
+      "frames": [
+        {
+          "time": 2036,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2169,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2340,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2533,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2734,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2751,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2757,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2765,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2780,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2796,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2810,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2825,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2840,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2856,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2872,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2889,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2903,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2920,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2936,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2951,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "Cold settings tab mounts its runtime records",
+      "frames": [
+        {
+          "time": 3688,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3712,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3733,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3787,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3810,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3825,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3846,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3857,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3872,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3888,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3904,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 4076,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 4245,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 4401,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 4556,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 4708,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 4865,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5020,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5175,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5340,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5513,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5684,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5858,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6193,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6206,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6233,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6401,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "Cold run route mounts populated records",
+      "frames": [
+        {
+          "time": 6724,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6751,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6753,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6763,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6777,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6819,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6839,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6857,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6867,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6877,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6909,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6919,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6933,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6943,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7254,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7315,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7346,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7350,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7356,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7392,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7404,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7411,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7420,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7440,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7450,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7466,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7482,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7496,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7512,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "Cold run sheet mounts complete content",
+      "frames": [
+        {
+          "time": 7524,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7528,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7529,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7544,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7547,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7559,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7559,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7577,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7577,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7660,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7660,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7718,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7718,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7894,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7894,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7917,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7918,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7963,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7963,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7987,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7987,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8092,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8092,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

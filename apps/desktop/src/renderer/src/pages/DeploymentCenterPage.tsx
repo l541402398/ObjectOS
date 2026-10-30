@@ -29,7 +29,7 @@ export default function DeploymentCenterPage() {
           versionControl={
             <>
               <Select
-                value={selected.id}
+                aria-label="部署版本" value={selected.id}
                 options={versions.map((version) => ({ value: version.id, label: `v${version.version}` }))}
                 onChange={(versionId) => navigate(`/projects/${projectId}/deployments?version=${versionId}`)}
                 style={{ width: 140 }}

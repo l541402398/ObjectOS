@@ -111,6 +111,7 @@ export function AgentInspector({
             <InspectorSection title="模型与 Runtime">
               <div className="pdl-agent-selects">
                 <PopoverShell
+                  ariaLabel="选择模型"
                   side="bottom"
                   align="start"
                   trigger={<button type="button" className="pdl-select-like" aria-label="选择模型"><span><Sparkles size={13} />{draft.model}</span><ChevronDown size={14} /></button>}

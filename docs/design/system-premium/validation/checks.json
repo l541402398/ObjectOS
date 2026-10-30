@@ -1,0 +1,146 @@
+﻿[
+    {
+        "name":  "lint",
+        "command":  "pnpm lint",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:32:12.5294720Z",
+        "durationSeconds":  53.74,
+        "log":  "lint.txt"
+    },
+    {
+        "name":  "typecheck",
+        "command":  "pnpm typecheck",
+        "status":  "FAIL",
+        "exitCode":  2,
+        "startedAt":  "2026-10-30T10:33:06.5844456Z",
+        "durationSeconds":  54.67,
+        "log":  "typecheck.txt"
+    },
+    {
+        "name":  "test",
+        "command":  "pnpm test",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:34:01.2625141Z",
+        "durationSeconds":  178.32,
+        "log":  "test.txt"
+    },
+    {
+        "name":  "build",
+        "command":  "pnpm build",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:36:59.5926475Z",
+        "durationSeconds":  25.88,
+        "log":  "build.txt"
+    },
+    {
+        "name":  "desktop-e2e",
+        "command":  "node scripts/e2e.mjs",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:37:25.4774947Z",
+        "durationSeconds":  14.75,
+        "log":  "desktop-e2e.txt"
+    },
+    {
+        "name":  "agent-e2e",
+        "command":  "node scripts/agent-e2e.mjs",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:37:40.2312411Z",
+        "durationSeconds":  12.83,
+        "log":  "agent-e2e.txt"
+    },
+    {
+        "name":  "v12-e2e",
+        "command":  "node scripts/v12-e2e.mjs",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:37:53.0701258Z",
+        "durationSeconds":  17.97,
+        "log":  "v12-e2e.txt"
+    },
+    {
+        "name":  "v13-e2e",
+        "command":  "node scripts/v13-e2e.mjs",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:38:11.0518593Z",
+        "durationSeconds":  13.47,
+        "log":  "v13-e2e.txt"
+    },
+    {
+        "name":  "premium-lab",
+        "command":  "node scripts/premium-lab-e2e.mjs",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:38:24.5311141Z",
+        "durationSeconds":  46.06,
+        "log":  "premium-lab.txt"
+    },
+    {
+        "name":  "premium-usability",
+        "command":  "node scripts/premium-usability-e2e.mjs",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:39:10.6101539Z",
+        "durationSeconds":  24.98,
+        "log":  "premium-usability.txt"
+    },
+    {
+        "name":  "premium-readiness",
+        "command":  "node scripts/premium-readiness-e2e.mjs",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:39:35.5949793Z",
+        "durationSeconds":  21.44,
+        "log":  "premium-readiness.txt"
+    },
+    {
+        "name":  "premium-system",
+        "command":  "node scripts/premium-system-ui.mjs",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:39:57.0398709Z",
+        "durationSeconds":  388.52,
+        "log":  "premium-system.txt"
+    },
+    {
+        "name":  "premium-overlays",
+        "command":  "node scripts/premium-overlays-e2e.mjs",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:46:25.5662101Z",
+        "durationSeconds":  366.31,
+        "log":  "premium-overlays.txt"
+    },
+    {
+        "name":  "premium-walkthrough",
+        "command":  "node scripts/premium-walkthrough.mjs",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:52:31.8860930Z",
+        "durationSeconds":  31.41,
+        "log":  "premium-walkthrough.txt"
+    },
+    {
+        "name":  "package-dir",
+        "command":  "pnpm package:dir",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:53:03.3026999Z",
+        "durationSeconds":  74.11,
+        "log":  "package-dir.txt"
+    },
+    {
+        "name":  "package-smoke",
+        "command":  "pnpm test:package",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:54:17.4209297Z",
+        "durationSeconds":  9.72,
+        "log":  "package-smoke.txt"
+    }
+]

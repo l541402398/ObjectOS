@@ -320,7 +320,7 @@ export default function ProjectOverviewPage() {
           </div>
           {next ? (
             <>
-              <span className="po-lifecycle-arrow">→</span>
+              <span className="po-lifecycle-arrow" aria-hidden="true">→</span>
               <div>
                 <span className="po-caption po-muted">下一阶段</span>
                 <strong>{stageLabel(next.stage)}</strong>
@@ -628,6 +628,7 @@ export default function ProjectOverviewPage() {
                 </strong>
               </div>
               <InputNumber
+                aria-label="软预算（USD）"
                 min={0}
                 step={1}
                 value={budgetLimit ?? budget.data?.budget?.softLimit ?? 0}

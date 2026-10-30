@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowRight,
   ArrowUpRight,
+  MoreHorizontal,
+  Plus,
   CheckCircle2,
   CircleAlert,
   Clock3,
@@ -13,9 +15,14 @@ import {
 } from 'lucide-react'
 import { useResolvedTheme } from '../../stores/ui'
 import { formatRelative, formatDateTime } from '../../lib/format'
-import { runStatusLabel, taskStatusLabel } from '../../lib/labels'
+import { runStatusLabel, stageLabel, taskStatusLabel } from '../../lib/labels'
 import { useAgents, useApprovals, useBootstrap, usePlans, useRuns, useTaskBoard } from '../../lib/queries'
 import './studio.css'
+import { ProjectModeControl } from '../../components/ProjectModeControl'
+import { NextStepPanel } from '../../components/NextStepPanel'
+import { PopoverShell } from '../../next-ui/overlay/overlay-shell'
+import { ErrorState } from '@projectos/ui'
+import { errorMessage } from '../../lib/errors'
 
 export function StudioProjectHome(): ReactElement {
   const { projectId = '' } = useParams<{ projectId: string }>()
@@ -38,9 +45,12 @@ export function StudioProjectHome(): ReactElement {
   const workingAgents = (agents.data?.agents ?? []).filter((agent) => agent.status === 'working')
   const latestRuns = [...(runs.data?.runs ?? [])].sort((a, b) => (b.startedAt ?? b.createdAt) - (a.startedAt ?? a.createdAt)).slice(0, 6)
 
-  if (bootstrap.isLoading || plans.isLoading || board.isLoading) {
+  if (bootstrap.isLoading || plans.isLoading || board.isLoading || runs.isLoading || approvals.isLoading || agents.isLoading) {
     return <div className={`studio-home studio-theme`} data-theme={theme}><div className="studio-loading">正在读取项目事实…</div></div>
   }
+
+  const failure = [bootstrap, plans, board, runs, approvals, agents].find((query) => query.isError)
+  if (failure) return <div className="po-page"><ErrorState title="项目状态读取失败" message={errorMessage(failure.error)} onRetry={() => { void Promise.all([bootstrap, plans, board, runs, approvals, agents].map((query) => query.refetch())) }} /></div>
 
   if (!project) {
     return (
@@ -60,41 +70,45 @@ export function StudioProjectHome(): ReactElement {
     <div className="studio-home studio-theme" data-theme={theme}>
       <header className="studio-masthead">
         <div className="studio-masthead-id">
-          <span className="studio-eyebrow">PROJECT / {project.currentStage}</span>
+          <span className="studio-eyebrow">项目 · {stageLabel(project.currentStage)}</span>
           <h1 className="po-page-title">{project.name}</h1>
           <span className="studio-muted">{project.description || '本地优先项目工作区'}</span>
         </div>
         <div className="studio-masthead-actions">
-          <button type="button" className="studio-ghost" onClick={() => navigate(`/projects/${projectId}/tasks`)}>任务看板</button>
-          <button type="button" className="studio-ghost" onClick={() => navigate(`/projects/${projectId}/orchestration`)}>计划 DAG</button>
-          <button type="button" className="studio-cta" onClick={() => navigate(`/projects/${projectId}/agents`)}>进入协作图 <ArrowUpRight size={14} /></button>
+          <ProjectModeControl projectId={projectId} />
+          <button type="button" className="studio-cta" onClick={() => navigate(`/projects/${projectId}/work?intent=requirement`)}><Plus size={14} />提出需求</button>
+          <PopoverShell ariaLabel="更多项目操作" trigger={<button type="button" className="studio-ghost" aria-label="更多项目操作"><MoreHorizontal size={18} /></button>} className="pdl-plan-menu" align="end">
+            <button type="button" onClick={() => navigate(`/projects/${projectId}/work`)}>详细工作控制台</button>
+            <button type="button" onClick={() => navigate(`/projects/${projectId}/project-settings`)}>项目设置</button>
+            <button type="button" onClick={() => navigate(`/projects/${projectId}/health`)}>项目健康</button>
+          </PopoverShell>
         </div>
       </header>
 
       <section className="studio-hero">
         <div className="studio-hero-copy">
-          <span className="studio-kicker"><Sparkles size={13} /> CURRENT MISSION</span>
+          <span className="studio-kicker"><Sparkles size={13} /> 当前目标</span>
           <h2>{plan?.goal ?? '还没有执行计划'}</h2>
           <div className="studio-hero-meta">
-            <span>{plan ? `计划 r${plan.revision} · ${plan.status === 'approved' ? '已批准' : plan.status}` : '等待生成计划'}</span>
-            <span>{project.currentStage} 阶段</span>
+            <span>{plan ? `计划 r${plan.revision} · ${plan.status === 'approved' ? '已批准' : plan.status === 'draft' ? '待审核' : plan.status === 'rejected' ? '已拒绝' : plan.status}` : '等待生成计划'}</span>
+            <span>{stageLabel(project.currentStage)} 阶段</span>
             <span>{workingAgents.length} 位 Agent 正在工作</span>
           </div>
           <div className="studio-hero-actions">
             {plan ? (
-              <button type="button" className="studio-cta" onClick={() => navigate(`/projects/${projectId}/orchestration?plan=${plan.id}`)}>
-                查看执行计划 <ArrowRight size={14} />
+              <button type="button" className="studio-ghost" onClick={() => navigate(`/projects/${projectId}/orchestration?plan=${plan.id}`)}>
+                查看计划 <ArrowRight size={14} />
               </button>
             ) : (
               <button type="button" className="studio-cta" onClick={() => navigate(`/projects/${projectId}/orchestration`)}>生成计划 <ArrowRight size={14} /></button>
             )}
-            <button type="button" className="studio-ghost" onClick={() => navigate(`/projects/${projectId}/runs`)}>运行审计</button>
+            <button type="button" className="studio-ghost" onClick={() => navigate(`/projects/${projectId}/agents`)}>进入协作图 <ArrowRight size={14} /></button>
           </div>
         </div>
         <div className="studio-progress">
           <div className="studio-progress-ring" style={{ '--studio-progress': `${progress}%` } as React.CSSProperties}>
             <strong>{progress}%</strong>
-            <span>完成</span>
+            <span>任务完成</span>
           </div>
           <dl>
             <div><dt>任务</dt><dd>{doneTasks.length} / {tasks.length}</dd></div>
@@ -105,9 +119,11 @@ export function StudioProjectHome(): ReactElement {
         </div>
       </section>
 
+      <NextStepPanel projectId={projectId} navigate={navigate} />
+
       <div className="studio-home-grid">
         <section className="studio-focus">
-          <header><span className="studio-kicker">IN FLIGHT</span><strong>正在发生</strong><em>{activeTasks.length}</em></header>
+          <header><strong>正在发生</strong><em>{activeTasks.length}</em></header>
           {activeTasks.length === 0 ? (
             <div className="studio-inline-empty">
               <Layers3 size={16} />
@@ -132,13 +148,13 @@ export function StudioProjectHome(): ReactElement {
             </div>
           )}
           <footer className="studio-section-foot">
-            <span>只显示真实 Task/Run 行</span>
+            <span>当前进行中的任务</span>
             <button type="button" className="studio-link" onClick={() => navigate(`/projects/${projectId}/agents`)}>在协作图中查看 <ArrowRight size={12} /></button>
           </footer>
         </section>
 
         <aside className="studio-ledger">
-          <header><span className="studio-kicker">NEEDS A HUMAN</span><strong>待处理</strong><em>{pending.length}</em></header>
+          <header><strong>待处理</strong><em>{pending.length}</em></header>
           {pending.length === 0 ? (
             <div className="studio-inline-empty"><CheckCircle2 size={16} /><span>没有等待你的审批。</span></div>
           ) : (
@@ -154,13 +170,13 @@ export function StudioProjectHome(): ReactElement {
           )}
           <div className="studio-ledger-note">
             <Clock3 size={13} />
-            <span>审批与 Run 状态来自本地持久化，不是前端模拟。</span>
+            <span>处理后，关联任务会按现有授权继续。</span>
           </div>
         </aside>
       </div>
 
       <section className="studio-timeline">
-        <header><span className="studio-kicker">RECENT EXECUTION</span><strong>最近运行</strong><button type="button" className="studio-link" onClick={() => navigate(`/projects/${projectId}/runs`)}>全部记录 <ArrowRight size={12} /></button></header>
+        <header><strong>最近运行</strong><button type="button" className="studio-link" onClick={() => navigate(`/projects/${projectId}/runs`)}>全部记录 <ArrowRight size={12} /></button></header>
         {latestRuns.length === 0 ? (
           <div className="studio-inline-empty"><GitBranch size={16} /><span>还没有运行记录。</span></div>
         ) : (
@@ -178,7 +194,7 @@ export function StudioProjectHome(): ReactElement {
 
       <footer className="studio-colophon">
         <span>{project.rootPath}</span>
-        <span>本地工作区 · 真实持久化</span>
+        <span>本地工作区</span>
       </footer>
     </div>
   )

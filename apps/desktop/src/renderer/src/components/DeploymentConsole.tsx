@@ -1,6 +1,9 @@
+import { useNavigate } from 'react-router-dom'
+import { DeploymentStart } from './DeploymentStart'
+import { FormDialog } from '../next-ui/overlay/FormDialog'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { App as AntApp, Button, Empty, Input, Modal, Select, Tag } from 'antd'
+import { App as AntApp, Button, Empty, Input, Select, Tag } from 'antd'
 import { errorMessage } from '../lib/errors'
 import { formatRelative } from '../lib/format'
 import './deployment-console.css'
@@ -23,6 +26,7 @@ function deploymentStatusLabel(deployment: { status: string; assurance: string }
 }
 
 export function DeploymentConsole({ projectId, versionId, versionControl }: { projectId: string; versionId: string; versionControl?: ReactNode }) {
+  const navigate = useNavigate()
   const { message } = AntApp.useApp()
   const queryClient = useQueryClient()
   const overview = useQuery({
@@ -39,6 +43,9 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
   const [deployReleaseId, setDeployReleaseId] = useState<string | null>(null)
   const [deploySource, setDeploySource] = useState<'manual' | 'imported' | 'unknown'>('manual')
   const [targetOpen, setTargetOpen] = useState(false)
+  const [environmentOpen, setEnvironmentOpen] = useState(false)
+  const [environmentKey, setEnvironmentKey] = useState('')
+  const [environmentName, setEnvironmentName] = useState('')
   const [targetName, setTargetName] = useState('')
   const [targetRef, setTargetRef] = useState('')
   const [targetKind, setTargetKind] = useState<'local' | 'ssh'>('ssh')
@@ -55,6 +62,11 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
     setTargetId((current) => current ?? data.targets[0]?.id ?? null)
     setSelectedDeploymentId((current) => current ?? data.deployments[0]?.id ?? null)
   }, [data])
+
+  const availableTargets = useMemo(() => (data?.targets ?? []).filter((item) => item.environmentId === environmentId), [data?.targets, environmentId])
+  useEffect(() => {
+    setTargetId((current) => availableTargets.some((item) => item.id === current) ? current : availableTargets[0]?.id ?? null)
+  }, [availableTargets])
 
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: ['release-overview', projectId, versionId] })
@@ -133,6 +145,11 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
     },
     onError: (error) => message.error(errorMessage(error)),
   })
+  const createEnvironment = useMutation({
+    mutationFn: () => window.projectos.lifecycle.createEnvironment({ projectId, key: environmentKey.trim(), name: environmentName.trim(), kind: 'custom', protected: false }),
+    onSuccess: async (created) => { setEnvironmentId(created.id); setEnvironmentOpen(false); setEnvironmentKey(''); setEnvironmentName(''); await Promise.all([invalidate(), queryClient.invalidateQueries({ queryKey: ['lifecycle', projectId] })]); message.success('环境已登记') },
+    onError: (error) => message.error(errorMessage(error)),
+  })
   const createTarget = useMutation({
     mutationFn: () =>
       window.projectos.release.createTarget({
@@ -171,19 +188,26 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
       <header className="dc-head">
         <div>
           <div className="rw-eyebrow">DELIVERY CONTROL</div>
-          <h1>部署控制台</h1>
-          <p>{environment?.name ?? '未选择环境'} · {target?.name ?? '未选择目标'} · {currentVersionLabel ? `当前可信版本 v${currentVersionLabel}` : '没有已验证运行版本'}</p>
+          <h1>部署中心</h1>
+          <p>{selected ? `${environment?.name ?? '当前环境'} · ${target?.name ?? '部署记录'} · ${currentVersionLabel ? `已验证 v${currentVersionLabel}` : '尚未验证运行版本'}` : '将经过审核的发布包交付到目标环境'}</p>
         </div>
         <div className="dc-head-right">
           {versionControl}
-          <Select value={environmentId ?? undefined} style={{ width: 130 }} options={data.environments.map((item) => ({ value: item.id, label: item.name }))} onChange={setEnvironmentId} />
-          <Select value={targetId ?? undefined} style={{ width: 190 }} placeholder="选择目标" options={data.targets.map((item) => ({ value: item.id, label: `${item.name} · ${item.adapterType ?? '未配置'}` }))} onChange={setTargetId} />
+          {data.environments.length ? <Select aria-label="部署环境" value={environmentId ?? undefined} style={{ width: 130 }} options={data.environments.map((item) => ({ value: item.id, label: item.name }))} onChange={setEnvironmentId} /> : null}
+          {selected ? <>
+          <Select value={targetId ?? undefined} style={{ width: 190 }} aria-label="部署目标" placeholder="选择目标" options={availableTargets.map((item) => ({ value: item.id, label: `${item.name} · ${item.adapterType ?? '未配置'}` }))} onChange={setTargetId} />
           <Button onClick={() => setTargetOpen(true)}>连接目标</Button>
+          <Button onClick={() => setEnvironmentOpen(true)}>登记环境</Button>
+          </> : null}
         </div>
       </header>
 
-      <div className="dc-body">
-        <aside className="dc-targets">
+      {!selected ? <DeploymentStart releaseCount={data.releases.length} releaseVersion={data.releases[0]?.version}
+        environmentName={environment?.name} environmentCount={data.environments.length} targetCount={availableTargets.length}
+        onRelease={() => navigate(`/projects/${projectId}/releases?version=${versionId}`)}
+        onEnvironment={() => setEnvironmentOpen(true)} onTarget={() => environmentId ? setTargetOpen(true) : setEnvironmentOpen(true)}
+        onDeploy={() => { setDeployReleaseId(data.releases[0]?.id ?? null); setDeployOpen(true) }} /> : <div className="dc-body">
+        <aside className="dc-targets" aria-label="环境与目标">
           <div className="dc-panel-title">环境与目标 <span>{data.targets.length}</span></div>
           {data.targets.length === 0 ? (
             <div className="dc-empty-block">
@@ -213,7 +237,6 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
             <Button type="primary" disabled={!data.releases.length} onClick={() => { setDeployReleaseId(data.releases[0]?.id ?? null); setDeployOpen(true) }}>登记部署</Button>
             {canExecute ? <Button type="primary" loading={executing} onClick={() => void runExecute(selected!.id)}>执行部署</Button> : null}
             {selected?.status === 'pending' ? <Button onClick={() => record.mutate(selected.id)} loading={record.isPending}>人工记录结果</Button> : null}
-            <Button disabled={!data.releases.length} onClick={() => setDeployOpen(true)}>从 Release 开始</Button>
             <Button onClick={() => { void queryClient.refetchQueries({ queryKey: ['release-overview', projectId, versionId] }) }}>刷新状态</Button>
           </div>
           {executeError ? <div className="dc-execute-error">{executeError}</div> : null}
@@ -250,7 +273,7 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
                 <span><b>可信度</b>{ASSURANCE_LABEL[selected.assurance] ?? selected.assurance}</span>
               </div>
               <div className="dc-evidence">
-                <h3>执行证据</h3>
+                <h2>执行证据</h2>
                 {health ? (
                   <div className={`dc-health ${health.ok ? 'ok' : 'warn'}`}>
                     <strong>{health.ok ? '服务健康通过' : '未验证服务健康'}</strong>
@@ -266,7 +289,7 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
               </div>
               {operations.data && operations.data.operations.length > 0 ? (
                 <div className="dc-timeline">
-                  <h3>执行时间线 <span>{operations.data.operations.length} 次尝试 · {operations.data.steps.length} 步</span></h3>
+                  <h2>执行时间线 <span>{operations.data.operations.length} 次尝试 · {operations.data.steps.length} 步</span></h2>
                   {operations.data.operations.map((operation) => (
                     <div key={operation.id} className={`dc-op is-${operation.state}`}>
                       <div className="dc-op-head">
@@ -290,7 +313,7 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
                 </div>
               ) : null}
               <div className="dc-history">
-                <h3>部署历史 <span>{deployments.length}</span></h3>
+                <h2>部署历史 <span>{deployments.length}</span></h2>
                 {deployments.map((item) => (
                   <button key={item.id} className={`dc-history-row ${selected.id === item.id ? 'is-selected' : ''}`} onClick={() => setSelectedDeploymentId(item.id)}>
                     <span>{data.releases.find((r) => r.id === item.releaseId)?.version ?? item.releaseId.slice(0, 8)}</span>
@@ -303,19 +326,19 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
           )}
         </section>
 
-        <aside className="dc-inspector">
-          <h3>目标与权限</h3>
+        <aside className="dc-inspector" aria-label="部署权限与状态">
+          <h2>目标与权限</h2>
           <div className="dc-kv"><span>环境</span><strong>{environment?.name ?? '—'}</strong></div>
           <div className="dc-kv"><span>目标</span><strong>{target?.name ?? '—'}</strong></div>
           <div className="dc-kv"><span>控制方式</span><strong>{target?.controlMode ?? '—'}</strong></div>
           <div className="dc-kv"><span>Adapter</span><strong>{target?.adapterType ?? '未配置'}</strong></div>
           <div className="dc-kv"><span>地址</span><strong className="dc-ellipsis">{target?.targetRef ?? '—'}</strong></div>
           <div className="dc-rail-divider" />
-          <h3>当前可信运行版本</h3>
+          <h2>当前可信运行版本</h2>
           <div className="dc-current">{currentVersionLabel ? `v${currentVersionLabel}` : '无'}</div>
           <p className="dc-rail-copy">仅外部确认或独立观察的部署会成为环境运行版本。人工记录和文件交付不会。</p>
           <div className="dc-rail-divider" />
-          <h3>操作</h3>
+          <h2>操作</h2>
           {selected && target?.adapterType === 'ssh-artifact' && ['needs_reconciliation', 'unknown', 'running', 'failed', 'pending'].includes(selected.status) ? (
             <Button block onClick={() => reconcile.mutate(selected.id)} loading={reconcile.isPending}>对账远程事实</Button>
           ) : null}
@@ -325,24 +348,32 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
           {selected?.status === 'failed' ? <Button block onClick={() => { setDeployReleaseId(selected.releaseId); setDeployOpen(true) }}>重新登记</Button> : null}
           <p className="dc-rail-copy">执行前必须完成独立审批；未知结果进入待核对，不自动重放。</p>
         </aside>
-      </div>
+      </div>}
 
-      <Modal open={deployOpen} title="登记部署" okText="创建" cancelText="取消" confirmLoading={createDeployment.isPending} okButtonProps={{ disabled: !deployReleaseId || !environmentId }} onOk={() => createDeployment.mutate()} onCancel={() => setDeployOpen(false)}>
+      <FormDialog open={environmentOpen} title="登记环境" okText="登记" onCancel={() => setEnvironmentOpen(false)} onOk={() => createEnvironment.mutate()} confirmLoading={createEnvironment.isPending} okButtonProps={{ disabled: !environmentKey.trim() || !environmentName.trim() }}>
         <div className="rw-form">
-          <label><span>Release</span><Select value={deployReleaseId} onChange={setDeployReleaseId} options={data.releases.map((item) => ({ value: item.id, label: `v${item.version} · ${item.manifestHash.slice(0, 8)}` }))} /></label>
-          <label><span>环境</span><Select value={environmentId} onChange={setEnvironmentId} options={data.environments.map((item) => ({ value: item.id, label: item.name }))} /></label>
-          <label><span>目标</span><Select allowClear value={targetId} onChange={(value) => setTargetId(value ?? null)} options={data.targets.map((item) => ({ value: item.id, label: item.name }))} /></label>
-          <label><span>来源</span><Select value={deploySource} onChange={setDeploySource} options={[
+          <label><span>环境名称</span><Input value={environmentName} onChange={(event) => setEnvironmentName(event.target.value)} placeholder="例如：测试环境" /></label>
+          <label><span>环境标识</span><Input value={environmentKey} onChange={(event) => setEnvironmentKey(event.target.value)} placeholder="例如：staging" /></label>
+          <p className="dc-note">环境用于区分部署用途，创建后再连接服务器或目录。</p>
+        </div>
+      </FormDialog>
+      <FormDialog open={deployOpen} title="登记部署" okText="创建" cancelText="取消" confirmLoading={createDeployment.isPending} okButtonProps={{ disabled: !deployReleaseId || !environmentId }} onOk={() => createDeployment.mutate()} onCancel={() => setDeployOpen(false)}>
+        <div className="rw-form">
+          <label><span>发布包</span><Select aria-label="部署发布包" value={deployReleaseId} onChange={setDeployReleaseId} options={data.releases.map((item) => ({ value: item.id, label: `v${item.version} · ${item.manifestHash.slice(0, 8)}` }))} /></label>
+          <label><span>环境</span><Select aria-label="登记部署的环境" value={environmentId} onChange={setEnvironmentId} options={data.environments.map((item) => ({ value: item.id, label: item.name }))} /></label>
+          <label><span>目标</span><Select aria-label="登记部署的目标" allowClear value={targetId} onChange={(value) => setTargetId(value ?? null)} options={availableTargets.map((item) => ({ value: item.id, label: item.name }))} /></label>
+          <label><span>来源</span><Select aria-label="部署记录来源" value={deploySource} onChange={setDeploySource} options={[
             { value: 'manual', label: '手工记录（未验证）' },
             { value: 'imported', label: '导入外部记录' },
             { value: 'unknown', label: '来源未知（待核对）' },
           ]} /></label>
           <p className="dc-note">创建后等待独立审批；不会自动执行。</p>
         </div>
-      </Modal>
+      </FormDialog>
 
-      <Modal open={targetOpen} title="连接部署目标" okText="登记" cancelText="取消" confirmLoading={createTarget.isPending} okButtonProps={{ disabled: !targetName.trim() || !targetRef.trim() }} onOk={() => createTarget.mutate()} onCancel={() => setTargetOpen(false)}>
+      <FormDialog open={targetOpen} title="连接部署目标" okText="登记" cancelText="取消" confirmLoading={createTarget.isPending} okButtonProps={{ disabled: !environmentId || !targetName.trim() || !targetRef.trim() }} onOk={() => createTarget.mutate()} onCancel={() => setTargetOpen(false)}>
         <div className="rw-form">
+          <label><span>所属环境</span><Select aria-label="部署目标所属环境" value={environmentId ?? undefined} onChange={setEnvironmentId} options={data.environments.map((item) => ({ value: item.id, label: item.name }))} /></label>
           <label><span>已登记资源</span><Select allowClear value={targetResourceId} onChange={(value) => { setTargetResourceId(value ?? null); setTargetProfileId(null) }} options={(resourceOverview.data?.resources ?? []).map((item) => ({ value: item.id, label: `${item.name} · ${item.endpoint}` }))} /></label>
           <label><span>连接 Profile</span><Select allowClear value={targetProfileId} onChange={(value) => {
             setTargetProfileId(value ?? null)
@@ -363,7 +394,7 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
           <label><span>目标地址（自动填充，可修正）</span><Input value={targetRef} onChange={(event) => setTargetRef(event.target.value)} placeholder="ssh://root@host:22/opt/projectos-... 或本地目录" /></label>
           <p className="dc-note">SSH 密钥由 OS 安全存储引用，不写入数据库。连接检测成功后才显示可执行。</p>
         </div>
-      </Modal>
+      </FormDialog>
     </div>
   )
 }

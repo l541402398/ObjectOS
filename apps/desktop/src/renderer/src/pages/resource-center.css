@@ -50,7 +50,7 @@
   font-size: 12px; color: var(--color-text-tertiary); cursor: pointer;
 }
 .rc-tabs button.is-active { background: var(--color-surface); color: var(--color-text-primary); box-shadow: var(--shadow-xs); }
-.rc-tabs span { opacity: 0.7; margin-left: 2px; }
+.rc-tabs span { color: var(--ui-ink-2); margin-left: 2px; }
 
 .rc-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin-top: 2px; }
 
@@ -140,7 +140,7 @@
   border-left: 1px solid var(--color-divider);
   background: color-mix(in srgb, var(--color-surface) 55%, transparent);
 }
-.rc-inspector h3 { margin: 0 0 2px; font-size: 12px; color: var(--color-text-tertiary); }
+.rc-inspector h2 { margin: 0 0 2px; font-size: 12px; color: var(--color-text-tertiary); }
 .rc-inspector p { margin: 0; font-size: 12px; line-height: 1.5; color: var(--color-text-tertiary); }
 .rc-rail-divider { height: 1px; margin: 7px 0; background: var(--color-divider); }
 

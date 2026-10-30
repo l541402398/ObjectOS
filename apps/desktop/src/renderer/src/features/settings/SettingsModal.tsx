@@ -2,6 +2,7 @@ import {
   ApiOutlined,
   AppstoreOutlined,
   InfoCircleOutlined,
+  LoadingOutlined,
   SettingOutlined,
   SlidersOutlined,
   HddOutlined,
@@ -81,6 +82,7 @@ function renderSection(section: SettingsSection): ReactNode {
 export function SettingsModal() {
   const open = useUiStore((state) => state.settingsOpen)
   const section = useUiStore((state) => state.settingsSection)
+  const pendingSection = useUiStore((state) => state.settingsPendingSection)
   const setSection = useUiStore((state) => state.setSettingsSection)
   const close = useUiStore((state) => state.closeSettings)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -99,16 +101,19 @@ export function SettingsModal() {
               <button
                 key={item.key}
                 type="button"
+                aria-label={item.label}
+                aria-current={section === item.key ? 'page' : undefined}
+                aria-busy={pendingSection === item.key || undefined}
                 className={`po-settings-nav-item ${section === item.key ? 'is-active' : ''}`.trim()}
                 data-testid={item.key === 'organization' ? 'organization-settings-entry' : undefined}
                 onClick={() => setSection(item.key)}
               >
-                <span>{item.icon}</span>
-                {item.label}
+                <span aria-hidden>{pendingSection === item.key ? <LoadingOutlined /> : item.icon}</span>
+                <span className="po-settings-nav-label">{item.label}</span>
               </button>
             ))}
           </nav>
-          <div className="po-settings-content" key={section} ref={contentRef}>{renderSection(section)}</div>
+          <div className="po-settings-content" tabIndex={0} key={section} ref={contentRef} aria-busy={pendingSection !== null}>{renderSection(section)}</div>
         </div>
       </div>
     </DialogShell>

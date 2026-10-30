@@ -1,0 +1,128 @@
+[
+  {
+    "name": "lint",
+    "command": "pnpm lint",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T09:08:09.3517298Z",
+    "durationSeconds": 64.44,
+    "log": "lint.txt"
+  },
+  {
+    "name": "typecheck",
+    "command": "pnpm typecheck",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T09:09:13.8574081Z",
+    "durationSeconds": 50.37,
+    "log": "typecheck.txt"
+  },
+  {
+    "name": "test",
+    "command": "pnpm test",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T09:10:04.2421078Z",
+    "durationSeconds": 161.19,
+    "log": "test.txt"
+  },
+  {
+    "name": "build",
+    "command": "pnpm build",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T09:12:45.4413826Z",
+    "durationSeconds": 20.7,
+    "log": "build.txt"
+  },
+  {
+    "name": "desktop-e2e",
+    "command": "node scripts/e2e.mjs",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T09:13:06.1483975Z",
+    "durationSeconds": 8.2,
+    "log": "desktop-e2e.txt"
+  },
+  {
+    "name": "agent-e2e",
+    "command": "node scripts/agent-e2e.mjs",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T09:13:14.3608814Z",
+    "durationSeconds": 11.92,
+    "log": "agent-e2e.txt"
+  },
+  {
+    "name": "v12-e2e",
+    "command": "node scripts/v12-e2e.mjs",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T09:13:26.2882917Z",
+    "durationSeconds": 15.51,
+    "log": "v12-e2e.txt"
+  },
+  {
+    "name": "v13-e2e",
+    "command": "node scripts/v13-e2e.mjs",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T09:13:41.8510181Z",
+    "durationSeconds": 12.05,
+    "log": "v13-e2e.txt"
+  },
+  {
+    "name": "premium-lab",
+    "command": "node scripts/premium-lab-e2e.mjs",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T09:13:53.9125152Z",
+    "durationSeconds": 43.16,
+    "log": "premium-lab.txt"
+  },
+  {
+    "name": "premium-usability",
+    "command": "node scripts/premium-usability-e2e.mjs",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T09:14:37.0832854Z",
+    "durationSeconds": 23.06,
+    "log": "premium-usability.txt"
+  },
+  {
+    "name": "premium-system",
+    "command": "node scripts/premium-system-ui.mjs",
+    "status": "FAIL",
+    "exitCode": 1,
+    "startedAt": "2026-10-30T09:15:00.1496491Z",
+    "durationSeconds": 376.3,
+    "log": "premium-system.txt"
+  },
+  {
+    "name": "premium-overlays",
+    "command": "node scripts/premium-overlays-e2e.mjs",
+    "status": "FAIL",
+    "exitCode": 1,
+    "startedAt": "2026-10-30T09:21:16.4548884Z",
+    "durationSeconds": 356.63,
+    "log": "premium-overlays.txt"
+  },
+  {
+    "name": "package-dir",
+    "command": "pnpm package:dir",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T09:27:13.1184520Z",
+    "durationSeconds": 84.35,
+    "log": "package-dir.txt"
+  },
+  {
+    "name": "package-smoke",
+    "command": "pnpm test:package",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T09:28:37.4732462Z",
+    "durationSeconds": 9.4,
+    "log": "package-smoke.txt"
+  }
+]

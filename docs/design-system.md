@@ -1,23 +1,27 @@
 # 设计系统与 UI 验收
 
+> 2026-10-30：当前基线为用户再次确认的 Design Lab DAG，见 `docs/design/system-premium/REPORT.md`、ADR-0070/0071。
+> 新界面的主观视觉验收仍由用户确认。以下尺寸与令牌已同步至本轮实现。
+
 > ProjectOS 的视觉目标是“现代极简、层次清晰、克制玻璃拟态的专业工作台”，不是套用
 > Ant Design 默认主题。所有页面必须使用 `packages/design-tokens` 与 `packages/ui`。
 
 ## 1. 页面结构
 
-- 顶部 46px 轻量标题栏：拖拽区域、面包屑、命令面板、Runtime 状态、主题、窗口控制。
-- 左侧 248px 可折叠导航（窄窗口 76px），仅在侧栏、顶栏、悬浮/弹层使用玻璃材质。
+- 顶部 58px 轻量标题栏：拖拽区域、面包屑、命令面板、Runtime 状态、主题、窗口控制。
+- 左侧 228px 可展开导航（默认及窄窗口 60px 图标栏），仅在侧栏、顶栏、悬浮/弹层使用玻璃材质。
 - 中央内容区：不透明卡片与代码/表格/终端表面。
-- 右侧检查器（≥1280px）：Agent 运行步骤、审批、项目上下文；窄窗口隐藏。
+- 右侧检查器：按需展开对象详情，窄窗口使用同一浮动面板，不删除功能。
 - 底部状态栏：项目路径、Git 分支/变更、阶段、Runtime、端口安全提示。
 
 ## 2. 令牌
 
-来源：`packages/design-tokens/src/index.ts` 与 `tokens.css`。
+来源：`packages/design-tokens/src/index.ts`、`tokens.css` 与统一兼容层 `unified.css`。
 
-- Light canvas `#F4F5F7`，surface `#FFFFFF`，accent `#1677FF`。
-- Dark canvas `#0A0C11`，surface `#14171F`，accent `#6FAEFF`。
-- 圆角 6/8/10/12/16/20/24；间距 4 基准；字体系统栈；正文 13–14px。
+- Light canvas `#EFF4FC`，surface `#F4F7FD`，accent `#4F64D9`；空间背景使用批准稿的紫蓝/青色静态光学层，阅读面与弹层使用轻微冷色渐层。
+- Dark 使用 `unified.css` 的同一语义层，保留冷色光学空间与清晰工作面。
+- 控件 36px / 10px 圆角；内容面 14–18px、浮层 20–22px、工作区 28px。间距以 4px 为基准。
+- 字体依据用户后续反馈统一为本地 Noto Sans SC 可变字体；26px 页标题、24px 目标标题、16px 段落标题、14px 正文、13px 辅助和 12px 标签。代码中文亦显式回退至该字体。保持批准 Lab 的构图与材质方向。
 - Light/Dark 由 `data-theme` 驱动；`reduceTransparency` / `reduceMotion` 写入根节点属性，
   并提供 `prefers-reduced-transparency`、`prefers-reduced-motion`、`forced-colors` 回退。
 - 玻璃仅用于 `AppShell` 侧栏、顶栏、检查器、弹层；编辑区、表格、终端保持高对比实体背景。
@@ -35,7 +39,7 @@ ApprovalCard、RichText（安全 Markdown 子集）。
 - 页面不得散落玻璃 CSS、硬编码品牌色或独立阴影；新增样式优先使用 CSS variables。
 - 所有交互状态：hover、focus-visible、active、disabled、loading、empty、error。
 - 大段代码、Diff、终端使用等宽字体和稳定背景；不在玻璃上放长表格。
-- 动效 120/180/260/320ms，尊重减少动效；无循环装饰动画。
+- 动效尊重实时减少动效设置；用户明确要求的协作关系流向脉冲有暂停控制并限定数量，计划 DAG 本身不循环流动。
 - 键盘可达；焦点清晰；窗口控制与命令面板可见。
 
 ## 4. 页面清单
@@ -43,10 +47,10 @@ ApprovalCard、RichText（安全 Markdown 子集）。
 | 路由 | 页面 | 真实数据 |
 |---|---|---|
 | `/` | 项目中心 | 项目、统计、近期活动、创建/加载示例 |
-| `/projects/:id` | 项目总览 | 生命周期门禁、里程碑、需求/ADR、Agent、审批、Git |
+| `/projects/:id` | 研发工作中心 | 当前目标、工作模式、下一步、任务与运行；直接提出需求 |
 | `/projects/:id/tasks` | 任务看板 | 拖拽、筛选、DAG、验收、运行/交付物/审批 |
 | `/projects/:id/orchestration` | 编排工作台 | React Flow 图、Agent/任务节点、Inspector、布局保存 |
-| `/projects/:id/agents` | Agent 工作台 | 会话、Ant Design X 消息、工具链、审批、运行检查器 |
+| `/projects/:id/agents` | Agent 协作图 | 真实 Agent/任务/成果连线，按需打开上下文、审批与运行检查器；无聊天式内页 |
 | `/projects/:id/collaboration` | 跨会话中心 | 收件箱状态、唤醒、交接、Agent 阵容 |
 | `/projects/:id/workspace` | 工作区 | 文件树、Monaco、Git diff、只读终端 |
 | `/projects/:id/runs` | 运行审计 | 运行表、步骤、工具、审批、事件流 |

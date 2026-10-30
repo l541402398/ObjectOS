@@ -1,6 +1,7 @@
+import { FormDialog } from '../next-ui/overlay/FormDialog'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { App as AntApp, Button, Empty, Input, Modal, Select, Tag } from 'antd'
+import { App as AntApp, Button, Empty, Input, Select, Tag } from 'antd'
 import type { ReleaseOverview } from '@projectos/contracts'
 import { SectionCard } from '@projectos/ui'
 import { errorMessage } from '../lib/errors'
@@ -603,7 +604,7 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
         </div>
       ) : null}
 
-      <Modal
+      <FormDialog
         open={crOpen}
         title="新建变更申请"
         okText="创建"
@@ -620,9 +621,9 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
           <label><span>目标环境</span><Select allowClear value={environmentId} onChange={(value) => setEnvironmentId(value ?? null)} options={data.environments.map((environment) => ({ value: environment.id, label: environment.name }))} /></label>
           <label><span>关联 Artifact</span><Select mode="multiple" value={artifactIds} onChange={setArtifactIds} options={versionArtifacts.map((artifact) => ({ value: artifact.id, label: artifact.title }))} /></label>
         </div>
-      </Modal>
+      </FormDialog>
 
-      <Modal
+      <FormDialog
         open={deployOpen}
         title="登记部署记录"
         okText="创建待审批部署"
@@ -643,9 +644,9 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
           ]} /></label>
           <div className="rel-hint">当前没有可执行部署适配器；登记不会把环境标记为外部确认成功。</div>
         </div>
-      </Modal>
+      </FormDialog>
 
-      <Modal
+      <FormDialog
         open={targetOpen}
         title="登记部署目标"
         okText="登记"
@@ -675,9 +676,9 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
           ]} /></label>
           <div className="rel-hint">登记目标不代表已连接服务器；没有 Adapter 时不显示执行按钮。</div>
         </div>
-      </Modal>
+      </FormDialog>
 
-      <Modal
+      <FormDialog
         open={strategyOpen}
         title="登记部署策略"
         okText="登记"
@@ -695,7 +696,7 @@ export function ReleasePanel({ projectId, versionId, versionLabel, mode = 'all' 
             { value: 'imported', label: '导入观察（无执行）' },
           ]} /></label>
         </div>
-      </Modal>
+      </FormDialog>
     </SectionCard>
   )
 }

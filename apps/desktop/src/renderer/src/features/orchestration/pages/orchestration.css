@@ -1,16 +1,16 @@
 .po-orchestration-page {
-  --orch-bg: #070a10;
-  --orch-panel: #0d121b;
-  --orch-panel-raised: #121926;
-  --orch-border: #1d2735;
-  --orch-border-soft: #16202d;
-  --orch-text: #edf3ff;
-  --orch-text-dim: #94a2b8;
-  --orch-text-faint: #647287;
-  --orch-blue: #4c8dff;
-  --orch-green: #22c55e;
-  --orch-amber: #e8a33d;
-  --orch-red: #ef5b63;
+  --orch-bg: var(--ui-bg-app);
+  --orch-panel: var(--ui-surface);
+  --orch-panel-raised: var(--ui-surface-raised);
+  --orch-border: var(--ui-border);
+  --orch-border-soft: var(--ui-divider);
+  --orch-text: var(--ui-ink);
+  --orch-text-dim: var(--ui-ink-2);
+  --orch-text-faint: var(--ui-muted);
+  --orch-blue: var(--ui-accent);
+  --orch-green: var(--ui-ok);
+  --orch-amber: var(--ui-warn);
+  --orch-red: var(--ui-danger);
   max-width: none;
   height: calc(100vh - 92px);
   min-height: 660px;
@@ -61,7 +61,7 @@
   margin: 0;
   border-color: rgba(76, 141, 255, 0.35);
   background: rgba(76, 141, 255, 0.12);
-  color: #9fc1ff;
+  color: var(--ui-accent-strong);
   font-size: var(--text-small);
 }
 
@@ -89,7 +89,7 @@
   padding: 6px 10px;
   border: 1px solid var(--orch-border);
   border-radius: 8px;
-  background: linear-gradient(180deg, rgba(24, 35, 52, 0.9), rgba(12, 18, 27, 0.9));
+  background: var(--ui-surface);
 }
 
 .po-orch-metrics span {
@@ -132,7 +132,7 @@
   padding: 7px 11px;
   border: 1px solid var(--orch-border-soft);
   border-radius: 8px;
-  background: rgba(13, 18, 27, 0.72);
+  background: var(--ui-surface);
   color: var(--orch-text-faint);
   font-size: var(--text-small);
 }
@@ -149,11 +149,11 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #2f6fe4, #6aa7ff);
+  background: var(--ui-accent);
 }
 
 .po-orch-progress-line strong {
-  color: #9fc1ff;
+  color: var(--ui-accent-strong);
   font-size: var(--text-small);
   font-variant-numeric: tabular-nums;
 }
@@ -196,7 +196,7 @@
   height: 23px;
   padding: 0 7px;
   border-color: var(--orch-border);
-  background: rgba(18, 25, 38, 0.8);
+  background: var(--ui-surface);
   color: var(--orch-text-dim);
   font-size: var(--text-small);
 }
@@ -229,7 +229,7 @@
 .po-orch-canvas .react-flow__minimap {
   border: 1px solid var(--orch-border);
   border-radius: 7px;
-  background: rgba(9, 13, 21, 0.9);
+  background: var(--ui-surface);
 }
 
 .po-orch-canvas .react-flow__minimap-mask {
@@ -247,7 +247,7 @@
   padding: 4px 8px;
   border: 1px solid var(--orch-border-soft);
   border-radius: 6px;
-  background: rgba(10, 15, 23, 0.82);
+  background: var(--ui-surface);
   color: var(--orch-text-faint);
   font-size: var(--text-small);
   backdrop-filter: blur(8px);
@@ -320,7 +320,7 @@
   border: 1px solid rgba(76, 141, 255, 0.35);
   border-radius: 9px;
   background: rgba(76, 141, 255, 0.13);
-  color: #8ab8ff;
+  color: var(--ui-accent-strong);
   font-size: 15px;
 }
 
@@ -362,7 +362,7 @@
 .po-flow-state.is-running {
   border-color: rgba(76, 141, 255, 0.35);
   background: rgba(76, 141, 255, 0.12);
-  color: #9fc1ff;
+  color: var(--ui-accent-strong);
 }
 
 .po-flow-state.is-waiting {
@@ -384,7 +384,7 @@
   border: 1px solid var(--orch-border);
   border-top: 2px solid var(--flow-accent, #4c8dff);
   border-radius: 10px;
-  background: linear-gradient(180deg, rgba(22, 31, 46, 0.96), rgba(13, 19, 29, 0.96));
+  background: var(--ui-surface);
   box-shadow: 0 12px 28px -18px rgba(0, 0, 0, 0.85);
   color: var(--orch-text);
 }
@@ -459,7 +459,7 @@
 
 .po-flow-agent-metrics em {
   margin-left: auto;
-  color: #7fb0ff;
+  color: var(--ui-accent-strong);
   font-size: var(--text-micro);
   font-style: normal;
 }
@@ -476,7 +476,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #2f6fe4, #6aa7ff);
+  background: var(--ui-accent);
 }
 
 .po-flow-task {
@@ -489,7 +489,7 @@
   border: 1px solid var(--orch-border);
   border-left: 2px solid var(--flow-accent, #4c8dff);
   border-radius: 8px;
-  background: rgba(15, 22, 33, 0.95);
+  background: var(--ui-surface);
   box-shadow: 0 8px 20px -16px rgba(0, 0, 0, 0.8);
   color: var(--orch-text);
 }
@@ -562,11 +562,11 @@
   width: 4px;
   height: 4px;
   border: 1px solid #426184;
-  background: #0b111a;
+  background: var(--ui-surface);
 }
 
 .po-flow-edge.is-delegation path {
-  stroke-dasharray: 3 4;
+  stroke-dasharray: none;
 }
 
 /* Inspector --------------------------------------------------------------- */
@@ -641,7 +641,7 @@
   border: 1px solid rgba(76, 141, 255, 0.3);
   border-radius: 8px;
   background: rgba(76, 141, 255, 0.1);
-  color: #8ab8ff;
+  color: var(--ui-accent-strong);
   font-size: var(--text-small);
 }
 
@@ -686,7 +686,7 @@
   padding: 6px 7px;
   border: 1px solid var(--orch-border-soft);
   border-radius: 6px;
-  background: rgba(18, 26, 39, 0.7);
+  background: var(--ui-surface);
   color: var(--orch-text-faint);
   font-size: var(--text-micro);
 }
@@ -714,7 +714,7 @@
   padding: 7px 8px;
   border: 1px solid var(--orch-border-soft);
   border-radius: 6px;
-  background: rgba(18, 26, 39, 0.55);
+  background: var(--ui-surface);
 }
 
 .po-inspector-task strong,
@@ -893,7 +893,7 @@
 
 .po-plan-row:hover {
   border-color: var(--orch-border);
-  background: rgba(24, 34, 49, 0.6);
+  background: var(--ui-surface);
 }
 
 .po-plan-row > span {
@@ -969,7 +969,7 @@
   padding: 5px 7px;
   border: 1px solid var(--orch-border-soft);
   border-radius: 6px;
-  background: rgba(15, 22, 33, 0.7);
+  background: var(--ui-surface);
 }
 
 .po-dep-chip {
@@ -982,7 +982,7 @@
 }
 
 .po-dep-chip.is-current {
-  color: #b8d3ff;
+  color: var(--ui-accent-strong);
 }
 
 .po-dep-arrow {
@@ -1073,7 +1073,7 @@
   padding: 8px 9px;
   border: 1px solid var(--orch-border);
   border-radius: 7px;
-  background: rgba(13, 19, 29, 0.8);
+  background: var(--ui-surface);
   color: var(--orch-text-faint);
   font-size: var(--text-small);
   line-height: 1.45;
@@ -1157,7 +1157,7 @@
   padding: 8px 9px;
   border: 1px solid var(--orch-border);
   border-radius: 7px;
-  background: rgba(13, 19, 29, 0.8);
+  background: var(--ui-surface);
   color: var(--orch-text-faint);
   font-size: var(--text-small);
 }
@@ -1186,7 +1186,7 @@
 }
 
 .po-plan-branch span:first-child {
-  color: #9fc1ff;
+  color: var(--ui-accent-strong);
   font-family: var(--font-mono);
 }
 
@@ -1584,32 +1584,32 @@
 }
 
 .po-plan-modal {
-  --plan-surface: rgba(255, 255, 255, 0.58);
-  --plan-surface-strong: rgba(255, 255, 255, 0.82);
-  --plan-border: rgba(42, 72, 124, 0.14);
-  --plan-text: #1b2a44;
-  --plan-muted: #63728b;
-  --plan-faint: #8a95a8;
-  --plan-accent: #2f6fe4;
-  --plan-warn: #a76a16;
-  --plan-danger: #bf3d4b;
-  --orch-panel: var(--plan-surface);
-  --orch-border: var(--plan-border);
-  --orch-text: var(--plan-text);
-  --orch-text-dim: var(--plan-muted);
-  --orch-text-faint: var(--plan-muted);
+  --plan-surface: var(--ui-surface);
+  --plan-surface-strong: var(--ui-surface-raised);
+  --plan-border: var(--ui-border);
+  --plan-text: var(--ui-ink);
+  --plan-muted: var(--ui-muted);
+  --plan-faint: var(--ui-muted);
+  --plan-accent: var(--ui-accent-strong);
+  --plan-warn: var(--ui-warn);
+  --plan-danger: var(--ui-danger);
+  --orch-panel: var(--ui-surface);
+  --orch-border: var(--ui-border);
+  --orch-text: var(--ui-ink);
+  --orch-text-dim: var(--ui-ink-2);
+  --orch-text-faint: var(--ui-muted);
 }
 
 :root[data-theme='dark'] .po-plan-modal {
-  --plan-surface: rgba(18, 27, 42, 0.62);
-  --plan-surface-strong: rgba(23, 34, 52, 0.86);
-  --plan-border: rgba(130, 158, 200, 0.18);
-  --plan-text: #edf3ff;
-  --plan-muted: #9aa8bd;
-  --plan-faint: #74829a;
-  --plan-accent: #6ea8ff;
-  --plan-warn: #e8b25d;
-  --plan-danger: #ff7c86;
+  --plan-surface: var(--ui-surface);
+  --plan-surface-strong: var(--ui-surface-raised);
+  --plan-border: var(--ui-border);
+  --plan-text: var(--ui-ink);
+  --plan-muted: var(--ui-muted);
+  --plan-faint: var(--ui-muted);
+  --plan-accent: var(--ui-accent-strong);
+  --plan-warn: var(--ui-warn);
+  --plan-danger: var(--ui-danger);
 }
 
 .po-plan-editor .ant-input,
@@ -2113,7 +2113,7 @@
   border: 1px solid var(--orch-border);
   border-radius: 8px;
   background: #080b11;
-  color: #c8d5e6;
+  color: var(--ui-ink-2);
   font-family: var(--font-mono);
   font-size: var(--text-small);
   line-height: 1.5;
@@ -2139,124 +2139,11 @@
 .po-orch-filter .ant-input {
   height: 22px;
   border-color: var(--orch-border);
-  background: rgba(18, 25, 38, 0.8);
+  background: var(--ui-surface);
   font-size: var(--text-small);
 }
 
 /* Light theme follows the app theme instead of forcing a dark canvas. */
-:root[data-theme='light'] .po-orchestration-page {
-  --orch-bg: #f2f5fa;
-  --orch-panel: #ffffff;
-  --orch-panel-raised: #f7f9fd;
-  --orch-border: #d7dfeb;
-  --orch-border-soft: #e7ecf4;
-  --orch-text: #182233;
-  --orch-text-dim: #536177;
-  --orch-text-faint: #7c8799;
-  --orch-blue: #2f6fe4;
-  --orch-green: #16a34a;
-  --orch-amber: #b7791f;
-  --orch-red: #dc4c55;
-  background: radial-gradient(900px 420px at 25% -20%, rgba(47, 111, 228, 0.1), transparent 65%), #f2f5fa;
-}
-
-:root[data-theme='light'] .po-orch-metrics > div {
-  background: linear-gradient(180deg, #ffffff, #f5f8fd);
-}
-
-:root[data-theme='light'] .po-orch-progress-line,
-:root[data-theme='light'] .po-orch-canvas-toolbar,
-:root[data-theme='light'] .po-orch-canvas-card,
-:root[data-theme='light'] .po-orch-inspector,
-:root[data-theme='light'] .po-dep-flow {
-  background: #ffffff;
-}
-
-:root[data-theme='light'] .po-orch-progress-line > div,
-:root[data-theme='light'] .po-flow-progress {
-  background: #e3e9f2;
-}
-
-:root[data-theme='light'] .po-orch-canvas-toolbar .ant-btn {
-  background: #f6f8fc;
-  color: #46546a;
-}
-
-:root[data-theme='light'] .po-orch-canvas .react-flow__controls-button,
-:root[data-theme='light'] .po-orch-canvas .react-flow__minimap {
-  background: #ffffff;
-  color: #46546a;
-}
-
-:root[data-theme='light'] .po-orch-canvas .react-flow__minimap-mask {
-  fill: rgba(220, 227, 238, 0.55);
-}
-
-:root[data-theme='light'] .po-orch-legend {
-  background: rgba(255, 255, 255, 0.9);
-  color: #6b778b;
-}
-
-:root[data-theme='light'] .po-flow-orchestrator {
-  background: linear-gradient(110deg, rgba(219, 233, 255, 0.95), #ffffff);
-  box-shadow: 0 12px 28px -20px rgba(24, 45, 80, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
-}
-
-:root[data-theme='light'] .po-flow-agent {
-  background: linear-gradient(180deg, #ffffff, #f8fafd);
-  box-shadow: 0 10px 24px -20px rgba(23, 43, 74, 0.45);
-}
-
-:root[data-theme='light'] .po-flow-agent-task {
-  background: #f2f6fc;
-  color: #526078;
-}
-
-:root[data-theme='light'] .po-flow-task {
-  background: #ffffff;
-  box-shadow: 0 8px 18px -18px rgba(23, 43, 74, 0.45);
-}
-
-:root[data-theme='light'] .po-flow-handle {
-  background: #ffffff;
-  border-color: #7d94b3;
-}
-
-:root[data-theme='light'] .po-flow-edge path {
-  stroke: #8fa2ba !important;
-}
-
-:root[data-theme='light'] .po-flow-state {
-  background: #f7f9fc;
-}
-
-:root[data-theme='light'] .po-orch-inspector-metrics span,
-:root[data-theme='light'] .po-inspector-task,
-:root[data-theme='light'] .po-inspector-approval,
-:root[data-theme='light'] .po-dep-chain {
-  background: #f7f9fc;
-}
-
-:root[data-theme='light'] .po-orch-seq {
-  background: #f7f9fc;
-}
-
-:root[data-theme='light'] .po-orch-filter .ant-input {
-  background: #ffffff;
-  color: #182233;
-}
-
-:root[data-theme='light'] .po-inspector-metrics span {
-  background: #f7f9fc;
-  color: #6b778b;
-}
-
-:root[data-theme='light'] .po-inspector-metrics span {
-  background: #f7f9fc !important;
-  color: #6b778b !important;
-}
-
-
 /* Zoomed-out graph: keep title and status legible, hide secondary metadata (details stay in the Inspector). */
 .po-orch-canvas.is-compact .po-flow-kicker,
 .po-orch-canvas.is-compact .po-flow-agent-metrics,
@@ -2439,7 +2326,7 @@
 .po-orch-drawer-panel .po-inspector-kv > span:nth-child(odd) { color: var(--orch-text-faint); font-size: 12px; }
 .po-orch-drawer-panel .po-inspector-kv > span:nth-child(even),
 .po-orch-drawer-panel .po-inspector-kv > code { color: var(--orch-text); font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
-.po-orch-drawer-panel .po-inspector-kv > code { font-family: var(--font-mono); color: #9fc1ff; }
+.po-orch-drawer-panel .po-inspector-kv > code { font-family: var(--font-mono); color: var(--ui-accent-strong); }
 .po-orch-drawer-panel .po-inspector-actions { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 12px; }
 .po-orch-drawer-panel .po-inspector-actions .ant-btn { border-radius: 999px; }
 .po-orch-drawer-panel .po-inspector-task { display: flex; flex-direction: column; gap: 3px; }
@@ -2473,7 +2360,7 @@
 .po-reassign-kicker { font-size: var(--text-micro); letter-spacing: 0.14em; color: var(--orch-text-faint); }
 .po-reassign-error { margin: 0; font-size: var(--text-small); line-height: 1.5; color: var(--orch-text-dim); }
 .po-reassign-diff { display: flex; flex-direction: column; gap: 3px; font-size: var(--text-micro); color: var(--orch-text-dim); }
-.po-reassign-diff .is-warn { color: #e0a23c; }
+.po-reassign-diff .is-warn { color: var(--ui-warn); }
 .po-reassign-candidates { display: flex; flex-direction: column; gap: 7px; }
 .po-reassign-candidate {
   display: flex;
@@ -2495,22 +2382,22 @@
   border-color: rgba(10, 132, 255, 0.6);
   background: rgba(10, 132, 255, 0.1);
 }
-.po-reassign-check { flex: 0 0 16px; padding-top: 1px; color: #0a84ff; font-size: 14px; }
+.po-reassign-check { flex: 0 0 16px; padding-top: 1px; color: var(--ui-accent-strong); font-size: 14px; }
 .po-reassign-dot { display: block; width: 11px; height: 11px; margin-top: 2px; border: 1.5px solid var(--orch-border); border-radius: 50%; }
 .po-reassign-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .po-reassign-name { display: flex; align-items: baseline; gap: 8px; }
 .po-reassign-name strong { font-size: var(--text-small); }
 .po-reassign-name > span { font-size: var(--text-micro); color: var(--orch-text-faint); }
 .po-reassign-meta { font-size: var(--text-micro); color: var(--orch-text-dim); }
-.po-reassign-warn { font-size: var(--text-micro); font-style: normal; color: #e0a23c; }
-.po-reassign-ok { font-size: var(--text-micro); font-style: normal; color: #22b8a0; }
+.po-reassign-warn { font-size: var(--text-micro); font-style: normal; color: var(--ui-warn); }
+.po-reassign-ok { font-size: var(--text-micro); font-style: normal; color: var(--ui-teal); }
 .po-reassign-reason { font-size: var(--text-micro); color: var(--orch-text-faint); line-height: 1.45; }
 .po-reassign-blocker {
   padding: 8px 9px;
   border-radius: 9px;
   font-size: var(--text-micro);
   line-height: 1.5;
-  color: #e0a23c;
+  color: var(--ui-warn);
   background: rgba(224, 162, 60, 0.1);
 }
 .po-reassign-actions { display: flex; gap: 8px; }
@@ -2842,3 +2729,15 @@
 
 .po-plan-modal.is-workspace .ant-modal { width: min(1480px, calc(100vw - 48px)) !important; max-width: calc(100vw - 32px) !important; }
 .po-plan-modal.is-workspace .ant-modal-content { min-width: 0; }
+
+/* The workspace and its focused reading surfaces share the system palette. */
+.po-shell .po-orchestration-page { height: 100%; min-height: 0; padding: 24px; background: transparent; }
+.po-shell .po-orch-name h1 { font-size: 26px; }
+.po-shell .po-orch-canvas-card { background: var(--ui-glass); border-radius: 16px; }
+.po-shell .po-orch-progress-line, .po-shell .po-orch-canvas-toolbar,
+.po-shell .po-orch-inspector, .po-shell .po-dep-flow { background: var(--ui-surface); color: var(--ui-ink-2); }
+.po-shell .po-orch-progress-line > div, .po-shell .po-flow-progress { background: var(--ui-surface-sunken); }
+.po-shell .po-orch-progress-line strong { color: var(--ui-accent-strong); }
+.po-shell .po-flow-orchestrator, .po-shell .po-flow-agent, .po-shell .po-flow-task { background: var(--ui-surface); box-shadow: var(--ui-shadow-sm); }
+.po-shell .po-orch-legend { background: var(--ui-surface); color: var(--ui-muted); }
+.po-shell .po-orch-seq { background: var(--ui-surface-sunken); color: var(--ui-muted); }

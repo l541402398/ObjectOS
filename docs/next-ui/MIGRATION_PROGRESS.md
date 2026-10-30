@@ -1,5 +1,15 @@
 # ProjectOS Next UI — Migration Progress
 
+2026-10-30 current implementation: ADR-0070/0071 applies the user-confirmed DAG aesthetic to the real
+product shell, routes and overlays, resolves the five Lab implementation prerequisites, and adds
+guided work, mode controls, responsive delivery setup and interruptible graph pulses. The latest
+global typography/layout feedback is included. Current validation and screenshots are maintained in
+[`system-premium/REPORT.md`](../design/system-premium/REPORT.md), not the historical checklist below.
+This is an engineering implementation for review; the user's final visual acceptance remains pending.
+Follow-up font/cold-load evidence: `system-premium/readiness/` verifies actual local typeface use,
+settings/detail openings and first route frames; the old NSimSun fallback remains recorded as a
+diagnostic. This is part of the same UI migration, with no Runtime/organization execution change.
+
 2026-10-29 checkpoint: A2.2a device/consent is independently verified (563 PASS / 4 SKIP; 77
 real Electron/PG checks), with an explicit execution-disabled boundary. The user has re-approved
 the supplied DAG material/composition for the entire system and requested real-menu matching.

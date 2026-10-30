@@ -1,0 +1,102 @@
+[
+  {
+    "route": "",
+    "selector": ".wc-next-head strong",
+    "text": "现在需要你决定",
+    "font": "600 16px / 24.8px \"SF Pro Display\", Inter, \"PingFang SC\", \"Microsoft YaHei\", system-ui, -apple-system, sans-serif",
+    "family": "\"SF Pro Display\", Inter, \"PingFang SC\", \"Microsoft YaHei\", system-ui, -apple-system, sans-serif",
+    "spacing": "normal",
+    "lineHeight": "24.8px",
+    "color": "rgb(34, 48, 77)",
+    "background": "rgba(0, 0, 0, 0)",
+    "fonts": [
+      {
+        "familyName": "Microsoft YaHei",
+        "postScriptName": "MicrosoftYaHei-Bold",
+        "isCustomFont": false,
+        "glyphCount": 7
+      }
+    ]
+  },
+  {
+    "route": "",
+    "selector": ".studio-focus header strong",
+    "text": "正在发生",
+    "font": "600 16px / 24.8px \"SF Pro Display\", Inter, \"PingFang SC\", \"Microsoft YaHei\", system-ui, -apple-system, sans-serif",
+    "family": "\"SF Pro Display\", Inter, \"PingFang SC\", \"Microsoft YaHei\", system-ui, -apple-system, sans-serif",
+    "spacing": "normal",
+    "lineHeight": "24.8px",
+    "color": "rgb(34, 48, 77)",
+    "background": "rgba(0, 0, 0, 0)",
+    "fonts": [
+      {
+        "familyName": "Microsoft YaHei",
+        "postScriptName": "MicrosoftYaHei-Bold",
+        "isCustomFont": false,
+        "glyphCount": 4
+      }
+    ]
+  },
+  {
+    "route": "deployments",
+    "selector": ".dc-readiness-item h3",
+    "text": "发布包",
+    "font": "600 16px / 24.8px \"SF Pro Display\", Inter, \"PingFang SC\", \"Microsoft YaHei\", system-ui, -apple-system, sans-serif",
+    "family": "\"SF Pro Display\", Inter, \"PingFang SC\", \"Microsoft YaHei\", system-ui, -apple-system, sans-serif",
+    "spacing": "normal",
+    "lineHeight": "24.8px",
+    "color": "rgb(34, 48, 77)",
+    "background": "rgba(0, 0, 0, 0)",
+    "fonts": [
+      {
+        "familyName": "Microsoft YaHei",
+        "postScriptName": "MicrosoftYaHei-Bold",
+        "isCustomFont": false,
+        "glyphCount": 3
+      }
+    ]
+  },
+  {
+    "route": "deployments",
+    "selector": ".dc-readiness-item strong",
+    "text": "尚未生成",
+    "font": "500 14px / 21.7px \"SF Pro Display\", Inter, \"PingFang SC\", \"Microsoft YaHei\", system-ui, -apple-system, sans-serif",
+    "family": "\"SF Pro Display\", Inter, \"PingFang SC\", \"Microsoft YaHei\", system-ui, -apple-system, sans-serif",
+    "spacing": "normal",
+    "lineHeight": "21.7px",
+    "color": "rgb(34, 48, 77)",
+    "background": "rgba(0, 0, 0, 0)",
+    "fonts": [
+      {
+        "familyName": "Microsoft YaHei",
+        "postScriptName": "MicrosoftYaHei",
+        "isCustomFont": false,
+        "glyphCount": 4
+      }
+    ]
+  },
+  {
+    "motion": "inspector moving",
+    "fps": 9.74127182044888,
+    "p95": 125,
+    "pulses": 5
+  },
+  {
+    "motion": "inspector paused",
+    "fps": 9.94431185361973,
+    "p95": 125.10000000000036,
+    "pulses": 0
+  },
+  {
+    "motion": "inspector moving again",
+    "fps": 10.092775901556623,
+    "p95": 125.10000000000218,
+    "pulses": 5
+  },
+  {
+    "motion": "no filters",
+    "fps": 55.96642014791125,
+    "p95": 15.700000000000728,
+    "pulses": 5
+  }
+]

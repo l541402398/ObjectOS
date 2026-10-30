@@ -1,3 +1,4 @@
+import { useProductDialogs } from '../next-ui/overlay/ProductDialogs'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { App, Button, Form, Input, Select, Switch, Tag } from 'antd'
 import {
@@ -153,7 +154,8 @@ export function AgentStudioModal({
   projectId: string
   onCreated?: (agent: AgentDefinition) => void
 }) {
-  const { message, modal } = App.useApp()
+  const { message } = App.useApp()
+  const modal = useProductDialogs()
   const queryClient = useQueryClient()
   const agents = useAgentDefinitions()
   const skills = useSkills()
@@ -442,7 +444,7 @@ export function AgentStudioModal({
         </header>
 
         <div className="v16-studio-body">
-          <aside className="v16-studio-left">
+          <aside className="v16-studio-left" aria-label="Agent 与模板">
             <label className="v16-studio-search">
               <SearchOutlined />
               <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="搜索模板或 Agent" />
@@ -718,7 +720,7 @@ export function AgentStudioModal({
             </footer>
           </section>
 
-          <aside className="v16-studio-preview">
+          <aside className="v16-studio-preview" aria-label="Agent 预览">
             <div className="v16-preview-card">
               <div className="v16-preview-avatar">{values?.avatar || '🤖'}</div>
               <h3>{values?.name || '未命名 Agent'}</h3>

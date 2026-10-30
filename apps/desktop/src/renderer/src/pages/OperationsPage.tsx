@@ -117,15 +117,15 @@ export default function OperationsPage() {
   const data = query.data
 
   return (
-    <div className="po-page po-page-wide">
+    <div className="po-page po-page-wide po-operations-page">
       <header className="po-page-header">
         <div>
           <div className="po-eyebrow"><SafetyCertificateOutlined /> 自主运营</div>
-          <h1>健康检查与修复</h1>
+          <h1 className="po-page-title">健康检查与修复</h1>
         </div>
         <div className="po-operations-actions">
           <Select
-            value={data?.mode ?? 'observe'}
+            aria-label="运维模式" value={data?.mode ?? 'observe'}
             options={[
               { value: 'observe', label: 'Observe · 只观察' },
               { value: 'propose', label: 'Propose · 生成提案' },
@@ -137,7 +137,7 @@ export default function OperationsPage() {
           />
           <Select
             allowClear
-            placeholder="修复 Agent · 角色默认"
+            aria-label="修复 Agent" placeholder="修复 Agent · 角色默认"
             value={data?.repairAgentId ?? undefined}
             options={(agents.data?.agents ?? []).map((view) => ({
               value: view.agent.id,
@@ -151,7 +151,7 @@ export default function OperationsPage() {
             }}
           />
           <Select
-            value={trigger.data?.enabled ? trigger.data.intervalMinutes : 0}
+            aria-label="自动检查频率" value={trigger.data?.enabled ? trigger.data.intervalMinutes : 0}
             options={[
               { value: 0, label: '自动检查关闭' },
               { value: 15, label: '每 15 分钟' },

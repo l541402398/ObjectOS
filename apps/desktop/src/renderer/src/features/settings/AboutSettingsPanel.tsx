@@ -1,3 +1,5 @@
+import fontLicense from '../../assets/fonts/OFL-NotoSansSC.txt?raw'
+
 export function AboutSettingsPanel() {
   return (
     <div className="po-settings-panel">
@@ -34,6 +36,10 @@ export function AboutSettingsPanel() {
         <span>MIT License</span>
         <span>ProjectOS contributors</span>
       </div>
+      <details className="po-font-license">
+        <summary>字体许可 · Noto Sans SC</summary>
+        <pre>{fontLicense}</pre>
+      </details>
     </div>
   )
 }

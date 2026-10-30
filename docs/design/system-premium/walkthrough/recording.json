@@ -1,0 +1,18 @@
+{
+  "head": "7746a49b53875ce33107f99623da0409dc1137f5",
+  "status": "PASS",
+  "fixture": "isolated persisted demo; native Electron video; no provider or deployment calls; recording is not the FPS benchmark",
+  "steps": [
+    "Project home and persisted modes",
+    "Requirement entry",
+    "Graph details and directional pulses",
+    "Version and iteration ownership",
+    "Guided deployment preparation",
+    "Shared Settings surface",
+    "Dark theme",
+    "Protected Lab DAG",
+    "Stage route and keyboard identity",
+    "Shared editable task inspector"
+  ],
+  "errors": []
+}

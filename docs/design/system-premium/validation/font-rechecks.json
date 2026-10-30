@@ -1,0 +1,53 @@
+[
+  {
+    "name": "lint",
+    "command": "pnpm lint",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T10:37:04.6780317Z",
+    "durationSeconds": 67.14,
+    "log": "font-final-lint.txt"
+  },
+  {
+    "name": "typecheck",
+    "command": "pnpm typecheck",
+    "status": "FAIL",
+    "exitCode": 2,
+    "startedAt": "2026-10-30T10:38:11.9585075Z",
+    "durationSeconds": 71.21,
+    "log": "font-final-typecheck.txt"
+  },
+  {
+    "name": "typecheck",
+    "command": "pnpm typecheck",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T11:00:11.9696921Z",
+    "recordedAt": "2026-10-30T11:02:04.9207544Z",
+    "durationSeconds": null,
+    "log": "typecheck-repaired.txt",
+    "note": "Actual process exit 0 observed; isolated test now supplies the installed router URL, pattern and context contract."
+  },
+  {
+    "name": "readiness-unit",
+    "command": "pnpm exec vitest run tests/ui-readiness.test.ts",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T11:00:12.1830413Z",
+    "recordedAt": "2026-10-30T11:02:04.9360980Z",
+    "durationSeconds": null,
+    "log": "readiness-unit-repaired.txt",
+    "note": "Actual process exit 0 observed; isolated test now supplies the installed router URL, pattern and context contract."
+  },
+  {
+    "name": "readiness-test-lint",
+    "command": "pnpm exec eslint tests/ui-readiness.test.ts",
+    "status": "PASS",
+    "exitCode": 0,
+    "startedAt": "2026-10-30T11:00:15.2719090Z",
+    "recordedAt": "2026-10-30T11:02:04.9689560Z",
+    "durationSeconds": null,
+    "log": "readiness-lint-repaired.txt",
+    "note": "Actual process exit 0 observed; isolated test now supplies the installed router URL, pattern and context contract."
+  }
+]

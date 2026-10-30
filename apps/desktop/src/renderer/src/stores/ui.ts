@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useEffect, useState } from 'react'
+import { prepareSettingsSection } from '../lib/route-readiness'
+
+let settingsRequest = 0
 
 export type ThemeMode = 'light' | 'dark' | 'system'
 export type SettingsSection =
@@ -28,6 +31,7 @@ interface UiState {
   settingsOpen: boolean
   settingsSection: SettingsSection
   settingsConnectionId: string | null
+  settingsPendingSection: SettingsSection | null
   setThemeMode: (mode: ThemeMode) => void
   setReduceTransparency: (value: boolean) => void
   setReduceMotion: (value: boolean) => void
@@ -42,29 +46,39 @@ interface UiState {
 
 export const useUiStore = create<UiState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       themeMode: 'system',
       reduceTransparency: false,
       reduceMotion: false,
-      sidebarCollapsed: false,
+      sidebarCollapsed: true,
       lastProjectId: null,
       settingsOpen: false,
       settingsSection: 'ai-connections',
       settingsConnectionId: null,
+      settingsPendingSection: null,
       setThemeMode: (themeMode) => set({ themeMode }),
       setReduceTransparency: (reduceTransparency) => set({ reduceTransparency }),
       setReduceMotion: (reduceMotion) => set({ reduceMotion }),
       toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
       setLastProjectId: (lastProjectId) => set({ lastProjectId }),
-      openSettings: (section = 'ai-connections', connectionId) =>
-        set((state) => ({
-          settingsOpen: true,
-          settingsSection: section,
-          settingsConnectionId: connectionId === undefined ? state.settingsConnectionId : connectionId,
-        })),
-      closeSettings: () => set({ settingsOpen: false }),
-      setSettingsSection: (settingsSection) => set({ settingsSection }),
+      openSettings: (section = 'ai-connections', connectionId) => {
+        const request = ++settingsRequest
+        const selectedConnection = connectionId === undefined ? get().settingsConnectionId : connectionId
+        set({ settingsPendingSection: section })
+        void prepareSettingsSection(section, selectedConnection).catch(() => undefined).then(() => {
+          if (request !== settingsRequest) return
+          set({ settingsOpen: true, settingsSection: section, settingsConnectionId: selectedConnection, settingsPendingSection: null })
+        })
+      },
+      closeSettings: () => { settingsRequest++; set({ settingsOpen: false, settingsPendingSection: null }) },
+      setSettingsSection: (section) => {
+        const request = ++settingsRequest
+        set({ settingsPendingSection: section })
+        void prepareSettingsSection(section, get().settingsConnectionId).catch(() => undefined).then(() => {
+          if (request === settingsRequest) set({ settingsSection: section, settingsPendingSection: null })
+        })
+      },
       setSettingsConnectionId: (settingsConnectionId) => set({ settingsConnectionId }),
     }),
     {

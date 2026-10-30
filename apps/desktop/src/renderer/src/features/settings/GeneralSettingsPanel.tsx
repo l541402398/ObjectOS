@@ -74,6 +74,7 @@ export function GeneralSettingsPanel() {
               <span>{field.hint}</span>
             </div>
             <InputNumber
+              aria-label={`${field.label}（${field.suffix}）`}
               min={field.min}
               max={field.max}
               step={field.key === 'plannerTimeoutMs' ? 5_000 : 1}
@@ -97,6 +98,7 @@ export function GeneralSettingsPanel() {
               <span>{field.hint}</span>
             </div>
             <InputNumber
+              aria-label={`${field.label}（${field.suffix}）`}
               min={field.min}
               max={field.max}
               value={draft[field.key]}

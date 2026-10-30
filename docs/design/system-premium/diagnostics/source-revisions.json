@@ -1,0 +1,14 @@
+[
+  {
+    "source": ".tmp/reference-uiux",
+    "commit": "28b3b8dee8c976df4fa3e94aed4e092ad43fcb03"
+  },
+  {
+    "source": ".tmp/reference-vercel",
+    "commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62"
+  },
+  {
+    "source": ".tmp/reference-impeccable",
+    "commit": "02523aec3e4c4580102d996d1b6a71fbe062e03f"
+  }
+]

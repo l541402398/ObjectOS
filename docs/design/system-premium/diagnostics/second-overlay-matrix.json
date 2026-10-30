@@ -1,0 +1,4924 @@
+{
+  "head": "7746a49b53875ce33107f99623da0409dc1137f5",
+  "fixture": "isolated persisted demo; actual typed IPC; no external provider calls",
+  "checks": [
+    {
+      "name": "project-create-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":440,\"y\":186.046875,\"right\":1000,\"bottom\":713.953125,\"overflow\":0}"
+    },
+    {
+      "name": "project-create-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "project-create-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":440,\"y\":186.046875,\"right\":1000,\"bottom\":713.953125,\"overflow\":0}"
+    },
+    {
+      "name": "project-create-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "project-create-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":232,\"y\":186.046875,\"right\":792,\"bottom\":713.953125,\"overflow\":0}"
+    },
+    {
+      "name": "project-create-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":232,\"y\":186.046875,\"right\":792,\"bottom\":713.953125,\"overflow\":0}"
+    },
+    {
+      "name": "project-create-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":296,\"y\":96.6500015258789,\"right\":856,\"bottom\":623.3500137329102,\"overflow\":0}"
+    },
+    {
+      "name": "project-create-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":296,\"y\":96.6500015258789,\"right\":856,\"bottom\":623.3500137329102,\"overflow\":0}"
+    },
+    {
+      "name": "project-create-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":129.60000610351562,\"y\":96.6500015258789,\"right\":689.6000061035156,\"bottom\":623.3500137329102,\"overflow\":0}"
+    },
+    {
+      "name": "project-create-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":129.60000610351562,\"y\":96.6500015258789,\"right\":689.6000061035156,\"bottom\":623.3500137329102,\"overflow\":0}"
+    },
+    {
+      "name": "project-create journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "project-import-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":440,\"y\":216.09375,\"right\":1000,\"bottom\":683.90625,\"overflow\":0}"
+    },
+    {
+      "name": "project-import-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "project-import-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":440,\"y\":216.09375,\"right\":1000,\"bottom\":683.90625,\"overflow\":0}"
+    },
+    {
+      "name": "project-import-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "project-import-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":232,\"y\":216.09375,\"right\":792,\"bottom\":683.90625,\"overflow\":0}"
+    },
+    {
+      "name": "project-import-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":232,\"y\":216.09375,\"right\":792,\"bottom\":683.90625,\"overflow\":0}"
+    },
+    {
+      "name": "project-import-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":296,\"y\":126.70000457763672,\"right\":856,\"bottom\":593.3000106811523,\"overflow\":0}"
+    },
+    {
+      "name": "project-import-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":296,\"y\":126.70000457763672,\"right\":856,\"bottom\":593.3000106811523,\"overflow\":0}"
+    },
+    {
+      "name": "project-import-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":129.60000610351562,\"y\":126.70000457763672,\"right\":689.6000061035156,\"bottom\":593.3000106811523,\"overflow\":0}"
+    },
+    {
+      "name": "project-import-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":129.60000610351562,\"y\":126.70000457763672,\"right\":689.6000061035156,\"bottom\":593.3000106811523,\"overflow\":0}"
+    },
+    {
+      "name": "project-import journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "command-palette-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":400,\"y\":186.859375,\"right\":1040,\"bottom\":713.140625,\"overflow\":0}"
+    },
+    {
+      "name": "command-palette-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "command-palette-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":400,\"y\":186.859375,\"right\":1040,\"bottom\":713.140625,\"overflow\":0}"
+    },
+    {
+      "name": "command-palette-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "command-palette-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":192,\"y\":186.859375,\"right\":832,\"bottom\":713.140625,\"overflow\":0}"
+    },
+    {
+      "name": "command-palette-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":192,\"y\":186.859375,\"right\":832,\"bottom\":713.140625,\"overflow\":0}"
+    },
+    {
+      "name": "command-palette-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":256,\"y\":97.45000457763672,\"right\":896,\"bottom\":622.5500411987305,\"overflow\":0}"
+    },
+    {
+      "name": "command-palette-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":256,\"y\":97.45000457763672,\"right\":896,\"bottom\":622.5500411987305,\"overflow\":0}"
+    },
+    {
+      "name": "command-palette-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":89.5999984741211,\"y\":97.45000457763672,\"right\":729.5999984741211,\"bottom\":622.5500411987305,\"overflow\":0}"
+    },
+    {
+      "name": "command-palette-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":89.5999984741211,\"y\":97.45000457763672,\"right\":729.5999984741211,\"bottom\":622.5500411987305,\"overflow\":0}"
+    },
+    {
+      "name": "Command navigation uses real route",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "command-palette journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Expanded navigation shows real page labels",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "navigation-expanded-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":0,\"y\":0,\"right\":1440,\"bottom\":900,\"overflow\":0}"
+    },
+    {
+      "name": "navigation-expanded-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "navigation-expanded-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":0,\"y\":0,\"right\":1440,\"bottom\":900,\"overflow\":0}"
+    },
+    {
+      "name": "navigation-expanded-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "navigation-expanded-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":0,\"y\":0,\"right\":1024,\"bottom\":900,\"overflow\":0}"
+    },
+    {
+      "name": "navigation-expanded-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":0,\"y\":0,\"right\":1024,\"bottom\":900,\"overflow\":0}"
+    },
+    {
+      "name": "navigation-expanded-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":0,\"y\":0,\"right\":1152,\"bottom\":720,\"overflow\":0}"
+    },
+    {
+      "name": "navigation-expanded-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":0,\"y\":0,\"right\":1152,\"bottom\":720,\"overflow\":0}"
+    },
+    {
+      "name": "navigation-expanded-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":0,\"y\":0,\"right\":819.2000122070312,\"bottom\":720,\"overflow\":0}"
+    },
+    {
+      "name": "navigation-expanded-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":0,\"y\":0,\"right\":819.2000122070312,\"bottom\":720,\"overflow\":0}"
+    },
+    {
+      "name": "navigation-menu-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":16,\"y\":54,\"right\":276,\"bottom\":672,\"overflow\":0}"
+    },
+    {
+      "name": "navigation-menu-1024-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "navigation-menu-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":16,\"y\":54,\"right\":276,\"bottom\":672,\"overflow\":0}"
+    },
+    {
+      "name": "navigation-menu-1024-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "navigation-menu-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":16,\"y\":54,\"right\":276,\"bottom\":671.6000366210938,\"overflow\":0}"
+    },
+    {
+      "name": "navigation-menu-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":16,\"y\":54,\"right\":276,\"bottom\":671.6000366210938,\"overflow\":0}"
+    },
+    {
+      "name": "navigation journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "journey-details-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":125,\"y\":125,\"right\":1391,\"bottom\":457.9375,\"overflow\":0}"
+    },
+    {
+      "name": "journey-details-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "journey-details-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":125,\"y\":125,\"right\":1391,\"bottom\":457.9375,\"overflow\":0}"
+    },
+    {
+      "name": "journey-details-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "journey-details-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":109,\"y\":125,\"right\":987,\"bottom\":457.9375,\"overflow\":0}"
+    },
+    {
+      "name": "journey-details-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":109,\"y\":125,\"right\":987,\"bottom\":457.9375,\"overflow\":0}"
+    },
+    {
+      "name": "journey-details-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":108.80000305175781,\"y\":124.80000305175781,\"right\":1115.2000274658203,\"bottom\":454.40000915527344,\"overflow\":0}"
+    },
+    {
+      "name": "journey-details-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":108.80000305175781,\"y\":124.80000305175781,\"right\":1115.2000274658203,\"bottom\":454.40000915527344,\"overflow\":0}"
+    },
+    {
+      "name": "journey-details-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":108.80000305175781,\"y\":124.80000305175781,\"right\":782.4000396728516,\"bottom\":454.40000915527344,\"overflow\":0}"
+    },
+    {
+      "name": "journey-details-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":108.80000305175781,\"y\":124.80000305175781,\"right\":782.4000396728516,\"bottom\":454.40000915527344,\"overflow\":0}"
+    },
+    {
+      "name": "Full process remains reachable",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "journey-details journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "task-create-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":410,\"y\":81,\"right\":1030,\"bottom\":819,\"overflow\":0}"
+    },
+    {
+      "name": "task-create-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "task-create-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":410,\"y\":81,\"right\":1030,\"bottom\":819,\"overflow\":0}"
+    },
+    {
+      "name": "task-create-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "task-create-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":202,\"y\":81,\"right\":822,\"bottom\":819,\"overflow\":0}"
+    },
+    {
+      "name": "task-create-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":202,\"y\":81,\"right\":822,\"bottom\":819,\"overflow\":0}"
+    },
+    {
+      "name": "task-create-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":266,\"y\":64.80000305175781,\"right\":886,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "task-create-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":266,\"y\":64.80000305175781,\"right\":886,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "task-create-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":99.5999984741211,\"y\":64.80000305175781,\"right\":719.5999984741211,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "task-create-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":99.5999984741211,\"y\":64.80000305175781,\"right\":719.5999984741211,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "task-priority-menu-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":410,\"y\":81,\"right\":1030,\"bottom\":819,\"overflow\":0}"
+    },
+    {
+      "name": "task-priority-menu-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "task-priority-menu-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":410,\"y\":81,\"right\":1030,\"bottom\":819,\"overflow\":0}"
+    },
+    {
+      "name": "task-priority-menu-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "task-priority-menu-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":202,\"y\":81,\"right\":822,\"bottom\":819,\"overflow\":0}"
+    },
+    {
+      "name": "task-priority-menu-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":202,\"y\":81,\"right\":822,\"bottom\":819,\"overflow\":0}"
+    },
+    {
+      "name": "task-priority-menu-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":266,\"y\":64.80000305175781,\"right\":886,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "task-priority-menu-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":266,\"y\":64.80000305175781,\"right\":886,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "task-priority-menu-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":99.5999984741211,\"y\":64.80000305175781,\"right\":719.5999984741211,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "task-priority-menu-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":99.5999984741211,\"y\":64.80000305175781,\"right\":719.5999984741211,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "Select Escape leaves its form open",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "task-create journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "task-detail-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":728,\"y\":12,\"right\":1428,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "task-detail-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "task-detail-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":728,\"y\":12,\"right\":1428,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "task-detail-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "task-detail-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":452,\"y\":12,\"right\":1012,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "task-detail-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":452,\"y\":12,\"right\":1012,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "task-detail-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":580,\"y\":12,\"right\":1140,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "task-detail-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":580,\"y\":12,\"right\":1140,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "task-detail-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":247.1999969482422,\"y\":12,\"right\":807.1999969482422,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "task-detail-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":247.1999969482422,\"y\":12,\"right\":807.1999969482422,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "task-edit-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":410,\"y\":81,\"right\":1030,\"bottom\":819,\"overflow\":0}"
+    },
+    {
+      "name": "task-edit-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "task-edit-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":410,\"y\":81,\"right\":1030,\"bottom\":819,\"overflow\":0}"
+    },
+    {
+      "name": "task-edit-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "task-edit-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":202,\"y\":81,\"right\":822,\"bottom\":819,\"overflow\":0}"
+    },
+    {
+      "name": "task-edit-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":202,\"y\":81,\"right\":822,\"bottom\":819,\"overflow\":0}"
+    },
+    {
+      "name": "task-edit-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":266,\"y\":64.80000305175781,\"right\":886,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "task-edit-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":266,\"y\":64.80000305175781,\"right\":886,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "task-edit-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":99.5999984741211,\"y\":64.80000305175781,\"right\":719.5999984741211,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "task-edit-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":99.5999984741211,\"y\":64.80000305175781,\"right\":719.5999984741211,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "task-detail journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "agent-studio-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":146,\"y\":14,\"right\":1426,\"bottom\":886,\"overflow\":0}"
+    },
+    {
+      "name": "agent-studio-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "agent-studio-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":146,\"y\":14,\"right\":1426,\"bottom\":886,\"overflow\":0}"
+    },
+    {
+      "name": "agent-studio-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "agent-studio-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":14,\"y\":14,\"right\":1010,\"bottom\":886,\"overflow\":0}"
+    },
+    {
+      "name": "agent-studio-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":14,\"y\":14,\"right\":1010,\"bottom\":886,\"overflow\":0}"
+    },
+    {
+      "name": "agent-studio-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":14,\"y\":14,\"right\":1138,\"bottom\":706,\"overflow\":0}"
+    },
+    {
+      "name": "agent-studio-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":14,\"y\":14,\"right\":1138,\"bottom\":706,\"overflow\":0}"
+    },
+    {
+      "name": "agent-studio-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":14,\"y\":14,\"right\":805.2000122070312,\"bottom\":706,\"overflow\":0}"
+    },
+    {
+      "name": "agent-studio-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":14,\"y\":14,\"right\":805.2000122070312,\"bottom\":706,\"overflow\":0}"
+    },
+    {
+      "name": "agent-edit-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":146,\"y\":14,\"right\":1426,\"bottom\":886,\"overflow\":0}"
+    },
+    {
+      "name": "agent-edit-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "agent-edit-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":146,\"y\":14,\"right\":1426,\"bottom\":886,\"overflow\":0}"
+    },
+    {
+      "name": "agent-edit-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "agent-edit-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":14,\"y\":14,\"right\":1010,\"bottom\":886,\"overflow\":0}"
+    },
+    {
+      "name": "agent-edit-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":14,\"y\":14,\"right\":1010,\"bottom\":886,\"overflow\":0}"
+    },
+    {
+      "name": "agent-edit-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":14,\"y\":14,\"right\":1138,\"bottom\":706,\"overflow\":0}"
+    },
+    {
+      "name": "agent-edit-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":14,\"y\":14,\"right\":1138,\"bottom\":706,\"overflow\":0}"
+    },
+    {
+      "name": "agent-edit-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":14,\"y\":14,\"right\":805.2000122070312,\"bottom\":706,\"overflow\":0}"
+    },
+    {
+      "name": "agent-edit-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":14,\"y\":14,\"right\":805.2000122070312,\"bottom\":706,\"overflow\":0}"
+    },
+    {
+      "name": "agent-prompt-preview-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":360,\"y\":248.28125,\"right\":1080,\"bottom\":651.71875,\"overflow\":0}"
+    },
+    {
+      "name": "agent-prompt-preview-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "agent-prompt-preview-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":360,\"y\":248.28125,\"right\":1080,\"bottom\":651.71875,\"overflow\":0}"
+    },
+    {
+      "name": "agent-prompt-preview-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "agent-prompt-preview-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":152,\"y\":248.28125,\"right\":872,\"bottom\":651.71875,\"overflow\":0}"
+    },
+    {
+      "name": "agent-prompt-preview-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":152,\"y\":248.28125,\"right\":872,\"bottom\":651.71875,\"overflow\":0}"
+    },
+    {
+      "name": "agent-prompt-preview-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":216,\"y\":158.60000610351562,\"right\":936,\"bottom\":561.4000244140625,\"overflow\":0}"
+    },
+    {
+      "name": "agent-prompt-preview-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":216,\"y\":158.60000610351562,\"right\":936,\"bottom\":561.4000244140625,\"overflow\":0}"
+    },
+    {
+      "name": "agent-prompt-preview-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":49.60000228881836,\"y\":158.60000610351562,\"right\":769.6000022888184,\"bottom\":561.4000244140625,\"overflow\":0}"
+    },
+    {
+      "name": "agent-prompt-preview-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":49.60000228881836,\"y\":158.60000610351562,\"right\":769.6000022888184,\"bottom\":561.4000244140625,\"overflow\":0}"
+    },
+    {
+      "name": "Nested decision uses one backdrop",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Closing preview restores its invoker",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "agent-studio journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pulse actually advances source to target",
+      "status": "PASS",
+      "detail": "18.75% → 41.25%"
+    },
+    {
+      "name": "agent-context-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":936,\"y\":64,\"right\":1416,\"bottom\":876,\"overflow\":0}"
+    },
+    {
+      "name": "agent-context-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "agent-context-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":936,\"y\":64,\"right\":1416,\"bottom\":876,\"overflow\":0}"
+    },
+    {
+      "name": "agent-context-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "agent-context-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":520,\"y\":64,\"right\":1000,\"bottom\":876,\"overflow\":0}"
+    },
+    {
+      "name": "agent-context-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":520,\"y\":64,\"right\":1000,\"bottom\":876,\"overflow\":0}"
+    },
+    {
+      "name": "agent-context-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":648,\"y\":64,\"right\":1128,\"bottom\":696,\"overflow\":0}"
+    },
+    {
+      "name": "agent-context-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":648,\"y\":64,\"right\":1128,\"bottom\":696,\"overflow\":0}"
+    },
+    {
+      "name": "agent-context-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":8,\"y\":58,\"right\":811.2000122070312,\"bottom\":712,\"overflow\":0}"
+    },
+    {
+      "name": "agent-context-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":8,\"y\":58,\"right\":811.2000122070312,\"bottom\":712,\"overflow\":0}"
+    },
+    {
+      "name": "Flow pause removes animations",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "System reduced-motion removes pulses live",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Reduced-motion can be interrupted",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "agent-flow-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":126,\"y\":264.1875,\"right\":1390,\"bottom\":784,\"overflow\":0}"
+    },
+    {
+      "name": "agent-flow-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "agent-flow-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":126,\"y\":264.1875,\"right\":1390,\"bottom\":784,\"overflow\":0}"
+    },
+    {
+      "name": "agent-flow-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "agent-flow-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":114,\"y\":264.1875,\"right\":982,\"bottom\":790,\"overflow\":0}"
+    },
+    {
+      "name": "agent-flow-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":114,\"y\":264.1875,\"right\":982,\"bottom\":790,\"overflow\":0}"
+    },
+    {
+      "name": "agent-flow-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":113.5999984741211,\"y\":263.6000061035156,\"right\":1110.3999862670898,\"bottom\":610.4000244140625,\"overflow\":0}"
+    },
+    {
+      "name": "agent-flow-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":113.5999984741211,\"y\":263.6000061035156,\"right\":1110.3999862670898,\"bottom\":610.4000244140625,\"overflow\":0}"
+    },
+    {
+      "name": "agent-flow-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":113.5999984741211,\"y\":263.6000061035156,\"right\":777.5999984741211,\"bottom\":610.4000244140625,\"overflow\":0}"
+    },
+    {
+      "name": "agent-flow-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":113.5999984741211,\"y\":263.6000061035156,\"right\":777.5999984741211,\"bottom\":610.4000244140625,\"overflow\":0}"
+    },
+    {
+      "name": "agent-flow journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "plan-generator-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":260,\"y\":127,\"right\":1180,\"bottom\":773,\"overflow\":0}"
+    },
+    {
+      "name": "plan-generator-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "plan-generator-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":260,\"y\":127,\"right\":1180,\"bottom\":773,\"overflow\":0}"
+    },
+    {
+      "name": "plan-generator-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "plan-generator-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":52,\"y\":127,\"right\":972,\"bottom\":773,\"overflow\":0}"
+    },
+    {
+      "name": "plan-generator-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":52,\"y\":127,\"right\":972,\"bottom\":773,\"overflow\":0}"
+    },
+    {
+      "name": "plan-generator-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":147.5,\"y\":98,\"right\":1004.5,\"bottom\":622,\"overflow\":0}"
+    },
+    {
+      "name": "plan-generator-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":147.5,\"y\":98,\"right\":1004.5,\"bottom\":622,\"overflow\":0}"
+    },
+    {
+      "name": "plan-generator-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":114.0999984741211,\"y\":98,\"right\":705.0999984741211,\"bottom\":622,\"overflow\":0}"
+    },
+    {
+      "name": "plan-generator-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":114.0999984741211,\"y\":98,\"right\":705.0999984741211,\"bottom\":622,\"overflow\":0}"
+    },
+    {
+      "name": "real-plan-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":101,\"y\":120,\"right\":1415,\"bottom\":871,\"overflow\":0}"
+    },
+    {
+      "name": "real-plan-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "real-plan-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":101,\"y\":120,\"right\":1415,\"bottom\":871,\"overflow\":0}"
+    },
+    {
+      "name": "real-plan-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "real-plan-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":89,\"y\":120,\"right\":1007,\"bottom\":871,\"overflow\":0}"
+    },
+    {
+      "name": "real-plan-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":89,\"y\":120,\"right\":1007,\"bottom\":871,\"overflow\":0}"
+    },
+    {
+      "name": "real-plan-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":88.80000305175781,\"y\":119.5999984741211,\"right\":1135.2000274658203,\"bottom\":691.2000350952148,\"overflow\":0}"
+    },
+    {
+      "name": "real-plan-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":88.80000305175781,\"y\":119.5999984741211,\"right\":1135.2000274658203,\"bottom\":691.2000350952148,\"overflow\":0}"
+    },
+    {
+      "name": "real-plan-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":88.80000305175781,\"y\":119.5999984741211,\"right\":802.4000396728516,\"bottom\":691.2000350952148,\"overflow\":0}"
+    },
+    {
+      "name": "real-plan-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":88.80000305175781,\"y\":119.5999984741211,\"right\":802.4000396728516,\"bottom\":691.2000350952148,\"overflow\":0}"
+    },
+    {
+      "name": "Plan shares real navigation and defaults to DAG",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "plan-generator journey",
+      "status": "FAIL",
+      "detail": "TimeoutError: locator.click: Timeout 8000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.pdl-node').first()\u001b[22m\n\u001b[2m    - locator resolved to <div tabindex=\"0\" role=\"button\" class=\"pdl-node\" aria-label=\"TASK 01 分析「完善团队项目的任务协作与验收体验」的架构与影响面，Sage\">…</div>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    15 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+    },
+    {
+      "name": "run-detail-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":506,\"y\":14,\"right\":1426,\"bottom\":886,\"overflow\":0}"
+    },
+    {
+      "name": "run-detail-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "run-detail-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":506,\"y\":14,\"right\":1426,\"bottom\":886,\"overflow\":0}"
+    },
+    {
+      "name": "run-detail-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "run-detail-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":90,\"y\":14,\"right\":1010,\"bottom\":886,\"overflow\":0}"
+    },
+    {
+      "name": "run-detail-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":90,\"y\":14,\"right\":1010,\"bottom\":886,\"overflow\":0}"
+    },
+    {
+      "name": "run-detail-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":218,\"y\":14,\"right\":1138,\"bottom\":706,\"overflow\":0}"
+    },
+    {
+      "name": "run-detail-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":218,\"y\":14,\"right\":1138,\"bottom\":706,\"overflow\":0}"
+    },
+    {
+      "name": "run-detail-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":14,\"y\":14,\"right\":805.2000122070312,\"bottom\":706,\"overflow\":0}"
+    },
+    {
+      "name": "run-detail-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":14,\"y\":14,\"right\":805.2000122070312,\"bottom\":706,\"overflow\":0}"
+    },
+    {
+      "name": "run-detail journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "version-create-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":326.578125,\"right\":980,\"bottom\":573.421875,\"overflow\":0}"
+    },
+    {
+      "name": "version-create-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "version-create-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":326.578125,\"right\":980,\"bottom\":573.421875,\"overflow\":0}"
+    },
+    {
+      "name": "version-create-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "version-create-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":326.578125,\"right\":772,\"bottom\":573.421875,\"overflow\":0}"
+    },
+    {
+      "name": "version-create-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":326.578125,\"right\":772,\"bottom\":573.421875,\"overflow\":0}"
+    },
+    {
+      "name": "version-create-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":237,\"right\":836,\"bottom\":483,\"overflow\":0}"
+    },
+    {
+      "name": "version-create-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":237,\"right\":836,\"bottom\":483,\"overflow\":0}"
+    },
+    {
+      "name": "version-create-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":237,\"right\":669.6000061035156,\"bottom\":483,\"overflow\":0}"
+    },
+    {
+      "name": "version-create-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":237,\"right\":669.6000061035156,\"bottom\":483,\"overflow\":0}"
+    },
+    {
+      "name": "version-create journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "iteration-create-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":299.65625,\"right\":980,\"bottom\":600.34375,\"overflow\":0}"
+    },
+    {
+      "name": "iteration-create-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "iteration-create-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":299.65625,\"right\":980,\"bottom\":600.34375,\"overflow\":0}"
+    },
+    {
+      "name": "iteration-create-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "iteration-create-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":299.65625,\"right\":772,\"bottom\":600.34375,\"overflow\":0}"
+    },
+    {
+      "name": "iteration-create-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":299.65625,\"right\":772,\"bottom\":600.34375,\"overflow\":0}"
+    },
+    {
+      "name": "iteration-create-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":210.25,\"right\":836,\"bottom\":509.75,\"overflow\":0}"
+    },
+    {
+      "name": "iteration-create-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":210.25,\"right\":836,\"bottom\":509.75,\"overflow\":0}"
+    },
+    {
+      "name": "iteration-create-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":210.25,\"right\":669.6000061035156,\"bottom\":509.75,\"overflow\":0}"
+    },
+    {
+      "name": "iteration-create-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":210.25,\"right\":669.6000061035156,\"bottom\":509.75,\"overflow\":0}"
+    },
+    {
+      "name": "iteration-create journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "environment-create-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":304.796875,\"right\":980,\"bottom\":595.203125,\"overflow\":0}"
+    },
+    {
+      "name": "environment-create-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "environment-create-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":304.796875,\"right\":980,\"bottom\":595.203125,\"overflow\":0}"
+    },
+    {
+      "name": "environment-create-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "environment-create-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":304.796875,\"right\":772,\"bottom\":595.203125,\"overflow\":0}"
+    },
+    {
+      "name": "environment-create-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":304.796875,\"right\":772,\"bottom\":595.203125,\"overflow\":0}"
+    },
+    {
+      "name": "environment-create-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":215.25,\"right\":836,\"bottom\":504.75,\"overflow\":0}"
+    },
+    {
+      "name": "environment-create-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":215.25,\"right\":836,\"bottom\":504.75,\"overflow\":0}"
+    },
+    {
+      "name": "environment-create-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":215.25,\"right\":669.6000061035156,\"bottom\":504.75,\"overflow\":0}"
+    },
+    {
+      "name": "environment-create-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":215.25,\"right\":669.6000061035156,\"bottom\":504.75,\"overflow\":0}"
+    },
+    {
+      "name": "environment-create journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "evidence-record-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":177.4375,\"right\":980,\"bottom\":722.5625,\"overflow\":0}"
+    },
+    {
+      "name": "evidence-record-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "evidence-record-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":177.4375,\"right\":980,\"bottom\":722.5625,\"overflow\":0}"
+    },
+    {
+      "name": "evidence-record-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "evidence-record-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":177.4375,\"right\":772,\"bottom\":722.5625,\"overflow\":0}"
+    },
+    {
+      "name": "evidence-record-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":177.4375,\"right\":772,\"bottom\":722.5625,\"overflow\":0}"
+    },
+    {
+      "name": "evidence-record-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":88.5999984741211,\"right\":836,\"bottom\":631.3999862670898,\"overflow\":0}"
+    },
+    {
+      "name": "evidence-record-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":88.5999984741211,\"right\":836,\"bottom\":631.3999862670898,\"overflow\":0}"
+    },
+    {
+      "name": "evidence-record-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":88.5999984741211,\"right\":669.6000061035156,\"bottom\":631.3999862670898,\"overflow\":0}"
+    },
+    {
+      "name": "evidence-record-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":88.5999984741211,\"right\":669.6000061035156,\"bottom\":631.3999862670898,\"overflow\":0}"
+    },
+    {
+      "name": "evidence-record journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "release-change-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":230.28125,\"right\":980,\"bottom\":669.71875,\"overflow\":0}"
+    },
+    {
+      "name": "release-change-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "release-change-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":230.28125,\"right\":980,\"bottom\":669.71875,\"overflow\":0}"
+    },
+    {
+      "name": "release-change-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "release-change-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":230.28125,\"right\":772,\"bottom\":669.71875,\"overflow\":0}"
+    },
+    {
+      "name": "release-change-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":230.28125,\"right\":772,\"bottom\":669.71875,\"overflow\":0}"
+    },
+    {
+      "name": "release-change-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":141.25,\"right\":836,\"bottom\":578.75,\"overflow\":0}"
+    },
+    {
+      "name": "release-change-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":141.25,\"right\":836,\"bottom\":578.75,\"overflow\":0}"
+    },
+    {
+      "name": "release-change-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":141.25,\"right\":669.6000061035156,\"bottom\":578.75,\"overflow\":0}"
+    },
+    {
+      "name": "release-change-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":141.25,\"right\":669.6000061035156,\"bottom\":578.75,\"overflow\":0}"
+    },
+    {
+      "name": "release-change journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "deployment-readiness-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":101,\"y\":120,\"right\":1415,\"bottom\":871,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-readiness-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "deployment-readiness-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":101,\"y\":120,\"right\":1415,\"bottom\":871,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-readiness-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "deployment-readiness-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":89,\"y\":120,\"right\":1007,\"bottom\":871,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-readiness-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":89,\"y\":120,\"right\":1007,\"bottom\":871,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-readiness-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":88.80000305175781,\"y\":119.5999984741211,\"right\":1135.2000274658203,\"bottom\":691.2000350952148,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-readiness-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":88.80000305175781,\"y\":119.5999984741211,\"right\":1135.2000274658203,\"bottom\":691.2000350952148,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-readiness-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":88.80000305175781,\"y\":119.5999984741211,\"right\":802.4000396728516,\"bottom\":691.2000350952148,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-readiness-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":88.80000305175781,\"y\":119.5999984741211,\"right\":802.4000396728516,\"bottom\":691.2000350952148,\"overflow\":0}"
+    },
+    {
+      "name": "Empty deployment guides to available release",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "deployment-create journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "deployment-target-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":130.03125,\"right\":980,\"bottom\":769.953125,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-target-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "deployment-target-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":130.03125,\"right\":980,\"bottom\":769.953125,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-target-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "deployment-target-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":130.03125,\"right\":772,\"bottom\":769.953125,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-target-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":130.03125,\"right\":772,\"bottom\":769.953125,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-target-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":64.80000305175781,\"right\":836,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-target-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":64.80000305175781,\"right\":836,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-target-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":64.80000305175781,\"right\":669.6000061035156,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-target-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":64.80000305175781,\"right\":669.6000061035156,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-target journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "resource-create-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":440,\"y\":98.203125,\"right\":1000,\"bottom\":801.796875,\"overflow\":0}"
+    },
+    {
+      "name": "resource-create-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "resource-create-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":440,\"y\":98.203125,\"right\":1000,\"bottom\":801.796875,\"overflow\":0}"
+    },
+    {
+      "name": "resource-create-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "resource-create-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":232,\"y\":98.203125,\"right\":792,\"bottom\":801.796875,\"overflow\":0}"
+    },
+    {
+      "name": "resource-create-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":232,\"y\":98.203125,\"right\":792,\"bottom\":801.796875,\"overflow\":0}"
+    },
+    {
+      "name": "resource-create-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":296,\"y\":64.80000305175781,\"right\":856,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "resource-create-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":296,\"y\":64.80000305175781,\"right\":856,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "resource-create-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":129.60000610351562,\"y\":64.80000305175781,\"right\":689.6000061035156,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "resource-create-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":129.60000610351562,\"y\":64.80000305175781,\"right\":689.6000061035156,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "resource-create journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "lifecycle-create-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":440,\"y\":214.546875,\"right\":1000,\"bottom\":685.453125,\"overflow\":0}"
+    },
+    {
+      "name": "lifecycle-create-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "lifecycle-create-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":440,\"y\":214.546875,\"right\":1000,\"bottom\":685.453125,\"overflow\":0}"
+    },
+    {
+      "name": "lifecycle-create-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "lifecycle-create-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":232,\"y\":214.546875,\"right\":792,\"bottom\":685.453125,\"overflow\":0}"
+    },
+    {
+      "name": "lifecycle-create-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":232,\"y\":214.546875,\"right\":792,\"bottom\":685.453125,\"overflow\":0}"
+    },
+    {
+      "name": "lifecycle-create-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":296,\"y\":125.1500015258789,\"right\":856,\"bottom\":594.8500137329102,\"overflow\":0}"
+    },
+    {
+      "name": "lifecycle-create-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":296,\"y\":125.1500015258789,\"right\":856,\"bottom\":594.8500137329102,\"overflow\":0}"
+    },
+    {
+      "name": "lifecycle-create-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":129.60000610351562,\"y\":125.1500015258789,\"right\":689.6000061035156,\"bottom\":594.8500137329102,\"overflow\":0}"
+    },
+    {
+      "name": "lifecycle-create-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":129.60000610351562,\"y\":125.1500015258789,\"right\":689.6000061035156,\"bottom\":594.8500137329102,\"overflow\":0}"
+    },
+    {
+      "name": "lifecycle-create journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "collaboration-message-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":440,\"y\":130.28125,\"right\":1000,\"bottom\":769.71875,\"overflow\":0}"
+    },
+    {
+      "name": "collaboration-message-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "collaboration-message-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":440,\"y\":130.28125,\"right\":1000,\"bottom\":769.71875,\"overflow\":0}"
+    },
+    {
+      "name": "collaboration-message-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "collaboration-message-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":232,\"y\":130.28125,\"right\":792,\"bottom\":769.71875,\"overflow\":0}"
+    },
+    {
+      "name": "collaboration-message-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":232,\"y\":130.28125,\"right\":792,\"bottom\":769.71875,\"overflow\":0}"
+    },
+    {
+      "name": "collaboration-message-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":296,\"y\":64.80000305175781,\"right\":856,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "collaboration-message-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":296,\"y\":64.80000305175781,\"right\":856,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "collaboration-message-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":129.60000610351562,\"y\":64.80000305175781,\"right\":689.6000061035156,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "collaboration-message-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":129.60000610351562,\"y\":64.80000305175781,\"right\":689.6000061035156,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "collaboration-message journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection-editor-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":130,\"y\":98.703125,\"right\":1310,\"bottom\":801.296875,\"overflow\":0}"
+    },
+    {
+      "name": "connection-editor-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection-editor-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":130,\"y\":98.703125,\"right\":1310,\"bottom\":801.296875,\"overflow\":0}"
+    },
+    {
+      "name": "connection-editor-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection-editor-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":16,\"y\":98.703125,\"right\":1008,\"bottom\":801.296875,\"overflow\":0}"
+    },
+    {
+      "name": "connection-editor-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":16,\"y\":98.703125,\"right\":1008,\"bottom\":801.296875,\"overflow\":0}"
+    },
+    {
+      "name": "connection-editor-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":16,\"y\":64.80000305175781,\"right\":1136,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "connection-editor-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":16,\"y\":64.80000305175781,\"right\":1136,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "connection-editor-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":16,\"y\":64.80000305175781,\"right\":803.2000122070312,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "connection-editor-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":16,\"y\":64.80000305175781,\"right\":803.2000122070312,\"bottom\":655.2000274658203,\"overflow\":0}"
+    },
+    {
+      "name": "Connection edit stays inline in Settings",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection-delete-confirm-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":350.609375,\"right\":980,\"bottom\":549.390625,\"overflow\":0}"
+    },
+    {
+      "name": "connection-delete-confirm-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection-delete-confirm-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":350.609375,\"right\":980,\"bottom\":549.390625,\"overflow\":0}"
+    },
+    {
+      "name": "connection-delete-confirm-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection-delete-confirm-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":350.609375,\"right\":772,\"bottom\":549.390625,\"overflow\":0}"
+    },
+    {
+      "name": "connection-delete-confirm-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":350.609375,\"right\":772,\"bottom\":549.390625,\"overflow\":0}"
+    },
+    {
+      "name": "connection-delete-confirm-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":261,\"right\":836,\"bottom\":459,\"overflow\":0}"
+    },
+    {
+      "name": "connection-delete-confirm-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":261,\"right\":836,\"bottom\":459,\"overflow\":0}"
+    },
+    {
+      "name": "connection-delete-confirm-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":261,\"right\":669.6000061035156,\"bottom\":459,\"overflow\":0}"
+    },
+    {
+      "name": "connection-delete-confirm-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":261,\"right\":669.6000061035156,\"bottom\":459,\"overflow\":0}"
+    },
+    {
+      "name": "Cancelled decision keeps Settings open",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Cancelled decision preserves connection",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection-editor journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "model-add-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":247.078125,\"right\":980,\"bottom\":652.921875,\"overflow\":0}"
+    },
+    {
+      "name": "model-add-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "model-add-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":247.078125,\"right\":980,\"bottom\":652.921875,\"overflow\":0}"
+    },
+    {
+      "name": "model-add-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "model-add-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":247.078125,\"right\":772,\"bottom\":652.921875,\"overflow\":0}"
+    },
+    {
+      "name": "model-add-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":247.078125,\"right\":772,\"bottom\":652.921875,\"overflow\":0}"
+    },
+    {
+      "name": "model-add-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":157.5500030517578,\"right\":836,\"bottom\":562.4499969482422,\"overflow\":0}"
+    },
+    {
+      "name": "model-add-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":157.5500030517578,\"right\":836,\"bottom\":562.4499969482422,\"overflow\":0}"
+    },
+    {
+      "name": "model-add-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":157.5500030517578,\"right\":669.6000061035156,\"bottom\":562.4499969482422,\"overflow\":0}"
+    },
+    {
+      "name": "model-add-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":157.5500030517578,\"right\":669.6000061035156,\"bottom\":562.4499969482422,\"overflow\":0}"
+    },
+    {
+      "name": "model-detail-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":968,\"y\":12,\"right\":1428,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "model-detail-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "model-detail-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":968,\"y\":12,\"right\":1428,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "model-detail-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "model-detail-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":552,\"y\":12,\"right\":1012,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "model-detail-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":552,\"y\":12,\"right\":1012,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "model-detail-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":680,\"y\":12,\"right\":1140,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "model-detail-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":680,\"y\":12,\"right\":1140,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "model-detail-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":347.20001220703125,\"y\":12,\"right\":807.2000122070312,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "model-detail-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":347.20001220703125,\"y\":12,\"right\":807.2000122070312,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "Child inspector Escape preserves Settings",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "model-add journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "runtime-create-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":187.890625,\"right\":980,\"bottom\":712.109375,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-create-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "runtime-create-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":460,\"y\":187.890625,\"right\":980,\"bottom\":712.109375,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-create-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "runtime-create-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":187.890625,\"right\":772,\"bottom\":712.109375,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-create-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":252,\"y\":187.890625,\"right\":772,\"bottom\":712.109375,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-create-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":98.55000305175781,\"right\":836,\"bottom\":621.4500274658203,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-create-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":316,\"y\":98.55000305175781,\"right\":836,\"bottom\":621.4500274658203,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-create-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":98.55000305175781,\"right\":669.6000061035156,\"bottom\":621.4500274658203,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-create-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":149.60000610351562,\"y\":98.55000305175781,\"right\":669.6000061035156,\"bottom\":621.4500274658203,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-create journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "runtime-detail-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":968,\"y\":12,\"right\":1428,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-detail-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "runtime-detail-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":968,\"y\":12,\"right\":1428,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-detail-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "runtime-detail-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":552,\"y\":12,\"right\":1012,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-detail-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":552,\"y\":12,\"right\":1012,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-detail-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":680,\"y\":12,\"right\":1140,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-detail-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":680,\"y\":12,\"right\":1140,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-detail-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":347.20001220703125,\"y\":12,\"right\":807.2000122070312,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-detail-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":347.20001220703125,\"y\":12,\"right\":807.2000122070312,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "runtime-detail journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "skill-detail-1440-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":868,\"y\":12,\"right\":1428,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "skill-detail-1440-light accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "skill-detail-1440-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1440,\"height\":900,\"x\":868,\"y\":12,\"right\":1428,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "skill-detail-1440-dark accessibility",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "skill-detail-1024-light fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":452,\"y\":12,\"right\":1012,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "skill-detail-1024-dark fits",
+      "status": "PASS",
+      "detail": "{\"width\":1024,\"height\":900,\"x\":452,\"y\":12,\"right\":1012,\"bottom\":888,\"overflow\":0}"
+    },
+    {
+      "name": "skill-detail-1440-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":580,\"y\":12,\"right\":1140,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "skill-detail-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":580,\"y\":12,\"right\":1140,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "skill-detail-1024-light-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":247.1999969482422,\"y\":12,\"right\":807.1999969482422,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "skill-detail-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": "{\"width\":819,\"height\":720,\"x\":247.1999969482422,\"y\":12,\"right\":807.1999969482422,\"bottom\":708,\"overflow\":0}"
+    },
+    {
+      "name": "skill-detail journey",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "No Renderer exceptions",
+      "status": "PASS",
+      "detail": ""
+    }
+  ],
+  "audits": [
+    {
+      "name": "project-create-1440-light",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "project-create-1440-dark",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "project-import-1440-light",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "project-import-1440-dark",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "command-palette-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "span:nth-child(1) > kbd:nth-child(1)"
+            ],
+            [
+              "kbd:nth-child(2)"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "command-palette-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "span:nth-child(1) > kbd:nth-child(1)"
+            ],
+            [
+              "kbd:nth-child(2)"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "navigation-expanded-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".po-titlebar-brand > span:nth-child(2)"
+            ],
+            [
+              ".po-crumb-link"
+            ],
+            [
+              ".po-crumb-group"
+            ],
+            [
+              ".po-crumb-page"
+            ],
+            [
+              ".po-command-trigger > span:nth-child(2)"
+            ],
+            [
+              "kbd"
+            ],
+            [
+              ".po-project-button-text > strong"
+            ],
+            [
+              ".po-project-button-text > span"
+            ],
+            [
+              ".is-open > span:nth-child(1)"
+            ],
+            [
+              "button[aria-label=\"研发工作中心\"] > .po-nav-label"
+            ],
+            [
+              "button[aria-label=\"Agent 协作\"] > .po-nav-label"
+            ],
+            [
+              "button[aria-label=\"审批\"] > .po-nav-label"
+            ],
+            [
+              "button[aria-label=\"运行审计\"] > .po-nav-label"
+            ],
+            [
+              ".po-sidenav-group:nth-child(2) > .po-sidenav-group-trigger.po-sidenav-title > span:nth-child(1)"
+            ],
+            [
+              ".po-sidenav-group:nth-child(3) > .po-sidenav-group-trigger.po-sidenav-title > span:nth-child(1)"
+            ],
+            [
+              ".po-sidenav-dock > .po-sidenav-group > .po-sidenav-title"
+            ],
+            [
+              "button[aria-label=\"项目中心\"] > .po-nav-label"
+            ],
+            [
+              "button[aria-label=\"账号与组织\"] > .po-nav-label"
+            ],
+            [
+              "button[aria-label=\"设置\"] > .po-nav-label"
+            ],
+            [
+              ".po-journey-goal"
+            ],
+            [
+              ".po-journey-bg"
+            ],
+            [
+              ".po-journey-current"
+            ],
+            [
+              ".po-journey-owner"
+            ],
+            [
+              "h1"
+            ],
+            [
+              ".po-page-meta > span:nth-child(1)"
+            ],
+            [
+              ".po-page-meta > span:nth-child(2)"
+            ],
+            [
+              ".po-page-meta > span:nth-child(3)"
+            ],
+            [
+              ".po-page-meta > span:nth-child(4)"
+            ],
+            [
+              ".ant-input"
+            ],
+            [
+              "#_r_1a_"
+            ],
+            [
+              "#_r_1c_"
+            ],
+            [
+              "#_r_1e_"
+            ],
+            [
+              "#_r_1g_"
+            ],
+            [
+              ".po-board-hint"
+            ],
+            [
+              ".po-board-column:nth-child(1) > .po-board-column-head > div > strong"
+            ],
+            [
+              ".po-board-column:nth-child(1) > .po-board-column-head > .po-column-count"
+            ],
+            [
+              ".po-board-column:nth-child(2) > .po-board-column-head > div > strong"
+            ],
+            [
+              ".po-board-column:nth-child(2) > .po-board-column-head > .po-column-count"
+            ],
+            [
+              ".po-board-column:nth-child(3) > .po-board-column-head > div > strong"
+            ],
+            [
+              ".po-board-column:nth-child(3) > .po-board-column-head > .po-column-count"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-head > div > strong"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-head > .po-column-count"
+            ],
+            [
+              ".po-board-column:nth-child(5) > .po-board-column-head > div > strong"
+            ],
+            [
+              ".po-board-column:nth-child(5) > .po-board-column-head > .po-column-count"
+            ],
+            [
+              ".po-status-path"
+            ],
+            [
+              ".po-git-branch"
+            ],
+            [
+              ".po-status-dirty"
+            ],
+            [
+              ".po-status-item:nth-child(3)"
+            ],
+            [
+              ".po-status-label"
+            ],
+            [
+              ".po-status-item:nth-child(5)"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "navigation-expanded-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".po-titlebar-brand > span:nth-child(2)"
+            ],
+            [
+              ".po-crumb-link"
+            ],
+            [
+              ".po-crumb-group"
+            ],
+            [
+              ".po-crumb-page"
+            ],
+            [
+              ".po-command-trigger > span:nth-child(2)"
+            ],
+            [
+              "kbd"
+            ],
+            [
+              ".po-pill-success.po-pill > span:nth-child(2)"
+            ],
+            [
+              ".po-project-button-icon"
+            ],
+            [
+              ".po-project-button-text > strong"
+            ],
+            [
+              ".po-project-button-text > span"
+            ],
+            [
+              ".is-open > span:nth-child(1)"
+            ],
+            [
+              "button[aria-label=\"研发工作中心\"] > .po-nav-label"
+            ],
+            [
+              "button[aria-label=\"任务看板\"] > .po-nav-label"
+            ],
+            [
+              "button[aria-label=\"任务看板\"] > .po-nav-badge"
+            ],
+            [
+              "button[aria-label=\"Agent 协作\"] > .po-nav-label"
+            ],
+            [
+              "button[aria-label=\"Agent 协作\"] > .po-nav-badge"
+            ],
+            [
+              "button[aria-label=\"审批\"] > .po-nav-label"
+            ],
+            [
+              "button[aria-label=\"审批\"] > .po-nav-badge"
+            ],
+            [
+              "button[aria-label=\"运行审计\"] > .po-nav-label"
+            ],
+            [
+              ".po-sidenav-group:nth-child(2) > .po-sidenav-group-trigger.po-sidenav-title > span:nth-child(1)"
+            ],
+            [
+              ".po-sidenav-group:nth-child(3) > .po-sidenav-group-trigger.po-sidenav-title > span:nth-child(1)"
+            ],
+            [
+              ".po-sidenav-dock > .po-sidenav-group > .po-sidenav-title"
+            ],
+            [
+              "button[aria-label=\"项目中心\"] > .po-nav-label"
+            ],
+            [
+              "button[aria-label=\"账号与组织\"] > .po-nav-label"
+            ],
+            [
+              "button[aria-label=\"设置\"] > .po-nav-label"
+            ],
+            [
+              ".po-journey-goal"
+            ],
+            [
+              ".po-journey-bg"
+            ],
+            [
+              ".po-journey-current"
+            ],
+            [
+              ".po-journey-owner"
+            ],
+            [
+              "h1"
+            ],
+            [
+              ".po-page-meta > span:nth-child(1)"
+            ],
+            [
+              ".po-page-meta > span:nth-child(2)"
+            ],
+            [
+              ".po-page-meta > span:nth-child(3)"
+            ],
+            [
+              ".po-page-meta > span:nth-child(4)"
+            ],
+            [
+              "#_r_1a_"
+            ],
+            [
+              "#_r_1c_"
+            ],
+            [
+              "#_r_1e_"
+            ],
+            [
+              "#_r_1g_"
+            ],
+            [
+              ".po-board-hint"
+            ],
+            [
+              ".po-board-column:nth-child(1) > .po-board-column-head > div > strong"
+            ],
+            [
+              ".po-board-column:nth-child(1) > .po-board-column-head > .po-column-count"
+            ],
+            [
+              ".po-board-column:nth-child(1) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-top > .is-2.po-priority-label"
+            ],
+            [
+              ".po-board-column:nth-child(1) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-title"
+            ],
+            [
+              ".po-board-column:nth-child(1) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-desc"
+            ],
+            [
+              "span[aria-label=\"Sage\"]"
+            ],
+            [
+              ".po-board-column:nth-child(1) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-top > .is-3.po-priority-label"
+            ],
+            [
+              ".po-board-column:nth-child(1) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-title"
+            ],
+            [
+              ".po-board-column:nth-child(1) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-desc"
+            ],
+            [
+              ".po-board-column:nth-child(1) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-footer > .po-avatar[aria-label=\"Kai\"]"
+            ],
+            [
+              ".po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(3) > .po-task-tile-top > .is-3.po-priority-label"
+            ],
+            [
+              ".po-board-column:nth-child(1) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(3) > .po-task-tile-title"
+            ],
+            [
+              ".po-board-column:nth-child(1) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(3) > .po-task-tile-desc"
+            ],
+            [
+              ".po-board-column:nth-child(2) > .po-board-column-head > div > strong"
+            ],
+            [
+              ".po-board-column:nth-child(2) > .po-board-column-head > .po-column-count"
+            ],
+            [
+              ".po-board-column:nth-child(2) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-top > .is-2.po-priority-label"
+            ],
+            [
+              ".po-board-column:nth-child(2) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-title"
+            ],
+            [
+              ".po-board-column:nth-child(2) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-desc"
+            ],
+            [
+              ".po-board-column:nth-child(2) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-footer > .po-task-meta > span:nth-child(1)"
+            ],
+            [
+              ".po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-footer > .po-task-meta > .po-task-blocked"
+            ],
+            [
+              "span[aria-label=\"Iris\"]"
+            ],
+            [
+              ".po-board-column:nth-child(2) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-top > .is-3.po-priority-label"
+            ],
+            [
+              ".po-board-column:nth-child(2) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-title"
+            ],
+            [
+              ".po-board-column:nth-child(2) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-desc"
+            ],
+            [
+              ".po-board-column:nth-child(2) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-footer > .po-task-meta > span:nth-child(1)"
+            ],
+            [
+              ".po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-footer > .po-task-meta > .po-task-blocked"
+            ],
+            [
+              ".po-board-column:nth-child(2) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-footer > .po-avatar[aria-label=\"Kai\"]"
+            ],
+            [
+              ".po-board-column:nth-child(3) > .po-board-column-head > div > strong"
+            ],
+            [
+              ".po-board-column:nth-child(3) > .po-board-column-head > .po-column-count"
+            ],
+            [
+              ".po-board-column:nth-child(3) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"] > .po-task-tile-top > .is-1.po-priority-label"
+            ],
+            [
+              ".po-pill-warning > span"
+            ],
+            [
+              ".po-board-column:nth-child(3) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"] > .po-task-tile-title"
+            ],
+            [
+              ".po-board-column:nth-child(3) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"] > .po-task-tile-desc"
+            ],
+            [
+              ".po-board-column:nth-child(3) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"] > .po-task-tile-footer > .po-task-meta > span:nth-child(1)"
+            ],
+            [
+              ".po-board-column:nth-child(3) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"] > .po-task-tile-footer > .po-task-meta > span:nth-child(2)"
+            ],
+            [
+              ".po-board-column:nth-child(3) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"] > .po-task-tile-footer > .po-task-meta > span:nth-child(3)"
+            ],
+            [
+              ".po-board-column:nth-child(3) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"] > .po-task-tile-footer > .po-avatar[aria-label=\"Kai\"]"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-head > div > strong"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-head > .po-column-count"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-top > .is-2.po-priority-label"
+            ],
+            [
+              ".po-task-tile-top > .po-pill-success.po-pill > span"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-title"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-desc"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-footer > .po-task-meta > span:nth-child(1)"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-footer > .po-task-meta > span:nth-child(2)"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-footer > .po-task-meta > span:nth-child(3)"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-footer > .po-avatar[aria-label=\"Kai\"]"
+            ],
+            [
+              ".po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-top > .is-2.po-priority-label"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-title"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-desc"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-footer > .po-task-meta > span"
+            ],
+            [
+              ".po-board-column:nth-child(4) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-footer > .po-avatar[aria-label=\"Kai\"]"
+            ],
+            [
+              ".po-board-column:nth-child(5) > .po-board-column-head > div > strong"
+            ],
+            [
+              ".po-board-column:nth-child(5) > .po-board-column-head > .po-column-count"
+            ],
+            [
+              ".po-board-column:nth-child(5) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-top > .is-1.po-priority-label"
+            ],
+            [
+              ".po-board-column:nth-child(5) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-title"
+            ],
+            [
+              ".po-board-column:nth-child(5) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-desc"
+            ],
+            [
+              ".po-board-column:nth-child(5) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-footer > .po-task-meta > span"
+            ],
+            [
+              ".po-board-column:nth-child(5) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(1) > .po-task-tile-footer > .po-avatar[aria-label=\"Kai\"]"
+            ],
+            [
+              ".po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-top > .is-1.po-priority-label"
+            ],
+            [
+              ".po-board-column:nth-child(5) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-title"
+            ],
+            [
+              ".po-board-column:nth-child(5) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-desc"
+            ],
+            [
+              ".po-board-column:nth-child(5) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-footer > .po-task-meta > span"
+            ],
+            [
+              ".po-board-column:nth-child(5) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(2) > .po-task-tile-footer > .po-avatar[aria-label=\"Kai\"]"
+            ],
+            [
+              ".po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(3) > .po-task-tile-top > .is-1.po-priority-label"
+            ],
+            [
+              ".po-board-column:nth-child(5) > .po-board-column-body > .po-task-tile[draggable=\"true\"][role=\"button\"]:nth-child(3) > .po-task-tile-title"
+            ],
+            [
+              ".po-status-path"
+            ],
+            [
+              ".po-git-branch"
+            ],
+            [
+              ".po-status-dirty"
+            ],
+            [
+              ".po-status-item:nth-child(3)"
+            ],
+            [
+              ".po-status-label"
+            ],
+            [
+              ".po-status-item:nth-child(5)"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "navigation-menu-1024-light",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "navigation-menu-1024-dark",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "journey-details-1440-light",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "journey-details-1440-dark",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "task-create-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".ant-select-content-has-value"
+            ],
+            [
+              "label[for=\"dependsOn\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "task-create-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".ant-select-content-has-value"
+            ],
+            [
+              "label[for=\"dependsOn\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "task-priority-menu-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "targets": [
+            [
+              "#priority"
+            ]
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".ant-select-content-has-value"
+            ],
+            [
+              "#priority"
+            ],
+            [
+              "label[for=\"dependsOn\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "task-priority-menu-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "targets": [
+            [
+              "#priority"
+            ]
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".ant-select-content-has-value"
+            ],
+            [
+              "#priority"
+            ],
+            [
+              "label[for=\"dependsOn\"]"
+            ],
+            [
+              ".ant-select-item-option-active > .ant-select-item-option-content"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "task-detail-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "targets": [
+            [
+              ".po-detail-block-head > .po-avatar[aria-label=\"Sage\"]"
+            ]
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".po-pill-neutral.po-pill:nth-child(2) > span"
+            ],
+            [
+              ".po-detail-block:nth-child(1) > .po-detail-block-head > div > strong"
+            ],
+            [
+              ".po-detail-block:nth-child(1) > .po-detail-block-head > div > span"
+            ],
+            [
+              "p"
+            ],
+            [
+              ".po-detail-block:nth-child(2) > .po-detail-block-head > div > strong"
+            ],
+            [
+              ".po-detail-block:nth-child(2) > .po-detail-block-head > div > span"
+            ],
+            [
+              ".po-task-fact-grid > div:nth-child(1) > span"
+            ],
+            [
+              ".po-task-fact-grid > div:nth-child(1) > strong"
+            ],
+            [
+              ".po-task-fact-grid > div:nth-child(2) > span"
+            ],
+            [
+              "div:nth-child(2) > strong"
+            ],
+            [
+              ".po-task-fact-grid > div:nth-child(3) > span"
+            ],
+            [
+              "div:nth-child(3) > strong"
+            ],
+            [
+              ".po-task-fact-grid > div:nth-child(4) > span"
+            ],
+            [
+              "div:nth-child(4) > strong"
+            ],
+            [
+              ".po-task-assignee-row > span"
+            ],
+            [
+              ".ant-select-content-has-value"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "task-detail-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "targets": [
+            [
+              ".po-detail-block-head > .po-avatar[aria-label=\"Sage\"]"
+            ]
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".po-pill-neutral.po-pill:nth-child(2) > span"
+            ],
+            [
+              ".po-detail-block:nth-child(1) > .po-detail-block-head > div > strong"
+            ],
+            [
+              ".po-detail-block:nth-child(1) > .po-detail-block-head > div > span"
+            ],
+            [
+              ".po-detail-block-head > .po-avatar[aria-label=\"Sage\"]"
+            ],
+            [
+              "p"
+            ],
+            [
+              ".po-detail-block:nth-child(2) > .po-detail-block-head > div > strong"
+            ],
+            [
+              ".po-detail-block:nth-child(2) > .po-detail-block-head > div > span"
+            ],
+            [
+              ".po-task-fact-grid > div:nth-child(1) > span"
+            ],
+            [
+              ".po-task-fact-grid > div:nth-child(1) > strong"
+            ],
+            [
+              ".po-task-fact-grid > div:nth-child(2) > span"
+            ],
+            [
+              "div:nth-child(2) > strong"
+            ],
+            [
+              ".po-task-fact-grid > div:nth-child(3) > span"
+            ],
+            [
+              "div:nth-child(3) > strong"
+            ],
+            [
+              ".po-task-fact-grid > div:nth-child(4) > span"
+            ],
+            [
+              "div:nth-child(4) > strong"
+            ],
+            [
+              ".po-task-assignee-row > span"
+            ],
+            [
+              ".ant-select-content-has-value"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "task-edit-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "div[title=\"高\"]"
+            ],
+            [
+              ".ant-select-in-form-item.ant-select-allow-clear.ant-select > .ant-select-content-has-value.ant-select-content[title=\"Sage · 架构师\"]"
+            ],
+            [
+              "div[title=\"M3 · 加密同步\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "task-edit-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "div[title=\"高\"]"
+            ],
+            [
+              ".ant-select-in-form-item.ant-select-allow-clear.ant-select > .ant-select-content-has-value.ant-select-content[title=\"Sage · 架构师\"]"
+            ],
+            [
+              "div[title=\"M3 · 加密同步\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent-studio-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "h2"
+            ],
+            [
+              ".v16-studio-head > div:nth-child(1) > p"
+            ],
+            [
+              "input[placeholder=\"搜索模板或 Agent\"]"
+            ],
+            [
+              ".v16-studio-group-title"
+            ],
+            [
+              ".is-active.v16-template-item > .v16-template-icon"
+            ],
+            [
+              ".is-active.v16-template-item > span:nth-child(2) > strong"
+            ],
+            [
+              ".is-active.v16-template-item > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(3) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(3) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(3) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(4) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(4) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(4) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(5) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(5) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(5) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(6) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(6) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(6) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(7) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(7) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(7) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(8) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(8) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(8) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(9) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(9) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(9) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(10) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(10) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(10) > span:nth-child(2) > small"
+            ],
+            [
+              ".is-blank > span:nth-child(2) > strong"
+            ],
+            [
+              ".is-blank > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-studio-tabs > .is-active"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(2)"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(3)"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(4)"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(5)"
+            ],
+            [
+              "label[for=\"name\"]"
+            ],
+            [
+              "#name"
+            ],
+            [
+              "label[for=\"role\"]"
+            ],
+            [
+              "#role"
+            ],
+            [
+              "label[for=\"category\"]"
+            ],
+            [
+              "div[title=\"通用\"]"
+            ],
+            [
+              "label[for=\"visibility\"]"
+            ],
+            [
+              "div[title=\"项目内可见\"]"
+            ],
+            [
+              "label[for=\"description\"]"
+            ],
+            [
+              "#description"
+            ],
+            [
+              ".ant-input-data-count"
+            ],
+            [
+              ".v16-readonly-field > span"
+            ],
+            [
+              ".v16-readonly-field > strong"
+            ],
+            [
+              "h3"
+            ],
+            [
+              ".v16-preview-role"
+            ],
+            [
+              ".v16-preview-desc"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(1) > span"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(1) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(2) > span"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(2) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(3) > span"
+            ],
+            [
+              "div:nth-child(3) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(4) > span"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(4) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(5) > span"
+            ],
+            [
+              "div:nth-child(5) > strong"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent-studio-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "h2"
+            ],
+            [
+              ".v16-studio-head > div:nth-child(1) > p"
+            ],
+            [
+              "input[placeholder=\"搜索模板或 Agent\"]"
+            ],
+            [
+              ".v16-studio-group-title"
+            ],
+            [
+              ".is-active.v16-template-item > .v16-template-icon"
+            ],
+            [
+              ".is-active.v16-template-item > span:nth-child(2) > strong"
+            ],
+            [
+              ".is-active.v16-template-item > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(3) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(3) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(3) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(4) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(4) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(4) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(5) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(5) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(5) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(6) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(6) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(6) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(7) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(7) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(7) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(8) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(8) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(8) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(9) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(9) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(9) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(10) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(10) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(10) > span:nth-child(2) > small"
+            ],
+            [
+              ".is-blank > span:nth-child(2) > strong"
+            ],
+            [
+              ".is-blank > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-studio-tabs > .is-active"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(2)"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(3)"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(4)"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(5)"
+            ],
+            [
+              "label[for=\"name\"]"
+            ],
+            [
+              "#name"
+            ],
+            [
+              "label[for=\"role\"]"
+            ],
+            [
+              "#role"
+            ],
+            [
+              "label[for=\"category\"]"
+            ],
+            [
+              "div[title=\"通用\"]"
+            ],
+            [
+              "label[for=\"visibility\"]"
+            ],
+            [
+              "div[title=\"项目内可见\"]"
+            ],
+            [
+              "label[for=\"description\"]"
+            ],
+            [
+              "#description"
+            ],
+            [
+              ".ant-input-data-count"
+            ],
+            [
+              ".v16-readonly-field > span"
+            ],
+            [
+              ".v16-readonly-field > strong"
+            ],
+            [
+              "h3"
+            ],
+            [
+              ".v16-preview-role"
+            ],
+            [
+              ".v16-preview-desc"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(1) > span"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(1) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(2) > span"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(2) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(3) > span"
+            ],
+            [
+              "div:nth-child(3) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(4) > span"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(4) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(5) > span"
+            ],
+            [
+              "div:nth-child(5) > strong"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent-edit-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "h2"
+            ],
+            [
+              ".v16-studio-head > div:nth-child(1) > p"
+            ],
+            [
+              "input[placeholder=\"搜索模板或 Agent\"]"
+            ],
+            [
+              ".v16-studio-group-title:nth-child(1)"
+            ],
+            [
+              ".v16-template-item:nth-child(2) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(2) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(2) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(3) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(3) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(3) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(4) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(4) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(4) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(5) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(5) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(5) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(6) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(6) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(6) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(7) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(7) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(7) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(8) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(8) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(8) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(9) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(9) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(9) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(10) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(10) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(10) > span:nth-child(2) > small"
+            ],
+            [
+              ".is-blank > span:nth-child(2) > strong"
+            ],
+            [
+              ".is-blank > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-studio-group-title:nth-child(12)"
+            ],
+            [
+              ".is-active.v16-template-item > span:nth-child(2) > strong"
+            ],
+            [
+              ".is-active.v16-template-item > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-studio-tabs > .is-active"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(2)"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(3)"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(4)"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(5)"
+            ],
+            [
+              "label[for=\"name\"]"
+            ],
+            [
+              "#name"
+            ],
+            [
+              "label[for=\"role\"]"
+            ],
+            [
+              "#role"
+            ],
+            [
+              "label[for=\"category\"]"
+            ],
+            [
+              "div[title=\"通用\"]"
+            ],
+            [
+              "label[for=\"visibility\"]"
+            ],
+            [
+              "div[title=\"项目内可见\"]"
+            ],
+            [
+              "label[for=\"description\"]"
+            ],
+            [
+              "#description"
+            ],
+            [
+              ".ant-input-data-count"
+            ],
+            [
+              ".v16-readonly-field > span"
+            ],
+            [
+              ".v16-readonly-field > strong"
+            ],
+            [
+              "h3"
+            ],
+            [
+              ".v16-preview-role"
+            ],
+            [
+              ".v16-preview-desc"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(1) > span"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(1) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(2) > span"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(2) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(3) > span"
+            ],
+            [
+              "div:nth-child(3) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(4) > span"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(4) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(5) > span"
+            ],
+            [
+              "div:nth-child(5) > strong"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent-edit-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "h2"
+            ],
+            [
+              ".v16-studio-head > div:nth-child(1) > p"
+            ],
+            [
+              "input[placeholder=\"搜索模板或 Agent\"]"
+            ],
+            [
+              ".v16-studio-group-title:nth-child(1)"
+            ],
+            [
+              ".v16-template-item:nth-child(2) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(2) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(2) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(3) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(3) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(3) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(4) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(4) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(4) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(5) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(5) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(5) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(6) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(6) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(6) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(7) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(7) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(7) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(8) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(8) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(8) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(9) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(9) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(9) > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-template-item:nth-child(10) > .v16-template-icon"
+            ],
+            [
+              ".v16-template-item:nth-child(10) > span:nth-child(2) > strong"
+            ],
+            [
+              ".v16-template-item:nth-child(10) > span:nth-child(2) > small"
+            ],
+            [
+              ".is-blank > span:nth-child(2) > strong"
+            ],
+            [
+              ".is-blank > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-studio-group-title:nth-child(12)"
+            ],
+            [
+              ".is-active.v16-template-item > span:nth-child(2) > strong"
+            ],
+            [
+              ".is-active.v16-template-item > span:nth-child(2) > small"
+            ],
+            [
+              ".v16-studio-tabs > .is-active"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(2)"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(3)"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(4)"
+            ],
+            [
+              ".v16-studio-tabs > button:nth-child(5)"
+            ],
+            [
+              "label[for=\"name\"]"
+            ],
+            [
+              "#name"
+            ],
+            [
+              "label[for=\"role\"]"
+            ],
+            [
+              "#role"
+            ],
+            [
+              "label[for=\"category\"]"
+            ],
+            [
+              "div[title=\"通用\"]"
+            ],
+            [
+              "label[for=\"visibility\"]"
+            ],
+            [
+              "div[title=\"项目内可见\"]"
+            ],
+            [
+              "label[for=\"description\"]"
+            ],
+            [
+              "#description"
+            ],
+            [
+              ".ant-input-data-count"
+            ],
+            [
+              ".v16-readonly-field > span"
+            ],
+            [
+              ".v16-readonly-field > strong"
+            ],
+            [
+              "h3"
+            ],
+            [
+              ".v16-preview-role"
+            ],
+            [
+              ".v16-preview-desc"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(1) > span"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(1) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(2) > span"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(2) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(3) > span"
+            ],
+            [
+              "div:nth-child(3) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(4) > span"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(4) > strong"
+            ],
+            [
+              ".v16-preview-list > div:nth-child(5) > span"
+            ],
+            [
+              "div:nth-child(5) > strong"
+            ]
+          ]
+        },
+        {
+          "id": "heading-order",
+          "targets": [
+            [
+              "h2"
+            ],
+            [
+              "h3"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent-prompt-preview-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "pre"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent-prompt-preview-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "pre"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent-context-1440-light",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "agent-context-1440-dark",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "agent-flow-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "targets": [
+            [
+              ".react-flow__panel"
+            ]
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "div[data-id=\"agt_engineer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-agent-top > .aco-avatar"
+            ],
+            [
+              "div[data-id=\"agt_engineer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-agent-top > .aco-gnode-agent-copy > strong"
+            ],
+            [
+              "div[data-id=\"agt_engineer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-agent-top > .aco-gnode-agent-copy > span"
+            ],
+            [
+              ".aco-gnode-agent-top > .aco-pill.is-warn"
+            ],
+            [
+              ".aco-gnode-current[title=\"笔记图谱视图与反向链接索引\"]"
+            ],
+            [
+              "div[data-id=\"agt_engineer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-foot > .aco-mono"
+            ],
+            [
+              "div[data-id=\"agt_engineer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-testid=\"collaboration-agent-agt_qa\"] > .aco-gnode-agent-top > .aco-avatar"
+            ],
+            [
+              "div[data-testid=\"collaboration-agent-agt_qa\"] > .aco-gnode-agent-top > .aco-gnode-agent-copy > strong"
+            ],
+            [
+              "div[data-testid=\"collaboration-agent-agt_qa\"] > .aco-gnode-agent-top > .aco-gnode-agent-copy > span"
+            ],
+            [
+              "div[data-testid=\"collaboration-agent-agt_qa\"] > .aco-gnode-agent-top > .is-neutral.aco-pill"
+            ],
+            [
+              "div[data-testid=\"collaboration-agent-agt_qa\"] > .aco-gnode-current"
+            ],
+            [
+              "div[data-testid=\"collaboration-agent-agt_qa\"] > .aco-gnode-foot > .aco-mono"
+            ],
+            [
+              "div[data-testid=\"collaboration-agent-agt_qa\"] > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-id=\"agt_reviewer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-agent-top > .aco-avatar"
+            ],
+            [
+              "div[data-id=\"agt_reviewer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-agent-top > .aco-gnode-agent-copy > strong"
+            ],
+            [
+              "div[data-id=\"agt_reviewer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-agent-top > .aco-gnode-agent-copy > span"
+            ],
+            [
+              "div[data-id=\"agt_reviewer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-agent-top > .is-neutral.aco-pill"
+            ],
+            [
+              "div[data-id=\"agt_reviewer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-current"
+            ],
+            [
+              "div[data-id=\"agt_reviewer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-foot > .aco-mono"
+            ],
+            [
+              "div[data-id=\"agt_reviewer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              ".is-done"
+            ],
+            [
+              "div[data-task-status=\"done\"] > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "strong[title=\"建立 SQLite 全文索引与启动恢复\"]"
+            ],
+            [
+              "div[data-task-status=\"done\"] > .aco-gnode-foot > .aco-gnode-assignee"
+            ],
+            [
+              "div[data-task-status=\"done\"] > .aco-gnode-foot > .aco-gnode-assignee > i"
+            ],
+            [
+              "div[data-task-status=\"done\"] > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v1ped7nwn8qvj8axwg\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-top > .is-review.aco-gnode-state"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v1ped7nwn8qvj8axwg\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "strong[title=\"本地全文搜索与结果排序\"]"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v1ped7nwn8qvj8axwg\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-foot > .aco-gnode-assignee"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v1ped7nwn8qvj8axwg\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-foot > .aco-gnode-assignee > i"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v1ped7nwn8qvj8axwg\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              ".is-running"
+            ],
+            [
+              ".is-waiting > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              ".aco-gnode-title[title=\"笔记图谱视图与反向链接索引\"]"
+            ],
+            [
+              ".is-waiting > .aco-gnode-foot > .aco-gnode-assignee"
+            ],
+            [
+              ".is-waiting > .aco-gnode-foot > .aco-gnode-assignee > i"
+            ],
+            [
+              ".is-waiting > .aco-gnode-foot > .aco-warn-text"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2pk4dthnghwb3119w\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-top > .is-review.aco-gnode-state"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2pk4dthnghwb3119w\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "strong[title=\"命令面板与快捷键体系\"]"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2pk4dthnghwb3119w\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-foot > .aco-gnode-assignee"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2pk4dthnghwb3119w\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-foot > .aco-gnode-assignee > i"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2pk4dthnghwb3119w\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2tfkees3pnznwvfkj\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-top > .is-ready.aco-gnode-state"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2tfkees3pnznwvfkj\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "strong[title=\"补充搜索排序的边界测试\"]"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2tfkees3pnznwvfkj\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-foot > .aco-gnode-assignee"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2tfkees3pnznwvfkj\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-foot > .aco-gnode-assignee > i"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2tfkees3pnznwvfkj\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2t0ha5rzc6n9c09sv\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-top > .is-ready.aco-gnode-state"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2t0ha5rzc6n9c09sv\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "strong[title=\"反向链接索引的增量更新\"]"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2t0ha5rzc6n9c09sv\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-foot > .aco-gnode-assignee"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2t0ha5rzc6n9c09sv\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-foot > .aco-gnode-assignee > i"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2t0ha5rzc6n9c09sv\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7ht69p8c6e9yzjtca\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7ht69p8c6e9yzjtca\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-top > .aco-unverified"
+            ],
+            [
+              "strong[title=\"搜索实现审查报告\"]"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7ht69p8c6e9yzjtca\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-foot > .aco-mono"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7ht69p8c6e9yzjtca\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7195yd00dqgma2j1v\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7195yd00dqgma2j1v\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-top > .aco-unverified"
+            ],
+            [
+              "strong[title=\"图谱视图交互草图\"]"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7195yd00dqgma2j1v\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-foot > .aco-mono"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7195yd00dqgma2j1v\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-id=\"art_01m66357v6gkhxftgk1n77v0rn\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              ".aco-verified"
+            ],
+            [
+              "strong[title=\"全文搜索测试报告\"]"
+            ],
+            [
+              "div[data-id=\"art_01m66357v6gkhxftgk1n77v0rn\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-foot > .aco-mono"
+            ],
+            [
+              "div[data-id=\"art_01m66357v6gkhxftgk1n77v0rn\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              ".aco-gnode-approval > .aco-gnode-top > .is-review.aco-gnode-state"
+            ],
+            [
+              ".aco-gnode-approval > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "strong[title=\"授权 write_file\"]"
+            ],
+            [
+              ".aco-gnode-approval > .aco-gnode-foot > span:nth-child(1)"
+            ],
+            [
+              ".aco-gnode-approval > .aco-gnode-foot > .aco-warn-text"
+            ],
+            [
+              "g[transform=\"translate(1166, 66)\"] > text"
+            ],
+            [
+              "g[transform=\"translate(1166, 381)\"] > text"
+            ],
+            [
+              ".aco-standby-avatars > i:nth-child(1)"
+            ],
+            [
+              "i:nth-child(2)"
+            ],
+            [
+              ".aco-standby-toggle > span:nth-child(2)"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent-flow-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "targets": [
+            [
+              ".react-flow__panel"
+            ]
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "div[data-id=\"agt_engineer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-agent-top > .aco-avatar"
+            ],
+            [
+              "div[data-id=\"agt_engineer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-agent-top > .aco-gnode-agent-copy > strong"
+            ],
+            [
+              "div[data-id=\"agt_engineer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-agent-top > .aco-gnode-agent-copy > span"
+            ],
+            [
+              ".aco-gnode-agent-top > .aco-pill.is-warn"
+            ],
+            [
+              ".aco-gnode-current[title=\"笔记图谱视图与反向链接索引\"]"
+            ],
+            [
+              "div[data-id=\"agt_engineer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-foot > .aco-mono"
+            ],
+            [
+              "div[data-id=\"agt_engineer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-testid=\"collaboration-agent-agt_qa\"] > .aco-gnode-agent-top > .aco-avatar"
+            ],
+            [
+              "div[data-testid=\"collaboration-agent-agt_qa\"] > .aco-gnode-agent-top > .aco-gnode-agent-copy > strong"
+            ],
+            [
+              "div[data-testid=\"collaboration-agent-agt_qa\"] > .aco-gnode-agent-top > .aco-gnode-agent-copy > span"
+            ],
+            [
+              "div[data-testid=\"collaboration-agent-agt_qa\"] > .aco-gnode-agent-top > .is-neutral.aco-pill"
+            ],
+            [
+              "div[data-testid=\"collaboration-agent-agt_qa\"] > .aco-gnode-current"
+            ],
+            [
+              "div[data-testid=\"collaboration-agent-agt_qa\"] > .aco-gnode-foot > .aco-mono"
+            ],
+            [
+              "div[data-testid=\"collaboration-agent-agt_qa\"] > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-id=\"agt_reviewer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-agent-top > .aco-avatar"
+            ],
+            [
+              "div[data-id=\"agt_reviewer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-agent-top > .aco-gnode-agent-copy > strong"
+            ],
+            [
+              "div[data-id=\"agt_reviewer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-agent-top > .aco-gnode-agent-copy > span"
+            ],
+            [
+              "div[data-id=\"agt_reviewer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-agent-top > .is-neutral.aco-pill"
+            ],
+            [
+              "div[data-id=\"agt_reviewer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-current"
+            ],
+            [
+              "div[data-id=\"agt_reviewer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-foot > .aco-mono"
+            ],
+            [
+              "div[data-id=\"agt_reviewer\"] > .aco-gnode-agent.aco-gnode > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              ".is-done"
+            ],
+            [
+              "div[data-task-status=\"done\"] > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "strong[title=\"建立 SQLite 全文索引与启动恢复\"]"
+            ],
+            [
+              "div[data-task-status=\"done\"] > .aco-gnode-foot > .aco-gnode-assignee"
+            ],
+            [
+              "div[data-task-status=\"done\"] > .aco-gnode-foot > .aco-gnode-assignee > i"
+            ],
+            [
+              "div[data-task-status=\"done\"] > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v1ped7nwn8qvj8axwg\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-top > .is-review.aco-gnode-state"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v1ped7nwn8qvj8axwg\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "strong[title=\"本地全文搜索与结果排序\"]"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v1ped7nwn8qvj8axwg\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-foot > .aco-gnode-assignee"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v1ped7nwn8qvj8axwg\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-foot > .aco-gnode-assignee > i"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v1ped7nwn8qvj8axwg\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              ".is-running"
+            ],
+            [
+              ".is-waiting > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              ".aco-gnode-title[title=\"笔记图谱视图与反向链接索引\"]"
+            ],
+            [
+              ".is-waiting > .aco-gnode-foot > .aco-gnode-assignee"
+            ],
+            [
+              ".is-waiting > .aco-gnode-foot > .aco-gnode-assignee > i"
+            ],
+            [
+              ".is-waiting > .aco-gnode-foot > .aco-warn-text"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2pk4dthnghwb3119w\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-top > .is-review.aco-gnode-state"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2pk4dthnghwb3119w\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "strong[title=\"命令面板与快捷键体系\"]"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2pk4dthnghwb3119w\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-foot > .aco-gnode-assignee"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2pk4dthnghwb3119w\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-foot > .aco-gnode-assignee > i"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2pk4dthnghwb3119w\"] > .aco-gnode-task.aco-gnode[data-task-status=\"review\"] > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2tfkees3pnznwvfkj\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-top > .is-ready.aco-gnode-state"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2tfkees3pnznwvfkj\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "strong[title=\"补充搜索排序的边界测试\"]"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2tfkees3pnznwvfkj\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-foot > .aco-gnode-assignee"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2tfkees3pnznwvfkj\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-foot > .aco-gnode-assignee > i"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2tfkees3pnznwvfkj\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2t0ha5rzc6n9c09sv\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-top > .is-ready.aco-gnode-state"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2t0ha5rzc6n9c09sv\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "strong[title=\"反向链接索引的增量更新\"]"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2t0ha5rzc6n9c09sv\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-foot > .aco-gnode-assignee"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2t0ha5rzc6n9c09sv\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-foot > .aco-gnode-assignee > i"
+            ],
+            [
+              "div[data-id=\"tsk_01m66357v2t0ha5rzc6n9c09sv\"] > .aco-gnode-task.aco-gnode[data-task-status=\"ready\"] > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7ht69p8c6e9yzjtca\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7ht69p8c6e9yzjtca\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-top > .aco-unverified"
+            ],
+            [
+              "strong[title=\"搜索实现审查报告\"]"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7ht69p8c6e9yzjtca\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-foot > .aco-mono"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7ht69p8c6e9yzjtca\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7195yd00dqgma2j1v\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7195yd00dqgma2j1v\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-top > .aco-unverified"
+            ],
+            [
+              "strong[title=\"图谱视图交互草图\"]"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7195yd00dqgma2j1v\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-foot > .aco-mono"
+            ],
+            [
+              "div[data-id=\"art_01m66357v7195yd00dqgma2j1v\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              "div[data-id=\"art_01m66357v6gkhxftgk1n77v0rn\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              ".aco-verified"
+            ],
+            [
+              "strong[title=\"全文搜索测试报告\"]"
+            ],
+            [
+              "div[data-id=\"art_01m66357v6gkhxftgk1n77v0rn\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-foot > .aco-mono"
+            ],
+            [
+              "div[data-id=\"art_01m66357v6gkhxftgk1n77v0rn\"] > .aco-gnode-artifact.aco-gnode > .aco-gnode-foot > span:nth-child(2)"
+            ],
+            [
+              ".aco-gnode-approval > .aco-gnode-top > .is-review.aco-gnode-state"
+            ],
+            [
+              ".aco-gnode-approval > .aco-gnode-top > .aco-gnode-meta"
+            ],
+            [
+              "strong[title=\"授权 write_file\"]"
+            ],
+            [
+              ".aco-gnode-approval > .aco-gnode-foot > span:nth-child(1)"
+            ],
+            [
+              ".aco-gnode-approval > .aco-gnode-foot > .aco-warn-text"
+            ],
+            [
+              "g[transform=\"translate(1166, 66)\"] > text"
+            ],
+            [
+              "g[transform=\"translate(1166, 381)\"] > text"
+            ],
+            [
+              ".aco-flow-toggle"
+            ],
+            [
+              ".aco-canvas-hint:nth-child(5)"
+            ],
+            [
+              ".aco-standby-toggle > span:nth-child(2)"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "plan-generator-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".is-active[role=\"radio\"] > span:nth-child(2) > strong"
+            ],
+            [
+              ".is-active[role=\"radio\"] > span:nth-child(2) > em"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "plan-generator-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".is-active[role=\"radio\"] > span:nth-child(2) > strong"
+            ],
+            [
+              ".is-active[role=\"radio\"] > span:nth-child(2) > em"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "real-plan-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "targets": [
+            [
+              ".react-flow__panel"
+            ]
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".pdl-plan-title > .pdl-eyebrow"
+            ],
+            [
+              "h1"
+            ],
+            [
+              ".pdl-state"
+            ],
+            [
+              ".pdl-plan-meta > span:nth-child(2)"
+            ],
+            [
+              ".pdl-plan-meta > span:nth-child(3)"
+            ],
+            [
+              ".pdl-plan-meta > span:nth-child(4)"
+            ],
+            [
+              ".pdl-metrics > div:nth-child(1) > strong"
+            ],
+            [
+              ".pdl-metrics > div:nth-child(1) > span"
+            ],
+            [
+              "div:nth-child(2) > strong"
+            ],
+            [
+              ".pdl-metrics > div:nth-child(2) > span"
+            ],
+            [
+              "div:nth-child(3) > strong"
+            ],
+            [
+              ".pdl-metrics > div:nth-child(3) > span"
+            ],
+            [
+              "button[role=\"tab\"]:nth-child(1)"
+            ],
+            [
+              ".pdl-view-context > span"
+            ],
+            [
+              ".pdl-dag-head > div:nth-child(1) > .pdl-eyebrow"
+            ],
+            [
+              "h2"
+            ],
+            [
+              ".pdl-dag-actions > span"
+            ],
+            [
+              ".pdl-dag-actions > button"
+            ],
+            [
+              ".pdl-dag-legend > span:nth-child(1)"
+            ],
+            [
+              ".pdl-dag-legend > span:nth-child(2)"
+            ],
+            [
+              ".pdl-dag-legend > span:nth-child(3)"
+            ],
+            [
+              ".pdl-dag-caption > span:nth-child(1)"
+            ],
+            [
+              ".pdl-dag-caption > span:nth-child(2)"
+            ],
+            [
+              ".pdl-footer-meta"
+            ],
+            [
+              ".pdl-quiet"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "real-plan-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "targets": [
+            [
+              ".react-flow__panel"
+            ]
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".pdl-plan-title > .pdl-eyebrow"
+            ],
+            [
+              "h1"
+            ],
+            [
+              ".pdl-state"
+            ],
+            [
+              ".pdl-plan-meta > span:nth-child(2)"
+            ],
+            [
+              ".pdl-plan-meta > span:nth-child(3)"
+            ],
+            [
+              ".pdl-plan-meta > span:nth-child(4)"
+            ],
+            [
+              ".pdl-metrics > div:nth-child(1) > strong"
+            ],
+            [
+              ".pdl-metrics > div:nth-child(1) > span"
+            ],
+            [
+              "div:nth-child(2) > strong"
+            ],
+            [
+              ".pdl-metrics > div:nth-child(2) > span"
+            ],
+            [
+              "div:nth-child(3) > strong"
+            ],
+            [
+              ".pdl-metrics > div:nth-child(3) > span"
+            ],
+            [
+              "button[role=\"tab\"]:nth-child(1)"
+            ],
+            [
+              ".is-active[role=\"tab\"]"
+            ],
+            [
+              ".pdl-view-context > span"
+            ],
+            [
+              ".pdl-dag-head > div:nth-child(1) > .pdl-eyebrow"
+            ],
+            [
+              "h2"
+            ],
+            [
+              ".pdl-dag-actions > span"
+            ],
+            [
+              ".pdl-dag-actions > button"
+            ],
+            [
+              ".pdl-dag-legend > span:nth-child(1)"
+            ],
+            [
+              ".pdl-dag-legend > span:nth-child(2)"
+            ],
+            [
+              ".pdl-dag-legend > span:nth-child(3)"
+            ],
+            [
+              ".pdl-dag-caption > span:nth-child(1)"
+            ],
+            [
+              ".pdl-dag-caption > span:nth-child(2)"
+            ],
+            [
+              ".pdl-footer-meta"
+            ],
+            [
+              ".pdl-quiet"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run-detail-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".po-run-detail > .po-approval-list > .po-approval.is-pending.is-compact > .po-approval-head > .po-approval-heading > .po-approval-title"
+            ],
+            [
+              ".po-run-detail > .po-approval-list > .po-approval.is-pending.is-compact > .po-approval-head > .po-approval-heading > .po-approval-sub"
+            ],
+            [
+              ".po-run-detail > .po-approval-list > .po-approval.is-pending.is-compact > .po-approval-detail"
+            ],
+            [
+              ".po-run-detail > .po-approval-list > .po-approval.is-pending.is-compact > details > summary"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run-detail-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".po-run-detail > .po-approval-list > .po-approval.is-pending.is-compact > .po-approval-head > .po-approval-heading > .po-approval-title"
+            ],
+            [
+              ".po-run-detail > .po-approval-list > .po-approval.is-pending.is-compact > .po-approval-head > .po-approval-heading > .po-approval-sub"
+            ],
+            [
+              ".po-run-detail > .po-approval-list > .po-approval.is-pending.is-compact > .po-approval-head > .po-pill-warning.po-pill > span:nth-child(2)"
+            ],
+            [
+              ".po-run-detail > .po-approval-list > .po-approval.is-pending.is-compact > .po-approval-detail"
+            ],
+            [
+              ".po-run-detail > .po-approval-list > .po-approval.is-pending.is-compact > details > summary"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "version-create-1440-light",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "version-create-1440-dark",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "iteration-create-1440-light",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "iteration-create-1440-dark",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "environment-create-1440-light",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "environment-create-1440-dark",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "evidence-record-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "div[title=\"评审记录\"]"
+            ],
+            [
+              "div[title=\"passed\"]"
+            ],
+            [
+              "div[title=\"自我声明\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "evidence-record-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "div[title=\"评审记录\"]"
+            ],
+            [
+              "div[title=\"passed\"]"
+            ],
+            [
+              "div[title=\"自我声明\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "release-change-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "div[title=\"medium\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "release-change-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "div[title=\"medium\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "deployment-readiness-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "targets": [
+            [
+              ".dc-delivery-map"
+            ]
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".rw-eyebrow"
+            ],
+            [
+              "h1"
+            ],
+            [
+              ".dc-head > div:nth-child(1) > p"
+            ],
+            [
+              "div[title=\"v0.1.0\"]"
+            ],
+            [
+              "div[title=\"Local\"]"
+            ],
+            [
+              "h2"
+            ],
+            [
+              ".dc-start-copy > p"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "deployment-readiness-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "targets": [
+            [
+              ".dc-delivery-map"
+            ]
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".rw-eyebrow"
+            ],
+            [
+              "h1"
+            ],
+            [
+              ".dc-head > div:nth-child(1) > p"
+            ],
+            [
+              "div[title=\"v0.1.0\"]"
+            ],
+            [
+              "div[title=\"Local\"]"
+            ],
+            [
+              "h2"
+            ],
+            [
+              ".dc-start-copy > p"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "deployment-target-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "label:nth-child(1) > .ant-select.ant-select-outlined.ant-select-css-var > .ant-select-content-has-value.ant-select-content[title=\"Local\"]"
+            ],
+            [
+              "div[title=\"SSH / VPS\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "deployment-target-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "label:nth-child(1) > .ant-select.ant-select-outlined.ant-select-css-var > .ant-select-content-has-value.ant-select-content[title=\"Local\"]"
+            ],
+            [
+              "div[title=\"SSH / VPS\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "resource-create-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "div[title=\"主机 / VPS\"]"
+            ],
+            [
+              "div[title=\"私钥\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "resource-create-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "div[title=\"主机 / VPS\"]"
+            ],
+            [
+              "div[title=\"私钥\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "lifecycle-create-1440-light",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "lifecycle-create-1440-dark",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "collaboration-message-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".ant-form-item.ant-form-item-vertical.ant-form-css-var:nth-child(1) > .ant-row.ant-form-item-row.projectos > .ant-form-item-control.ant-col.projectos > .ant-form-item-control-input > .ant-form-item-control-input-content > .ant-select-in-form-item.ant-select.ant-select-outlined > .ant-select-content.ant-select-content-has-value"
+            ],
+            [
+              "div[title=\"Iris · 计划协作 · Iris · r2\"]"
+            ],
+            [
+              "div[title=\"消息\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "collaboration-message-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".ant-form-item.ant-form-item-vertical.ant-form-css-var:nth-child(1) > .ant-row.ant-form-item-row.projectos > .ant-form-item-control.ant-col.projectos > .ant-form-item-control-input > .ant-form-item-control-input-content > .ant-select-in-form-item.ant-select.ant-select-outlined > .ant-select-content.ant-select-content-has-value"
+            ],
+            [
+              "div[title=\"Iris · 计划协作 · Iris · r2\"]"
+            ],
+            [
+              "div[title=\"消息\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "connection-editor-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "div[title=\"DeepSeek\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "connection-editor-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "div[title=\"DeepSeek\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "connection-delete-confirm-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".pui-overlay-copy"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "connection-delete-confirm-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".pui-overlay-copy"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "model-add-1440-light",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "model-add-1440-dark",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "model-detail-1440-light",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "model-detail-1440-dark",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "runtime-create-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".ant-select-content-has-value"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "runtime-create-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".ant-select-content-has-value"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "runtime-detail-1440-light",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "runtime-detail-1440-dark",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "skill-detail-1440-light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "pre"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "skill-detail-1440-dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "pre"
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

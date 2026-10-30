@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { App as AntApp, Badge, Button, Empty, Popover, Select, Tag } from 'antd'
+import { App as AntApp, Badge, Button, Empty, Popover, Tag } from 'antd'
 import { BellOutlined, RightOutlined, SyncOutlined } from '@ant-design/icons'
 import type { ActionItem } from '@projectos/contracts'
 import { useActionCenter, useAutonomySettings } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
 import './action-center.css'
+import { PROJECT_MODES, ProjectModeControl } from './ProjectModeControl'
 
 const KIND_LABEL: Record<string, string> = {
   tool_approval: '工具授权',
@@ -16,12 +17,6 @@ const KIND_LABEL: Record<string, string> = {
   deployment_reconciliation: '部署对账',
   run_failure: 'Run 失败',
 }
-
-const MODE_OPTIONS = [
-  { value: 'assist', label: '辅助模式' },
-  { value: 'autonomous', label: '自主模式（推荐）' },
-  { value: 'managed', label: '托管模式（范围受限）' },
-]
 
 /**
  * Global action panel. Every row is a real persisted object with an exact route, so
@@ -39,17 +34,6 @@ export function ActionCenterButton({ projectId }: { projectId: string | null }) 
   const summary = actions.data?.summary
   const openItems = items.filter((item) => !item.stale)
   const staleItems = items.filter((item) => item.stale)
-
-  const setMode = useMutation({
-    mutationFn: (mode: 'assist' | 'autonomous' | 'managed') =>
-      window.projectos.actions.setAutonomy({ projectId: projectId!, mode }),
-    onSuccess: async (next) => {
-      await queryClient.invalidateQueries({ queryKey: ['autonomy-settings', projectId ?? ''] })
-      await queryClient.invalidateQueries({ queryKey: ['action-center', projectId ?? ''] })
-      message.success(next.mode === 'autonomous' ? '已切换为自主模式：满足门禁的阶段会自动推进' : '已切换自主模式')
-    },
-    onError: (error) => message.error(errorMessage(error)),
-  })
 
   const tick = useMutation({
     mutationFn: () => window.projectos.actions.tick(projectId!),
@@ -102,20 +86,9 @@ export function ActionCenterButton({ projectId }: { projectId: string | null }) 
           <strong>待办与决策</strong>
           <span>{openItems.length} 项需要你处理</span>
         </div>
-        <Select
-          size="small"
-          value={autonomy.data?.mode ?? 'assist'}
-          options={MODE_OPTIONS}
-          style={{ width: 168 }}
-          loading={autonomy.isLoading || setMode.isPending}
-          onChange={(mode) => projectId && setMode.mutate(mode as 'assist' | 'autonomous' | 'managed')}
-        />
+        <ProjectModeControl projectId={projectId} />
       </header>
-      {autonomy.data?.mode === 'autonomous' ? (
-        <p className="ac-mode-hint">自主模式：已授权的常规研发、测试与门禁合规的阶段推进由系统自动完成；生产部署、凭据变更与越权文件操作仍需独立授权。</p>
-      ) : (
-        <p className="ac-mode-hint">辅助模式：系统只准备动作，由你决定何时推进。切到自主模式后，满足门禁的阶段会自动前进。</p>
-      )}
+      <p className="ac-mode-hint">{PROJECT_MODES.find((mode) => mode.value === autonomy.data?.mode)?.description ?? '正在读取项目工作模式。'}</p>
       <div className="ac-list">
         {openItems.length === 0 ? (
           <Empty

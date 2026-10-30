@@ -1,5 +1,13 @@
 # Approved Visual Baselines
 
+Current authority (2026-10-30): the user-confirmed DAG screenshot
+`2026-10-29-user-confirmed-DAG.png`, protected DAG composition `0686c41`, and root AGENTS.md.
+The user explicitly requested this design across the real system (ADR-0070). The stage-label
+rejection in the historical notes below concerns that stage view, not rejection of the approved
+DAG screenshot. The formal R1 Modal remains rejected. New product screenshots require review.
+
+## Historical stage-route record
+
 Status: **approved icon-only Premium Liquid Glass Design Lab**  
 Approved tag: `visual-baseline-approved-icons-10d84f4`  
 Approved commit: `10d84f4`  

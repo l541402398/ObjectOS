@@ -1,7 +1,9 @@
 import type { NavigateFunction } from 'react-router-dom'
 import { Button, Tag } from 'antd'
 import { ArrowRightOutlined, CheckCircleOutlined } from '@ant-design/icons'
+import { useQuery } from '@tanstack/react-query'
 import { useActionCenter } from '../lib/queries'
+import { journeyActionLabel, JOURNEY_OWNER_LABEL } from '../lib/journey'
 import type { ActionItem } from '@projectos/contracts'
 
 const KIND_LABEL: Record<string, string> = {
@@ -22,15 +24,19 @@ const RISK_LABEL: Record<string, string> = { low: '低风险', medium: '需确�
  */
 export function NextStepPanel({ projectId, navigate }: { projectId: string; navigate: NavigateFunction }) {
   const actions = useActionCenter(projectId)
+  const journey = useQuery({ queryKey: ['work', 'journey', projectId], queryFn: () => window.projectos.work.journey(projectId), staleTime: 2000, refetchInterval: 5000 })
+  const next = journey.data?.nextAction
   const items = (actions.data?.items ?? []).filter((item) => !item.stale)
   const first = items[0] ?? null
-  const rest = items.slice(1, 4)
+  const rest = items.slice(1)
+
+  if (actions.isError) return <section className="wc-next" aria-label="当前待办"><div className="wc-next-body"><p role="alert">待办读取失败，暂时无法确认需要处理的事项。</p><Button onClick={() => void actions.refetch()}>重新读取</Button></div></section>
 
   return (
     <section className="wc-next" data-testid="next-step-panel">
       <header className="wc-next-head">
         <span className="wc-next-kicker">NEXT STEP</span>
-        <strong>{first ? '现在需要你决定' : '无需你介入，系统在推进'}</strong>
+        <strong>{first ? '现在需要你决定' : next ? JOURNEY_OWNER_LABEL[next.owner] : '正在读取当前进度'}</strong>
         <Tag className="wc-next-count">{items.length} 项待办</Tag>
       </header>
       {first ? (
@@ -46,20 +52,22 @@ export function NextStepPanel({ projectId, navigate }: { projectId: string; navi
             <p className="wc-next-resume">处理后：{first.resume}</p>
           </div>
           <Button type="primary" icon={<ArrowRightOutlined />} onClick={() => navigate(first.route)}>
-            去处理
+            {first.kind === 'tool_approval' || first.kind === 'delivery_approval' ? '处理审批' : first.kind === 'task_acceptance' ? '查看验收' : first.kind === 'version_gate' ? '查看版本门禁' : first.kind === 'run_failure' ? '查看失败原因' : '处理对账'}
           </Button>
         </div>
       ) : (
         <div className="wc-next-body">
           <div className="wc-next-main">
             <p className="wc-next-reason">
-              <CheckCircleOutlined /> 当前没有需要人工处理的事项。AI 会继续执行已授权的任务、收集证据并在满足门禁时自动推进阶段。
+              <CheckCircleOutlined /> {next?.label ?? (journey.isError ? '进度读取失败，请重试。' : '正在读取项目进度…')}
             </p>
+            {next?.detail ? <p className="wc-next-resume">{next.detail}</p> : null}
           </div>
+          {next?.route ? <Button type="primary" onClick={() => navigate(next.route!)}>{journeyActionLabel(next)}</Button> : journey.isError ? <Button onClick={() => void journey.refetch()}>重试</Button> : null}
         </div>
       )}
       {rest.length > 0 ? (
-        <div className="wc-next-rest">
+        <details className="wc-next-rest"><summary>其他 {items.length - 1} 项待处理</summary>
           {rest.map((item: ActionItem) => (
             <button type="button" key={item.id} className="wc-next-row" onClick={() => navigate(item.route)}>
               <Tag>{KIND_LABEL[item.kind] ?? item.kind}</Tag>
@@ -67,7 +75,7 @@ export function NextStepPanel({ projectId, navigate }: { projectId: string; navi
               <ArrowRightOutlined />
             </button>
           ))}
-        </div>
+        </details>
       ) : null}
     </section>
   )

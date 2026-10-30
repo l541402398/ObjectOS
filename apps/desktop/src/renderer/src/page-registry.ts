@@ -78,6 +78,20 @@ export function pageGroup(key: string): string {
   return pageByKey(key)?.group ?? ''
 }
 
+/** Location matching includes global routes and the retained legacy deep links. */
+export function currentPageKey(pathname: string): string {
+  if (pathname === '/') return 'center'
+  if (pathname === '/notifications') return 'notifications'
+  if (/^\/settings(?:\/|$)/.test(pathname)) return 'settings'
+  const project = /^\/projects\/[^/]+(\/.*)?$/.exec(pathname)
+  if (!project) return 'not-found'
+  const path = project[1] ?? ''
+  if (path === '/work') return 'work'
+  if (path === '/resources') return 'connections'
+  if (path === '/approvals/center') return 'approvals'
+  return PROJECT_PAGES.find((page) => page.group !== '全局' && page.path === path)?.key ?? 'not-found'
+}
+
 /** Route path segment for a project page key (empty string means the project index). */
 export function pagePath(key: string): string {
   return pageByKey(key)?.path ?? ''

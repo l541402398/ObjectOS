@@ -1,7 +1,8 @@
+import { FormDialog } from '../next-ui/overlay/FormDialog'
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { App as AntApp, Button, Input, Modal, Select, Tag } from 'antd'
+import { App as AntApp, Button, Input, Select, Tag } from 'antd'
 import { PlusOutlined, RocketOutlined, SwapOutlined } from '@ant-design/icons'
 import type { ProductVersion, VersionPhase } from '@projectos/contracts'
 import { EmptyState, ErrorState, LoadingBlock, PageHeader, SectionCard, StatusPill } from '@projectos/ui'
@@ -86,13 +87,10 @@ export default function LifecyclePage() {
   const artifacts = useArtifacts(projectId)
   const [versionOpen, setVersionOpen] = useState(false)
   const [iterationOpen, setIterationOpen] = useState(false)
-  const [environmentOpen, setEnvironmentOpen] = useState(false)
   const [version, setVersion] = useState('')
   const [makeDefault, setMakeDefault] = useState(false)
   const [iterationName, setIterationName] = useState('')
   const [iterationGoal, setIterationGoal] = useState('')
-  const [environmentKey, setEnvironmentKey] = useState('')
-  const [environmentName, setEnvironmentName] = useState('')
   const [evidenceOpen, setEvidenceOpen] = useState(false)
   const [evidenceType, setEvidenceType] = useState('review_record')
   const [evidenceStatus, setEvidenceStatus] = useState('passed')
@@ -203,25 +201,6 @@ export default function LifecyclePage() {
     onError: (error) => message.error(errorMessage(error)),
   })
 
-  const createEnvironment = useMutation({
-    mutationFn: () =>
-      window.projectos.lifecycle.createEnvironment({
-        projectId,
-        key: environmentKey.trim(),
-        name: environmentName.trim(),
-        kind: 'custom',
-        protected: false,
-      }),
-    onSuccess: async () => {
-      setEnvironmentOpen(false)
-      setEnvironmentKey('')
-      setEnvironmentName('')
-      await invalidate()
-      message.success('环境已登记')
-    },
-    onError: (error) => message.error(errorMessage(error)),
-  })
-
   const recordEvidence = useMutation({
     mutationFn: () =>
       window.projectos.lifecycle.recordEvidence({
@@ -256,14 +235,14 @@ export default function LifecyclePage() {
       <PageHeader
         eyebrow="LIFECYCLE"
         title="版本与迭代"
-        description="在同一项目下维护多个版本、迭代与环境，各自独立推进。"
+        description="选择交付版本，安排本轮工作，再查看发布准备情况。"
         actions={
           <>
-            <Button icon={<PlusOutlined />} onClick={() => setVersionOpen(true)} disabled={!productId}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setVersionOpen(true)} disabled={!productId}>
               新建版本
             </Button>
-            <Button icon={<SwapOutlined />} onClick={() => setEnvironmentOpen(true)}>
-              登记环境
+            <Button icon={<SwapOutlined />} onClick={() => navigate(`/projects/${projectId}/deployments${selectedVersion ? `?version=${selectedVersion.id}` : ''}`)}>
+              部署环境
             </Button>
           </>
         }
@@ -274,17 +253,15 @@ export default function LifecyclePage() {
         }
       />
 
-      <div className="lc-metrics">
-        <div className="lc-metric"><span>产品</span><strong>{data.posture.productCount}</strong></div>
-        <div className="lc-metric"><span>版本</span><strong>{data.posture.versionCount}</strong><small>{data.posture.activeVersionCount} 个未退役</small></div>
-        <div className="lc-metric"><span>迭代</span><strong>{data.posture.iterationCount}</strong></div>
-        <div className="lc-metric"><span>环境</span><strong>{data.posture.environmentCount}</strong></div>
-        <div className="lc-metric"><span>待审批/待验收</span><strong>{data.posture.pendingApprovals + data.posture.reviewTasks}</strong></div>
-      </div>
+      <section className="lc-relationship" aria-label="版本、迭代与环境的关系">
+        <div className="lc-scope-version"><span className="po-eyebrow">准备交付什么</span><strong>{selectedVersion ? `v${selectedVersion.version}` : '选择一个版本'}</strong><p>版本归集这次交付的需求、任务与成果。</p><div className="lc-scope-iteration"><span>版本内的工作安排</span><strong>{iterations.length} 个迭代</strong><small>简单项目可直接安排任务，无需拆分迭代。</small></div></div>
+        <span className="lc-relationship-arrow" aria-hidden>发布后部署 →</span>
+        <div className="lc-scope-environment"><span className="po-eyebrow">交付到哪里</span><strong>部署环境</strong><p>{data.environments.length ? data.environments.map((item) => item.name).join(' · ') : '按需配置测试或生产环境'}</p><button type="button" onClick={() => navigate(`/projects/${projectId}/deployments${selectedVersion ? `?version=${selectedVersion.id}` : ''}`)}>查看环境与部署 →</button><small>环境由项目共用，不属于某个迭代。</small></div>
+      </section>
 
       <div className="lc-grid">
-        <main className="lc-main">
-          <SectionCard title="版本" subtitle="并行版本；每个版本有独立阶段与迭代">
+        <div className="lc-main">
+          <SectionCard title="版本" subtitle="选择当前要推进的交付范围">
             {versions.length === 0 ? (
               <EmptyState compact title="还没有版本" description="新建一个版本后即可规划迭代与任务。" />
             ) : (
@@ -322,20 +299,20 @@ export default function LifecyclePage() {
                           ) : null}
                           {isFocus ? (
                             <Button size="small" onClick={() => navigate(`/projects/${projectId}/releases?version=${item.id}`)}>
-                              发布与部署
+                              查看发布
                             </Button>
                           ) : null}
-                          {next.length > 0 ? (
+                          {isFocus && next.length > 0 ? (
                             <Select
                               size="small"
                               value={null}
-                              placeholder="推进阶段"
+                              aria-label="推进阶段" placeholder="推进阶段"
                               options={next.map((phase) => ({ value: phase, label: PHASE_LABELS[phase] }))}
                               onChange={(to: VersionPhase) => transition.mutate({ version: item, to })}
                               popupMatchSelectWidth={false}
                             />
                           ) : (
-                            <span className="lc-retired">已结束</span>
+                            next.length === 0 ? <span className="lc-retired">已结束</span> : null
                           )}
                         </div>
                       </div>
@@ -352,12 +329,12 @@ export default function LifecyclePage() {
           </SectionCard>
 
           {selectedVersion ? (
-            <VersionDeliverySummary projectId={projectId} versionId={selectedVersion.id} versionLabel={selectedVersion.version} />
+            <details className="lc-disclosure"><summary>v{selectedVersion.version} · 交付进度</summary><VersionDeliverySummary projectId={projectId} versionId={selectedVersion.id} versionLabel={selectedVersion.version} /></details>
           ) : null}
 
           <SectionCard
             title={selectedVersion ? `迭代 · v${selectedVersion.version}` : '迭代'}
-            subtitle="迭代归属版本；不同版本可并行"
+            subtitle="把这个版本的工作分成几轮，也可以直接按任务推进"
             extra={
               <Button size="small" icon={<PlusOutlined />} disabled={!selectedVersion} onClick={() => setIterationOpen(true)}>
                 新建迭代
@@ -365,7 +342,7 @@ export default function LifecyclePage() {
             }
           >
             {iterations.length === 0 ? (
-              <div className="lc-empty">该版本还没有迭代。创建迭代后，任务与计划可以归属其中。</div>
+              <div className="lc-empty">还没有拆分迭代。可以按当前任务继续推进；需要分轮交付时再创建迭代。</div>
             ) : (
               <div className="lc-iterations">
                 {iterations.map((iteration) => (
@@ -399,26 +376,9 @@ export default function LifecyclePage() {
               </div>
             )}
           </SectionCard>
-        </main>
+        </div>
 
         <aside className="lc-side">
-          <SectionCard title="环境" subtitle="发布与部署记录在这里关联">
-            <div className="lc-environments">
-              {data.environments.map((environment) => (
-                <div className="lc-environment" key={environment.id}>
-                  <span className="lc-env-dot" />
-                  <div>
-                    <strong>{environment.name}</strong>
-                    <small>{environment.key}{environment.key === environment.name.toLowerCase() ? '' : ` · ${environment.name}`}{environment.protected ? ' · 受保护' : ''}</small>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Button block icon={<PlusOutlined />} onClick={() => setEnvironmentOpen(true)}>
-              登记环境
-            </Button>
-          </SectionCard>
-
           <SectionCard title="版本门禁" subtitle={selectedVersion ? `v${selectedVersion.version} · 证据驱动` : '选择版本'} extra={<Button size="small" icon={<PlusOutlined />} disabled={!selectedVersion} onClick={() => setEvidenceOpen(true)}>记录证据</Button>}>
             {!selectedVersion ? (
               <div className="lc-empty">创建或选择版本后查看门禁。</div>
@@ -437,7 +397,7 @@ export default function LifecyclePage() {
                   <div className="lc-gate-status"><Tag>暂时没有评估</Tag><span>推进阶段时自动写入评估</span></div>
                 )}
                 {gateError ? <div className="lc-gate-error">{gateError}</div> : null}
-                <div className="lc-gate-conditions">
+                <details className="lc-gate-conditions"><summary>查看阶段准入条件</summary>
                   {(gates.data?.definitions ?? []).map((definition) => (
                     <div className="lc-gate-def" key={definition.id}>
                       <strong>{GATE_LABELS[definition.key] ?? definition.key}</strong>
@@ -449,7 +409,7 @@ export default function LifecyclePage() {
                       ))}
                     </div>
                   ))}
-                </div>
+                </details>
                 <div className="lc-evidence-count">{gates.data?.evidence.length ?? 0} 条证据关联此版本</div>
               </div>
             )}
@@ -469,7 +429,7 @@ export default function LifecyclePage() {
         </aside>
       </div>
 
-      <Modal
+      <FormDialog
         open={versionOpen}
         title="新建版本"
         okText="创建"
@@ -484,9 +444,9 @@ export default function LifecyclePage() {
           <label className="lc-check"><input type="checkbox" checked={makeDefault} onChange={(event) => setMakeDefault(event.target.checked)} /> 设为默认版本并切换项目关注</label>
           <div className="lc-hint">新版本从 planned 开始；不会创建发布或部署记录。</div>
         </div>
-      </Modal>
+      </FormDialog>
 
-      <Modal
+      <FormDialog
         open={iterationOpen}
         title={`新建迭代${selectedVersion ? ` · v${selectedVersion.version}` : ''}`}
         okText="创建"
@@ -500,26 +460,9 @@ export default function LifecyclePage() {
           <label><span>迭代名称</span><Input value={iterationName} onChange={(event) => setIterationName(event.target.value)} placeholder="例如 M1 可用切片" /></label>
           <label><span>目标</span><Input.TextArea rows={3} value={iterationGoal} onChange={(event) => setIterationGoal(event.target.value)} placeholder="这一轮要交付什么" /></label>
         </div>
-      </Modal>
+      </FormDialog>
 
-      <Modal
-        open={environmentOpen}
-        title="登记环境"
-        okText="登记"
-        cancelText="取消"
-        confirmLoading={createEnvironment.isPending}
-        okButtonProps={{ disabled: !environmentKey.trim() || !environmentName.trim() }}
-        onOk={() => createEnvironment.mutate()}
-        onCancel={() => setEnvironmentOpen(false)}
-      >
-        <div className="lc-form">
-          <label><span>Key</span><Input value={environmentKey} onChange={(event) => setEnvironmentKey(event.target.value)} placeholder="staging" /></label>
-          <label><span>名称</span><Input value={environmentName} onChange={(event) => setEnvironmentName(event.target.value)} placeholder="Staging" /></label>
-          <div className="lc-hint">只登记环境；不会连接部署系统或创建虚假部署记录。</div>
-        </div>
-      </Modal>
-
-      <Modal
+      <FormDialog
         open={evidenceOpen}
         title={`记录证据${selectedVersion ? ` · v${selectedVersion.version}` : ''}`}
         okText="记录"
@@ -575,7 +518,7 @@ export default function LifecyclePage() {
           <label><span>摘要</span><Input.TextArea rows={3} value={evidenceSummary} onChange={(event) => setEvidenceSummary(event.target.value)} placeholder="实际检查了什么、结果如何" /></label>
           <div className="lc-hint">证据必须关联版本；自我声明不会自动等同于外部确认。</div>
         </div>
-      </Modal>
+      </FormDialog>
     </div>
   )
 }

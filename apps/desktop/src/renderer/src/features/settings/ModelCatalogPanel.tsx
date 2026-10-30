@@ -1,3 +1,4 @@
+import { useProductDialogs } from '../../next-ui/overlay/ProductDialogs'
 import { useEffect, useMemo, useState } from 'react'
 import { App as AntApp, Button, Form, Input, InputNumber, Select, Table, Tag, type TableColumnsType } from 'antd'
 import { DeleteOutlined, PlusOutlined, ReloadOutlined, StarOutlined, SyncOutlined } from '@ant-design/icons'
@@ -23,7 +24,8 @@ const CAPABILITY_LABELS: Record<string, string> = {
 }
 
 export function ModelCatalogPanel() {
-  const { message, modal } = AntApp.useApp()
+  const { message } = AntApp.useApp()
+  const modal = useProductDialogs()
   const queryClient = useQueryClient()
   const connectionsQuery = useAIConnections()
   const selectedConnectionId = useUiStore((state) => state.settingsConnectionId)
@@ -286,7 +288,7 @@ export function ModelCatalogPanel() {
         </OverlayScrollArea>
         <OverlayFooter>
           <Button onClick={() => setAddOpen(false)}>取消</Button>
-          <Button type="primary" loading={addModel.isPending} onClick={() => void form.validateFields().then((values) => addModel.mutate(values))}>添加</Button>
+          <Button type="primary" loading={addModel.isPending} onClick={() => void form.validateFields().then((values) => addModel.mutate(values), () => undefined)}>添加</Button>
         </OverlayFooter>
       </DialogShell>
     </div>

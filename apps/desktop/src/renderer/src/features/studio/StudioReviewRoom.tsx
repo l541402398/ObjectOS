@@ -102,7 +102,7 @@ export function StudioReviewRoom(): ReactElement {
         </div>
       ) : (
         <div className="studio-review-layout">
-          <aside className="studio-review-index">
+          <aside className="studio-review-index" aria-label="待处理请求">
             <span className="studio-kicker">QUEUE</span>
             <div className="studio-review-queue">
               {list.map((approval) => (
@@ -167,7 +167,7 @@ export function StudioReviewRoom(): ReactElement {
             ) : null}
           </article>
 
-          <aside className="studio-decision">
+          <aside className="studio-decision" aria-label="审批决策">
             <span className="studio-kicker">DECISION</span>
             <h3>对本次请求作出决定</h3>
             <p>只对当前 Approval ID 生效。服务端会再次校验权限、过期时间和状态。</p>

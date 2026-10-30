@@ -1,6 +1,5 @@
 import {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -10,8 +9,11 @@ import {
 } from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
-import { motion, useReducedMotion } from 'motion/react'
+import { motion } from 'motion/react'
+import { useReducedMotionPreference as useReducedMotion } from '../../hooks/useReducedMotionPreference'
+import { useLatestEvent } from '../../hooks/useLatestEvent'
 import { X } from 'lucide-react'
+import { ConfigProvider } from 'antd'
 import { cn } from '../cn'
 import { useOverlayLayer } from './overlay-context'
 import { useResolvedTheme } from '../../stores/ui'
@@ -25,25 +27,35 @@ export function useOverlayDismiss(): () => void {
 function usePresence(open: boolean, duration = 220): boolean {
   const [present, setPresent] = useState(open)
   useEffect(() => {
-    if (open) { setPresent(true); return undefined }
+    if (open) {
+      setPresent(true)
+      return undefined
+    }
     const timer = window.setTimeout(() => setPresent(false), duration)
     return () => window.clearTimeout(timer)
   }, [duration, open])
   return present
 }
 
-function useDismissGuard(open: boolean, onOpenChange: (open: boolean) => void, dirty: boolean, onDiscard?: () => void) {
+function useDismissGuard(
+  open: boolean,
+  onOpenChange: (open: boolean) => void,
+  dirty: boolean,
+  onDiscard?: () => void,
+) {
   const [confirm, setConfirm] = useState(false)
-  useEffect(() => { if (open) setConfirm(false) }, [open])
-  const requestClose = useCallback(() => {
+  useEffect(() => {
+    if (open) setConfirm(false)
+  }, [open])
+  const requestClose = useLatestEvent(() => {
     if (dirty) setConfirm(true)
     else onOpenChange(false)
-  }, [dirty, onOpenChange])
-  const discard = useCallback(() => {
+  })
+  const discard = useLatestEvent(() => {
     setConfirm(false)
     onDiscard?.()
     onOpenChange(false)
-  }, [onDiscard, onOpenChange])
+  })
   return { confirm, setConfirm, requestClose, discard }
 }
 
@@ -66,7 +78,7 @@ function OverlayHeader({
 }): ReactElement {
   const dismiss = useOverlayDismiss()
   return (
-    <header className={cn('pui-overlay-header', className)}>
+    <div className={cn('pui-overlay-header', className)}>
       <div className="pui-overlay-heading">
         {eyebrow ? <div className="pui-overlay-eyebrow">{eyebrow}</div> : null}
         <h2 className="pui-overlay-title">{title}</h2>
@@ -74,43 +86,126 @@ function OverlayHeader({
       </div>
       <div className="pui-overlay-header-actions">
         {actions}
-        <button type="button" className="pui-overlay-close" aria-label={closeLabel} onClick={onClose ?? dismiss}><X size={17} /></button>
+        <button
+          type="button"
+          className="pui-overlay-close"
+          aria-label={closeLabel}
+          onClick={onClose ?? dismiss}
+        >
+          <X size={17} />
+        </button>
       </div>
-    </header>
+    </div>
   )
 }
 
-function OverlayFooter({ children, meta, className }: { children: ReactNode; meta?: ReactNode; className?: string }): ReactElement {
-  return <footer className={cn('pui-overlay-footer', className)}>{meta ? <span className="pui-overlay-footer-meta">{meta}</span> : null}<div className="pui-overlay-footer-actions">{children}</div></footer>
+function OverlayFooter({
+  children,
+  meta,
+  className,
+}: {
+  children: ReactNode
+  meta?: ReactNode
+  className?: string
+}): ReactElement {
+  return (
+    <div className={cn('pui-overlay-footer', className)}>
+      {meta ? <span className="pui-overlay-footer-meta">{meta}</span> : null}
+      <div className="pui-overlay-footer-actions">{children}</div>
+    </div>
+  )
 }
 
-function OverlayScrollArea({ children, className }: { children: ReactNode; className?: string }): ReactElement {
+function OverlayScrollArea({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}): ReactElement {
   return <div className={cn('pui-overlay-scroll', className)}>{children}</div>
 }
 
-function InspectorSection({ title, actions, children, className }: { title?: ReactNode; actions?: ReactNode; children: ReactNode; className?: string }): ReactElement {
+function InspectorSection({
+  title,
+  actions,
+  children,
+  className,
+}: {
+  title?: ReactNode
+  actions?: ReactNode
+  children: ReactNode
+  className?: string
+}): ReactElement {
   return (
     <section className={cn('pui-inspector-section', className)}>
-      {title || actions ? <div className="pui-inspector-section-head"><span>{title}</span>{actions}</div> : null}
+      {title || actions ? (
+        <div className="pui-inspector-section-head">
+          <span>{title}</span>
+          {actions}
+        </div>
+      ) : null}
       {children}
     </section>
   )
 }
 
-function DiscardChangesDialog({ open, onCancel, onConfirm, theme }: { open: boolean; onCancel: () => void; onConfirm: () => void; theme?: 'light' | 'dark' }): ReactElement {
-  const { zIndex } = useOverlayLayer('modal')
+function DiscardChangesDialog({
+  open,
+  onCancel,
+  onConfirm,
+  theme,
+}: {
+  open: boolean
+  onCancel: () => void
+  onConfirm: () => void
+  theme?: 'light' | 'dark'
+}): ReactElement {
+  const { zIndex, hasModalBelow } = useOverlayLayer('modal', open)
   const reduce = useReducedMotion()
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={(next) => { if (!next) onCancel() }}>
+    <DialogPrimitive.Root
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onCancel()
+      }}
+    >
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="pui-overlay-backdrop" style={{ zIndex: zIndex + 300 }} />
-        <DialogPrimitive.Content asChild onEscapeKeyDown={(event) => { event.preventDefault(); onCancel() }}>
-          <motion.div className="pui-overlay-surface pui-overlay-dialog pui-overlay-dialog-sm" data-theme={theme} style={{ zIndex: zIndex + 301 }} initial={reduce ? false : { opacity: 0, y: 8, scale: .985 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: .2 }}>
+        {!hasModalBelow ? <DialogPrimitive.Overlay className="pui-overlay-backdrop" style={{ zIndex: zIndex + 300 }} /> : null}
+        <DialogPrimitive.Content
+          asChild
+          onEscapeKeyDown={(event) => {
+            event.preventDefault()
+            onCancel()
+          }}
+        >
+          <motion.div
+            className="pui-overlay-surface pui-overlay-dialog pui-overlay-dialog-sm"
+            data-theme={theme}
+            style={{ zIndex: zIndex + 301 }}
+            initial={reduce ? false : { y: 8, scale: 0.995 }}
+            animate={{ y: 0, scale: 1 }}
+            transition={{ duration: reduce ? 0 : 0.2 }}
+          >
             <OverlayHeader eyebrow="未保存修改" title="放弃这次编辑？" onClose={onCancel} />
-            <div className="pui-overlay-body"><p className="pui-overlay-copy">关闭后当前未保存的内容会丢失。</p></div>
+            <div className="pui-overlay-body">
+              <p className="pui-overlay-copy">关闭后当前未保存的内容会丢失。</p>
+            </div>
             <OverlayFooter>
-              <button type="button" className="pui-overlay-button pui-overlay-button-quiet" onClick={onCancel}>继续编辑</button>
-              <button type="button" className="pui-overlay-button pui-overlay-button-danger" onClick={onConfirm}>放弃修改</button>
+              <button
+                type="button"
+                className="pui-overlay-button pui-overlay-button-quiet"
+                onClick={onCancel}
+              >
+                继续编辑
+              </button>
+              <button
+                type="button"
+                className="pui-overlay-button pui-overlay-button-danger"
+                onClick={onConfirm}
+              >
+                放弃修改
+              </button>
             </OverlayFooter>
           </motion.div>
         </DialogPrimitive.Content>
@@ -155,22 +250,29 @@ function ModalShell({
   // light-gray text on a white sheet (unreadable).
   const appTheme = useResolvedTheme()
   const surfaceTheme = theme ?? appTheme
-  const { zIndex } = useOverlayLayer('modal')
+  const { zIndex, isTop, hasModalBelow } = useOverlayLayer(modal ? 'modal' : 'inspector', present)
   const guard = useDismissGuard(open, onOpenChange, dirty, onDiscard)
   const surfaceRef = useRef<HTMLDivElement>(null)
+  const returnFocus = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
-    if (!open || modal) return
+    if (!open || modal || !isTop) return
     const surface = surfaceRef.current
     if (!surface) return
-    const selector = 'a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    const selector =
+      'a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])'
     const focusFirst = (): void => {
       surface.querySelector<HTMLElement>(selector)?.focus({ preventScroll: true })
     }
     const onFocusIn = (event: FocusEvent): void => {
       const target = event.target as HTMLElement | null
       if (!target || surface.contains(target)) return
-      if (target.closest('.ant-select-dropdown, .ant-dropdown, .ant-popover, .ant-picker-dropdown, .ant-tooltip, [data-radix-popper-content-wrapper]')) return
+      if (
+        target.closest(
+          '.ant-select-dropdown, .ant-dropdown, .ant-popover, .ant-picker-dropdown, .ant-tooltip, [data-radix-popper-content-wrapper]',
+        )
+      )
+        return
       focusFirst()
     }
     const timer = window.setTimeout(() => {
@@ -181,36 +283,79 @@ function ModalShell({
       window.clearTimeout(timer)
       document.removeEventListener('focusin', onFocusIn)
     }
-  }, [open, modal])
+  }, [open, modal, isTop])
 
   if (!present) return null
   return (
-    <DialogPrimitive.Root open={present} modal={modal} onOpenChange={(next) => { if (!next) guard.requestClose() }}>
+    <DialogPrimitive.Root
+      open={present}
+      modal={modal}
+      onOpenChange={(next) => {
+        if (!next && isTop) guard.requestClose()
+      }}
+    >
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="pui-overlay-backdrop" style={{ zIndex }} />
+        {!hasModalBelow ? <DialogPrimitive.Overlay className="pui-overlay-backdrop" style={{ zIndex }} /> : null}
         <DialogPrimitive.Content
           asChild
           aria-label={ariaLabel}
-          onEscapeKeyDown={(event) => { event.preventDefault(); guard.requestClose() }}
-          onPointerDownOutside={(event) => { event.preventDefault(); guard.requestClose() }}
+          onOpenAutoFocus={() => { returnFocus.current = document.activeElement as HTMLElement | null }}
+          onCloseAutoFocus={(event) => { event.preventDefault(); if (returnFocus.current?.isConnected) returnFocus.current.focus({ preventScroll: true }) }}
+          onEscapeKeyDown={(event) => {
+            event.preventDefault()
+            if (isTop) guard.requestClose()
+          }}
+          onPointerDownOutside={(event) => {
+            event.preventDefault()
+            if (isTop) guard.requestClose()
+          }}
+          onInteractOutside={(event) => { event.preventDefault() }}
         >
           <motion.div
             ref={surfaceRef}
             data-testid={testId}
             data-theme={surfaceTheme}
-            className={cn('pui-overlay-surface', variant === 'sheet' ? 'pui-overlay-sheet' : 'pui-overlay-dialog', skin === 'projectos' && 'pdl-root', !open && 'is-closing')}
+            className={cn(
+              'pui-overlay-surface',
+              variant === 'sheet' ? 'pui-overlay-sheet' : 'pui-overlay-dialog',
+              skin === 'projectos' && 'pdl-root',
+              !open && 'is-closing',
+            )}
             data-side={side}
-            style={{ zIndex: zIndex + 1, width: variant === 'dialog' ? `min(${width}px, calc(100vw - 32px))` : `min(${width}px, calc(100vw - 28px))` }}
-            initial={reduce ? false : { opacity: 0, x: variant === 'sheet' ? (side === 'right' ? 34 : -34) : 0, y: variant === 'dialog' ? 8 : 0, scale: variant === 'dialog' ? .985 : 1 }}
-            animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-            transition={{ duration: reduce ? 0 : .24, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              zIndex: zIndex + 1,
+              width:
+                variant === 'dialog'
+                  ? `min(${width}px, calc(100vw - 32px))`
+                  : `min(${width}px, calc(100vw - 28px))`,
+            }}
+            initial={
+              reduce
+                ? false
+                : {
+                    x: variant === 'sheet' ? (side === 'right' ? 20 : -20) : 0,
+                    y: variant === 'dialog' ? 8 : 0,
+                    scale: variant === 'dialog' ? 0.995 : 1,
+                  }
+            }
+            animate={{ x: 0, y: 0, scale: 1 }}
+            transition={{ duration: reduce ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
           >
             <span className="pui-overlay-opaque" aria-hidden />
-            <div className="pui-overlay-content"><DismissContext.Provider value={guard.requestClose}>{children}</DismissContext.Provider></div>
+            <div className="pui-overlay-content">
+              <DismissContext.Provider value={guard.requestClose}>
+                <ConfigProvider getPopupContainer={(trigger) => trigger?.closest<HTMLElement>('.pui-overlay-content') ?? document.body}>{children}</ConfigProvider>
+              </DismissContext.Provider>
+            </div>
           </motion.div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
-      <DiscardChangesDialog open={guard.confirm} onCancel={() => guard.setConfirm(false)} onConfirm={guard.discard} theme={surfaceTheme} />
+      <DiscardChangesDialog
+        open={guard.confirm}
+        onCancel={() => guard.setConfirm(false)}
+        onConfirm={guard.discard}
+        theme={surfaceTheme}
+      />
     </DialogPrimitive.Root>
   )
 }
@@ -252,62 +397,100 @@ export function InspectorShell({
   const reduce = useReducedMotion()
   const appTheme = useResolvedTheme()
   const surfaceTheme = theme ?? appTheme
-  const { zIndex } = useOverlayLayer('inspector')
+  const { zIndex, isTop } = useOverlayLayer('inspector', present)
   const guard = useDismissGuard(open, onOpenChange, dirty, onDiscard)
   const requestClose = guard.requestClose
-  const panelRef = useRef<HTMLElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const onKey = useLatestEvent((event: KeyboardEvent) => {
+    if (!isTop || event.defaultPrevented || !panelRef.current) return
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      requestClose()
+      return
+    }
+    if (event.key !== 'Tab') return
+    const focusable = [
+      ...panelRef.current.querySelectorAll<HTMLElement>(
+        'a[href],button,input,textarea,select,[tabindex]:not([tabindex="-1"])',
+      ),
+    ].filter((node) => !node.hasAttribute('disabled') && node.getClientRects().length > 0)
+    const head = focusable[0],
+      tail = focusable.at(-1)
+    if (event.shiftKey && document.activeElement === head) {
+      event.preventDefault()
+      tail?.focus()
+    } else if (!event.shiftKey && document.activeElement === tail) {
+      event.preventDefault()
+      head?.focus()
+    }
+  })
   useEffect(() => {
     if (!present) return undefined
     const previous = document.activeElement as HTMLElement | null
     const panel = panelRef.current
-    const first = panel?.querySelector<HTMLElement>('button, input, textarea, [tabindex]:not([tabindex="-1"])')
+    const first = panel?.querySelector<HTMLElement>(
+      'button, input, textarea, [tabindex]:not([tabindex="-1"])',
+    )
     first?.focus()
-    const onKey = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') { event.preventDefault(); requestClose(); return }
-      if (event.key !== 'Tab' || !panel) return
-      const focusable = [...panel.querySelectorAll<HTMLElement>('button, input, textarea, [tabindex]:not([tabindex="-1"])')].filter((node) => !node.hasAttribute('disabled'))
-      if (focusable.length === 0) return
-      const head = focusable[0]!
-      const tail = focusable[focusable.length - 1]!
-      if (event.shiftKey && document.activeElement === head) { event.preventDefault(); tail.focus() }
-      else if (!event.shiftKey && document.activeElement === tail) { event.preventDefault(); head.focus() }
-    }
     window.addEventListener('keydown', onKey)
     return () => {
       window.removeEventListener('keydown', onKey)
       previous?.focus()
     }
-  }, [present, requestClose])
+  }, [onKey, present])
   if (!present) return null
   return (
-    <DialogPrimitive.Root open={present} modal={false} onOpenChange={(next) => { if (!next) guard.requestClose() }}>
+    <DialogPrimitive.Root
+      open={present}
+      modal={false}
+      onOpenChange={(next) => {
+        if (!next && isTop) guard.requestClose()
+      }}
+    >
       <DialogPrimitive.Portal>
         <DialogPrimitive.Content
           asChild
           aria-label={ariaLabel}
-          onEscapeKeyDown={(event) => { event.preventDefault(); guard.requestClose() }}
-          onInteractOutside={(event) => { event.preventDefault() }}
+          onEscapeKeyDown={(event) => {
+            event.preventDefault()
+            if (isTop) guard.requestClose()
+          }}
+          onInteractOutside={(event) => {
+            event.preventDefault()
+          }}
         >
-          <aside
+          <div
             ref={panelRef}
             data-testid={testId}
             data-theme={surfaceTheme}
-            className={cn('pui-overlay-surface pui-overlay-inspector', skin === 'projectos' && 'pdl-root', !open && 'is-closing', className)}
+            className={cn(
+              'pui-overlay-surface pui-overlay-inspector',
+              skin === 'projectos' && 'pdl-root',
+              !open && 'is-closing',
+              className,
+            )}
             style={{ zIndex, width: `min(${width}px, calc(100vw - 24px))` }}
           >
             <span className="pui-overlay-opaque" aria-hidden />
             <motion.div
               className="pui-overlay-content"
-              initial={reduce ? false : { opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: reduce ? 0 : .24, ease: [0.22, 1, 0.36, 1] }}
+              initial={reduce ? false : { x: 20 }}
+              animate={{ x: 0 }}
+              transition={{ duration: reduce ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
             >
-              <DismissContext.Provider value={guard.requestClose}>{children}</DismissContext.Provider>
+              <DismissContext.Provider value={guard.requestClose}>
+                <ConfigProvider getPopupContainer={(trigger) => trigger?.closest<HTMLElement>('.pui-overlay-content') ?? document.body}>{children}</ConfigProvider>
+              </DismissContext.Provider>
             </motion.div>
-          </aside>
+          </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
-      <DiscardChangesDialog open={guard.confirm} onCancel={() => guard.setConfirm(false)} onConfirm={guard.discard} theme={surfaceTheme} />
+      <DiscardChangesDialog
+        open={guard.confirm}
+        onCancel={() => guard.setConfirm(false)}
+        onConfirm={guard.discard}
+        theme={surfaceTheme}
+      />
     </DialogPrimitive.Root>
   )
 }
@@ -315,22 +498,48 @@ export function InspectorShell({
 export function PopoverShell({
   trigger,
   children,
+  ariaLabel,
   side = 'bottom',
   align = 'start',
   className,
+  open,
+  onOpenChange,
+  theme,
 }: {
   trigger: ReactNode
   children: ReactNode
+  ariaLabel: string
   side?: 'top' | 'right' | 'bottom' | 'left'
   align?: 'start' | 'center' | 'end'
   className?: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  theme?: 'light' | 'dark'
 }): ReactElement {
-  const { zIndex } = useOverlayLayer('popover')
+  const [internalOpen, setInternalOpen] = useState(false)
+  const shown = open ?? internalOpen
+  const appTheme = useResolvedTheme()
+  const { zIndex } = useOverlayLayer('popover', shown)
   return (
-    <PopoverPrimitive.Root>
+    <PopoverPrimitive.Root
+      open={shown}
+      onOpenChange={(next) => {
+        if (open === undefined) setInternalOpen(next)
+        onOpenChange?.(next)
+      }}
+    >
       <PopoverPrimitive.Trigger asChild>{trigger}</PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Content className={cn('pui-overlay-popover', className)} side={side} align={align} sideOffset={8} style={{ zIndex: zIndex + 100 }} collisionPadding={10}>
+        <PopoverPrimitive.Content
+          aria-label={ariaLabel}
+          data-theme={theme ?? appTheme}
+          className={cn('pui-overlay-popover', className)}
+          side={side}
+          align={align}
+          sideOffset={8}
+          style={{ zIndex: zIndex + 100 }}
+          collisionPadding={10}
+        >
           {children}
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Portal>

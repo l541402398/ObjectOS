@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { App as AntApp, Button, Input, Tag } from 'antd'
-import { ReadOutlined, SearchOutlined } from '@ant-design/icons'
-import { EmptyState, ErrorState, LoadingBlock } from '@projectos/ui'
+import { SearchOutlined } from '@ant-design/icons'
+import { EmptyState, ErrorState, LoadingBlock, PageHeader } from '@projectos/ui'
 import { useQueryClient } from '@tanstack/react-query'
 import { qk, useKnowledge, useKnowledgeSearch } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
@@ -93,16 +93,11 @@ export default function KnowledgePage() {
 
   return (
     <div className="po-page po-page-wide">
-      <header className="po-page-header">
-        <div>
-          <div className="po-eyebrow"><ReadOutlined /> 项目记忆</div>
-          <h1>知识库</h1>
-          <p className="po-page-sub">扫描索引、决策与项目记忆的全文检索。</p>
-        </div>
-        <div className="po-page-header-actions">
-          <Button onClick={() => void scan()} loading={scanning}>重新扫描项目</Button>
-        </div>
-      </header>
+      <PageHeader
+        title="知识库"
+        description="扫描索引、决策与项目记忆"
+        actions={<Button onClick={() => void scan()} loading={scanning}>重新扫描项目</Button>}
+      />
       <div className="po-knowledge-search">
         <Input
           allowClear

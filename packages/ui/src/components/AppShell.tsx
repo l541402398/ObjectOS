@@ -30,14 +30,14 @@ export function AppShell({
         跳到主内容
       </a>
       <header className="po-titlebar">{header}</header>
-      {subheader ? <div className="po-subheader">{subheader}</div> : null}
       <div className="po-shell-body">
         <aside className="po-sidebar glass-panel" aria-label="主导航">
           {sidebar}
         </aside>
-        <main className="po-main" id="po-main">
-          {children}
-        </main>
+        <div className="po-workspace-frame">
+          {subheader ? <div className="po-subheader">{subheader}</div> : null}
+          <main className="po-main" id="po-main">{children}</main>
+        </div>
         {inspector && inspectorOpen ? (
           <aside className="po-inspector glass-panel" aria-label="上下文检查器">
             {inspector}

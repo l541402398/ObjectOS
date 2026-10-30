@@ -1,0 +1,25 @@
+[PASS] connection-editor-1440-light fits {"width":1440,"height":900,"x":130,"y":98.703125,"right":1310,"bottom":801.296875,"overflow":0}
+[PASS] connection-editor-1440-light accessibility 
+[PASS] connection-editor-1440-dark fits {"width":1440,"height":900,"x":130,"y":98.703125,"right":1310,"bottom":801.296875,"overflow":0}
+[PASS] connection-editor-1440-dark accessibility 
+[PASS] connection-editor-1024-light fits {"width":1024,"height":900,"x":16,"y":98.703125,"right":1008,"bottom":801.296875,"overflow":0}
+[PASS] connection-editor-1024-dark fits {"width":1024,"height":900,"x":16,"y":98.703125,"right":1008,"bottom":801.296875,"overflow":0}
+[PASS] connection-editor-1440-light-125 fits {"width":1152,"height":720,"x":16,"y":64.80000305175781,"right":1136,"bottom":655.2000274658203,"overflow":0}
+[PASS] connection-editor-1440-dark-125 fits {"width":1152,"height":720,"x":16,"y":64.80000305175781,"right":1136,"bottom":655.2000274658203,"overflow":0}
+[PASS] connection-editor-1024-light-125 fits {"width":819,"height":720,"x":16,"y":64.80000305175781,"right":803.2000122070312,"bottom":655.2000274658203,"overflow":0}
+[PASS] connection-editor-1024-dark-125 fits {"width":819,"height":720,"x":16,"y":64.80000305175781,"right":803.2000122070312,"bottom":655.2000274658203,"overflow":0}
+[PASS] Connection edit stays inline in Settings 
+[PASS] connection-delete-confirm-1440-light fits {"width":1440,"height":900,"x":460,"y":350.609375,"right":980,"bottom":549.390625,"overflow":0}
+[PASS] connection-delete-confirm-1440-light accessibility 
+[PASS] connection-delete-confirm-1440-dark fits {"width":1440,"height":900,"x":460,"y":350.609375,"right":980,"bottom":549.390625,"overflow":0}
+[PASS] connection-delete-confirm-1440-dark accessibility 
+[PASS] connection-delete-confirm-1024-light fits {"width":1024,"height":900,"x":252,"y":350.609375,"right":772,"bottom":549.390625,"overflow":0}
+[PASS] connection-delete-confirm-1024-dark fits {"width":1024,"height":900,"x":252,"y":350.609375,"right":772,"bottom":549.390625,"overflow":0}
+[PASS] connection-delete-confirm-1440-light-125 fits {"width":1152,"height":720,"x":316,"y":261,"right":836,"bottom":459,"overflow":0}
+[PASS] connection-delete-confirm-1440-dark-125 fits {"width":1152,"height":720,"x":316,"y":261,"right":836,"bottom":459,"overflow":0}
+[PASS] connection-delete-confirm-1024-light-125 fits {"width":819,"height":720,"x":149.60000610351562,"y":261,"right":669.6000061035156,"bottom":459,"overflow":0}
+[PASS] connection-delete-confirm-1024-dark-125 fits {"width":819,"height":720,"x":149.60000610351562,"y":261,"right":669.6000061035156,"bottom":459,"overflow":0}
+[PASS] Cancelled decision keeps Settings open 
+[PASS] Cancelled decision preserves connection 
+[PASS] connection-editor journey 
+[PASS] No Renderer exceptions 

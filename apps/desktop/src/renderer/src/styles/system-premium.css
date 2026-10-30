@@ -1,0 +1,277 @@
+/* ADR-0070. One optical workspace, matching the approved Design Lab DAG.
+   Structural rules belong here; palette/material recipes belong to design-tokens. */
+.po-shell {
+  --sidebar-width: 228px;
+  --sidebar-collapsed-width: 60px;
+  --titlebar-height: 58px;
+  --statusbar-height: 28px;
+  background: var(--ui-ambient);
+  color: var(--ui-ink);
+  font-family: var(--ui-font);
+  font-size: 14px;
+  line-height: 1.55;
+  isolation: isolate;
+}
+.po-shell::before, .po-shell::after { content: none; }
+.po-shell .po-titlebar {
+  height: var(--titlebar-height);
+  flex-basis: var(--titlebar-height);
+  padding: 0 24px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.po-shell .po-shell-body { padding: 0 24px 0; gap: 16px; }
+.po-shell .po-sidebar.glass-panel, .po-workspace-frame {
+  border: 1px solid var(--ui-glass-border);
+  border-radius: 28px;
+  background: var(--ui-optical-frame);
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-lg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.po-shell .po-sidebar.glass-panel { border-radius: 22px; }
+.po-workspace-frame { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; overflow: hidden; position: relative; }
+.po-shell .po-main {
+  border: 0; border-radius: 0; margin: 0;
+  background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
+  scrollbar-gutter: auto;
+}
+.po-shell .po-subheader { flex: 0 0 auto; padding: 0; min-width: 0; }
+.po-shell .po-journey {
+  margin: 0 24px; padding: 14px 0;
+  border: 0; border-bottom: 1px solid var(--ui-border); border-radius: 0;
+  background: transparent; box-shadow: none; backdrop-filter: none;
+}
+.po-shell .po-journey-action { background: var(--ui-accent); color: var(--ui-inverse); border-color: transparent; filter: none; }
+.po-shell .po-journey-action:hover { background: var(--ui-accent-strong); filter: none; }
+.po-shell .po-journey-left { flex: 0 1 310px; max-width: 30%; align-items: center; }
+.po-shell .po-journey-project, .po-shell .po-journey-next-label { display: none; }
+.po-shell .po-journey-track { justify-content: center; }
+.po-shell .po-journey-step { flex: none; }
+.po-shell .po-journey-step-button { padding: 6px 4px; min-height: 32px; }
+.po-shell .po-journey-connector { width: 10px; }
+.po-shell .po-journey-next { flex: none; gap: 8px; }
+.po-shell .po-journey-toggle { width: 32px; height: 32px; }
+.po-shell .po-journey-dot.is-active { animation: none; }
+.po-shell .po-journey.is-compact .po-journey-left { flex: 1; max-width: none; }
+.po-shell .po-journey.is-compact .po-journey-eyebrow,
+.po-shell .po-journey.is-compact .po-journey-current-detail { display: none; }
+.po-shell .po-journey-track-compact { flex: 0 0 auto; min-height: 32px; }
+.po-shell .po-statusbar {
+  height: 28px; flex-basis: 28px; margin: 0; padding: 0 26px; gap: 14px;
+  border: 0; border-radius: 0; background: transparent; box-shadow: none;
+  color: var(--ui-ink-2); font-size: 12px; backdrop-filter: none;
+}
+.po-shell .po-sidebar-inner { width: 100%; flex-basis: 100%; padding: 12px 6px 8px; }
+.po-shell .po-sidenav { padding: 0; min-height: 0; }
+.po-shell .po-sidenav-scroll { padding: 0; min-height: 0; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: thin; }
+.po-shell .po-sidenav-dock { padding-top: 8px; margin-top: 8px; border-top: 1px solid var(--ui-border); flex: 0 0 auto; }
+.po-shell .po-sidenav-group + .po-sidenav-group { margin-top: 12px; }
+.po-shell .po-sidenav-title { color: var(--ui-ink-2); font-size: 12px; letter-spacing: .06em; padding: 8px 12px; }
+.po-shell .po-nav-item {
+  min-height: 40px; height: 40px; margin: 2px 0; border: 1px solid transparent; border-radius: 12px;
+  padding: 0 12px; color: var(--ui-ink-2); background: transparent; box-shadow: none;
+  font-size: 13px;
+}
+.po-shell .po-nav-item:hover { color: var(--ui-ink); background: var(--ui-surface-hover); }
+.po-shell .po-nav-item.is-active {
+  color: var(--ui-accent-strong); background: var(--ui-accent-soft); border-color: var(--ui-accent-line);
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight);
+}
+.po-shell .po-nav-item.is-active::before { content: none; }
+.po-shell .po-nav-icon { width: 20px; flex-basis: 20px; height: 20px; }
+.po-shell.is-collapsed .po-nav-item { padding: 0; justify-content: center; }
+.po-shell.is-collapsed .po-nav-badge {
+  top: 0; right: 0; min-width: 16px; height: 16px; padding: 0 3px;
+  font-size: 12px; line-height: 16px; background: var(--ui-accent-soft); color: var(--ui-accent-strong);
+}
+.po-shell .po-project-switcher, .po-shell.is-collapsed .po-project-switcher {
+  display: block; margin: 0 0 10px; padding: 0 0 10px; border: 0; border-bottom: 1px solid var(--ui-border);
+  border-radius: 0; background: transparent;
+}
+.po-shell .po-project-button { min-height: 42px; padding: 6px; border-radius: 12px; background: transparent; border-color: transparent; }
+.po-shell .po-project-button:hover { background: var(--ui-surface-hover); }
+.po-shell .po-project-button-icon { flex-basis: 30px; height: 30px; width: 30px; border-radius: 10px; background: var(--ui-accent-soft); color: var(--ui-accent-strong); font-size: 14px; font-weight: 650; }
+.po-shell .po-project-progress { padding: 4px 8px 0; }
+.po-shell .po-project-button-text strong, .po-shell .po-project-button-text span { font-size: 12px; }
+.po-shell .po-titlebar-left > .po-icon-button { display: inline-flex; }
+.po-titlebar-brand { display: inline-flex; align-items: center; gap: 9px; flex: none; padding: 0; margin-right: 10px; border: 0; background: transparent; color: var(--ui-ink); cursor: pointer; }
+.po-titlebar-brand > span:last-child { font-size: 12px; font-weight: 720; letter-spacing: .10em; }
+.po-titlebar-brand .po-logo { width: 28px; height: 28px; flex-basis: 28px; border-radius: 10px; background: var(--ui-brand-fill); color: var(--ui-inverse); box-shadow: var(--ui-shadow-sm); }
+.po-titlebar-brand .po-logo svg { width: 18px; height: 18px; }
+.po-shell .po-crumb-back { width: 32px; height: 32px; border: 0; background: transparent; }
+.po-shell .po-crumb-link { max-width: 200px; }
+.po-shell .po-crumbs { gap: 4px; }
+.po-shell .po-command-trigger { width: min(280px, 22vw); height: 34px; border-radius: 12px; background: var(--ui-glass); color: var(--ui-ink-2); }
+.po-shell .po-command-trigger > .anticon { flex: none; }
+.po-shell .po-command-trigger kbd { font-size: 12px; background: transparent; }
+.po-shell .po-icon-button, .po-shell .po-window-button { min-width: 34px; height: 34px; border-radius: 10px; }
+.po-shell .po-runtime-indicator .po-pill { font-size: 12px; }
+.po-navigation-menu { width: 260px; padding: 8px; }
+.po-navigation-menu .po-sidenav { max-height: min(600px, calc(100vh - 100px)); padding: 0; }
+.po-navigation-menu .po-nav-item { min-height: 40px; font-size: 14px; }
+.po-navigation-menu .po-sidenav-title { font-size: 12px; padding-top: 12px; }
+
+/* Cool optical reading surfaces: text stays opaque, without flat white slabs or live blur. */
+:root :is(.po-card, .po-panel, .po-surface, .po-metric, .v16-stat-card, .v16-project-visual, .v16-lifecycle-card,
+  .v16-settings-card, .po-resource-card, .po-knowledge-card, .po-run-card, .po-approval-card, .po-task-tile,
+  .wc-focus, .wc-goal-state, .wc-task-row, .wc-agent, .nx-center-hero, .po-run-detail,
+  .ap-shell, .rw-shell, .rc-shell, .lc-metric, .lc-version, .delivery-summary-item, .rel-item, .dc-target) {
+  color: var(--ui-ink); background: var(--ui-reading-surface); border: 1px solid var(--ui-border);
+  border-radius: 16px; box-shadow: var(--ui-shadow-sm); backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+:root :is(.po-board-column, .rel-column) { background: var(--ui-glass); border: 1px solid var(--ui-glass-border); border-radius: 18px; box-shadow: none; backdrop-filter: none; }
+:root .nx-center-hero { background: linear-gradient(120deg, var(--ui-accent-soft), var(--ui-surface) 58%); }
+:root .v16-project-visual .v16-project-cover { height: 82px; background: var(--ui-optical-frame); border-bottom: 1px solid var(--ui-border); }
+:root .v16-project-avatar { background: var(--ui-accent-soft); color: var(--ui-accent-strong); border-color: var(--ui-accent-line); backdrop-filter: none; }
+:root .v16-project-more { color: var(--ui-ink-2); }
+:root .v16-project-visual .v16-project-cover::before { content: none; }
+:root .v16-stat-card .v16-stat-icon { background: var(--ui-accent-soft); color: var(--ui-accent-strong); }
+:root .po-page { padding: 24px; gap: 20px; }
+:root .po-page-title { font-size: 26px; line-height: 1.24; font-weight: 660; color: var(--ui-ink); text-shadow: none; }
+:root .po-page-description { font-size: 14px; color: var(--ui-ink-2); }
+:root :is(.po-section-title, .v16-section-title, .po-card-title) { font-size: 16px; font-weight: 650; }
+:root :is(.v16-stat-icon, .v17-settings-card-icon) { background: var(--ui-accent-soft); color: var(--ui-accent-strong); box-shadow: none; }
+:root :is(.v16-stat-icon, .v17-settings-card-icon)::before { content: none; }
+:root :is(.v17-next-step-banner, .v17-general-settings-note) { background: var(--ui-surface); color: var(--ui-ink); border-color: var(--ui-border); box-shadow: var(--ui-shadow-sm); backdrop-filter: none; }
+:root .v17-next-step-banner.is-error { background: var(--ui-surface); border-color: var(--ui-danger); }
+
+/* Shared library portals live outside .po-shell and receive the same materials. */
+:root :is(.ant-modal-content, .ant-drawer-content, .ant-dropdown-menu, .ant-select-dropdown, .ant-popover-inner,
+  .ant-notification-notice, .ant-message-notice-content) {
+  color: var(--ui-ink); background: var(--ui-surface-raised); border-color: var(--ui-border);
+  box-shadow: var(--ui-shadow-lg); backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+:root .ant-card { background: var(--ui-surface); border-color: var(--ui-border); box-shadow: none; backdrop-filter: none; }
+:root .ant-btn-primary, :root .po-primary-button { background: var(--ui-accent); border-color: transparent; color: var(--ui-inverse); box-shadow: none; }
+:root .ant-btn-primary:not(:disabled):hover, :root .po-primary-button:hover { background: var(--ui-accent-strong); color: var(--ui-inverse); }
+:root .ant-btn-primary:disabled { background: var(--ui-surface-sunken); color: var(--ui-faint); }
+:root .ant-btn-primary.ant-btn-dangerous { background: var(--ui-danger); color: var(--ui-inverse); }
+:root .ant-tag { font-size: 12px; }
+:root :is(.ant-tag-gold, .ant-tag-orange, .ant-tag-warning) { color: var(--ui-warn); background: var(--color-warning-soft); border-color: color-mix(in srgb, var(--ui-warn) 28%, transparent); }
+:root :is(.ant-tag-blue, .ant-tag-geekblue, .ant-tag-processing) { color: var(--ui-accent-strong); background: var(--ui-accent-soft); border-color: var(--ui-accent-line); }
+:root :is(.ant-tag-red, .ant-tag-error) { color: var(--ui-danger); background: var(--color-danger-soft); }
+:root :is(.po-pill-accent, .lc-badge.is-focus) { color: var(--ui-accent-strong); }
+:root .ant-empty-description { color: var(--ui-muted); font-size: 14px; }
+:root .ant-form-item-label > label { color: var(--ui-ink-2); }
+:root .ant-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn { color: var(--ui-accent-strong); }
+:root .ant-input::placeholder { color: var(--ui-muted); }
+:root .ant-table { font-size: 13px; }
+:root .ant-table-thead > tr > th { color: var(--ui-ink-2); }
+:root .po-avatar { font-size: 12px; }
+:root .po-settings-dialog.is-next { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+:root .po-settings-nav { background: var(--ui-surface-sunken); }
+.po-settings-nav-item .po-settings-nav-label { font-size: 13px; color: inherit; }
+:root .po-settings-nav-item { min-height: 40px; border-radius: 10px; }
+:root .po-settings-nav-item.is-active { color: var(--ui-accent-strong); background: var(--ui-accent-soft); }
+.po-editor-tab-select { display: inline-flex; align-items: center; gap: 7px; min-width: 0; padding: 7px 0; border: 0; background: transparent; color: inherit; cursor: pointer; }
+.po-editor-tab-select > span:last-child { overflow: hidden; text-overflow: ellipsis; }
+.po-editor-tab-close { border: 0; background: transparent; color: var(--ui-ink-2); cursor: pointer; }
+:root .pui-overlay-surface { box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-lg); }
+
+@media (max-width: 1179px) {
+  .po-shell .po-titlebar { padding: 0 16px; }
+  .po-shell .po-shell-body { padding: 0 16px; gap: 12px; }
+  .po-shell .po-titlebar-inner { gap: 8px; }
+  .po-titlebar-brand > span:last-child { display: none; }
+  .po-titlebar-brand { margin-right: 0; }
+  .po-shell .po-command-trigger { width: 36px; padding: 0; justify-content: center; }
+  .po-shell .po-command-trigger > span:not(.anticon), .po-shell .po-command-trigger kbd { display: none; }
+  .po-shell .po-crumb-link { max-width: 180px; }
+  :root .po-page { padding: 20px; }
+  .po-shell .po-journey { margin: 0 20px; }
+}
+@media (max-width: 900px) {
+  .po-shell .po-titlebar-right { gap: 0; }
+  .po-shell .po-runtime-indicator { display: none; }
+  .po-shell .po-crumb-group { display: none; }
+  .po-shell .po-crumb-group + .po-crumb-sep { display: none; }
+  .po-shell .po-crumb-link { max-width: 140px; }
+  .pui-overlay-surface.pui-overlay-inspector.pdl-root { top: 58px; right: 8px; bottom: 8px; width: calc(100vw - 16px) !important; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .po-shell { background: var(--ui-bg-app); }
+  .po-shell .po-sidebar.glass-panel, .po-workspace-frame { background: var(--ui-surface); }
+}
+[data-reduce-transparency='true'] .po-shell { background: var(--ui-bg-app); }
+[data-reduce-transparency='true'] :is(.po-sidebar.glass-panel, .po-workspace-frame) { background: var(--ui-surface); }
+@media (prefers-reduced-motion: reduce) {
+  .po-shell .po-sidebar { transition: none; }
+  .po-shell .po-main { scroll-behavior: auto; }
+}
+
+/* Route text is painted once with its content; avoid the old whole-page opacity reveal. */
+.po-main .po-page { animation: none; }
+.po-route-progress { position: absolute; top: 0; right: 24px; z-index: 40; display: flex; gap: 8px; align-items: center; padding: 7px 12px; border-radius: 0 0 10px 10px; border: 1px solid var(--ui-border); border-top: 0; background: var(--ui-surface); color: var(--ui-ink-2); font-size: 12px; box-shadow: var(--ui-shadow-sm); }
+.po-shell .po-statusbar, .po-shell .po-status-label { color: var(--ui-ink); }
+.po-shell .po-status-dirty { color: var(--ui-ink-2); }
+:root :is(.nx-hero-kicker, .po-demo-tag, .po-diff .is-hunk) { color: var(--ui-accent-strong); }
+:root .v17-runtime-filter .is-active { background: var(--ui-accent); color: var(--ui-inverse); }
+:root .po-flow-agent-task { background: var(--ui-surface-sunken); color: var(--ui-ink-2); }
+:root .aco-avatar, :root .aco-idle-dock-avatar { color: var(--ui-accent-strong) !important; }
+
+:root .po-command-item.is-active .po-command-label { color: var(--ui-accent-strong); }
+/* Shared reading rhythm, using the approved Lab's typeface and discrete type hierarchy. */
+.po-shell, .pui-overlay-surface, .pui-overlay-popover { font-synthesis: none; }
+:root :is(.po-page-title, .studio-masthead-id h1, .studio-review-masthead h1, .dc-head h1, .rw-head h1, .rc-head h1) { font-size: var(--ui-text-title); font-weight: 600; line-height: 1.35; letter-spacing: -.015em; }
+:root :is(.po-section-title, .po-card-title, .v16-section-title) { font-size: var(--ui-text-section); font-weight: 600; line-height: 1.5; letter-spacing: normal; }
+:root :is(.po-page-description, .po-section-subtitle) { line-height: 1.65; }
+:root .po-eyebrow { font-size: var(--ui-text-label); font-weight: 500; letter-spacing: .09em; }
+:root .pui-overlay-title { font-size: 20px; font-weight: 600; line-height: 1.4; letter-spacing: -.01em; }
+:root :is(.studio-cta, .studio-ghost, .studio-danger) { min-height: var(--ui-control-height); font-size: var(--ui-text-body); font-weight: 500; border-radius: var(--ui-control-radius); }
+:root .studio-theme button { font-family: var(--ui-font); }
+:root .studio-hero-copy { padding: 24px; }
+:root .studio-hero-copy h2 { font-size: 24px; line-height: 1.5; font-weight: 600; }
+:root .studio-hero-meta { font-size: var(--ui-text-secondary); }
+:root .studio-focus > header, :root .studio-ledger > header, :root .studio-timeline > header { padding: 18px 20px; }
+:root .studio-focus > header strong, :root .studio-ledger > header strong, :root .studio-timeline > header strong { font-size: var(--ui-text-section); font-weight: 600; }
+:root .studio-focus-row, :root .studio-approval-row { padding: 14px 20px; }
+:root .studio-focus-main strong, :root .studio-approval-row strong { font-size: var(--ui-text-body); font-weight: 500; }
+:root .studio-hero, :root .studio-focus, :root .studio-ledger, :root .studio-timeline { border-radius: 16px; }
+:root .wc-next { padding: 20px; gap: 16px; background: var(--ui-surface); border-color: var(--ui-border); }
+:root .wc-next-head strong { font-size: var(--ui-text-section); font-weight: 600; }
+:root .wc-next-title h3 { font-size: var(--ui-text-body); font-weight: 600; }
+:root .wc-next-reason, :root .wc-next-decision, :root .wc-next-resume { font-size: var(--ui-text-secondary); line-height: 1.65; }
+:root .wc-next-main { gap: 6px; }
+:root .wc-next-rest { border-top: 1px solid var(--ui-divider); padding-top: 12px; }
+:root .wc-next-rest summary { font-size: var(--ui-text-secondary); color: var(--ui-ink-2); cursor: pointer; }
+:root .wc-next-row { padding: 10px 0; border: 0; border-bottom: 1px solid var(--ui-divider); border-radius: 0; font-size: var(--ui-text-secondary); }
+:root .dc-start-copy h2 { font-size: 24px; line-height: 1.5; font-weight: 600; letter-spacing: -.015em; }
+:root .dc-start-hero { padding: 28px; }
+:root .dc-start-icon { width: 48px; height: 48px; border-radius: 14px; margin-bottom: 18px; }
+:root .dc-readiness-item { box-shadow: none; }
+:root .dc-map-node, :root .dc-map-destination { box-shadow: var(--ui-shadow-sm); }
+.po-shell .po-journey-left { flex: 1 1 360px; max-width: 52%; }
+.po-shell .po-journey-track-compact { flex: 0 0 auto; gap: 8px; border: 0; background: transparent; color: var(--ui-ink-2); padding: 6px 8px; }
+.po-shell .po-journey-progress { color: var(--ui-ink-2); background: var(--ui-surface); font-variant-numeric: tabular-nums; }
+.po-shell .po-journey-next { margin-left: auto; }
+.po-shell .po-journey-dot.is-active { animation: none; }
+@media (max-width: 900px) { .po-shell .po-journey-left { max-width: 42%; } .po-shell .po-journey-bg { display: none; } .wc-next-body { flex-wrap: wrap; } }
+
+:root[data-theme] :is(.v16-glass-card, .po-operations-card) { min-width: 0; background: var(--ui-surface); border: 1px solid var(--ui-border); box-shadow: var(--ui-shadow-sm); backdrop-filter: none; -webkit-backdrop-filter: none; }
+:root .v16-team-row > div { min-width: 0; }
+:root .v16-team-row strong { overflow-wrap: anywhere; }
+:root .po-orch-name h1 { font-size: var(--ui-text-title); font-weight: 600; line-height: 1.35; }
+:root .po-orch-sub span:first-child { font-family: inherit; }
+.po-shell, .pui-overlay-surface { font-weight: 400; }
+:root :is(.po-task-title, .po-table-context strong, .v16-card-title strong, .pui-overlay-title, .pui-overlay-eyebrow, .po-settings-panel h2, .po-settings-panel h3, .v17-runtime-title strong) { font-weight: 550; }
+:root .po-task-tile-title { font-size: var(--ui-text-body); line-height: 1.6; font-weight: 550; }
+:root :is(.po-card, .v16-glass-card, .po-operations-card, .studio-focus, .studio-ledger, .studio-timeline, .studio-review-workbench) { background: var(--ui-reading-surface); }
+.pui-overlay-surface :is(.po-task-detail-section, .po-task-properties, .po-settings-panel-head) { background: var(--ui-reading-surface); }
+.pui-overlay-header { background: var(--ui-optical-frame); }
+.pui-overlay-surface :is(.po-task-section-head p, .po-task-description-copy, .pui-overlay-copy) { line-height: 1.75; }
+.po-font-license { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--ui-border); color: var(--ui-ink-2); }
+.po-font-license summary { cursor: pointer; font-size: 13px; }
+.po-font-license pre { max-height: 260px; overflow: auto; white-space: pre-wrap; font: 12px/1.6 var(--ui-mono); }
+:root .po-operations-actions { flex-wrap: wrap; min-width: 0; }
+@media (max-width: 1179px) {
+  .po-operations-page .po-page-header { flex-direction: column; align-items: stretch; }
+  .po-operations-page .po-operations-actions { justify-content: flex-start; }
+}
+@media (max-width: 900px) {
+  :root .po-page-header { align-items: flex-start; }
+  .nx-hero-tasks { min-width: 150px; }
+}

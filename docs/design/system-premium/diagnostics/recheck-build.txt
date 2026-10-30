@@ -1,0 +1,176 @@
+
+> projectos@1.7.0 build C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4
+> pnpm build:runtime && pnpm build:desktop && pnpm build:server
+
+
+> projectos@1.7.0 build:runtime C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4
+> tsup --config tooling/tsup.runtime.config.ts
+
+CLI Building entry: {"index":"apps/runtime/src/main.ts"}
+CLI Using tsconfig: tsconfig.json
+CLI tsup v9.0.0
+CLI Using tsup config: C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\tooling\tsup.runtime.config.ts
+CLI Target: node24
+CLI Cleaning output folder
+ESM Build start
+ESM apps\runtime\dist\index.mjs     2.44 MB
+ESM apps\runtime\dist\index.mjs.map 4.21 MB
+ESM ⚡️ Build success in 544ms
+
+> projectos@1.7.0 build:desktop C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4
+> pnpm --filter @projectos/desktop build
+
+
+> @projectos/desktop@1.7.0 build C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\desktop
+> electron-vite build
+
+vite v8.3.4 building ssr environment for production...
+transforming...
+✓ 165 modules transformed.
+rendering chunks...
+out/main/index.js  1,048.94 kB │ map: 2,207.75 kB
+
+✓ built in 376ms
+vite v8.3.4 building ssr environment for production...
+transforming...
+✓ 2 modules transformed.
+rendering chunks...
+out/preload/index.js  19.57 kB │ map: 32.63 kB
+
+✓ built in 38ms
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 9939 modules transformed.
+rendering chunks...
+out/renderer/index.html                                       0.95 kB
+out/renderer/assets/v16-hero-DaMu8r2b.jpg                    77.62 kB
+out/renderer/assets/codicon-DF1abBS2.ttf                    153.22 kB
+out/renderer/assets/editor.worker-CkKTOJID.js               603.25 kB
+out/renderer/assets/json.worker-hsFR6Xe7.js                 884.49 kB
+out/renderer/assets/html.worker-e83tMwUW.js               1,242.53 kB
+out/renderer/assets/css.worker-nDBJJo5y.js                1,740.43 kB
+out/renderer/assets/ts.worker-DxaUoIxg.js                11,618.79 kB
+out/renderer/assets/esm-SxuD-EZ_.css                         18.59 kB
+out/renderer/assets/TaskInspector-8CrwnptH.css               50.46 kB
+out/renderer/assets/OrchestrationWorkspace-BnzvLkmh.css      88.03 kB
+out/renderer/assets/PrecisionWorkspace-CnBFnERD.css          98.11 kB
+out/renderer/assets/WorkspacePage-CJc0byHM.css              114.97 kB
+out/renderer/assets/editor-B3hG8qNE.css                     132.60 kB
+out/renderer/assets/index-CTQN_nkB.css                      535.99 kB
+out/renderer/assets/azcli-BqcWRKEF.js                         1.19 kB │ map:      2.36 kB
+out/renderer/assets/javascript-VkiqSCy9.js                    1.28 kB │ map:      2.18 kB
+out/renderer/assets/ini-CNy4vSye.js                           1.54 kB │ map:      3.08 kB
+out/renderer/assets/csp-B2p9GsUy.js                           1.63 kB │ map:      2.93 kB
+out/renderer/assets/trash-BDRkZPLs.js                         1.66 kB │ map:      2.63 kB
+out/renderer/assets/sun-DSdtE8bb.js                           1.71 kB │ map:      2.76 kB
+out/renderer/assets/workers-D0yHfqwZ.js                       2.15 kB │ map:      8.85 kB
+out/renderer/assets/pla-BeS7y6wq.js                           2.40 kB │ map:      4.98 kB
+out/renderer/assets/sb-0l5wjnic.js                            2.44 kB │ map:      4.88 kB
+out/renderer/assets/bat-BlelgT75.js                           2.46 kB │ map:      4.63 kB
+out/renderer/assets/scheme-DHhaN73q.js                        2.48 kB │ map:      4.40 kB
+out/renderer/assets/flow9-CKNLu2LS.js                         2.53 kB │ map:      4.97 kB
+out/renderer/assets/xml-D5SrF9Xm.js                           2.74 kB │ map:      4.98 kB
+out/renderer/assets/dockerfile-Cyh3Jgs6.js                    2.82 kB │ map:      5.43 kB
+out/renderer/assets/pascaligo-FWIXLoZ9.js                     2.82 kB │ map:      5.77 kB
+out/renderer/assets/lua-CDkDgA4D.js                           2.98 kB │ map:      5.96 kB
+out/renderer/assets/graphql-B2tRV4hI.js                       3.03 kB │ map:      6.24 kB
+out/renderer/assets/cameligo-Dr620tZk.js                      3.11 kB │ map:      6.27 kB
+out/renderer/assets/lexon-BzEkOcta.js                         3.29 kB │ map:      6.53 kB
+out/renderer/assets/preload-helper-CRqqVDM6.js                3.29 kB
+out/renderer/assets/objective-c-Bv7VzMP8.js                   3.34 kB │ map:      6.18 kB
+out/renderer/assets/sparql-C1NNcVuc.js                        3.46 kB │ map:      6.66 kB
+out/renderer/assets/mips-VJQl0LR9.js                          3.47 kB │ map:      7.00 kB
+out/renderer/assets/go-diy0KpX9.js                            3.69 kB │ map:      7.64 kB
+out/renderer/assets/sophia-CsoxghK5.js                        3.70 kB │ map:      7.23 kB
+out/renderer/assets/bicep-Db3LT7-V.js                         3.74 kB │ map:      6.33 kB
+out/renderer/assets/m3-BtTgGmXR.js                            3.91 kB │ map:      7.26 kB
+out/renderer/assets/fsharp-TbYvSExJ.js                        4.00 kB │ map:      7.64 kB
+out/renderer/assets/pascal-DPCHZvrA.js                        4.10 kB │ map:      8.03 kB
+out/renderer/assets/typespec-v-xFl_-S.js                      4.16 kB │ map:      7.07 kB
+out/renderer/assets/r-BrX0Sd8H.js                             4.23 kB │ map:      8.12 kB
+out/renderer/assets/shell-BvaiOH9c.js                         4.24 kB │ map:      7.87 kB
+out/renderer/assets/java-CVxIuYqx.js                          4.32 kB │ map:      8.50 kB
+out/renderer/assets/qsharp-m88Fj6D4.js                        4.41 kB │ map:      8.77 kB
+out/renderer/assets/powershell-CJYWFYCN.js                    4.50 kB │ map:      8.86 kB
+out/renderer/assets/hcl-DwcDz79-.js                           4.55 kB │ map:      8.16 kB
+out/renderer/assets/kotlin-BDKv-Pjc.js                        4.61 kB │ map:      8.75 kB
+out/renderer/assets/cypher-aCaPZkT7.js                        4.64 kB │ map:      8.84 kB
+out/renderer/assets/redis-BL01ig3q.js                         4.72 kB │ map:      8.82 kB
+out/renderer/assets/yaml-B2INi1hm.js                          4.73 kB │ map:      9.39 kB
+out/renderer/assets/liquid-Cwz_IQ6X.js                        4.78 kB │ map:      8.69 kB
+out/renderer/assets/tcl-CHB5wHwK.js                           4.83 kB │ map:      8.82 kB
+out/renderer/assets/coffee-DisWmfC_.js                        5.02 kB │ map:      9.59 kB
+out/renderer/assets/less-CtKr44sP.js                          5.06 kB │ map:      8.82 kB
+out/renderer/assets/markdown-BuiY7Dpr.js                      5.13 kB │ map:     10.53 kB
+out/renderer/assets/restructuredtext-D3hZZy5q.js              5.30 kB │ map:      9.04 kB
+out/renderer/assets/cssMode-DiwMNIZV.js                       5.37 kB │ map:      9.20 kB
+out/renderer/assets/apex-DKmjEPvx.js                          5.41 kB │ map:     10.55 kB
+out/renderer/assets/python-CG64S5xc.js                        5.47 kB │ map:     10.63 kB
+out/renderer/assets/workflow-BzzPZX6l.js                      5.48 kB │ map:      8.68 kB
+out/renderer/assets/rust-IY35AXLX.js                          5.62 kB │ map:     10.64 kB
+out/renderer/assets/dart-Po7FPwfb.js                          5.63 kB │ map:     10.82 kB
+out/renderer/assets/css-BWrj3V4a.js                           5.91 kB │ map:     10.81 kB
+out/renderer/assets/mdx-MZkj2Fjk.js                           6.16 kB │ map:     10.49 kB
+out/renderer/assets/csharp-9q1ReAJ3.js                        6.21 kB │ map:     11.93 kB
+out/renderer/assets/htmlMode-0qst2BRB.js                      6.29 kB │ map:     10.43 kB
+out/renderer/assets/html-CNjwZBmR.js                          6.31 kB │ map:     12.39 kB
+out/renderer/assets/msdax-BN4v4L2F.js                         6.39 kB │ map:     11.47 kB
+out/renderer/assets/swift-B2P0Syo0.js                         6.61 kB │ map:     11.58 kB
+out/renderer/assets/typescript-sTU4LDUL.js                    6.69 kB │ map:     12.67 kB
+out/renderer/assets/pug-CB5U28NR.js                           6.76 kB │ map:     13.78 kB
+out/renderer/assets/cpp-DIyGmJCR.js                           7.02 kB │ map:     13.22 kB
+out/renderer/assets/ecl-BWA0cGaE.js                           7.15 kB │ map:     13.19 kB
+out/renderer/assets/vb-Cbfo1XzI.js                            7.52 kB │ map:     13.74 kB
+out/renderer/assets/twig-z3JG2dlI.js                          8.08 kB │ map:     16.16 kB
+out/renderer/assets/wgsl-ViSOxyLW.js                          8.37 kB │ map:     13.73 kB
+out/renderer/assets/handlebars-DYwm-2VP.js                    8.46 kB │ map:     16.33 kB
+out/renderer/assets/scss-jezxWklq.js                          8.47 kB │ map:     15.77 kB
+out/renderer/assets/julia-u7NEkMw-.js                         9.84 kB │ map:     17.60 kB
+out/renderer/assets/systemverilog-CuSR58gi.js                 9.95 kB │ map:     18.64 kB
+out/renderer/assets/st-Dy7bYaOX.js                            9.95 kB │ map:     17.50 kB
+out/renderer/assets/scala-D-09FoXN.js                        10.04 kB │ map:     17.74 kB
+out/renderer/assets/php-6E4jPit_.js                          10.52 kB │ map:     19.79 kB
+out/renderer/assets/postiats-Bf7amnpX.js                     10.87 kB │ map:     27.20 kB
+out/renderer/assets/perl-CemHGggK.js                         10.96 kB │ map:     20.59 kB
+out/renderer/assets/razor-Z-df9dBC.js                        11.24 kB │ map:     21.10 kB
+out/renderer/assets/ruby-CfeIRtZF.js                         11.35 kB │ map:     23.27 kB
+out/renderer/assets/clojure-DOHmgZab.js                      12.23 kB │ map:     21.14 kB
+out/renderer/assets/protobuf-B5hYHNhq.js                     12.36 kB │ map:     21.63 kB
+out/renderer/assets/elixir-CAkvxTpr.js                       12.74 kB │ map:     27.24 kB
+out/renderer/assets/sql-mY9DvOWV.js                          13.15 kB │ map:     24.00 kB
+out/renderer/assets/mysql-CieCmrkn.js                        14.27 kB │ map:     24.68 kB
+out/renderer/assets/redshift-D50Fb8jL.js                     14.54 kB │ map:     24.20 kB
+out/renderer/assets/pgsql-CPIXiAVJ.js                        16.32 kB │ map:     26.44 kB
+out/renderer/assets/abap-CjKMAjTb.js                         18.29 kB │ map:     34.54 kB
+out/renderer/assets/powerquery-SiRoA3ta.js                   19.99 kB │ map:     30.11 kB
+out/renderer/assets/freemarker2-Dx_pg4__.js                  21.39 kB │ map:     57.81 kB
+out/renderer/assets/solidity-CExXrpLi.js                     23.02 kB │ map:     38.28 kB
+out/renderer/assets/jsonMode-BBPQ-OjR.js                     26.39 kB │ map:     71.21 kB
+out/renderer/assets/jsx-runtime-BqujO2Cb.js                  27.38 kB │ map:     43.98 kB
+out/renderer/assets/tsMode-DpZlVdbs.js                       36.25 kB │ map:     65.15 kB
+out/renderer/assets/TaskInspector-DWKsKjmd.js                56.91 kB │ map:     93.61 kB
+out/renderer/assets/lspLanguageFeatures-BpM2lYbF.js          74.94 kB │ map:    129.18 kB
+out/renderer/assets/DesignLabPage-B0nGXnEE.js               111.09 kB │ map:    145.83 kB
+out/renderer/assets/PrecisionWorkspace-BywWxa6T.js          279.43 kB │ map:    476.64 kB
+out/renderer/assets/OrchestrationWorkspace-CdeJDXEg.js      378.53 kB │ map:    633.24 kB
+out/renderer/assets/ui-BT9LvixV.js                        1,305.05 kB │ map:  2,508.32 kB
+out/renderer/assets/WorkspacePage-BKIxM9wR.js             2,388.85 kB │ map:  4,952.57 kB
+out/renderer/assets/esm-DAkPhoi7.js                       3,125.51 kB │ map:  5,260.78 kB
+out/renderer/assets/index-DTpCoPNB.js                     3,867.82 kB │ map:  6,830.65 kB
+out/renderer/assets/editor.api-BfC7_LxB.js                5,092.49 kB │ map: 10,346.45 kB
+
+✓ built in 13.37s
+
+> projectos@1.7.0 build:server C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4
+> tsup --config tooling/tsup.server.config.ts
+
+CLI Building entry: {"index":"C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\apps\\server\\src\\index.ts"}
+CLI Using tsconfig: tsconfig.json
+CLI tsup v9.0.0
+CLI Using tsup config: C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\tooling\tsup.server.config.ts
+CLI Target: node24
+CLI Cleaning output folder
+ESM Build start
+ESM apps\server\dist\index.js     115.00 KB
+ESM apps\server\dist\index.js.map 215.22 KB
+ESM ⚡️ Build success in 81ms

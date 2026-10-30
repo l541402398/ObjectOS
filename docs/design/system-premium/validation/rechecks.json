@@ -1,0 +1,47 @@
+﻿[
+    {
+        "name":  "lint",
+        "command":  "pnpm lint",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:00:52.6300017Z",
+        "durationSeconds":  79.15,
+        "log":  "final-lint.txt"
+    },
+    {
+        "name":  "typecheck",
+        "command":  "pnpm typecheck",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:02:12.0897075Z",
+        "durationSeconds":  56.96,
+        "log":  "final-typecheck.txt"
+    },
+    {
+        "name":  "test",
+        "command":  "pnpm test",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:03:09.0560478Z",
+        "durationSeconds":  175.91,
+        "log":  "final-test.txt"
+    },
+    {
+        "name":  "build",
+        "command":  "pnpm build",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:06:04.9710866Z",
+        "durationSeconds":  49.25,
+        "log":  "final-build.txt"
+    },
+    {
+        "name":  "v13-e2e",
+        "command":  "node scripts/v13-e2e.mjs",
+        "status":  "PASS",
+        "exitCode":  0,
+        "startedAt":  "2026-10-30T10:06:54.2327121Z",
+        "durationSeconds":  17.48,
+        "log":  "final-v13-e2e.txt"
+    }
+]

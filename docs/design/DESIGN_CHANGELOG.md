@@ -1,5 +1,58 @@
 # ProjectOS UI Design Changelog
 
+## 2026-10-30 — follow-up: actual font fallback and complete first frames
+
+- User specifically identified sharp, inconsistent type beside flat white surfaces and separate
+  component/text painting. This authorizes a typography refinement within the approved DAG aesthetic.
+  Packaged the complete OFL Noto Sans SC variable font locally; no remote font dependency. Exact
+  Google Fonts source revision, source/output hashes and license are included with the asset.
+- Native CDP proved missing historical `--pw-font`/`--pw-mono` aliases rendered approval code in
+  NSimSun. Mapped those aliases to the shared fonts, with explicit Chinese fallback for code. This
+  finding is preserved in `system-premium/diagnostics/font-fallback-reproduction.json`.
+- Softened reading and overlay surfaces with opaque cool gradients; removed residual 12.5px task
+  titles; use real 400/550/600 variable weights. Do not blur text or lower its opacity.
+- Wait for the local font before first product mount. Align route preparation with actual reads
+  (including the 100-record run list, files, resources and dependent plan/model data). Settings and
+  task/run detail keep previous content until ready; late requests cannot reopen a closed dialog or
+  replace a newer choice. Removed the task inspector's delayed clear race.
+- Eight deferred-read tests exercise ordering, cancellation and failure retention; native checks
+  inspect cold frames at 4x CPU load plus actual fonts. `readiness/checks.json` and the full matrix
+  record final results. The first probe's file resource-timing assertion was replaced by actual
+  loaded font-face source + platform font inspection because local file timing entries were empty.
+- Required design sources remain as recorded below; local font refinement supersedes only the old
+  font stack, not the approved optical composition. Test success does not imply aesthetic acceptance.
+
+## 2026-10-30 — one approved optical system; guided work and consistent reading rhythm
+
+- Implemented ADR-0070/0071 in Renderer and shared UI only. The user-confirmed DAG screenshot stays
+  authoritative. Actual project navigation replaces prototype menu entries; Settings remains global.
+- Completed the five Lab implementation fixes: shared curve/icon coordinates, readable type and native
+  contrast sampling, solid focused DAG edges, complete shared task inspector, and durable evidence.
+  A ResizeObserver fits the DAG again after resizing/zooming without resetting it on text edits.
+- Unified the shell, page surfaces, buttons, forms, menus and dialogs with the cool optical material.
+  Removed conflicting historical global overrides, including forced white primary-button text in dark
+  mode. Body/secondary/title hierarchy and control dimensions now share tokens. Light secondary ink
+  was deepened to `#4B5A73` after native ambient-background samples fell just below 4.5:1.
+- Visual review removed the remaining Overview photo/34px hero override and moved Knowledge to
+  the shared PageHeader. Collaboration hints/legend/pause now occupy their own toolbar, never the
+  node viewport. Settings overview no longer displays decorative implementation branding.
+- Full overlay regression exposed intermittently unmeasured/hidden plan nodes. Initial dimensions
+  now match ELK/CSS; each real-plan matrix state also asserts node visibility. The failed full run,
+  passing isolated replay and final full recheck are preserved separately in the report.
+- Retained assisted/autonomous/managed modes and persisted permissions. Home and journey show the
+  actual next action. Prepared route reads avoid components painting before their text. Versions own
+  iterations; environments are project-wide deployment destinations; empty deployment has real steps.
+- Collaboration remains a graph. Bounded directional pulses are pausable and respect live reduced
+  motion. Native investigation isolated the previous ~10 fps bottleneck to the detail sheet's full
+  backdrop blur; a nonmodal inspector restores interactive performance. No shader is enabled.
+- Imperative decisions use the shared dialog system. Only the top layer dismisses, nested decisions
+  retain their parent, one backdrop is used, and keyboard focus returns to the invoking control.
+- Actual sources, commands, intermediate failures, comparison images and remaining limits are recorded
+  in [the implementation report](system-premium/REPORT.md) and its evidence manifest. UI UX Pro Max,
+  Vercel, Impeccable, Sim, installed Liquid Glass/Motion and Aurora sources were consulted; unavailable
+  dedicated skill-tool/native Impeccable features are explicitly distinguished from source checks.
+  Engineering test results do not establish the user's subjective visual acceptance.
+
 ## 2026-10-29 — A2.2a device consent; system direction reaffirmed
 
 - Added actual device/heartbeat/state and native-confirmed local project consent inside Settings.

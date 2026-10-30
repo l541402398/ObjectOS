@@ -149,8 +149,10 @@ export function AgentAvatar({
       style={{
         width: size,
         height: size,
-        fontSize: Math.max(11, Math.round(size * 0.38)),
-        background: `linear-gradient(145deg, ${accent}, ${accent}bb)`,
+        fontSize: Math.max(12, Math.round(size * 0.38)),
+        background: 'var(--ui-accent-soft)',
+        color: 'var(--ui-accent-strong)',
+        borderColor: accent,
       }}
       aria-label={name}
     >

@@ -1,8 +1,10 @@
+import { useProductDialogs } from '../next-ui/overlay/ProductDialogs'
+import { FormDialog } from '../next-ui/overlay/FormDialog'
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { NextStepPanel } from '../components/NextStepPanel'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { App as AntApp, Button, Input, Modal } from 'antd'
+import { App as AntApp, Button, Input } from 'antd'
 import {
   ArrowRightOutlined,
   CheckCircleOutlined,
@@ -153,8 +155,10 @@ function firstUnfinished(plan: PlanDraft | null): string | null {
 export default function WorkCenterPage() {
   const { projectId = '' } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
+  const [search, setSearch] = useSearchParams()
   const queryClient = useQueryClient()
-  const { message, modal } = AntApp.useApp()
+  const { message } = AntApp.useApp()
+  const modal = useProductDialogs()
   const overview = useProjectOverview(projectId)
   const plans = usePlans(projectId)
   const board = useTaskBoard(projectId)
@@ -174,7 +178,8 @@ export default function WorkCenterPage() {
   })
 
   const [goal, setGoal] = useState('')
-  const [requirementOpen, setRequirementOpen] = useState(false)
+  const [requirementOpen, setRequirementOpen] = useState(() => search.get('intent') === 'requirement')
+  useEffect(() => { if (search.get('intent') === 'requirement') { setRequirementOpen(true); setSearch((current) => { const next = new URLSearchParams(current); next.delete('intent'); return next }, { replace: true }) } }, [search, setSearch])
   const [requirementTitle, setRequirementTitle] = useState('')
   const [requirementBody, setRequirementBody] = useState('')
   const [busyTaskId, setBusyTaskId] = useState<string | null>(null)
@@ -539,7 +544,7 @@ export default function WorkCenterPage() {
       </div>
 
       <div className="wc-grid">
-        <main className="wc-main">
+        <div className="wc-main">
           <SectionCard
             title="当前计划"
             subtitle={activePlan ? `r${activePlan.revision} · ${PLAN_STATUS_LABELS[activePlan.status] ?? activePlan.status}` : '尚未生成计划'}
@@ -798,7 +803,7 @@ export default function WorkCenterPage() {
               ))}
             </div>
           </SectionCard>
-        </main>
+        </div>
 
         <aside className="wc-side">
           <SectionCard title="需要你处理" subtitle="审批与验收优先">
@@ -905,7 +910,7 @@ export default function WorkCenterPage() {
         </aside>
       </div>
 
-      <Modal
+      <FormDialog
         open={requirementOpen}
         title="记录需求"
         okText="保存"
@@ -926,7 +931,7 @@ export default function WorkCenterPage() {
           </label>
           <div className="wc-muted">需求会进入真实数据库；AI 规划会把它作为目标上下文。</div>
         </div>
-      </Modal>
+      </FormDialog>
     </div>
   )
 }

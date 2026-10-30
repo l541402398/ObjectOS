@@ -435,3 +435,22 @@
 }
 
 .v16-filter-sep { width: 1px; height: 16px; align-self: center; margin: 0 4px; background: var(--color-divider); }
+
+.lc-relationship { display: grid; grid-template-columns: minmax(0, 1.2fr) auto minmax(0, 1fr); gap: 24px; align-items: center; padding: 26px; border: 1px solid var(--ui-glass-border); border-radius: 22px; background: var(--ui-optical-frame); }
+.lc-scope-version, .lc-scope-environment { min-width: 0; }
+.lc-scope-version > strong, .lc-scope-environment > strong { display: block; margin: 6px 0 8px; color: var(--ui-ink); font-size: 24px; font-weight: 650; }
+.lc-relationship p { color: var(--ui-ink-2); font-size: 14px; margin: 0 0 14px; }
+.lc-scope-iteration { display: grid; grid-template-columns: 1fr auto; gap: 7px 12px; padding: 14px 16px; border: 1px solid var(--ui-border); border-radius: 12px; background: var(--ui-surface); font-size: 13px; }
+.lc-scope-iteration strong { color: var(--ui-accent-strong); font-weight: 600; }
+.lc-scope-iteration small { grid-column: 1 / -1; }
+.lc-relationship small { display: block; color: var(--ui-ink-2); font-size: 12px; }
+.lc-relationship-arrow { font-size: 12px; color: var(--ui-ink-2); }
+.lc-scope-environment button { display: inline-flex; min-height: 36px; align-items: center; padding: 0; margin-bottom: 10px; border: 0; color: var(--ui-accent-strong); background: transparent; cursor: pointer; font: 600 13px var(--ui-font); }
+.lc-disclosure { border: 1px solid var(--ui-border); border-radius: 16px; background: var(--ui-surface); }
+.lc-disclosure > summary { padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.lc-disclosure > .po-card { margin: 0; box-shadow: none; border: 0; }
+.lc-gate-conditions > summary { cursor: pointer; font-size: 13px; padding: 8px 0; color: var(--ui-accent-strong); }
+.lc-version { padding: 18px; }
+.lc-iteration { padding: 16px; border-radius: 12px; }
+@media (max-width: 1000px) { .lc-relationship { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 20px; } .lc-relationship-arrow { display: none; } }
+@media (max-width: 760px) { .lc-relationship { grid-template-columns: minmax(0,1fr); } .lc-grid { grid-template-columns: minmax(0,1fr); } }

@@ -2,21 +2,6 @@
    ProjectOS application surfaces
    ========================================================================== */
 
-.po-page {
-  animation: po-page-in var(--motion-slow) var(--ease-out);
-}
-
-@keyframes po-page-in {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .po-icon-button {
   width: 30px;
   height: 30px;

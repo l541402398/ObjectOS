@@ -1,0 +1,17 @@
+{
+  "observedAtUtc": "2026-10-30T10:29:41.3478019Z",
+  "applicationPopups": [
+    {
+      "utc": "2026-10-30T09:56:43.5224904Z",
+      "Id": 26,
+      "RecordId": 232664,
+      "Message": "弹出应用程序: electron.exe - 应用程序错误: 应用程序发生异常 unknown software exception (0x80000003)，位置为 0x00007FF649A90D99。\r\n\n要终止程序，请单击“确定”。"
+    }
+  ],
+  "matchingTest": "premium-overlays --only=plan-generator launch at 2026-10-30T09:56:41Z in restricted execution",
+  "failedProfile": "projectos-premium-overlays-d88dOh: empty user directory, no business data or desktop/runtime log",
+  "permittedRerun": "projectos-premium-overlays-Y2E3T1: runtime start 09:57:45.694Z, ready 09:57:47.176Z, exit code 0 at 09:58:19.230Z",
+  "limit": "Time correlation localizes failure to the test launch before app bootstrap; no native dump proves a specific C++ cause. No Electron sandbox/security settings changed.",
+  "verificationFinishedAtUtc": "2026-10-30T11:02:05.5946019Z",
+  "subsequentElectronPopupCount": 0
+}

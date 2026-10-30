@@ -1,0 +1,33 @@
+[PASS] Approved DAG is the initial workspace
+[PASS] Default ambient is static optical fallback
+[PASS] No production project is fabricated
+[PASS] DAG connections are solid and do not loop
+[PASS] DAG 1024/light/1 fits all seven nodes after resize
+[PASS] DAG 1024/dark/1 fits all seven nodes after resize
+[PASS] DAG 1440/light/1.25 fits all seven nodes after resize
+[PASS] DAG 1440/dark/1.25 fits all seven nodes after resize
+[PASS] DAG 1024/light/1.25 fits all seven nodes after resize
+[PASS] DAG 1024/dark/1.25 fits all seven nodes after resize
+[PASS] Stage route has icons without permanent captions
+[PASS] Typography uses the frozen readable roles — {"title":26,"body":14,"secondary":12,"section":16}
+[PASS] 1440 light: icon centres meet the actual SVG curve — 0.212px
+[PASS] Keyboard focus exposes stage identity
+[PASS] Selecting a stage updates the visible task section
+[PASS] 1100 dark 1: icon centres meet the actual SVG curve — 0.164px
+[PASS] Stage 1100/1 has no page overflow
+[PASS] 1024 light 1: icon centres meet the actual SVG curve — 0.149px
+[PASS] Stage 1024/1 has no page overflow
+[PASS] 1440 light 1.25: icon centres meet the actual SVG curve — 0.169px
+[PASS] Stage 1440/1.25 has no page overflow
+[PASS] Typing retains focus through local plan updates
+[PASS] Criteria remain individually editable and checkable
+[PASS] Escape dismisses the top popover before its inspector
+[PASS] Origin task rejects cyclic dependencies
+[PASS] All incumbent editable sections remain present
+[PASS] Inspector closes and restores workspace interaction
+[PASS] Selected path uses a solid restrained gradient
+[PASS] Local prototype edits did not create persisted projects
+[PASS] Reduced motion is interruptible
+[PASS] No Renderer exceptions
+[PASS] Lab and inspector accessibility audits pass — dag-light: 0; dag-dark: 0; inspector-light: 0; inspector-dark: 0
+PREMIUM LAB SUMMARY {"pass":32,"fail":0}

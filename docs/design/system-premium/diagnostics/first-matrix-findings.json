@@ -1,0 +1,436 @@
+{
+  "overlays": [
+    {
+      "name": "project-create-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "project-import-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "navigation-expanded-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "navigation-menu-1024-light accessibility",
+      "status": "FAIL",
+      "detail": "aria-dialog-name"
+    },
+    {
+      "name": "navigation-menu-1024-dark accessibility",
+      "status": "FAIL",
+      "detail": "aria-dialog-name"
+    },
+    {
+      "name": "task-create-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "task-priority-menu-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "task-detail-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "task-edit-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "agent-studio-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "agent-edit-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "agent-prompt-preview-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "real-plan-1440-light-125 fits",
+      "status": "FAIL",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":88.80000305175781,\"y\":119.5999984741211,\"right\":1126.3999786376953,\"bottom\":759.5999984741211,\"overflow\":0}"
+    },
+    {
+      "name": "real-plan-1440-dark-125 fits",
+      "status": "FAIL",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":88.80000305175781,\"y\":119.5999984741211,\"right\":1126.3999786376953,\"bottom\":759.5999984741211,\"overflow\":0}"
+    },
+    {
+      "name": "real-plan-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": "{\"width\":819,\"height\":720,\"x\":88.80000305175781,\"y\":119.5999984741211,\"right\":793.5999908447266,\"bottom\":759.5999984741211,\"overflow\":0}"
+    },
+    {
+      "name": "real-plan-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": "{\"width\":819,\"height\":720,\"x\":88.80000305175781,\"y\":119.5999984741211,\"right\":793.5999908447266,\"bottom\":759.5999984741211,\"overflow\":0}"
+    },
+    {
+      "name": "plan-generator journey",
+      "status": "FAIL",
+      "detail": "TimeoutError: locator.click: Timeout 8000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.pdl-node').first()\u001b[22m\n\u001b[2m    - locator resolved to <div tabindex=\"0\" role=\"button\" class=\"pdl-node\" aria-label=\"TASK 01 分析「完善团队项目的任务协作与验收体验」的架构与影响面，Sage\">…</div>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    15 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+    },
+    {
+      "name": "run-detail-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "deployment-readiness-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "deployment-readiness-1440-light-125 fits",
+      "status": "FAIL",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":108.80000305175781,\"y\":244.4499969482422,\"right\":1106.4000396728516,\"bottom\":799.6000213623047,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-readiness-1440-dark-125 fits",
+      "status": "FAIL",
+      "detail": "{\"width\":1152,\"height\":720,\"x\":108.80000305175781,\"y\":244.4499969482422,\"right\":1106.4000396728516,\"bottom\":799.6000213623047,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-readiness-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": "{\"width\":819,\"height\":720,\"x\":108.80000305175781,\"y\":297.75,\"right\":773.5999908447266,\"bottom\":844.9000244140625,\"overflow\":0}"
+    },
+    {
+      "name": "deployment-readiness-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": "{\"width\":819,\"height\":720,\"x\":108.80000305175781,\"y\":297.75,\"right\":773.5999908447266,\"bottom\":844.9000244140625,\"overflow\":0}"
+    },
+    {
+      "name": "lifecycle-create-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "collaboration-message-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "connection-editor-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "connection-delete-confirm-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "Cancelled decision preserves connection",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "model-add-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "model-detail-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "runtime-create-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "runtime-detail-1440-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    }
+  ],
+  "pages": [
+    {
+      "name": "project-center-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "project-center-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "project-center-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "project-home-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "work-center-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "tasks-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "orchestration-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "approval-center-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "runs-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "versions-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "deployments-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "connections-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "project-settings-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "collaboration-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "operations-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "operations-1024-light fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "operations-1024-dark fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "operations-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "operations-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "health-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "notifications-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "notifications-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-0-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-0-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-1-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-1-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-AI 连接-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "settings-AI 连接-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "settings-2-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-2-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-模型目录-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "settings-模型目录-dark accessibility",
+      "status": "FAIL",
+      "detail": "color-contrast"
+    },
+    {
+      "name": "settings-3-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-3-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-4-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-4-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-5-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-5-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-6-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-6-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-7-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-7-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-8-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-8-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-9-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-9-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-10-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-10-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-11-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-11-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-12-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-12-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-13-1024-light-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    },
+    {
+      "name": "settings-13-1024-dark-125 fits",
+      "status": "FAIL",
+      "detail": ""
+    }
+  ]
+}

@@ -1,0 +1,2409 @@
+{
+  "head": "7746a49b53875ce33107f99623da0409dc1137f5",
+  "fixture": "fresh isolated persisted demo; cold query cache, 4x CPU throttling, actual platform-font inspection; delayed read ordering separately exercised by ui-readiness.test.ts",
+  "checks": [
+    {
+      "name": "First product frame has its local typeface",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Loaded font face points to the packaged app only",
+      "status": "PASS",
+      "detail": "[{\"name\":\"assets/NotoSansSC-variable-DKKZoNvi.woff2\",\"local\":true}]"
+    },
+    {
+      "name": "Cold task route mounts complete content",
+      "status": "PASS",
+      "detail": "{\"frames\":45,\"destinationFrames\":14,\"partialFrames\":0}"
+    },
+    {
+      "name": "Task title uses packaged Noto Sans SC",
+      "status": "PASS",
+      "detail": "[{\"familyName\":\"Noto Sans SC Thin\",\"postScriptName\":\"NotoSansSC-SemiBold\",\"isCustomFont\":true,\"glyphCount\":10}]"
+    },
+    {
+      "name": "Cold task inspector mounts complete content",
+      "status": "PASS",
+      "detail": "{\"frames\":25,\"destinationFrames\":17,\"partialFrames\":0}"
+    },
+    {
+      "name": "Inspector heading uses packaged Noto Sans SC",
+      "status": "PASS",
+      "detail": "[{\"familyName\":\"Noto Sans SC Thin\",\"postScriptName\":\"NotoSansSC-SemiBold\",\"isCustomFont\":true,\"glyphCount\":10}]"
+    },
+    {
+      "name": "Cold settings tab mounts its runtime records",
+      "status": "PASS",
+      "detail": "{\"frames\":164,\"destinationFrames\":21,\"partialFrames\":0}"
+    },
+    {
+      "name": "Settings runtime title uses packaged Noto Sans SC",
+      "status": "PASS",
+      "detail": "[{\"familyName\":\"Noto Sans SC Thin\",\"postScriptName\":\"NotoSansSC-SemiBold\",\"isCustomFont\":true,\"glyphCount\":16}]"
+    },
+    {
+      "name": "Cold run route mounts populated records",
+      "status": "PASS",
+      "detail": "{\"frames\":47,\"destinationFrames\":18,\"partialFrames\":0}"
+    },
+    {
+      "name": "Cold run sheet mounts complete content",
+      "status": "PASS",
+      "detail": "{\"frames\":10,\"destinationFrames\":5,\"partialFrames\":0}"
+    },
+    {
+      "name": "Chinese within code evidence uses packaged Noto Sans SC",
+      "status": "FAIL",
+      "detail": "[{\"familyName\":\"NSimSun\",\"postScriptName\":\"NSimSun\",\"isCustomFont\":false,\"glyphCount\":628}]"
+    },
+    {
+      "name": "No Renderer exceptions",
+      "status": "PASS",
+      "detail": ""
+    }
+  ],
+  "fontSamples": [
+    {
+      "name": "Task title",
+      "computed": {
+        "text": "设计同步冲突合并策略",
+        "family": "\"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "weight": "550",
+        "size": "14px",
+        "lineHeight": "22.4px"
+      },
+      "fonts": [
+        {
+          "familyName": "Noto Sans SC Thin",
+          "postScriptName": "NotoSansSC-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "name": "Inspector heading",
+      "computed": {
+        "text": "设计同步冲突合并策略",
+        "family": "\"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "weight": "550",
+        "size": "20px",
+        "lineHeight": "28px"
+      },
+      "fonts": [
+        {
+          "familyName": "Noto Sans SC Thin",
+          "postScriptName": "NotoSansSC-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "name": "Settings runtime title",
+      "computed": {
+        "text": "ProjectOS Native",
+        "family": "\"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "weight": "550",
+        "size": "14px",
+        "lineHeight": "23.1px"
+      },
+      "fonts": [
+        {
+          "familyName": "Noto Sans SC Thin",
+          "postScriptName": "NotoSansSC-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 16
+        }
+      ]
+    },
+    {
+      "name": "Chinese within code evidence",
+      "computed": {
+        "text": "{\n  \"toolName\": \"write_file\",\n  \"args\": {\n    \"path\": \"src/graph.ts\",\n    \"content\": \"import type { Note } from './notes.ts'\\n\\nexport interface GraphNode { id: string; label: string }\\nexport function buildGraph(notes: Note[]) {\\n  const byTitle = new Map(notes.map((note) => [note.title, note]))\\n  const edges = notes.flatMap((note) => note.links.flatMap((link) => {\\n    const target = byTitle.get(link)\\n    return target ? [{ source: note.id, target: target.id }] : []\\n  }))\\n  return { nodes: notes.map((note) => ({ id: note.id, label: note.title })), edges }\\n}\\n\"\n  },\n  \"risk\": \"workspace-write\",\n  \"reason\": \"修改项目文件需要人工授权\"\n}",
+        "family": "monospace",
+        "weight": "400",
+        "size": "12px",
+        "lineHeight": "19.8px"
+      },
+      "fonts": [
+        {
+          "familyName": "NSimSun",
+          "postScriptName": "NSimSun",
+          "isCustomFont": false,
+          "glyphCount": 628
+        }
+      ]
+    }
+  ],
+  "traces": [
+    {
+      "name": "startup",
+      "frames": [
+        {
+          "time": 211,
+          "shell": false,
+          "fonts": "loaded"
+        },
+        {
+          "time": 332,
+          "shell": false,
+          "fonts": "loading"
+        },
+        {
+          "time": 334.60000002384186,
+          "shell": false,
+          "fonts": "loading"
+        },
+        {
+          "time": 377.19999998807907,
+          "shell": false,
+          "fonts": "loaded"
+        },
+        {
+          "time": 377.39999997615814,
+          "shell": false,
+          "fonts": "loaded"
+        },
+        {
+          "time": 427.80000001192093,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 455.80000001192093,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 459.69999998807907,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 474,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 489,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 504.60000002384186,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 520,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 535.1000000238419,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 550.6000000238419,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 566.3000000119209,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 582.3999999761581,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 598.1000000238419,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 613.6000000238419,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 628.8999999761581,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 644.8000000119209,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 661,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 676.8000000119209,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 692.3000000119209,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 707.6000000238419,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 723.1999999880791,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 740,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 754.5,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 772.8000000119209,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 801.6000000238419,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 814.5,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 819.6999999880791,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 841,
+          "shell": false,
+          "typeface": "ready",
+          "fonts": "loaded"
+        },
+        {
+          "time": 1105.8999999761581,
+          "shell": true,
+          "typeface": "ready",
+          "fonts": "loaded"
+        }
+      ],
+      "sources": [
+        {
+          "name": "assets/NotoSansSC-variable-DKKZoNvi.woff2",
+          "local": true
+        }
+      ]
+    },
+    {
+      "name": "Cold task route mounts complete content",
+      "frames": [
+        {
+          "time": 1400.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1491.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1492.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1504.1000000238419,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1520.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1546.8999999761581,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1699.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1717.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1731.1000000238419,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1755.8999999761581,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1771.6000000238419,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1791.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1827.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1845.3999999761581,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1874.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1881.3999999761581,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1920.6000000238419,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1935,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1973,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1982.3999999761581,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 1991.6000000238419,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2010.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2025.8999999761581,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2037.6000000238419,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2056.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2074,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2087.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2101.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2116,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2135.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2151.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2898.899999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2948.5,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2970,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 2981.899999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3012,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3026.199999988079,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3037,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3062.100000023842,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3086.399999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3103,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3118,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3129.800000011921,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3146.399999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3161.199999988079,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "Cold task inspector mounts complete content",
+      "frames": [
+        {
+          "time": 3237.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3238,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3255.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3270.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3285.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3394.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3396.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3412.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3811,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3850.699999988079,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3854.199999988079,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3868.100000023842,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3880.5,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3895.5,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3910.800000011921,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3926.199999988079,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3942.800000011921,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3957.899999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3973.5,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 3989.399999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 4004.5,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 4020.600000023842,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 4036.399999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 4052.399999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 4067.699999988079,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "Cold settings tab mounts its runtime records",
+      "frames": [
+        {
+          "time": 5466.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5480.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5497.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5506.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5524.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5545.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5565,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5566.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5583.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5715.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5727.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5731.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5762.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5790.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5802,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5818.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5834.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5852.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5867.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5880.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5896.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5911.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5927.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5942.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5958.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5975.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 5988.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6005.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6020.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6035.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6052.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6068,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6083.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6099.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6114.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6131.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6146.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6162.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6177.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6192.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6208.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6224.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6239.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6255.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6270.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6286.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6302.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6317.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6334,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6349.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6365.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6380.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6395.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6411.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6427.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6442.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6458.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6473.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6489.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6504.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6520.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6536.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6552.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6567.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6583.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6598.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6614.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6630.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6645.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6661.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6677.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6692.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6707.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6723,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6738.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6755.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6770.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6787,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6802.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6818.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6834.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6848.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6865.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6880.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6895.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6911.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6926.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6942.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6958.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6974.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 6989.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7005.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7021.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7036.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7051,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7067,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7083.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7099.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7118.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7129.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7146.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7161.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7177.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7192.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7208.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7223.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7240.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7255.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7271.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7286.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7302.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7317,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7333.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7350.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7365.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7380.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7397.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7411.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7427.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7442.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7457.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7474.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7490.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7505.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7521.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7536.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7552.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7568.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7583.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7598,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7615.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7629.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7645.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7662.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7676.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7692.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7708.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7723.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7739.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7755.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7770.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7787.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 7802.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8300.300000011921,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8308.300000011921,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8317.399999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8332.699999988079,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8355.699999988079,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8363.5,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8379.300000011921,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8396.300000011921,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8414.199999988079,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8426.600000023842,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8461.5,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8463.199999988079,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8474.899999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8489,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8504.699999988079,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8524.199999988079,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8535.5,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8561.699999988079,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8566.800000011921,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8606.899999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 8608.100000023842,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "Cold run route mounts populated records",
+      "frames": [
+        {
+          "time": 9118.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9121.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9189.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9209,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9209.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9223.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9240.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9259.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9378.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9397.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9445.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9522,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9526.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9542.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9572.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9587.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9603.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9618,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9722.399999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9735.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9775.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9785.600000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9793.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9807.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9820.699999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9865.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9880.800000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9888.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 9896.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10293.5,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10303.199999988079,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10315.300000011921,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10336.5,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10355.100000023842,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10375.899999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10385.600000023842,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10398.300000011921,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10420.399999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10433.800000011921,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10442.800000011921,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10458.899999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10473.899999976158,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10490.100000023842,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10507.100000023842,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10520.600000023842,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10537,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10551.5,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "Cold run sheet mounts complete content",
+      "frames": [
+        {
+          "time": 10570.100000023842,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10582.899999976158,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10598.5,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10712.300000011921,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 10714.199999988079,
+          "surface": false,
+          "content": false,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 11044.300000011921,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 11081.5,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 11092.600000023842,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 11121,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        },
+        {
+          "time": 11208,
+          "surface": true,
+          "content": true,
+          "typeface": "ready",
+          "fontStatus": "loaded"
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

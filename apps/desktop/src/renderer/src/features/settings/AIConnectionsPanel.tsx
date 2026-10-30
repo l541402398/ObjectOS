@@ -1,3 +1,4 @@
+import { useProductDialogs } from '../../next-ui/overlay/ProductDialogs'
 import { useEffect, useMemo, useState } from 'react'
 import {
   App as AntApp,
@@ -91,7 +92,8 @@ function StageLine({ result }: { result: AIConnectionTestResult }) {
 }
 
 export function AIConnectionsPanel() {
-  const { message, modal } = AntApp.useApp()
+  const { message } = AntApp.useApp()
+  const modal = useProductDialogs()
   const queryClient = useQueryClient()
   const connectionsQuery = useAIConnections()
   const openSettings = useUiStore((state) => state.openSettings)
@@ -244,7 +246,8 @@ export function AIConnectionsPanel() {
   }, [connections.length, editing, form])
 
   const save = async (): Promise<void> => {
-    const values = await form.validateFields()
+    const values = await form.validateFields().catch(() => null)
+    if (!values) return
     if (editing && editing !== 'new') update.mutate({ ...values, id: editing.id })
     else create.mutate(values)
   }

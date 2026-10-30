@@ -11,6 +11,7 @@ export interface SidebarNavItem {
 }
 
 export interface SidebarNavGroup {
+  placement?: 'main' | 'footer'
   key?: string
   title?: string
   items: SidebarNavItem[]
@@ -95,9 +96,10 @@ export function SidebarNavigation({ groups, activeKey, onSelect, collapsed = fal
         onClick={() => onSelect(item.key)}
         disabled={item.disabled}
         aria-current={active ? 'page' : undefined}
+        aria-label={item.label}
         title={item.title ?? item.label}
       >
-        {item.icon ? <span className="po-nav-icon">{item.icon}</span> : null}
+        {item.icon ? <span className="po-nav-icon" aria-hidden>{item.icon}</span> : null}
         <span className="po-nav-label">{item.label}</span>
         {item.badge !== null && item.badge !== undefined && item.badge !== 0 ? (
           <span className="po-nav-badge">{item.badge}</span>
@@ -105,7 +107,7 @@ export function SidebarNavigation({ groups, activeKey, onSelect, collapsed = fal
       </button>
     )
     return collapsed ? (
-      <Tooltip key={item.key} title={item.label} placement="right">
+      <Tooltip key={item.key} title={item.title ?? item.label} placement="right" trigger={['hover', 'focus']}>
         {button}
       </Tooltip>
     ) : (
@@ -113,16 +115,13 @@ export function SidebarNavigation({ groups, activeKey, onSelect, collapsed = fal
     )
   }
 
-  return (
-    <div className="po-sidenav">
-      <div className="po-sidenav-scroll">
-        {groups.map((group, index) => {
+  const renderGroup = (group: SidebarNavGroup, index: number) => {
           const groupKey = group.key ?? group.title ?? `group-${index}`
           const isCollapsible = !collapsed && group.collapsible !== false && Boolean(group.title)
-          const isOpen = collapsed || group.disabled ? false : expanded[groupKey] === true
+          const isOpen = !group.disabled && (group.collapsible === false || expanded[groupKey] === true)
           return (
             <div className={`po-sidenav-group ${group.disabled ? 'is-disabled' : ''}`.trim()} key={groupKey}>
-              {!collapsed && group.title ? (
+              {!collapsed && group.title && isCollapsible ? (
                 <button
                   type="button"
                   className={`po-sidenav-title po-sidenav-group-trigger ${isOpen ? 'is-open' : ''}`.trim()}
@@ -134,12 +133,15 @@ export function SidebarNavigation({ groups, activeKey, onSelect, collapsed = fal
                   {group.note ? <span className="po-sidenav-note">{group.note}</span> : null}
                   {isCollapsible ? <span className="po-sidenav-chevron" aria-hidden="true">›</span> : null}
                 </button>
-              ) : null}
+              ) : !collapsed && group.title ? <div className="po-sidenav-title">{group.title}</div> : null}
               {collapsed || isOpen ? group.items.filter((item) => !item.disabled || collapsed).map(renderItem) : null}
             </div>
           )
-        })}
-      </div>
+  }
+  return (
+    <div className="po-sidenav">
+      <div className="po-sidenav-scroll">{groups.filter((group) => group.placement !== 'footer').map(renderGroup)}</div>
+      {groups.some((group) => group.placement === 'footer') ? <div className="po-sidenav-dock">{groups.filter((group) => group.placement === 'footer').map(renderGroup)}</div> : null}
       {footer ? <div className="po-sidenav-footer">{footer}</div> : null}
     </div>
   )

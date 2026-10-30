@@ -1,6 +1,7 @@
+import { FormDialog } from '../next-ui/overlay/FormDialog'
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { App as AntApp, Button, Empty, Input, Modal, Select } from 'antd'
+import { App as AntApp, Button, Empty, Input, Select } from 'antd'
 import { errorMessage } from '../lib/errors'
 import { formatRelative } from '../lib/format'
 import './resource-center.css'
@@ -185,13 +186,13 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
       </header>
 
       <div className="rc-body">
-        <aside className="rc-left">
+        <aside className="rc-left" aria-label="资源列表">
           <div className="rc-tabs">
             <button className={view === 'resources' ? 'is-active' : ''} onClick={() => setView('resources')}>资源 <span>{resources.length}</span></button>
             <button className={view === 'credentials' ? 'is-active' : ''} onClick={() => setView('credentials')}>凭据 <span>{credentials.length}</span></button>
           </div>
           <Input.Search placeholder="搜索名称或端点" value={query} onChange={(event) => setQuery(event.target.value)} allowClear />
-          <Select value={type} onChange={setType} options={[{ value: 'all', label: '全部类型' }, ...Object.entries(TYPE_LABEL).map(([value, label]) => ({ value, label }))]} style={{ width: '100%' }} />
+          <Select aria-label="资源类型" value={type} onChange={setType} options={[{ value: 'all', label: '全部类型' }, ...Object.entries(TYPE_LABEL).map(([value, label]) => ({ value, label }))]} style={{ width: '100%' }} />
           <div className="rc-list">
             {view === 'resources' ? resources.map((resource) => {
               const profile = data.profiles.find((item) => item.resourceId === resource.id)
@@ -268,19 +269,19 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
           )}
         </section>
 
-        <aside className="rc-inspector">
-          <h3>安全边界</h3>
+        <aside className="rc-inspector" aria-label="连接安全与状态">
+          <h2>安全边界</h2>
           <p>凭据仅进入 OS 安全存储，Renderer/SQLite/AI 只持有 opaque 引用。</p>
           <div className="rc-rail-divider" />
-          <h3>连接结果</h3>
+          <h2>连接结果</h2>
           <p>连接成功只代表网络、主机身份与认证可用；不代表部署权限或服务健康。</p>
           <div className="rc-rail-divider" />
-          <h3>凭据引用</h3>
+          <h2>凭据引用</h2>
           <p>Profile 可引用 active 凭据；停用后连接测试立即失败，部署授权仍需单独审批。</p>
         </aside>
       </div>
 
-      <Modal open={createOpen} title={resourceType === 'host' ? '登记主机' : '登记平台资源'} okText={resourceType === 'host' ? '保存并测试' : '保存'} cancelText="取消" width={560} confirmLoading={create.isPending} okButtonProps={{ disabled: !name.trim() || (resourceType === 'host' && (!host.trim() || !secret)) }} onOk={() => create.mutate()} onCancel={() => setCreateOpen(false)}>
+      <FormDialog open={createOpen} title={resourceType === 'host' ? '登记主机' : '登记平台资源'} okText={resourceType === 'host' ? '保存并测试' : '保存'} cancelText="取消" width={560} confirmLoading={create.isPending} okButtonProps={{ disabled: !name.trim() || (resourceType === 'host' && (!host.trim() || !secret)) }} onOk={() => create.mutate()} onCancel={() => setCreateOpen(false)}>
         <div className="rc-form">
           <label><span>资源类型</span><Select value={resourceType} onChange={setResourceType} options={[{ value: 'host', label: '主机 / VPS' }, { value: 'kubernetes', label: 'Kubernetes 集群' }, { value: 'pipeline', label: 'CI/CD 流水线' }, { value: 'gitops', label: 'GitOps 控制器' }]} /></label>
           <div className="rc-form-grid">
@@ -306,18 +307,18 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
           {resourceType === 'host' ? <label><span>已固定主机指纹（可选）</span><Input value={fingerprint} onChange={(event) => setFingerprint(event.target.value)} placeholder="SHA256:..." /></label> : null}
           <p className="rc-form-note">{resourceType === 'host' ? '首次测试会返回主机指纹；确认后才能固定并重试。凭据保存需要系统安全存储可用。' : '本轮只登记平台连接元数据；Kubernetes/CI/CD 连接器未实现前明确标记未连接，不伪造测试成功。'}</p>
         </div>
-      </Modal>
+      </FormDialog>
 
-      <Modal open={editResourceOpen} title="编辑资源" okText="保存" cancelText="取消" confirmLoading={editResource.isPending} okButtonProps={{ disabled: !editName.trim() }} onOk={() => editResource.mutate()} onCancel={() => setEditResourceOpen(false)}>
+      <FormDialog open={editResourceOpen} title="编辑资源" okText="保存" cancelText="取消" confirmLoading={editResource.isPending} okButtonProps={{ disabled: !editName.trim() }} onOk={() => editResource.mutate()} onCancel={() => setEditResourceOpen(false)}>
         <div className="rc-form">
           <label><span>名称</span><Input value={editName} onChange={(event) => setEditName(event.target.value)} /></label>
           <label><span>端点</span><Input value={editEndpoint} onChange={(event) => setEditEndpoint(event.target.value)} /></label>
           <label><span>用途</span><Input value={editPurpose} onChange={(event) => setEditPurpose(event.target.value)} /></label>
           <p className="rc-form-note">修改会提升资源 revision；使用旧快照的部署授权将被拒绝，需要重新审批。</p>
         </div>
-      </Modal>
+      </FormDialog>
 
-      <Modal open={Boolean(editProfileId)} title="编辑连接配置" okText="保存" cancelText="取消" confirmLoading={editProfile.isPending} okButtonProps={{ disabled: !editProfileName.trim() || !editProfileHost.trim() }} onOk={() => editProfile.mutate()} onCancel={() => setEditProfileId(null)}>
+      <FormDialog open={Boolean(editProfileId)} title="编辑连接配置" okText="保存" cancelText="取消" confirmLoading={editProfile.isPending} okButtonProps={{ disabled: !editProfileName.trim() || !editProfileHost.trim() }} onOk={() => editProfile.mutate()} onCancel={() => setEditProfileId(null)}>
         <div className="rc-form">
           <label><span>名称</span><Input value={editProfileName} onChange={(event) => setEditProfileName(event.target.value)} /></label>
           <div className="rc-form-grid">
@@ -328,15 +329,15 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
           <label><span>已固定主机指纹</span><Input value={editProfileFingerprint} onChange={(event) => setEditProfileFingerprint(event.target.value)} placeholder="SHA256:..." /></label>
           <p className="rc-form-note">修改连接配置会提升 Profile revision；原部署授权立即失效。</p>
         </div>
-      </Modal>
+      </FormDialog>
 
-      <Modal open={Boolean(rotateCredentialId)} title="轮换凭据" okText="轮换" cancelText="取消" confirmLoading={rotateCredential.isPending} okButtonProps={{ disabled: !rotateSecret.trim() }} onOk={() => rotateCredential.mutate()} onCancel={() => setRotateCredentialId(null)}>
+      <FormDialog open={Boolean(rotateCredentialId)} title="轮换凭据" okText="轮换" cancelText="取消" confirmLoading={rotateCredential.isPending} okButtonProps={{ disabled: !rotateSecret.trim() }} onOk={() => rotateCredential.mutate()} onCancel={() => setRotateCredentialId(null)}>
         <div className="rc-form">
           <label><span>新私钥（不读回）</span><Input.TextArea rows={4} value={rotateSecret} onChange={(event) => setRotateSecret(event.target.value)} placeholder="-----BEGIN OPENSSH PRIVATE KEY-----" /></label>
           <label><span>Passphrase（可选）</span><Input.Password value={rotatePassphrase} onChange={(event) => setRotatePassphrase(event.target.value)} /></label>
           <p className="rc-form-note">轮换会创建新凭据、把引用它的连接配置切换到新凭据，并停用旧凭据；部署授权随之失效。</p>
         </div>
-      </Modal>
+      </FormDialog>
     </div>
   )
 }

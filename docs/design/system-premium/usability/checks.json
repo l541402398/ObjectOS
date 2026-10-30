@@ -1,0 +1,82 @@
+{
+  "head": "7746a49b53875ce33107f99623da0409dc1137f5",
+  "fixture": "isolated persisted demo, real API, 4x renderer CPU throttling for navigation",
+  "checks": [
+    {
+      "name": "自主模式 persists through the real API",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "托管模式 persists through the real API",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "辅助模式 persists through the real API",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Reload retains assisted mode",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Home next step is a persisted action",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Propose requirement opens its existing form directly",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Slower renderer keeps a coherent destination",
+      "status": "PASS",
+      "detail": "{\"elapsedMs\":2240,\"frames\":68,\"intermediateEmpty\":0}"
+    },
+    {
+      "name": "Cached revisit renders populated tasks",
+      "status": "PASS",
+      "detail": "204 ms including native input"
+    },
+    {
+      "name": "Rapid navigation ends at the latest chosen page",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Motion remains bounded to selected/running relations",
+      "status": "PASS",
+      "detail": "{\"frames\":156,\"fps\":62.3052959504524,\"p95FrameMs\":15.700000000000728,\"pulseCount\":5,\"nodeCount\":13}"
+    },
+    {
+      "name": "Pause removes moving elements",
+      "status": "PASS",
+      "detail": "{\"frames\":161,\"fps\":64.14853773148081,\"p95FrameMs\":15.700000000000728,\"pulseCount\":0,\"nodeCount\":13}"
+    },
+    {
+      "name": "Reduced motion is honored immediately",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Iterations and environment ownership are explicit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Environment entry lands in deployment setup",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "No Renderer exceptions",
+      "status": "PASS",
+      "detail": ""
+    }
+  ],
+  "errors": []
+}

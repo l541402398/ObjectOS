@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState, type ReactElement } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { useMemo, useState, type ReactElement } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import {
-  Activity,
   ArrowRight,
   Check,
   CheckCircle2,
@@ -9,16 +8,12 @@ import {
   ChevronRight,
   CircleAlert,
   GitBranch,
-  House,
   Layers3,
   Plus,
   ShieldAlert,
-  Sun,
-  Moon,
-  Workflow,
   X,
 } from 'lucide-react'
-import type { AgentCapability, PlanDraft, PlanRole, PlannedTask } from '@projectos/contracts'
+import { AGENT_CAPABILITIES, type AgentCapability, type PlanDraft, type PlanRole, type PlannedTask } from '@projectos/contracts'
 import { computeStages, mergeStagesByRole, planDependencyIssues, type Stage } from './plan-review-logic'
 import { LabStageJourney } from '../../design-lab/StageJourney'
 import { LabTaskGraph } from '../../design-lab/TaskGraph'
@@ -26,6 +21,8 @@ import { TaskInspector } from '../../design-lab/TaskInspector'
 import { OpticalGlass } from '../../design-lab/OpticalGlass'
 import type { LabStage, LabTask } from '../../design-lab/data'
 import '../../design-lab/design-lab.css'
+import { useResolvedTheme } from '../../../stores/ui'
+import { useReducedMotionPreference } from '../../../hooks/useReducedMotionPreference'
 
 type AgentOption = { value: string; label: string }
 
@@ -93,8 +90,8 @@ export function PlanReviewWorkspace({
   onReject: () => void
   onBack: () => void
 }): ReactElement {
-  const reduce = useReducedMotion()
-  useEffect(() => { document.body.classList.add('po-plan-workspace-open'); return () => document.body.classList.remove('po-plan-workspace-open') }, [])
+  const reduce = useReducedMotionPreference()
+  const theme = useResolvedTheme()
   const stages = useMemo(() => mergeStagesByRole(computeStages(draft.tasks, roleLabels)), [draft.tasks, roleLabels])
   const issues = useMemo(() => planDependencyIssues(draft.tasks), [draft.tasks])
   const labStages = useMemo(() => stages.map((stage) => toLabStage(stage, roleLabels)), [stages, roleLabels])
@@ -107,13 +104,12 @@ export function PlanReviewWorkspace({
     () => draft.tasks.map((task, index) => toLabTask(task, index, stageByTask.get(task.key) ?? stages[0]?.id ?? '', roleLabels, agentOptions)),
     [agentOptions, draft.tasks, roleLabels, stageByTask, stages],
   )
-  const [view, setView] = useState<'route' | 'dag'>('route')
+  const [view, setView] = useState<'route' | 'dag'>('dag')
   const [activeStage, setActiveStage] = useState(labStages[0]?.id ?? '')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [inspectorOpen, setInspectorOpen] = useState(false)
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
   const [riskOpen, setRiskOpen] = useState(true)
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
   const selected = tasks.find((task) => task.id === selectedId) ?? null
   const risks = tasks.filter((task) => task.risk)
@@ -146,28 +142,7 @@ export function PlanReviewWorkspace({
 
   return (
     <div className="pdl-root po-plan-workspace" data-theme={theme} data-testid="plan-review-workspace">
-      <div className="pdl-aurora" aria-hidden="true"><div className="pdl-aurora-fallback"><i /><i /><i /></div></div>
-      <div className="pdl-ambient" aria-hidden="true"><i /><i /><i /></div>
-      <header className="pdl-topbar">
-        <div className="pdl-brand"><span className="pdl-brand-icon"><Layers3 size={17} /></span><span>PROJECTOS</span><em>PLAN REVIEW</em></div>
-        <div className="pdl-top-actions">
-          <button type="button" className="pdl-icon-button" aria-label="切换主题" onClick={() => setTheme((current) => current === 'light' ? 'dark' : 'light')}>{theme === 'light' ? <Moon size={15} /> : <Sun size={15} />}</button>
-          <button type="button" className="pdl-icon-button" aria-label="返回编排" onClick={onBack}><X size={16} /></button>
-          <span className="pdl-avatar">P</span>
-        </div>
-      </header>
-      <div className="pdl-shell">
-        <aside className="pdl-rail" aria-label="工作区导航">
-          <button type="button" className="pdl-rail-button" aria-label="返回编排" onClick={onBack}><House size={18} /></button>
-          <button type="button" className="pdl-rail-button is-active" aria-label="计划审核"><Layers3 size={18} /></button>
-          <button type="button" className="pdl-rail-button" aria-label="编排"><Workflow size={18} /></button>
-          <button type="button" className="pdl-rail-button" aria-label="任务"><GitBranch size={18} /></button>
-          <button type="button" className="pdl-rail-button" aria-label="审计"><Activity size={18} /></button>
-          <span className="pdl-rail-spacer" />
-          <button type="button" className="pdl-rail-avatar" aria-label="当前用户">S</button>
-        </aside>
-        <main className="pdl-workspace">
-          <div className="pdl-workspace-glow" aria-hidden="true" />
+      <section className="pdl-workspace" aria-label="计划审核">
           <header className="pdl-plan-head">
             <div className="pdl-plan-title">
               <span className="pdl-eyebrow">PLAN REVIEW<i /> {labStages.length} 个阶段 · {tasks.length} 项工作</span>
@@ -178,6 +153,7 @@ export function PlanReviewWorkspace({
               </div>
             </div>
             <div className="pdl-head-side">
+              <button type="button" className="pdl-icon-button" aria-label="返回编排" onClick={onBack}><X size={16} /></button>
               <div className="pdl-metrics">
                 <div><strong>{String(tasks.length).padStart(2, '0')}</strong><span>工作项</span></div>
                 <div><strong>{String(labStages.length).padStart(2, '0')}</strong><span>阶段</span></div>
@@ -197,7 +173,7 @@ export function PlanReviewWorkspace({
 
           <AnimatePresence mode="wait" initial={false}>
             {view === 'route' ? (
-              <motion.div key="route" className="pdl-route-view" initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={reduce ? {} : { opacity: 0, y: -5 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}>
+              <motion.div key="route" className="pdl-route-view" initial={reduce ? false : { y: 8 }} animate={{ y: 0 }} exit={reduce ? {} : { y: -5 }} transition={{ duration: reduce ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}>
                 <LabStageJourney stages={labStages} active={activeStage} onSelect={(id) => { setActiveStage(id); setCollapsed((current) => { const next = new Set(current); next.delete(id); return next }) }} taskCounts={Object.fromEntries(labStages.map((stage) => [stage.id, tasks.filter((task) => task.stageId === stage.id).length]))} />
                 <div className="pdl-content-grid">
                   <section className="pdl-ledger-panel" aria-label="任务清单">
@@ -235,7 +211,7 @@ export function PlanReviewWorkspace({
                     <div className="pdl-risk-box">
                       <button type="button" className="pdl-risk-toggle" onClick={() => setRiskOpen((open) => !open)} aria-expanded={riskOpen}><span><ShieldAlert size={14} />{risks.length ? `${risks.length} 项需复核` : '无待处理项'}</span><ChevronDown size={13} className={riskOpen ? 'is-open' : ''} /></button>
                       <AnimatePresence initial={false}>{riskOpen ? (
-                        <motion.div className="pdl-risk-body" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+                        <motion.div className="pdl-risk-body" initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} transition={{ duration: reduce ? 0 : 0.2 }}>
                           {risks.length ? risks.map((task) => <button type="button" key={task.id} onClick={() => { setSelectedId(task.id); setInspectorOpen(true) }}><span>{task.code}</span><p>{task.risk}</p><ArrowRight size={12} /></button>) : <p>当前没有阻塞项。</p>}
                         </motion.div>
                       ) : null}</AnimatePresence>
@@ -245,10 +221,10 @@ export function PlanReviewWorkspace({
                 </div>
               </motion.div>
             ) : (
-              <motion.div key="dag" className="pdl-dag-view" initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={reduce ? {} : { opacity: 0, y: -5 }} transition={{ duration: 0.22 }}>
+              <motion.div key="dag" className="pdl-dag-view" initial={reduce ? false : { y: 8 }} animate={{ y: 0 }} exit={reduce ? {} : { y: -5 }} transition={{ duration: reduce ? 0 : 0.22 }}>
                 <div className="pdl-dag-head"><div><span className="pdl-eyebrow">DEPENDENCY MAP</span><h2>任务依赖</h2></div><div className="pdl-dag-actions"><span>{tasks.filter((task) => task.dependsOn.length === 0).length} 个起点 · {dependencyCount} 条依赖</span><button type="button" onClick={() => setView('route')}>返回阶段路线</button></div></div>
                 <LabTaskGraph tasks={tasks} selectedId={selectedId} onSelect={(id) => { setSelectedId(id); setInspectorOpen(true) }} />
-                <div className="pdl-dag-caption"><span>选择节点查看上下游路径</span><span>ELK layered · React Flow</span></div>
+                <div className="pdl-dag-caption"><span>选择节点查看上下游路径</span><span>滚轮缩放 · 拖动平移</span></div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -259,13 +235,13 @@ export function PlanReviewWorkspace({
               <button type="button" className="pdl-primary" onClick={onApprove} disabled={blocking} title={blocking ? '存在阻塞项，修复后才能批准' : undefined}><Check size={14} />批准计划</button>
             </div>
           </footer>
-        </main>
-      </div>
-      <AnimatePresence>{selected && inspectorOpen ? <TaskInspector task={selected} tasks={tasks} onPatch={patchTask} onDelete={() => onRemoveTask(selected.id)} onClose={() => setInspectorOpen(false)} /> : null}</AnimatePresence>
+      </section>
+      {selected ? <TaskInspector key={selected.id} task={selected} tasks={tasks} open={inspectorOpen} theme={theme}
+        roleChoices={Object.values(roleLabels)} capabilityChoices={AGENT_CAPABILITIES}
+        agentChoices={agentOptions} selectedAgent={draft.tasks.find((task) => task.key === selected.id)?.agentId}
+        onAgentChange={(agentId) => onUpdateTask(draft.tasks.findIndex((task) => task.key === selected.id), { agentId: agentId || null, assignmentMode: 'explicit' })}
+        onPatch={patchTask} onInspect={(id) => { setSelectedId(id); setInspectorOpen(true) }}
+        onDelete={() => { onRemoveTask(selected.id); setInspectorOpen(false) }} onClose={() => setInspectorOpen(false)} /> : null}
     </div>
   )
 }
-
-
-
-

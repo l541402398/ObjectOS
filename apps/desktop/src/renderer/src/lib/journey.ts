@@ -29,3 +29,20 @@ export function currentJourneyStage(stages: JourneyStage[]): JourneyStage | null
 export function journeyProgress(stages: JourneyStage[]): { done: number; total: number } {
   return { done: stages.filter((stage) => stage.state === 'done').length, total: stages.length }
 }
+
+/** Short, concrete destination labels; the server remains the source of the next action. */
+export function journeyActionLabel(action: ProjectJourney['nextAction']): string {
+  if (action.action === 'reverify') return '重新验证'
+  const route = action.route ?? ''
+  if (route.includes('/approvals')) return '处理审批'
+  if (route.includes('/orchestration')) return '查看计划'
+  if (route.includes('/runs')) return '查看运行'
+  if (route.includes('/tasks')) return '查看任务'
+  if (route.includes('/versions')) return '查看版本门禁'
+  if (route.includes('/deployments')) return '处理部署'
+  if (route.includes('/releases')) return '处理发布'
+  if (route.includes('/knowledge')) return '查看成果'
+  if (route.includes('/agents')) return '查看协作'
+  if (route.includes('/work')) return '打开当前工作'
+  return '查看下一步'
+}

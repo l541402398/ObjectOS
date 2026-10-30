@@ -1,5 +1,11 @@
 # ProjectOS Next UI — Baseline and Recovery
 
+Current recovery entry (2026-10-30): work continues in `ProjectOS-v2-phase2.4`, branch
+`codex/premium-system`, based on `7746a49b53875ce33107f99623da0409dc1137f5`. Read
+[`system-premium/REPORT.md`](../design/system-premium/REPORT.md), its command logs, screenshot manifest
+and review commit record before further UI edits. The frozen visual authority remains the approved
+DAG (`0686c41` and the user-confirmed PNG); older worktree paths/checklists below are historical.
+
 Date: 2026-10-22  
 Migration branch: `feature/projectos-next-ui-full-migration`  
 Isolated worktree: `C:\Users\Administrator\Desktop\workplace\ProjectOS-next-ui-full-migration`

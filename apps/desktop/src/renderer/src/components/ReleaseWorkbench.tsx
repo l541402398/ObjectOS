@@ -1,6 +1,7 @@
+import { FormDialog } from '../next-ui/overlay/FormDialog'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { App as AntApp, Button, Empty, Input, Modal, Select, Tag } from 'antd'
+import { App as AntApp, Button, Empty, Input, Select, Tag } from 'antd'
 import { errorMessage } from '../lib/errors'
 import { formatRelative } from '../lib/format'
 import { useArtifacts, useTaskBoard } from '../lib/queries'
@@ -140,14 +141,14 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
       </div>
 
       <div className="rw-body">
-        <aside className="rw-list">
+        <aside className="rw-list" aria-label="发布记录">
           <div className="rw-tabs">
             <button className={tab === 'candidates' ? 'is-active' : ''} onClick={() => { setTab('candidates'); setSelection(null) }}>候选 <span>{data.candidates.length}</span></button>
             <button className={tab === 'changes' ? 'is-active' : ''} onClick={() => { setTab('changes'); setSelection(null) }}>变更 <span>{data.changeRequests.length}</span></button>
             <button className={tab === 'releases' ? 'is-active' : ''} onClick={() => { setTab('releases'); setSelection(null) }}>历史 <span>{data.releases.length}</span></button>
           </div>
           <Input.Search className="rw-filter" size="small" allowClear placeholder="筛选当前视图" value={rowQuery} onChange={(event) => setRowQuery(event.target.value)} />
-          <div className="rw-rows" role="list">
+          <div className="rw-rows">
             {rows.length === 0 ? <div className="rw-list-empty">暂无记录</div> : null}
             {tab === 'candidates' && data.candidates.map((candidate) => (
               <button key={candidate.id} className={`rw-row ${selection?.id === candidate.id ? 'is-selected' : ''}`} onClick={() => setSelection({ type: 'candidate', id: candidate.id })}>
@@ -183,7 +184,7 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
                 <span><b>制品</b>{selectedCandidate.artifacts.length}</span>
                 <span><b>创建</b>{formatRelative(selectedCandidate.createdAt)}</span>
               </div>
-              <h3 className="rw-section-title">冻结制品</h3>
+              <h2 className="rw-section-title">冻结制品</h2>
               <div className="rw-table">
                 {selectedCandidate.artifacts.map((artifact) => (
                   <div className="rw-table-row" key={artifact.id}><span>{artifact.name}</span><code>{artifact.contentHash.slice(0, 18)}…</code></div>
@@ -206,7 +207,7 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
                 <span><b>制品</b>{selectedRelease.artifactManifest.length}</span>
                 <span><b>登记</b>{formatRelative(selectedRelease.createdAt)}</span>
               </div>
-              <h3 className="rw-section-title">不可变 manifest</h3>
+              <h2 className="rw-section-title">不可变 manifest</h2>
               <div className="rw-table">
                 {selectedRelease.artifactManifest.map((artifact) => (
                   <div className="rw-table-row" key={artifact.id}><span>{artifact.name}</span><code>{artifact.contentHash.slice(0, 18)}…</code></div>
@@ -235,33 +236,33 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
           ) : null}
         </section>
 
-        <aside className="rw-rail">
-          <h3>发布就绪</h3>
+        <aside className="rw-rail" aria-label="发布就绪检查">
+          <h2>发布就绪</h2>
           <div className="rw-check"><span className={approvedRequest ? 'ok' : 'wait'} />变更批准<strong>{approvedRequest ? '已批准' : '未完成'}</strong></div>
           <div className="rw-check"><span className={versionArtifacts.length ? 'ok' : 'wait'} />真实制品<strong>{versionArtifacts.length}</strong></div>
           <div className="rw-check"><span className={latestCandidate?.gateStatus === 'passed' ? 'ok' : 'wait'} />质量门禁<strong>{latestCandidate?.gateStatus ?? '未评估'}</strong></div>
           <div className="rw-check"><span className={latestCandidate ? 'ok' : 'wait'} />候选冻结<strong>{latestCandidate ? (CANDIDATE_STATUS[latestCandidate.status] ?? latestCandidate.status) : '无'}</strong></div>
           <div className="rw-check"><span className={latestRelease ? 'ok' : 'wait'} />Release 登记<strong>{latestRelease ? '已登记' : '未登记'}</strong></div>
           <div className="rw-rail-divider" />
-          <h3>待处理审批</h3>
+          <h2>待处理审批</h2>
           {pendingApprovals.length === 0 ? <div className="rw-rail-empty">没有待处理审批</div> : null}
           {pendingApprovals.slice(0, 4).map((approval) => (
             <div className="rw-approval" key={approval.id}><span>{approval.subjectType === 'change_request' ? '变更审批' : '部署审批'}</span><em>r{approval.subjectRevision}</em></div>
           ))}
           <div className="rw-rail-divider" />
-          <h3>发布口径</h3>
+          <h2>发布口径</h2>
           <p className="rw-rail-copy">候选冻结与 Release 登记是本地可追溯事实；只有外部回执才能称为已分发。</p>
         </aside>
       </div>
 
-      <Modal open={createOpen} title="新建变更" okText="创建" cancelText="取消" confirmLoading={createChange.isPending} okButtonProps={{ disabled: !title.trim() }} onOk={() => createChange.mutate()} onCancel={() => setCreateOpen(false)}>
+      <FormDialog open={createOpen} title="新建变更" okText="创建" cancelText="取消" confirmLoading={createChange.isPending} okButtonProps={{ disabled: !title.trim() }} onOk={() => createChange.mutate()} onCancel={() => setCreateOpen(false)}>
         <div className="rw-form">
           <label><span>标题</span><Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="例如：v0.2.0 发布" /></label>
           <label><span>说明</span><Input.TextArea rows={3} value={description} onChange={(event) => setDescription(event.target.value)} placeholder="变更范围与验证方式" /></label>
           <label><span>风险</span><Select value={risk} onChange={setRisk} options={['low', 'medium', 'high', 'critical'].map((value) => ({ value, label: value }))} /></label>
           <label><span>目标环境</span><Select allowClear value={environmentId} onChange={(value) => setEnvironmentId(value ?? null)} options={data.environments.map((environment) => ({ value: environment.id, label: environment.name }))} /></label>
         </div>
-      </Modal>
+      </FormDialog>
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { useProductDialogs } from '../../../next-ui/overlay/ProductDialogs'
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
@@ -86,6 +87,7 @@ import {
 } from '../../../lib/queries'
 import { errorMessage } from '../../../lib/errors'
 import { formatRelative } from '../../../lib/format'
+import { stageLabel } from '../../../lib/labels'
 import { useQueryClient } from '@tanstack/react-query'
 import { useResolvedTheme } from '../../../stores/ui'
 import './orchestration.css'
@@ -336,7 +338,8 @@ export default function OrchestrationWorkspace() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const queryClient = useQueryClient()
-  const { message, notification, modal } = AntApp.useApp()
+  const { message, notification } = AntApp.useApp()
+  const modal = useProductDialogs()
   const bootstrap = useBootstrap()
   const project = bootstrap.data?.projects.find((item) => item.id === projectId) ?? null
   const snapshotQuery = useProjectSnapshot(projectId)
@@ -1450,16 +1453,15 @@ export default function OrchestrationWorkspace() {
               <Tag color="blue">进行中</Tag>
             </div>
             <div className="po-orch-sub">
-              <span>{project?.id}</span>
-              <span>阶段 {project?.currentStage}</span>
+              <span>{project ? stageLabel(project.currentStage) : '项目'}阶段</span>
               <span>扫描 {snapshot ? formatRelative(snapshot.scannedAt) : '未完成'}</span>
             </div>
           </div>
           <div className="po-orch-metrics">
             <div><span>Agents</span><strong>{counts.agents}</strong></div>
-            <div><span>Tasks</span><strong>{counts.tasks}</strong></div>
-            <div><span>Active</span><strong>{counts.running}</strong></div>
-            <div><span>Blocked</span><strong className={counts.blocked ? 'is-danger' : ''}>{counts.blocked}</strong></div>
+            <div><span>任务</span><strong>{counts.tasks}</strong></div>
+            <div><span>执行中</span><strong>{counts.running}</strong></div>
+            <div><span>待处理</span><strong className={counts.blocked ? 'is-danger' : ''}>{counts.blocked}</strong></div>
           </div>
           <div className="po-orch-actions">
             {searchParams.get('return') === 'agents' ? <Button onClick={() => navigate('/projects/' + projectId + '/agents')}>返回协作图</Button> : null}
@@ -1476,7 +1478,6 @@ export default function OrchestrationWorkspace() {
           <div><i style={{ width: `${Math.round((project?.stats.progress ?? 0) * 100)}%` }} /></div>
           <strong>{Math.round((project?.stats.progress ?? 0) * 100)}%</strong>
           <span className="po-grow" />
-          <span>任务 DAG 是唯一依赖真相</span>
         </div>
 
         {latestPlan?.status === 'approved' && !latestPlan.execution ? (
@@ -1528,10 +1529,9 @@ export default function OrchestrationWorkspace() {
                 <button type="button" className={kindFilter === 'all' ? 'is-active' : ''} onClick={() => setKindFilter('all')}>全部 {counts.agents + counts.tasks + 1}</button>
                 <button type="button" className={kindFilter === 'orchestrator' ? 'is-active' : ''} onClick={() => setKindFilter('orchestrator')}>总控 1</button>
                 <button type="button" className={kindFilter === 'agent' ? 'is-active' : ''} onClick={() => setKindFilter('agent')}>Agent {counts.agents}</button>
-                <button type="button" className={kindFilter === 'task' ? 'is-active' : ''} onClick={() => setKindFilter('task')}>Task {counts.tasks}</button>
+                <button type="button" className={kindFilter === 'task' ? 'is-active' : ''} onClick={() => setKindFilter('task')}>任务 {counts.tasks}</button>
               </div>
-              <span>AGENT TOPOLOGY</span>
-              <span className="po-orch-seq">SEQ {seqCursor}{seqGap ? ' · 已补齐' : ''}</span>
+              <span className="po-orch-seq" title={`同步序号 ${seqCursor}`}>{seqGap ? '已补齐同步' : '已同步'}</span>
               <Input
                 size="small"
                 allowClear

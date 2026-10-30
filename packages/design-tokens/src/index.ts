@@ -45,14 +45,14 @@ export interface ThemePalette {
 export const lightPalette: ThemePalette = {
   canvas: '#EFF4FC',
   canvasElevated: '#EFF4FC',
-  surface: '#FBFDFF',
-  surfaceRaised: '#FFFFFF',
+  surface: '#F4F7FD',
+  surfaceRaised: '#FBFCFF',
   surfaceSunken: '#EFF4FC',
   surfaceHover: '#F0F4FC',
-  overlay: 'rgba(245,250,255,.82)',
-  textPrimary: '#22304D',
-  textSecondary: '#52617B',
-  textTertiary: '#52617B',
+  overlay: 'rgba(245,250,255,.62)',
+  textPrimary: '#2C3B56',
+  textSecondary: '#4B5A73',
+  textTertiary: '#4B5A73',
   textDisabled: '#8996AD',
   textInverse: '#FFFFFF',
   accent: '#4F64D9',
@@ -73,7 +73,7 @@ export const lightPalette: ThemePalette = {
   divider: 'rgba(66,88,132,.09)',
   focusRing: 'rgba(79,100,217,.30)',
   selection: 'rgba(79,100,217,.16)',
-  glassBg: 'rgba(245,250,255,.72)',
+  glassBg: 'rgba(245,250,255,.48)',
   glassBorder: 'rgba(255,255,255,.68)',
   glassHighlight: 'rgba(255,255,255,.90)',
   codeBg: '#EEF2FA',
@@ -91,7 +91,7 @@ export const darkPalette: ThemePalette = {
   surfaceRaised: '#17243C',
   surfaceSunken: '#0B1427',
   surfaceHover: '#1D2C47',
-  overlay: 'rgba(17,27,48,.86)',
+  overlay: 'rgba(17,27,48,.64)',
   textPrimary: '#EFF4FF',
   textSecondary: '#B5C2D9',
   textTertiary: '#A4B4D0',
@@ -115,7 +115,7 @@ export const darkPalette: ThemePalette = {
   divider: 'rgba(217,230,255,.08)',
   focusRing: 'rgba(155,173,255,.38)',
   selection: 'rgba(155,173,255,.22)',
-  glassBg: 'rgba(17,27,48,.72)',
+  glassBg: 'rgba(17,27,48,.50)',
   glassBorder: 'rgba(217,230,255,.12)',
   glassHighlight: 'rgba(217,230,255,.06)',
   codeBg: '#0C1629',
@@ -131,8 +131,8 @@ export function paletteFor(mode: ThemeMode): ThemePalette {
 }
 
 export const fonts = {
-  sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif',
-  mono: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+  sans: '"ProjectOS Sans", "PingFang SC", "Microsoft YaHei UI", system-ui, sans-serif',
+  mono: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, "ProjectOS Sans", monospace',
   sizes: {
     /** Dense graph metadata only; never for key status. */
     micro: 12,

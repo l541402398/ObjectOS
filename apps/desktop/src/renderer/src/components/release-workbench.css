@@ -155,7 +155,7 @@
 
 .rw-tabs button span {
   margin-left: 2px;
-  opacity: 0.7;
+  color: var(--ui-ink-2);
 }
 
 .rw-tabs button.is-active {
@@ -333,7 +333,7 @@
   background: color-mix(in srgb, var(--color-surface) 55%, transparent);
 }
 
-.rw-rail h3 {
+.rw-rail h2 {
   margin: 0 0 3px;
   font-size: 12px;
   font-weight: 600;

@@ -93,7 +93,7 @@ function DiffView({ patch, truncated }: { patch: string; truncated: boolean }) {
   }
   const lines = patch.split('\n')
   return (
-    <div className="po-diff">
+    <div className="po-diff" tabIndex={0} aria-label="文件差异">
       {truncated ? <div className="po-diff-note">差异过大，仅显示前 400KB。</div> : null}
       <pre>
         {lines.map((line, index) => (
@@ -287,26 +287,25 @@ export default function WorkspacePage() {
             <div className="po-editor-tabs">
               <div className="po-editor-tab-scroll">
                 {openTabs.map((tab) => (
-                  <button
-                    type="button"
+                  <div
                     key={tab}
                     className={`po-editor-tab ${tab === selectedPath ? 'is-active' : ''}`.trim()}
-                    onClick={() => setSelectedPath(tab)}
                   >
-                    <FileOutlined />
-                    <span>{tab.split('/').pop()}</span>
-                    <span
+                    <button type="button" className="po-editor-tab-select" onClick={() => setSelectedPath(tab)} aria-pressed={tab === selectedPath} title={tab}>
+                      <FileOutlined aria-hidden /><span>{tab.split('/').pop()}</span>
+                    </button>
+                    <button
+                      type="button"
                       className="po-editor-tab-close"
-                      role="button"
-                      tabIndex={-1}
+                      aria-label={`关闭 ${tab.split('/').pop()}`}
                       onClick={(event) => {
                         event.stopPropagation()
                         closeTab(tab)
                       }}
                     >
                       ×
-                    </span>
-                  </button>
+                    </button>
+                  </div>
                 ))}
               </div>
               {file.data ? (
@@ -379,6 +378,7 @@ export default function WorkspacePage() {
               <span className="po-grow" />
               {bottomTab === 'diff' && git && !git.clean ? (
                 <select
+                  aria-label="查看文件差异"
                   className="po-diff-select"
                   value={diffPath ?? ''}
                   onChange={(event) => setDiffPath(event.target.value || null)}

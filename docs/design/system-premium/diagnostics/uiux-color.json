@@ -1,0 +1,48 @@
+{
+  "domain": "color",
+  "query": "SaaS enterprise dashboard",
+  "file": "colors.csv",
+  "count": 2,
+  "results": [
+    {
+      "Product Type": "Financial Dashboard",
+      "Primary": "#0F172A",
+      "On Primary": "#FFFFFF",
+      "Secondary": "#1E293B",
+      "On Secondary": "#FFFFFF",
+      "Accent": "#22C55E",
+      "On Accent": "#0F172A",
+      "Background": "#020617",
+      "Foreground": "#F8FAFC",
+      "Card": "#0E1223",
+      "Card Foreground": "#F8FAFC",
+      "Muted": "#1A1E2F",
+      "Muted Foreground": "#94A3B8",
+      "Border": "#334155",
+      "Destructive": "#EF4444",
+      "On Destructive": "#000000",
+      "Ring": "#FFFFFF",
+      "Notes": "Dark bg + green positive indicators"
+    },
+    {
+      "Product Type": "Micro SaaS",
+      "Primary": "#6366F1",
+      "On Primary": "#000000",
+      "Secondary": "#818CF8",
+      "On Secondary": "#0F172A",
+      "Accent": "#059669",
+      "On Accent": "#000000",
+      "Background": "#F5F3FF",
+      "Foreground": "#1E1B4B",
+      "Card": "#FFFFFF",
+      "Card Foreground": "#1E1B4B",
+      "Muted": "#EBEFF9",
+      "Muted Foreground": "#475569",
+      "Border": "#E0E7FF",
+      "Destructive": "#DC2626",
+      "On Destructive": "#FFFFFF",
+      "Ring": "#6366F1",
+      "Notes": "Indigo primary + emerald CTA [Accent adjusted from #10B981]"
+    }
+  ]
+}

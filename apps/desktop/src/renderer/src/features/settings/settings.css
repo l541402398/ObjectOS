@@ -89,12 +89,14 @@
   cursor: pointer;
 }
 
-.po-settings-nav-item span {
+.po-settings-nav-item > span:first-child {
   width: 18px;
+  flex: 0 0 18px;
   display: inline-flex;
   justify-content: center;
   color: var(--color-text-tertiary);
 }
+.po-settings-nav-item .po-settings-nav-label { min-width: 0; color: inherit; line-height: 1.5; }
 
 .po-settings-nav-item:hover {
   background: var(--color-surface-hover);
@@ -108,7 +110,7 @@
 }
 
 .po-settings-nav-item.is-active span {
-  color: var(--color-accent);
+  color: var(--ui-accent-strong);
 }
 
 .po-settings-content {

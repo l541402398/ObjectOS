@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -29,7 +29,7 @@ import {
   toneForStatus,
 } from '@projectos/ui'
 import { ApprovalCard, ToolTrace } from '@projectos/ai-ui'
-import { useApprovals, useProjectEvents, useRunDetail, useRuns } from '../lib/queries'
+import { qk, useApprovals, useProjectEvents, useRunDetail, useRuns } from '../lib/queries'
 import { formatDateTime, formatDuration, formatRelative } from '../lib/format'
 import { eventTypeLabel, runStatusLabel } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
@@ -45,6 +45,9 @@ export default function RunsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [selectedRunId, setSelectedRunId] = useState<string | null>(searchParams.get('run'))
   const [detailOpen, setDetailOpen] = useState(Boolean(searchParams.get('run')))
+  const [detailPending, setDetailPending] = useState(false)
+  const detailRequest = useRef(0)
+  useEffect(() => () => { detailRequest.current++ }, [])
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [reconcileOpen, setReconcileOpen] = useState(false)
@@ -54,6 +57,19 @@ export default function RunsPage() {
   const runDetail = useRunDetail(selectedRunId)
   const approvals = useApprovals(projectId)
   const events = useProjectEvents(projectId, 100)
+
+  const openRun = (id: string): void => {
+    const request = ++detailRequest.current
+    setDetailPending(true)
+    void queryClient.ensureQueryData({ queryKey: qk.run(id), queryFn: () => window.projectos.runs.get(id) })
+      .then(() => {
+        if (request !== detailRequest.current) return
+        setSelectedRunId(id)
+        setDetailOpen(true)
+      })
+      .catch((error: unknown) => { if (request === detailRequest.current) message.error(errorMessage(error)) })
+      .finally(() => { if (request === detailRequest.current) setDetailPending(false) })
+  }
 
   useEffect(() => {
     const runFromQuery = searchParams.get('run')
@@ -236,7 +252,7 @@ export default function RunsPage() {
                   />
                   <Select
                     allowClear
-                    placeholder="状态"
+                    aria-label="运行状态" placeholder="状态"
                     value={statusFilter}
                     onChange={(value) => setStatusFilter(value ?? null)}
                     style={{ width: 150 }}
@@ -270,14 +286,14 @@ export default function RunsPage() {
                     columns={columns}
                     dataSource={runList}
                     pagination={{ pageSize: 20, showSizeChanger: false }}
-                    scroll={{ y: 560 }}
                     rowClassName={(record) => (record.id === selectedRunId ? 'po-row-selected' : '')}
-                    onRow={(record) => ({ onClick: () => { setSelectedRunId(record.id); setDetailOpen(true) } })}
+                    onRow={(record) => ({ onClick: () => openRun(record.id) })}
                   />
                 )}
               </div>
 
-              <SheetShell open={detailOpen && Boolean(selectedRun)} onOpenChange={(open) => { if (!open) setDetailOpen(false) }} ariaLabel="运行详情" width={920} testId="run-detail-sheet">
+              {detailPending ? <div className="po-route-progress" role="status" aria-live="polite">正在读取运行详情…</div> : null}
+              <SheetShell open={detailOpen && Boolean(selectedRun)} onOpenChange={(open) => { if (!open) { setDetailOpen(false); detailRequest.current++; setDetailPending(false) } }} ariaLabel="运行详情" width={920} testId="run-detail-sheet">
                 <OverlayHeader eyebrow="RUN AUDIT" title="运行详情" closeLabel="关闭运行详情" meta={selectedRun ? <><span>{selectedRun.agentName}</span><StatusPill tone={toneForStatus(selectedRun.status)}>{runStatusLabel(selectedRun.status)}</StatusPill></> : null} />
                 <OverlayScrollArea className="po-run-detail-scroll">
                 {!selectedRun ? null : runDetail.isLoading ? (
@@ -399,7 +415,7 @@ export default function RunsPage() {
                 </p>
                 <Select
                   style={{ width: '100%', marginBottom: 12 }}
-                  value={reconcileDecision}
+                  aria-label="核对决定" value={reconcileDecision}
                   options={[
                     { value: 'completed', label: '确认已完成（任务进入审查，计划需手动继续）' },
                     { value: 'retry', label: '确认可重试（任务回到就绪，计划需手动继续）' },

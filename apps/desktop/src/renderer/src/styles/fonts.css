@@ -1,0 +1,10 @@
+/* Noto Sans SC, OFL-1.1. Fully local variable face; see assets/fonts/SOURCE.json. */
+@font-face {
+  font-family: 'ProjectOS Sans';
+  src: url('../assets/fonts/NotoSansSC-variable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+html { font-synthesis: none; }

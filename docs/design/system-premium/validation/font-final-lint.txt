@@ -1,0 +1,65 @@
+
+> projectos@1.7.0 lint C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4
+> eslint . && node scripts/check-boundaries.mjs
+
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\desktop\src\renderer\src\components\AppLayout.tsx
+  242:6  warning  React Hook useEffect has missing dependencies: 'navigate' and 'projectId'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\desktop\src\renderer\src\components\GoalJourneyBar.tsx
+  61:9  warning  The 'stages' logical expression could make the dependencies of useMemo Hook (at line 64) change on every render. To fix this, wrap the initialization of 'stages' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\desktop\src\renderer\src\components\ReleasePanel.tsx
+  4:33  warning  'Empty' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+  5:15  warning  'ReleaseOverview' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\desktop\src\renderer\src\features\orchestration\components\PlanReviewNext.tsx
+   17:3  warning  'Sparkles' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  138:9  warning  'activeStage' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\desktop\src\renderer\src\pages\DeploymentCenterPage.tsx
+  13:9  warning  The 'versions' logical expression could make the dependencies of useMemo Hook (at line 21) change on every render. To fix this, wrap the initialization of 'versions' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\desktop\src\renderer\src\pages\ReleaseCenterPage.tsx
+  13:9  warning  The 'versions' logical expression could make the dependencies of useMemo Hook (at line 21) change on every render. To fix this, wrap the initialization of 'versions' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\runtime\src\agent-runner.ts
+  1:10  warning  'execFileSync' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\runtime\src\journey.ts
+  168:9  warning  'approvalsRoute' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\runtime\src\orchestrator.ts
+   2:10  warning  'collectReviewSnapshot' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  20:3   warning  'resolveReviewEvidence' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\runtime\src\release-service.ts
+   11:8   warning  'ChangeRequestEvent' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+   12:8   warning  'ChangeRequestLink' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+   22:8   warning  'DeploymentEvent' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+   41:7   warning  'CHANGE_SOURCE_STATUS' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  609:62  warning  'actor' is assigned a value but never used. Allowed unused args must match /^_/u                 @typescript-eslint/no-unused-vars
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\docs\user-guide\tools\prepare-demo.mjs
+  11:47  warning  'writeFileSync' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\docs\user-guide\tools\scan-ui.mjs
+   68:7  warning  'DESIGN_LAB' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  168:9  warning  'designLab' is assigned a value but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\packages\application\src\completion-evidence.ts
+  126:10  warning  'toolExitOk' is defined but never used. Allowed unused vars must match /^_/u                   @typescript-eslint/no-unused-vars
+  300:9   warning  'diagnosticEvidence' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\tests\p287-review-snapshot.test.ts
+  338:11  warning  'dir' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\tests\p288-auto-review.test.ts
+  15:72  warning  'waitFor' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\tests\p288-delivery-lineage.test.ts
+  13:28  warning  'logger' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 25 problems (0 errors, 25 warnings)
+
+Dependency boundaries OK (packages, runtime, renderer, server).

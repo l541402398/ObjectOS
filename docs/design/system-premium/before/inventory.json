@@ -1,0 +1,928 @@
+{
+  "phase": "diagnostic-before",
+  "head": "7746a49b53875ce33107f99623da0409dc1137f5",
+  "fixture": "isolated persisted demo data; actual Electron / typed IPC",
+  "results": [
+    {
+      "name": "project-center-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "project-home-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": [
+        {
+          "className": "studio-eyebrow",
+          "text": "PROJECT / implementation",
+          "size": "10px"
+        },
+        {
+          "className": "",
+          "text": "计划 r1 · draft",
+          "size": "11.5px"
+        },
+        {
+          "className": "",
+          "text": "implementation 阶段",
+          "size": "11.5px"
+        },
+        {
+          "className": "",
+          "text": "1 位 Agent 正在工作",
+          "size": "11.5px"
+        },
+        {
+          "className": "",
+          "text": "完成",
+          "size": "10px"
+        },
+        {
+          "className": "",
+          "text": "任务",
+          "size": "10.5px"
+        },
+        {
+          "className": "",
+          "text": "执行中",
+          "size": "10.5px"
+        },
+        {
+          "className": "",
+          "text": "待审批",
+          "size": "10.5px"
+        },
+        {
+          "className": "",
+          "text": "活动 Run",
+          "size": "10.5px"
+        },
+        {
+          "className": "studio-kicker",
+          "text": "IN FLIGHT",
+          "size": "10px"
+        },
+        {
+          "className": "",
+          "text": "3",
+          "size": "11px"
+        },
+        {
+          "className": "",
+          "text": "Kai · 等待授权",
+          "size": "10.5px"
+        },
+        {
+          "className": "studio-focus-time",
+          "text": "2 小时前",
+          "size": "9.5px"
+        },
+        {
+          "className": "",
+          "text": "Kai · 已完成",
+          "size": "10.5px"
+        },
+        {
+          "className": "studio-focus-time",
+          "text": "1 天前",
+          "size": "9.5px"
+        },
+        {
+          "className": "",
+          "text": "Kai · 待审查",
+          "size": "10.5px"
+        },
+        {
+          "className": "studio-focus-time",
+          "text": "等待运行",
+          "size": "9.5px"
+        },
+        {
+          "className": "",
+          "text": "只显示真实 Task/Run 行",
+          "size": "10px"
+        },
+        {
+          "className": "studio-kicker",
+          "text": "NEEDS A HUMAN",
+          "size": "10px"
+        },
+        {
+          "className": "",
+          "text": "1",
+          "size": "11px"
+        },
+        {
+          "className": "",
+          "text": "Kai · 刚刚",
+          "size": "10.5px"
+        },
+        {
+          "className": "",
+          "text": "审批与 Run 状态来自本地持久化，不是前端模拟。",
+          "size": "10px"
+        },
+        {
+          "className": "studio-kicker",
+          "text": "RECENT EXECUTION",
+          "size": "10px"
+        },
+        {
+          "className": "",
+          "text": "Kai",
+          "size": "11.5px"
+        },
+        {
+          "className": "",
+          "text": "等待授权 · 2026/10/29 21:51",
+          "size": "9.5px"
+        },
+        {
+          "className": "",
+          "text": "等待审批",
+          "size": "9.5px"
+        },
+        {
+          "className": "",
+          "text": "Nova",
+          "size": "11.5px"
+        },
+        {
+          "className": "",
+          "text": "已完成 · 2026/10/28 19:03",
+          "size": "9.5px"
+        },
+        {
+          "className": "",
+          "text": "查看",
+          "size": "9.5px"
+        },
+        {
+          "className": "",
+          "text": "Kai",
+          "size": "11.5px"
+        }
+      ]
+    },
+    {
+      "name": "work-center-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "tasks-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": [
+        {
+          "className": "po-avatar",
+          "text": "S",
+          "size": "11px"
+        },
+        {
+          "className": "po-avatar",
+          "text": "K",
+          "size": "11px"
+        },
+        {
+          "className": "po-avatar",
+          "text": "A",
+          "size": "11px"
+        },
+        {
+          "className": "po-avatar",
+          "text": "I",
+          "size": "11px"
+        },
+        {
+          "className": "po-avatar",
+          "text": "K",
+          "size": "11px"
+        },
+        {
+          "className": "po-avatar",
+          "text": "K",
+          "size": "11px"
+        },
+        {
+          "className": "po-avatar",
+          "text": "K",
+          "size": "11px"
+        },
+        {
+          "className": "po-avatar",
+          "text": "K",
+          "size": "11px"
+        },
+        {
+          "className": "po-avatar",
+          "text": "K",
+          "size": "11px"
+        },
+        {
+          "className": "po-avatar",
+          "text": "K",
+          "size": "11px"
+        }
+      ]
+    },
+    {
+      "name": "agents-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": [
+        {
+          "className": "",
+          "text": "25",
+          "size": "10px"
+        },
+        {
+          "className": "",
+          "text": "5",
+          "size": "10px"
+        },
+        {
+          "className": "",
+          "text": "13",
+          "size": "10px"
+        },
+        {
+          "className": "",
+          "text": "7",
+          "size": "10px"
+        },
+        {
+          "className": "",
+          "text": "A",
+          "size": "8px"
+        },
+        {
+          "className": "",
+          "text": "S",
+          "size": "8px"
+        },
+        {
+          "className": "",
+          "text": "系统",
+          "size": "11.5px"
+        },
+        {
+          "className": "",
+          "text": "项目有一条新的记录",
+          "size": "11.5px"
+        },
+        {
+          "className": "aco-mono",
+          "text": "刚刚",
+          "size": "10px"
+        },
+        {
+          "className": "aco-pill is-warn",
+          "text": "等待审批",
+          "size": "9.5px"
+        }
+      ]
+    },
+    {
+      "name": "orchestration-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "approvals-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": [
+        {
+          "className": "studio-eyebrow",
+          "text": "REVIEW ROOM / APPROVALS",
+          "size": "10px"
+        },
+        {
+          "className": "",
+          "text": "1 项待处理",
+          "size": "11px"
+        },
+        {
+          "className": "studio-ghost",
+          "text": "专业审批中心",
+          "size": "11px"
+        },
+        {
+          "className": "studio-kicker",
+          "text": "QUEUE",
+          "size": "10px"
+        },
+        {
+          "className": "",
+          "text": "授权 write_file",
+          "size": "11.5px"
+        },
+        {
+          "className": "",
+          "text": "Kai · 刚刚",
+          "size": "9.5px"
+        },
+        {
+          "className": "studio-pill is-warn",
+          "text": "等待决定",
+          "size": "10px"
+        },
+        {
+          "className": "studio-mono",
+          "text": "apr_01m65s7ccqvtecxgw8zbf19q81",
+          "size": "10px"
+        },
+        {
+          "className": "",
+          "text": "请求方",
+          "size": "9.5px"
+        },
+        {
+          "className": "",
+          "text": "Kai",
+          "size": "11.5px"
+        },
+        {
+          "className": "",
+          "text": "任务",
+          "size": "9.5px"
+        },
+        {
+          "className": "",
+          "text": "笔记图谱视图与反向链接索引",
+          "size": "11.5px"
+        },
+        {
+          "className": "",
+          "text": "Run",
+          "size": "9.5px"
+        },
+        {
+          "className": "studio-mono",
+          "text": "run_01m65s7ccn0csjzvb9byd87xyn",
+          "size": "11.5px"
+        },
+        {
+          "className": "",
+          "text": "请求时间",
+          "size": "9.5px"
+        },
+        {
+          "className": "",
+          "text": "2026/10/29 23:51",
+          "size": "11.5px"
+        },
+        {
+          "className": "",
+          "text": "过期时间",
+          "size": "9.5px"
+        },
+        {
+          "className": "",
+          "text": "2026/10/30 00:21",
+          "size": "11.5px"
+        },
+        {
+          "className": "",
+          "text": "实际请求参数",
+          "size": "11px"
+        },
+        {
+          "className": "",
+          "text": "write_file",
+          "size": "9.5px"
+        },
+        {
+          "className": "",
+          "text": "{\n  \"toolName\": \"write_file\",\n  \"args\": {\n   ",
+          "size": "10.5px"
+        },
+        {
+          "className": "",
+          "text": "写入目标",
+          "size": "11px"
+        },
+        {
+          "className": "",
+          "text": "src/graph.ts",
+          "size": "9.5px"
+        },
+        {
+          "className": "studio-kicker",
+          "text": "DECISION",
+          "size": "10px"
+        },
+        {
+          "className": "",
+          "text": "只对当前 Approval ID 生效。服务端会再次校验权限、过期时间和状态。",
+          "size": "11px"
+        }
+      ]
+    },
+    {
+      "name": "approval-center-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "runs-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "versions-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "releases-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "deployments-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "connections-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "overview-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "knowledge-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "project-settings-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "workspace-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "resources-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "collaboration-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "operations-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "health-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "notifications-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "settings-0-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "settings-1-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "settings-2-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "settings-3-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "settings-4-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "settings-5-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": [
+        {
+          "className": "",
+          "text": "Runtime enforced",
+          "size": "11px"
+        }
+      ]
+    },
+    {
+      "name": "settings-6-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": [
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "available",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "skills",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "unavailable",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "tool calls",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "skills",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "permissions",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "worktree",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "available",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "tool calls",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "skills",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "permissions",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "worktree",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "available",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "tool calls",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "permissions",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "unavailable",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "tool calls",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "skills",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "permissions",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "worktree",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "unavailable",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "tool calls",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "skills",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "permissions",
+          "size": "11px"
+        },
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "worktree",
+          "size": "11px"
+        }
+      ]
+    },
+    {
+      "name": "settings-7-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "settings-8-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "settings-9-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "settings-10-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "settings-11-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": [
+        {
+          "className": "ant-tag ant-tag-filled projectos",
+          "text": "未启用",
+          "size": "11px"
+        }
+      ]
+    },
+    {
+      "name": "settings-12-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    },
+    {
+      "name": "settings-13-1440-light",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentOverflow": false,
+      "mainOverflow": false,
+      "modalOverflow": false,
+      "sub12px": []
+    }
+  ],
+  "checks": [
+    {
+      "name": "No Renderer exceptions",
+      "status": "PASS",
+      "detail": ""
+    }
+  ],
+  "errors": []
+}

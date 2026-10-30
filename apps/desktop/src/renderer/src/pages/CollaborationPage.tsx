@@ -430,7 +430,7 @@ export default function CollaborationPage() {
             extra={
               <Select
                 size="small"
-                value={policy.data?.mode ?? 'manual'}
+                aria-label="协作策略" value={policy.data?.mode ?? 'manual'}
                 loading={policy.isLoading || setPolicy.isPending}
                 style={{ width: 150 }}
                 options={[

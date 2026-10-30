@@ -58,6 +58,7 @@ export function CommandPalette({
           <SearchOutlined />
           <input
             ref={inputRef}
+            aria-label="搜索页面、操作或设置"
             value={query}
             placeholder="搜索页面、操作或设置…"
             onChange={(event) => setQuery(event.target.value)}

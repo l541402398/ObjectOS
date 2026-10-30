@@ -1,197 +1,4 @@
-/* ==========================================================================
-   ProjectOS Next UI — Premium Liquid Glass application skin
-   This layer is intentionally additive: it remaps the existing shell and
-   business surfaces to the accepted Design Lab material system without
-   changing page data flow. Page-specific compositions migrate above it.
-   ========================================================================== */
-
-:root {
-  --nx-ink: var(--ui-ink);
-  --nx-ink-2: var(--ui-ink-2);
-  --nx-muted: var(--ui-muted);
-  --nx-line: var(--ui-border);
-  --nx-line-strong: var(--ui-border-strong);
-  --nx-accent: var(--ui-accent);
-  --nx-cyan: var(--ui-teal);
-  --nx-glass: var(--ui-glass);
-  --nx-glass-strong: var(--ui-glass-strong);
-  --nx-solid: var(--ui-surface);
-  --nx-shadow: var(--ui-shadow-lg);
-  --nx-blur: var(--ui-blur);
-}
-
-:root[data-theme='dark'] {
-  --nx-ink: var(--ui-ink);
-  --nx-ink-2: var(--ui-ink-2);
-  --nx-muted: var(--ui-muted);
-  --nx-line: var(--ui-border);
-  --nx-line-strong: var(--ui-border-strong);
-  --nx-accent: var(--ui-accent);
-  --nx-cyan: var(--ui-teal);
-  --nx-glass: var(--ui-glass);
-  --nx-glass-strong: var(--ui-glass-strong);
-  --nx-solid: var(--ui-surface);
-  --nx-shadow: var(--ui-shadow-lg);
-}
-
-/* --- shell ---------------------------------------------------------------- */
-
-.po-shell {
-  background: var(--color-canvas);
-  color: var(--nx-ink);
-}
-
-.po-shell::before {
-  background:
-    radial-gradient(58% 44% at 8% -8%, rgba(127, 146, 255, .28), transparent 68%),
-    radial-gradient(44% 38% at 96% 0%, rgba(117, 224, 232, .18), transparent 70%),
-    radial-gradient(42% 40% at 52% 106%, rgba(171, 135, 243, .12), transparent 74%);
-  opacity: 1;
-}
-
-.po-shell::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: .3;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.13'/%3E%3C/svg%3E");
-  mix-blend-mode: soft-light;
-}
-
-:root[data-theme='dark'] .po-shell::before {
-  background:
-    radial-gradient(54% 46% at 6% -10%, rgba(100, 116, 218, .38), transparent 68%),
-    radial-gradient(42% 42% at 96% 0%, rgba(65, 183, 196, .2), transparent 70%),
-    radial-gradient(46% 36% at 56% 106%, rgba(138, 104, 212, .16), transparent 74%);
-}
-
-.po-titlebar {
-  height: 46px;
-  flex-basis: 46px;
-  padding: 0 14px;
-  border-bottom: 1px solid transparent;
-  background: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-
-.po-titlebar-inner {
-  min-width: 0;
-}
-
-.po-shell-body {
-  gap: 10px;
-  padding: 0 12px 8px;
-}
-
-.po-sidebar {
-  border-radius: 22px;
-}
-
-.po-sidebar.glass-panel {
-  border: 1px solid rgba(255, 255, 255, .78);
-  background: linear-gradient(160deg, rgba(251, 253, 255, .78), rgba(239, 246, 255, .62));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .88), var(--nx-shadow);
-  -webkit-backdrop-filter: blur(var(--nx-blur)) saturate(1.2);
-  backdrop-filter: blur(var(--nx-blur)) saturate(1.2);
-}
-
-:root[data-theme='dark'] .po-sidebar.glass-panel {
-  border-color: var(--nx-line-strong);
-  background: linear-gradient(160deg, rgba(25, 38, 64, .82), rgba(11, 19, 36, .72));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), var(--nx-shadow);
-}
-
-.po-main {
-  margin: 0;
-  border: 1px solid rgba(255, 255, 255, .8);
-  border-radius: 26px;
-  background: linear-gradient(145deg, rgba(251, 253, 255, .68), rgba(244, 249, 255, .48));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), var(--nx-shadow);
-  -webkit-backdrop-filter: blur(26px) saturate(1.12);
-  backdrop-filter: blur(26px) saturate(1.12);
-  scrollbar-gutter: stable;
-}
-
-:root[data-theme='dark'] .po-main {
-  border-color: var(--nx-line-strong);
-  background: linear-gradient(145deg, rgba(23, 35, 60, .72), rgba(11, 19, 35, .6));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), var(--nx-shadow);
-}
-
-.po-statusbar {
-  border-top: 1px solid var(--nx-line);
-  background: color-mix(in srgb, var(--color-canvas) 72%, transparent);
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
-  color: var(--nx-muted);
-}
-
-/* --- navigation ----------------------------------------------------------- */
-
-.po-sidebar-inner {
-  color: var(--nx-ink);
-}
-
-.po-brand {
-  padding: 16px 12px 12px;
-}
-
-.po-brand-text strong {
-  color: var(--nx-ink);
-  letter-spacing: -.02em;
-}
-
-.po-brand-text span {
-  color: var(--nx-muted);
-}
-
-.po-project-switcher {
-  margin: 0 8px 8px;
-  padding: 8px;
-  border: 1px solid var(--nx-line);
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--nx-solid) 42%, transparent);
-}
-
-.po-project-button {
-  color: var(--nx-ink);
-}
-
-.po-project-button-text span {
-  color: var(--nx-muted);
-}
-
-.po-sidenav-title {
-  color: var(--nx-muted);
-  font-size: 12px;
-  letter-spacing: .12em;
-}
-
-.po-nav-item {
-  height: 34px;
-  border-radius: 9px;
-  color: var(--nx-ink-2);
-  font-size: 12.5px;
-}
-
-.po-nav-item:hover {
-  background: color-mix(in srgb, var(--nx-accent) 7%, transparent);
-  color: var(--nx-ink);
-}
-
-.po-nav-item.is-active,
-.po-nav-item[aria-current='page'] {
-  border-color: color-mix(in srgb, var(--nx-accent) 18%, transparent);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--nx-accent) 12%, transparent), color-mix(in srgb, var(--nx-cyan) 5%, transparent));
-  color: var(--nx-accent);
-}
-
-.po-sidebar-footer {
-  border-top: 1px solid var(--nx-line);
-}
+/* Page compositions only; canonical system materials live in system-premium.css. */
 
 /* --- page rhythm ---------------------------------------------------------- */
 
@@ -218,174 +25,6 @@
 .po-page-header {
   padding: 0 2px 2px;
   border-bottom: 0;
-}
-
-/* --- common surfaces ------------------------------------------------------ */
-
-.po-card,
-.v16-stat-card,
-.v16-project-visual,
-.v16-lifecycle-card,
-.po-panel,
-.po-metric,
-.po-surface,
-.v16-settings-card,
-.po-resource-card,
-.po-knowledge-card,
-.po-run-card,
-.po-approval-card {
-  border: 1px solid rgba(255, 255, 255, .76);
-  border-radius: 16px;
-  background: linear-gradient(150deg, rgba(251, 253, 255, .78), rgba(242, 248, 255, .58));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .86), 0 18px 42px -36px rgba(22, 44, 82, .45);
-  -webkit-backdrop-filter: blur(18px) saturate(1.1);
-  backdrop-filter: blur(18px) saturate(1.1);
-}
-
-:root[data-theme='dark'] .po-card,
-:root[data-theme='dark'] .v16-stat-card,
-:root[data-theme='dark'] .v16-project-visual,
-:root[data-theme='dark'] .v16-lifecycle-card,
-:root[data-theme='dark'] .po-panel,
-:root[data-theme='dark'] .po-metric,
-:root[data-theme='dark'] .po-surface,
-:root[data-theme='dark'] .v16-settings-card,
-:root[data-theme='dark'] .po-resource-card,
-:root[data-theme='dark'] .po-knowledge-card,
-:root[data-theme='dark'] .po-run-card,
-:root[data-theme='dark'] .po-approval-card {
-  border-color: var(--nx-line);
-  background: linear-gradient(150deg, rgba(25, 38, 64, .8), rgba(13, 23, 42, .68));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 18px 42px -32px rgba(0, 0, 0, .72);
-}
-
-.v16-stat-card::before,
-.v16-project-cover::before {
-  opacity: .7;
-}
-
-.v16-stat-value {
-  color: var(--nx-ink);
-  font-size: 28px;
-  font-weight: 660;
-  letter-spacing: -.035em;
-}
-
-.v16-stat-label,
-.v16-stat-hint {
-  color: var(--nx-muted);
-  font-size: 12px;
-}
-
-.po-section-title,
-.v16-section-title {
-  color: var(--nx-ink);
-  font-size: 15px;
-  font-weight: 650;
-  letter-spacing: -.015em;
-}
-
-.po-muted {
-  color: var(--nx-muted);
-}
-
-/* --- Ant controls --------------------------------------------------------- */
-
-.po-shell .ant-btn {
-  height: 32px;
-  border-radius: 8px;
-  border-color: var(--nx-line);
-  box-shadow: none;
-  font-size: 12.5px;
-  font-weight: 520;
-}
-
-.po-shell .ant-btn-primary {
-  border-color: transparent;
-  background: linear-gradient(135deg, #5d70e4, #5f9fe8);
-  box-shadow: 0 8px 20px -14px rgba(66, 89, 200, .8);
-}
-
-.po-shell .ant-btn-primary:not(:disabled):hover {
-  background: linear-gradient(135deg, #5265d9, #4f92dc);
-}
-
-.po-shell .ant-input,
-.po-shell .ant-input-affix-wrapper,
-.po-shell .ant-select-selector,
-.po-shell .ant-input-number {
-  border-radius: 8px !important;
-  border-color: var(--nx-line) !important;
-  background: color-mix(in srgb, var(--nx-solid) 48%, transparent) !important;
-  box-shadow: none !important;
-}
-
-.po-shell .ant-input:focus,
-.po-shell .ant-input-affix-wrapper-focused,
-.po-shell .ant-select-focused .ant-select-selector {
-  border-color: color-mix(in srgb, var(--nx-accent) 50%, var(--nx-line)) !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--nx-accent) 9%, transparent) !important;
-}
-
-.po-shell .ant-tag {
-  border-radius: 6px;
-  font-size: 12px;
-}
-
-.po-shell .ant-table,
-.po-shell .ant-table-container {
-  background: transparent;
-}
-
-.po-shell .ant-table-thead > tr > th {
-  background: color-mix(in srgb, var(--nx-solid) 32%, transparent);
-  color: var(--nx-muted);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: .04em;
-}
-
-.po-shell .ant-table-tbody > tr > td {
-  border-bottom-color: var(--nx-line);
-}
-
-.po-shell .ant-tabs-tab {
-  font-size: 12.5px;
-}
-
-.po-shell .ant-modal-content,
-.po-shell .ant-drawer-content {
-  border: 1px solid rgba(255, 255, 255, .78);
-  border-radius: 20px;
-  background: var(--nx-solid);
-  box-shadow: var(--nx-shadow);
-}
-
-:root[data-theme='dark'] .po-shell .ant-modal-content,
-:root[data-theme='dark'] .po-shell .ant-drawer-content {
-  border-color: var(--nx-line-strong);
-}
-
-/* --- responsive ----------------------------------------------------------- */
-
-@media (max-width: 1180px) {
-  .po-shell-body { padding: 0 8px 6px; gap: 8px; }
-  .po-page { padding: 18px 18px 28px; }
-  .po-page-title { font-size: 24px; }
-}
-
-@media (max-width: 900px) {
-  .po-main { border-radius: 18px; }
-  .po-page { padding: 16px 14px 26px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .po-shell::after { display: none; }
-}
-
-@media (prefers-contrast: more) {
-  .po-shell::after { display: none; }
-  .po-main, .po-sidebar.glass-panel { -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 
 /* --- task board composition ---------------------------------------------- */
@@ -524,54 +163,6 @@
 }
 
 
-@media (max-width: 1179px) {
-  .po-project-switcher { display: none; }
-  .po-brand { padding: 12px 0 8px; justify-content: center; }
-  .po-brand-text { display: none; }
-  .po-sidenav-scroll { padding: 0 6px; }
-  .po-nav-item { height: 36px; border-radius: 10px; }
-  .po-sidebar-runtime span:not(.po-status-dot) { display: none; }
-  .po-sidebar-footer { padding: 6px 0; }
-}
-
-@media (max-width: 1179px) {
-  .po-sidebar-inner { width: var(--sidebar-collapsed-width); flex-basis: var(--sidebar-collapsed-width); }
-  .po-nav-item { width: 100%; }
-}
-
-/* Keep the workspace optical without a second full-page blur layer. In this
-   Electron build a blurred scrolling workspace can leave stale tiles during
-   capture (notably one task card). The frame still carries glass; the content
-   surface is an opaque optical wash. */
-.po-main {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  background: linear-gradient(145deg, rgba(251, 253, 255, .84), rgba(242, 248, 255, .72));
-}
-
-:root[data-theme='dark'] .po-main {
-  background: linear-gradient(145deg, rgba(22, 34, 58, .9), rgba(11, 19, 35, .82));
-}
-
-.po-shell.is-collapsed .po-project-switcher { display: none; }
-.po-shell.is-collapsed .po-brand { padding: 12px 0 8px; justify-content: center; }
-.po-shell.is-collapsed .po-brand-text { display: none; }
-.po-sidebar-inner {
-  width: 100%;
-  flex-basis: 100%;
-}
-
-.po-sidebar-inner {
-  width: calc(100% - 2px);
-  flex: 0 0 calc(100% - 2px);
-}
-
-.po-shell .po-sidebar-inner,
-.po-shell.is-collapsed .po-sidebar-inner {
-  width: calc(100% - 2px) !important;
-  flex: 0 0 calc(100% - 2px) !important;
-}
-
 /* Formal plan DAG: selected dependency path is solid and restrained, never the
    legacy dashed "demo" line. Unrelated paths recede. */
 .pui-dag-wrap .pui-edge-related path {
@@ -635,7 +226,7 @@
 @media (max-width: 900px) {
   .nx-center-hero { grid-template-columns: 1fr; padding: 16px; }
   .nx-hero-side { flex-direction: row; align-items: center; justify-content: space-between; }
-  .nx-hero-side .ant-btn { flex: 0 0 auto; }
+  .nx-hero-side .ant-btn { flex: 0 0 auto; width: auto; }
 }
 
 .pui-overlay-scroll.po-advance-scroll { padding: 14px 18px 8px; }
@@ -882,7 +473,7 @@
 .v16-notifications-page .v16-team-row span { color: var(--nx-muted); font-size: 12px; }
 @media (max-width: 900px) {
   .v16-health-page .v16-settings-grid,
-  .v16-notifications-page .v16-settings-grid { grid-template-columns: 1fr; }
+  .v16-notifications-page .v16-settings-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Workspace gives the editor more width on compact desktops; the tree remains
@@ -1044,7 +635,8 @@
 .po-plan-dag-foot { display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--pui-border); color: var(--pui-ink-muted); font-size: 12px; }
 .po-plan-dag-agent { display: inline-flex; min-width: 0; align-items: center; gap: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .po-plan-dag-agent i { display: inline-grid; width: 14px; height: 14px; flex: 0 0 14px; place-items: center; border-radius: 50%; color: var(--pui-accent); background: var(--pui-accent-soft); font-size: 12px; font-style: normal; font-weight: 650; }
-.po-plan-dag { position: relative; }\n.po-plan-dag-legend { position: absolute; right: 12px; bottom: 12px; z-index: 6; display: flex; flex-wrap: wrap; gap: 12px; padding: 7px 10px; border: 1px solid var(--pui-border); border-radius: 9px; background: color-mix(in srgb, var(--pui-surface-strong) 88%, transparent); box-shadow: 0 8px 20px -18px rgba(20,45,88,.5); color: var(--pui-ink-muted); font-size: 12px; }
+.po-plan-dag { position: relative; }
+.po-plan-dag-legend { position: absolute; right: 12px; bottom: 12px; z-index: 6; display: flex; flex-wrap: wrap; gap: 12px; padding: 7px 10px; border: 1px solid var(--pui-border); border-radius: 9px; background: color-mix(in srgb, var(--pui-surface-strong) 88%, transparent); box-shadow: 0 8px 20px -18px rgba(20,45,88,.5); color: var(--pui-ink-muted); font-size: 12px; }
 .po-plan-dag-legend span { display: inline-flex; align-items: center; gap: 5px; }
 .po-plan-dag-legend i { width: 5px; height: 5px; border-radius: 50%; }
 .po-plan-dag-legend i.is-start { background: var(--pui-cyan); }
@@ -1052,33 +644,11 @@
 .po-plan-dag-legend i.is-path { background: var(--pui-accent); }
 
 
-/* The approved Design Lab is a 100vw prototype page. Inside the formal app shell
-   it must occupy the routed content area, not the whole window. */
-.pdl-root.po-plan-workspace {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  min-height: 0;
-  z-index: 1200;
-  border: 0;
-  border-radius: 0;
-  overflow: hidden;
-}
-.po-plan-workspace .pdl-topbar { background: color-mix(in srgb, var(--pdl-surface-strong) 82%, transparent); border-bottom: 1px solid var(--pdl-line); backdrop-filter: blur(20px) saturate(1.2); }`n.po-plan-workspace .pdl-shell { height: calc(100% - 58px); }
-.po-plan-workspace .pdl-workspace { min-width: 0; }
-
-
-
-
-
+/* The real review uses the global product rail and optical frame. */
+.pdl-root.po-plan-workspace { position: relative; width: 100%; height: 100%; min-height: 0; min-width: 0; background: transparent; overflow: hidden; }
+.po-plan-workspace > .pdl-workspace { height: 100%; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
 .pdl-panel-actions { display: flex; align-items: center; gap: 8px; }
-.pdl-panel-actions .pdl-quiet { height: 26px; padding: 0 9px; font-size: 12px; }
-
-body.po-plan-workspace-open .po-titlebar { display: none; }
-body.po-plan-workspace-open .po-shell-body { padding: 0; }
-body.po-plan-workspace-open .po-sidebar { display: none; }
-
+.pdl-panel-actions .pdl-quiet { min-height: 32px; padding: 0 9px; font-size: 12px; }
 @media (max-width: 1200px) {
   .po-plan-workspace .pdl-content-grid { grid-template-columns: minmax(0, 1fr); }
   .po-plan-workspace .pdl-review-panel { display: none; }

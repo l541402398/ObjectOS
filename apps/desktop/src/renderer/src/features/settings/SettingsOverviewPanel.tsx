@@ -46,8 +46,7 @@ export function SettingsOverviewPanel() {
   return (
     <div className="po-settings-panel v17-settings-overview">
       <div className="po-settings-panel-head">
-        <div><h2>设置</h2><p>ProjectOS 工作区、执行引擎与外观</p></div>
-        <span className="v16-eyebrow">LIQUID GLASS</span>
+        <div><h2>工作区概览</h2><p>项目、执行环境与常用设置</p></div>
       </div>
 
       <div className="v17-settings-stats">
