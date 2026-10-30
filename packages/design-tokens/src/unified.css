@@ -1,0 +1,693 @@
+/**
+ * ProjectOS unified semantic design layer.
+ *
+ * This is the only product palette source. Legacy families (--color-*, --pdl-*, --nx-*, --studio-*,
+ * --pw-*) remain as compatibility aliases but all resolve to the same warm-neutral / graphite /
+ * copper system below. Import this file after the historical shell/page styles.
+ */
+
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  --ui-bg-app: #e8e0d2;
+  --ui-bg-workspace: #efe7da;
+  --ui-bg-sunken: #ddd1bf;
+  --ui-glass: rgba(252, 247, 238, 0.72);
+  --ui-glass-strong: rgba(255, 251, 244, 0.90);
+  --ui-glass-border: rgba(255, 251, 244, 0.68);
+  --ui-glass-highlight: rgba(255, 251, 244, 0.90);
+  --ui-surface: #fbf6ec;
+  --ui-surface-raised: #fffbf4;
+  --ui-surface-sunken: #e2d7c6;
+  --ui-surface-hover: #f3eadb;
+  --ui-ink: #1d232b;
+  --ui-ink-2: #494640;
+  --ui-muted: #6c6357;
+  --ui-faint: #8b8071;
+  --ui-inverse: #fff8ef;
+  --ui-accent: #b4552d;
+  --ui-accent-strong: #8f3d1d;
+  --ui-accent-soft: #f4e3d8;
+  --ui-accent-line: rgba(142, 60, 27, 0.28);
+  --ui-teal: #2d5f57;
+  --ui-teal-soft: #e4efec;
+  --ui-ok: #3c6b4f;
+  --ui-warn: #9c6622;
+  --ui-danger: #a23a34;
+  --ui-info: #2d5f57;
+  --ui-border: rgba(49, 41, 31, 0.14);
+  --ui-border-strong: rgba(49, 41, 31, 0.26);
+  --ui-divider: rgba(49, 41, 31, 0.09);
+  --ui-focus: rgba(142, 60, 27, 0.30);
+  --ui-scrim: rgba(24, 18, 12, 0.34);
+  --ui-shadow-sm: 0 1px 2px rgba(43, 33, 23, 0.06);
+  --ui-shadow-md: 0 16px 38px -20px rgba(43, 33, 23, 0.24);
+  --ui-shadow-lg: 0 28px 70px -34px rgba(43, 33, 23, 0.34);
+  --ui-blur: 18px;
+  --ui-radius-xs: 5px;
+  --ui-radius-sm: 7px;
+  --ui-radius-md: 10px;
+  --ui-radius-lg: 14px;
+  --ui-radius-xl: 20px;
+  --ui-font: "SF Pro Display", "SF Pro Text", "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+  --ui-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+  /* Canonical aliases: Ant Design/UI kit and old pages. */
+  --color-canvas: var(--ui-bg-app);
+  --color-canvas-elevated: var(--ui-bg-workspace);
+  --color-surface: var(--ui-surface);
+  --color-surface-raised: var(--ui-surface-raised);
+  --color-surface-sunken: var(--ui-surface-sunken);
+  --color-surface-hover: var(--ui-surface-hover);
+  --color-overlay: var(--ui-glass);
+  --color-text-primary: var(--ui-ink);
+  --color-text-secondary: var(--ui-ink-2);
+  --color-text-tertiary: var(--ui-muted);
+  --color-text-disabled: var(--ui-faint);
+  --color-text-inverse: var(--ui-inverse);
+  --color-accent: var(--ui-accent);
+  --color-accent-strong: var(--ui-accent-strong);
+  --color-accent-soft: var(--ui-accent-soft);
+  --color-accent-border: var(--ui-accent-line);
+  --color-accent-contrast: var(--ui-inverse);
+  --color-success: var(--ui-ok);
+  --color-success-soft: #e7f0e8;
+  --color-warning: var(--ui-warn);
+  --color-warning-soft: #f8ecd9;
+  --color-danger: var(--ui-danger);
+  --color-danger-soft: #f7e3df;
+  --color-info: var(--ui-info);
+  --color-info-soft: var(--ui-teal-soft);
+  --color-border: var(--ui-border);
+  --color-border-strong: var(--ui-border-strong);
+  --color-divider: var(--ui-divider);
+  --color-focus-ring: var(--ui-focus);
+  --color-selection: rgba(142, 60, 27, 0.16);
+  --glass-bg: var(--ui-glass);
+  --glass-border: var(--ui-glass-border);
+  --glass-highlight: var(--ui-glass-highlight);
+  --glass-blur: var(--ui-blur);
+  --color-code-bg: #f4ede1;
+  --color-code-border: var(--ui-border);
+  --color-scrim: var(--ui-scrim);
+  --shadow-xs: var(--ui-shadow-sm);
+  --shadow-sm: var(--ui-shadow-sm);
+  --shadow-md: var(--ui-shadow-md);
+  --shadow-lg: var(--ui-shadow-lg);
+  --shadow-glass: var(--ui-shadow-md);
+  --scrollbar: rgba(49, 41, 31, 0.18);
+  --scrollbar-hover: rgba(49, 41, 31, 0.30);
+
+  /* Shell (Design Lab) compatibility aliases. */
+  --pdl-ink: var(--ui-ink);
+  --pdl-ink-2: var(--ui-ink-2);
+  --pdl-muted: var(--ui-muted);
+  --pdl-line: var(--ui-border);
+  --pdl-line-strong: var(--ui-border-strong);
+  --pdl-surface: var(--ui-glass);
+  --pdl-surface-2: var(--ui-glass-strong);
+  --pdl-solid: var(--ui-surface);
+  --pdl-accent: var(--ui-accent);
+  --pdl-accent-soft: var(--ui-accent-soft);
+  --pdl-violet: #7d8f86;
+  --pdl-cyan: #6f9c91;
+  --pdl-danger: var(--ui-danger);
+  --pdl-warn: var(--ui-warn);
+  --pdl-ok: var(--ui-ok);
+  --pdl-shadow: var(--ui-shadow-lg);
+  --pdl-canvas: linear-gradient(132deg, #eee5d6 0%, #ece3d4 42%, #e8dfd0 74%, #e2d8c8 100%);
+
+  /* Next-UI compatibility aliases. */
+  --nx-ink: var(--ui-ink);
+  --nx-ink-2: var(--ui-ink-2);
+  --nx-muted: var(--ui-muted);
+  --nx-line: var(--ui-border);
+  --nx-line-strong: var(--ui-border-strong);
+  --nx-accent: var(--ui-accent);
+  --nx-cyan: var(--ui-teal);
+  --nx-glass: var(--ui-glass);
+  --nx-glass-strong: var(--ui-glass-strong);
+  --nx-solid: var(--ui-surface);
+  --nx-shadow: var(--ui-shadow-lg);
+  --nx-blur: var(--ui-blur);
+
+  /* Studio compatibility aliases, overridden on .studio-theme below. */
+  --studio-canvas: var(--ui-bg-app);
+  --studio-surface: var(--ui-surface);
+  --studio-raised: var(--ui-surface-raised);
+  --studio-ink: var(--ui-ink);
+  --studio-ink-2: var(--ui-ink-2);
+  --studio-muted: var(--ui-muted);
+  --studio-line: var(--ui-border);
+  --studio-line-strong: var(--ui-border-strong);
+  --studio-accent: var(--ui-accent);
+  --studio-accent-soft: var(--ui-accent-soft);
+  --studio-teal: var(--ui-teal);
+  --studio-warn: var(--ui-warn);
+  --studio-danger: var(--ui-danger);
+  --studio-ok: var(--ui-ok);
+  --studio-shadow: var(--ui-shadow-md);
+
+  /* Precision compatibility aliases. */
+  --pw-canvas: var(--ui-bg-app);
+  --pw-surface: var(--ui-surface);
+  --pw-surface-2: var(--ui-surface-hover);
+  --pw-surface-3: var(--ui-surface-sunken);
+  --pw-surface-hover: var(--ui-surface-hover);
+  --pw-ink: var(--ui-ink);
+  --pw-ink-2: var(--ui-ink-2);
+  --pw-muted: var(--ui-muted);
+  --pw-faint: var(--ui-faint);
+  --pw-line: var(--ui-border);
+  --pw-line-strong: var(--ui-border-strong);
+  --pw-divider: var(--ui-divider);
+  --pw-accent: var(--ui-accent);
+  --pw-accent-strong: var(--ui-accent-strong);
+  --pw-accent-soft: var(--ui-accent-soft);
+  --pw-accent-line: var(--ui-accent-line);
+  --pw-accent-ink: var(--ui-accent-strong);
+  --pw-ok: var(--ui-ok);
+  --pw-ok-soft: #e7f0e8;
+  --pw-ok-line: rgba(48, 84, 63, 0.28);
+  --pw-warn: var(--ui-warn);
+  --pw-warn-soft: #f8ecd9;
+  --pw-warn-line: rgba(122, 78, 18, 0.30);
+  --pw-danger: var(--ui-danger);
+  --pw-danger-soft: #f7e3df;
+  --pw-danger-line: rgba(162, 58, 52, 0.28);
+  --pw-grid-dot: rgba(49, 41, 31, 0.10);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --ui-bg-app: #0b1118;
+  --ui-bg-workspace: #111922;
+  --ui-bg-sunken: #080d13;
+  --ui-glass: rgba(18, 25, 34, 0.72);
+  --ui-glass-strong: rgba(24, 33, 44, 0.90);
+  --ui-glass-border: rgba(225, 233, 240, 0.12);
+  --ui-glass-highlight: rgba(225, 233, 240, 0.06);
+  --ui-surface: #131b24;
+  --ui-surface-raised: #19232e;
+  --ui-surface-sunken: #0a1016;
+  --ui-surface-hover: #1d2834;
+  --ui-ink: #f0ebe1;
+  --ui-ink-2: #c8c2b6;
+  --ui-muted: #a49e92;
+  --ui-faint: #857f74;
+  --ui-inverse: #0b1118;
+  --ui-accent: #e08a5b;
+  --ui-accent-strong: #f2a474;
+  --ui-accent-soft: #2b211c;
+  --ui-accent-line: rgba(224, 138, 91, 0.32);
+  --ui-teal: #7fb7a8;
+  --ui-teal-soft: #172723;
+  --ui-ok: #87b99a;
+  --ui-warn: #d7a352;
+  --ui-danger: #e08078;
+  --ui-info: #7fb7a8;
+  --ui-border: rgba(225, 233, 240, 0.13);
+  --ui-border-strong: rgba(225, 233, 240, 0.24);
+  --ui-divider: rgba(225, 233, 240, 0.08);
+  --ui-focus: rgba(224, 138, 91, 0.38);
+  --ui-scrim: rgba(4, 7, 10, 0.58);
+  --ui-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.28);
+  --ui-shadow-md: 0 18px 42px -22px rgba(0, 0, 0, 0.52);
+  --ui-shadow-lg: 0 30px 76px -34px rgba(0, 0, 0, 0.68);
+
+  --color-canvas: var(--ui-bg-app);
+  --color-canvas-elevated: var(--ui-bg-workspace);
+  --color-surface: var(--ui-surface);
+  --color-surface-raised: var(--ui-surface-raised);
+  --color-surface-sunken: var(--ui-surface-sunken);
+  --color-surface-hover: var(--ui-surface-hover);
+  --color-overlay: var(--ui-glass);
+  --color-text-primary: var(--ui-ink);
+  --color-text-secondary: var(--ui-ink-2);
+  --color-text-tertiary: var(--ui-muted);
+  --color-text-disabled: var(--ui-faint);
+  --color-text-inverse: var(--ui-inverse);
+  --color-accent: var(--ui-accent);
+  --color-accent-strong: var(--ui-accent-strong);
+  --color-accent-soft: var(--ui-accent-soft);
+  --color-accent-border: var(--ui-accent-line);
+  --color-accent-contrast: var(--ui-inverse);
+  --color-success: var(--ui-ok);
+  --color-success-soft: rgba(135, 185, 154, 0.14);
+  --color-warning: var(--ui-warn);
+  --color-warning-soft: rgba(215, 163, 82, 0.14);
+  --color-danger: var(--ui-danger);
+  --color-danger-soft: rgba(224, 128, 120, 0.13);
+  --color-info: var(--ui-info);
+  --color-info-soft: rgba(127, 183, 168, 0.13);
+  --color-border: var(--ui-border);
+  --color-border-strong: var(--ui-border-strong);
+  --color-divider: var(--ui-divider);
+  --color-focus-ring: var(--ui-focus);
+  --color-selection: rgba(224, 138, 91, 0.22);
+  --glass-bg: var(--ui-glass);
+  --glass-border: var(--ui-glass-border);
+  --glass-highlight: var(--ui-glass-highlight);
+  --color-code-bg: #0e151d;
+  --color-code-border: var(--ui-border);
+  --color-scrim: var(--ui-scrim);
+  --shadow-xs: var(--ui-shadow-sm);
+  --shadow-sm: var(--ui-shadow-sm);
+  --shadow-md: var(--ui-shadow-md);
+  --shadow-lg: var(--ui-shadow-lg);
+  --scrollbar: rgba(225, 233, 240, 0.16);
+  --scrollbar-hover: rgba(225, 233, 240, 0.28);
+
+  --pdl-ink: var(--ui-ink);
+  --pdl-ink-2: var(--ui-ink-2);
+  --pdl-muted: var(--ui-muted);
+  --pdl-line: var(--ui-border);
+  --pdl-line-strong: var(--ui-border-strong);
+  --pdl-surface: var(--ui-glass);
+  --pdl-surface-2: var(--ui-glass-strong);
+  --pdl-solid: var(--ui-surface);
+  --pdl-accent: var(--ui-accent);
+  --pdl-accent-soft: var(--ui-accent-soft);
+  --pdl-violet: #6f8a80;
+  --pdl-cyan: #6f9c91;
+  --pdl-danger: var(--ui-danger);
+  --pdl-warn: var(--ui-warn);
+  --pdl-ok: var(--ui-ok);
+  --pdl-shadow: var(--ui-shadow-lg);
+  --pdl-canvas: linear-gradient(132deg, #101821 0%, #0e151d 44%, #111a22 74%, #0a1015 100%);
+
+  --nx-ink: var(--ui-ink);
+  --nx-ink-2: var(--ui-ink-2);
+  --nx-muted: var(--ui-muted);
+  --nx-line: var(--ui-border);
+  --nx-line-strong: var(--ui-border-strong);
+  --nx-accent: var(--ui-accent);
+  --nx-cyan: var(--ui-teal);
+  --nx-glass: var(--ui-glass);
+  --nx-glass-strong: var(--ui-glass-strong);
+  --nx-solid: var(--ui-surface);
+  --nx-shadow: var(--ui-shadow-lg);
+
+  --studio-canvas: var(--ui-bg-app);
+  --studio-surface: var(--ui-surface);
+  --studio-raised: var(--ui-surface-raised);
+  --studio-ink: var(--ui-ink);
+  --studio-ink-2: var(--ui-ink-2);
+  --studio-muted: var(--ui-muted);
+  --studio-line: var(--ui-border);
+  --studio-line-strong: var(--ui-border-strong);
+  --studio-accent: var(--ui-accent);
+  --studio-accent-soft: var(--ui-accent-soft);
+  --studio-teal: var(--ui-teal);
+  --studio-warn: var(--ui-warn);
+  --studio-danger: var(--ui-danger);
+  --studio-ok: var(--ui-ok);
+  --studio-shadow: var(--ui-shadow-md);
+
+  --pw-canvas: var(--ui-bg-app);
+  --pw-surface: var(--ui-surface);
+  --pw-surface-2: var(--ui-surface-hover);
+  --pw-surface-3: var(--ui-surface-sunken);
+  --pw-surface-hover: var(--ui-surface-hover);
+  --pw-ink: var(--ui-ink);
+  --pw-ink-2: var(--ui-ink-2);
+  --pw-muted: var(--ui-muted);
+  --pw-faint: var(--ui-faint);
+  --pw-line: var(--ui-border);
+  --pw-line-strong: var(--ui-border-strong);
+  --pw-divider: var(--ui-divider);
+  --pw-accent: var(--ui-accent);
+  --pw-accent-strong: var(--ui-accent-strong);
+  --pw-accent-soft: var(--ui-accent-soft);
+  --pw-accent-line: var(--ui-accent-line);
+  --pw-accent-ink: var(--ui-accent-strong);
+  --pw-ok: var(--ui-ok);
+  --pw-ok-soft: rgba(135, 185, 154, 0.12);
+  --pw-ok-line: rgba(135, 185, 154, 0.28);
+  --pw-warn: var(--ui-warn);
+  --pw-warn-soft: rgba(215, 163, 82, 0.12);
+  --pw-warn-line: rgba(215, 163, 82, 0.30);
+  --pw-danger: var(--ui-danger);
+  --pw-danger-soft: rgba(224, 128, 120, 0.12);
+  --pw-danger-line: rgba(224, 128, 120, 0.28);
+  --pw-grid-dot: rgba(225, 233, 240, 0.10);
+}
+
+/* ------------------------------------------------------------------ shell */
+
+.po-shell {
+  background: var(--pdl-canvas);
+  color: var(--ui-ink);
+}
+
+.po-shell::before {
+  background:
+    radial-gradient(46% 38% at 6% -6%, color-mix(in srgb, var(--ui-accent) 14%, transparent), transparent 68%),
+    radial-gradient(38% 32% at 96% 2%, color-mix(in srgb, var(--ui-teal) 11%, transparent), transparent 70%),
+    radial-gradient(40% 36% at 52% 108%, color-mix(in srgb, var(--ui-accent) 7%, transparent), transparent 74%);
+  opacity: 0.75;
+}
+
+[data-theme='dark'] .po-shell::before {
+  background:
+    radial-gradient(46% 40% at 4% -8%, rgba(224, 138, 91, 0.14), transparent 68%),
+    radial-gradient(38% 34% at 96% 0%, rgba(127, 183, 168, 0.08), transparent 70%),
+    radial-gradient(40% 34% at 56% 108%, rgba(180, 85, 45, 0.08), transparent 74%);
+}
+
+.po-sidebar.glass-panel {
+  border-color: var(--ui-glass-border);
+  background: linear-gradient(160deg, var(--ui-glass-strong), var(--ui-glass));
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-md);
+}
+
+[data-theme='dark'] .po-sidebar.glass-panel {
+  border-color: var(--ui-border-strong);
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-lg);
+}
+
+.po-main {
+  border-color: var(--ui-glass-border);
+  background: linear-gradient(
+    148deg,
+    color-mix(in srgb, var(--ui-bg-workspace) 94%, transparent),
+    color-mix(in srgb, var(--ui-bg-app) 82%, transparent)
+  );
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-md);
+}
+
+[data-theme='dark'] .po-main {
+  border-color: var(--ui-border-strong);
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-lg);
+}
+
+.po-journey {
+  border-color: var(--ui-glass-border);
+  background: linear-gradient(140deg, var(--ui-glass-strong), var(--ui-glass));
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-sm);
+}
+
+.po-titlebar,
+.po-statusbar {
+  background: transparent;
+  color: var(--ui-ink-2);
+}
+
+.po-crumb-page,
+.po-crumb-link.is-current {
+  color: var(--ui-ink);
+}
+
+.po-crumb-link {
+  color: var(--ui-ink-2);
+}
+
+.po-crumb-back {
+  border-color: var(--ui-border);
+  background: color-mix(in srgb, var(--ui-glass-strong) 72%, transparent);
+  color: var(--ui-ink-2);
+}
+
+.po-crumb-back:hover:not(:disabled) {
+  color: var(--ui-ink);
+  border-color: var(--ui-border-strong);
+}
+
+/* Page families must consume the same semantic palette. */
+body .studio-theme,
+body .studio-theme[data-theme='light'] {
+  --studio-canvas: var(--ui-bg-app);
+  --studio-surface: var(--ui-surface);
+  --studio-raised: var(--ui-surface-raised);
+  --studio-ink: var(--ui-ink);
+  --studio-ink-2: var(--ui-ink-2);
+  --studio-muted: var(--ui-muted);
+  --studio-line: var(--ui-border);
+  --studio-line-strong: var(--ui-border-strong);
+  --studio-accent: var(--ui-accent);
+  --studio-accent-soft: var(--ui-accent-soft);
+  --studio-teal: var(--ui-teal);
+  --studio-warn: var(--ui-warn);
+  --studio-danger: var(--ui-danger);
+  --studio-ok: var(--ui-ok);
+  --studio-shadow: var(--ui-shadow-md);
+}
+
+body .studio-theme[data-theme='dark'] {
+  --studio-canvas: var(--ui-bg-app);
+  --studio-surface: var(--ui-surface);
+  --studio-raised: var(--ui-surface-raised);
+  --studio-ink: var(--ui-ink);
+  --studio-ink-2: var(--ui-ink-2);
+  --studio-muted: var(--ui-muted);
+  --studio-line: var(--ui-border);
+  --studio-line-strong: var(--ui-border-strong);
+  --studio-accent: var(--ui-accent);
+  --studio-accent-soft: var(--ui-accent-soft);
+  --studio-teal: var(--ui-teal);
+  --studio-warn: var(--ui-warn);
+  --studio-danger: var(--ui-danger);
+  --studio-ok: var(--ui-ok);
+  --studio-shadow: var(--ui-shadow-md);
+}
+
+body .aco-deck.pw-theme {
+  --pw-canvas: var(--ui-bg-app);
+  --pw-surface: var(--ui-surface);
+  --pw-surface-2: var(--ui-surface-hover);
+  --pw-surface-3: var(--ui-surface-sunken);
+  --pw-surface-hover: var(--ui-surface-hover);
+  --pw-ink: var(--ui-ink);
+  --pw-ink-2: var(--ui-ink-2);
+  --pw-muted: var(--ui-muted);
+  --pw-faint: var(--ui-faint);
+  --pw-line: var(--ui-border);
+  --pw-line-strong: var(--ui-border-strong);
+  --pw-divider: var(--ui-divider);
+  --pw-accent: var(--ui-accent);
+  --pw-accent-strong: var(--ui-accent-strong);
+  --pw-accent-soft: var(--ui-accent-soft);
+  --pw-accent-line: var(--ui-accent-line);
+  --pw-accent-ink: var(--ui-accent-strong);
+  --pw-ok: var(--ui-ok);
+  --pw-ok-soft: #e7f0e8;
+  --pw-ok-line: rgba(48, 84, 63, 0.28);
+  --pw-warn: var(--ui-warn);
+  --pw-warn-soft: #f8ecd9;
+  --pw-warn-line: rgba(122, 78, 18, 0.30);
+  --pw-danger: var(--ui-danger);
+  --pw-danger-soft: #f7e3df;
+  --pw-danger-line: rgba(162, 58, 52, 0.28);
+  --pw-grid-dot: rgba(49, 41, 31, 0.10);
+}
+
+body .aco-deck.pw-theme[data-theme='dark'] {
+  --pw-canvas: var(--ui-bg-app);
+  --pw-surface: var(--ui-surface);
+  --pw-surface-2: var(--ui-surface-hover);
+  --pw-surface-3: var(--ui-surface-sunken);
+  --pw-surface-hover: var(--ui-surface-hover);
+  --pw-ink: var(--ui-ink);
+  --pw-ink-2: var(--ui-ink-2);
+  --pw-muted: var(--ui-muted);
+  --pw-faint: var(--ui-faint);
+  --pw-line: var(--ui-border);
+  --pw-line-strong: var(--ui-border-strong);
+  --pw-divider: var(--ui-divider);
+  --pw-accent: var(--ui-accent);
+  --pw-accent-strong: var(--ui-accent-strong);
+  --pw-accent-soft: var(--ui-accent-soft);
+  --pw-accent-line: var(--ui-accent-line);
+  --pw-accent-ink: var(--ui-accent-strong);
+  --pw-ok: var(--ui-ok);
+  --pw-ok-soft: rgba(135, 185, 154, 0.12);
+  --pw-ok-line: rgba(135, 185, 154, 0.28);
+  --pw-warn: var(--ui-warn);
+  --pw-warn-soft: rgba(215, 163, 82, 0.12);
+  --pw-warn-line: rgba(215, 163, 82, 0.30);
+  --pw-danger: var(--ui-danger);
+  --pw-danger-soft: rgba(224, 128, 120, 0.12);
+  --pw-danger-line: rgba(224, 128, 120, 0.28);
+  --pw-grid-dot: rgba(225, 233, 240, 0.10);
+}
+
+/* Hard-coded legacy cool surfaces that predate the token layer. These selectors are deliberately
+   more specific than v16/v17/next-ui rules so the shell cannot fall back to blue glass. */
+html[data-theme='light'] .po-shell .po-sidebar.glass-panel {
+  border-color: var(--ui-glass-border);
+  background: linear-gradient(168deg, rgba(255, 251, 244, 0.80), rgba(240, 232, 219, 0.66));
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-md);
+}
+
+html[data-theme='dark'] .po-shell .po-sidebar.glass-panel {
+  border-color: var(--ui-border-strong);
+  background: linear-gradient(168deg, rgba(24, 33, 44, 0.84), rgba(10, 16, 22, 0.74));
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-lg);
+}
+
+html[data-theme='light'] .po-shell .po-main {
+  border-color: var(--ui-glass-border);
+  background: linear-gradient(148deg, rgba(255, 251, 244, 0.78), rgba(239, 231, 218, 0.64));
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-md);
+}
+
+html[data-theme='dark'] .po-shell .po-main {
+  border-color: var(--ui-border-strong);
+  background: linear-gradient(148deg, rgba(23, 31, 41, 0.84), rgba(10, 16, 22, 0.72));
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-lg);
+}
+
+html[data-theme='light'] .po-shell .po-journey {
+  border-color: var(--ui-glass-border);
+  background: linear-gradient(140deg, rgba(255, 251, 244, 0.90), rgba(244, 236, 224, 0.72));
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-sm);
+}
+
+html[data-theme='dark'] .po-shell .po-journey {
+  border-color: var(--ui-border-strong);
+  background: linear-gradient(140deg, rgba(24, 33, 44, 0.88), rgba(13, 20, 27, 0.76));
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-md);
+}
+
+html[data-theme='light'] .po-titlebar {
+  background: linear-gradient(180deg, rgba(252, 247, 238, 0.86), rgba(245, 237, 225, 0.72)) !important;
+  border-bottom-color: var(--ui-border) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 251, 244, 0.92) !important;
+}
+
+html[data-theme='dark'] .po-titlebar {
+  background: linear-gradient(180deg, rgba(22, 30, 39, 0.88), rgba(13, 20, 27, 0.76)) !important;
+  border-bottom-color: var(--ui-border) !important;
+  box-shadow: inset 0 1px 0 rgba(225, 233, 240, 0.06) !important;
+}
+
+html[data-theme='light'] .po-statusbar {
+  border-color: var(--ui-border);
+  background: rgba(252, 247, 238, 0.72);
+  color: var(--ui-muted);
+}
+
+html[data-theme='dark'] .po-statusbar {
+  border-color: var(--ui-border);
+  background: rgba(13, 20, 27, 0.72);
+  color: var(--ui-muted);
+}
+
+.po-crumbs {
+  color: var(--ui-ink-2);
+}
+/* v16/v17 paint a photographic blue field through ::before/::after. Replace the ambient field
+   itself; otherwise every warm glass surface looks cold through the blur. */
+html[data-theme='light'] .po-shell::before {
+  background:
+    radial-gradient(50% 42% at 6% -8%, rgba(142, 60, 27, 0.14), transparent 70%),
+    radial-gradient(44% 38% at 96% 2%, rgba(45, 95, 87, 0.10), transparent 72%),
+    linear-gradient(132deg, #eee5d6 0%, #ece3d4 44%, #e8dfd0 74%, #e2d8c8 100%) !important;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+html[data-theme='dark'] .po-shell::before {
+  background:
+    radial-gradient(50% 44% at 4% -8%, rgba(224, 138, 91, 0.14), transparent 70%),
+    radial-gradient(44% 40% at 96% 0%, rgba(127, 183, 168, 0.09), transparent 72%),
+    linear-gradient(132deg, #101821 0%, #0e151d 44%, #111a22 74%, #0a1015 100%) !important;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+html[data-theme='light'] .po-shell::after {
+  background:
+    radial-gradient(760px 420px at 82% -8%, rgba(180, 85, 45, 0.08), transparent 68%),
+    radial-gradient(620px 360px at 4% 10%, rgba(45, 95, 87, 0.06), transparent 70%) !important;
+}
+
+html[data-theme='dark'] .po-shell::after {
+  background:
+    radial-gradient(760px 420px at 82% -6%, rgba(224, 138, 91, 0.08), transparent 66%),
+    radial-gradient(660px 380px at 6% 12%, rgba(127, 183, 168, 0.06), transparent 70%) !important;
+}
+/* Component-local blue accents loaded after the token layer. */
+html[data-theme='light'] .po-shell .po-journey-action {
+  background: linear-gradient(140deg, var(--ui-accent), var(--ui-accent-strong));
+  border-color: color-mix(in srgb, var(--ui-accent) 50%, transparent);
+  color: var(--ui-inverse);
+}
+
+html[data-theme='dark'] .po-shell .po-journey-action {
+  background: linear-gradient(140deg, var(--ui-accent), var(--ui-accent-strong));
+  border-color: color-mix(in srgb, var(--ui-accent) 50%, transparent);
+  color: var(--ui-inverse);
+}
+
+html[data-theme='light'] .po-shell .po-journey-action:hover,
+html[data-theme='dark'] .po-shell .po-journey-action:hover {
+  filter: brightness(1.06);
+}
+
+html[data-theme='light'] .po-shell .po-sidebar .po-nav-item.is-active,
+html[data-theme='light'] .po-shell .po-sidebar .po-nav-item[aria-current='page'] {
+  border-color: var(--ui-accent-line);
+  background: linear-gradient(135deg, var(--ui-accent-soft), color-mix(in srgb, var(--ui-accent-soft) 55%, var(--ui-surface)));
+  color: var(--ui-accent-strong);
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-sm);
+}
+
+html[data-theme='dark'] .po-shell .po-sidebar .po-nav-item.is-active,
+html[data-theme='dark'] .po-shell .po-sidebar .po-nav-item[aria-current='page'] {
+  border-color: var(--ui-accent-line);
+  background: linear-gradient(135deg, var(--ui-accent-soft), color-mix(in srgb, var(--ui-accent-soft) 55%, var(--ui-surface)));
+  color: var(--ui-accent);
+  box-shadow: inset 0 1px 0 var(--ui-glass-highlight), var(--ui-shadow-sm);
+}
+
+html[data-theme='light'] .po-shell .po-sidebar .po-nav-item.is-active::before,
+html[data-theme='light'] .po-shell .po-sidebar .po-nav-item[aria-current='page']::before {
+  background: var(--ui-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--ui-accent) 45%, transparent);
+}
+
+html[data-theme='dark'] .po-shell .po-sidebar .po-nav-item.is-active::before,
+html[data-theme='dark'] .po-shell .po-sidebar .po-nav-item[aria-current='page']::before {
+  background: var(--ui-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--ui-accent) 35%, transparent);
+}
+
+html[data-theme='light'] .po-shell .po-sidebar .po-sidenav-title,
+html[data-theme='light'] .po-shell .po-sidebar .po-nav-group-label {
+  color: var(--ui-muted);
+}
+
+html[data-theme='dark'] .po-shell .po-sidebar .po-sidenav-title,
+html[data-theme='dark'] .po-shell .po-sidebar .po-nav-group-label {
+  color: var(--ui-muted);
+}
+/* Ant Design primary actions have legacy blue gradients in v16/v17. They are product actions, not
+   page decoration, so they must use the canonical copper action color. */
+html[data-theme='light'] .po-shell .ant-btn-primary,
+html[data-theme='dark'] .po-shell .ant-btn-primary,
+html[data-theme='light'] .po-shell .po-primary-button,
+html[data-theme='dark'] .po-shell .po-primary-button {
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--ui-accent), var(--ui-accent-strong)) !important;
+  color: var(--ui-inverse) !important;
+  box-shadow: 0 8px 20px -14px color-mix(in srgb, var(--ui-accent) 60%, transparent) !important;
+}
+
+html[data-theme='light'] .po-shell .ant-btn-primary:not(:disabled):hover,
+html[data-theme='dark'] .po-shell .ant-btn-primary:not(:disabled):hover,
+html[data-theme='light'] .po-shell .po-primary-button:hover,
+html[data-theme='dark'] .po-shell .po-primary-button:hover {
+  background: linear-gradient(135deg, var(--ui-accent-strong), var(--ui-accent)) !important;
+  color: var(--ui-inverse) !important;
+}
+
+html[data-theme='light'] .po-shell .ant-btn-primary:disabled,
+html[data-theme='dark'] .po-shell .ant-btn-primary:disabled {
+  background: var(--ui-surface-sunken) !important;
+  color: var(--ui-faint) !important;
+}

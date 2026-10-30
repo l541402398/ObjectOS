@@ -1,0 +1,102 @@
+{
+  "phase": "global-ui-unification-token-shell-core-pages",
+  "branch": "feat/ui-unification",
+  "base": "43451e2eddbd11fd199d59af57b32b6d61f002df",
+  "head": "recorded in the follow-up evidence commit",
+  "scope": [
+    "one semantic --ui-* token layer",
+    "AppShell / titlebar / sidebar / journey / statusbar",
+    "StudioProjectHome",
+    "CollaborationOverview Command Deck",
+    "StudioReviewRoom"
+  ],
+  "notInScope": [
+    "business-page composition migration",
+    "full overlay visual sweep",
+    "performance benchmark",
+    "axe audit"
+  ],
+  "checks": {
+    "typecheck": "PASS",
+    "lint": "PASS (0 errors / 29 pre-existing warnings)",
+    "designTokens": "20 passed (contrast + CSS sync)",
+    "fullTest": "PASS — 495 passed / 0 failed / 4 skipped",
+    "electronE2E": {
+      "pass": 30,
+      "fail": 0,
+      "command": "node scripts/agent-overview-e2e.mjs",
+      "raw": "docs/agent-overview/evidence/electron-checks.json"
+    },
+    "build": "PASS",
+    "package": "PASS",
+    "packageSmoke": "PASS"
+  },
+  "pixelContinuity": {
+    "light": {
+      "sidebar": [
+        249,
+        243,
+        231
+      ],
+      "main": [
+        251,
+        246,
+        236
+      ],
+      "titlebar": [
+        242,
+        235,
+        222
+      ],
+      "maxSidebarMainDelta": 6
+    },
+    "dark": {
+      "sidebar": [
+        19,
+        27,
+        37
+      ],
+      "main": [
+        19,
+        27,
+        36
+      ],
+      "titlebar": [
+        13,
+        20,
+        27
+      ],
+      "maxSidebarMainDelta": 7
+    },
+    "raw": "docs/ui-recovery/screenshots/shell-pixels.json"
+  },
+  "screenshots": [
+    "docs/ui-recovery/screenshots/three-pages-light.png",
+    "docs/ui-recovery/screenshots/three-pages-dark.png",
+    "docs/ui-recovery/screenshots/shell-before-after.png",
+    "docs/agent-overview/evidence/screenshots/studio-project-home-1440-light.png",
+    "docs/agent-overview/evidence/screenshots/studio-project-home-1440-dark.png",
+    "docs/agent-overview/evidence/screenshots/studio-project-home-1024-light.png",
+    "docs/agent-overview/evidence/screenshots/studio-project-home-1024-dark.png",
+    "docs/agent-overview/evidence/screenshots/studio-project-home-1440-125.png",
+    "docs/agent-overview/evidence/screenshots/overview-1440-light.png",
+    "docs/agent-overview/evidence/screenshots/overview-1440-dark.png",
+    "docs/agent-overview/evidence/screenshots/overview-1024-all.png",
+    "docs/agent-overview/evidence/screenshots/overview-1440-light-125.png",
+    "docs/agent-overview/evidence/screenshots/studio-review-1440-light.png",
+    "docs/agent-overview/evidence/screenshots/studio-review-1440-dark.png",
+    "docs/agent-overview/evidence/screenshots/studio-review-1024-light.png",
+    "docs/agent-overview/evidence/screenshots/studio-review-1024-dark.png",
+    "docs/agent-overview/evidence/screenshots/studio-review-1440-125.png",
+    "docs/agent-overview/evidence/screenshots/unification-tasks-1440-light.png",
+    "docs/agent-overview/evidence/screenshots/unification-runs-1440-light.png",
+    "docs/agent-overview/evidence/screenshots/unification-approval-center-1440-light.png",
+    "docs/agent-overview/evidence/screenshots/unification-settings-1440-light.png"
+  ],
+  "reports": [
+    "docs/ui-recovery/UI_UNIFICATION.md",
+    "docs/ui-recovery/UI_UNIFICATION_ACCEPTANCE.md",
+    "docs/ui-recovery/VISUAL_DECISIONS.md",
+    "docs/ui-recovery/NAVIGATION_CLOSURE.md"
+  ]
+}

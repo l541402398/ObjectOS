@@ -262,7 +262,12 @@ try {
   }, projectId, { timeout: 120_000 })
   await page.waitForTimeout(600)
 
-  const projection = await page.evaluate(async (id) => window.projectos.collaboration.overview(id), projectId)
+  let projection = await page.evaluate(async (id) => window.projectos.collaboration.overview(id), projectId)
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    if (projection.metrics.pendingApprovals >= 1 && projection.metrics.workingAgents >= 2) break
+    await page.waitForTimeout(1_000)
+    projection = await page.evaluate(async (id) => window.projectos.collaboration.overview(id), projectId)
+  }
   record('真实投影：审批、运行中 Agent、产物同时存在', projection.metrics.pendingApprovals >= 1 && projection.metrics.workingAgents >= 2 && projection.artifacts.length >= 2,
     `approvals=${projection.metrics.pendingApprovals} working=${projection.metrics.workingAgents} artifacts=${projection.artifacts.length} handoffs=${projection.handoffs.length}`)
   record('投影包含真实计划与依赖任务', Boolean(projection.plan) && projection.tasks.length >= 4 && projection.plan.taskIds.length >= 4,
@@ -296,6 +301,17 @@ try {
   }))
   record('图中存在真实关系连线', edgeDebug.edges >= 8 && edgeDebug.handoffEdges >= 1, JSON.stringify(edgeDebug))
   record('1440 无横向溢出', ui.overflowX === 0, `overflow=${ui.overflowX}`)
+  const styleProbe = await page.evaluate(() => ({
+    theme: document.documentElement.dataset.theme,
+    shellBefore: getComputedStyle(document.querySelector('.po-shell'), '::before').backgroundImage.slice(0, 160),
+    sidebar: getComputedStyle(document.querySelector('.po-sidebar')).backgroundImage.slice(0, 160),
+    uiGlass: getComputedStyle(document.documentElement).getPropertyValue('--ui-glass'),
+    pdlCanvas: getComputedStyle(document.documentElement).getPropertyValue('--pdl-canvas').slice(0, 80),
+    nxAccent: getComputedStyle(document.documentElement).getPropertyValue('--nx-accent'),
+    journey: document.querySelector('.po-journey-action') ? getComputedStyle(document.querySelector('.po-journey-action')).backgroundImage.slice(0, 160) : 'none',
+    navActive: document.querySelector('.po-nav-item.is-active') ? { bg: getComputedStyle(document.querySelector('.po-nav-item.is-active')).backgroundColor, color: getComputedStyle(document.querySelector('.po-nav-item.is-active')).color } : null,
+  }))
+  console.log('STYLE_PROBE', JSON.stringify(styleProbe))
   await shot('overview-1440-light.png')
 
   // P1-C production visual masters: project home and review room, using the same real project,
@@ -350,6 +366,29 @@ try {
   await page.waitForTimeout(500)
   await shot('studio-review-1440-125.png')
   await win.evaluate((w) => w.webContents.setZoomFactor(1))
+  await page.waitForTimeout(400)
+
+  // Cross-page shell continuity: business pages keep their old compositions in this phase but must
+  // share the same warm frame. These are baseline captures for the next batch, not claimed redesigns.
+  for (const [route, file] of [
+    ['tasks', 'unification-tasks-1440-light.png'],
+    ['runs', 'unification-runs-1440-light.png'],
+    ['approvals/center', 'unification-approval-center-1440-light.png'],
+  ]) {
+    await page.evaluate((hash) => { window.location.hash = hash }, `#/projects/${projectId}/${route}`)
+    await page.waitForSelector('.po-page', { timeout: 20_000 })
+    await page.waitForTimeout(900)
+    await shot(file)
+  }
+  await page.keyboard.press('Control+k')
+  await page.waitForTimeout(350)
+  await page.keyboard.type('设置')
+  await page.waitForTimeout(350)
+  await page.keyboard.press('Enter')
+  await page.waitForSelector('.ant-modal-content, [role="dialog"]', { timeout: 10_000 })
+  await page.waitForTimeout(500)
+  await shot('unification-settings-1440-light.png')
+  await page.keyboard.press('Escape')
   await page.waitForTimeout(400)
 
   await openOverview(projectId)
@@ -467,7 +506,7 @@ try {
 
   // In-node approval uses the real decision API, requires explicit risk confirmation and rejects
   // a duplicate decision after the persisted status changes.
-  const pendingApproval = projection.approvals.find((approval) => approval.status === 'pending')
+  const pendingApproval = (await page.evaluate(async (id) => window.projectos.collaboration.overview(id), projectId)).approvals.find((approval) => approval.status === 'pending')
   if (pendingApproval) {
     await page.locator(`[data-testid="collaboration-approval-${pendingApproval.id}"]`).click()
     await page.waitForSelector('[data-testid="collaboration-inspector"]', { timeout: 10_000 })

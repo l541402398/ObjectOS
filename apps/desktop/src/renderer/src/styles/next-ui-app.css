@@ -6,32 +6,32 @@
    ========================================================================== */
 
 :root {
-  --nx-ink: #22304d;
-  --nx-ink-2: #52617b;
-  --nx-muted: #5f6e89;
-  --nx-line: rgba(77, 98, 140, .14);
-  --nx-line-strong: rgba(77, 98, 140, .24);
-  --nx-accent: #4f64d9;
-  --nx-cyan: #2a92a2;
-  --nx-glass: rgba(251, 253, 255, .72);
-  --nx-glass-strong: rgba(251, 253, 255, .9);
-  --nx-solid: #fbfdff;
-  --nx-shadow: 0 30px 80px -44px rgba(18, 38, 73, .48);
-  --nx-blur: 24px;
+  --nx-ink: var(--ui-ink);
+  --nx-ink-2: var(--ui-ink-2);
+  --nx-muted: var(--ui-muted);
+  --nx-line: var(--ui-border);
+  --nx-line-strong: var(--ui-border-strong);
+  --nx-accent: var(--ui-accent);
+  --nx-cyan: var(--ui-teal);
+  --nx-glass: var(--ui-glass);
+  --nx-glass-strong: var(--ui-glass-strong);
+  --nx-solid: var(--ui-surface);
+  --nx-shadow: var(--ui-shadow-lg);
+  --nx-blur: var(--ui-blur);
 }
 
 :root[data-theme='dark'] {
-  --nx-ink: #eff4ff;
-  --nx-ink-2: #b5c2d9;
-  --nx-muted: #8e9eb9;
-  --nx-line: rgba(174, 194, 231, .13);
-  --nx-line-strong: rgba(184, 203, 239, .22);
-  --nx-accent: #9badff;
-  --nx-cyan: #74d7df;
-  --nx-glass: rgba(17, 27, 48, .72);
-  --nx-glass-strong: rgba(17, 27, 48, .9);
-  --nx-solid: #111b30;
-  --nx-shadow: 0 34px 90px -38px rgba(0, 0, 0, .74);
+  --nx-ink: var(--ui-ink);
+  --nx-ink-2: var(--ui-ink-2);
+  --nx-muted: var(--ui-muted);
+  --nx-line: var(--ui-border);
+  --nx-line-strong: var(--ui-border-strong);
+  --nx-accent: var(--ui-accent);
+  --nx-cyan: var(--ui-teal);
+  --nx-glass: var(--ui-glass);
+  --nx-glass-strong: var(--ui-glass-strong);
+  --nx-solid: var(--ui-surface);
+  --nx-shadow: var(--ui-shadow-lg);
 }
 
 /* --- shell ---------------------------------------------------------------- */

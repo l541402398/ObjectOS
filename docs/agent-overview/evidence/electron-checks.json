@@ -1,13 +1,13 @@
 {
   "meta": {
-    "generatedAt": "2026-10-29T18:23:15.313Z",
-    "projectId": "prj_01m64ebpsqpcpfy3xb6ekym0c0",
-    "planId": "pln_01m64ebq5fm7yy8qc22xfvsts2",
+    "generatedAt": "2026-10-30T00:46:43.476Z",
+    "projectId": "prj_01m6549j9s1afcmzkwzc0hrabh",
+    "planId": "pln_01m6549jpbkpzd8h1gfd9sbexw",
     "taskIds": [
-      "tsk_01m64ebq9r7eft9zz7z4tk87bm",
-      "tsk_01m64ebq9rzxznd728qg1dmzsk",
-      "tsk_01m64ebq9vzxb5jb329f0p34r9",
-      "tsk_01m64ebq9w19f1n200sfxjer0q"
+      "tsk_01m6549jv3qfer3ye9vgj7k4x6",
+      "tsk_01m6549jv6x6bjpx22m3ewptfs",
+      "tsk_01m6549jv7ep9ghnfrvvvc4qd3",
+      "tsk_01m6549jv9f90c0brmggxdjx6s"
     ],
     "fixture": "real project/plan/tasks/runs/approvals/artifacts/handoff; local fake OpenAI-compatible provider, no real credentials",
     "providerRequests": 6
@@ -21,7 +21,7 @@
     {
       "name": "投影包含真实计划与依赖任务",
       "status": "PASS",
-      "detail": "plan=pln_01m64ebq5fm7yy8qc22xfvsts2 tasks=4 planTaskIds=4"
+      "detail": "plan=pln_01m6549jpbkpzd8h1gfd9sbexw tasks=4 planTaskIds=4"
     },
     {
       "name": "存在真实 Handoff 行",
@@ -36,7 +36,7 @@
     {
       "name": "图中存在真实关系连线",
       "status": "PASS",
-      "detail": "{\"edges\":11,\"handoffEdges\":1,\"paths\":[{\"stroke\":\"rgb(154, 168, 191)\",\"width\":\"1.8px\"},{\"stroke\":\"rgb(154, 168, 191)\",\"width\":\"1.8px\"},{\"stroke\":\"rgb(154, 168, 191)\",\"width\":\"1.8px\"}]}"
+      "detail": "{\"edges\":11,\"handoffEdges\":1,\"paths\":[{\"stroke\":\"rgb(163, 143, 120)\",\"width\":\"1.8px\"},{\"stroke\":\"rgb(163, 143, 120)\",\"width\":\"1.8px\"},{\"stroke\":\"rgb(163, 143, 120)\",\"width\":\"1.8px\"}]}"
     },
     {
       "name": "1440 无横向溢出",
@@ -66,7 +66,7 @@
     {
       "name": "连线在真实截图像素中可见",
       "status": "PASS",
-      "detail": "{\"visiblePixels\":3561,\"total\":624337}"
+      "detail": "{\"visiblePixels\":3691,\"total\":624337}"
     },
     {
       "name": "边端点与节点边界对齐",
@@ -106,17 +106,17 @@
     {
       "name": "点击 Agent 节点加载真实 Agent/Run 详情",
       "status": "PASS",
-      "detail": "AGENTKai开发工程师K开发工程师实现协作总览三栏与活动带工作中当前任务实现协作总览三栏与活动带任务状态进行中活动 Runrun_01m64ebs5g1drgz1gz2n1fsemzRun 状态执行中待审批0 项会话 / 已完成 Run1 / 0最近活动2026/10/29 11:22真实持久化对象打开会话 运行审"
+      "detail": "AGENTKai开发工程师K开发工程师实现协作总览三栏与活动带工作中当前任务实现协作总览三栏与活动带任务状态进行中活动 Runrun_01m6549mxtpw44cfdqephqjrvyRun 状态执行中待审批0 项会话 / 已完成 Run1 / 0最近活动2026/10/29 17:45真实持久化对象打开会话 运行审"
     },
     {
       "name": "Agent 会话工作台可从节点打开且有明确返回",
       "status": "PASS",
-      "detail": "{\"hash\":\"#/projects/prj_01m64ebpsqpcpfy3xb6ekym0c0/agents?workspace=sessions\",\"workspace\":true,\"back\":true}"
+      "detail": "{\"hash\":\"#/projects/prj_01m6549j9s1afcmzkwzc0hrabh/agents?workspace=sessions\",\"workspace\":true,\"back\":true}"
     },
     {
       "name": "会话工作台返回后恢复选中节点",
       "status": "PASS",
-      "detail": "AGENTKai开发工程师K开发工程师实现协作总览三栏与活动带工作中当前任务实现协作总览三栏与活动带任务状态进行中活动 Runrun_01m64ebs5g1drgz1gz2n1fsemzRun 状态执行中待审批0 项会话 / 已完成 Run1 / 0最近活动2026/10/29 "
+      "detail": "AGENTKai开发工程师K开发工程师实现协作总览三栏与活动带工作中当前任务实现协作总览三栏与活动带任务状态进行中活动 Runrun_01m6549mxtpw44cfdqephqjrvyRun 状态执行中待审批0 项会话 / 已完成 Run1 / 0最近活动2026/10/29 "
     },
     {
       "name": "计划 DAG 有返回协作图入口",
@@ -131,7 +131,7 @@
     {
       "name": "底部活动可下钻到真实审批/运行路由",
       "status": "PASS",
-      "detail": "#/projects/prj_01m64ebpsqpcpfy3xb6ekym0c0/runs"
+      "detail": "#/projects/prj_01m6549j9s1afcmzkwzc0hrabh/runs"
     },
     {
       "name": "深色主题 token 生效",

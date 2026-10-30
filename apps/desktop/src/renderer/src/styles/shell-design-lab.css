@@ -10,43 +10,43 @@
  */
 
 :root {
-  --pdl-ink: #22304d;
-  --pdl-ink-2: #5f6e89;
-  --pdl-muted: #5f6e89;
-  --pdl-line: rgba(77, 98, 140, 0.16);
-  --pdl-line-strong: rgba(77, 98, 140, 0.26);
-  --pdl-surface: rgba(255, 255, 255, 0.48);
-  --pdl-surface-2: rgba(251, 253, 255, 0.62);
-  --pdl-solid: rgba(249, 251, 255, 0.88);
-  --pdl-accent: #5061dc;
-  --pdl-accent-soft: rgba(88, 107, 229, 0.1);
-  --pdl-violet: #8b7cf2;
-  --pdl-cyan: #43b8ce;
-  --pdl-danger: #b45462;
-  --pdl-warn: #86621f;
-  --pdl-ok: #1d7460;
-  --pdl-shadow: 0 32px 90px -52px rgba(38, 62, 106, 0.55);
-  --pdl-canvas: linear-gradient(132deg, #e7ecf9 0%, #e8f4f4 44%, #e4ecf9 74%, #e9e2f7 100%);
+  --pdl-ink: var(--ui-ink);
+  --pdl-ink-2: var(--ui-ink-2);
+  --pdl-muted: var(--ui-muted);
+  --pdl-line: var(--ui-border);
+  --pdl-line-strong: var(--ui-border-strong);
+  --pdl-surface: var(--ui-glass);
+  --pdl-surface-2: var(--ui-glass-strong);
+  --pdl-solid: var(--ui-surface);
+  --pdl-accent: var(--ui-accent);
+  --pdl-accent-soft: var(--ui-accent-soft);
+  --pdl-violet: var(--ui-teal);
+  --pdl-cyan: var(--ui-teal);
+  --pdl-danger: var(--ui-danger);
+  --pdl-warn: var(--ui-warn);
+  --pdl-ok: var(--ui-ok);
+  --pdl-shadow: var(--ui-shadow-lg);
+  --pdl-canvas: var(--ui-bg-app);
 }
 
 :root[data-theme='dark'] {
-  --pdl-ink: #eff4ff;
-  --pdl-ink-2: #b5c2d9;
-  --pdl-muted: #8e9eb9;
-  --pdl-line: rgba(174, 194, 231, 0.14);
-  --pdl-line-strong: rgba(184, 203, 239, 0.24);
-  --pdl-surface: rgba(24, 36, 64, 0.5);
-  --pdl-surface-2: rgba(28, 42, 73, 0.62);
-  --pdl-solid: rgba(18, 29, 52, 0.9);
-  --pdl-accent: #9badff;
-  --pdl-accent-soft: rgba(116, 138, 255, 0.15);
-  --pdl-violet: #a595ff;
-  --pdl-cyan: #6dd4e2;
-  --pdl-danger: #e5919c;
-  --pdl-warn: #d8ae73;
-  --pdl-ok: #7ad4b7;
-  --pdl-shadow: 0 34px 95px -42px rgba(0, 0, 0, 0.78);
-  --pdl-canvas: linear-gradient(132deg, #0b1222 0%, #101a2e 43%, #171b38 76%, #0d212b 100%);
+  --pdl-ink: var(--ui-ink);
+  --pdl-ink-2: var(--ui-ink-2);
+  --pdl-muted: var(--ui-muted);
+  --pdl-line: var(--ui-border);
+  --pdl-line-strong: var(--ui-border-strong);
+  --pdl-surface: var(--ui-glass);
+  --pdl-surface-2: var(--ui-glass-strong);
+  --pdl-solid: var(--ui-surface);
+  --pdl-accent: var(--ui-accent);
+  --pdl-accent-soft: var(--ui-accent-soft);
+  --pdl-violet: var(--ui-teal);
+  --pdl-cyan: var(--ui-teal);
+  --pdl-danger: var(--ui-danger);
+  --pdl-warn: var(--ui-warn);
+  --pdl-ok: var(--ui-ok);
+  --pdl-shadow: var(--ui-shadow-lg);
+  --pdl-canvas: var(--ui-bg-app);
 }
 
 /* Ambient canvas: the Design Lab gradient replaces the previous radial-only field. */

@@ -53,11 +53,11 @@ const ARTIFACT_SIZE = { width: 204, height: 80 }
 const APPROVAL_SIZE = { width: 214, height: 88 }
 
 const EDGE_COLORS: Record<RelationshipKind, string> = {
-  assignment: '#9aa8bf',
-  dependency: '#8ea3c4',
-  artifact: '#5f9f8f',
-  approval: '#c2953f',
-  handoff: '#c08a3e',
+  assignment: '#a38f78',
+  dependency: '#8d9b8d',
+  artifact: '#5f8f78',
+  approval: '#b07b38',
+  handoff: '#b4552d',
 }
 
 function AgentNode({ data }: NodeProps<Node<AgentData, 'aco-agent'>>): ReactElement {
@@ -186,7 +186,7 @@ function RelationshipLayer({
       : `M ${sx} ${sy} C ${sx + bend} ${sy}, ${tx - bend} ${ty}, ${tx} ${ty}`
     const highlighted = Boolean(selectedId) && (edge.source === selectedId || edge.target === selectedId)
     const dimmed = Boolean(selectedId) && !highlighted
-    const color = highlighted ? '#5b7cfa' : EDGE_COLORS[edge.kind]
+    const color = highlighted ? '#b4552d' : EDGE_COLORS[edge.kind]
     return [{
       edge,
       d,
@@ -220,7 +220,7 @@ function RelationshipLayer({
             markerHeight="7"
             orient="auto-start-reverse"
           >
-            <path d="M 0 0 L 10 5 L 0 10 z" fill={selectedId ? '#5b7cfa' : color} />
+            <path d="M 0 0 L 10 5 L 0 10 z" fill={selectedId ? '#b4552d' : color} />
           </marker>
         ))}
       </defs>
