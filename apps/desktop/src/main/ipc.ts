@@ -1,7 +1,8 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, shell, safeStorage } from 'electron'
 import { randomUUID } from 'node:crypto'
 import {
   ApiSchemas,
+  OrganizationApiSchemas,
   AppError,
   isApiMethod,
   isMainMethod,
@@ -24,6 +25,7 @@ import type { ResourceCredentialVault } from './resource-credentials.js'
 import { testSshConnection } from './resource-connection.js'
 import { executeSshDeployment, observeSshDeployment, SshDeployError, type SshObservation } from './ssh-deploy.js'
 import type { RuntimeSupervisor } from './runtime-supervisor.js'
+import { OrganizationConnection } from './auth/organization-connection.js'
 
 export interface IpcContext {
   supervisor: RuntimeSupervisor
@@ -64,6 +66,7 @@ function aggregateStats(projects: ProjectSummary[]): ProjectStats {
 
 export function registerIpc(ctx: IpcContext): () => void {
   const { supervisor, providerConfig, connectionSecrets, resourceSecrets, window, logger } = ctx
+  const organizationConnection = new OrganizationConnection(ctx.dataDir, safeStorage, (url) => shell.openExternal(url))
 
   const syncProvider = async (): Promise<void> => {
     if (!supervisor.isReady()) return
@@ -245,6 +248,9 @@ export function registerIpc(ctx: IpcContext): () => void {
   }
 
   const handleMain = async (method: string, input: Record<string, unknown>): Promise<unknown> => {
+    if(Object.prototype.hasOwnProperty.call(OrganizationApiSchemas,method)) {
+      return organizationConnection.execute(method as keyof typeof OrganizationApiSchemas,input)
+    }
     switch (method) {
       case 'app.bootstrap': {
         await supervisor.waitForReady(25_000)

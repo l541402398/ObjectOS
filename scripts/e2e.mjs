@@ -18,7 +18,7 @@ const consoleErrors = []
 async function launch() {
   const app = await electron.launch({
     executablePath: electronPath,
-    args: ['.'],
+    args: ['.', `--user-data-dir=${join(dataDir, 'electron-user')}`],
     cwd: desktopDir,
     env: baseEnv,
     timeout: 30_000,

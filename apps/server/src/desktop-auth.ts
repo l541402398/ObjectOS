@@ -62,10 +62,12 @@ export interface MembershipRecord {
 /** Narrow view of better-auth that keeps the vendor API surface in one place (see app.ts). */
 export interface AuthClient {
   getSession(input: { headers: Headers }): Promise<{ user: DesktopAccount } | null>
-  signInEmail(input: {
-    body: { email: string; password: string }
+  signInEmail(input: { body: { email: string; password: string }; asResponse: true }): Promise<Response>
+  signUpEmail?(input: {
+    body: { name: string; email: string; password: string }
     asResponse: true
   }): Promise<Response>
+  signOut?(input: { headers: Headers; asResponse: true }): Promise<Response>
 }
 
 /** better-auth-backed directory: membership and organization scope are read from the auth DB. */
@@ -78,6 +80,14 @@ export interface AuthDirectory {
 export interface DesktopAuthDependencies {
   auth: AuthClient
   directory: AuthDirectory
+  tokens?: DesktopTokenStore
+  trustedOrigin?: string
+}
+
+export interface DesktopTokenStore {
+  issue(tokenHash: string, record: { accountId: string; expiresAt: number }): Promise<void>
+  find(tokenHash: string): Promise<{ accountId: string; expiresAt: number } | null>
+  revoke(tokenHash: string): Promise<void>
 }
 
 /** What organization-scoped routes in app.ts need in order to enforce scope. */
@@ -163,16 +173,28 @@ function applyBrowserPageHeaders(reply: FastifyReply): void {
   reply.header('cache-control', 'no-store')
   reply.header('x-frame-options', 'DENY')
   reply.header('x-content-type-options', 'nosniff')
-  reply.header('referrer-policy', 'no-referrer')
+  // Chromium derives the Origin of a navigation form POST from the document's referrer policy.
+  // no-referrer can produce an opaque "null" Origin even for this same-origin form. Preserve only
+  // same-origin referrers so strict CSRF checks work without leaking callback data cross-origin.
+  reply.header('referrer-policy', 'same-origin')
   reply.header('content-security-policy', CONTENT_SECURITY_POLICY)
 }
 
-function sendError(
-  reply: FastifyReply,
-  statusCode: number,
-  code: string,
-  message: string,
-): FastifyReply {
+/** Chromium checks a form's complete redirect chain. Permit only this validated native callback
+ * origin in addition to self; never a wildcard, another host, or an arbitrary query-string value. */
+function applyCallbackFormPolicy(reply: FastifyReply, redirectUri: string): boolean {
+  if (!DesktopAuthorizeQuerySchema.shape.redirect_uri.safeParse(redirectUri).success) return false
+  try {
+    const callback = new URL(redirectUri)
+    if (callback.protocol !== 'http:' || callback.hostname !== '127.0.0.1') return false
+    reply.header('content-security-policy', `${CONTENT_SECURITY_POLICY} ${callback.origin}`)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function sendError(reply: FastifyReply, statusCode: number, code: string, message: string): FastifyReply {
   return reply.code(statusCode).header('cache-control', 'no-store').send({ error: { code, message } })
 }
 
@@ -220,38 +242,40 @@ function authorizeSearchParams(data: DesktopAuthorizeQuery): URLSearchParams {
 
 function hiddenAuthorizeInputs(data: DesktopAuthorizeQuery): string {
   return [...authorizeSearchParams(data).entries()]
-    .map(
-      ([name, value]) =>
-        `<input type="hidden" name="${escapeHtml(name)}" value="${escapeHtml(value)}">`,
-    )
+    .map(([name, value]) => `<input type="hidden" name="${escapeHtml(name)}" value="${escapeHtml(value)}">`)
     .join('\n        ')
 }
 
 const PAGE_STYLES = `
-  :root { color-scheme: light dark; }
+  :root { color-scheme:light dark; --bg:#e8eef9; --surface:#fbfdff; --ink:#22304d; --muted:#52617b; --line:#d8e1ef; --accent:#4f64d9; --field:#fff; --danger:#9f3346; }
+  @media(prefers-color-scheme:dark) { :root { --bg:#091223; --surface:#111b30; --ink:#eff4ff; --muted:#b5c2d9; --line:#34445f; --accent:#9badff; --field:#162238; --danger:#ffa6b5; } }
   * { box-sizing: border-box; }
   body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 32px;
-    background: #0d1117; color: #e6edf3;
-    font: 15px/1.55 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; }
-  .card { width: 100%; max-width: 460px; padding: 32px; border-radius: 16px;
-    background: #161b22; border: 1px solid #30363d; }
-  h1 { margin: 0 0 8px; font-size: 22px; }
+    background:radial-gradient(ellipse at 15% 0%,#8c8ee526,transparent 55%),radial-gradient(ellipse at 90% 90%,#43b8ce18,transparent 55%),var(--bg); color:var(--ink);
+    font:14px/1.55 "Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+  .card { width:100%; max-width:520px; padding:36px; border-radius:24px; background:var(--surface);
+    border:1px solid var(--line); box-shadow:0 20px 70px #15274318,inset 0 1px #ffffff55; }
+  .brand { display:flex; align-items:center; gap:10px; margin-bottom:28px; font-weight:650; letter-spacing:.02em; }
+  .brand svg { color:var(--accent); }
+  h1 { margin:0 0 12px; font-size:26px; line-height:1.24; letter-spacing:-.02em; }
   h2 { margin: 24px 0 8px; font-size: 15px; }
   p { margin: 8px 0; }
-  .muted { color: #8b949e; }
+  .muted { color:var(--muted); }
   .small { font-size: 13px; }
   ul { margin: 8px 0; padding-left: 20px; }
   li { margin: 4px 0; }
-  label { display: block; margin: 14px 0 0; font-size: 13px; color: #8b949e; }
-  input[type="email"], input[type="password"] { width: 100%; margin-top: 6px; padding: 10px 12px;
-    border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: inherit; font: inherit; }
-  button { margin-top: 20px; padding: 11px 18px; border-radius: 8px; border: 1px solid #2f81f7;
-    background: #2f81f7; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
-  button.secondary { background: transparent; border-color: #30363d; color: #b3bcc6; }
-  .error { margin-top: 16px; padding: 10px 12px; border-radius: 8px;
-    background: #3d1a1a; border: 1px solid #8b2b2b; color: #ffb4b4; font-size: 13px; }
-  .notice { margin-top: 20px; padding: 12px; border-radius: 8px; background: #10233a;
-    border: 1px solid #1f4e79; font-size: 13px; color: #b6d7ff; }
+  label { display:block; margin-top:18px; font-size:13px; color:var(--muted); }
+  input:not([type="hidden"]) { width:100%; margin-top:7px; padding:11px 13px; min-height:44px; border-radius:9px;
+    border:1px solid var(--line); background:var(--field); color:inherit; font:inherit; }
+  button { margin-top:24px; padding:11px 18px; min-height:44px; border-radius:9px; border:1px solid var(--accent);
+    background:var(--accent); color:var(--surface); font:inherit; font-weight:650; cursor:pointer; }
+  button:hover { box-shadow:0 3px 14px #5061dc26; }
+  button.secondary { background:transparent; border-color:var(--line); color:var(--ink); margin-left:8px; }
+  a { color:var(--accent); text-underline-offset:3px; }
+  :is(a,button,input):focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  .error { margin-top:16px; padding:12px; border:1px solid var(--danger); border-radius:9px; color:var(--danger); }
+  .notice { margin-top:20px; padding:16px; border-radius:12px; border:1px solid var(--line); color:var(--muted); }
+  @media(max-width:560px) { body { padding:16px; } .card { padding:24px; border-radius:18px; } }
 `
 
 function renderPage(documentTitle: string, card: string): string {
@@ -265,29 +289,32 @@ function renderPage(documentTitle: string, card: string): string {
 </head>
 <body>
   <main class="card">
+    <div class="brand"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="2" y="2" width="24" height="24" rx="8" stroke="currentColor" stroke-width="1.5"/><path d="M8 9h12M8 14h12M8 19h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>ProjectOS</div>
 ${card}
   </main>
 </body>
 </html>`
 }
 
-function renderLoginPage(data: DesktopAuthorizeQuery, errorMessage?: string): string {
+function renderLoginPage(data: DesktopAuthorizeQuery, errorMessage?: string, register = false): string {
   const action = `/v1/desktop/authorize?${authorizeSearchParams(data).toString()}`
   return renderPage(
-    'ProjectOS 账号登录',
-    `    <h1>登录 ProjectOS</h1>
+    register ? '创建 ProjectOS 账号' : 'ProjectOS 账号登录',
+    `    <h1>${register ? '创建组织账号' : '登录 ProjectOS'}</h1>
     <p class="muted">桌面设备正在请求访问你的组织工作区。登录在系统浏览器中完成，密码不会交给桌面进程。</p>
-${errorMessage ? `    <p class="error">${escapeHtml(errorMessage)}</p>` : ''}
+${errorMessage ? `    <p class="error" role="alert">${escapeHtml(errorMessage)}</p>` : ''}
     <form method="post" action="${escapeHtml(action)}">
         ${hiddenAuthorizeInputs(data)}
+        ${register ? '<input type="hidden" name="mode" value="register"><label>姓名<input type="text" name="name" autocomplete="name" maxlength="120" required autofocus></label>' : ''}
         <label>邮箱
-          <input type="email" name="email" autocomplete="username" required autofocus>
+          <input type="email" name="email" autocomplete="username" maxlength="254" required ${register ? '' : 'autofocus'}>
         </label>
         <label>密码
-          <input type="password" name="password" autocomplete="current-password" required>
+          <input type="password" name="password" autocomplete="${register ? 'new-password' : 'current-password'}" ${register ? 'minlength="8"' : ''} maxlength="128" required>
         </label>
-        <button type="submit">登录并继续</button>
+        <button type="submit">${register ? '创建账号并继续' : '登录并继续'}</button>
     </form>
+    <p class="small muted">${register ? `已有账号？<a href="${escapeHtml(action)}">登录</a>` : `还没有账号？<a href="${escapeHtml(action + '&mode=register')}">创建账号</a>`}</p>
     <p class="muted small">本次授权只用于 127.0.0.1 回环回调，访问令牌不会出现在浏览器地址栏。</p>`,
   )
 }
@@ -308,7 +335,7 @@ function renderConsentPage(
           )
           .join('\n')
   const scopedHint = data.organization_id
-    ? `    <p class="muted small">本次请求限定的组织 ID：${escapeHtml(data.organization_id)}</p>`
+    ? `    <p class="muted small">发起登录的组织：${escapeHtml(data.organization_id)}。设备仍可切换到你有权访问的其他组织。</p>`
     : ''
   return renderPage(
     'ProjectOS 设备授权',
@@ -321,23 +348,36 @@ ${scopedHint}
 ${organizationItems}
     </ul>
     <div class="notice">
-      授权后该设备可以读取上述组织中你有权限查看的项目与需求，并在项目权限允许时提交需求。
+      授权后该设备可以访问你的账号、组织及有权限的项目，各项操作仍按当前成员角色校验。
       <strong>不会授予</strong>本机文件读写、Shell 命令执行、Git 推送或任何 Worker 租约；这些需要单独的策略审批。
     </div>
     <form method="post" action="/v1/desktop/consent">
       <input type="hidden" name="request_id" value="${escapeHtml(requestId)}">
       <button type="submit" name="decision" value="allow">授权此设备</button>
       <button type="submit" name="decision" value="deny" class="secondary" formnovalidate>拒绝</button>
+      <button type="submit" formaction="/v1/desktop/change-account" class="secondary" formnovalidate>使用其他账号</button>
     </form>
     <p class="muted small">授权码 120 秒内有效且只能使用一次。</p>`,
   )
 }
 
-export function registerDesktopAuth(
-  app: FastifyInstance,
-  deps: DesktopAuthDependencies,
-): DesktopAuthHandle {
+export function registerDesktopAuth(app: FastifyInstance, deps: DesktopAuthDependencies): DesktopAuthHandle {
   const state = createState()
+  const tokens: DesktopTokenStore = deps.tokens ?? {
+    async issue(hash, record) {
+      state.bearerTokens.set(hash, record)
+    },
+    async find(hash) {
+      return state.bearerTokens.get(hash) ?? null
+    },
+    async revoke(hash) {
+      state.bearerTokens.delete(hash)
+    },
+  }
+  function formOriginAllowed(request: FastifyRequest): boolean {
+    if (request.headers['sec-fetch-site'] === 'cross-site') return false
+    return !request.headers.origin || !deps.trustedOrigin || request.headers.origin === deps.trustedOrigin
+  }
 
   function purgeExpired(now: number): void {
     for (const [key, record] of state.consentRequests) {
@@ -356,10 +396,13 @@ export function registerDesktopAuth(
     reply: FastifyReply,
     data: DesktopAuthorizeQuery,
   ): Promise<FastifyReply> {
+    if (!applyCallbackFormPolicy(reply, data.redirect_uri))
+      return sendError(reply, 400, 'invalid_request', 'invalid native callback origin')
     const session = await deps.auth.getSession({ headers: toHeaders(request) })
 
     if (!session) {
-      return reply.type(HTML_CONTENT_TYPE).send(renderLoginPage(data))
+      const register = (request.query as Record<string, unknown>)?.mode === 'register'
+      return reply.type(HTML_CONTENT_TYPE).send(renderLoginPage(data, undefined, register))
     }
 
     if (data.organization_id) {
@@ -380,6 +423,8 @@ export function registerDesktopAuth(
     if (!account) {
       return sendError(reply, 401, 'UNAUTHENTICATED', 'the signed-in account no longer exists')
     }
+    if (state.consentRequests.size >= 10_000)
+      return sendError(reply, 503, 'AUTH_BUSY', 'too many pending authorization requests')
     state.consentRequests.set(requestId, {
       requestId,
       accountId: session.user.id,
@@ -393,6 +438,39 @@ export function registerDesktopAuth(
   }
 
   // ---- 1. Authorization page (and the login form target) --------------------------------------
+  app.post('/v1/desktop/change-account', async (request, reply) => {
+    applyBrowserPageHeaders(reply)
+    if (!formOriginAllowed(request))
+      return sendError(reply, 403, 'INVALID_ORIGIN', 'browser form origin is not trusted')
+    const form = parseFormBody(request.body)
+    const requestId = form?.get('request_id') ?? ''
+    const record = state.consentRequests.get(requestId)
+    if (record) state.consentRequests.delete(requestId)
+    const session = await deps.auth.getSession({ headers: toHeaders(request) })
+    if (!record || record.expiresAt <= Date.now() || !session || record.accountId !== session.user.id)
+      return sendError(
+        reply,
+        400,
+        'invalid_request',
+        'consent request is unknown, expired or belongs to another account',
+      )
+    if (!deps.auth.signOut)
+      return sendError(reply, 501, 'NOT_IMPLEMENTED', 'browser account switching is unavailable')
+    const response = await deps.auth.signOut({ headers: toHeaders(request), asResponse: true })
+    if (!response.ok) return sendError(reply, 400, 'invalid_request', 'browser sign-out failed')
+    const cookies = response.headers.getSetCookie()
+    if (cookies.length) reply.header('set-cookie', cookies)
+    const query: DesktopAuthorizeQuery = {
+      client_id: 'projectos-desktop',
+      redirect_uri: record.redirectUri,
+      code_challenge: record.codeChallenge,
+      code_challenge_method: 'S256',
+      state: record.state,
+      ...(record.organizationId ? { organization_id: record.organizationId } : {}),
+    }
+    return reply.redirect(`/v1/desktop/authorize?${authorizeSearchParams(query)}`, 302)
+  })
+
   app.get('/v1/desktop/authorize', async (request, reply) => {
     applyBrowserPageHeaders(reply)
     const parsed = DesktopAuthorizeQuerySchema.safeParse(request.query)
@@ -405,6 +483,8 @@ export function registerDesktopAuth(
 
   app.post('/v1/desktop/authorize', async (request, reply) => {
     applyBrowserPageHeaders(reply)
+    if (!formOriginAllowed(request))
+      return sendError(reply, 403, 'INVALID_ORIGIN', 'browser form origin is not trusted')
     const form = parseFormBody(request.body)
     if (!form) {
       return sendError(reply, 400, 'invalid_request', 'expected an application/x-www-form-urlencoded body')
@@ -413,23 +493,44 @@ export function registerDesktopAuth(
     if (!data) {
       return sendError(reply, 400, 'invalid_request', 'invalid desktop authorize request')
     }
+    if (!applyCallbackFormPolicy(reply, data.redirect_uri))
+      return sendError(reply, 400, 'invalid_request', 'invalid native callback origin')
 
     const email = form.get('email') ?? ''
     const password = form.get('password') ?? ''
+    const register = form.get('mode') === 'register'
     if (!email || !password) {
-      return reply.code(400).type(HTML_CONTENT_TYPE).send(renderLoginPage(data, '请输入邮箱和密码。'))
+      return reply
+        .code(400)
+        .type(HTML_CONTENT_TYPE)
+        .send(renderLoginPage(data, '请输入邮箱和密码。', register))
     }
 
-    const signInResponse = await deps.auth.signInEmail({
-      body: { email, password },
-      asResponse: true,
-    })
+    const name = (form.get('name') ?? '').trim()
+    if (
+      email.length > 254 ||
+      password.length > 128 ||
+      (register && (!name || name.length > 120 || password.length < 8 || !deps.auth.signUpEmail))
+    )
+      return reply
+        .code(400)
+        .type(HTML_CONTENT_TYPE)
+        .send(renderLoginPage(data, '请检查姓名、邮箱和密码；密码至少 8 位。', register))
+    const signInResponse = register
+      ? await deps.auth.signUpEmail!({ body: { name, email, password }, asResponse: true })
+      : await deps.auth.signInEmail({ body: { email, password }, asResponse: true })
     if (!signInResponse.ok) {
       // Never echo the credential, never distinguish "unknown account" from "wrong password".
       return reply
         .code(401)
         .type(HTML_CONTENT_TYPE)
-        .send(renderLoginPage(data, '邮箱或密码不正确，请重试。'))
+        .send(
+          renderLoginPage(
+            data,
+            register ? '无法创建账号，请检查信息或使用已有账号登录。' : '邮箱或密码不正确，请重试。',
+            register,
+          ),
+        )
     }
 
     const setCookies = signInResponse.headers.getSetCookie()
@@ -440,6 +541,8 @@ export function registerDesktopAuth(
   // ---- 2. Explicit consent, then a one-time authorization code --------------------------------
   app.post('/v1/desktop/consent', async (request, reply) => {
     applyBrowserPageHeaders(reply)
+    if (!formOriginAllowed(request))
+      return sendError(reply, 403, 'INVALID_ORIGIN', 'browser form origin is not trusted')
     const form = parseFormBody(request.body)
     if (!form) {
       return sendError(reply, 400, 'invalid_request', 'expected an application/x-www-form-urlencoded body')
@@ -461,6 +564,8 @@ export function registerDesktopAuth(
     if (session.user.id !== record.accountId) {
       return sendError(reply, 403, 'RESOURCE_NOT_IN_SCOPE', 'this consent request belongs to another account')
     }
+    if (!applyCallbackFormPolicy(reply, record.redirectUri))
+      return sendError(reply, 400, 'invalid_request', 'invalid native callback origin')
 
     if (decision !== 'allow') {
       const denied = new URL(record.redirectUri)
@@ -516,7 +621,7 @@ export function registerDesktopAuth(
     const organizations = await deps.directory.organizationsFor(record.accountId)
     const token = opaqueId(32)
     const expiresAt = now + DESKTOP_TOKEN_TTL_MS
-    state.bearerTokens.set(token, { accountId: record.accountId, expiresAt })
+    await tokens.issue(sha256Base64Url(token), { accountId: record.accountId, expiresAt })
 
     const session: DesktopSession = {
       token,
@@ -543,15 +648,23 @@ export function registerDesktopAuth(
     async authenticateBearer(authorization: string | undefined): Promise<DesktopAccount | null> {
       const token = bearerFrom(authorization)
       if (!token) return null
-      const record = state.bearerTokens.get(token)
+      const hash = sha256Base64Url(token)
+      const record = await tokens.find(hash)
       if (!record) return null
       if (record.expiresAt <= Date.now()) {
-        state.bearerTokens.delete(token)
+        await tokens.revoke(hash)
         return null
       }
       return deps.directory.accountById(record.accountId)
     },
   }
+
+  app.post('/v1/desktop/revoke', async (request, reply) => {
+    const account = await handle.authenticateBearer(request.headers.authorization)
+    if (!account) return sendError(reply, 401, 'UNAUTHENTICATED', 'a valid bearer token is required')
+    await tokens.revoke(sha256Base64Url(bearerFrom(request.headers.authorization)!))
+    return reply.header('cache-control', 'no-store').send({ ok: true })
+  })
 
   return handle
 }

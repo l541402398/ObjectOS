@@ -1,5 +1,18 @@
 # ProjectOS 架构说明
 
+## A1 组织控制面增量（2026-10-29）
+
+独立启动的 `apps/server` 使用 PostgreSQL 保存账号、组织、成员和共享项目元数据。桌面 Main
+通过系统浏览器 / PKCE / 一次性 loopback 回调登录；会话密钥只进 Main 的安全存储，Renderer
+仅使用具名 `organization.*` preload API。个人模式继续使用既有本地 Runtime 和 SQLite。
+本次不会把服务端组织角色转换为本机文件、命令、Git 或 Worker 执行权；共享项目也不自动上传
+或关联本地项目。组织资产/Worker、需求独立工作区和流程实例由后续切片实现。
+
+`contracts` 可复用平台无关的 `organization-contracts` Schema 以定义脱敏 IPC 视图；二者均不访问
+Node/Electron/数据库。服务端不能依赖本地执行内核。迁移、授权和回滚决策见 ADR-0067，真实结果见
+`docs/org-upgrade/reports/A1-report.md`。下面的 Runtime 单写者与无 TCP 规则仍用于本地执行内核；
+组织 HTTP 服务是独立进程，桌面只在登录期间打开一次性 127.0.0.1 回调监听。
+
 ## 1. 进程与信任边界
 
 ```text

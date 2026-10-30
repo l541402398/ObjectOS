@@ -1,0 +1,171 @@
+{
+  "meta": {
+    "generatedAt": "2026-10-30T03:38:33.622Z",
+    "projectId": "prj_01m65e362myq5zkytfmaemzx9m",
+    "planId": "pln_01m65e36bk27n9gyztsdscn7fv",
+    "taskIds": [
+      "tsk_01m65e36h0wsyc7rngmc5kjd91",
+      "tsk_01m65e36h2rhbrhrx2b7qana63",
+      "tsk_01m65e36h3hfmcrqxnj4egkkn0",
+      "tsk_01m65e36h4f31xbne8yd14nx3e"
+    ],
+    "fixture": "real project/plan/tasks/runs/approvals/artifacts/handoff; local fake OpenAI-compatible provider, no real credentials",
+    "providerRequests": 6
+  },
+  "results": [
+    {
+      "name": "真实投影：审批、运行中 Agent、产物同时存在",
+      "status": "PASS",
+      "detail": "approvals=1 working=2 artifacts=2 handoffs=1"
+    },
+    {
+      "name": "投影包含真实计划与依赖任务",
+      "status": "PASS",
+      "detail": "plan=pln_01m65e36bk27n9gyztsdscn7fv tasks=4 planTaskIds=4"
+    },
+    {
+      "name": "存在真实 Handoff 行",
+      "status": "PASS",
+      "detail": "handoffs=requested"
+    },
+    {
+      "name": "全图渲染真实 Agent/任务/审批/产物/交接",
+      "status": "PASS",
+      "detail": "{\"agents\":4,\"waiting\":2,\"tasks\":4,\"artifacts\":2,\"approvals\":1,\"handoffHint\":1,\"activity\":\"最新活动系统请求授权：run_command刚刚等待审批处理审批  刚刚\",\"overflowX\":0}"
+    },
+    {
+      "name": "图中存在真实关系连线",
+      "status": "PASS",
+      "detail": "{\"edges\":11,\"handoffEdges\":1,\"paths\":[{\"stroke\":\"rgb(163, 143, 120)\",\"width\":\"1.8px\"},{\"stroke\":\"rgb(163, 143, 120)\",\"width\":\"1.8px\"},{\"stroke\":\"rgb(163, 143, 120)\",\"width\":\"1.8px\"}]}"
+    },
+    {
+      "name": "1440 无横向溢出",
+      "status": "PASS",
+      "detail": "overflow=0"
+    },
+    {
+      "name": "项目首页使用真实项目/计划/审批数据",
+      "status": "PASS",
+      "detail": "{\"heading\":\"Agent Overview E2E\",\"mission\":\"实现 Agent 协作总览与真实运行追踪\",\"pending\":1}"
+    },
+    {
+      "name": "审批评审室显示真实队列与请求证据",
+      "status": "PASS",
+      "detail": "{\"queue\":1,\"title\":\"授权 run_command\",\"hasRequest\":true}"
+    },
+    {
+      "name": "空闲 Agent 退出主图并收进待命区",
+      "status": "PASS",
+      "detail": "{\"graphAgents\":4,\"standbyDock\":true,\"standbyLabel\":\"A待命 Agent · 1\",\"idleInGraph\":false}"
+    },
+    {
+      "name": "待命 Agent 区域可展开且仍可查看",
+      "status": "PASS",
+      "detail": "rows=1"
+    },
+    {
+      "name": "连线在真实截图像素中可见",
+      "status": "PASS",
+      "detail": "{\"visiblePixels\":3712,\"total\":624337}"
+    },
+    {
+      "name": "边端点与节点边界对齐",
+      "status": "PASS",
+      "detail": "{\"edges\":11,\"aligned\":11,\"sample\":[{\"startDistance\":0,\"endDistance\":0},{\"startDistance\":0,\"endDistance\":0},{\"startDistance\":0,\"endDistance\":0},{\"startDistance\":0,\"endDistance\":0}]}"
+    },
+    {
+      "name": "缩放后连线端点仍对齐",
+      "status": "PASS",
+      "detail": "{\"edges\":11,\"aligned\":11,\"zoom\":1.4}"
+    },
+    {
+      "name": "点击审批节点加载真实请求参数",
+      "status": "PASS",
+      "detail": "{\n  \"toolName\": \"run_command\",\n  \"args\": {\n    \"command\": \"node -e \\\"console.log(1)\\\"\",\n    \"timeoutMs\": 30000\n  },\n  \"risk\": \"process\",\n  \"reason\": \"执行进程需要人工授权"
+    },
+    {
+      "name": "未确认风险范围时禁止批准",
+      "status": "PASS",
+      "detail": "disabled=true"
+    },
+    {
+      "name": "节点审批真实写入并刷新 Run 状态",
+      "status": "PASS",
+      "detail": "pending=false status=approved"
+    },
+    {
+      "name": "重复审批被服务端拒绝",
+      "status": "PASS",
+      "detail": "授权请求已被处理"
+    },
+    {
+      "name": "点击产物节点加载真实 Artifact 详情",
+      "status": "PASS",
+      "detail": "{\"title\":\"协作总览对象关系与状态映射\",\"body\":\"# 对象关系\\n\\nTask → Run → Approval/Artifact；Handoff 只来自真实 handoffs 表。\\n\",\"detailRows\":7}"
+    },
+    {
+      "name": "点击 Agent 节点加载真实 Agent/Run 详情",
+      "status": "PASS",
+      "detail": "AGENTKai开发工程师K开发工程师实现协作关系图与活动带工作中当前任务实现协作关系图与活动带任务状态进行中活动 Runrun_01m65e37x27rgga1wnbb8p1g7eRun 状态执行中待审批0 项会话 / 已完成 Run1 / 0最近活动2026/10/29 20:36执行指令新建上下文执行上下文计划协"
+    },
+    {
+      "name": "Agent 指令在图对象详情内且无旧整页聊天入口",
+      "status": "PASS",
+      "detail": "{\"graph\":true,\"prompt\":true,\"session\":true,\"chat\":false,\"oldEntry\":false}"
+    },
+    {
+      "name": "旧会话深链接归位到同一协作图上下文",
+      "status": "PASS",
+      "detail": "{\"graph\":true,\"chat\":false,\"hash\":\"#/projects/prj_01m65e362myq5zkytfmaemzx9m/agents\"}"
+    },
+    {
+      "name": "计划 DAG 有返回协作图入口",
+      "status": "PASS",
+      "detail": "buttons=1"
+    },
+    {
+      "name": "计划 DAG 返回协作图",
+      "status": "PASS",
+      "detail": "returned to .aco-root"
+    },
+    {
+      "name": "底部活动可下钻到真实审批/运行路由",
+      "status": "PASS",
+      "detail": "#/projects/prj_01m65e362myq5zkytfmaemzx9m/runs"
+    },
+    {
+      "name": "深色主题 token 生效",
+      "status": "PASS",
+      "detail": "ink=#EFF4FF"
+    },
+    {
+      "name": "1024 保持全图而非三栏",
+      "status": "PASS",
+      "detail": "{\"canvas\":true,\"filters\":4,\"overflowX\":0,\"visibleTasks\":4}"
+    },
+    {
+      "name": "1024 图内筛选只显示 Agent",
+      "status": "PASS",
+      "detail": "{\"agents\":4,\"tasks\":0}"
+    },
+    {
+      "name": "125% 缩放真实生效且无溢出",
+      "status": "PASS",
+      "detail": "{\"dpr\":1.25,\"overflowX\":0}"
+    },
+    {
+      "name": "reduce-motion 下关闭交接流动动画",
+      "status": "PASS",
+      "detail": "{\"media\":true,\"handoffDuration\":\"1e-06s\"}"
+    },
+    {
+      "name": "Runtime 重启后真实状态恢复",
+      "status": "PASS",
+      "detail": "{\"restored\":{\"agents\":4,\"artifacts\":2,\"waiting\":0},\"approvals\":0,\"approvedPersisted\":true}"
+    }
+  ],
+  "summary": {
+    "pass": 30,
+    "fail": 0
+  }
+}

@@ -51,6 +51,23 @@ const onStatus = (handler: (status: RuntimeStatus) => void): Unsubscribe => {
 }
 
 const api: ProjectOSDesktopApi = {
+  organization: {
+    status: (input) => call('organization.status',input),
+    connect: (input) => call('organization.connect',input),
+    cancel: () => call('organization.cancel'),
+    disconnect: () => call('organization.disconnect'),
+    select: (input) => call('organization.select',input),
+    create: (input) => call('organization.create',input),
+    projects: () => call('organization.projects'),
+    createProject: (input) => call('organization.createProject',input),
+    members: () => call('organization.members'),
+    invite: (input) => call('organization.invite',input),
+    invitations: () => call('organization.invitations'),
+    decideInvitation: (input) => call('organization.decideInvitation',input),
+    changeMember: (input) => call('organization.changeMember',input),
+    removeMember: (input) => call('organization.removeMember',input),
+    setProjectMember: (input) => call('organization.setProjectMember',input),
+  },
   app: {
     bootstrap: () => call('app.bootstrap'),
     preferences: () => call('app.preferences.get'),

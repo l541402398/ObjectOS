@@ -4,7 +4,7 @@ import { join, relative } from 'node:path'
 const repoRoot = process.cwd()
 
 const PACKAGE_RULES = {
-  contracts: [],
+  contracts: ['organization-contracts'],
   domain: ['contracts'],
   application: ['contracts', 'domain', 'session-manager', 'collaboration'],
   persistence: ['contracts', 'domain', 'application'],
@@ -25,7 +25,7 @@ const PACKAGE_RULES = {
   'design-tokens': [],
   ui: ['contracts', 'design-tokens'],
   'ai-ui': ['contracts', 'design-tokens', 'ui'],
-  // Organization control-plane contracts are platform-neutral; the server is the only consumer.
+  // Organization schemas are platform-neutral; core IPC contracts may reuse sanitized views.
   'organization-contracts': [],
 }
 

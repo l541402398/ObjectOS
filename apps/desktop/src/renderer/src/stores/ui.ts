@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 export type ThemeMode = 'light' | 'dark' | 'system'
 export type SettingsSection =
   | 'overview'
+  | 'organization'
   | 'ai-connections'
   | 'models'
   | 'runtime'

@@ -564,7 +564,7 @@ describe('organization control plane (A0 PoC, real HTTP)', () => {
     })
     expect(loginPage.status, loginPage.text).toBe(200)
     expect(loginPage.headers.get('content-security-policy')).toBe(
-      "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'",
+      `default-src 'none'; style-src 'unsafe-inline'; form-action 'self' ${new URL(redirectUri).origin}`,
     )
     expect(loginPage.headers.get('x-frame-options')).toBe('DENY')
     expect(loginPage.headers.get('cache-control')).toBe('no-store')

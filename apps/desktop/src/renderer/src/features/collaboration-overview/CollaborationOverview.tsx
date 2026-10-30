@@ -10,7 +10,6 @@ import {
   RefreshCw,
   ShieldAlert,
   Workflow,
-  MessagesSquare,
 } from 'lucide-react'
 import type {
   CollaborationOverviewAgent,
@@ -25,6 +24,7 @@ import { qk, useCollaborationOverview } from '../../lib/queries'
 import { OverlayFooter, OverlayHeader, OverlayScrollArea, SheetShell } from '../../next-ui/overlay/overlay-shell'
 import { CollaborationGraph, type GraphSelection } from './CollaborationGraph'
 import { projectCollaborationFocus } from './focus-projection'
+import { AgentContextActions } from './AgentContextActions'
 import '@projectos/design-tokens/precision.css'
 import './collaboration-overview.css'
 
@@ -88,14 +88,16 @@ function handoffStatusLabel(status: HandoffView['status']): string {
 
 export function CollaborationOverview({
   projectId,
-  onOpenSession,
-  onOpenSessions,
   onManageAgents,
+  requestedAgentId,
+  requestedSessionId,
+  onContextRequestHandled,
 }: {
   projectId: string
-  onOpenSession: (sessionId: string) => void
-  onOpenSessions: () => void
   onManageAgents: () => void
+  requestedAgentId?: string | null
+  requestedSessionId?: string | null
+  onContextRequestHandled: () => void
 }): ReactElement {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -110,6 +112,7 @@ export function CollaborationOverview({
   const [decisionNote, setDecisionNote] = useState('')
   const [riskAccepted, setRiskAccepted] = useState(false)
   const [deciding, setDeciding] = useState(false)
+  const [requestedContext,setRequestedContext] = useState<{agentId:string;sessionId:string|null}|null>(null)
   const [decisionError, setDecisionError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -150,6 +153,12 @@ export function CollaborationOverview({
   const handoffs = useMemo(() => data?.handoffs ?? [], [data])
   const pendingApprovals = useMemo(() => approvals.filter((approval) => approval.status === 'pending'), [approvals])
   const plan = data?.plan ?? null
+  useEffect(()=>{
+    if(!requestedAgentId||!data?.agents.some((agent)=>agent.id===requestedAgentId))return
+    setSelection({kind:'agent',id:requestedAgentId})
+    setRequestedContext({agentId:requestedAgentId,sessionId:requestedSessionId??null})
+    onContextRequestHandled()
+  },[requestedAgentId,requestedSessionId,data?.agents,onContextRequestHandled])
   const metrics = data?.metrics ?? null
   const focus = useMemo(
     () => projectCollaborationFocus({ agents, tasks, artifacts, approvals, handoffs, plan }),
@@ -206,7 +215,7 @@ export function CollaborationOverview({
       await queryClient.invalidateQueries({ queryKey: qk.collaborationOverview(projectId) })
       await queryClient.invalidateQueries({ queryKey: qk.approvals(projectId) })
       setDecision(null)
-      setSelection(null)
+      setSelection((current) => current?.kind === 'approval' && current.id === approvalForSelection.id ? null : current)
     } catch (error) {
       setDecisionError(errorMessage(error))
     } finally {
@@ -318,6 +327,9 @@ export function CollaborationOverview({
           {selectedAgent.pendingApprovals > 0 ? (
             <div className="aco-callout is-warn"><ShieldAlert size={13} /> 该 Agent 正在等待人工审批；Run 已暂停，不会继续写入。</div>
           ) : null}
+          <AgentContextActions key={selectedAgent.id} projectId={projectId} agent={selectedAgent}
+            preferredSessionId={requestedContext?.agentId===selectedAgent.id?requestedContext.sessionId:null}
+            onClose={()=>setSelection(null)} />
         </>
       )
     }
@@ -518,7 +530,6 @@ export function CollaborationOverview({
         </div>
         <span className="aco-toolbar-spacer" />
         <button type="button" className="aco-link" onClick={openOrchestration}><Workflow size={12} /> 计划 DAG</button>
-        <button type="button" className="aco-link" onClick={onOpenSessions}><MessagesSquare size={12} /> 会话工作台</button>
         <button type="button" className="aco-link" onClick={onManageAgents}><Bot size={12} /> Agent 管理</button>
       </div>
 
@@ -602,11 +613,6 @@ export function CollaborationOverview({
           ) : null}
           {selectedAgent ? (
             <>
-              {selectedAgent.activeSessionId ? (
-                <button type="button" className="aco-btn is-primary" onClick={() => { onOpenSession(selectedAgent.activeSessionId!) }}>
-                  打开会话 <ArrowRight size={12} />
-                </button>
-              ) : null}
               {selectedAgent.activeRunId ? (
                 <button type="button" className="aco-btn" onClick={() => openRun(selectedAgent.activeRunId!)}>运行审计</button>
               ) : null}

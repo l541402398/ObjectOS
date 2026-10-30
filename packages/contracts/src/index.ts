@@ -17,5 +17,6 @@ export * from './errors.js'
 export * from './runtime-protocol.js'
 export * from './desktop-api.js'
 export * from './plugins.js'
+export * from './organization.js'
 
 

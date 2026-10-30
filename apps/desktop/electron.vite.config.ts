@@ -8,7 +8,7 @@ const repoRoot = resolve(root, '../..')
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin({ exclude: ['@projectos/contracts', 'zod', 'ulid', 'ssh2'] })],
+    plugins: [externalizeDepsPlugin({ exclude: ['@projectos/contracts', '@projectos/organization-contracts', 'zod', 'ulid', 'ssh2'] })],
     resolve: {
       alias: {
         '@main': resolve(root, 'src/main'),

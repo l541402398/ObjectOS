@@ -1,0 +1,792 @@
+{
+  "schemaVersion": 1,
+  "phase": "Organization A1 foundation",
+  "repository": "l541402398/ObjectOS",
+  "branch": "codex/org-a1-foundation",
+  "generatedAtUtc": "2026-10-30T03:44:43.871Z",
+  "userDate": "2026-10-29",
+  "userTimeZone": "America/Los_Angeles",
+  "baselineCommit": "ec97824d7751cc3d443ae1cdac4793e9170ed1ec",
+  "observedHeadBeforeImplementationCommit": "ec97824d7751cc3d443ae1cdac4793e9170ed1ec",
+  "implementationCommit": {
+    "status": "PENDING_COMMIT",
+    "sha": null,
+    "note": "Backfill implementation SHA after code-and-evidence commit; these results describe the tested working tree."
+  },
+  "overallResult": "PASS_ENGINEERING_CHECKS_VISUAL_REVIEW_PENDING",
+  "visualAuthority": {
+    "baselineCommit": "0686c41",
+    "direction": "User-approved Premium Liquid Glass Design Lab",
+    "finalVisualAcceptance": "PENDING_USER_REVIEW"
+  },
+  "checks": [
+    {
+      "command": "pnpm lint",
+      "result": "PASS",
+      "exitCode": 0,
+      "errors": 0,
+      "warnings": 29,
+      "boundaries": "PASS"
+    },
+    {
+      "command": "pnpm typecheck",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm test",
+      "result": "PASS",
+      "exitCode": 0,
+      "passed": 536,
+      "failed": 0,
+      "skipped": 4,
+      "testFilesPassed": 98,
+      "testFilesSkipped": 2
+    },
+    {
+      "command": "pnpm build",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/e2e.mjs",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/agent-e2e.mjs",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/v12-e2e.mjs",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/v13-e2e.mjs",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm package:dir",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm test:package",
+      "result": "PASS",
+      "exitCode": 0
+    },
+    {
+      "command": "node --import tsx scripts/org-a1-e2e.mjs",
+      "result": "PASS",
+      "exitCode": 0,
+      "passed": 30,
+      "failed": 0,
+      "structuredEvidence": "docs/org-upgrade/evidence/A1/electron-checks.json",
+      "fixture": "Actual isolated PostgreSQL + Electron + browser PKCE + typed IPC"
+    },
+    {
+      "command": "node --import tsx scripts/org-server-artifact-smoke.mts",
+      "result": "PASS",
+      "exitCode": 0,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "command": "node scripts/agent-overview-e2e.mjs",
+      "result": "PASS",
+      "exitCode": 0,
+      "passed": 30,
+      "failed": 0,
+      "structuredEvidence": "docs/org-upgrade/evidence/A1/graph/electron-checks.json",
+      "environment": {
+        "PROJECTOS_OVERVIEW_EVIDENCE_DIR": "docs/org-upgrade/evidence/A1/graph"
+      },
+      "fixture": "Actual Electron; local fake provider and seeded persisted artifacts/handoff; not real-model delivery",
+      "captureNote": "Wait for Motion opacity=1 plus 1200ms before capture"
+    }
+  ],
+  "protectedGraphImplementation": {
+    "result": "PASS",
+    "files": [
+      {
+        "path": "apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationGraph.tsx",
+        "result": "PASS",
+        "baseGitBlobSha1": "322f5dce633f2bb91857da738409e228f72a2118",
+        "workingGitBlobSha1": "322f5dce633f2bb91857da738409e228f72a2118",
+        "baseUtf8LfSha256": "4f4b1a93d8afd12c9cdd2736164e7f1cdd3df4750557265b61b06ea69648cfcd",
+        "workingUtf8LfSha256": "4f4b1a93d8afd12c9cdd2736164e7f1cdd3df4750557265b61b06ea69648cfcd",
+        "workingFileSha256": "4f4b1a93d8afd12c9cdd2736164e7f1cdd3df4750557265b61b06ea69648cfcd"
+      },
+      {
+        "path": "apps/desktop/src/renderer/src/features/collaboration-overview/focus-projection.ts",
+        "result": "PASS",
+        "baseGitBlobSha1": "584f0bfb446aa0cce22410c10bee38794e0c638a",
+        "workingGitBlobSha1": "584f0bfb446aa0cce22410c10bee38794e0c638a",
+        "baseUtf8LfSha256": "9ab96e4acddf53860ef385cbad24d9c0baf64913d8d11df60743d102ac9889b4",
+        "workingUtf8LfSha256": "9ab96e4acddf53860ef385cbad24d9c0baf64913d8d11df60743d102ac9889b4",
+        "workingFileSha256": "9ab96e4acddf53860ef385cbad24d9c0baf64913d8d11df60743d102ac9889b4"
+      }
+    ],
+    "comparison": "git diff plus SHA256; normalize CRLF to LF only",
+    "scope": "Graph canvas/topology/focus source unchanged; shared theme tokens may change appearance. Pixel identity is not claimed."
+  },
+  "structuredEvidence": [
+    {
+      "path": "docs/org-upgrade/evidence/A1/electron-checks.json",
+      "bytes": 3239,
+      "sha256": "7aa59845f1f99a16d55ef4bfa90f2fba2235edeaa35147f061b920606426ff0d"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/electron-checks.json",
+      "bytes": 6409,
+      "sha256": "2f34e0b800ddf05798185e22a18700c05d446e2006affccb885712050bab9350"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/org-upgrade/evidence/A1/diagnostics/browser-failure.png",
+      "bytes": 189767,
+      "sha256": "9defc5bd92ce1768cdadf362553fb81e2462b143879f2e3075180afda3d89785",
+      "width": 1084,
+      "height": 853,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "historical-diagnostic",
+      "theme": "unspecified",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/diagnostics/failure.png",
+      "bytes": 314561,
+      "sha256": "9f7eef01b6f61021353c350f1332f8bcbb9d4e317d63263dfe0aa80d069376b1",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "historical-diagnostic",
+      "theme": "unspecified",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/agent-inspector-1440-light.png",
+      "bytes": 272124,
+      "sha256": "7999fba21d1ae5f39d700e988a7a85c2d1f97c7dd8f413d880a56c4535594cc0",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/approval-inline-confirm.png",
+      "bytes": 296069,
+      "sha256": "533680b35b90f75c525098cac0a42404d4290473ae04afcadcaa3705e606e748",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "unspecified",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/artifact-inspector-1440-light.png",
+      "bytes": 256998,
+      "sha256": "e41604aedfdda2977ed89e045a1a82ea24c7e485aa65bfb2c76285debd7d10a3",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/overview-1024-agents.png",
+      "bytes": 207686,
+      "sha256": "b697784d91721339fc63cda5ed1e0c2916b4721ea8c934c2424e52fbe7d30b50",
+      "width": 1024,
+      "height": 768,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "unspecified",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/overview-1024-all.png",
+      "bytes": 236921,
+      "sha256": "3f53cf326bfe2426c2d8ce68e40efada99050dc776a26a41abfa8f203b201501",
+      "width": 1024,
+      "height": 768,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "unspecified",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/overview-1024-tasks.png",
+      "bytes": 199867,
+      "sha256": "3bf9d7ae5d3711798de3b2b6977652c6e96f19bd2aa5723764a66876b99a8f7b",
+      "width": 1024,
+      "height": 768,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "unspecified",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/overview-1440-approved.png",
+      "bytes": 345106,
+      "sha256": "89828f0b0dca9ac73c611974812730e58a86f8885d119ca465b342005469481c",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "unspecified",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/overview-1440-dark.png",
+      "bytes": 352096,
+      "sha256": "33518704463b69e38823a03bba17f87421dbc5887256c28d7c8a09aa76afe455",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "dark",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/overview-1440-light-125.png",
+      "bytes": 291668,
+      "sha256": "fa1c8ba9921cf5a5fb53832c5a594bc6f75adf5924f7d339bdbd994c25312912",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": 1.25
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/overview-1440-light.png",
+      "bytes": 346635,
+      "sha256": "4b8c049db1f10bf5a6cbf380a51dbd778436bbcf35da4b47b1099c7c7c928716",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/overview-1440-restart-light.png",
+      "bytes": 339255,
+      "sha256": "2fac7a15d6d54203f5ddbbe5eadc37cf3dafd56634091bda8f5fd1405c27d8df",
+      "width": 1440,
+      "height": 892,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/overview-1440-standby.png",
+      "bytes": 352449,
+      "sha256": "a55b8498e6ea1f724e6721c8725ee18238aafae5903cd5b0ad6dc2037d1be8ce",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "unspecified",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/overview-1440-zoom.png",
+      "bytes": 346579,
+      "sha256": "92e2f5d2c04637efb65d46ec914f8ba778cd5389e9134baa1091d77e9af03e24",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "unspecified",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/studio-project-home-1024-dark.png",
+      "bytes": 278969,
+      "sha256": "6f131afb32bf90d60e7a4d4337238c80ef62abb2f6cff2beff64a086a5055f55",
+      "width": 1024,
+      "height": 768,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "dark",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/studio-project-home-1024-light.png",
+      "bytes": 295548,
+      "sha256": "49b31fabaa2103aa9cfdbbb141acad1f4fcfe12dca4f47e599adabdf64000fc9",
+      "width": 1024,
+      "height": 768,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/studio-project-home-1440-125.png",
+      "bytes": 418342,
+      "sha256": "e03624d1e0166854c14d784ce5c7ca1c0d77adbfce0f971e4c5bc482d3d1ce73",
+      "width": 1440,
+      "height": 891,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "unspecified",
+      "zoomFactor": 1.25
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/studio-project-home-1440-dark.png",
+      "bytes": 398758,
+      "sha256": "e49a310e389f1b92cf8564c7a5db4db3f34c87f53aa4ae1f6a997b16a2788fee",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "dark",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/studio-project-home-1440-light.png",
+      "bytes": 438326,
+      "sha256": "b40eafeea6d0d48ea0a800a50eb0cabc351c843709a65be2451a76ecc96b958b",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/studio-review-1024-dark.png",
+      "bytes": 248572,
+      "sha256": "8f045c92ea9386bc43a3b013804693fbfae12aa6b9ae3c8bd6ec37a3bb1b8edd",
+      "width": 1024,
+      "height": 768,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "dark",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/studio-review-1024-light.png",
+      "bytes": 262403,
+      "sha256": "e2d01cdc4944694a5e99fdb397767804fe2cfb4a0276812a9e50412124b4db90",
+      "width": 1024,
+      "height": 768,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/studio-review-1440-125.png",
+      "bytes": 351055,
+      "sha256": "f1b6c1ef566aee11e746c2dcaaea17c3b82a4febf7adb3ffcd0d3bc73e234d9f",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "unspecified",
+      "zoomFactor": 1.25
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/studio-review-1440-dark.png",
+      "bytes": 342621,
+      "sha256": "d322f10a3e5e34068c3068bbd6d24ec828424c28327a04628c3d4b11b21e5b52",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "dark",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/studio-review-1440-light.png",
+      "bytes": 373019,
+      "sha256": "66cde213cb52c7d71b588aa3d9167131a6d3ffba2c626ec3f2e6ddb9fc13021e",
+      "width": 1440,
+      "height": 891,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/unification-approval-center-1440-light.png",
+      "bytes": 428830,
+      "sha256": "e6e6ee4a22d443b2b76a9188e5d53956e4eff72328c8202dc3ff0367321a5a75",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/unification-runs-1440-light.png",
+      "bytes": 367387,
+      "sha256": "20abb921ebc793f5bae7cadfb6bb4dafa684af5a4c4eb512fa2a9da0be2522ed",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/unification-settings-1440-light.png",
+      "bytes": 409375,
+      "sha256": "5731562e29a8f80e6115a9d2f9221a00568f203939b9b884856bca404939d45a",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/graph/screenshots/unification-tasks-1440-light.png",
+      "bytes": 654092,
+      "sha256": "09dcdae4bd40c7d8bf7802503421cde5275695f6058f8dfbc94661d07bdab034",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "graph-regression",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/browser-consent-light.png",
+      "bytes": 189539,
+      "sha256": "568c505815a5990f8fced649512aa6ed4c475a22083c5dc07d04c2fc006e36c3",
+      "width": 1084,
+      "height": 853,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/browser-registration-light.png",
+      "bytes": 166292,
+      "sha256": "5cb82101632baf6a0655e3efb630aafbe5d028d9bf7c26908b0ab69721270140",
+      "width": 1084,
+      "height": 853,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/connection-1024-dark.png",
+      "bytes": 245240,
+      "sha256": "fa30d7938298d0fec07a13f5fbcd0630f9a9429970cf1d618604683ca4705dd9",
+      "width": 1024,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "dark",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/connection-1024-light.png",
+      "bytes": 211308,
+      "sha256": "b13f677b8fc30c1beef64fbf615e766a6a0a33b41dc741b3b4295f3c138f6903",
+      "width": 1024,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/connection-1440-dark.png",
+      "bytes": 327220,
+      "sha256": "bbfeeb78b767e7452643aefee66ed1e95263d0fa831b775a240b8d51a48ea713",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "dark",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/connection-1440-light-125.png",
+      "bytes": 219010,
+      "sha256": "232e58a6758a53b664bec76e50bca25b5158d24f81013dcf36a0504fa0f6d87b",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": 1.25
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/connection-1440-light.png",
+      "bytes": 308681,
+      "sha256": "ac6cab7959142e62649a7833c6cfc2a80047fb7464d5a5bfe2d3c520b041d09a",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/members-1024-dark.png",
+      "bytes": 162544,
+      "sha256": "f06e182fd7eda49fea04b9de8c90ca96d6d09018c712d844f2ae9fba4667cf22",
+      "width": 1024,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "dark",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/members-1024-light.png",
+      "bytes": 156537,
+      "sha256": "9d8f673a98572b485b3033e0c3c610c4b2883e981017cebd18294fb2bc48b664",
+      "width": 1024,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/members-1440-dark.png",
+      "bytes": 251862,
+      "sha256": "368e57dc5ad524ed3fcae3b0b79ad1dfebf7e4a7b5cbb8037f05e0fa06feab0a",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "dark",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/members-1440-light-125.png",
+      "bytes": 179299,
+      "sha256": "8daffd68008dc41de5b75fffc6b307adaef45e75c4ce41ce4594dbbc5ef5c62d",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": 1.25
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/members-1440-light.png",
+      "bytes": 263449,
+      "sha256": "6ba90ec00603fb02c2ad3837c2029315ee72ead2c158be6be55f6baea563d940",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/projects-1024-dark.png",
+      "bytes": 179361,
+      "sha256": "c84ac18f9d9c5e6d249ff9a53e5e6f2db53a0e2903e6de76cabd3c9ff9e2c215",
+      "width": 1024,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "dark",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/projects-1024-light.png",
+      "bytes": 172387,
+      "sha256": "8d8618e204b15fc18b8b6028cc75fbc6391345bc2690f71e4ac5e9bf32f65540",
+      "width": 1024,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/projects-1440-dark.png",
+      "bytes": 277430,
+      "sha256": "7a9e93d6ba3c05fc18ee22229d1dc64cb99a06f8431d44a76fa7fd0b8bec6df1",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "dark",
+      "zoomFactor": null
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/projects-1440-light-125.png",
+      "bytes": 179496,
+      "sha256": "1df97833bc88651c43dfb6f3c90585a0e0071ef7bcc19d4ec230511d8dcc1fdd",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": 1.25
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A1/screenshots/projects-1440-light.png",
+      "bytes": 281594,
+      "sha256": "0e957badc7169420db2f678c72c26d3f0d51bbbb0e81e9a23b1cf448e29bcd85",
+      "width": 1440,
+      "height": 900,
+      "dimensionEvidence": "PNG IHDR header",
+      "group": "organization-a1",
+      "classification": "final-run-evidence",
+      "theme": "light",
+      "zoomFactor": null
+    }
+  ],
+  "screenshotCounts": {
+    "total": 46,
+    "finalOrganization": 17,
+    "finalGraph": 27,
+    "historicalDiagnostic": 2
+  },
+  "buildArtifacts": [
+    {
+      "path": "apps/server/dist/index.js",
+      "bytes": 71308,
+      "sha256": "52987ab372e9ec708f01c6367e910ce38e535e4b705611d3c910d3af95318482"
+    },
+    {
+      "path": "apps/runtime/dist/index.mjs",
+      "bytes": 2539207,
+      "sha256": "d773918d1ab9b538d96a5a6ff44e797e5126a121d374ef362367d136a588586d"
+    },
+    {
+      "path": "apps/desktop/out/main/index.js",
+      "bytes": 1023699,
+      "sha256": "1c915d796aeb2d0d12ec883120fe38206522dc8da14001aa2307fa35942d1557"
+    },
+    {
+      "path": "apps/desktop/out/preload/index.js",
+      "bytes": 18703,
+      "sha256": "0283327a356aab8d6cddd007a59a9c4d1ae7c161cedbaa34188198288e7da40a"
+    },
+    {
+      "path": "apps/desktop/out/renderer/index.html",
+      "bytes": 880,
+      "sha256": "ebfe2bb7972dda7bd5c71344b0cf887d353da68aa8db88b38ec30e9b4cdb0072"
+    },
+    {
+      "path": "release/win-unpacked/ProjectOS.exe",
+      "bytes": 239400448,
+      "sha256": "628359bf97c5ffff1c7a991599782d3064fc6c6ec7438f4b2a81a4318d226b0a",
+      "authenticodeStatus": "NotSigned",
+      "signatureCheck": "Get-AuthenticodeSignature"
+    },
+    {
+      "path": "release/win-unpacked/resources/runtime/index.mjs",
+      "bytes": 2539207,
+      "sha256": "d773918d1ab9b538d96a5a6ff44e797e5126a121d374ef362367d136a588586d"
+    },
+    {
+      "path": "release/win-unpacked/resources/app.asar",
+      "bytes": 35753064,
+      "sha256": "cb6bcfafac4cfb361ff5242a907b3b62ca0bda592af79ad4fd08394d237d7990"
+    }
+  ],
+  "dependencyLockfile": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 332664,
+    "sha256": "d2bb5f32b9df10def1032258218bb09c1eaffe680164d3acd0894f15588f43a7"
+  },
+  "skippedChecks": [
+    {
+      "check": "Full axe accessibility audit",
+      "result": "SKIP"
+    },
+    {
+      "check": "Dedicated foreground FPS/memory glass benchmark",
+      "result": "SKIP"
+    },
+    {
+      "check": "Real-model autonomous delivery",
+      "result": "SKIP"
+    },
+    {
+      "check": "Real SSH/VPS deployment",
+      "result": "SKIP"
+    }
+  ],
+  "privacy": {
+    "paths": "Repository-relative only; absolute user video locations and workstation paths omitted.",
+    "rawLogsIncluded": false,
+    "credentials": "No URL credentials, bearer tokens, passwords, API keys or invitation codes included.",
+    "userProvidedVideoReferences": {
+      "count": 2,
+      "absoluteLocationsIncluded": false,
+      "contentsCopied": false
+    }
+  },
+  "limitations": [
+    "Focused keyboard/labels/reduced-motion/overflow checks are not full WCAG acceptance.",
+    "NotSigned package smoke does not establish signing or installer acceptance.",
+    "A1 does not deliver asset publication, Worker dispatch, local-project linking, requirement workspaces or configurable workflow execution.",
+    "Email ownership verification, refresh-token rotation, distributed rate limits, database RLS and production deployment operations are not claimed.",
+    "Initial failures and repairs are recorded in A1-report.md; diagnostics are historical and not final screenshots."
+  ]
+}

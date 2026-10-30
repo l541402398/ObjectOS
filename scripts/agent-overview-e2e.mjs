@@ -21,7 +21,7 @@ import { join, resolve } from 'node:path'
 
 const root = process.cwd()
 const exec = promisify(execFile)
-const evidenceDir = resolve(root, 'docs/agent-overview/evidence')
+const evidenceDir = resolve(process.env.PROJECTOS_OVERVIEW_EVIDENCE_DIR || join(root, 'docs/agent-overview/evidence'))
 const shotDir = join(evidenceDir, 'screenshots')
 mkdirSync(shotDir, { recursive: true })
 
@@ -125,7 +125,15 @@ async function openOverview(projectId) {
 }
 
 async function shot(name) {
-  await page.screenshot({ path: join(shotDir, name), animations: 'disabled' })
+  await page.mouse.move(5, 5)
+  // Native capture does not wait for Motion as Playwright screenshot does. Capture
+  // the settled surface, then allow the Electron compositor to finish painting.
+  await page.waitForFunction(() => [...document.querySelectorAll('.pui-overlay-surface:not(.is-closing)')]
+    .filter(element => element.getBoundingClientRect().width > 0)
+    .every(element => Number(getComputedStyle(element).opacity) >= .999))
+  await page.waitForTimeout(1200)
+  const bytes = await win.evaluate(async (w) => (await w.webContents.capturePage()).toPNG().toString('base64'))
+  writeFileSync(join(shotDir, name), Buffer.from(bytes, 'base64'))
 }
 
 async function setWindow(width, height) {
@@ -171,7 +179,7 @@ try {
     planId,
     tasks: [
       { key: 'arch', title: '梳理协作总览数据边界', description: '确认 Task/Run/Handoff/Artifact 关联', role: 'architect', agentId: 'agt_architect', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: [], acceptanceCriteria: ['给出真实对象关系'], expectedArtifacts: [], requiresApproval: false },
-      { key: 'impl', title: '实现协作总览三栏与活动带', description: '按真实投影渲染', role: 'developer', agentId: 'agt_engineer', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: [], acceptanceCriteria: ['三栏可读'], expectedArtifacts: [], requiresApproval: false },
+      { key: 'impl', title: '实现协作关系图与活动带', description: '按真实投影渲染', role: 'developer', agentId: 'agt_engineer', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: [], acceptanceCriteria: ['关系图可读'], expectedArtifacts: [], requiresApproval: false },
       { key: 'test', title: '真实 Electron 验证', description: '验证状态与下钻', role: 'tester', agentId: 'agt_qa', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: ['arch', 'impl'], acceptanceCriteria: ['截图与断言通过'], expectedArtifacts: [], requiresApproval: false },
       { key: 'review', title: '独立代码审查', description: '审查总览实现', role: 'reviewer', agentId: 'agt_reviewer', assignmentReasons: ['用户手动指定'], assignmentBlocked: false, dependsOn: ['test'], acceptanceCriteria: ['给出审查结论'], expectedArtifacts: [], requiresApproval: false },
     ],
@@ -369,14 +377,15 @@ try {
   await page.waitForTimeout(400)
 
   // Cross-page shell continuity: business pages keep their old compositions in this phase but must
-  // share the same warm frame. These are baseline captures for the next batch, not claimed redesigns.
+  // share the approved optical frame. These are baseline captures, not claimed composition redesigns.
   for (const [route, file] of [
     ['tasks', 'unification-tasks-1440-light.png'],
     ['runs', 'unification-runs-1440-light.png'],
     ['approvals/center', 'unification-approval-center-1440-light.png'],
   ]) {
     await page.evaluate((hash) => { window.location.hash = hash }, `#/projects/${projectId}/${route}`)
-    await page.waitForSelector('.po-page', { timeout: 20_000 })
+    const heading = route === 'tasks' ? '任务看板' : route === 'runs' ? '运行审计' : '审批工作台'
+    await page.getByRole('heading', { name: heading, exact: true }).waitFor({ timeout: 20_000 })
     await page.waitForTimeout(900)
     await shot(file)
   }
@@ -552,7 +561,7 @@ try {
   await page.keyboard.press('Escape')
   await page.waitForTimeout(350)
 
-  // Agent node → inspector → existing professional workspace with the real session.
+  // Agent node → compact execution context, while the same graph remains the workspace.
   const currentOverview = await page.evaluate(async (id) => window.projectos.collaboration.overview(id), projectId)
   const workingAgentId = currentOverview.agents.find((agent) => agent.activeSessionId)?.id ?? currentOverview.agents[0]?.id
   await page.locator(`[data-testid="collaboration-agent-${workingAgentId}"]`).click()
@@ -560,22 +569,24 @@ try {
   const agentInspector = await page.evaluate(() => document.querySelector('[data-testid="collaboration-inspector"]')?.textContent ?? '')
   record('点击 Agent 节点加载真实 Agent/Run 详情', agentInspector.includes('活动 Run') && agentInspector.includes('待审批'), agentInspector.slice(0, 160))
   await shot('agent-inspector-1440-light.png')
-  const sessionButton = page.getByRole('button', { name: '打开会话' })
-  if (await sessionButton.count()) {
-    await sessionButton.first().click()
-    await page.waitForSelector('.po-agent-workspace', { timeout: 15_000 })
-    const sessionWorkspace = await page.evaluate(() => ({ hash: window.location.hash, workspace: Boolean(document.querySelector('.po-agent-workspace')), back: Boolean([...document.querySelectorAll('button')].find((button) => button.textContent?.includes('返回协作总览'))) }))
-    record('Agent 会话工作台可从节点打开且有明确返回', sessionWorkspace.workspace && sessionWorkspace.hash.includes('workspace=sessions') && sessionWorkspace.back, JSON.stringify(sessionWorkspace))
-    await page.getByRole('button', { name: '返回协作总览' }).first().click()
-    await page.waitForSelector('.aco-root', { timeout: 15_000 })
-    const restoredSelection = await page.evaluate(() => document.querySelector('[data-testid="collaboration-inspector"]')?.textContent ?? '')
-    record('会话工作台返回后恢复选中节点', restoredSelection.includes('活动 Run') || restoredSelection.includes('等待审批'), restoredSelection.slice(0, 140))
-    await page.keyboard.press('Escape')
-    await page.waitForSelector('[data-testid="collaboration-inspector"]', { state: 'detached', timeout: 5_000 }).catch(() => undefined)
-  } else {
-    record('Agent 会话工作台可从节点打开且有明确返回', 'SKIP', '该 Agent 当前没有活动会话')
-    await page.keyboard.press('Escape')
-  }
+  await page.waitForSelector('[data-testid="agent-context-actions"]', { timeout: 10_000 })
+  const graphContext = await page.evaluate(() => ({
+    graph: Boolean(document.querySelector('[data-testid="collaboration-graph"]')),
+    prompt: Boolean(document.querySelector('[data-testid="agent-context-prompt"]')),
+    session: Boolean(document.querySelector('[data-testid="agent-context-session"]')),
+    chat: Boolean(document.querySelector('.po-agent-workspace, .po-sender')),
+    oldEntry: [...document.querySelectorAll('button')].some(button => /^(打开会话|会话工作台)$/.test(button.textContent?.trim() ?? '')),
+  }))
+  record('Agent 指令在图对象详情内且无旧整页聊天入口', graphContext.graph && graphContext.prompt && graphContext.session && !graphContext.chat && !graphContext.oldEntry, JSON.stringify(graphContext))
+  const legacySessionId = currentOverview.agents.find(agent => agent.id === workingAgentId)?.activeSessionId
+  if (legacySessionId) {
+    await page.evaluate(({projectId,sessionId})=>{window.location.hash=`#/projects/${projectId}/agents?workspace=sessions&session=${encodeURIComponent(sessionId)}`},{projectId,sessionId:legacySessionId})
+    await page.waitForFunction((sessionId)=>!window.location.hash.includes('workspace=sessions')&&document.querySelector('[data-testid="agent-context-session"]')?.value===sessionId,legacySessionId,{timeout:15_000})
+    const legacyLanding=await page.evaluate(()=>({graph:Boolean(document.querySelector('[data-testid="collaboration-graph"]')),chat:Boolean(document.querySelector('.po-agent-workspace, .po-sender')),hash:window.location.hash}))
+    record('旧会话深链接归位到同一协作图上下文',legacyLanding.graph&&!legacyLanding.chat,JSON.stringify(legacyLanding))
+  } else record('旧会话深链接归位到同一协作图上下文','SKIP','该 Agent 没有持久化会话可用于深链接')
+  await page.keyboard.press('Escape')
+  await page.waitForSelector('[data-testid="collaboration-inspector"]', { state: 'detached', timeout: 5_000 })
 
   await page.getByRole('button', { name: '计划 DAG' }).click()
   await page.waitForSelector('.po-orchestration-page', { timeout: 20_000 })
@@ -597,7 +608,7 @@ try {
   await setTheme('dark')
   await page.waitForTimeout(600)
   const darkInk = await page.evaluate(() => getComputedStyle(document.querySelector('.aco-root')).getPropertyValue('--pw-ink').trim())
-  record('深色主题 token 生效', darkInk === '#e9eef6' || darkInk === '#f0ebe1', `ink=${darkInk}`)
+  record('深色主题 token 生效', darkInk.toLowerCase() === '#eff4ff', `ink=${darkInk}`)
   await shot('overview-1440-dark.png')
   await setTheme('light')
 

@@ -21,6 +21,23 @@ type ProviderInfo = z.infer<typeof ProviderInfoSchema>
  * schema-validated request; there is no generic channel or filesystem access.
  */
 export interface ProjectOSDesktopApi {
+  organization: {
+    status: (input?: In<'organization.status'>) => Promise<Out<'organization.status'>>
+    connect: (input: In<'organization.connect'>) => Promise<Out<'organization.connect'>>
+    cancel: () => Promise<Out<'organization.cancel'>>
+    disconnect: () => Promise<Out<'organization.disconnect'>>
+    select: (input: In<'organization.select'>) => Promise<Out<'organization.select'>>
+    create: (input: In<'organization.create'>) => Promise<Out<'organization.create'>>
+    projects: () => Promise<Out<'organization.projects'>>
+    createProject: (input: In<'organization.createProject'>) => Promise<Out<'organization.createProject'>>
+    members: () => Promise<Out<'organization.members'>>
+    invite: (input: In<'organization.invite'>) => Promise<Out<'organization.invite'>>
+    invitations: () => Promise<Out<'organization.invitations'>>
+    decideInvitation: (input: In<'organization.decideInvitation'>) => Promise<Out<'organization.decideInvitation'>>
+    changeMember: (input: In<'organization.changeMember'>) => Promise<Out<'organization.changeMember'>>
+    removeMember: (input: In<'organization.removeMember'>) => Promise<Out<'organization.removeMember'>>
+    setProjectMember: (input: In<'organization.setProjectMember'>) => Promise<Out<'organization.setProjectMember'>>
+  }
   app: {
     bootstrap: (input?: In<'app.bootstrap'>) => Promise<Out<'app.bootstrap'>>
     preferences: (input?: In<'app.preferences.get'>) => Promise<Out<'app.preferences.get'>>

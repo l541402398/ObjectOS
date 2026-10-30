@@ -1,6 +1,6 @@
 import { existsSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PROJECT_EVENT_TYPES } from '@projectos/domain'
 import {
   FakeProvider,
@@ -13,6 +13,7 @@ import {
 
 const cleanups: Array<() => void> = []
 afterEach(() => {
+  vi.restoreAllMocks()
   while (cleanups.length > 0) cleanups.pop()?.()
 })
 
@@ -126,7 +127,7 @@ describe('R1-C hard Run/Plan budgets', () => {
 
   it('fails the Plan at its total wall-clock limit and stops the running Run', async () => {
     const harness = setup(new FakeProvider(() => ({ hang: true })), {
-      limits: { planWallClockMs: 1_500, runWallClockMs: 120_000, maxAgentSteps: 10 },
+      limits: { planWallClockMs: 60_000, runWallClockMs: 120_000, maxAgentSteps: 10 },
     })
     cleanups.push(harness.close)
     const { store, services, orchestration, scheduler, dataDir } = harness
@@ -147,6 +148,17 @@ describe('R1-C hard Run/Plan budgets', () => {
       },
     ])
     await scheduler.start(plan.plan.id, 1, 0)
+    // Git/workspace setup is charged to the real budget. First prove a Run is active, then move
+    // beyond the persisted deadline so this checks active-run termination independently of CPU load.
+    await waitFor(
+      () => store.read.listRunSummaries(project.id, 20).some((run) => run.taskId === plan.taskIds[0] && run.status === 'running'),
+      20_000,
+      'plan task to have an active Run',
+    )
+    const deadlineAt = store.read.getPlanRevision(plan.plan.id)!.execution!.deadlineAt
+    const realNow = Date.now.bind(Date)
+    const advanceBy = Math.max(0, deadlineAt - realNow() + 1)
+    vi.spyOn(Date, 'now').mockImplementation(() => realNow() + advanceBy)
     await waitFor(
       () => store.read.getPlanRevision(plan.plan.id)?.execution?.status === 'failed',
       20_000,

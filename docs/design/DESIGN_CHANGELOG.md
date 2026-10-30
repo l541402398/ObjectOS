@@ -1,5 +1,49 @@
 # ProjectOS UI Design Changelog
 
+## 2026-10-29 — A1 organization settings and approved palette correction
+
+- User explicitly selected the approved Premium Liquid Glass direction. Semantic palette values in
+  `packages/design-tokens/src/{index.ts,tokens.css,unified.css}` now follow the blue-violet/cyan
+  optical baseline; legacy aliases and page structures remain. Shell surfaces consume those same
+  glass values instead of hardcoded warm colors. Token/contrast checks: 20/20 with unchanged assertions.
+- Added a real `账号与组织` Settings sub-view, sidebar/command entry, browser login/cancel,
+  account/connection states, organization creation/switching, shared project metadata, members,
+  invitations and role operations through the typed preload API. Forms/confirmations are inline
+  inside the existing global DialogShell; no nested modal/backdrop.
+- Data is scoped by server/account/organization; scope caches are removed before switching and
+  scoped content is hidden while changing. No demonstration rows, fake project execution, token
+  fields or renderer HTTP access. Shared-project/local-workspace boundary is visible.
+- Actual source guidance, exact reference commits, detector result, font/contrast choices and
+  limitations are in `docs/org-upgrade/design/A1_ORGANIZATION_UI.md`. Dedicated skill-loader tools
+  were unavailable; actual checked-out guidance was read instead. Impeccable source detector: `[]`.
+- No new Liquid Glass React or Aurora effect is enabled; foreground FPS and full axe are not
+  claimed here. Real Electron matrix and visual acceptance remain tied to the A1 evidence report.
+- Baseline audit limitation: current Lab source still contains constant stage labels/counts and
+  looping dashed active-edge CSS. Protected Lab/graph files were not modified in this settings
+  slice. An old “five fixes complete” checklist is not evidence of their current rendered state.
+
+### Agent collaboration follow-up — keep the drawing canvas, remove the chat inner page
+
+- User explicitly requested the existing graph/connection implementation remain and the chat-style
+  inner page be removed. Actual clear video frames were inspected for Agent→aggregation→artifact
+  semantics. External video brand assets were not copied or committed.
+- `CollaborationGraph.tsx` / `focus-projection.ts` are unchanged. The full-page legacy chat branch
+  and its “会话工作台/打开会话” entry points were removed. Existing session/message storage remains.
+- Agent details now contain a compact context selector/create action, instruction form, real Run
+  state/stop action and collapsed read-only latest output. Existing in-node approval and audit
+  actions are retained. Old session/pro links resolve back to the same graph context.
+- Agent management now renders beside the graph instead of being hidden by the former early return.
+- Context-scope/deep-link + graph-focus unit checks: 5/5 PASS. Relevant ESLint: 0 errors/warnings.
+  Graph Electron harness retains real data/pixel/endpoint/approval/restart assertions and writes
+  this round's screenshots to a separate evidence directory. Final results belong to that run.
+- Final A1 checks: whole-repo lint 0 errors / 29 existing warnings, typecheck/build PASS,
+  536 tests PASS / 4 external-infrastructure cases SKIP, four required desktop E2Es PASS,
+  organization journey 30/30 and graph journey 30/30, packaged EXE smoke PASS. See
+  `docs/org-upgrade/reports/A1-report.md` and its adjacent evidence manifest.
+- Native graph capture now waits for overlay opacity 1 plus 1200ms compositor settle. The earlier
+  apparent sheet transparency was a captured entrance-animation frame; settled screenshots were
+  inspected and are opaque. The product overlay and drawing implementation remain unchanged.
+
 ## 2026-10-29 — A1 Agent 协作总览（全画布图，非三栏）
 
 - 用户否定了首版固定三栏（Agent/计划/成果），要求“整页都是图，点击图上的对象再加载信息”。

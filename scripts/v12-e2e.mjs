@@ -58,7 +58,7 @@ let passed = false
 const errors = []
 
 async function launch() {
-  const next = await electron.launch({ executablePath: electronPath, args: ['.'], cwd: desktopDir, env, timeout: 60_000 })
+  const next = await electron.launch({ executablePath: electronPath, args: ['.', `--user-data-dir=${join(dataDir, 'electron-user')}`], cwd: desktopDir, env, timeout: 60_000 })
   const page = await next.firstWindow()
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text())
@@ -123,15 +123,16 @@ try {
   await page.waitForTimeout(2200)
   await page.evaluate(
     ({ projectId, sessionId }) => {
-      location.hash = `#/projects/${projectId}/agents?session=${sessionId}`
+      location.hash = `#/projects/${projectId}/agents?workspace=sessions&session=${sessionId}`
     },
     ids,
   )
-  await page.waitForSelector('.po-sender textarea', { timeout: 20_000 })
-  await page.locator('.po-sender textarea').fill('请回复连接状态')
-  await page.locator('.po-sender textarea').press('Enter')
+  await page.getByTestId('agent-context-prompt').waitFor({ timeout: 20_000 })
+  if (await page.locator('.po-sender, .po-chat-scroll').count()) throw new Error('retired chat workspace is still present')
+  await page.getByTestId('agent-context-prompt').fill('请回复连接状态')
+  await page.getByTestId('agent-context-submit').click()
   await page.waitForFunction(
-    () => document.querySelector('.po-chat-scroll')?.textContent?.includes('V1.2 连接运行正常'),
+    () => document.querySelector('.aco-context-output')?.textContent?.includes('V1.2 连接运行正常'),
     null,
     { timeout: 25_000 },
   )
@@ -148,6 +149,7 @@ try {
   if (routeBefore !== '') throw new Error('settings changed the route')
 
   // Explicit collapse must not leave wrapped labels inside the 76px rail.
+  await page.getByTestId('collaboration-inspector').getByRole('button', { name: '关闭', exact: true }).first().click()
   const collapsed = await page.evaluate(() => document.querySelector('.po-shell')?.classList.contains('is-collapsed'))
   if (collapsed) await page.locator('.po-titlebar-left > .po-icon-button').click()
   await page.locator('.po-titlebar-left > .po-icon-button').click()

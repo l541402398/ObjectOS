@@ -46,10 +46,6 @@ afterEach(() => {
 function makeRunner(options: { apiKey?: string } = {}) {
   const store = new SqliteStore({ filePath: ':memory:' })
   const dataDir = mkdtempSync(join(tmpdir(), 'projectos-guards-'))
-  cleanup.push(() => {
-    store.close()
-    rmSync(dataDir, { recursive: true, force: true })
-  })
   const services = new CoreServices(store, workspace)
   const provider = new ProviderManager({
     provider: 'openai-compatible',
@@ -82,6 +78,11 @@ function makeRunner(options: { apiKey?: string } = {}) {
     hub,
     logger,
   )
+  cleanup.push(() => {
+    runner.shutdown()
+    store.close()
+    rmSync(dataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 })
+  })
   return { store, services, runner, dataDir }
 }
 

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { ORGANIZATION_MAIN_METHODS, OrganizationApiSchemas } from './organization.js'
 import { ProjectJourneySchema } from './journey.js'
 import {
   ApprovalStatusSchema,
@@ -355,6 +356,7 @@ const projectIdInput = z.object({ projectId: IdSchema })
 
 /** Renderer → Main → Runtime request catalogue. Inputs are validated at both boundaries. */
 export const ApiSchemas = {
+  ...OrganizationApiSchemas,
   'app.bootstrap': {
     input: empty,
     output: z.object({
@@ -1595,6 +1597,7 @@ export type ApiOutput<M extends ApiMethod> = z.output<(typeof ApiSchemas)[M]['ou
 export type ApiParsedInput<M extends ApiMethod> = z.output<(typeof ApiSchemas)[M]['input']>
 
 export const MAIN_METHODS = [
+  ...ORGANIZATION_MAIN_METHODS,
   'settings.get',
   'settings.update',
   'settings.clearKey',

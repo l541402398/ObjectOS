@@ -1,45 +1,55 @@
-# Navigation closure — P0-B
+# Navigation closure — graph workspace consolidation
 
-## Route decision
+Updated 2026-10-29, branch `codex/org-a1-foundation`, baseline `ec97824`.
+The user explicitly requested retaining the existing graph/connection implementation and removing
+the chat-style inner page. This supersedes the earlier P0-B decision to keep an explicit legacy room.
 
-- `/projects/:projectId/agents` is the single default team-work entry. It always renders the collaboration graph.
-- `?workspace=sessions` is the explicit, contextual **legacy session workspace** (chat, group chat, session creation, Agent Studio, Handoff). It is not a fixed mode switch: it is reached from an Agent node's “打开会话”, from the toolbar “会话工作台”, or a directly pasted URL.
-- `?view=pro` is no longer a product mode. An old bookmark is redirected to the graph (query removed) and the graph stays usable.
-- `/projects/:projectId/orchestration?return=agents` is the real plan DAG. It has a visible “返回协作图” button when opened from the graph.
-- `/approvals` is the new document-first review room; `/approvals/center` retains the professional audit center. Approval can be decided in the graph, review room or center, all through the same API.
+## Current routes and actions
 
-## Functional inventory of the old Agent workspace (not deleted)
-
-| Capability | Old location | Current entry | Return path |
-|---|---|---|---|
-| Session list / open session | `AgentWorkbenchPage` | Agent inspector “打开会话”; toolbar “会话工作台” | “返回协作总览” button |
-| Send message / streaming | `AgentWorkbenchPage` | same legacy workspace | same |
-| Create session | `AgentWorkbenchPage` | same legacy workspace | same |
-| Group chat / plan collaboration | `AgentWorkbenchPage` | same legacy workspace (group panel) | same |
-| Agent Studio / Agent management | `AgentWorkbenchPage` + `AgentStudioModal` | toolbar “Agent 管理” from graph; legacy page | drawer close / back |
-| Handoff view | `AgentWorkbenchPage` | graph Handoff edge/agent inspector; legacy group panel | close inspector / back |
-| Plan DAG | `/orchestration` | toolbar “计划 DAG” | “返回协作图” |
-| Approval list / audit | `/approvals` | graph activity, approval sheet “审批中心” | browser/app back; direct graph return is not yet a first-class button |
-
-The old page remains reachable until each capability has a graph-native replacement. No chat/session/Handoff data was deleted.
-
-## Verified navigation closure (real Electron E2E)
-
-| From → To | Assertion | Result |
+| Capability | Current product entry | Return / context |
 |---|---|---|
-| Graph → Agent inspector → 会话工作台 | URL has `workspace=sessions`; legacy workspace renders; “返回协作总览” exists | PASS |
-| 会话工作台 → 返回协作总览 | `.aco-root` returns; selected Agent inspector restores from session storage | PASS |
-| Graph → 计划 DAG | `/orchestration?return=agents` renders; “返回协作图” exists | PASS |
-| 计划 DAG → 返回协作图 | `.aco-root` returns | PASS |
-| Graph → 审批节点 → 允许本次 | real `approval.decide`; sheet closes; pending disappears; Run resumes | PASS |
-| Graph → 产物 → 运行审计/任务看板 | existing routes; task route returns through shell navigation | PASS (run link), task route not yet E2E-asserted |
-| Activity → approvals/runs | real route; E2E uses history back | PASS |
-| Old `?view=pro` deep link | redirected to graph, no fixed “专业编排” switch | PASS (code + build) |
-| Permission-insufficient approval | No role/permission denial path exists in this local app; backend only enforces it | BLOCKED (cannot simulate without inventing auth) |
-| Expired approval | No short-TTL approval fixture in this E2E | SKIP (not tested; not claimed) |
+| Agent collaboration | `/projects/:projectId/agents` | Single full-width graph; pan/zoom/filter/selection are retained |
+| Agent instruction | Select an Agent → compact execution section in its detail surface | Close the detail; the same graph remains underneath |
+| Existing execution context | Agent detail context selector | Only the selected Agent/project's persisted sessions are offered |
+| Create execution context | Agent detail → 新建上下文 | Real `sessions.create`; no full-page chat route |
+| Start/stop run | Agent detail → 执行指令 / 停止运行 | Existing `sessions.sendMessage(startRun:true)` / `runs.cancel`; real status from persisted Run |
+| Recent output | Agent detail → collapsed read-only snapshot | No message bubbles or second chat workspace |
+| Agent Studio | Graph toolbar → Agent 管理 | Actual modal is now rendered; close returns to graph |
+| Plan DAG | Graph toolbar → 计划 DAG | `/orchestration?return=agents`, visible 返回协作图 |
+| Approval | Real graph Approval node or Agent/task detail | Existing risk confirmation + `approval.decide` |
+| Run audit | Agent/task/artifact/approval/handoff detail | Existing `/runs?run=...`; shell history preserves navigation |
+| Artifact / handoff | Real graph object / edge | Read persisted body, provenance and transfer details; no chat room required |
 
-## Remaining navigation gaps
+## Legacy links
 
-- `/runs` and `/tasks` have no explicit graph-return control; browser history works but is not a designed control. `/approvals` now has a visible “返回协作图” control.
-- The graph restores selection/filter/viewport from sessionStorage for the current window; it is not persisted in the URL, so a new window does not restore viewport.
-- The old session page is a legacy explicit route, not yet fully migrated into a graph-native conversation drawer.
+- `?workspace=sessions` and `?view=pro` no longer select another UI. The obsolete mode parameter
+  is removed while staying on the graph.
+- A valid `?session=...` selects that persisted session's Agent detail/context, then consumes the
+  navigation request. Foreign project/Agent sessions cannot be chosen as an execution context.
+- Old “会话工作台”, “打开会话” and “返回协作总览” room-navigation buttons are removed.
+- Stored sessions/messages, native AgentRunner, approvals and handoffs are unchanged.
+
+## Verification
+
+`tests/agent-context.test.ts` + `tests/collaboration-focus.test.ts`: **5 PASS**. They cover explicit/
+active/latest context precedence, project/Agent filtering, legacy-link normalization and the
+unchanged activity focus projection.
+
+`scripts/agent-overview-e2e.mjs` retains its real projection, relationship pixels, endpoint alignment,
+approval/risk/duplicate-decision, artifacts, reduced-motion and restart checks. Its navigation checks
+now require in-graph context controls, no `.po-agent-workspace` / `.po-sender`, and legacy session
+links returning to the same graph. The evidence directory supports
+`PROJECTOS_OVERVIEW_EVIDENCE_DIR`; A1 runs preserve the old committed captures.
+
+Final command output and actual screenshots are authoritative for this round; the old P0-B chat
+navigation PASS statements do not apply to the current product.
+
+## Remaining gaps
+
+- Runs/tasks still rely on shell/history for some graph-return paths.
+- Graph viewport/filter/selection restore through sessionStorage in the current window, rather
+  than a shareable URL.
+- Full historical session conversation has no separate UI after the requested chat-page removal;
+  persisted history and Run audit remain available to the existing APIs and audit surfaces.
+- Permission-denial and short-TTL approval UI negatives retain the fixture limitations recorded by
+  the earlier report; they are not silently claimed as passed.

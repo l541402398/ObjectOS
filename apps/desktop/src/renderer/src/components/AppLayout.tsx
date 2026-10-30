@@ -277,6 +277,10 @@ export default function AppLayout() {
         openSettings('ai-connections')
         return
       }
+      if (key === 'organization') {
+        openSettings('organization')
+        return
+      }
       if (key === 'design-lab') {
         navigate('/design-lab')
         return
@@ -329,6 +333,7 @@ export default function AppLayout() {
     list.push(
       { id: 'center', label: '项目中心', group: '全局', icon: <AppstoreOutlined />, shortcut: 'G', run: () => navigate('/') },
       { id: 'settings', label: '设置', group: '全局', icon: <SettingOutlined />, shortcut: '⌘,', run: () => openSettings('ai-connections') },
+      { id: 'organization', label: '账号与组织', group: '全局', icon: <ApartmentOutlined aria-hidden />, run: () => openSettings('organization') },
       { id: 'theme-light', label: '切换到浅色主题', group: '外观', icon: <SunOutlined />, run: () => setThemeMode('light') },
       { id: 'theme-dark', label: '切换到深色主题', group: '外观', icon: <MoonOutlined />, run: () => setThemeMode('dark') },
       { id: 'theme-system', label: '跟随系统主题', group: '外观', icon: <SwapOutlined />, run: () => setThemeMode('system') },
@@ -397,6 +402,7 @@ export default function AppLayout() {
     collapsible: true,
     items: [
       { key: 'center', label: '项目中心', icon: <ProjectOutlined /> },
+      { key: 'organization', label: '账号与组织', icon: <ApartmentOutlined aria-hidden /> },
       { key: 'settings', label: '设置', icon: <SettingOutlined /> },
     ],
   })

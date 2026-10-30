@@ -1468,3 +1468,19 @@
 .aco-deck .aco-activity { border-radius: 11px; }
 .aco-deck .aco-head { padding-bottom: 2px; }
 .aco-deck .aco-mode { display: none; }
+.aco-context { margin-top:22px; padding-top:18px; border-top:1px solid var(--ui-divider); color:var(--ui-ink); }
+.aco-context-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.aco-context-heading h3 { margin:0; font-size:16px; line-height:1.4; font-weight:650; }
+.aco-context-label { display:block; margin:12px 0 6px; font-size:13px; line-height:1.5; font-weight:600; }
+.aco-context select,.aco-context textarea { display:block; width:100%; min-width:0; border:1px solid var(--ui-border-strong); border-radius:8px; padding:9px 11px; color:var(--ui-ink); background:var(--ui-surface-raised); font:14px/1.55 var(--ui-font); }
+.aco-context select { min-height:40px; }.aco-context textarea { resize:vertical; min-height:86px; }
+.aco-context select:focus-visible,.aco-context textarea:focus-visible,.aco-context-output summary:focus-visible { outline:2px solid var(--ui-accent); outline-offset:2px; }
+.aco-context-actions { display:flex; justify-content:flex-end; margin-top:10px; }
+.aco-context-hint { margin:9px 0; color:var(--ui-ink-2); font-size:12px; line-height:1.6; }
+.aco-context-run { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:10px; color:var(--ui-ink-2); font-size:12px; }
+.aco-context-run code { font:12px/1.5 var(--ui-mono); overflow-wrap:anywhere; }
+.aco-context-error { display:flex; align-items:flex-start; gap:7px; padding:10px; border:1px solid color-mix(in srgb,var(--ui-danger) 25%,transparent); border-radius:8px; color:var(--ui-danger); background:var(--color-danger-soft); font-size:13px; line-height:1.6; }
+.aco-context-error svg { flex:none; margin-top:2px; }
+.aco-context-output { margin-top:14px; padding-top:12px; border-top:1px solid var(--ui-divider); }
+.aco-context-output summary { font-size:13px; color:var(--ui-ink-2); cursor:pointer; }
+.aco-context-output pre { white-space:pre-wrap; overflow-wrap:anywhere; font:13px/1.6 var(--ui-font); max-height:260px; overflow:auto; color:var(--ui-ink); }

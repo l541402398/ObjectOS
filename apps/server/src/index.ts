@@ -1,35 +1,32 @@
-/**
- * A0 PoC entry point: starts the organization control-plane server on 127.0.0.1 only.
- *
- * Environment:
- *  - PORT                TCP port, default 4310
- *  - BETTER_AUTH_URL     public base URL, default http://127.0.0.1:${PORT}
- *  - BETTER_AUTH_SECRET  signing secret; a development fallback is used when absent, so a missing
- *                        secret in production is a deployment error the A1 plan must remove
- */
-import { buildServer } from './app.js'
+import { Pool } from 'pg'
+import { buildOrganizationServer, validateOrganizationServerOptions } from './persistent-server.js'
+import { migrateOrganizationDatabase } from './postgres-store.js'
 
-export { buildServer } from './app.js'
-
-const port = Number.parseInt(process.env.PORT ?? '4310', 10)
-const baseURL = process.env.BETTER_AUTH_URL ?? `http://127.0.0.1:${port}`
-const secret = process.env.BETTER_AUTH_SECRET
-
-if (!secret) {
-  console.warn('[organization-server] BETTER_AUTH_SECRET is not set; using the A0 development fallback secret.')
+const port = Number(process.env.PORT ?? '4310')
+if (!Number.isInteger(port) || port < 1 || port > 65535)
+  throw new Error('PORT must be a TCP port between 1 and 65535')
+const options = {
+  databaseUrl: process.env.DATABASE_URL ?? '',
+  secret: process.env.BETTER_AUTH_SECRET ?? '',
+  baseURL: process.env.BETTER_AUTH_URL ?? `http://127.0.0.1:${port}`,
 }
-
-const server = await buildServer({ baseURL, ...(secret === undefined ? {} : { secret }) })
-
-await server.listen({ port, host: '127.0.0.1' })
-console.log(`[organization-server] listening on ${baseURL} (A0 PoC; in-memory data only)`)
-console.log(`[organization-server] better-auth mounted at ${baseURL}/api/auth/*`)
-
-async function shutdown(signal: string): Promise<void> {
-  console.log(`[organization-server] ${signal} received, closing`)
-  await server.close()
-  process.exit(0)
+validateOrganizationServerOptions(options)
+if (process.argv.includes('--migrate')) {
+  const pool = new Pool({ connectionString: options.databaseUrl, connectionTimeoutMillis: 5_000 })
+  try {
+    await migrateOrganizationDatabase(pool)
+    console.log('[organization-server] migration complete; schema version 1')
+  } finally {
+    await pool.end()
+  }
+} else {
+  const server = await buildOrganizationServer(options)
+  await server.listen({ port, host: process.env.HOST ?? '127.0.0.1' })
+  console.log('[organization-server] listening with PostgreSQL persistence')
+  const shutdown = async () => {
+    await server.close()
+    process.exit(0)
+  }
+  process.once('SIGINT', () => void shutdown())
+  process.once('SIGTERM', () => void shutdown())
 }
-
-process.once('SIGINT', () => void shutdown('SIGINT'))
-process.once('SIGTERM', () => void shutdown('SIGTERM'))

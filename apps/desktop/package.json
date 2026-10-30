@@ -21,6 +21,8 @@
     "@monaco-editor/react": "^4.7.0",
     "@projectos/ai-ui": "workspace:*",
     "@projectos/contracts": "workspace:*",
+    "@projectos/organization-contracts": "workspace:*",
+    "zod": "^4.6.7",
     "@projectos/design-tokens": "workspace:*",
     "@projectos/ui": "workspace:*",
     "@radix-ui/react-dialog": "^1.3.1",

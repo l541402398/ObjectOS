@@ -74,7 +74,7 @@ delete env.ELECTRON_RUN_AS_NODE
 let app
 let passed = false
 try {
-  app = await electron.launch({ executablePath: electronPath, args: ['.'], cwd: desktopDir, env, timeout: 30_000 })
+  app = await electron.launch({ executablePath: electronPath, args: ['.', `--user-data-dir=${join(dataDir, 'electron-user')}`], cwd: desktopDir, env, timeout: 30_000 })
   const page = await app.firstWindow()
   const errors = []
   page.on('console', (message) => {
@@ -113,17 +113,20 @@ try {
   await page.waitForTimeout(2500)
   await page.evaluate(
     ({ projectId, sessionId }) => {
-      location.hash = `#/projects/${projectId}/agents?session=${sessionId}`
+      location.hash = `#/projects/${projectId}/agents?workspace=sessions&session=${sessionId}`
     },
     { projectId: project.project.id, sessionId: session.session.id },
   )
-  await page.waitForSelector('.po-sender textarea', { timeout: 30_000 })
-  const composer = page.locator('.po-sender textarea').first()
+  await page.getByTestId('agent-context-prompt').waitFor({ timeout: 30_000 })
+  if (await page.locator('.po-sender, .po-chat-scroll').count()) throw new Error('retired chat workspace is still present')
+  const composer = page.getByTestId('agent-context-prompt')
   await composer.fill('请创建 agent-output.md，先请求授权。')
-  await composer.press('Enter')
-  await page.getByRole('button', { name: '批准并继续' }).click({ timeout: 20_000 })
+  await page.getByTestId('agent-context-submit').click()
+  await page.getByRole('button', { name: '允许本次', exact: true }).click({ timeout: 20_000 })
+  await page.getByTestId('approval-confirm').getByRole('checkbox').check()
+  await page.getByRole('button', { name: '确认允许本次', exact: true }).click()
   await page.waitForFunction(
-    () => document.querySelector('.po-chat-scroll')?.textContent?.includes('已完成文件写入'),
+    () => document.querySelector('.aco-context-output')?.textContent?.includes('已完成文件写入'),
     null,
     { timeout: 25_000 },
   )

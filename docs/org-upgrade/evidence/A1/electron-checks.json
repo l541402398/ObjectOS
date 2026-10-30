@@ -1,0 +1,159 @@
+{
+  "fixture": "real PostgreSQL + real Electron + browser PKCE, isolated demo identities",
+  "summary": {
+    "pass": 30,
+    "fail": 0
+  },
+  "results": [
+    {
+      "name": "Local mode remains available",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Organization form controls have labels",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Connection action is reachable by keyboard",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Browser request has PKCE and no token",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "IPC session is sanitized",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Credentials are encrypted on disk",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Shared project persisted",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Real invitation created",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Second account accepts invitation",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Organization membership does not grant project access",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Server restart preserves session and shared project",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Desktop restart restores encrypted organization session",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Sign-out returned to local mode",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Renderer has no Node API",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "No renderer exceptions",
+      "status": "PASS",
+      "detail": ""
+    }
+  ]
+}

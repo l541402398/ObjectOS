@@ -286,7 +286,7 @@ function registerOrganizationRoutes(
 }
 
 /** Mounts better-auth's Web-standard handler under Fastify at `/api/auth/*`. */
-function mountBetterAuth(app: FastifyInstance, auth: { handler: (request: Request) => Promise<Response> }, baseURL: string): void {
+export function mountBetterAuth(app: FastifyInstance, auth: { handler: (request: Request) => Promise<Response> }, baseURL: string): void {
   const rawJsonBodies = new WeakMap<FastifyRequest, string>()
 
   // Capture the raw JSON text: better-auth expects to parse the body itself (it also signs it for
@@ -398,9 +398,15 @@ export async function buildServer(options: BuildServerOptions = {}): Promise<Fas
     async signInEmail({ body }) {
       return auth.api.signInEmail({ body, asResponse: true })
     },
+    async signUpEmail({ body }) {
+      return auth.api.signUpEmail({ body, asResponse: true })
+    },
+    async signOut({ headers }) {
+      return auth.api.signOut({ headers, asResponse:true })
+    },
   }
 
-  const desktopAuth = registerDesktopAuth(app, { auth: authClient, directory })
+  const desktopAuth = registerDesktopAuth(app, { auth: authClient, directory, trustedOrigin:baseURL })
   registerOrganizationRoutes(app, { store, directory, desktopAuth })
 
   app.get('/health', async () => ({ ok: true, service: 'projectos-organization-server', baseURL }))

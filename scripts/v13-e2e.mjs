@@ -35,7 +35,7 @@ let passed = false
 const errors = []
 
 async function launch() {
-  const next = await electron.launch({ executablePath: appPath, args: ['.'], cwd: desktopDir, env, timeout: 60_000 })
+  const next = await electron.launch({ executablePath: appPath, args: ['.', `--user-data-dir=${join(dataDir, 'electron-user')}`], cwd: desktopDir, env, timeout: 60_000 })
   const page = await next.firstWindow()
   await next.evaluate(({ BrowserWindow }) => {
     const win = BrowserWindow.getAllWindows()[0]

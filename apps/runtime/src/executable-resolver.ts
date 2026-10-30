@@ -116,7 +116,8 @@ export async function resolveExecutable(command: string, options: ResolveExecuta
   const windows = platform === 'win32'
   if (isAbsolute(command)) return isExecutableFile(command) ? command : null
 
-  const pathValue = options.path ?? env.PATH ?? ''
+  const pathValue = options.path ?? env.PATH ?? env.Path ?? ''
+  const probeEnv = { ...Object.fromEntries(Object.entries(env).filter(([key]) => key.toLowerCase() !== 'path')), PATH: pathValue }
   for (const directory of pathValue.split(windows ? ';' : ':')) {
     if (!directory) continue
     for (const variant of variants(command, windows, env)) {
@@ -127,7 +128,7 @@ export async function resolveExecutable(command: string, options: ResolveExecuta
 
   if (windows && process.platform === 'win32') {
     try {
-      const result = await exec('where.exe', [command], { timeout: 5_000, windowsHide: true })
+      const result = await exec('where.exe', [command], { timeout: 5_000, windowsHide: true, env: probeEnv })
       const first = result.stdout.split(/\r?\n/).map((line) => line.trim()).find(Boolean)
       if (first && isExecutableFile(first)) return first
     } catch {
@@ -144,7 +145,7 @@ export async function resolveExecutable(command: string, options: ResolveExecuta
     const shell = options.shell ?? env.SHELL ?? '/bin/bash'
     if (existsSync(shell)) {
       try {
-        const result = await exec(shell, ['-lc', 'command -v -- "$1"', 'projectos-resolve', command], { timeout: 5_000 })
+        const result = await exec(shell, ['-lc', 'command -v -- "$1"', 'projectos-resolve', command], { timeout: 5_000, env: probeEnv })
         const first = result.stdout.split(/\r?\n/).map((line) => line.trim()).find((line) => line.startsWith('/'))
         if (first && isExecutableFile(first)) return first
       } catch {

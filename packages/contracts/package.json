@@ -7,6 +7,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@projectos/organization-contracts": "workspace:^",
     "ulid": "^3.0.2",
     "zod": "^4.6.7"
   }

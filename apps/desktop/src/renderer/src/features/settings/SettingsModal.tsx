@@ -22,10 +22,13 @@ import { DataSecuritySettingsPanel, OpenSpecSettingsPanel, PermissionsSettingsPa
 import { UsageSettingsPanel } from './UsageSettingsPanel'
 import { SkillsSettingsPanel } from './SkillsSettingsPanel'
 import { DialogShell, OverlayHeader } from '../../next-ui/overlay/overlay-shell'
+import { Building2 } from 'lucide-react'
+import { OrganizationPanel } from './OrganizationPanel'
 import './settings.css'
 
 const SECTIONS: Array<{ key: SettingsSection; label: string; icon: ReactNode }> = [
   { key: 'overview', label: '设置概览', icon: <AppstoreOutlined /> },
+  { key: 'organization', label: '账号与组织', icon: <Building2 size={17} aria-hidden /> },
   { key: 'ai-connections', label: 'AI 连接', icon: <ApiOutlined /> },
   { key: 'models', label: '模型目录', icon: <AppstoreOutlined /> },
   { key: 'runtime', label: '运行时', icon: <HddOutlined /> },
@@ -42,6 +45,8 @@ const SECTIONS: Array<{ key: SettingsSection; label: string; icon: ReactNode }> 
 
 function renderSection(section: SettingsSection): ReactNode {
   switch (section) {
+    case 'organization':
+      return <OrganizationPanel />
     case 'overview':
       return <SettingsOverviewPanel />
     case 'ai-connections':
@@ -95,6 +100,7 @@ export function SettingsModal() {
                 key={item.key}
                 type="button"
                 className={`po-settings-nav-item ${section === item.key ? 'is-active' : ''}`.trim()}
+                data-testid={item.key === 'organization' ? 'organization-settings-entry' : undefined}
                 onClick={() => setSection(item.key)}
               >
                 <span>{item.icon}</span>

@@ -307,8 +307,7 @@ describe('desktop loopback login (A0 PoC)', () => {
     await createOrganization(identity, 'State Org', 'state-org')
     const tokenEndpointCalls: string[] = []
     const countingFetch: typeof fetch = async (input, init) => {
-      const url =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url
       tokenEndpointCalls.push(url)
       return await fetch(input, init)
     }
@@ -371,12 +370,83 @@ describe('desktop loopback login (A0 PoC)', () => {
     expect(wrongShape.status).toBe(401)
   })
 
-  it('rejects non-loopback auth base URLs', async () => {
+  it('rejects insecure non-loopback auth base URLs', async () => {
     await expect(
       runDesktopLogin({
-        authBaseUrl: 'https://auth.example.com',
+        authBaseUrl: 'http://auth.example.com',
         openExternal: () => undefined,
       }),
     ).rejects.toMatchObject({ code: 'invalid_configuration' })
+  })
+
+  it('cancels a stalled browser launch and closes the callback listener', async () => {
+    const controller = new AbortController()
+    let callback = ''
+    const login = runDesktopLogin({
+      authBaseUrl: baseUrl,
+      signal: controller.signal,
+      openExternal: async (url) => {
+        callback = new URL(url).searchParams.get('redirect_uri')!
+        controller.abort()
+        await new Promise<void>(() => undefined)
+      },
+    })
+    await expect(login).rejects.toMatchObject({ code: 'authorization_failed' })
+    await expect(fetch(callback)).rejects.toThrow()
+  })
+
+  it('applies the total deadline when system browser startup never resolves', async () => {
+    let callback = ''
+    await expect(
+      runDesktopLogin({
+        authBaseUrl: baseUrl,
+        timeoutMs: 100,
+        openExternal: async (url) => {
+          callback = new URL(url).searchParams.get('redirect_uri')!
+          await new Promise<void>(() => undefined)
+        },
+      }),
+    ).rejects.toMatchObject({ code: 'timeout' })
+    await expect(fetch(callback)).rejects.toThrow()
+  })
+
+  it('cancels a stalled token exchange without leaving a callback listener', async () => {
+    const identity = await createAccount('desktop-token-timeout')
+    const browser = createFakeBrowser({ identity })
+    const controller = new AbortController()
+    let tokenStarted = false
+    await expect(
+      runDesktopLogin({
+        authBaseUrl: baseUrl,
+        signal: controller.signal,
+        openExternal: browser.openExternal,
+        fetchImpl: async () => {
+          tokenStarted = true
+          controller.abort()
+          return new Promise<Response>(() => undefined)
+        },
+      }),
+    ).rejects.toMatchObject({ code: 'authorization_failed' })
+    expect(tokenStarted).toBe(true)
+    await expect(fetch(browser.callbackUrl()!)).rejects.toThrow()
+  })
+
+  it('accepts an HTTPS organization origin while retaining a local PKCE callback', async () => {
+    const controller = new AbortController()
+    let observed = ''
+    await expect(
+      runDesktopLogin({
+        authBaseUrl: 'https://auth.example.com',
+        signal: controller.signal,
+        openExternal: async (url) => {
+          observed = url
+          controller.abort()
+        },
+      }),
+    ).rejects.toMatchObject({ code: 'authorization_failed' })
+    const authorize = new URL(observed)
+    expect(authorize.origin).toBe('https://auth.example.com')
+    expect(authorize.searchParams.get('redirect_uri')).toMatch(/^http:\/\/127\.0\.0\.1:\d+\/callback$/)
+    expect(authorize.searchParams.get('code_challenge_method')).toBe('S256')
   })
 })

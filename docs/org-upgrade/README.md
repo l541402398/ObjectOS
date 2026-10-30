@@ -1,6 +1,7 @@
 # ProjectOS 组织升级 · A0 交付索引
 
-> 轮次：A0（架构基线 + 商业级 UI/UX 母版）。**A1 未开始**；本目录所有结论以 `v2.0-org-a0` 分支实际提交为准。
+> A0 历史交付索引。A1 已按用户授权在 `codex/org-a1-foundation` 开始，当前实施范围见
+> [A1_IMPLEMENTATION.md](A1_IMPLEMENTATION.md)，验收结果以 A1 报告为准。以下 A0 证据不代表 A1 已通过。
 
 ## 文档
 
