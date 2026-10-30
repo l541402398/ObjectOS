@@ -2,12 +2,12 @@
   "phase": "A2.2a registered devices and native-confirmed local project consent",
   "branch": "codex/org-a2-worker",
   "testedBaseHead": "4e1936965e26022379888277c6cced57c05a07e9",
-  "generatedAtUtc": "2026-10-30T06:31:52.732Z",
+  "generatedAtUtc": "2026-10-30T06:37:23.907Z",
   "userDate": "2026-10-29",
   "timeZone": "America/Los_Angeles",
   "implementationCommit": {
-    "sha": null,
-    "status": "PENDING_COMMIT",
+    "sha": "c661d7a5e3691e19b9df7ca3ed40370749c4a71c",
+    "status": "COMMITTED",
     "note": "Implementation and evidence travel together; follow-up metadata records the exact implementation SHA."
   },
   "status": "PASS_ENGINEERING_CHECKS_VISUAL_ACCEPTANCE_PENDING",
