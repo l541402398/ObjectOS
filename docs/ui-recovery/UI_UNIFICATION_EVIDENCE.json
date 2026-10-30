@@ -2,7 +2,7 @@
   "phase": "global-ui-unification-token-shell-core-pages",
   "branch": "feat/ui-unification",
   "base": "43451e2eddbd11fd199d59af57b32b6d61f002df",
-  "head": "recorded in the follow-up evidence commit",
+  "head": "6b6a23d986b199536b4571351fd9d4d385db473a",
   "scope": [
     "one semantic --ui-* token layer",
     "AppShell / titlebar / sidebar / journey / statusbar",

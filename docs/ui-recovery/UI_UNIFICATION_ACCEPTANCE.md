@@ -2,6 +2,8 @@
 
 - Branch: `feat/ui-unification`
 - Base: `43451e2eddbd11fd199d59af57b32b6d61f002df`
+- Implementation commit: `6b6a23d986b199536b4571351fd9d4d385db473a`
+- Remote verification: `git ls-remote` returned the same SHA
 - Date: 2026-10-29
 - Scope: unified semantic tokens, AppShell, StudioProjectHome, CollaborationOverview, StudioReviewRoom.
 - Not in scope: business-page composition migration (waits for visual approval).
