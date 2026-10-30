@@ -66,7 +66,24 @@ function aggregateStats(projects: ProjectSummary[]): ProjectStats {
 
 export function registerIpc(ctx: IpcContext): () => void {
   const { supervisor, providerConfig, connectionSecrets, resourceSecrets, window, logger } = ctx
-  const organizationConnection = new OrganizationConnection(ctx.dataDir, safeStorage, (url) => shell.openExternal(url))
+  const organizationConnection = new OrganizationConnection(ctx.dataDir, safeStorage, (url) => shell.openExternal(url), fetch, {
+    runtime: (method, input) => supervisor.request(method, input, 15_000),
+    confirm: async (grant, projectName, organizationName) => {
+      const response = await dialog.showMessageBox(window, {
+        type: 'question', title: '授权本机项目', message: `允许“${organizationName} / ${projectName}”关联此本机项目？`,
+        detail: `本机项目：${grant.localProjectName}\n目录：${grant.rootPath}\n允许范围：${grant.scope.directories.join('、')}\n权限：${grant.scope.tools.includes('write_file') ? '读取与写入（写入仍需逐次审批）' : '只读'}\n调用上限：${grant.scope.maxToolCalls} 次\n有效期至：${new Date(grant.expiresAt).toLocaleString()}\n\n此授权不包含命令、Git 或网络访问；当前设备尚未启用远程任务接收。`,
+        buttons: ['取消', '授权此项目'], defaultId: 0, cancelId: 0, noLink: true,
+      })
+      return response.response === 1
+    },
+  })
+  let syncingWorkers = false
+  const workerTimer = setInterval(() => {
+    if (syncingWorkers || !supervisor.isReady()) return
+    syncingWorkers = true
+    void organizationConnection.syncWorkers().catch(() => undefined).finally(() => { syncingWorkers = false })
+  }, 5_000)
+  workerTimer.unref?.()
 
   const syncProvider = async (): Promise<void> => {
     if (!supervisor.isReady()) return
@@ -751,6 +768,7 @@ export function registerIpc(ctx: IpcContext): () => void {
   sweepTimer.unref?.()
 
   return () => {
+    clearInterval(workerTimer)
     clearInterval(sweepTimer)
     ipcMain.removeHandler('projectos:request')
   }

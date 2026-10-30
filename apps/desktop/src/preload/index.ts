@@ -52,6 +52,11 @@ const onStatus = (handler: (status: RuntimeStatus) => void): Unsubscribe => {
 
 const api: ProjectOSDesktopApi = {
   organization: {
+    workers: () => call('organization.workers'),
+    enrollWorker: (input) => call('organization.enrollWorker', input),
+    changeWorker: (input) => call('organization.changeWorker', input),
+    grantWorker: (input) => call('organization.grantWorker', input),
+    revokeWorkerGrant: (input) => call('organization.revokeWorkerGrant', input),
     status: (input) => call('organization.status',input),
     connect: (input) => call('organization.connect',input),
     cancel: () => call('organization.cancel'),

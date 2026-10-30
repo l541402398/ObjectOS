@@ -1,5 +1,10 @@
 # ProjectOS Next UI — Migration Progress
 
+2026-10-29 checkpoint: A2.2a device/consent is independently verified (563 PASS / 4 SKIP; 77
+real Electron/PG checks), with an explicit execution-disabled boundary. The user has re-approved
+the supplied DAG material/composition for the entire system and requested real-menu matching.
+ADR-0070 is the next UI scope; old historical migration acceptance does not replace this request.
+
 Current additive work (2026-10-29): A1 organization Settings and graph-only Agent workspace are
 committed. A2.1 adds real organization asset versions/pins inside that same Settings surface.
 See `docs/org-upgrade/reports/A2.1-report.md` for actual checks/screenshots and A2.2 boundaries.

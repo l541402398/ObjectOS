@@ -16,16 +16,25 @@ package explicitly permits independently runnable sub-milestones; each carries e
 - Actual PostgreSQL/Electron/browser tests, screenshots and packaged regressions; see
   [A2.1 report](reports/A2.1-report.md) and ADR-0068.
 
-## A2.2 — authorized execution bridge (remaining)
+## A2.2a — device identity and local consent
 
-Worker registration, identity and capability/version checks; local project association;
-organization/project grants, heartbeat/revocation and fenced/idempotent leases; safe reconciliation
+Real device registration/proof, session-bound heartbeat, owner/admin pause/revoke and owner-proof
+resume. Local project association requires a Main-owned native confirmation of canonical root,
+relative directories, read/write permission, expiry and tool-call ceiling. Main secrets stay in
+safeStorage; Runtime owns SQLite consent/audit; PostgreSQL receives opaque workspace references.
+Local-first revoke survives service outage; encrypted clear intents survive Runtime outage and
+logout. Devices explicitly report that task reception is not yet enabled. See ADR-0069 and
+`reports/A2.2a-report.md` for actual evidence and limits.
+
+## A2.2b — authorized execution bridge (remaining)
+
+Fenced/idempotent job leases and safe reconciliation
 of uncertain results. Integrate the existing AgentRunner/AssignmentResolver with an AssetBindingResolver
 and trusted, frozen Run snapshots. Check scope/lease/path/tool/budget locally before each side effect.
 An organization role grants no local shell access. Remote executor remains an abstraction.
 
 Catalog pins in A2.1 are shared configuration facts. They do not install a Skill/MCP/Tool, mutate old
-local Agent definitions, bind secrets, launch a Worker or prove Run snapshot adoption. UI states this
+local Agent definitions, bind secrets, launch a Run or prove Run snapshot adoption. UI states this
 boundary. A2 is not complete until the execution bridge and its negative/recovery tests pass.
 
 The Agent collaboration drawing/connection implementation and graph-only navigation remain protected.

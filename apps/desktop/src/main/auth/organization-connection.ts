@@ -9,8 +9,16 @@ import {
   OrganizationConnectionViewSchema,
   OrganizationSessionViewSchema,
   type OrganizationConnectionView,
+  WorkerInternalSchemas,
 } from '@projectos/contracts'
 import { DesktopLoginError, runDesktopLogin } from './desktop-login-core.js'
+import {
+  OrganizationWorkerBridge,
+  StoredWorkerSchema,
+  isWorkerMethod,
+  type OrganizationWorkerPorts,
+  type WorkerHost,
+} from './organization-worker.js'
 
 interface SecureCodec {
   isEncryptionAvailable(): boolean
@@ -29,6 +37,8 @@ const Vault = z.object({
   pendingRevocations: z
     .array(z.object({ serverUrl: z.string(), token: z.string().min(32), expiresAt: z.number() }))
     .max(20),
+  workers: z.array(StoredWorkerSchema).max(100).default([]),
+  pendingWorkerClears: z.array(WorkerInternalSchemas['runtime.worker.clear'].input).max(500).default([]),
 })
 type StoredVault = z.infer<typeof Vault>
 type Connection = z.infer<typeof StoredConnection>
@@ -37,7 +47,13 @@ interface Snapshot {
   connection: Connection
   generation: number
 }
-const emptyVault = (): StoredVault => ({ version: 1, connection: null, pendingRevocations: [] })
+const emptyVault = (): StoredVault => ({
+  version: 1,
+  connection: null,
+  pendingRevocations: [],
+  workers: [],
+  pendingWorkerClears: [],
+})
 
 export function organizationOrigin(value: string): string {
   let url: URL
@@ -69,13 +85,20 @@ export class OrganizationConnection {
   private offline = false
   private contextChanging = false
   private revocationPass: Promise<void> | null = null
+  private readonly workerBridge?: OrganizationWorkerBridge
+  private workerChanging = false
+  private workerQueue: Promise<void> = Promise.resolve()
+  private workerPending = 0
+  private workerClearPass: Promise<void> | null = null
 
   constructor(
     dataDir: string,
     private readonly codec: SecureCodec,
     private readonly openExternal: (url: string) => Promise<void>,
     private readonly fetchImpl: typeof fetch = fetch,
+    private readonly workerPorts?: OrganizationWorkerPorts,
   ) {
+    this.workerBridge = workerPorts ? new OrganizationWorkerBridge(workerPorts) : undefined
     this.path = join(dataDir, 'organization-session.vault')
     if (existsSync(this.path) && codec.isEncryptionAvailable()) {
       try {
@@ -125,7 +148,11 @@ export class OrganizationConnection {
   }
 
   private publicValue<T>(value: T, token?: string): T {
-    if (token && JSON.stringify(value).includes(token))
+    const serialized = JSON.stringify(value)
+    if (
+      (token && serialized.includes(token)) ||
+      this.vault.workers.some((w) => serialized.includes(w.secret))
+    )
       throw new AppError('BAD_REQUEST', '组织服务返回了无效的数据。')
     return value
   }
@@ -247,7 +274,15 @@ export class OrganizationConnection {
     }
   }
 
-  private async request(snapshot: Snapshot, path: string, method = 'GET', body?: unknown, maxResponseBytes = 1024 * 1024): Promise<unknown> {
+  private async request(
+    snapshot: Snapshot,
+    path: string,
+    method = 'GET',
+    body?: unknown,
+    maxResponseBytes = 1024 * 1024,
+    workerSecret?: string,
+    workerProof?: string,
+  ): Promise<unknown> {
     this.assertCurrent(snapshot)
     const connection = snapshot.connection
     let response: Response
@@ -257,7 +292,8 @@ export class OrganizationConnection {
         redirect: 'error',
         signal: AbortSignal.timeout(10_000),
         headers: {
-          authorization: `Bearer ${connection.session.token}`,
+          authorization: `Bearer ${workerSecret ?? connection.session.token}`,
+          ...(workerProof ? { 'x-worker-proof': workerProof } : {}),
           ...(body === undefined ? {} : { 'content-type': 'application/json' }),
         },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
@@ -269,7 +305,7 @@ export class OrganizationConnection {
     }
     this.assertCurrent(snapshot)
     this.offline = false
-    if (response.status === 401) {
+    if (response.status === 401 && !workerSecret) {
       this.commit({ ...this.vault, connection: { ...connection, invalidated: true } }, true)
       throw new AppError('FORBIDDEN', '登录已失效，请重新连接组织。')
     }
@@ -280,7 +316,9 @@ export class OrganizationConnection {
       if (response.status === 429)
         throw new AppError('BAD_REQUEST', '操作过于频繁，请稍后重试。', { retryable: true })
       if (response.status >= 500)
-        throw new AppError('RUNTIME_UNAVAILABLE', '组织服务暂时无法完成请求，请稍后重试。', { retryable: true })
+        throw new AppError('RUNTIME_UNAVAILABLE', '组织服务暂时无法完成请求，请稍后重试。', {
+          retryable: true,
+        })
       throw new AppError('BAD_REQUEST', '组织服务未能完成操作，请检查输入或稍后重试。')
     }
     const result = await this.readJson(response, maxResponseBytes)
@@ -292,6 +330,99 @@ export class OrganizationConnection {
     const id = snapshot.connection.activeOrganizationId
     if (!id) throw new AppError('BAD_REQUEST', '请先选择或创建组织。')
     return `/v1/organizations/${encodeURIComponent(id)}`
+  }
+
+  private workerHost(snapshot: Snapshot): WorkerHost {
+    const { connection } = snapshot,
+      organizationId = connection.activeOrganizationId
+    if (!organizationId) throw new AppError('BAD_REQUEST', '请先选择组织。')
+    const scope = {
+      serverUrl: connection.serverUrl,
+      organizationId,
+      accountId: connection.session.account.id,
+    }
+    return {
+      scope,
+      organizationName:
+        connection.session.organizations.find((o) => o.id === organizationId)?.name ?? organizationId,
+      assertCurrent: () => this.assertCurrent(snapshot),
+      request: (path, method = 'GET', body, secret, proof) =>
+        this.request(snapshot, path, method, body, 1024 * 1024, secret, proof),
+      credential: () =>
+        this.vault.workers.find(
+          (w) =>
+            w.serverUrl === scope.serverUrl &&
+            w.organizationId === scope.organizationId &&
+            w.accountId === scope.accountId,
+        ),
+      persist: (worker) => {
+        this.assertCurrent(snapshot)
+        this.commit({
+          ...this.vault,
+          workers: [
+            ...this.vault.workers.filter(
+              (w) =>
+                !(
+                  w.serverUrl === scope.serverUrl &&
+                  w.organizationId === scope.organizationId &&
+                  w.accountId === scope.accountId
+                ),
+            ),
+            worker,
+          ],
+        })
+      },
+    }
+  }
+  private async clearWorkerContext(): Promise<void> {
+    const connection = this.vault.connection
+    if (!this.workerPorts || !connection?.activeOrganizationId) return
+    const scope = {
+      serverUrl: connection.serverUrl,
+      organizationId: connection.activeOrganizationId,
+      accountId: connection.session.account.id,
+    }
+    const key = JSON.stringify(scope)
+    if (!this.vault.pendingWorkerClears.some((s) => JSON.stringify(s) === key))
+      this.commit({ ...this.vault, pendingWorkerClears: [...this.vault.pendingWorkerClears, scope] })
+    await this.flushWorkerClears()
+  }
+  private async flushWorkerClears(): Promise<void> {
+    if (!this.workerPorts) return
+    if (this.workerClearPass) return this.workerClearPass
+    const pass = async () => {
+      for (const scope of this.vault.pendingWorkerClears) {
+        try {
+          await this.workerPorts!.runtime('runtime.worker.clear', scope)
+          const key = JSON.stringify(scope)
+          this.commit({
+            ...this.vault,
+            pendingWorkerClears: this.vault.pendingWorkerClears.filter((s) => JSON.stringify(s) !== key),
+          })
+        } catch {
+          /* Logout still clears account credentials; durable local revoke resumes when Runtime recovers. */
+        }
+      }
+    }
+    this.workerClearPass = pass()
+    try {
+      await this.workerClearPass
+    } finally {
+      this.workerClearPass = null
+    }
+  }
+  async syncWorkers(): Promise<void> {
+    await this.flushWorkerClears()
+    if (
+      !this.workerBridge ||
+      !this.vault.connection?.activeOrganizationId ||
+      this.workerChanging ||
+      this.workerPending ||
+      this.contextChanging
+    )
+      return
+    const snapshot = this.snapshot()
+    await this.workerBridge.sync(this.workerHost(snapshot))
   }
 
   private parseMe(raw: unknown) {
@@ -314,6 +445,8 @@ export class OrganizationConnection {
           )
             ? connection.activeOrganizationId
             : (me.organizations[0]?.id ?? null)
+          if (activeOrganizationId !== connection.activeOrganizationId) await this.clearWorkerContext()
+          this.assertCurrent(snapshot)
           this.commit(
             {
               ...this.vault,
@@ -390,6 +523,7 @@ export class OrganizationConnection {
     }
     if (method === 'organization.disconnect') {
       this.login?.abort()
+      await this.clearWorkerContext()
       const connection = this.vault.connection
       if (connection) {
         const pending = this.vault.pendingRevocations.filter((item) => item.expiresAt > Date.now())
@@ -422,6 +556,8 @@ export class OrganizationConnection {
         this.assertCurrent(snapshot)
         if (!me.organizations.some((item) => item.id === selected))
           throw new AppError('FORBIDDEN', '你没有此组织的访问权限。')
+        await this.clearWorkerContext()
+        this.assertCurrent(snapshot)
         this.commit(
           {
             ...this.vault,
@@ -439,8 +575,38 @@ export class OrganizationConnection {
       }
     }
     const snapshot = this.snapshot()
+    if (isWorkerMethod(method)) {
+      if (!this.workerBridge) throw new AppError('RUNTIME_UNAVAILABLE', '设备服务尚未就绪。')
+      if (this.workerPending >= 8 || this.contextChanging)
+        throw new AppError('CONFLICT', '设备或组织操作正在进行，请稍后重试。')
+      const previous = this.workerQueue
+      let release!: () => void
+      this.workerQueue = new Promise<void>((resolve) => {
+        release = resolve
+      })
+      this.workerPending++
+      await previous
+      this.workerChanging = true
+      try {
+        this.assertCurrent(snapshot)
+        await this.flushWorkerClears()
+        if (this.vault.pendingWorkerClears.length)
+          throw new AppError('RUNTIME_UNAVAILABLE', '本机授权撤销尚待完成，请等待本机服务恢复。')
+        const value = await this.workerBridge.execute(this.workerHost(snapshot), method, input)
+        this.assertCurrent(snapshot)
+        return this.publicValue(
+          OrganizationApiSchemas[method].output.parse(value),
+          snapshot.connection.session.token,
+        )
+      } finally {
+        this.workerChanging = false
+        this.workerPending--
+        release()
+      }
+    }
     // Up to 100 immutable versions of a 64KiB request; still a strict streaming bound.
-    const assetRequest = (suffix = '', method = 'GET', body?: unknown) => this.request(snapshot, `${this.orgPath(snapshot)}/assets${suffix}`, method, body, 8 * 1024 * 1024)
+    const assetRequest = (suffix = '', method = 'GET', body?: unknown) =>
+      this.request(snapshot, `${this.orgPath(snapshot)}/assets${suffix}`, method, body, 8 * 1024 * 1024)
     switch (method) {
       case 'organization.assets':
         result = await assetRequest()
@@ -456,12 +622,22 @@ export class OrganizationConnection {
       case 'organization.transitionAsset': {
         const { assetId, versionId, ...body } = input
         const path = `/${encodeURIComponent(String(assetId))}/versions`
-        result = await assetRequest(method === 'organization.createAssetVersion' ? path : `${path}/${encodeURIComponent(String(versionId))}${method === 'organization.transitionAsset' ? '/transition' : ''}`, method === 'organization.updateAssetDraft' ? 'PATCH' : 'POST', body)
+        result = await assetRequest(
+          method === 'organization.createAssetVersion'
+            ? path
+            : `${path}/${encodeURIComponent(String(versionId))}${method === 'organization.transitionAsset' ? '/transition' : ''}`,
+          method === 'organization.updateAssetDraft' ? 'PATCH' : 'POST',
+          body,
+        )
         break
       }
       case 'organization.bindAsset':
       case 'organization.unbindAsset':
-        result = await assetRequest('/bindings', method === 'organization.bindAsset' ? 'PUT' : 'DELETE', input)
+        result = await assetRequest(
+          '/bindings',
+          method === 'organization.bindAsset' ? 'PUT' : 'DELETE',
+          input,
+        )
         break
       case 'organization.projects':
         result = await this.request(snapshot, `${this.orgPath(snapshot)}/projects`)

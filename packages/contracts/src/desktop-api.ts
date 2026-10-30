@@ -22,6 +22,11 @@ type ProviderInfo = z.infer<typeof ProviderInfoSchema>
  */
 export interface ProjectOSDesktopApi {
   organization: {
+    workers: () => Promise<Out<'organization.workers'>>
+    enrollWorker: (input: In<'organization.enrollWorker'>) => Promise<Out<'organization.enrollWorker'>>
+    changeWorker: (input: In<'organization.changeWorker'>) => Promise<Out<'organization.changeWorker'>>
+    grantWorker: (input: In<'organization.grantWorker'>) => Promise<Out<'organization.grantWorker'>>
+    revokeWorkerGrant: (input: In<'organization.revokeWorkerGrant'>) => Promise<Out<'organization.revokeWorkerGrant'>>
     status: (input?: In<'organization.status'>) => Promise<Out<'organization.status'>>
     connect: (input: In<'organization.connect'>) => Promise<Out<'organization.connect'>>
     cancel: () => Promise<Out<'organization.cancel'>>

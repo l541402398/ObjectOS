@@ -1,0 +1,4 @@
+{
+  "response": "injected at Main-owned Electron dialog port; actual Runtime/PG persist and authority checks",
+  "limitation": "OS-drawn dialog pixels and physical native-button input are not covered by this harness."
+}

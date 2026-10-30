@@ -66,9 +66,10 @@ try{
  database=await startOrganizationTestDatabase();await migrateOrganizationDatabase(database.pool)
  serverUrl=`http://127.0.0.1:${await reserveOrganizationTestPort()}`
  serverOptions={databaseUrl:database.databaseUrl,secret,baseURL:serverUrl}
- let rejectNextProjectRead=false
+ let rejectNextProjectRead=false, workerUnavailable=false
  server=await buildOrganizationServer(serverOptions)
  server.addHook('onRequest',async(request,reply)=>{
+  if(workerUnavailable && request.url.includes('/workers')) return reply.code(503).send({error:{code:'TEMPORARY_UNAVAILABLE',message:'Isolated worker availability fixture'}})
   if(rejectNextProjectRead && request.method==='GET' && request.url.endsWith('/projects')){
    rejectNextProjectRead=false;return reply.code(503).send({error:{code:'TEMPORARY_UNAVAILABLE',message:'Isolated one-shot recovery fixture'}})
   }
@@ -127,6 +128,7 @@ try{
  check('Organization membership does not grant project access',(await allowed.json()).projects.length===0)
  rejectNextProjectRead=process.env.PROJECTOS_ASSET_E2E==='1'
  const assetEvidence=process.env.PROJECTOS_ASSET_E2E==='1' ? await (await import('./org-asset-ui.mjs')).exerciseAssets({page,matrix,capture,check,waitFor}) : null
+ const workerEvidence=process.env.PROJECTOS_WORKER_E2E==='1' ? await (await import('./org-worker-ui.mjs')).exerciseWorkers({page,app,dataDir,matrix,capture,check,waitFor,evidence,setUnavailable:(value)=>{workerUnavailable=value}}) : null
  await server.close();server=await buildOrganizationServer(serverOptions);await server.listen({host:'127.0.0.1',port:Number(new URL(serverUrl).port)})
  check('Server restart preserves session and shared project',(await page.evaluate(()=>window.projectos.organization.status({refresh:true}))).status==='connected'&&(await page.evaluate(()=>window.projectos.organization.projects())).projects.length===1)
  await app.close();app=null;await launch()
@@ -134,6 +136,11 @@ try{
  if(assetEvidence){
   const restored=await page.evaluate(id=>window.projectos.organization.assetDetail({assetId:id}),assetEvidence.assetId)
   check('Asset version and revoked pin survive server and desktop restart',restored.bindings[0]?.status==='revoked'&&restored.bindings[0]?.versionId===assetEvidence.pinnedVersionId)
+ }
+ if(workerEvidence){
+  const restored=await page.evaluate(()=>window.projectos.organization.workers())
+  check('Device and consent survive actual server/desktop restart',restored.currentWorkerId===workerEvidence.workerId&&restored.local.grants.some(g=>g.id===workerEvidence.grantId&&g.status==='active')&&restored.grants.some(g=>g.id===workerEvidence.grantId&&g.status==='active'))
+  await page.getByRole('button',{name:'执行端',exact:true}).click();await page.getByTestId('worker-link').waitFor();await capture('worker-restarted')
  }
  await page.getByTestId('org-disconnect').click();await page.getByTestId('org-disconnect-confirm').click()
  await waitFor(async()=> (await page.evaluate(()=>window.projectos.organization.status())).status==='local','local sign-out')

@@ -1,8 +1,52 @@
 import { z } from 'zod'
-import { DesktopSessionSchema, OrgRoleSchema, ProjectRoleSchema, ProjectSchema } from '@projectos/organization-contracts'
-import { SharedAssetListSchema, SharedAssetDetailSchema, SharedAssetCreateSchema, SharedAssetVersionInputSchema, SharedAssetDraftSchema, SharedAssetTransitionSchema, SharedAssetBindingInputSchema, SharedAssetUnbindInputSchema } from '@projectos/organization-contracts'
-export { SharedAssetDefinitionSchema, canonicalAssetDefinition, SharedAssetCreateSchema, SharedAssetVersionInputSchema } from '@projectos/organization-contracts'
-export type { SharedAsset, SharedAssetVersion, SharedAssetDetail, SharedAssetDefinition } from '@projectos/organization-contracts'
+import {
+  WorkerDesktopListSchema,
+  WorkerStateInputSchema,
+  WorkerGrantRequestSchema,
+} from '@projectos/organization-contracts'
+export {
+  WorkerInternalSchemas,
+  WorkerGrantInputSchema,
+  WorkerServerListSchema,
+  WorkerEnrollmentSchema,
+  LocalWorkerGrantSchema,
+  WorkerLocalContextSchema,
+} from '@projectos/organization-contracts'
+export type {
+  WorkerDesktopList,
+  LocalWorkerGrant,
+  LocalWorkerScope,
+  LocalWorkerView,
+  WorkerInternalScope,
+} from '@projectos/organization-contracts'
+import {
+  DesktopSessionSchema,
+  OrgRoleSchema,
+  ProjectRoleSchema,
+  ProjectSchema,
+} from '@projectos/organization-contracts'
+import {
+  SharedAssetListSchema,
+  SharedAssetDetailSchema,
+  SharedAssetCreateSchema,
+  SharedAssetVersionInputSchema,
+  SharedAssetDraftSchema,
+  SharedAssetTransitionSchema,
+  SharedAssetBindingInputSchema,
+  SharedAssetUnbindInputSchema,
+} from '@projectos/organization-contracts'
+export {
+  SharedAssetDefinitionSchema,
+  canonicalAssetDefinition,
+  SharedAssetCreateSchema,
+  SharedAssetVersionInputSchema,
+} from '@projectos/organization-contracts'
+export type {
+  SharedAsset,
+  SharedAssetVersion,
+  SharedAssetDetail,
+  SharedAssetDefinition,
+} from '@projectos/organization-contracts'
 
 /** Renderer-safe views: the bearer token is deliberately absent from every IPC output. */
 export const OrganizationSessionViewSchema = DesktopSessionSchema.omit({ token: true })
@@ -16,47 +60,147 @@ export const OrganizationConnectionViewSchema = z.object({
 export type OrganizationConnectionView = z.infer<typeof OrganizationConnectionViewSchema>
 export const SharedProjectViewSchema = ProjectSchema.extend({ role: ProjectRoleSchema })
 export type SharedProjectView = z.infer<typeof SharedProjectViewSchema>
-export const OrganizationProjectsViewSchema = z.object({ organizationId: z.string(), projects: z.array(SharedProjectViewSchema) })
-export const OrganizationMembersViewSchema = z.object({ members: z.array(z.object({
-  id: z.string(), accountId: z.string(), name: z.string(), email: z.email(), role: OrgRoleSchema,
-})) })
+export const OrganizationProjectsViewSchema = z.object({
+  organizationId: z.string(),
+  projects: z.array(SharedProjectViewSchema),
+})
+export const OrganizationMembersViewSchema = z.object({
+  members: z.array(
+    z.object({
+      id: z.string(),
+      accountId: z.string(),
+      name: z.string(),
+      email: z.email(),
+      role: OrgRoleSchema,
+    }),
+  ),
+})
 export type OrganizationMemberView = z.infer<typeof OrganizationMembersViewSchema>['members'][number]
-export const OrganizationInvitationsViewSchema = z.object({ invitations: z.array(z.object({
-  id: z.string(), organizationId: z.string(), organizationName: z.string(), role: z.enum(['admin','member']), expiresAt: z.number(),
-})) })
-export const OrganizationInvitationResultSchema = z.object({ invitation: z.object({
-  id: z.string(), email: z.email(), role: z.enum(['admin','member']), status: z.literal('pending'), expiresAt: z.number(),
-}), invitationCode: z.string().min(24).max(256) })
+export const OrganizationInvitationsViewSchema = z.object({
+  invitations: z.array(
+    z.object({
+      id: z.string(),
+      organizationId: z.string(),
+      organizationName: z.string(),
+      role: z.enum(['admin', 'member']),
+      expiresAt: z.number(),
+    }),
+  ),
+})
+export const OrganizationInvitationResultSchema = z.object({
+  invitation: z.object({
+    id: z.string(),
+    email: z.email(),
+    role: z.enum(['admin', 'member']),
+    status: z.literal('pending'),
+    expiresAt: z.number(),
+  }),
+  invitationCode: z.string().min(24).max(256),
+})
 
 const empty = z.object({}).strict()
 const ok = z.object({ ok: z.literal(true) })
 const id = z.string().min(1).max(128)
 export const OrganizationApiSchemas = {
-  'organization.status': { input: z.object({ refresh: z.boolean().default(false) }).strict(), output: OrganizationConnectionViewSchema },
-  'organization.connect': { input: z.object({ serverUrl: z.url() }).strict(), output: OrganizationConnectionViewSchema },
+  'organization.workers': { input: empty, output: WorkerDesktopListSchema },
+  'organization.enrollWorker': {
+    input: z.object({ name: z.string().trim().min(1).max(60) }).strict(),
+    output: WorkerDesktopListSchema,
+  },
+  'organization.changeWorker': { input: WorkerStateInputSchema, output: WorkerDesktopListSchema },
+  'organization.grantWorker': { input: WorkerGrantRequestSchema, output: WorkerDesktopListSchema },
+  'organization.revokeWorkerGrant': {
+    input: z.object({ grantId: z.uuid() }).strict(),
+    output: z.object({ ok: z.literal(true), remoteSynced: z.boolean() }),
+  },
+  'organization.status': {
+    input: z.object({ refresh: z.boolean().default(false) }).strict(),
+    output: OrganizationConnectionViewSchema,
+  },
+  'organization.connect': {
+    input: z.object({ serverUrl: z.url() }).strict(),
+    output: OrganizationConnectionViewSchema,
+  },
   'organization.cancel': { input: empty, output: ok },
   'organization.disconnect': { input: empty, output: OrganizationConnectionViewSchema },
-  'organization.select': { input: z.object({ organizationId: id }).strict(), output: OrganizationConnectionViewSchema },
-  'organization.create': { input: z.object({ name: z.string().trim().min(1).max(100), slug: z.string().min(2).max(60).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) }).strict(), output: OrganizationConnectionViewSchema },
+  'organization.select': {
+    input: z.object({ organizationId: id }).strict(),
+    output: OrganizationConnectionViewSchema,
+  },
+  'organization.create': {
+    input: z
+      .object({
+        name: z.string().trim().min(1).max(100),
+        slug: z
+          .string()
+          .min(2)
+          .max(60)
+          .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+      })
+      .strict(),
+    output: OrganizationConnectionViewSchema,
+  },
   'organization.projects': { input: empty, output: OrganizationProjectsViewSchema },
-  'organization.createProject': { input: z.object({ key: z.string().min(2).max(16).regex(/^[A-Z][A-Z0-9-]*$/), name: z.string().trim().min(1).max(120), description: z.string().max(600).default('') }).strict(), output: z.object({ project: SharedProjectViewSchema }) },
+  'organization.createProject': {
+    input: z
+      .object({
+        key: z
+          .string()
+          .min(2)
+          .max(16)
+          .regex(/^[A-Z][A-Z0-9-]*$/),
+        name: z.string().trim().min(1).max(120),
+        description: z.string().max(600).default(''),
+      })
+      .strict(),
+    output: z.object({ project: SharedProjectViewSchema }),
+  },
   'organization.members': { input: empty, output: OrganizationMembersViewSchema },
-  'organization.invite': { input: z.object({ email: z.email(), role: z.enum(['admin','member']).default('member') }).strict(), output: OrganizationInvitationResultSchema },
+  'organization.invite': {
+    input: z.object({ email: z.email(), role: z.enum(['admin', 'member']).default('member') }).strict(),
+    output: OrganizationInvitationResultSchema,
+  },
   'organization.invitations': { input: empty, output: OrganizationInvitationsViewSchema },
-  'organization.decideInvitation': { input: z.discriminatedUnion('decision',[
-    z.object({ invitationId:id, decision:z.literal('accepted'), invitationCode:z.string().min(24).max(256) }).strict(),
-    z.object({ invitationId:id, decision:z.literal('rejected') }).strict(),
-  ]), output: ok },
-  'organization.changeMember': { input: z.object({ memberId: id, role: z.enum(['admin','member']) }).strict(), output: ok },
+  'organization.decideInvitation': {
+    input: z.discriminatedUnion('decision', [
+      z
+        .object({
+          invitationId: id,
+          decision: z.literal('accepted'),
+          invitationCode: z.string().min(24).max(256),
+        })
+        .strict(),
+      z.object({ invitationId: id, decision: z.literal('rejected') }).strict(),
+    ]),
+    output: ok,
+  },
+  'organization.changeMember': {
+    input: z.object({ memberId: id, role: z.enum(['admin', 'member']) }).strict(),
+    output: ok,
+  },
   'organization.removeMember': { input: z.object({ memberId: id }).strict(), output: ok },
-  'organization.setProjectMember': { input: z.object({ projectId: id, accountId: id, role: ProjectRoleSchema.exclude(['owner']) }).strict(), output: ok },
+  'organization.setProjectMember': {
+    input: z.object({ projectId: id, accountId: id, role: ProjectRoleSchema.exclude(['owner']) }).strict(),
+    output: ok,
+  },
   'organization.assets': { input: empty, output: SharedAssetListSchema },
   'organization.assetDetail': { input: z.object({ assetId: id }).strict(), output: SharedAssetDetailSchema },
   'organization.createAsset': { input: SharedAssetCreateSchema, output: SharedAssetDetailSchema },
-  'organization.createAssetVersion': { input: SharedAssetVersionInputSchema.extend({ assetId: id }).strict(), output: SharedAssetDetailSchema },
-  'organization.updateAssetDraft': { input: SharedAssetDraftSchema.extend({ assetId: id, versionId: id }).strict(), output: SharedAssetDetailSchema },
-  'organization.transitionAsset': { input: SharedAssetTransitionSchema.extend({ assetId: id, versionId: id }).strict(), output: SharedAssetDetailSchema },
+  'organization.createAssetVersion': {
+    input: SharedAssetVersionInputSchema.extend({ assetId: id }).strict(),
+    output: SharedAssetDetailSchema,
+  },
+  'organization.updateAssetDraft': {
+    input: SharedAssetDraftSchema.extend({ assetId: id, versionId: id }).strict(),
+    output: SharedAssetDetailSchema,
+  },
+  'organization.transitionAsset': {
+    input: SharedAssetTransitionSchema.extend({ assetId: id, versionId: id }).strict(),
+    output: SharedAssetDetailSchema,
+  },
   'organization.bindAsset': { input: SharedAssetBindingInputSchema, output: SharedAssetDetailSchema },
   'organization.unbindAsset': { input: SharedAssetUnbindInputSchema, output: SharedAssetDetailSchema },
 } as const
-export const ORGANIZATION_MAIN_METHODS = Object.keys(OrganizationApiSchemas) as Array<keyof typeof OrganizationApiSchemas>
+export const ORGANIZATION_MAIN_METHODS = Object.keys(OrganizationApiSchemas) as Array<
+  keyof typeof OrganizationApiSchemas
+>

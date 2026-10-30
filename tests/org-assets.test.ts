@@ -147,7 +147,7 @@ describe('A2.1 immutable organization assets — real PostgreSQL and HTTP', () =
       (
         await database.pool.query('SELECT version FROM organization_schema_migrations ORDER BY version')
       ).rows.map((row) => row.version),
-    ).toEqual([1, 2])
+    ).toEqual([1, 2, 3])
     expect(
       (await database.pool.query('SELECT checksum FROM organization_schema_migrations WHERE version=1'))
         .rows[0].checksum,
@@ -171,12 +171,12 @@ describe('A2.1 immutable organization assets — real PostgreSQL and HTTP', () =
     }
     try {
       await database.pool.query(
-        "INSERT INTO organization_schema_migrations(version,checksum) VALUES(3,'unknown')",
+        "INSERT INTO organization_schema_migrations(version,checksum) VALUES(4,'unknown')",
       )
       await expect(assertOrganizationSchema(database.pool)).rejects.toThrow()
       await expect(migrateOrganizationDatabase(database.pool)).rejects.toThrow()
     } finally {
-      await database.pool.query('DELETE FROM organization_schema_migrations WHERE version=3')
+      await database.pool.query('DELETE FROM organization_schema_migrations WHERE version=4')
     }
     await expect(migrateOrganizationDatabase(database.pool, 1)).rejects.toThrow()
   })

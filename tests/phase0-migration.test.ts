@@ -12,7 +12,7 @@ afterEach(() => {
 })
 
 describe('Phase 0 V24 historical database fixture', () => {
-  it('keeps the V24 fixture readable and upgrades it to V36 with lifecycle and release defaults', () => {
+  it('keeps the V24 fixture readable and upgrades it to V37 with lifecycle and local Worker defaults', () => {
     const dir = mkdtempSync(join(tmpdir(), 'projectos-v24-fixture-'))
     cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
     const dbPath = join(dir, 'v24-copy.sqlite')
@@ -34,7 +34,7 @@ describe('Phase 0 V24 historical database fixture', () => {
 
     const store = new SqliteStore({ filePath: dbPath })
     try {
-      expect(Number(store.db.prepare('SELECT MAX(version) AS version FROM schema_migrations').get()?.version)).toBe(36)
+      expect(Number(store.db.prepare('SELECT MAX(version) AS version FROM schema_migrations').get()?.version)).toBe(37)
       const tables = new Set(
         (store.db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as Array<{ name: string }>).map((row) => row.name),
       )
@@ -58,7 +58,7 @@ describe('Phase 0 V24 historical database fixture', () => {
       const backup = new DatabaseSync(backupPath, { readOnly: true })
       try {
         expect((backup.prepare('PRAGMA integrity_check').get() as { integrity_check: string }).integrity_check).toBe('ok')
-        expect(Number((backup.prepare('SELECT MAX(version) AS version FROM schema_migrations').get() as { version: number }).version)).toBe(36)
+        expect(Number((backup.prepare('SELECT MAX(version) AS version FROM schema_migrations').get() as { version: number }).version)).toBe(37)
         expect(Number((backup.prepare('SELECT COUNT(*) AS count FROM projects WHERE id=?').get('prj_v24_fixture') as { count: number }).count)).toBe(1)
         expect(Number((backup.prepare('SELECT COUNT(*) AS count FROM releases').get() as { count: number }).count)).toBe(0)
       } finally {

@@ -7,6 +7,7 @@ import {
   RUNTIME_INTERNAL_METHODS,
   RUNTIME_METHODS,
   isMainMethod,
+  WorkerInternalSchemas,
   newId,
   type AIConnectionView,
   type ApiMethod,
@@ -58,6 +59,7 @@ import type { ProviderManager } from './provider-manager.js'
 import { seedDemo } from './demo.js'
 import { OrchestrationScheduler } from './orchestrator.js'
 import { ResourceService } from './resource-service.js'
+import { LocalWorkerService } from './local-worker.js'
 import { agentForPlannedTask } from '@projectos/planning'
 import { planGroupTitle } from '@projectos/session-manager'
 
@@ -81,6 +83,7 @@ export interface DispatcherDeps {
 }
 
 export class RuntimeDispatcher {
+  private readonly localWorker: LocalWorkerService
   private readonly aiConnections: AIConnectionService
   private readonly planGrants: PlanGrantService
   private readonly runtimeSettings: RuntimeSettingsService
@@ -106,6 +109,7 @@ export class RuntimeDispatcher {
   private readonly groupDiscussions = new Map<string, Promise<void>>()
 
   constructor(private readonly deps: DispatcherDeps) {
+    this.localWorker = new LocalWorkerService(deps.store)
     this.aiConnections = new AIConnectionService(deps.store)
     this.planGrants = new PlanGrantService(deps.store, deps.logger)
     this.runtimeSettings = new RuntimeSettingsService(deps.store, (limits) => deps.runner.setLimits(limits))
@@ -657,6 +661,10 @@ export class RuntimeDispatcher {
   }
 
   async dispatch(method: string, rawInput: unknown): Promise<unknown> {
+    if (Object.hasOwn(WorkerInternalSchemas, method)) {
+      const key = method as keyof typeof WorkerInternalSchemas
+      return WorkerInternalSchemas[key].output.parse(this.localWorker.dispatch(key, rawInput))
+    }
     const internal = (RUNTIME_INTERNAL_METHODS as readonly string[]).includes(method)
     if (!internal && isMainMethod(method)) {
       throw new AppError('FORBIDDEN', '该方法只能由 Electron Main 处理')

@@ -1,0 +1,394 @@
+{
+  "fixture": "real PostgreSQL + real Electron + browser PKCE, isolated demo identities",
+  "summary": {
+    "pass": 77,
+    "fail": 0
+  },
+  "results": [
+    {
+      "name": "Local mode remains available",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Organization form controls have labels",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Connection action is reachable by keyboard",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "connection 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Browser request has PKCE and no token",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "IPC session is sanitized",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Credentials are encrypted on disk",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Shared project persisted",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "projects 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Real invitation created",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Second account accepts invitation",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "members 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Organization membership does not grant project access",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "axe empty light has no violations",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "axe empty dark has no violations",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Enrollment moves keyboard focus to device name",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Real device enrolled and heartbeat is online",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Execution capability is not falsely advertised",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Typed IPC contains no worker credential",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Worker identity is encrypted with the existing Main vault",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "workers-registered 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "workers-registered 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "workers-registered 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "workers-registered 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "workers-registered 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "axe registered light has no violations",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "axe registered dark has no violations",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-consent-form 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-consent-form 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-consent-form 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-consent-form 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-consent-form 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "axe consent-form light has no violations",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "axe consent-form dark has no violations",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Declined native consent creates no active grant",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Main consent uses the real local root and conservative default",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Grant commits to both actual PostgreSQL and local SQLite",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Consent freezes the exact path/tool/budget scope",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-project-grant 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-project-grant 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-project-grant 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-project-grant 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-project-grant 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "axe authorized light has no violations",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "axe authorized dark has no violations",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Device detail receives keyboard focus",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-device-detail 1440 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-device-detail 1440 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-device-detail 1024 light fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-device-detail 1024 dark fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "worker-device-detail 125% fits",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "axe detail light has no violations",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "axe detail dark has no violations",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Pausing revokes persisted local and server grants",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Offline revocation is shown as locally effective, pending sync",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Recovery synchronizes the durable revocation",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "All device form controls have explicit labels",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Worker content stays within its scroll owner",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Reduced motion reaches a settled readable detail",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Server restart preserves session and shared project",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Desktop restart restores encrypted organization session",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Device and consent survive actual server/desktop restart",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Sign-out returned to local mode",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Renderer has no Node API",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "No renderer exceptions",
+      "status": "PASS",
+      "detail": ""
+    }
+  ]
+}

@@ -1,5 +1,11 @@
 # ProjectOS Next UI — Open Issues
 
+2026-10-29: A2.2a adds real registered devices / expiring native-confirmed local consent. Job leases,
+Run asset adoption and execution are still A2.2b. Its ten axe states report 0 violations / 2 manual
+review items; native OS dialog pixels/input and final aesthetic acceptance are unverified. The
+user has authorized a system-wide adoption of the approved DAG screenshot with real-menu mapping
+(ADR-0070); first resolve and verify the Lab's five contract prerequisites, then audit every route.
+
 Current organization extension (2026-10-29): A2.1's Settings asset catalog is independently
 reviewable; Worker grants/leases, local linking and Run binding resolver remain A2.2. Rendered
 Impeccable CDP detection did not complete; source `[]` and focused Electron keyboard/label/contrast/

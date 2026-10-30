@@ -1,0 +1,94 @@
+{
+  "tool": "axe-core 4.14.0",
+  "scope": "actual organization panel; not a screen-reader certification",
+  "states": [
+    {
+      "state": "empty",
+      "theme": "light",
+      "violations": [],
+      "incomplete": [],
+      "passes": 17
+    },
+    {
+      "state": "empty",
+      "theme": "dark",
+      "violations": [],
+      "incomplete": [],
+      "passes": 17
+    },
+    {
+      "state": "registered",
+      "theme": "light",
+      "violations": [],
+      "incomplete": [],
+      "passes": 26
+    },
+    {
+      "state": "registered",
+      "theme": "dark",
+      "violations": [],
+      "incomplete": [],
+      "passes": 26
+    },
+    {
+      "state": "consent-form",
+      "theme": "light",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23
+    },
+    {
+      "state": "consent-form",
+      "theme": "dark",
+      "violations": [],
+      "incomplete": [],
+      "passes": 23
+    },
+    {
+      "state": "authorized",
+      "theme": "light",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "h3"
+            ]
+          ]
+        }
+      ],
+      "passes": 28
+    },
+    {
+      "state": "authorized",
+      "theme": "dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "h3"
+            ]
+          ]
+        }
+      ],
+      "passes": 28
+    },
+    {
+      "state": "detail",
+      "theme": "light",
+      "violations": [],
+      "incomplete": [],
+      "passes": 22
+    },
+    {
+      "state": "detail",
+      "theme": "dark",
+      "violations": [],
+      "incomplete": [],
+      "passes": 22
+    }
+  ]
+}

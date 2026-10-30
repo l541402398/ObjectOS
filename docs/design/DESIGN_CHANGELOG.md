@@ -1,5 +1,22 @@
 # ProjectOS UI Design Changelog
 
+## 2026-10-29 — A2.2a device consent; system direction reaffirmed
+
+- Added actual device/heartbeat/state and native-confirmed local project consent inside Settings.
+  Compact account context; semantic device rows, inline forms, conservative defaults, visible
+  offline revoke and real recovery. No prototype job data or enabled-execution claim.
+- Actual axe fixed duplicate banner and insufficient badge contrast; live reduced-motion preference
+  now follows both system and app settings after inspecting installed Motion's initial-value latch.
+- 563 tests PASS / 4 external SKIP; 77 real PG/Electron checks; all required desktop/package checks
+  PASS. 43 final native captures plus 5 baseline comparisons and 1 labelled diagnostic. Ten axe
+  states have 0 violations / 2 manual-review contrast items. OS-native button pixels/input, screen
+  reader and FPS remain unverified. See `docs/org-upgrade/reports/A2.2a-report.md` and UI source log.
+- User explicitly reaffirmed the supplied approved DAG aesthetic for all product routes and asked
+  the left menus to match real functions. Preserved the new supplied image as
+  `baselines/2026-10-29-user-confirmed-DAG.png` (SHA256
+  `9461548a137c95c44b2f07b76382a8da4e76a671d0df8c0585b7fe2d7419c9af`). ADR-0070 records the
+  authorized rollout and five Lab prerequisites. No claim that the global rollout is done here.
+
 ## 2026-10-29 — A2.1 organization asset catalog
 
 - Extended A1's actual Settings tab with searchable Agent/Skill/MCP/Tool rows, inline drafts,

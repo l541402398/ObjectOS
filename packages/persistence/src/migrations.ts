@@ -1449,6 +1449,20 @@ const V36 = `
 ALTER TABLE plan_command_approvals ADD COLUMN context_hash TEXT;
 `
 
+const V37 = `
+CREATE TABLE worker_local_identity (singleton INTEGER PRIMARY KEY CHECK(singleton=1), instance_id TEXT NOT NULL);
+CREATE TABLE worker_local_grants (
+  id TEXT PRIMARY KEY, server_url TEXT NOT NULL, organization_id TEXT NOT NULL, account_id TEXT NOT NULL,
+  local_project_id TEXT NOT NULL REFERENCES projects(id), status TEXT NOT NULL,
+  expires_at INTEGER NOT NULL, grant_json TEXT NOT NULL
+);
+CREATE INDEX idx_worker_local_grants_scope ON worker_local_grants(server_url,organization_id,account_id);
+CREATE TABLE worker_local_audit (
+  seq INTEGER PRIMARY KEY AUTOINCREMENT, grant_id TEXT NOT NULL, operation TEXT NOT NULL,
+  created_at INTEGER NOT NULL, details_json TEXT NOT NULL
+);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -1486,6 +1500,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 34, name: 'durable autonomy coordination events', sql: V34 },
   { version: 35, name: 'plan command approval reuse', sql: V35 },
   { version: 36, name: 'command approval execution context fingerprint', sql: V36 },
+  { version: 37, name: 'local worker identity and explicit project consent', sql: V37 },
 ]
 
 function checksum(sql: string): string {

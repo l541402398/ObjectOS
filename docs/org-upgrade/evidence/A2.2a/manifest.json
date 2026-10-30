@@ -1,0 +1,1059 @@
+{
+  "phase": "A2.2a registered devices and native-confirmed local project consent",
+  "branch": "codex/org-a2-worker",
+  "testedBaseHead": "4e1936965e26022379888277c6cced57c05a07e9",
+  "generatedAtUtc": "2026-10-30T06:31:52.732Z",
+  "userDate": "2026-10-29",
+  "timeZone": "America/Los_Angeles",
+  "implementationCommit": {
+    "sha": null,
+    "status": "PENDING_COMMIT",
+    "note": "Implementation and evidence travel together; follow-up metadata records the exact implementation SHA."
+  },
+  "status": "PASS_ENGINEERING_CHECKS_VISUAL_ACCEPTANCE_PENDING",
+  "checks": [
+    {
+      "command": "pnpm lint",
+      "status": "PASS",
+      "exitCode": 0,
+      "fullOutputSha256": "8fcaf7d08dcccfb3deae0368066dfe04482ead70cb410f462e89aa75c928f973",
+      "outputTail": [
+        "C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\packages\\application\\src\\completion-evidence.ts",
+        "  126:10  warning  'toolExitOk' is defined but never used. Allowed unused vars must match /^_/u                   @typescript-eslint/no-unused-vars",
+        "  300:9   warning  'diagnosticEvidence' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars",
+        "",
+        "C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\tests\\p287-review-snapshot.test.ts",
+        "  338:11  warning  'dir' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars",
+        "",
+        "C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\tests\\p288-auto-review.test.ts",
+        "  15:72  warning  'waitFor' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars",
+        "",
+        "C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\tests\\p288-delivery-lineage.test.ts",
+        "  13:28  warning  'logger' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars",
+        "",
+        "✖ 29 problems (0 errors, 29 warnings)",
+        "",
+        "Dependency boundaries OK (packages, runtime, renderer, server)."
+      ]
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "PASS",
+      "exitCode": 0,
+      "fullOutputSha256": "2c91cbfb819ee4d0864ee0cec9cc4d9ff779454a82535ef0935d3077b2fc0688",
+      "outputTail": [
+        "> projectos@1.7.0 typecheck C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4",
+        "> tsc -p tsconfig.json --noEmit"
+      ]
+    },
+    {
+      "command": "pnpm test",
+      "status": "PASS",
+      "exitCode": 0,
+      "fullOutputSha256": "c6f2226f356f0220b43acb6ec751e6ec9a5d80cf6dc4b8cfc70632134f9a5501",
+      "outputTail": [
+        "warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it",
+        "warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it",
+        "warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it",
+        "warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it",
+        "warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it",
+        "warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it",
+        "warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it",
+        "warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it",
+        "warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it",
+        "warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it",
+        "warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it",
+        "",
+        " Test Files  101 passed | 2 skipped (103)",
+        "      Tests  563 passed | 4 skipped (567)",
+        "   Start at  23:13:30",
+        "   Duration  169.93s (tests 86%, import 14%)"
+      ]
+    },
+    {
+      "command": "pnpm build",
+      "status": "PASS",
+      "exitCode": 0,
+      "fullOutputSha256": "da5f012531e5b870cb180cb777b049093631dd3f6b58257fb15e24541cea2e1e",
+      "outputTail": [
+        "",
+        "✓ built in 14.93s",
+        "",
+        "> projectos@1.7.0 build:server C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4",
+        "> tsup --config tooling/tsup.server.config.ts",
+        "",
+        "CLI Building entry: {\"index\":\"C:\\\\Users\\\\Administrator\\\\Desktop\\\\workplace\\\\ProjectOS-v2-phase2.4\\\\apps\\\\server\\\\src\\\\index.ts\"}",
+        "CLI Using tsconfig: tsconfig.json",
+        "CLI tsup v9.0.0",
+        "CLI Using tsup config: C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\tooling\\tsup.server.config.ts",
+        "CLI Target: node24",
+        "CLI Cleaning output folder",
+        "ESM Build start",
+        "ESM apps\\server\\dist\\index.js     115.00 KB",
+        "ESM apps\\server\\dist\\index.js.map 215.22 KB",
+        "ESM ⚡️ Build success in 69ms"
+      ]
+    },
+    {
+      "command": "node scripts/e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "fullOutputSha256": "3a21c7f27de6e1ef832dbb51b527c385c2e516d170fb628d93bdc8932330dbce",
+      "outputTail": [
+        "E2E PASS — create project through the desktop UI and recover it after restart (T-001).",
+        "  project root: C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\projectos-e2e-lwEQue\\my-project"
+      ]
+    },
+    {
+      "command": "node scripts/agent-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "fullOutputSha256": "2ecedf72413167ee7bc51f8e9e2ca107ca0288f9475a876813e932488bb69174",
+      "outputTail": [
+        "AGENT E2E PASS — real approval pause, approved write, resumed loop and completed run.",
+        "  provider requests: 2",
+        "  run: run_01m65qjjxez0mxr1de4tkknrtf (completed)"
+      ]
+    },
+    {
+      "command": "node scripts/v12-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "fullOutputSha256": "75d7c76d8923aab25c11a2a3b0e2120c04ff8ad5036231c59cbf99219276b81a",
+      "outputTail": [
+        "V1.2 E2E PASS — modal settings, connection CRUD/test/discovery, default sync, native run, restart, external detection and collapsed rail.",
+        "  connection: V1.2 E2E Connection (fake-second)",
+        "  stream requests: 1"
+      ]
+    },
+    {
+      "command": "node scripts/v13-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "fullOutputSha256": "9060dfb3e2d2bf70fa92f8d91916818551c5d22d9ecd42d49120440627d87512",
+      "outputTail": [
+        "V1.3 E2E PASS — scan, plan DAG approval, real graph projection, saved layout, inline connection editor and restart recovery.",
+        "  project: V1.3 RBAC Project",
+        "  stack: TypeScript / JavaScript · React / Vite / Electron / Ant Design / Monorepo / TypeScript",
+        "  plan: r1 · 4 tasks · superseded",
+        "  graph: 10 nodes / 12 edges"
+      ]
+    },
+    {
+      "command": "pnpm package:dir",
+      "status": "PASS",
+      "exitCode": 0,
+      "fullOutputSha256": "1406226f9d731ecff82e7a8ed4e1661f373b4bc494223d7480bf83ee9e75abdc",
+      "outputTail": [
+        "",
+        "> @projectos/desktop@1.7.0 package:dir C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\apps\\desktop",
+        "> electron-builder --win dir --config electron-builder.yml",
+        "",
+        "  • electron-builder  version=26.15.3 os=10.0.19045",
+        "  • loaded configuration  file=C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\apps\\desktop\\electron-builder.yml",
+        "  • packageManager not detected by file, falling back to environment detection  resolvedPackageManager=pnpm detected=C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4",
+        "  • skipped dependencies rebuild  reason=npmRebuild is set to false",
+        "  • packaging       platform=win32 arch=x64 electron=43.8.2 appOutDir=C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\release\\win-unpacked",
+        "  • downloaded      label=electron progress=100%",
+        "  • downloaded electron zip extracted successfully  output=C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\release\\win-unpacked",
+        "  • searching for node modules  pm=pnpm searchDir=C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\apps\\desktop",
+        "  • platform-specific optional dependencies not bundled — add them to your project's optionalDependencies if your app requires them (pnpm 10+ does not auto-install transitive platform binaries)  dependencies=[\"@tailwindcss/oxide-android-arm64@4.3.3\",\"@tailwindcss/oxide-darwin-arm64@4.3.3\",\"@tailwindcss/oxide-darwin-x64@4.3.3\",\"@tailwindcss/oxide-freebsd-x64@4.3.3\",\"@tailwindcss/oxide-linux-arm-gnueabihf@4.3.3\",\"@tailwindcss/oxide-linux-arm64-gnu@4.3.3\",\"@tailwindcss/oxide-linux-arm64-musl@4.3.3\",\"@tailwindcss/oxide-linux-x64-gnu@4.3.3\",\"@tailwindcss/oxide-linux-x64-musl@4.3.3\",\"@tailwindcss/oxide-win32-arm64-msvc@4.3.3\",\"lightningcss-android-arm64@1.32.0\",\"lightningcss-darwin-arm64@1.32.0\",\"lightningcss-darwin-x64@1.32.0\",\"lightningcss-freebsd-x64@1.32.0\",\"lightningcss-linux-arm-gnueabihf@1.32.0\",\"lightningcss-linux-arm64-gnu@1.32.0\",\"lightningcss-linux-arm64-musl@1.32.0\",\"lightningcss-linux-x64-gnu@1.32.0\",\"lightningcss-linux-x64-musl@1.32.0\",\"lightningcss-win32-arm64-msvc@1.32.0\"]",
+        "  • dependency not found on disk  dependencies=[\"@tailwindcss/oxide-wasm32-wasi@4.3.3\"]",
+        "  • updating asar integrity executable resource  executablePath=C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\release\\win-unpacked\\ProjectOS.exe",
+        "  • signing with signtool.exe  path=C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\release\\win-unpacked\\ProjectOS.exe"
+      ]
+    },
+    {
+      "command": "pnpm test:package",
+      "status": "PASS",
+      "exitCode": 0,
+      "fullOutputSha256": "3f628e7e9f6a2e33dfded658bf84d88752cefc0b3cf677df9b476b99735a74b7",
+      "outputTail": [
+        "> projectos@1.7.0 test:package C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4",
+        "> node scripts/package-smoke.mjs",
+        "",
+        "PACKAGE SMOKE PASS — packaged EXE creates a project, writes starter files and recovers after restart.",
+        "  executable: C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\release\\win-unpacked\\ProjectOS.exe",
+        "  runtime: C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\release\\win-unpacked\\resources\\runtime\\index.mjs"
+      ]
+    },
+    {
+      "command": "node --import tsx scripts/org-server-artifact-smoke.mts",
+      "status": "PASS",
+      "exitCode": 0,
+      "fullOutputSha256": "6dec3527f91620bc35fe1c7f427bab05baaa4d48ec9dc7adefd72e3902d60ecc",
+      "outputTail": [
+        "PASS built JavaScript explicit PostgreSQL migration",
+        "PASS built JavaScript PostgreSQL server /health"
+      ]
+    },
+    {
+      "command": "node --import tsx scripts/org-a22-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "fullOutputSha256": "092a631936e78d4fd3dcc2ab953ffb49802332879039bcc0b35dbead60d384b4",
+      "outputTail": [
+        "[PASS] axe detail dark has no violations",
+        "ORG FIXTURE ERROR POST /v1/organizations/2a87d117-595d-489d-bbf7-a872fd35b68d/workers/320f4680-635b-4dd5-ba17-984a1c8506ff/heartbeat WORKER_FORBIDDEN 当前账号、设备或项目不具备此权限。",
+        "ORG FIXTURE ERROR POST /v1/organizations/2a87d117-595d-489d-bbf7-a872fd35b68d/workers/320f4680-635b-4dd5-ba17-984a1c8506ff/heartbeat WORKER_FORBIDDEN 当前账号、设备或项目不具备此权限。",
+        "[PASS] Pausing revokes persisted local and server grants",
+        "[PASS] Offline revocation is shown as locally effective, pending sync",
+        "[PASS] Recovery synchronizes the durable revocation",
+        "[PASS] All device form controls have explicit labels",
+        "[PASS] Worker content stays within its scroll owner",
+        "[PASS] Reduced motion reaches a settled readable detail",
+        "[PASS] Server restart preserves session and shared project",
+        "[PASS] Desktop restart restores encrypted organization session",
+        "[PASS] Device and consent survive actual server/desktop restart",
+        "[PASS] Sign-out returned to local mode",
+        "[PASS] Renderer has no Node API",
+        "[PASS] No renderer exceptions",
+        "ORG A1 E2E SUMMARY {\"pass\":77,\"fail\":0}"
+      ]
+    }
+  ],
+  "unitTests": {
+    "pass": 563,
+    "skip": 4,
+    "fail": 0,
+    "files": 103,
+    "windowsMaxWorkers": 4
+  },
+  "organizationJourney": {
+    "pass": 77,
+    "fail": 0
+  },
+  "axe": {
+    "states": 10,
+    "violations": 0,
+    "incomplete": 2,
+    "scope": "actual organization panel; not a screen-reader certification"
+  },
+  "migrations": {
+    "postgres": 3,
+    "originalApplicationSqlUnchanged": true,
+    "originalApplicationSqlSha256": "dc6cce053a6e6cc3b01f1c57883d8953c5e7dbe732c205d175654cdc3e00ede1",
+    "sqlite": 37,
+    "previous36SqlUnchanged": true,
+    "previous36": [
+      {
+        "name": "V1",
+        "utf8LfSha256": "54f254a2ba7248a66d0ecbaf162160986840b392c60cabdf224a10ee1ae034f7"
+      },
+      {
+        "name": "V2",
+        "utf8LfSha256": "4ff03293db0b0c599c80ec4b48ca5452714aff4c9f687569caf38f62208eed2b"
+      },
+      {
+        "name": "V3",
+        "utf8LfSha256": "7f69f1620aef0485736aaa7913d84da8970b09234d7d468a1cc9c57b456573e3"
+      },
+      {
+        "name": "V4",
+        "utf8LfSha256": "8d8476b9d9a7c660fd1e1f653a165cf640c7ca1d69e017481680b051be757e63"
+      },
+      {
+        "name": "V5",
+        "utf8LfSha256": "61171fd9eaabe56b0cd17ccea33d56c69af0b061dfe5eadff312a9eaab28032c"
+      },
+      {
+        "name": "V6",
+        "utf8LfSha256": "358ec7551c0655d3347105e6abacd2cd3a2927b5605dc71d020680d5558d925c"
+      },
+      {
+        "name": "V7",
+        "utf8LfSha256": "cb0e34e7178d2fed37cf463039d77005c5ad522e96c7d0ed504ae93372dfe300"
+      },
+      {
+        "name": "V8",
+        "utf8LfSha256": "c286da8b11bdc2cb53294e8d2ee404f725c8505386c692b924de44f1d86803a1"
+      },
+      {
+        "name": "V9",
+        "utf8LfSha256": "81e1e7dd682ccc07659faac6c1c9d176bc7e4e76a59bb2a9b77f5e12106ee940"
+      },
+      {
+        "name": "V10",
+        "utf8LfSha256": "d96fc2ace02d163961a4d446c39ca63a140039ceea3a908ebb368e85a9c4c290"
+      },
+      {
+        "name": "V11",
+        "utf8LfSha256": "beeb11160183abb6132c364d519f3b8acaf9d79f55b58d2feed10ad507353e1a"
+      },
+      {
+        "name": "V12",
+        "utf8LfSha256": "95121f8284e8668961e9e2549eab9aa570789595e4798509524249843093230b"
+      },
+      {
+        "name": "V13",
+        "utf8LfSha256": "69cbff4f70adb3e13866c18dd3fa27b40235c5b0250298855ddededdff45e711"
+      },
+      {
+        "name": "V15",
+        "utf8LfSha256": "1f40318fa3da9185690ef0fdc0c183d643c2eeb2d7abb5ca40c5726ef9f2de09"
+      },
+      {
+        "name": "V16",
+        "utf8LfSha256": "df4822dc38773ef6dc4a16c246d306bff5688349e6daab5bc74e82f252a2df4d"
+      },
+      {
+        "name": "V17",
+        "utf8LfSha256": "52f6ad36f3f887f3067921cd138c008bb4883b53ad46171f484ea25e60ffe0ce"
+      },
+      {
+        "name": "V18",
+        "utf8LfSha256": "9eb71e1cc5be9813c6413be10d8579b275aac6340a7debdfcfb14304f5a6ad81"
+      },
+      {
+        "name": "V19",
+        "utf8LfSha256": "290c6aa3255edcb01686caac629b3126bbe3ef5e03f975da4db5f217b17cfef5"
+      },
+      {
+        "name": "V20",
+        "utf8LfSha256": "18c1c72dd1f89209b4988f57b628a4d82565b523217ef19fbc34858d6a961df0"
+      },
+      {
+        "name": "V21",
+        "utf8LfSha256": "7ba80466b35a4e23b4d6d255ea34f4dcb7f796af9678f53d9ea65bbbcbf0be33"
+      },
+      {
+        "name": "V22",
+        "utf8LfSha256": "89efcd4121a59726ef4b8c84a7c32f9224d4e67abc2c991ed0c7744f9f3986eb"
+      },
+      {
+        "name": "V24",
+        "utf8LfSha256": "7e32c0bdfa8281d2760fcbd2fd8d3bf8826aa10ca0f475abcc89cfc7af395df2"
+      },
+      {
+        "name": "V23",
+        "utf8LfSha256": "685be05c5f43c00bd735f24840cbcad88695a636aee90b20632570d15725428f"
+      },
+      {
+        "name": "V14",
+        "utf8LfSha256": "ece7291b61cd4a80b6db89088159a506636331dd257323bedddd3144e969183f"
+      },
+      {
+        "name": "V25",
+        "utf8LfSha256": "09e757e848af7bdc3e7473bb2c331e910d27e40c32cfe08bb4c3e70a34e929a7"
+      },
+      {
+        "name": "V26",
+        "utf8LfSha256": "6b2f1bcdd2954ff8429a761b3fde4d440c6f0506ed77add97728ea1ebc6315da"
+      },
+      {
+        "name": "V27",
+        "utf8LfSha256": "c7ef57f1886ad605f132476101143393188d1df3804ea78a82db0772f7b4f730"
+      },
+      {
+        "name": "V28",
+        "utf8LfSha256": "8eb24dcc4d04401c36b7493ad20c003fa523421b93aff5feac6723fa2d346265"
+      },
+      {
+        "name": "V29",
+        "utf8LfSha256": "0737c2090130b4e385c0acda43590ba3d93a8fe7b461925f5ce3f39cac1f0764"
+      },
+      {
+        "name": "V30",
+        "utf8LfSha256": "29d42e10d40b354f3036c251336b4d4d87d5a8d68baa78a0f5ab9fa04d2b15b6"
+      },
+      {
+        "name": "V31",
+        "utf8LfSha256": "dbb501e289c961dffb3a0d26578e050d87cd228550669d2aaa6bfdf08b528fd7"
+      },
+      {
+        "name": "V32",
+        "utf8LfSha256": "3ce6f535281e51ecaec00d0d680565ee6a1634ce00b32c82aec2fb962d91f510"
+      },
+      {
+        "name": "V33",
+        "utf8LfSha256": "b5b29ec74f3917dcaae5342d2830978477e5e191d163d25bfeda9d9c478b6896"
+      },
+      {
+        "name": "V34",
+        "utf8LfSha256": "f634dc913dfa3739e73a0e9ccc723eb2b3ec98c97c7d81bb4d62e6d34862c676"
+      },
+      {
+        "name": "V35",
+        "utf8LfSha256": "09ddc6ab2e31df872746fb25a723cd9c08e030c337ad19b8010add2147b4ad5c"
+      },
+      {
+        "name": "V36",
+        "utf8LfSha256": "7bd449f118ad8f65dec192fbabfa04bb42e12c50b8aa2c21bfd76e7aba0ce0c5"
+      }
+    ]
+  },
+  "preservedSources": [
+    {
+      "path": "apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationGraph.tsx",
+      "status": "UNCHANGED",
+      "utf8LfSha256": "85ed7f8c2262b95b132cdce98b550c676ea16ffe596134d4683854e92422a9f7"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/collaboration-overview/focus-projection.ts",
+      "status": "UNCHANGED",
+      "utf8LfSha256": "58d6ff801b817092264e54146edb50dc7bdf7c953b36afe587c61590ff5fd174"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/AgentWorkbenchPage.tsx",
+      "status": "UNCHANGED",
+      "utf8LfSha256": "5536aac8e7b03b4e3635f5a466d70d61a6e00b59e09979a09b66c07aeee42b3b"
+    },
+    {
+      "path": "packages/design-tokens/src/unified.css",
+      "status": "UNCHANGED",
+      "utf8LfSha256": "f2b29c311db818ec0116991fb311529480b2d24de4cfe8f9ee7d4d751b398b7a"
+    },
+    {
+      "path": "apps/server/src/assets-schema.ts",
+      "status": "UNCHANGED",
+      "utf8LfSha256": "e83050330b109d7c000a75a97ddeb2c227d23883c5192156de398e0df5d95a6d"
+    },
+    {
+      "path": "apps/server/src/postgres-auth-schema.ts",
+      "status": "UNCHANGED",
+      "utf8LfSha256": "3c04fc57df8100cd49a1ca0b34a0e4b4d01b5ee943cdddcbd2ee651418c92e39"
+    }
+  ],
+  "testedSourceFiles": [
+    {
+      "path": "apps/desktop/src/main/auth/organization-connection.ts",
+      "bytes": 26833,
+      "sha256": "f95ea4e3d9b0ac8c572ea0849e4c030a00531727f15dc838d4c1817cf0ba52d2"
+    },
+    {
+      "path": "apps/desktop/src/main/auth/organization-worker.ts",
+      "bytes": 10243,
+      "sha256": "4e1805725208e070a4ef806c8bcc7c6ac1fbfb99ce48d384c8de1dd6f006d289"
+    },
+    {
+      "path": "apps/desktop/src/main/ipc.ts",
+      "bytes": 34419,
+      "sha256": "3373899f9ebb8b39a95b4c1caedca0ec36adf378ffb98a24a125062afe5825ee"
+    },
+    {
+      "path": "apps/desktop/src/preload/index.ts",
+      "bytes": 20253,
+      "sha256": "e18b7cba1bc2098a09b69d6ed2511603a9e151eda2d0a2fb6712cc7fc33aeb97"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/settings/OrganizationPanel.tsx",
+      "bytes": 7609,
+      "sha256": "1978b2c17dd9da2dff05e7deac3a642db17f4999ede008e0fcb9bd15eb5ebe99"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/settings/organization/OrganizationWorkers.tsx",
+      "bytes": 30257,
+      "sha256": "18f2cbe285095129aad5edbf9aff095dd23259e3425fde19d8026bb411a057a5"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/settings/organization/organization.css",
+      "bytes": 13119,
+      "sha256": "052237c05cfc561201c68bd07e5c5f3d6201bc26b0000f649b39041e657dc06c"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/settings/organization/workers.css",
+      "bytes": 7797,
+      "sha256": "d56ab8e80fdec53baaaddb53df1be7136959e8178956de0c8e6c07ead2ddb31c"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/hooks/useReducedMotionPreference.ts",
+      "bytes": 721,
+      "sha256": "5f2f78ecf57240e2f8c4960b0f68c7d593f10be2cff22bf31859faa52cc427ed"
+    },
+    {
+      "path": "apps/runtime/src/dispatcher.ts",
+      "bytes": 83395,
+      "sha256": "82514cb4ffec30c1de293d87ed9aea155620a7fec2a86a465d5bef090f77bba8"
+    },
+    {
+      "path": "apps/runtime/src/local-worker.ts",
+      "bytes": 8845,
+      "sha256": "d15b9d6aba04c04d83a804aa1629a57a8f9a092b948043a4944bc8cf092dc2c7"
+    },
+    {
+      "path": "apps/server/src/persistent-server.ts",
+      "bytes": 26037,
+      "sha256": "e7efa67a1b36d12520dffc800a47b4b524099d5160c4a7ce2c923f9c907ddd3e"
+    },
+    {
+      "path": "apps/server/src/postgres-store.ts",
+      "bytes": 8143,
+      "sha256": "39008a50dee03e7a9ae743669fcb0effa4478ecda4f109fecf4d57c74cff763a"
+    },
+    {
+      "path": "apps/server/src/workers-api.ts",
+      "bytes": 15831,
+      "sha256": "251139dc44d1c5395d105b5bd80be3af36588c0a82ebb896ca7436f7413c815d"
+    },
+    {
+      "path": "apps/server/src/workers-schema.ts",
+      "bytes": 1602,
+      "sha256": "8ac09366167f91a42ca6b75398506adcb46d882a389ae2b06ef976dba9e70777"
+    },
+    {
+      "path": "package.json",
+      "bytes": 4424,
+      "sha256": "ef2eb636c8ebba505e88c7834c08f3b078adeafbe38dc73b4425df83b58f838e"
+    },
+    {
+      "path": "packages/contracts/src/desktop-api.ts",
+      "bytes": 21848,
+      "sha256": "c280604b076fce03db6d6d05c5955fa375814dda972f400603e16fd3cc060348"
+    },
+    {
+      "path": "packages/contracts/src/organization.ts",
+      "bytes": 7321,
+      "sha256": "bdd52137e566f3b4000c73e898f8992802093ee9704de99b90d25365c4dad7a3"
+    },
+    {
+      "path": "packages/contracts/src/runtime-protocol.ts",
+      "bytes": 5319,
+      "sha256": "aa6a0fd102678093ab2528f6481570c38a4408e8278ddd7615768394f0d4325d"
+    },
+    {
+      "path": "packages/organization-contracts/src/index.ts",
+      "bytes": 14985,
+      "sha256": "dbd4f9c38fc2a0871091b1cc65e31a5c1478423d5b42751fdfe617078b7f3d96"
+    },
+    {
+      "path": "packages/organization-contracts/src/local-worker.ts",
+      "bytes": 5167,
+      "sha256": "7dcb73e9fbea0e0b9014f3f6477dc6366b23e15fdf461a23d4ed406e80c04ccc"
+    },
+    {
+      "path": "packages/persistence/src/migrations.ts",
+      "bytes": 57116,
+      "sha256": "e0e6f142f8abbd82e3688d40842ed14e640c9a54ea0de01641cea4b52d3cacc9"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "bytes": 332925,
+      "sha256": "54ba4957a09e87afd33cdfe10b40690cf9917b17fab68130251667c0b421244b"
+    },
+    {
+      "path": "scripts/org-a1-e2e.mjs",
+      "bytes": 14717,
+      "sha256": "25fbd7cca9cf4d379f29188643fe2fb6eb7266e2109c517af4e61f1cd150e377"
+    },
+    {
+      "path": "scripts/org-a22-e2e.mjs",
+      "bytes": 250,
+      "sha256": "dcc04f271da5d1507d1150438390a92911e7b1fbc1296a939bd99e211baa17e9"
+    },
+    {
+      "path": "scripts/org-a22-manifest.mjs",
+      "bytes": 8267,
+      "sha256": "429290e9c5020413684ffc9f97834888f2e1e8e2cc610eeb9b26a1164b27fe96"
+    },
+    {
+      "path": "scripts/org-server-artifact-smoke.mts",
+      "bytes": 1561,
+      "sha256": "4d53b627f05b0b746729d56920b9c8a5d10a969227d9481a4627069ec0923d09"
+    },
+    {
+      "path": "scripts/org-worker-ui.mjs",
+      "bytes": 9802,
+      "sha256": "e840acf7b253bf920165b84fd8ae5e344b90c84384b283440cf4ec1eac228618"
+    },
+    {
+      "path": "tests/org-assets.test.ts",
+      "bytes": 17830,
+      "sha256": "4c7a1c0ad21e071ba62803f83bc7ff16bd75635a315528e01b10026164eb16c8"
+    },
+    {
+      "path": "tests/org-connection.test.ts",
+      "bytes": 23944,
+      "sha256": "f014b49c2c2e2395574d64d8953627d37b115e761e962e0d1806c49a44d1aabc"
+    },
+    {
+      "path": "tests/org-local-worker.test.ts",
+      "bytes": 11169,
+      "sha256": "695819d0a53a14a044ab666ae9c9dcbcce3dd82bd9912fd99027564dc7ff2797"
+    },
+    {
+      "path": "tests/org-worker-runtime.test.ts",
+      "bytes": 11840,
+      "sha256": "7f0262cc827c19616ac720fdb9307a901247e64ff35b52bd07a526b89183763c"
+    },
+    {
+      "path": "tests/phase0-migration.test.ts",
+      "bytes": 3725,
+      "sha256": "44e9486e10c9a5c55d81a02e762bce764a8b6b747389f3a559edaea7e47fa4ea"
+    },
+    {
+      "path": "tests/r2-phase1.test.ts",
+      "bytes": 15490,
+      "sha256": "d3922233fee95aab4d14469c03caaf0e695ce4703f357c5b632ea7419f97fe96"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/before/projects-1024-dark.png",
+      "bytes": 179596,
+      "sha256": "9caa56a1bf7a174658c1b93e910d0b313094af43d76d913ba98de0bd60d0b692",
+      "width": 1024,
+      "height": 900,
+      "classification": "A2.1-comparison"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/before/projects-1024-light.png",
+      "bytes": 172557,
+      "sha256": "de99439ff20559a2d8cdaaa93e3e943ff1b0ec833864df3e21363a433c432003",
+      "width": 1024,
+      "height": 900,
+      "classification": "A2.1-comparison"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/before/projects-1440-dark.png",
+      "bytes": 277501,
+      "sha256": "f25907dae709f0fa3f1e23fd16d2ebe30cd550dabb9b854cb862635abeec21b9",
+      "width": 1440,
+      "height": 900,
+      "classification": "A2.1-comparison"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/before/projects-1440-light-125.png",
+      "bytes": 180099,
+      "sha256": "f3e7b2c8de9894cf557810bbc7942f69ea0cae8a91270ce59d3a8732909e3305",
+      "width": 1440,
+      "height": 900,
+      "classification": "A2.1-comparison"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/before/projects-1440-light.png",
+      "bytes": 281697,
+      "sha256": "40b2d632c6f01b8634cb693b5309be50d915afa83073224f667757f80f46e5b7",
+      "width": 1440,
+      "height": 900,
+      "classification": "A2.1-comparison"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/diagnostics/before-reduced-motion-fix.png",
+      "bytes": 292748,
+      "sha256": "28ac0ea82ac1daaae637d97ac2089121b48307a6ac82db54cbc95ee9f206248e",
+      "width": 1440,
+      "height": 900,
+      "classification": "historical-diagnostic"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/browser-consent-light.png",
+      "bytes": 189539,
+      "sha256": "568c505815a5990f8fced649512aa6ed4c475a22083c5dc07d04c2fc006e36c3",
+      "width": 1084,
+      "height": 853,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/browser-registration-light.png",
+      "bytes": 166292,
+      "sha256": "5cb82101632baf6a0655e3efb630aafbe5d028d9bf7c26908b0ab69721270140",
+      "width": 1084,
+      "height": 853,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/connection-1024-dark.png",
+      "bytes": 245789,
+      "sha256": "7c6dfd98c12f765d64f11edaebcc32401d1a46487c92cb3bde0b6a2a851e1558",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/connection-1024-light.png",
+      "bytes": 211824,
+      "sha256": "1467ee0840fe018ed27dccfa09b83ddbffffb6ce29aa298460d9ba135bc119bf",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/connection-1440-dark.png",
+      "bytes": 324482,
+      "sha256": "06738b2fef2514db06516a745e65bca155a9d17da81ddbf05635527b5f81e9a2",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/connection-1440-light-125.png",
+      "bytes": 218552,
+      "sha256": "80b35e286a2f7aa803d16f0b66831469c651ec8db1d1084916d7f6a2dd4e31bf",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/connection-1440-light.png",
+      "bytes": 308571,
+      "sha256": "9afb71d8b71f7c46b94a20762038e3322f9b5ccd2714179297435cf01b3ae345",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/members-1024-dark.png",
+      "bytes": 179676,
+      "sha256": "7f607efdf678e98533490488ecfd2728f8077303f79932dc543cc200b63ce82b",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/members-1024-light.png",
+      "bytes": 172668,
+      "sha256": "49d65910b8cb1f193a5d4c2c5146bebfe14d5b76893ec2f44a86fb3c0ea1b28b",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/members-1440-dark.png",
+      "bytes": 277572,
+      "sha256": "0c783f8c84757cf95f6583a0660c78b9eb805e7a0d32baae96d5f3bd86ccc8f9",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/members-1440-light-125.png",
+      "bytes": 183546,
+      "sha256": "778472e45fcbb4fb8932056a33c6ff8734fd5307f4cd0f807f82dd6859f2cbd0",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/members-1440-light.png",
+      "bytes": 281516,
+      "sha256": "446eb8effd4c679b2c7d58eb2bb4322883cac54e0384198955d9b5e503c85027",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/projects-1024-dark.png",
+      "bytes": 179146,
+      "sha256": "781bd77ea2e04a16d3b7330586999905ccbd7472ed9ea58ba7f6ebdccd0edfef",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/projects-1024-light.png",
+      "bytes": 171838,
+      "sha256": "c3cdbae021e63c0d9e10fc88ce86fcf5a76ae9df118a89b28e29ef6bec168a0c",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/projects-1440-dark.png",
+      "bytes": 276944,
+      "sha256": "44c799d21a472188b82da80ec446364d8ea73673a6f3d923ac07e8caea970b46",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/projects-1440-light-125.png",
+      "bytes": 183270,
+      "sha256": "2c67690417fb81e66ace99c019f1ed74702ac4c3164dd7f6bfa73f9c435aec2f",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/projects-1440-light.png",
+      "bytes": 280826,
+      "sha256": "1354c832dc3effde2254599a00d0f9a14221d7fe0b189494cda0b9ae54806e64",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-consent-declined.png",
+      "bytes": 290225,
+      "sha256": "f0a99357efa18a26e11f6940a47a6d06eb09021d46fed36bf7aec908d969296f",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-consent-form-1024-dark.png",
+      "bytes": 166747,
+      "sha256": "6e9cccf0ac11c67a170531f0b20264d829c7cd92ac9c695042f591f0f946ba40",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-consent-form-1024-light.png",
+      "bytes": 170456,
+      "sha256": "771811c0887fa9d0fee8520fe5a42ca76a3482b27bb1723ae3055bc65cec107f",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-consent-form-1440-dark.png",
+      "bytes": 286740,
+      "sha256": "22221566f2758855f8d85223790b6a42ae97119debf0bfbf2115b347311cadc7",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-consent-form-1440-light-125.png",
+      "bytes": 190977,
+      "sha256": "57c4f9871546e2c50c6c686d928219443a596b4d9e25ea1fd864ca3acf86b584",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-consent-form-1440-light.png",
+      "bytes": 294330,
+      "sha256": "649e9fcab2975f330e360d9212c4a2ffe07ddbe3ba1d9a4b66e09307c0fe6286",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-device-detail-1024-dark.png",
+      "bytes": 164277,
+      "sha256": "1ab88900a85cfb1d9ec6de480767e1635d14143f710501e48ba547d8250d304d",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-device-detail-1024-light.png",
+      "bytes": 167705,
+      "sha256": "c1b9c319b0c4d59d21fe352358d508959dc59ca92473a69511fd677888abe0e8",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-device-detail-1440-dark.png",
+      "bytes": 286435,
+      "sha256": "c257265aef37b3c945f26aea9b122a3c566a9f52524a9f20ba90e661da3ca27c",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-device-detail-1440-light-125.png",
+      "bytes": 192049,
+      "sha256": "61bb320e0f34b812eb743c82ed7e79a547560f933ba913cd37051359dd3515ee",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-device-detail-1440-light.png",
+      "bytes": 293937,
+      "sha256": "8450b93b3bc174794022d0684a01d56b3ac8a9d71bd3218ac16d94da3dceec83",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-offline-local-revoke.png",
+      "bytes": 293856,
+      "sha256": "d9b694a3b70d0d043a5e95e02333c0ec29313fa51a41ee735c76547ebbef2200",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-paused.png",
+      "bytes": 291484,
+      "sha256": "293d261c46f4b2ee1967f4a1607e10762ff042efdc6375ccd155ed2c960d76cc",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-project-grant-1024-dark.png",
+      "bytes": 162555,
+      "sha256": "f5b73594cf058bf8a7e8bd20fd9130a2cd9340b9f10d6c050402e3333147f62d",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-project-grant-1024-light.png",
+      "bytes": 166447,
+      "sha256": "a2b787b521086753d40016bbd2b44dcdee655ca4b25b58ebc75b5a9a80d1b1b0",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-project-grant-1440-dark.png",
+      "bytes": 281708,
+      "sha256": "942186aea48a79b92ceae687cec0cc9abc15c55327f0cc0f9ce4d85e868acfdd",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-project-grant-1440-light-125.png",
+      "bytes": 195364,
+      "sha256": "0f7aa2f83500c3ab0e78691e14450c30a30ab868c51f112bf7aca8627c9cbc16",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-project-grant-1440-light.png",
+      "bytes": 288857,
+      "sha256": "7fb8457301473557b165c020cfd1e6b03bd4c690d0efff83776dcfbf09df07b2",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-reduced-motion.png",
+      "bytes": 291718,
+      "sha256": "2893ad1e25e9d7e2f7ad77b123a0d125536260179417879716d0d772d7d6189d",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/worker-restarted.png",
+      "bytes": 296804,
+      "sha256": "a3e00fe88a51235db5a48d173453f32ee6386fbd1066f804f1974261ff5391e1",
+      "width": 1440,
+      "height": 892,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/workers-empty-1440-light.png",
+      "bytes": 291173,
+      "sha256": "e8f9a2aa87b44b6e57777e5a886feb930fa184590673d5787bebf43be04a265c",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/workers-registered-1024-dark.png",
+      "bytes": 169533,
+      "sha256": "ac3a9a846a5bc1cdad5945e8daa05c42442d76f3b695ecd4829273fb9d873008",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/workers-registered-1024-light.png",
+      "bytes": 173106,
+      "sha256": "2b5e56b433864666f054b54046db5551b886c5c3ff93efe7a5699b175bfb2eca",
+      "width": 1024,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/workers-registered-1440-dark.png",
+      "bytes": 288894,
+      "sha256": "e4a8f85b3da7407ca6a566de66085ac9c04ef9b765f0178bd9b9e17dacbcb7fa",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/workers-registered-1440-light-125.png",
+      "bytes": 191162,
+      "sha256": "af57fa406418acefbb52c5abb1e3eda85e764c3c729d8c2f7d8fa0bd41dac986",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/screenshots/workers-registered-1440-light.png",
+      "bytes": 296809,
+      "sha256": "c1e7faa1481e9b28439129c24472f38e2bbef875e41d392eedb4a67d4d4116d4",
+      "width": 1440,
+      "height": 900,
+      "classification": "final-run-evidence"
+    }
+  ],
+  "structuredEvidence": [
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/electron-checks.json",
+      "bytes": 8581,
+      "sha256": "ed8c09755acd8acc350c5f3fbcf7f3877ecf1240ced36a3183ac44a8fd5c6b94"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/axe-audit.json",
+      "bytes": 1721,
+      "sha256": "0b6d54f188fe92323022388f61a3093ff0a80c1e8e8e28d0ecbd40ef84fa15d4"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/source-audit.json",
+      "bytes": 81,
+      "sha256": "9105f28e73f53dcfd68cc17266f6c04b89b397b7dff87a6eee8fd65bd87efe48"
+    },
+    {
+      "path": "docs/org-upgrade/evidence/A2.2a/native-consent-test.json",
+      "bytes": 219,
+      "sha256": "982bdb77dab498c954c7aa4dc8c8cc29551c8e2894c27dc4b14fe4c1d51c47d9"
+    }
+  ],
+  "buildArtifacts": [
+    {
+      "path": "apps/server/dist/index.js",
+      "bytes": 117765,
+      "sha256": "533f9eb78d6a72648ed7fbd924192cbe343720b0723609f054d44d11b78af5b9"
+    },
+    {
+      "path": "apps/runtime/dist/index.mjs",
+      "bytes": 2562286,
+      "sha256": "b122a00422b4afe07ee5cc7093f4c57ceb8fc660961c073517c5d6cc97b77277"
+    },
+    {
+      "path": "apps/desktop/out/main/index.js",
+      "bytes": 1048949,
+      "sha256": "f7921ead2e4e4cba14ec53bc0a9beaf00d80aadbc246efc2f2800ef7c2a35049"
+    },
+    {
+      "path": "apps/desktop/out/preload/index.js",
+      "bytes": 19576,
+      "sha256": "0f4e4bbde0e706325f5cf72133bca26bd585031c2b009f78d0a08edd35d1af6e"
+    },
+    {
+      "path": "release/win-unpacked/ProjectOS.exe",
+      "bytes": 239400448,
+      "sha256": "c2f3de4791149f22e4f3a33f7c555ecd26106bc1717f14148642b82962c5f1d4",
+      "authenticodeStatus": "NotSigned"
+    },
+    {
+      "path": "release/win-unpacked/resources/app.asar",
+      "bytes": 35881649,
+      "sha256": "4a4c5574a0a8d1dcac04cd785c24603a48a588ecbec696d599c95ff16975b3cb"
+    },
+    {
+      "path": "release/win-unpacked/resources/runtime/index.mjs",
+      "bytes": 2562286,
+      "sha256": "b122a00422b4afe07ee5cc7093f4c57ceb8fc660961c073517c5d6cc97b77277"
+    }
+  ],
+  "boundaries": [
+    "No task reception, job leases, fencing or organization Run adoption; A2.2b remains",
+    "Native file scope facts only; no command/Git/network/MCP authority",
+    "OS dialog response injected in harness; physical native dialog input/pixels unverified",
+    "No production deployment or signed installer",
+    "Full screen reader / physical touch / GPU FPS acceptance not claimed",
+    "Four pre-existing opt-in external model/CLI/SSH cases skipped",
+    "200 registered devices per org, 200 grant records per device and 500 local records per scope; no retention/pagination UI",
+    "Shared-asset revocation applies to future execution in A2.2b; no Run is launched here"
+  ],
+  "privacy": {
+    "privateVideosCopied": false,
+    "rawCredentialsIncluded": false,
+    "output": "bounded actual command tails; only generated test identities/temporary test paths in captures",
+    "paths": "repository-relative source and artifact paths"
+  }
+}

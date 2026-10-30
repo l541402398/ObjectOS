@@ -15,6 +15,7 @@ import {
 import { mountBetterAuth } from './app.js'
 import { registerDesktopAuth } from './desktop-auth.js'
 import { AssetScopeError, registerOrganizationAssets } from './assets-api.js'
+import { registerOrganizationWorkers } from './workers-api.js'
 import {
   assertOrganizationSchema,
   audit,
@@ -557,5 +558,6 @@ export async function buildOrganizationServer(options: OrganizationServerOptions
     return { ok: true }
   })
   registerOrganizationAssets(app, pool, accountFor)
+  registerOrganizationWorkers(app, pool, accountFor)
   return app
 }

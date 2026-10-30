@@ -5,6 +5,7 @@ import { Building2, Cloud, LogOut, Plus, RefreshCw, ShieldCheck } from 'lucide-r
 import { ConnectOrganizationForm, CreateOrganizationForm } from './organization/OrganizationForms'
 import { OrganizationProjects } from './organization/OrganizationProjects'
 import { OrganizationAssets } from './organization/OrganizationAssets'
+import { OrganizationWorkers } from './organization/OrganizationWorkers'
 import { OrganizationMembers } from './organization/OrganizationMembers'
 import { OrganizationInvitations } from './organization/OrganizationInvitations'
 import { OrganizationError, OrganizationLoading, organizationRoleLabel } from './organization/OrganizationPrimitives'
@@ -12,7 +13,7 @@ import { useOrganization } from './organization/useOrganization'
 import './organization/organization.css'
 
 const STATUS = { local: '本地模式', connected: '组织已连接', offline: '服务离线', expired: '登录已失效' } as const
-const VIEWS = [{ key: 'projects', label: '共享项目' }, { key: 'assets', label: '组织资产' }, { key: 'members', label: '组织成员' }, { key: 'invitations', label: '待接受邀请' }] as const
+const VIEWS = [{ key: 'projects', label: '共享项目' }, { key: 'assets', label: '组织资产' }, { key: 'workers', label: '执行端' }, { key: 'members', label: '组织成员' }, { key: 'invitations', label: '待接受邀请' }] as const
 type View = (typeof VIEWS)[number]['key']
 
 export function OrganizationPanel() {
@@ -28,8 +29,8 @@ export function OrganizationPanel() {
   const createOrganization = (input: { name: string; slug: string }) => change.mutate(() => window.projectos.organization.create(input), { onSuccess: () => { setCreating(false); setView('projects') } })
   const disconnect = () => change.mutate(() => window.projectos.organization.disconnect(), { onSuccess: () => { setConfirmDisconnect(false); setCreating(false) } })
 
-  return <div className="org-panel" data-testid="organization-panel">
-    <header className="org-panel-heading"><div><h2>账号与组织</h2></div><span className={`org-connection-status is-${data?.status ?? 'local'}`}><span className="org-status-dot" />{data ? STATUS[data.status] : '正在读取'}</span></header>
+  return <section className="org-panel" data-testid="organization-panel" aria-label="账号与组织设置">
+    <div className="org-panel-heading"><div><h2>账号与组织</h2></div><span className={`org-connection-status is-${data?.status ?? 'local'}`}><span className="org-status-dot" />{data ? STATUS[data.status] : '正在读取'}</span></div>
     {connection.isPending ? <OrganizationLoading /> : connection.isError ? <><OrganizationError error={connection.error} /><button className="org-button" type="button" onClick={() => void connection.refetch()}>重新读取</button></> : data ? <>
       {data.status === 'local' ? <ConnectOrganizationForm pending={change.isPending} error={change.error} onConnect={(serverUrl) => change.mutate(() => window.projectos.organization.connect({ serverUrl }))} /> : <>
         <section className="org-account" aria-label="当前组织账号"><span className="org-account-avatar" aria-hidden>{data.session?.account.name.slice(0, 1) || 'P'}</span><div className="org-account-identity"><strong>{data.session?.account.name}</strong><span>{data.session?.account.email}</span><code>{data.serverUrl}</code></div><div className="org-account-actions"><button type="button" className="org-button" onClick={() => reload.mutate()} disabled={pending} data-testid="org-refresh"><RefreshCw size={15} aria-hidden />{reload.isPending ? '正在刷新…' : '刷新连接'}</button><button type="button" className="org-link" onClick={() => setConfirmDisconnect(!confirmDisconnect)} data-testid="org-disconnect"><LogOut size={15} aria-hidden />退出账号</button></div></section>
@@ -42,12 +43,12 @@ export function OrganizationPanel() {
           {creating ? <CreateOrganizationForm onCreate={createOrganization} onCancel={() => setCreating(false)} pending={pending} error={change.error} /> : null}
           <nav className="org-view-nav" aria-label="组织工作区视图">{VIEWS.filter((item) => data.activeOrganizationId || item.key === 'invitations').map((item) => <button type="button" key={item.key} aria-current={(view === item.key || (!data.activeOrganizationId && item.key === 'invitations')) ? 'page' : undefined} onClick={() => setView(item.key)} disabled={pending}>{item.label}</button>)}</nav>
           {pending ? <OrganizationLoading /> : <motion.div key={`${data.activeOrganizationId}:${view}`} initial={reduce ? false : { y: 5 }} animate={{ y: 0 }} transition={{ duration: .18, ease: [.22, 1, .36, 1] }}>
-            {!data.activeOrganizationId || view === 'invitations' ? <OrganizationInvitations connection={data} onChanged={refresh} /> : view === 'assets' ? <OrganizationAssets key={data.activeOrganizationId} connection={data} /> : view === 'members' ? <OrganizationMembers key={data.activeOrganizationId} connection={data} /> : <OrganizationProjects key={data.activeOrganizationId} connection={data} />}
+            {!data.activeOrganizationId || view === 'invitations' ? <OrganizationInvitations connection={data} onChanged={refresh} /> : view === 'workers' ? <OrganizationWorkers key={data.activeOrganizationId} connection={data} /> : view === 'assets' ? <OrganizationAssets key={data.activeOrganizationId} connection={data} /> : view === 'members' ? <OrganizationMembers key={data.activeOrganizationId} connection={data} /> : <OrganizationProjects key={data.activeOrganizationId} connection={data} />}
           </motion.div>}
         </> : null}
       </>}
       {data.revocationPending ? <div className="org-message is-warning" role="status"><span>本机已退出；服务端会话撤销将在联网后重试。</span><button type="button" className="org-link" disabled={reload.isPending} onClick={() => reload.mutate()}>重试撤销</button></div> : null}
       {data.status === 'local' ? <OrganizationError error={reload.error} /> : null}
     </> : null}
-  </div>
+  </section>
 }
