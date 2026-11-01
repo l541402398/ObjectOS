@@ -259,9 +259,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pw-root *,
-  .pw-root *::before,
-  .pw-root *::after {
+  .pw-root *:not(.po-avatar-3d-svg, .po-avatar-3d-svg *),
+  .pw-root *:not(.po-avatar-3d-svg, .po-avatar-3d-svg *)::before,
+  .pw-root *:not(.po-avatar-3d-svg, .po-avatar-3d-svg *)::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;

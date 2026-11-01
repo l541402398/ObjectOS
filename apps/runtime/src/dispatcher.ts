@@ -1114,7 +1114,11 @@ export class RuntimeDispatcher {
       }
       case 'task.update': {
         const input = this.parse('task.update', rawInput)
-        return { task: services.tasks.update(input) }
+        const task = services.tasks.update(input)
+        if (input.assigneeAgentId !== undefined) {
+          this.requirementFlow.syncFlowFromTaskAssignee(task.id, task.assigneeAgentId, 'manual')
+        }
+        return { task }
       }
       case 'task.move': {
         const input = this.parse('task.move', rawInput)
@@ -1470,11 +1474,17 @@ export class RuntimeDispatcher {
       }
       case 'handoff.request': {
         const input = this.parse('handoff.request', rawInput)
-        return { handoff: services.collaboration.requestHandoff(input) }
+        const handoff = services.collaboration.requestHandoff(input)
+        if (handoff.status === 'accepted') {
+          this.requirementFlow.syncFlowFromTaskAssignee(handoff.taskId, handoff.toAgentId, 'manual')
+        }
+        return { handoff }
       }
       case 'handoff.accept': {
         const input = this.parse('handoff.accept', rawInput)
-        return services.collaboration.acceptHandoff(input.handoffId, input.sessionId)
+        const res = services.collaboration.acceptHandoff(input.handoffId, input.sessionId)
+        this.requirementFlow.syncFlowFromTaskAssignee(res.handoff.taskId, res.handoff.toAgentId, 'manual')
+        return res
       }
       case 'handoff.reject': {
         const input = this.parse('handoff.reject', rawInput)

@@ -158,6 +158,14 @@ export function planTestEvidence(store: SqliteStore, plan: PlanDraft): TestEvide
  */
 export function failingVerifications(store: SqliteStore, plan: PlanDraft): Array<{ command: string; exitCode: number }> {
   const resolution = planTestEvidence(store, plan)
-  if (resolution.state !== 'failed' || !resolution.lastFailure) return []
+  if (resolution.state !== 'failed') return []
+  const failedFromVerdicts = (resolution.checkVerdicts ?? [])
+    .filter((verdict) => verdict.outcome === 'failed')
+    .map((verdict) => ({
+      command: verdict.command,
+      exitCode: verdict.exitCode,
+    }))
+  if (failedFromVerdicts.length > 0) return failedFromVerdicts
+  if (!resolution.lastFailure) return []
   return [{ command: resolution.lastFailure.command, exitCode: resolution.lastFailure.exitCode }]
 }

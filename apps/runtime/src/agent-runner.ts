@@ -49,7 +49,7 @@ import {
 } from '@projectos/policy'
 import { getToolDefinition, toolCatalogForAgent } from '@projectos/tools'
 import { collectReviewSnapshot, recollectForReview } from './review-snapshot-collector.js'
-import { RuntimeExecutionService } from './runtime-executor.js'
+import { RuntimeExecutionService, type FrozenRuntimeRequest, type StopReceipt } from './runtime-executor.js'
 import { collectUpstreamContext } from './upstream-context.js'
 import { AcpClient, acpTextFromEvent, acpTextFromResult } from './acp-client.js'
 import { assertApprovalSnapshotValid, persistWriteSnapshot, planWriteSnapshot } from './file-approval.js'
@@ -206,7 +206,7 @@ interface ActiveRun {
   leaseTimer: NodeJS.Timeout | null
   deadlineTimer: NodeJS.Timeout | null
   startedAt: number
-  runtimeCancel: (() => void) | null
+  runtimeCancel: (() => StopReceipt | void) | null
 }
 
 /** setTimeout overflows above 2^31-1 ms; clamp the deadline timer. */
@@ -953,6 +953,7 @@ export class AgentRunner {
     state: ActiveRun,
     profile: RuntimeProfile,
     toolCall: ToolCall,
+    frozenRequest?: FrozenRuntimeRequest,
   ): Promise<boolean> {
     this.store.updateToolCall(toolCall.id, { status: 'waiting_approval' })
     const approval = this.store.createApproval({
@@ -965,8 +966,14 @@ export class AgentRunner {
         kind: 'runtime-execution',
         runtimeProfileId: profile.id,
         protocol: profile.protocol,
+        executable: frozenRequest?.executable ?? profile.executable ?? null,
+        args: frozenRequest?.args ?? profile.args,
+        cwd: frozenRequest?.cwd ?? state.workspaceRoot,
+        promptHash: frozenRequest?.promptHash ?? null,
+        requestHash: frozenRequest?.requestHash ?? null,
+        deadlineAt: frozenRequest?.deadlineAt ?? state.budget.deadlineAt,
       },
-      expiresAt: now() + this.limits.taskLeaseTtlMs,
+      expiresAt: Math.min(now() + this.limits.taskLeaseTtlMs, state.budget.deadlineAt),
     })
     this.transitionRun(state, 'waiting_approval')
     state.pendingApprovalId = approval.id
@@ -1095,6 +1102,11 @@ export class AgentRunner {
     const run = this.store.read.getRun(state.runId)
     if (!run || isTerminalRunStatus(run.status)) return
     state.abort.abort()
+    try {
+      state.runtimeCancel?.()
+    } catch (cancelError) {
+      this.logger.warn({ err: cancelError, runId: state.runId }, 'failed to cancel external runtime on lease loss')
+    }
     const message = error instanceof Error ? error.message : String(error)
     this.logger.error({ err: error, runId: state.runId }, 'task lease lost; stopping run')
     void this.failRun(state, `任务租约已失效，运行已停止：${message}`).catch((nested) => {
@@ -1212,12 +1224,18 @@ export class AgentRunner {
           client.dispose()
         }
       } else {
-        const approved = await this.requestRuntimeApproval(state, profile, runtimeToolCall)
+        const frozenRequest = this.runtimeExecutor.freezeRequest(
+          profile,
+          prompt,
+          cwd || state.workspaceRoot,
+          state.budget.deadlineAt,
+        )
+        const approved = await this.requestRuntimeApproval(state, profile, runtimeToolCall, frozenRequest)
         if (!approved) {
           throw new AppError('APPROVAL_REQUIRED', '用户拒绝了 CLI Runtime 执行')
         }
-        const result = await this.runtimeExecutor.execute(profile.id, prompt, cwd, (executionId) => {
-          state.runtimeCancel = () => this.runtimeExecutor.cancel(executionId)
+        const result = await this.runtimeExecutor.executeFrozen(frozenRequest, (executionId) => {
+          state.runtimeCancel = () => this.runtimeExecutor.cancelIfActive(executionId)
         })
         output = result.output
         executionId = result.executionId
@@ -1225,7 +1243,7 @@ export class AgentRunner {
           this.store.updateToolCall(runtimeToolCall.id, { status: 'failed', error: '运行已取消', finishedAt: now() })
           return
         }
-      if (result.status !== 'completed') throw new AppError('INTERNAL', output || `Runtime ${result.status}`)
+        if (result.status !== 'completed') throw new AppError('INTERNAL', output || `Runtime ${result.status}`)
       }
       this.assertLease(state)
       const summary = output.trim().slice(0, 20_000) || 'Runtime 执行完成'
@@ -1360,14 +1378,30 @@ export class AgentRunner {
         .getRunSteps(run.id)
         .some((step) => step.title === '上游成果注入')
       if (!hasUpstreamStep) {
+        const reconciledSkipped = [...upstream.audit.skipped]
+        const reconciledArtifacts = upstream.audit.artifacts.map((art) => {
+          if (!art.injected) return art
+          const source = context.sources.find((s) => s.id === `upstream:${art.taskId}`)
+          const marker = `Artifact：${art.title}（`
+          if (!source || !context.system.includes(marker)) {
+            const reason = `Artifact「${art.title}」因上下文预算限制未注入提示词`
+            reconciledSkipped.push(reason)
+            return { ...art, injected: false, reason }
+          }
+          return {
+            ...art,
+            injected: true,
+            ...(source.truncated ? { reason: '上游任务上下文因预算限制发生截断' } : {}),
+          }
+        })
         this.store.appendRunStep({
           runId: run.id,
           kind: 'context',
           title: '上游成果注入',
           payload: {
-            artifacts: upstream.audit.artifacts,
+            artifacts: reconciledArtifacts,
             runIds: upstream.audit.runIds,
-            skipped: upstream.audit.skipped,
+            skipped: reconciledSkipped,
           },
         })
       }
@@ -1636,14 +1670,30 @@ export class AgentRunner {
     if (state.leaseTimer) clearInterval(state.leaseTimer)
     if (state.deadlineTimer) clearTimeout(state.deadlineTimer)
     state.deadlineTimer = null
-    if (state.lease && state.taskId) {
+    let stopConfirmed = true
+    if (state.runtimeCancel) {
+      try {
+        const receipt = state.runtimeCancel()
+        if (receipt && receipt.outcome === 'unknown') {
+          stopConfirmed = false
+          this.logger.error(
+            { runId: state.runId, pid: receipt.pid, detail: receipt.detail },
+            'external runtime process termination unconfirmed; retaining lease/slot quarantine',
+          )
+        }
+      } catch (error) {
+        this.logger.warn({ err: error, runId: state.runId }, 'failed to invoke runtimeCancel during cleanup')
+      }
+      state.runtimeCancel = null
+    }
+    if (stopConfirmed && state.lease && state.taskId) {
       try {
         this.store.releaseTaskLease(state.taskId, `run:${state.runId}`, state.lease.token)
       } catch (error) {
         this.logger.warn({ err: error }, 'failed to release lease')
       }
     }
-    if (state.slot) {
+    if (stopConfirmed && state.slot) {
       try {
         this.store.releaseAgentExecutionSlot(state.agentId, state.runId, state.slot.token)
       } catch (error) {
@@ -2100,7 +2150,14 @@ export class AgentRunner {
       case 'run_command': {
         const command = requiredString(args, 'command')
         const timeoutMs = typeof args.timeoutMs === 'number' ? args.timeoutMs : 30_000
-        return await runApprovedCommand(state.workspaceRoot, command, timeoutMs)
+        const flowStep = this.store.db.prepare('SELECT id FROM task_flow_steps WHERE run_id=?').get(state.runId)
+        const flowTask = flowStep && state.taskId ? this.store.read.getTask(state.taskId) : null
+        const workspace = flowTask ? this.store.read.getTaskWorkspace(flowTask.id) : null
+        const before = flowTask && workspace ? taskContent(workspace.rootPath, workspace.baseCommit, flowTask).fingerprint : null
+        const result = await runApprovedCommand(state.workspaceRoot, command, timeoutMs)
+        if (!flowTask || !workspace) return result
+        const after = taskContent(workspace.rootPath, workspace.baseCommit, flowTask).fingerprint
+        return { ...result, workflowTestFingerprint: before === after ? after : null }
       }
       case 'run_tests': {
         const command = typeof args.command === 'string' && args.command.trim() ? args.command.trim() : 'pnpm test'
@@ -2249,6 +2306,35 @@ export class AgentRunner {
           rawMetadata.workflowStepId = String(flowStep.id)
           rawMetadata.workflowStage = String(flowStep.stage)
           rawMetadata.workflowAttempt = Number(flowStep.attempt)
+          rawMetadata.artifactType = 'workflow_result'
+          const stage = String(flowStep.stage)
+          if (['requirement_review', 'design_review', 'code_review'].includes(stage)) {
+            const rawVerdict = String(rawMetadata.verdict ?? args.verdict ?? rawMetadata.conclusion ?? args.conclusion ?? '').trim().toLowerCase()
+            if (rawVerdict === 'rejected' || rawVerdict === 'reject' || rawVerdict === '不通过' || rawVerdict === '未通过') {
+              rawMetadata.verdict = 'rejected'
+            } else if (
+              rawVerdict === 'approved' ||
+              rawVerdict === 'approve' ||
+              rawVerdict === 'pass' ||
+              rawVerdict === 'passed' ||
+              rawVerdict === '通过' ||
+              (!rawVerdict && !/审核未通过|结论[:：]\s*(不通过|未通过|驳回)/i.test(body))
+            ) {
+              rawMetadata.verdict = 'approved'
+            }
+            try {
+              const parsedInput = JSON.parse(String(flowStep.input_json ?? '{}')) as { documents?: Array<{ id?: string }> }
+              const inputDocIds = Array.isArray(parsedInput.documents)
+                ? parsedInput.documents.map((d) => d?.id).filter((id): id is string => typeof id === 'string')
+                : []
+              const existingIds = Array.isArray(rawMetadata.reviewedArtifactIds)
+                ? rawMetadata.reviewedArtifactIds.filter((id): id is string => typeof id === 'string')
+                : []
+              rawMetadata.reviewedArtifactIds = [...new Set([...existingIds, ...inputDocIds])]
+            } catch {
+              // ignore malformed input_json
+            }
+          }
         } else {
           delete rawMetadata.workflowStepId
           delete rawMetadata.workflowStage
@@ -3254,6 +3340,11 @@ export class AgentRunner {
   shutdown(): void {
     for (const state of this.active.values()) {
       state.abort.abort()
+      try {
+        state.runtimeCancel?.()
+      } catch (error) {
+        this.logger.warn({ err: error, runId: state.runId }, 'failed to cancel external runtime on shutdown')
+      }
       if (state.leaseTimer) clearInterval(state.leaseTimer)
       if (state.deadlineTimer) clearTimeout(state.deadlineTimer)
       this.resolvePendingPermissions(state.runId, null)

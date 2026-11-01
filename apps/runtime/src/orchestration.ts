@@ -248,6 +248,9 @@ export class OrchestrationService {
   private taskRequirementSignature(task: PlannedTask): string {
     return JSON.stringify({
       role: task.role,
+      workType: task.workType ?? 'standard',
+      description: task.description.replace(/\s+/g, ' ').trim(),
+      dependsOn: [...task.dependsOn].map((dep) => dep.trim()).sort(),
       acceptance: this.requirementText(task.acceptanceCriteria),
       artifacts: this.requirementText(task.expectedArtifacts),
       // Soft preferences may change without invalidating completed work; hard
@@ -265,22 +268,40 @@ export class OrchestrationService {
     const ordered = topologicalPlanTasks(source)
     const oldByKey = new Map(ordered.map((task) => [task.key, task]))
     const newByKey = new Map(nextTasks.map((task) => [task.key, task]))
+    const taskIdByKey = new Map<string, string>()
     source.createdTaskIds.forEach((taskId, index) => {
       const key = ordered[index]?.key
-      if (!key) return
+      if (key) taskIdByKey.set(key, taskId)
+    })
+
+    // First pass: check direct equivalence and completion status
+    const directlyValid = new Set<string>()
+    for (const [key, newPlanTask] of newByKey) {
       const oldPlanTask = oldByKey.get(key)
-      const newPlanTask = newByKey.get(key)
-      if (!oldPlanTask || !newPlanTask) return
-      // A same key/title alone is never enough: changing acceptance or expected
-      // artifacts requires new evidence and therefore a fresh execution.
-      if (this.taskRequirementSignature(oldPlanTask) !== this.taskRequirementSignature(newPlanTask)) return
+      const taskId = taskIdByKey.get(key)
+      if (!oldPlanTask || !taskId) continue
+      if (this.taskRequirementSignature(oldPlanTask) !== this.taskRequirementSignature(newPlanTask)) continue
       const task = this.store.read.getTask(taskId)
-      if (!task || task.status !== 'done') return
-      result.set(key, {
+      if (!task || task.status !== 'done') continue
+      directlyValid.add(key)
+    }
+
+    // Second pass: propagate invalidation along downstream dependency closure.
+    // Any task that depends (directly or transitively) on a modified, added, or
+    // non-reusable upstream task cannot reuse its prior completion evidence.
+    const nextOrdered = topologicalPlanTasks({ ...source, tasks: nextTasks })
+    const validAfterClosure = new Set<string>()
+    for (const task of nextOrdered) {
+      if (!directlyValid.has(task.key)) continue
+      const allDepsValid = task.dependsOn.every((depKey) => validAfterClosure.has(depKey))
+      if (!allDepsValid) continue
+      validAfterClosure.add(task.key)
+      const taskId = taskIdByKey.get(task.key)!
+      result.set(task.key, {
         taskId,
         artifactIds: this.store.read.listArtifacts(source.projectId, taskId).map((artifact) => artifact.id),
       })
-    })
+    }
     return result
   }
 
@@ -469,7 +490,19 @@ export class OrchestrationService {
     const binding = requirement ? this.store.db.prepare('SELECT template_version_id FROM requirement_flow_bindings WHERE requirement_id=?').get(requirement.id) : null
     if (input.requirementId && (!requirement || requirement.projectId !== input.projectId || !binding)) throw new AppError('CONFLICT', '需求或已选流程不可用')
     if (requirement && input.mode !== 'ai') throw new AppError('BAD_REQUEST', '需求拆分请使用 AI 规划或手动添加任务')
-    const goal = requirement ? `${input.goal.trim()}\n\n需求：${requirement.title}\n${requirement.body.slice(0, 4500)}\n验收：${requirement.acceptanceCriteria.join('；').slice(0, 1500)}\n按可独立交付的功能拆分任务，不按需求分析/设计/审核等角色拆任务；每个任务会继承已选流程的全部阶段。` : input.goal.trim()
+    const MAX_REQ_BODY_CHARS = 24_000
+    const MAX_REQ_ACCEPTANCE_CHARS = 8_000
+    const numberedCriteria = requirement
+      ? requirement.acceptanceCriteria.map((item, idx) => `[C-${String(idx + 1).padStart(2, '0')}] ${item.trim()}`)
+      : []
+    const fullCriteriaText = numberedCriteria.join('\n')
+    const bodyTruncated = Boolean(requirement && requirement.body.length > MAX_REQ_BODY_CHARS)
+    const criteriaTruncated = Boolean(requirement && fullCriteriaText.length > MAX_REQ_ACCEPTANCE_CHARS)
+    const injectedBody = requirement ? requirement.body.slice(0, MAX_REQ_BODY_CHARS) : ''
+    const injectedCriteria = requirement ? fullCriteriaText.slice(0, MAX_REQ_ACCEPTANCE_CHARS) : ''
+    const goal = requirement
+      ? `${input.goal.trim()}\n\n需求：${requirement.title}\n${injectedBody}\n\n验收标准（请在拆分出的任务 acceptanceCriteria 中完整承接并覆盖每一项 [C-XX]）：\n${injectedCriteria || '（未单独填写验收标准，请依据需求正文提炼可验证标准）'}\n\n按可独立交付的功能拆分任务，不按需求分析/设计/审核等角色拆任务；每个任务会继承已选流程的全部阶段。`
+      : input.goal.trim()
     if (goal.length < 3) throw new AppError('BAD_REQUEST', '计划目标至少需要 3 个字符')
 
     if (input.mode === 'local') {
@@ -528,6 +561,62 @@ export class OrchestrationService {
       return fallbackPlan
     }
 
+    let plannedTasks = requirement ? generated.tasks : ensureReviewTask(goal, generated.tasks)
+    const coverageWarnings: string[] = []
+    if (requirement && requirement.acceptanceCriteria.length > 0 && plannedTasks.length > 0) {
+      const uncovered: string[] = []
+      for (let i = 0; i < requirement.acceptanceCriteria.length; i += 1) {
+        const raw = requirement.acceptanceCriteria[i]!.trim()
+        if (!raw) continue
+        const tag = `[C-${String(i + 1).padStart(2, '0')}]`
+        const covered = plannedTasks.some((task) =>
+          task.acceptanceCriteria.some((ac) => ac.includes(tag) || ac.includes(raw) || raw.includes(ac.trim())),
+        )
+        if (!covered) uncovered.push(`${tag} ${raw}`)
+      }
+      if (uncovered.length > 0) {
+        const targetIndex = plannedTasks.length - 1
+        const targetTask = plannedTasks[targetIndex]!
+        plannedTasks = plannedTasks.map((task, idx) =>
+          idx === targetIndex
+            ? {
+                ...task,
+                acceptanceCriteria: [...task.acceptanceCriteria, ...uncovered].slice(0, 20),
+              }
+            : task,
+        )
+        coverageWarnings.push(
+          `已自动将 ${uncovered.length} 项未显式映射的需求验收标准补齐挂载至任务「${targetTask.title}」，确保 100% 验收覆盖。`,
+        )
+      }
+    }
+    if (bodyTruncated) {
+      coverageWarnings.push(`需求正文超过 ${MAX_REQ_BODY_CHARS} 字符，规划输入已按上限裁剪。`)
+    }
+    if (criteriaTruncated) {
+      coverageWarnings.push(`需求验收标准超过 ${MAX_REQ_ACCEPTANCE_CHARS} 字符，规划输入已按上限裁剪。`)
+    }
+    const enrichedGeneration = generated.generation
+      ? {
+          ...generated.generation,
+          warnings: [...generated.generation.warnings, ...coverageWarnings].slice(0, 30),
+          contextSources: [
+            ...(requirement
+              ? [
+                  {
+                    kind: 'project' as const,
+                    id: requirement.id,
+                    title: `需求全文：${requirement.title}（${requirement.acceptanceCriteria.length} 项验收标准）`,
+                    chars: injectedBody.length + injectedCriteria.length,
+                    truncated: bodyTruncated || criteriaTruncated,
+                  },
+                ]
+              : []),
+            ...generated.generation.contextSources.filter((src) => !(requirement && src.id === requirement.id)),
+          ],
+        }
+      : undefined
+
     const plan: PlanDraft = {
       ...this.assignPlanAgents({
         id: planId,
@@ -536,12 +625,12 @@ export class OrchestrationService {
         status: 'draft',
         goal,
         // Model plans may omit the reviewer; without it the delivery gate can never be satisfied.
-        tasks: requirement ? generated.tasks : ensureReviewTask(goal, generated.tasks),
+        tasks: plannedTasks,
         ...(requirement && binding ? { requirementId: requirement.id, requirementVersion: requirement.version, requirementFlowVersionId: String(binding.template_version_id) } : {}),
         assumptions: generated.assumptions,
         risks: generated.risks,
         generatedBy: 'provider',
-        generation: generated.generation,
+        generation: enrichedGeneration,
         createdAt: now(),
         updatedAt: now(),
         approvedAt: null,
@@ -655,6 +744,11 @@ export class OrchestrationService {
       status: 'draft',
       goal: input.goal ?? source.goal,
       tasks: input.tasks ?? source.tasks,
+      ...(source.requirementId ? { requirementId: source.requirementId } : {}),
+      ...(source.requirementVersion !== undefined ? { requirementVersion: source.requirementVersion } : {}),
+      ...(source.requirementFlowVersionId ? { requirementFlowVersionId: source.requirementFlowVersionId } : {}),
+      versionId: input.versionId !== undefined ? input.versionId : (source.versionId ?? null),
+      iterationId: input.iterationId !== undefined ? input.iterationId : (source.iterationId ?? null),
       assumptions: input.assumptions ?? source.assumptions,
       risks: input.risks ?? source.risks,
       generatedBy: source.generatedBy,
@@ -687,6 +781,11 @@ export class OrchestrationService {
     validatePlanDraft(next)
     this.validatePlanAgents(next)
     this.store.createPlanRevision(next)
+    if (next.versionId) {
+      this.store.db
+        .prepare("UPDATE plan_revisions SET subject_type = 'version', subject_id = ?, updated_at = ? WHERE id = ?")
+        .run(next.versionId, now(), next.id)
+    }
     if (source.status === 'approved') {
       const revokedGrants = this.store.revokeActivePlanExecutionGrants(source.id, `计划被 r${revision} 替代`, now())
       if (revokedGrants > 0) {

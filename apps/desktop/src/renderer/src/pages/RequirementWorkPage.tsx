@@ -4,8 +4,9 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Form, Input, Select, Tabs, Radio, Tooltip } from 'antd'
 import { ArrowRightOutlined, EditOutlined, PlusOutlined, ReloadOutlined, PauseOutlined, PlayCircleOutlined, CloseOutlined } from '@ant-design/icons'
-import type { RequirementWorkView, RequirementFlowTemplate, TaskFlow, RequirementFlowStep, FlowStartIntent, FlowAssignmentSource } from '@projectos/contracts'
-import { EmptyState, ErrorState, LoadingBlock, PageHeader, StatusPill, toneForStatus } from '@projectos/ui'
+import { CheckCircle2, GitBranch, Layers3 } from 'lucide-react'
+import type { RequirementWorkView, RequirementFlowTemplate, TaskFlow, RequirementFlowStep, FlowStartIntent, FlowAssignmentSource, RequirementMaterial } from '@projectos/contracts'
+import { AgentAvatar, EmptyState, ErrorState, LoadingBlock, PageHeader, StatusPill, toneForStatus } from '@projectos/ui'
 import { qk, useAgents, useRequirements, useAutonomySettings } from '../lib/queries'
 import { useUiStore } from '../stores/ui'
 import { errorMessage } from '../lib/errors'
@@ -19,8 +20,31 @@ import { RequirementFlowEditor } from './RequirementFlowEditor'
 import { RequirementMaterials } from './RequirementMaterials'
 import { RequirementArrangement } from './RequirementArrangement'
 import { RequirementNextAction } from './RequirementNextAction'
+import { RequirementDependencyGraph } from './RequirementDependencyGraph'
 import './requirement-work.css'
 import './requirement-flow.css'
+
+const STAGE_EXPECTED_DELIVERABLE: Record<string, string> = {
+  requirement_analysis: '需求分析文档',
+  requirement_review: '需求审核结论',
+  technical_design: '技术设计文档',
+  design_review: '技术设计审核结论',
+  development: '开发成果与代码变更',
+  code_review: '代码审查结论',
+  testing: '实际测试报告',
+  custom: '阶段交付物',
+}
+
+const STAGE_ROLE_LABELS: Record<string, string> = {
+  requirement_analysis: '产品负责人',
+  requirement_review: '代码审查员',
+  technical_design: '架构师',
+  design_review: '代码审查员',
+  development: '开发工程师',
+  code_review: '代码审查员',
+  testing: '测试工程师',
+  custom: '执行 Agent',
+}
 
 type Editor = { kind: 'requirement' | 'documents' | 'task' }
 type Values = { title: string; body: string; technicalDesign: string; acceptance: string; description: string; dependsOn: string[]; templateVersionId: string; assignmentMode: 'manual' | 'ai' }
@@ -123,21 +147,157 @@ export function RequirementCreateModal({
   )
 }
 
-function TaskFlowDetails({ flow, projectId, onRefresh, onNavigate, onClose, onReview }: {
-  flow: TaskFlow; projectId: string; onRefresh: () => Promise<void>; onNavigate: (path: string) => void; onClose: () => void; onReview: () => void
+function TaskFlowDetails({ flow, materials, flashStepId, projectId, onRefresh, onNavigate, onClose, onReview, onShowMaterials }: {
+  flow: TaskFlow; materials: RequirementMaterial[]; flashStepId?: string | null; projectId: string; onRefresh: () => Promise<void>; onNavigate: (path: string) => void; onClose: () => void; onReview: () => void; onShowMaterials: () => void
 }) {
   const agents = useAgents(projectId)
   const action = useMutation({ mutationFn: async (operation: () => Promise<unknown>) => { await operation(); await onRefresh() } })
-  return <aside className="rq-task-flow-detail" aria-label="任务流程详情"><div className="rq-section-title"><h3>节点与负责人</h3><Button type="text" icon={<CloseOutlined aria-hidden />} aria-label="收起任务流程详情" onClick={onClose} /></div>
+  const pad2 = (n: number) => String(n).padStart(2, '0')
+
+  return <aside className="rq-task-flow-detail" aria-label="任务流程详情">
+    <div className="rq-section-title rq-detail-head-bar">
+      <div>
+        <span className="rq-dl-eyebrow">STAGE EXECUTION &amp; DELIVERABLES · 阶段执行、产出与负责人一体表</span>
+        <h3>节点与负责人</h3>
+      </div>
+      <div className="rq-inline-actions">
+        {flow.status === 'running' ? (
+          <Button size="small" icon={<PauseOutlined aria-hidden />} onClick={() => action.mutate(() => window.projectos.workflows.pause(flow.taskId))}>暂停后续节点</Button>
+        ) : (
+          flow.status !== 'completed' && (
+            <Button size="small" type="primary" icon={<PlayCircleOutlined aria-hidden />} loading={action.isPending} onClick={() => action.mutate(() => window.projectos.workflows.start(flow.taskId))}>
+              {flow.status === 'paused' ? '继续流程' : '开始流程'}
+            </Button>
+          )
+        )}
+        {flow.workspaceReady && (
+          <Button size="small" type={flow.status === 'completed' ? 'primary' : 'default'} onClick={onReview}>成果审查与合入</Button>
+        )}
+        <Button type="text" icon={<CloseOutlined aria-hidden />} aria-label="收起任务流程详情" onClick={onClose} />
+      </div>
+    </div>
     {action.isError && <Alert type="error" showIcon message={errorMessage(action.error)} />}
     {flow.error && <Alert type="error" showIcon message={flow.error} />}
     {flow.pendingApprovalId && <RequirementApproval key={flow.pendingApprovalId} projectId={projectId} approvalId={flow.pendingApprovalId} onDecided={async () => { await onRefresh() }} />}
-    <ol className="rq-step-list">{flow.steps.map((step, index) => <li key={step.id} className={`is-${step.status}${step.stale ? ' is-stale' : ''}`}><div className="rq-step-heading"><span className="rq-step-number">{step.status === 'completed' && !step.stale ? '✓' : index + 1}</span><strong>{step.title}</strong>{step.agentId && step.assignmentSource && <span className="rq-assignment-source">{sourceLabels[step.assignmentSource]}</span>}<span className="rq-secondary">{step.stale ? '已过期需重跑' : stepLabels[step.status]}</span></div>
-      <Select aria-label={`${step.title}负责 Agent`} placeholder="选择负责 Agent" value={step.agentId} disabled={!['pending', 'ready'].includes(step.status) || action.isPending} loading={agents.isLoading} options={agents.data?.agents.map(({ agent }) => ({ value: agent.id, label: `${agent.name} · ${agent.role}` }))} onChange={agentId => action.mutate(() => window.projectos.workflows.assign({ stepId: step.id, expectedVersion: step.version, agentId }))} />
-      {(step.error || step.staleReason) && <p className="rq-task-error">{step.error ?? step.staleReason}</p>}<div className="rq-inline-actions">{step.status === 'needs_reconciliation' && <Button onClick={() => action.mutate(() => window.projectos.workflows.reconcile({ stepId: step.id, expectedVersion: step.version }))}>核对节点记录</Button>}{step.runId && <Button type="link" onClick={() => onNavigate(`runs?run=${step.runId}`)}>运行记录</Button>}{(step.status === 'failed' || (step.status === 'completed' && (flow.status === 'blocked' || step.stale))) && <Button onClick={() => action.mutate(() => window.projectos.workflows.retry({ stepId: step.id, expectedVersion: step.version }))}>准备重试</Button>}</div>
-    </li>)}</ol>
-    <div className="rq-detail-actions">{flow.status === 'running' ? <Button icon={<PauseOutlined aria-hidden />} onClick={() => action.mutate(() => window.projectos.workflows.pause(flow.taskId))}>暂停后续节点</Button> : flow.status !== 'completed' && <Button type="primary" icon={<PlayCircleOutlined aria-hidden />} loading={action.isPending} onClick={() => action.mutate(() => window.projectos.workflows.start(flow.taskId))}>{flow.status === 'paused' ? '继续流程' : '开始流程'}</Button>}
-      {flow.workspaceReady && <Button onClick={onReview}>成果审查与合入</Button>}<Button type="text" onClick={() => onNavigate(`tasks?task=${flow.taskId}`)}>任务详情与验收 <ArrowRightOutlined aria-hidden /></Button></div>
+    <ol className="rq-step-list">{flow.steps.map((step, index) => {
+      const stepMaterials = materials.filter(
+        (m) => m.stepId === step.id || (m.taskId === flow.taskId && m.nodeId === step.nodeId),
+      )
+      const latestMat = stepMaterials[0]
+      const isStepRunning = step.status === 'running' || step.status === 'starting'
+      const isStepDone = step.status === 'completed' && !step.stale
+      const activity: 'coding' | 'writing' =
+        step.stage === 'development' || step.stage === 'testing' ? 'coding' : 'writing'
+
+      return (
+        <li
+          key={step.id}
+          data-step-id={step.id}
+          className={`rq-unified-step-row is-${step.status}${step.stale ? ' is-stale' : ''}${flashStepId === step.id ? ' is-flash-focus' : ''}`}
+        >
+          <div className="rq-step-heading">
+            <span className="rq-step-number">{isStepDone ? '✓' : index + 1}</span>
+            <div className="rq-step-title-stack">
+              <div className="rq-step-title-line">
+                <span className="rq-step-code-tag">STAGE {pad2(index + 1)}</span>
+                <strong>{step.title}</strong>
+              </div>
+              <div className="rq-step-meta-line">
+                {step.agentId && step.assignmentSource && (
+                  <span className="rq-assignment-source">{sourceLabels[step.assignmentSource]}</span>
+                )}
+                <span className={`rq-secondary rq-step-status-badge is-${step.status}`}>
+                  {step.stale ? '已过期需重跑' : stepLabels[step.status]}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="rq-step-deliverable-cell">
+            {latestMat ? (
+              <button
+                type="button"
+                className="rq-step-deliverable-card is-produced"
+                onClick={onShowMaterials}
+                title={`点击查看阶段产出：${latestMat.title}`}
+              >
+                <div className="rq-step-deliverable-top">
+                  <span className="rq-step-deliverable-kicker">📄 本阶段产出</span>
+                  {latestMat.reviewVerdict === 'approved' && (
+                    <span className="rq-dl-verdict-tag">✓ 审核通过</span>
+                  )}
+                </div>
+                <strong className="rq-step-deliverable-title">{latestMat.title}</strong>
+              </button>
+            ) : (
+              <div className="rq-step-deliverable-card is-expected">
+                <span className="rq-step-deliverable-kicker">预期阶段产出</span>
+                <span className="rq-step-deliverable-expected">
+                  {STAGE_EXPECTED_DELIVERABLE[step.stage] ?? '阶段交付物'}
+                </span>
+              </div>
+            )}
+            {(step.error || step.staleReason) && (
+              <p className="rq-task-error">{step.error ?? step.staleReason}</p>
+            )}
+          </div>
+
+          <div className="rq-step-agent-cell">
+            <AgentAvatar
+              name={step.agentName ?? 'Agent'}
+              role={STAGE_ROLE_LABELS[step.stage] ?? step.stage}
+              size={32}
+              status={isStepRunning ? 'working' : 'idle'}
+              activity={activity}
+            />
+            <Select
+              aria-label={`${step.title}负责 Agent`}
+              placeholder="选择负责 Agent"
+              value={step.agentId}
+              disabled={!['pending', 'ready'].includes(step.status) || action.isPending}
+              loading={agents.isLoading}
+              options={agents.data?.agents.map(({ agent }) => {
+                const isNative = agent.kind !== 'external'
+                return {
+                  value: agent.id,
+                  disabled: !isNative,
+                  label: `${agent.name} · ${agent.role}${isNative ? ' · 内置结构化' : ' · 外部 Runtime (不支持流程文档)'}`,
+                }
+              })}
+              onChange={agentId => action.mutate(() => window.projectos.workflows.assign({ stepId: step.id, expectedVersion: step.version, agentId }))}
+            />
+          </div>
+
+          <div className="rq-inline-actions rq-step-actions-cell">
+            {step.status === 'needs_reconciliation' && (
+              <Button size="small" onClick={() => action.mutate(() => window.projectos.workflows.reconcile({ stepId: step.id, expectedVersion: step.version }))}>核对节点记录</Button>
+            )}
+            {latestMat && (
+              <Button size="small" type="link" onClick={onShowMaterials}>查看产出</Button>
+            )}
+            {step.runId && (
+              <Button size="small" type="link" onClick={() => onNavigate(`runs?run=${step.runId}`)}>运行记录</Button>
+            )}
+            {(step.status === 'failed' || (step.status === 'completed' && (flow.status === 'blocked' || step.stale))) && (
+              <Button size="small" onClick={() => action.mutate(() => window.projectos.workflows.retry({ stepId: step.id, expectedVersion: step.version }))}>准备重试</Button>
+            )}
+          </div>
+        </li>
+      )
+    })}</ol>
+    <div className="rq-detail-actions">
+      {flow.status === 'running' ? (
+        <Button icon={<PauseOutlined aria-hidden />} onClick={() => action.mutate(() => window.projectos.workflows.pause(flow.taskId))}>暂停后续节点</Button>
+      ) : (
+        flow.status !== 'completed' && (
+          <Button type="primary" icon={<PlayCircleOutlined aria-hidden />} loading={action.isPending} onClick={() => action.mutate(() => window.projectos.workflows.start(flow.taskId))}>
+            {flow.status === 'paused' ? '继续流程' : '开始流程'}
+          </Button>
+        )
+      )}
+      {flow.workspaceReady && <Button onClick={onReview}>成果审查与合入</Button>}
+      <Button type="text" onClick={() => onNavigate(`tasks?task=${flow.taskId}`)}>任务详情与验收 <ArrowRightOutlined aria-hidden /></Button>
+    </div>
   </aside>
 }
 
@@ -145,14 +305,18 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
   const navigate = useNavigate(), req = view.requirement
   const [search] = useSearchParams()
   const [tab, setTab] = useState(() => search.get('tab') ?? 'tasks')
+  const [viewMode, setViewMode] = useState<'route' | 'dag'>('route')
   const [planOpen, setPlanOpen] = useState(false)
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(() => search.get('task'))
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(() => search.get('task') ?? view.tasks[0]?.id ?? null)
+  const [detailDismissed, setDetailDismissed] = useState(false)
+  const [flashStepId, setFlashStepId] = useState<string | null>(null)
   const [reviewTaskId, setReviewTaskId] = useState<string | null>(null)
   const [templateEditor, setTemplateEditor] = useState<RequirementFlowTemplate | 'new' | null>(null)
   const [templateDirty, setTemplateDirty] = useState(false)
   const [arrangeOpen, setArrangeOpen] = useState(false)
   const [startResult, setStartResult] = useState<FlowStartIntent | null>(null)
   const [bindingVersion, setBindingVersion] = useState('wfv_standard1')
+  const [criteriaOpen, setCriteriaOpen] = useState(false)
   const flow = useQuery({
     queryKey: flowKey(req.id),
     queryFn: () => window.projectos.workflows.view(req.id),
@@ -167,16 +331,63 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
   })
   const templates = useQuery({ queryKey: ['workflow-templates', req.projectId], queryFn: () => window.projectos.workflows.templates(req.projectId), staleTime: 30_000 })
   const data = flow.data, binding = data?.binding
-  const selectedFlow = data?.tasks.find(task => task.taskId === selectedTaskId)
+  const effectiveSelectedTaskId = selectedTaskId ?? (!detailDismissed ? (data?.tasks[0]?.taskId ?? view.tasks[0]?.id ?? null) : null)
+  const selectedFlow = data?.tasks.find(task => task.taskId === effectiveSelectedTaskId)
   const parallel = binding && data ? summarizeParallelStages(binding.graph, data.tasks) : null
   const refresh = async () => { await Promise.all([onRefresh(), flow.refetch(), flow.data ? Promise.resolve() : Promise.resolve()]) }
   const action = useMutation({ mutationFn: async (operation: () => Promise<unknown>) => { await operation(); await refresh() } })
   const go = (path: string) => navigate(`/projects/${req.projectId}/${path}`)
-  const start = (taskId: string) => { setSelectedTaskId(taskId); action.mutate(() => window.projectos.workflows.start(taskId)) }
+  const start = (taskId: string) => { setDetailDismissed(false); setSelectedTaskId(taskId); action.mutate(() => window.projectos.workflows.start(taskId)) }
   const bind = (templateVersionId: string) => action.mutate(() => window.projectos.workflows.bind({ requirementId: req.id, expectedRequirementVersion: req.version, templateVersionId, assignmentMode: binding?.assignmentMode ?? 'manual', assignments: {} }))
   const stageCount = binding?.graph.nodes.length ?? 0
   const materialCount = data?.materials.length ?? 0
   const pad2 = (n: number) => String(n).padStart(2, '0')
+  const focusStepInDetail = (taskId: string, stepId?: string | null, scrollApproval?: boolean) => {
+    setDetailDismissed(false)
+    setSelectedTaskId(taskId)
+    if (stepId) {
+      setFlashStepId(stepId)
+      window.setTimeout(() => setFlashStepId((curr) => (curr === stepId ? null : curr)), 2200)
+    }
+    window.setTimeout(() => {
+      if (scrollApproval) {
+        const approvalEl = document.querySelector('.rq-approval-card')
+        if (approvalEl) {
+          approvalEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          return
+        }
+      }
+      if (stepId) {
+        const stepEl = document.querySelector(`[data-step-id="${stepId}"]`)
+        if (stepEl) {
+          stepEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          return
+        }
+      }
+      document.querySelector('.rq-task-flow-detail')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }, 80)
+  }
+  const criteriaCoverage = useMemo(() => {
+    return req.acceptanceCriteria.map((raw, idx) => {
+      const code = `C-${pad2(idx + 1)}`
+      const text = raw.trim()
+      const matchedTasks = view.tasks.filter((task) => {
+        if (view.tasks.length === 1) return true
+        return (
+          task.acceptanceCriteria.some((ac) => ac.includes(`[${code}]`) || ac.includes(text) || text.includes(ac.trim())) ||
+          task.title.includes(text) ||
+          task.description.includes(text)
+        )
+      })
+      const doneCount = matchedTasks.filter((t) => t.status === 'done').length
+      const status: 'verified' | 'in_progress' | 'unmapped' =
+        matchedTasks.length === 0 ? 'unmapped' : doneCount === matchedTasks.length ? 'verified' : 'in_progress'
+      return { code, text, matchedTasks, status }
+    })
+  }, [req.acceptanceCriteria, view.tasks])
+  const coveredCriteriaCount = criteriaCoverage.filter((item) => item.status !== 'unmapped').length
+  const verifiedCriteriaCount = criteriaCoverage.filter((item) => item.status === 'verified').length
+  const completedFlowsCount = data?.tasks.filter((t) => t.status === 'completed').length ?? 0
   return <section className="rq-workspace" aria-label={req.title}>
     <div className="rq-heading">
       <div className="rq-heading-main">
@@ -212,38 +423,340 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
         onNavigate={go}
       />}
       <div className="rq-flow-caption"><span>{binding.templateName} · {binding.assignmentMode === 'ai' ? 'AI 自动分配' : '手动分配 Agent'}{parallel?.hasParallelActive && parallel.activeNodes.length > 1 ? ` · ${parallel.headline}` : ''}</span><Tooltip title={binding.lockedAt ? '执行中的需求固定使用所选流程版本' : undefined}><Button type="text" disabled={Boolean(binding.lockedAt)} onClick={() => setTemplateEditor(templates.data?.templates.find(template => template.versionId === binding.templateVersionId) ?? 'new')}>调整流程</Button></Tooltip></div>
+      <div className="rq-governance-strip" role="region" aria-label="全链路工程治理与验收覆盖">
+        <div className="rq-governance-pills">
+          <div className="rq-gov-pill is-ok" title="规划与执行上下文完整装载，不发生静默截断">
+            <span className="rq-gov-dot" aria-hidden />
+            <span className="rq-gov-label">上下文契约</span>
+            <strong>全文装载 · {(req.body?.length ?? 0) + req.acceptanceCriteria.join('').length} 字</strong>
+          </div>
+          <button
+            type="button"
+            className={`rq-gov-pill is-interactive ${
+              req.acceptanceCriteria.length === 0
+                ? 'is-neutral'
+                : coveredCriteriaCount === req.acceptanceCriteria.length
+                  ? 'is-ok'
+                  : 'is-warn'
+            }`}
+            aria-expanded={criteriaOpen}
+            onClick={() => setCriteriaOpen((prev) => !prev)}
+          >
+            <span className="rq-gov-dot" aria-hidden />
+            <span className="rq-gov-label">验收标准覆盖</span>
+            <strong>
+              {req.acceptanceCriteria.length > 0
+                ? `${coveredCriteriaCount}/${req.acceptanceCriteria.length} 已承接 · ${verifiedCriteriaCount} 已验证`
+                : '未设独立条目'}
+            </strong>
+            <span className="rq-gov-toggle">{criteriaOpen ? '收起' : '矩阵'}</span>
+          </button>
+          <div className="rq-gov-pill is-ok" title="所有流程节点均经过结构化能力预检，执行期锁定模板版本">
+            <span className="rq-gov-dot" aria-hidden />
+            <span className="rq-gov-label">执行器门禁</span>
+            <strong>{binding.lockedAt ? `版本已锁定 v${binding.version}` : `结构化预检就绪 v${binding.version}`}</strong>
+          </div>
+          <div className="rq-gov-pill is-ok" title="测试、构建、代码检查按命令分组独立裁决，后续命令不会掩盖失败">
+            <span className="rq-gov-dot" aria-hidden />
+            <span className="rq-gov-label">逐项验证隔离</span>
+            <strong>{completedFlowsCount}/{view.tasks.length} 流程完结</strong>
+          </div>
+        </div>
+        {criteriaOpen && req.acceptanceCriteria.length > 0 && (
+          <div className="rq-criteria-matrix" aria-label="需求验收标准追踪矩阵">
+            <div className="rq-criteria-matrix-head">
+              <strong>需求验收标准追踪矩阵（Acceptance Coverage Matrix）</strong>
+              <span className="rq-secondary">点击关联任务可直接定位至下方任务与流程节点</span>
+            </div>
+            <ul className="rq-criteria-list">
+              {criteriaCoverage.map((item) => (
+                <li key={item.code} className={`rq-criteria-row is-${item.status}`}>
+                  <span className="rq-criteria-code">{item.code}</span>
+                  <span className="rq-criteria-text">{item.text}</span>
+                  <div className="rq-criteria-tasks">
+                    {item.matchedTasks.length > 0 ? (
+                      item.matchedTasks.map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          className="rq-criteria-task-chip"
+                          onClick={() => {
+                            setTab('tasks')
+                            setSelectedTaskId(t.id)
+                          }}
+                        >
+                          {t.title} · {taskStatusLabel(t.status)}
+                        </button>
+                      ))
+                    ) : (
+                      <span className="rq-criteria-unmapped">待拆分或关联任务</span>
+                    )}
+                  </div>
+                  <StatusPill
+                    tone={item.status === 'verified' ? 'success' : item.status === 'in_progress' ? 'accent' : 'warning'}
+                  >
+                    {item.status === 'verified' ? '已验证' : item.status === 'in_progress' ? '执行中' : '待覆盖'}
+                  </StatusPill>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
       {data && <RequirementNextAction requirementId={req.id} flow={data} tasks={view.tasks} result={startResult} onResult={setStartResult} onArrange={() => setArrangeOpen(true)}
         onSelectTask={taskId => { setTab('tasks'); setSelectedTaskId(taskId) }} onShowMaterials={() => setTab('materials')} onRefresh={refresh} />}
     </>}
     <Tabs activeKey={tab} onChange={setTab} items={[
-      { key: 'tasks', label: `任务 ${view.tasks.length}`, children: <><div className="rq-section-title"><h3>{view.tasks.length ? '这次交付的任务' : '接下来，添加任务'}</h3><div className="rq-inline-actions"><Button disabled={!binding || req.status === 'implemented'} onClick={() => setPlanOpen(true)}>AI 拆分任务</Button>{binding && view.tasks.length > 0 && <Button loading={action.isPending} onClick={() => action.mutate(() => window.projectos.workflows.assignAI(req.id))}>AI 分配 Agent</Button>}<Button type={view.tasks.length ? 'default' : 'primary'} icon={<PlusOutlined aria-hidden />} disabled={!binding || req.status === 'implemented'} onClick={() => onEdit({ kind: 'task' })}>添加任务</Button></div></div>
-        {!view.tasks.length ? <EmptyState title="将需求拆成可以独立完成的任务" description="每个任务都会执行上方所选流程，可由不同 Agent 接力完成。" /> : <div className={`rq-task-workbench${selectedFlow ? ' has-detail' : ''}`}><ul className="rq-task-list">{view.tasks.map(task => {
-          const taskFlow = data?.tasks.find(item => item.taskId === task.id)
-          const activeSteps = taskFlow?.steps.filter(step => ['starting', 'running', 'waiting_approval', 'failed', 'needs_reconciliation'].includes(step.status)) ?? []
-          const staleSteps = taskFlow?.steps.filter(step => step.status === 'completed' && step.stale) ?? []
-          const readySteps = taskFlow?.steps.filter(step => step.status === 'ready') ?? []
-          const focusSteps = activeSteps.length > 0 ? activeSteps : staleSteps.length > 0 ? staleSteps : readySteps
-          const current = focusSteps[0]
-          const stepSummary = focusSteps.length > 1
-            ? `并行：${focusSteps.map(s => `${s.title} · ${s.stale ? '已过期需重跑' : stepLabels[s.status]}`).join(' / ')}`
-            : current
-              ? `${current.title} · ${current.stale ? '已过期需重跑' : stepLabels[current.status]}`
-              : taskFlow?.status === 'completed'
-                ? '流程完成 · 待验收'
-                : taskStatusLabel(task.status)
-          const agentNames = [...new Set(focusSteps.map(s => s.agentName).filter((name): name is string => Boolean(name)))]
-          const missing = taskFlow?.steps.some(step => !step.agentId)
-          const preparation = view.preparations.find(item => item.taskId === task.id)
-          const selected = selectedTaskId === task.id
-          return <li key={task.id} className={`rq-task${selected ? ' is-selected' : ''}`} data-task-id={task.id}><div className="rq-task-main"><button className="rq-task-title" onClick={() => setSelectedTaskId(selected ? null : task.id)}>{task.title}</button><div className="rq-task-meta"><span>{stepSummary}</span>{agentNames.length > 0 && <span>{agentNames.join('、')}</span>}{task.dependencyIds.length > 0 && <span>{task.dependencyIds.length} 项前置任务</span>}</div>{(taskFlow?.error || preparation?.error) && <p className="rq-task-error">{taskFlow?.error ?? preparation?.error}</p>}</div>
-            <div className="rq-task-actions">{taskFlow ? <Button loading={action.isPending && selected} onClick={() => { if ((missing && binding?.assignmentMode !== 'ai') || taskFlow.pendingApprovalId || ['running', 'blocked', 'completed'].includes(taskFlow.status)) setSelectedTaskId(task.id); else start(task.id) }}>{taskFlow.pendingApprovalId ? '处理授权' : taskFlow.status === 'completed' ? (staleSteps.length > 0 ? '重新验证' : '查看成果') : taskFlow.status === 'blocked' ? '处理问题' : taskFlow.status === 'running' ? '查看进度' : missing && binding?.assignmentMode !== 'ai' ? '分配 Agent' : taskFlow.status === 'paused' ? '继续流程' : '开始流程'}</Button> : <Button onClick={() => go(`tasks?task=${task.id}`)}>任务详情</Button>}</div></li>
-        })}</ul>{selectedFlow && <TaskFlowDetails key={selectedFlow.taskId} flow={selectedFlow} projectId={req.projectId} onClose={() => setSelectedTaskId(null)} onRefresh={refresh} onNavigate={go} onReview={() => setReviewTaskId(selectedFlow.taskId)} />}</div>}</> },
+      {
+        key: 'tasks',
+        label: `任务 ${view.tasks.length}`,
+        children: (
+          <>
+            <div className="rq-section-title rq-dl-viewbar-row">
+              <div className="rq-dl-viewbar-left">
+                <h3>{view.tasks.length ? '这次交付的任务' : '接下来，添加任务'}</h3>
+                {view.tasks.length > 0 && (
+                  <div className="rq-dl-viewbar" role="tablist" aria-label="需求任务与依赖视图">
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={viewMode === 'route'}
+                      className={viewMode === 'route' ? 'is-active' : ''}
+                      onClick={() => setViewMode('route')}
+                    >
+                      <Layers3 size={14} />
+                      阶段路线
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={viewMode === 'dag'}
+                      className={viewMode === 'dag' ? 'is-active' : ''}
+                      onClick={() => setViewMode('dag')}
+                    >
+                      <GitBranch size={14} />
+                      任务依赖
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="rq-inline-actions">
+                <Button disabled={!binding || req.status === 'implemented'} onClick={() => setPlanOpen(true)}>AI 拆分任务</Button>
+                {binding && view.tasks.length > 0 && (
+                  <Button loading={action.isPending} onClick={() => action.mutate(() => window.projectos.workflows.assignAI(req.id))}>AI 分配 Agent</Button>
+                )}
+                <Button type={view.tasks.length ? 'default' : 'primary'} icon={<PlusOutlined aria-hidden />} disabled={!binding || req.status === 'implemented'} onClick={() => onEdit({ kind: 'task' })}>添加任务</Button>
+              </div>
+            </div>
+
+            {!view.tasks.length ? (
+              <EmptyState title="将需求拆成可以独立完成的任务" description="每个任务都会执行上方所选流程，可由不同 Agent 接力完成。" />
+            ) : viewMode === 'dag' ? (
+              <RequirementDependencyGraph
+                graph={binding?.graph}
+                tasks={view.tasks}
+                taskFlows={data?.tasks ?? []}
+                materials={data?.materials ?? []}
+                selectedTaskId={effectiveSelectedTaskId}
+                onSelectTask={(taskId) => {
+                  setDetailDismissed(false)
+                  setSelectedTaskId(taskId)
+                }}
+                onOpenStageMaterial={() => setTab('materials')}
+              />
+            ) : (
+              <div className={`rq-task-workbench${selectedFlow ? ' has-detail' : ''}`}>
+                <div className="rq-dl-ledger-panel">
+                  <div className="rq-dl-panel-head">
+                    <div>
+                      <span className="rq-dl-eyebrow">DELIVERY TASKS &amp; READINESS</span>
+                      <h4>交付任务与协作团队</h4>
+                    </div>
+                    <span className="rq-dl-panel-note">
+                      {view.tasks.length} 项任务 · {stageCount} 阶段
+                    </span>
+                  </div>
+                  <ul className="rq-task-list">
+                    {view.tasks.map((task, taskIdx) => {
+                      const taskFlow = data?.tasks.find((item) => item.taskId === task.id)
+                      const activeSteps = taskFlow?.steps.filter((step) => ['starting', 'running', 'waiting_approval', 'failed', 'needs_reconciliation'].includes(step.status)) ?? []
+                      const staleSteps = taskFlow?.steps.filter((step) => step.status === 'completed' && step.stale) ?? []
+                      const readySteps = taskFlow?.steps.filter((step) => step.status === 'ready') ?? []
+                      const focusSteps = activeSteps.length > 0 ? activeSteps : staleSteps.length > 0 ? staleSteps : readySteps
+                      const current = focusSteps[0]
+                      const stepSummary = focusSteps.length > 1
+                        ? `并行：${focusSteps.map((s) => `${s.title} · ${s.stale ? '已过期需重跑' : stepLabels[s.status]}`).join(' / ')}`
+                        : current
+                          ? `${current.title} · ${current.stale ? '已过期需重跑' : stepLabels[current.status]}`
+                          : taskFlow?.status === 'completed'
+                            ? '流程完成 · 待验收'
+                            : taskStatusLabel(task.status)
+                      const agentNames = [...new Set(focusSteps.map((s) => s.agentName).filter((name): name is string => Boolean(name)))]
+                      const missing = taskFlow?.steps.some((step) => !step.agentId)
+                      const preparation = view.preparations.find((item) => item.taskId === task.id)
+                      const selected = effectiveSelectedTaskId === task.id
+                      const doneStepCount = taskFlow?.steps.filter((s) => s.status === 'completed' && !s.stale).length ?? 0
+                      const totalStepCount = taskFlow?.steps.length ?? 0
+
+                      return (
+                        <li key={task.id} className={`rq-task${selected ? ' is-selected' : ''}`} data-task-id={task.id}>
+                          <div className="rq-task-top-row">
+                            <div className="rq-task-main">
+                              <div className="rq-dl-task-kicker">
+                                <span className="rq-dl-task-code">TASK {pad2(taskIdx + 1)}</span>
+                                {totalStepCount > 0 && (
+                                  <span className="rq-dl-task-progress">
+                                    阶段进度 {doneStepCount}/{totalStepCount}
+                                  </span>
+                                )}
+                              </div>
+                              <button
+                                className="rq-task-title"
+                                onClick={() => {
+                                  if (selected && !detailDismissed) {
+                                    setDetailDismissed(true)
+                                    setSelectedTaskId(null)
+                                  } else {
+                                    setDetailDismissed(false)
+                                    setSelectedTaskId(task.id)
+                                  }
+                                }}
+                              >
+                                {task.title}
+                              </button>
+                              <div className="rq-task-meta">
+                                <span>{stepSummary}</span>
+                                {agentNames.length > 0 && <span>{agentNames.join('、')}</span>}
+                                {task.dependencyIds.length > 0 && <span>{task.dependencyIds.length} 项前置任务</span>}
+                              </div>
+                              {(taskFlow?.error || preparation?.error) && (
+                                <p className="rq-task-error">{taskFlow?.error ?? preparation?.error}</p>
+                              )}
+                            </div>
+                            <div className="rq-task-actions">
+                              {taskFlow ? (
+                                <Button
+                                  type={taskFlow.status === 'completed' || taskFlow.pendingApprovalId ? 'primary' : 'default'}
+                                  loading={action.isPending && selected}
+                                  onClick={() => {
+                                    if (taskFlow.pendingApprovalId) {
+                                      focusStepInDetail(task.id, activeSteps[0]?.id, true)
+                                    } else if (taskFlow.status === 'completed' && staleSteps.length === 0) {
+                                      setDetailDismissed(false)
+                                      setSelectedTaskId(task.id)
+                                      setReviewTaskId(task.id)
+                                    } else if (taskFlow.status === 'running' || taskFlow.status === 'blocked' || (taskFlow.status === 'completed' && staleSteps.length > 0)) {
+                                      focusStepInDetail(task.id, current?.id)
+                                    } else if (missing && binding?.assignmentMode !== 'ai') {
+                                      focusStepInDetail(task.id, taskFlow.steps.find((s) => !s.agentId)?.id)
+                                    } else {
+                                      start(task.id)
+                                    }
+                                  }}
+                                >
+                                  {taskFlow.pendingApprovalId
+                                    ? '处理授权'
+                                    : taskFlow.status === 'completed'
+                                      ? staleSteps.length > 0
+                                        ? '重新验证'
+                                        : '查看成果'
+                                      : taskFlow.status === 'blocked'
+                                        ? '处理问题'
+                                        : taskFlow.status === 'running'
+                                          ? '查看进度'
+                                          : missing && binding?.assignmentMode !== 'ai'
+                                            ? '分配 Agent'
+                                            : taskFlow.status === 'paused'
+                                              ? '继续流程'
+                                              : '开始流程'}
+                                </Button>
+                              ) : (
+                                <Button onClick={() => go(`tasks?task=${task.id}`)}>任务详情</Button>
+                              )}
+                            </div>
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ul>
+
+                  {selectedFlow && (() => {
+                    const completedSteps = selectedFlow.steps.filter((s) => s.status === 'completed' && !s.stale).length
+                    const totalSteps = selectedFlow.steps.length
+                    const taskMaterials = (data?.materials ?? []).filter((m) => m.taskId === selectedFlow.taskId)
+                    const uniqueAgents = [...new Map(
+                      selectedFlow.steps
+                        .filter((s) => s.agentName)
+                        .map((s) => [s.agentName!, { name: s.agentName!, role: STAGE_ROLE_LABELS[s.stage] ?? s.stage, isRunning: s.status === 'running' || s.status === 'starting' }]),
+                    ).values()]
+
+                    return (
+                      <div className="rq-dl-readiness-box rq-dl-left-readiness" aria-label="阶段准备度与协作团队">
+                        <div className="rq-dl-readiness-top">
+                          <span className="rq-dl-eyebrow">REVIEW &amp; EXECUTION READINESS</span>
+                          <span className={`rq-dl-ready-badge ${selectedFlow.status === 'completed' ? 'is-ok' : selectedFlow.pendingApprovalId ? 'is-warn' : 'is-accent'}`}>
+                            <CheckCircle2 size={13} />
+                            {selectedFlow.status === 'completed' ? '全部阶段已完成' : selectedFlow.pendingApprovalId ? '有待处理授权' : `阶段 ${completedSteps}/${totalSteps}`}
+                          </span>
+                        </div>
+                        <div className="rq-dl-readiness-score">
+                          <strong>{pad2(completedSteps)}<span> / {pad2(totalSteps)} 阶段</span></strong>
+                          <div className="rq-dl-readiness-stats">
+                            <div><span>参与 Agent</span><strong>{uniqueAgents.length} 位</strong></div>
+                            <div><span>产出资料</span><strong>{taskMaterials.length} 份</strong></div>
+                          </div>
+                        </div>
+                        {uniqueAgents.length > 0 && (
+                          <div className="rq-dl-agent-strip">
+                            {uniqueAgents.map((ag) => (
+                              <span key={ag.name} className={`rq-dl-agent-chip${ag.isRunning ? ' is-running' : ''}`}>
+                                <AgentAvatar name={ag.name} role={ag.role ?? undefined} size={20} status={ag.isRunning ? 'working' : 'idle'} />
+                                <b>{ag.name}</b>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="rq-detail-actions rq-detail-actions-top">
+                          {selectedFlow.workspaceReady && (
+                            <Button size="small" type={selectedFlow.status === 'completed' ? 'primary' : 'default'} onClick={() => setReviewTaskId(selectedFlow.taskId)}>成果审查与合入</Button>
+                          )}
+                          {taskMaterials.length > 0 && (
+                            <Button size="small" onClick={() => setTab('materials')}>查看产出 ({taskMaterials.length})</Button>
+                          )}
+                          <Button size="small" type="link" onClick={() => go(`collaboration`)}>Agent 协作图 →</Button>
+                        </div>
+                      </div>
+                    )
+                  })()}
+                </div>
+                {selectedFlow && (
+                  <TaskFlowDetails
+                    key={selectedFlow.taskId}
+                    flow={selectedFlow}
+                    materials={data?.materials ?? []}
+                    flashStepId={flashStepId}
+                    projectId={req.projectId}
+                    onClose={() => {
+                      setDetailDismissed(true)
+                      setSelectedTaskId(null)
+                    }}
+                    onRefresh={refresh}
+                    onNavigate={go}
+                    onReview={() => setReviewTaskId(selectedFlow.taskId)}
+                    onShowMaterials={() => setTab('materials')}
+                  />
+                )}
+              </div>
+            )}
+          </>
+        ),
+      },
       { key: 'documents', label: '需求说明', children: <div className="rq-documents"><h3>{req.title}</h3><div className="rq-prose">{req.body || '尚未补充需求描述'}</div>{req.acceptanceCriteria.length > 0 && <><h3>验收标准</h3><ol>{req.acceptanceCriteria.map((item, index) => <li key={index}>{item}</li>)}</ol></>}{req.technicalDesign && <><h3>技术设计</h3><div className="rq-prose">{req.technicalDesign}</div></>}</div> },
       { key: 'materials', label: `产出资料 ${data?.materials.length ?? 0}`, children: <RequirementMaterials projectId={req.projectId} requirementId={req.id} requirementTitle={req.title} materials={data?.materials ?? []} tasks={view.tasks.map(t => ({ id: t.id, title: t.title }))} taskFlows={data?.tasks ?? []} onNavigate={go} /> },
     ]} />
     {planOpen && <RequirementPlanDialog requirement={req} onClose={() => setPlanOpen(false)} onApplied={refresh}
       onStart={binding ? taskIds => action.mutate(async () => { const result = await window.projectos.workflows.startAll({ requirementId: req.id, expectedBindingVersion: binding.version, requestKey: `plan-start-${crypto.randomUUID()}`, taskIds }); setStartResult(result.intent) }) : undefined} />}
-    {arrangeOpen && binding && <RequirementArrangement requirementId={req.id} projectId={req.projectId} binding={binding} onClose={() => setArrangeOpen(false)} onChanged={refresh} />}
+    {arrangeOpen && binding && <RequirementArrangement requirementId={req.id} projectId={req.projectId} binding={binding} taskFlows={data?.tasks} onClose={() => setArrangeOpen(false)} onChanged={refresh} />}
     {templateEditor && <DialogShell open dirty={templateDirty} onOpenChange={open => { if (!open) { setTemplateEditor(null); setTemplateDirty(false) } }} ariaLabel="调整需求流程" width={1120}><OverlayHeader title="调整需求流程" /><OverlayScrollArea className="rq-integration-scroll"><RequirementFlowEditor projectId={req.projectId} initial={templateEditor === 'new' ? undefined : templateEditor} onDirty={() => setTemplateDirty(true)} onCancel={() => { setTemplateEditor(null); setTemplateDirty(false) }} onSaved={template => { setTemplateEditor(null); setTemplateDirty(false); void templates.refetch(); bind(template.versionId) }} /></OverlayScrollArea></DialogShell>}
     {reviewTaskId && <RequirementIntegrationDialog taskId={reviewTaskId} projectId={req.projectId} onClose={() => setReviewTaskId(null)} onRefresh={refresh} onNavigate={go} />}
   </section>
@@ -274,9 +787,36 @@ export default function RequirementWorkPage() {
     refetchInterval: editor ? false : 8000,
     refetchIntervalInBackground: false,
   })
-  const refresh = async () => { await Promise.all([queryClient.invalidateQueries({ queryKey: qk.requirements(projectId) }), queryClient.invalidateQueries({ queryKey: ['requirement-work'] }), queryClient.invalidateQueries({ queryKey: ['requirement-flow'] }), queryClient.invalidateQueries({ queryKey: qk.artifacts(projectId) }), queryClient.invalidateQueries({ queryKey: qk.board(projectId) }), queryClient.invalidateQueries({ queryKey: qk.approvals(projectId) })]) }
+  const refresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: qk.requirements(projectId) }),
+      queryClient.invalidateQueries({ queryKey: ['requirement-work'] }),
+      queryClient.invalidateQueries({ queryKey: ['requirement-flow'] }),
+      queryClient.invalidateQueries({ queryKey: ['flow-assignment-preview'] }),
+      queryClient.invalidateQueries({ queryKey: qk.projectRequirementFlows(projectId) }),
+      queryClient.invalidateQueries({ queryKey: qk.collaborationOverview(projectId) }),
+      queryClient.invalidateQueries({ queryKey: ['agents', projectId] }),
+      queryClient.invalidateQueries({ queryKey: qk.artifacts(projectId) }),
+      queryClient.invalidateQueries({ queryKey: qk.board(projectId) }),
+      queryClient.invalidateQueries({ queryKey: qk.approvals(projectId) }),
+      queryClient.invalidateQueries({ queryKey: ['task'] }),
+    ])
+  }
+  useEffect(() => {
+    if (!projectId) return undefined
+    const unsubscribe = window.projectos.runtime.onEvent(({ event }) => {
+      if (event.type === 'runtime.log' || event.type === 'run.delta') return
+      void queryClient.invalidateQueries({ queryKey: ['requirement-work'] })
+      void queryClient.invalidateQueries({ queryKey: ['requirement-flow'] })
+      void queryClient.invalidateQueries({ queryKey: ['flow-assignment-preview'] })
+      void queryClient.invalidateQueries({ queryKey: qk.projectRequirementFlows(projectId) })
+      void queryClient.invalidateQueries({ queryKey: qk.collaborationOverview(projectId) })
+      void queryClient.invalidateQueries({ queryKey: qk.board(projectId) })
+    })
+    return unsubscribe
+  }, [projectId, queryClient])
   const choose = (id: string) => { setSelectedRequirement(projectId, id); setSearch({ requirement: id }) }
-  return <div className="po-page rq-page" key={projectId}>
+  return <div className="po-page po-page-wide rq-page" key={projectId}>
     <PageHeader compact title="需求工作台" actions={<><Button icon={<ReloadOutlined aria-hidden />} aria-label="刷新需求" onClick={() => void refresh()} loading={work.isFetching && !work.isLoading} /><Button icon={<PlusOutlined aria-hidden />} onClick={() => setEditor({ kind: 'requirement' })}>新建需求</Button></>} />
     {requirements.isLoading ? <LoadingBlock label="正在读取需求" rows={6} /> : requirements.isError ? <ErrorState title="需求读取失败" message={errorMessage(requirements.error)} onRetry={() => void requirements.refetch()} /> : list.length === 0 ? <div className="rq-start"><EmptyState title="以需求组织一次完整交付" description="描述目标并选择流程，再将任务交给 Agent 协作完成。" /><Button type="primary" icon={<PlusOutlined aria-hidden />} onClick={() => setEditor({ kind: 'requirement' })}>创建第一个需求</Button></div> : <div className="rq-layout">
       <nav className="rq-requirements" aria-label="需求列表"><div className="rq-list-label">项目需求 <span>{list.length}</span></div>{list.map(req => <button key={req.id} className={`rq-requirement ${req.id === selectedId ? 'is-selected' : ''}`} aria-current={req.id === selectedId ? 'page' : undefined} onClick={() => choose(req.id)}><strong>{req.title}</strong><span>{requirementLabels[req.status] ?? req.status} · 版本 {req.version}</span></button>)}</nav>

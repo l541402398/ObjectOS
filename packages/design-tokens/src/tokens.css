@@ -274,9 +274,9 @@ body {
   }
 }
 
-[data-reduce-motion='true'] *,
-[data-reduce-motion='true'] *::before,
-[data-reduce-motion='true'] *::after {
+[data-reduce-motion='true'] *:not(.po-avatar-3d-svg, .po-avatar-3d-svg *),
+[data-reduce-motion='true'] *:not(.po-avatar-3d-svg, .po-avatar-3d-svg *)::before,
+[data-reduce-motion='true'] *:not(.po-avatar-3d-svg, .po-avatar-3d-svg *)::after {
   animation-duration: 0.001ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.001ms !important;
@@ -284,9 +284,9 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *:not(.po-avatar-3d-svg, .po-avatar-3d-svg *),
+  *:not(.po-avatar-3d-svg, .po-avatar-3d-svg *)::before,
+  *:not(.po-avatar-3d-svg, .po-avatar-3d-svg *)::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;

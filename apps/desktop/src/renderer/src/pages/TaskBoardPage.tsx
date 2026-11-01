@@ -38,10 +38,15 @@ import {
 } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import {
+  REQUIREMENT_STAGES,
   TASK_COLUMNS,
   TASK_STATUSES,
   type CreateTaskInput,
+  type RequirementFlowStep,
+  type RequirementMaterial,
+  type RequirementStage,
   type TaskCard,
+  type TaskFlow,
   type TaskStatus,
   type UpdateTaskInput,
 } from '@projectos/contracts'
@@ -55,6 +60,7 @@ import {
   StatusPill,
   assignTeamPersonas3D,
   resolveAgentPersona3D,
+  resolveAgentWorkActivity,
   toneForStatus,
 } from '@projectos/ui'
 import {
@@ -62,6 +68,7 @@ import {
   useAgents,
   useApprovals,
   useProjectOverview,
+  useProjectRequirementFlows,
   usePlans,
   useTaskBoard,
   useLifecycle,
@@ -118,8 +125,41 @@ interface AcceptancePolicyView {
 
 const PRIORITY_COLORS: Record<number, string> = { 1: '#D22D23', 2: '#E0A23C', 3: '#4C8DFF', 4: '#89919E' }
 
+function workActivityForStage(
+  stage: RequirementStage | null | undefined,
+  status: 'working' | 'idle',
+  role?: string,
+  name?: string,
+  taskTitle?: string,
+  taskDescription?: string,
+  taskLabels?: string[],
+): 'coding' | 'writing' {
+  if (stage === 'development' || stage === 'testing') return 'coding'
+  if (stage) return 'writing'
+  const resolved = resolveAgentWorkActivity({
+    status,
+    role,
+    name,
+    taskTitle,
+    taskDescription,
+    taskLabels,
+  })
+  return resolved === 'writing' ? 'writing' : 'coding'
+}
+
+function mapStepStatusToBoardColumn(status: RequirementFlowStep['status']): TaskStatus {
+  if (status === 'completed') return 'done'
+  if (status === 'waiting_approval') return 'review'
+  if (status === 'running' || status === 'starting') return 'running'
+  if (status === 'ready') return 'ready'
+  return 'backlog'
+}
+
 function TaskTile({
   task,
+  taskFlow,
+  materials = [],
+  requirementTitle,
   onOpen,
   onDragStart,
   onDragEnd,
@@ -131,6 +171,9 @@ function TaskTile({
   onAgentDrop,
 }: {
   task: TaskCard
+  taskFlow?: TaskFlow | null
+  materials?: RequirementMaterial[]
+  requirementTitle?: string | null
   onOpen: () => void
   onDragStart: () => void
   onDragEnd: () => void
@@ -141,6 +184,13 @@ function TaskTile({
   onAgentDragLeave?: () => void
   onAgentDrop?: (event: React.DragEvent<HTMLDivElement>) => void
 }) {
+  const steps = taskFlow?.steps ?? []
+  const completedSteps = steps.filter((s) => s.status === 'completed').length
+  const activeStep = steps.find((s) => s.status === 'running' || s.status === 'starting' || s.status === 'waiting_approval')
+  const activeAgentName = activeStep?.agentName ?? task.assigneeName
+  const uniqueStepAgents = [...new Set(steps.map((s) => s.agentName).filter((n): n is string => Boolean(n)))]
+  const taskMaterials = materials.filter((m) => m.taskId === task.id && m.status === 'current')
+
   return (
     <div
       className={`po-task-tile ${dragging ? 'is-dragging' : ''} ${agentDropActive ? 'is-agent-drop-target' : ''}`.trim()}
@@ -172,9 +222,20 @@ function TaskTile({
             : `松开指派给 ${draggingAgentName ?? 'Agent'}`}
         </div>
       ) : null}
+      {requirementTitle ? (
+        <div className="po-task-req-badge" title={`所属需求：${requirementTitle}`}>
+          <span>所属需求</span>
+          <strong>{requirementTitle}</strong>
+        </div>
+      ) : null}
       <div className="po-task-tile-top">
         <span className="po-priority-mark" style={{ background: PRIORITY_COLORS[task.priority] }} />
         <span className={`po-priority-label is-${task.priority}`}>{priorityLabel(task.priority)}</span>
+        {steps.length > 0 ? (
+          <span className="po-task-stage-progress-pill">
+            流程阶段 {completedSteps}/{steps.length}
+          </span>
+        ) : null}
         <span className="po-grow" />
         {task.latestRunStatus ? (
           <StatusPill tone={toneForStatus(task.latestRunStatus)} dot={false}>
@@ -184,6 +245,30 @@ function TaskTile({
       </div>
       <div className="po-task-tile-title">{task.title}</div>
       {task.description ? <div className="po-task-tile-desc">{task.description}</div> : null}
+      {steps.length > 0 ? (
+        <div className="po-task-mini-stages" aria-label="任务流程阶段进度">
+          {steps.map((step, idx) => {
+            const isDone = step.status === 'completed'
+            const isRunning = step.status === 'running' || step.status === 'starting' || step.status === 'waiting_approval'
+            return (
+              <span
+                key={step.id}
+                className={`po-task-mini-stage is-${step.status}`}
+                title={`${idx + 1}. ${step.title} · ${step.agentName ?? '待分配'} (${isDone ? '已完成' : isRunning ? '执行中' : '待流转'})`}
+              >
+                <i>{isDone ? '✓' : idx + 1}</i>
+                <span>{step.title}</span>
+              </span>
+            )
+          })}
+        </div>
+      ) : null}
+      {taskMaterials.length > 0 ? (
+        <div className="po-task-materials-summary">
+          <FileTextOutlined />
+          <span>已产出：{taskMaterials.slice(0, 3).map((m) => `${m.stepTitle ?? m.title}${m.agentName ? `(${m.agentName})` : ''}`).join('、')}{taskMaterials.length > 3 ? ` 等 ${taskMaterials.length} 份` : ''}</span>
+        </div>
+      ) : null}
       {task.labels.length > 0 ? (
         <div className="po-task-labels">
           {task.labels.slice(0, 3).map((label) => (
@@ -213,9 +298,23 @@ function TaskTile({
               <span><FileTextOutlined /> {task.artifactCount}</span>
             </Tooltip>
           ) : null}
+          {uniqueStepAgents.length > 1 ? (
+            <Tooltip title={`参与协作 Agent：${uniqueStepAgents.join(' → ')}`}>
+              <span className="po-task-agent-chain-count">{uniqueStepAgents.length} Agent 接力</span>
+            </Tooltip>
+          ) : null}
         </div>
-        {task.assigneeName ? (
-          <AgentAvatar name={task.assigneeName} size={23} title={`指派给 ${task.assigneeName}`} />
+        {activeAgentName ? (
+          <AgentAvatar
+            name={activeAgentName}
+            size={30}
+            status={task.status === 'running' ? 'working' : 'idle'}
+            activity={workActivityForStage(activeStep?.stage, task.status === 'running' ? 'working' : 'idle', undefined, activeAgentName, task.title, task.description, task.labels)}
+            taskTitle={task.title}
+            taskDescription={task.description}
+            taskLabels={task.labels}
+            title={activeStep ? `当前阶段：${activeStep.title}（${activeAgentName}）` : `指派给 ${activeAgentName}`}
+          />
         ) : (
           <span className="po-unassigned"><UserOutlined /></span>
         )}
@@ -234,6 +333,7 @@ export default function TaskBoardPage() {
   const lifecycle = useLifecycle(projectId)
   const plans = usePlans(projectId)
   const overview = useProjectOverview(projectId)
+  const reqFlowsQuery = useProjectRequirementFlows(projectId)
   const agents = useAgents(projectId)
   const approvals = useApprovals(projectId)
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
@@ -299,14 +399,45 @@ export default function TaskBoardPage() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['board', projectId] }),
       queryClient.invalidateQueries({ queryKey: ['overview', projectId] }),
+      queryClient.invalidateQueries({ queryKey: qk.projectRequirementFlows(projectId) }),
+      queryClient.invalidateQueries({ queryKey: qk.collaborationOverview(projectId) }),
+      queryClient.invalidateQueries({ queryKey: ['requirement-flow'] }),
+      queryClient.invalidateQueries({ queryKey: ['requirement-work'] }),
+      queryClient.invalidateQueries({ queryKey: ['flow-assignment-preview'] }),
+      queryClient.invalidateQueries({ queryKey: ['agents', projectId] }),
       queryClient.invalidateQueries({ queryKey: ['bootstrap'] }),
       queryClient.invalidateQueries({ queryKey: ['task'] }),
     ])
   }
 
+  useEffect(() => {
+    if (!projectId) return undefined
+    const unsubscribe = window.projectos.runtime.onEvent(({ event }) => {
+      if (event.type === 'runtime.log' || event.type === 'run.delta') return
+      void queryClient.invalidateQueries({ queryKey: ['board', projectId] })
+      void queryClient.invalidateQueries({ queryKey: ['overview', projectId] })
+      void queryClient.invalidateQueries({ queryKey: qk.projectRequirementFlows(projectId) })
+      void queryClient.invalidateQueries({ queryKey: ['agents', projectId] })
+    })
+    return unsubscribe
+  }, [projectId, queryClient])
+
   const moveTask = useMutation({
-    mutationFn: ({ task, to }: { task: TaskCard; to: TaskStatus }) =>
-      window.projectos.tasks.move({ taskId: task.id, to, expectedVersion: task.version }),
+    mutationFn: async ({ task, to }: { task: TaskCard; to: TaskStatus }) => {
+      if (task.status === 'backlog' && to === 'running') {
+        const readyRes = await window.projectos.tasks.move({
+          taskId: task.id,
+          to: 'ready',
+          expectedVersion: task.version,
+        })
+        return window.projectos.tasks.move({
+          taskId: task.id,
+          to: 'running',
+          expectedVersion: readyRes.task.version,
+        })
+      }
+      return window.projectos.tasks.move({ taskId: task.id, to, expectedVersion: task.version })
+    },
     onSuccess: async (result) => {
       await invalidate()
       message.success(`「${result.task.title}」已移到${taskStatusLabel(result.task.status)}`)
@@ -437,6 +568,18 @@ export default function TaskBoardPage() {
     onError: (error) => message.error(errorMessage(error)),
   })
 
+  const requirementFlows = useMemo(() => reqFlowsQuery.data ?? [], [reqFlowsQuery.data])
+  const allTaskFlows = useMemo(() => requirementFlows.flatMap((entry) => entry.view.tasks), [requirementFlows])
+  const allMaterials = useMemo(() => requirementFlows.flatMap((entry) => entry.view.materials), [requirementFlows])
+  const taskFlowByTaskId = useMemo(
+    () => new Map(allTaskFlows.map((flow) => [flow.taskId, flow])),
+    [allTaskFlows],
+  )
+  const requirementTitleById = useMemo(
+    () => new Map(requirementFlows.map((entry) => [entry.requirement.id, entry.requirement.title])),
+    [requirementFlows],
+  )
+
   const tasks = useMemo(() => {
     const list = board.data?.tasks ?? []
     const normalized = query.trim().toLowerCase()
@@ -447,17 +590,55 @@ export default function TaskBoardPage() {
       if (normalized && !`${task.title} ${task.description} ${task.labels.join(' ')}`.toLowerCase().includes(normalized)) {
         return false
       }
-      if (assigneeFilter && task.assigneeAgentId !== assigneeFilter) return false
+      if (assigneeFilter) {
+        const flow = taskFlowByTaskId.get(task.id)
+        const inFlow = flow?.steps.some((step) => step.agentId === assigneeFilter) ?? false
+        if (task.assigneeAgentId !== assigneeFilter && !inFlow) return false
+      }
       if (versionFilter && task.versionId !== versionFilter) return false
       if (iterationFilter && task.iterationId !== iterationFilter) return false
       if (priorityFilter && task.priority !== priorityFilter) return false
       return true
     })
-  }, [board.data, overview.data, requirementFilter, query, assigneeFilter, versionFilter, iterationFilter, priorityFilter])
+  }, [board.data, overview.data, requirementFilter, query, assigneeFilter, taskFlowByTaskId, versionFilter, iterationFilter, priorityFilter])
+
+  const stageItemsByColumn = useMemo(() => {
+    const map = new Map<TaskStatus, Array<{
+      step: RequirementFlowStep
+      stageIndex: number
+      totalStages: number
+      task: TaskCard
+      requirementTitle: string
+      materials: RequirementMaterial[]
+    }>>()
+    for (const col of TASK_COLUMNS) map.set(col, [])
+    for (const task of tasks) {
+      const flow = taskFlowByTaskId.get(task.id)
+      if (!flow || flow.steps.length === 0) continue
+      const reqTitle = (task.requirementId ? requirementTitleById.get(task.requirementId) : null) ?? '当前需求'
+      flow.steps.forEach((step, idx) => {
+        if (assigneeFilter && step.agentId !== assigneeFilter) return
+        const colStatus = mapStepStatusToBoardColumn(step.status)
+        const stepMats = allMaterials.filter(
+          (m) => (m.stepId === step.id || step.artifactIds.includes(m.artifactId)) && m.status === 'current',
+        )
+        map.get(colStatus)?.push({
+          step,
+          stageIndex: idx + 1,
+          totalStages: flow.steps.length,
+          task,
+          requirementTitle: reqTitle,
+          materials: stepMats,
+        })
+      })
+    }
+    return map
+  }, [allMaterials, assigneeFilter, requirementTitleById, taskFlowByTaskId, tasks])
 
   const columns = TASK_COLUMNS.map((status) => ({
     status,
     tasks: tasks.filter((task) => task.status === status),
+    stageItems: stageItemsByColumn.get(status) ?? [],
   }))
   const otherTasks = tasks.filter((task) => task.status === 'blocked' || task.status === 'cancelled')
   const agentOptions = (agents.data?.agents ?? []).map((agent) => ({
@@ -469,21 +650,61 @@ export default function TaskBoardPage() {
     const personaMap = assignTeamPersonas3D(rawAgents.map((entry) => entry.agent))
     const overviewAgents = new Map((overview.data?.agents ?? []).map((item) => [item.agent.id, item]))
     const allTasks = board.data?.tasks ?? []
+    const allSteps = allTaskFlows.flatMap((flow) => flow.steps)
+    const hasWorkflowSteps = allSteps.length > 0
+
     return rawAgents
       .map((entry) => {
         const agent = entry.agent
         const ov = overviewAgents.get(agent.id)
         const assignedTasks = allTasks.filter((t) => t.assigneeAgentId === agent.id && t.status !== 'cancelled')
         const runningTasks = assignedTasks.filter((t) => t.status === 'running')
-        const isWorking = ov?.status === 'working' || runningTasks.length > 0
+        const agentSteps = allSteps.filter((s) => s.agentId === agent.id)
+        const activeStep = agentSteps.find(
+          (s) => s.status === 'running' || s.status === 'starting' || s.status === 'waiting_approval',
+        )
+        const completedSteps = agentSteps.filter((s) => s.status === 'completed')
+        const activeTask = activeStep
+          ? allTasks.find((t) => t.id === activeStep.taskId) ?? runningTasks[0] ?? null
+          : runningTasks[0] ?? assignedTasks.find((t) => t.status !== 'done') ?? null
+
+        const isWorking = hasWorkflowSteps
+          ? Boolean(activeStep) || runningTasks.some((t) => !t.requirementId)
+          : ov?.status === 'working' || runningTasks.length > 0
         const persona = personaMap.get(agent.id) ?? resolveAgentPersona3D(`${agent.name} ${agent.role}`)
+        const workActivity = workActivityForStage(
+          activeStep?.stage ?? agentSteps[0]?.stage,
+          isWorking ? 'working' : 'idle',
+          agent.role,
+          agent.name,
+          activeStep?.title ?? activeTask?.title,
+          activeTask?.description,
+          activeTask?.labels,
+        )
+        const stageBadgeText =
+          !isWorking && agentSteps.length > 0
+            ? completedSteps.length > 0
+              ? `已完成 ${completedSteps.length} 阶段`
+              : `待接力 · ${agentSteps[0]!.title}`
+            : null
+        const stageSubtitle =
+          isWorking && activeStep
+            ? `${agent.role} · 阶段：${activeStep.title}`
+            : agentSteps.length > 0
+              ? `${agent.role} · 负责：${agentSteps.map((s) => s.title).join('、')}`
+              : null
+
         return {
           id: agent.id,
           name: agent.name,
           role: agent.role,
           status: (isWorking ? 'working' : 'idle') as 'working' | 'idle',
-          assignedCount: assignedTasks.length,
+          workActivity,
+          activeTask,
+          assignedCount: Math.max(assignedTasks.length, agentSteps.length),
           runningCount: runningTasks.length,
+          stageBadgeText,
+          stageSubtitle,
           persona,
         }
       })
@@ -491,7 +712,7 @@ export default function TaskBoardPage() {
         if (a.status !== b.status) return a.status === 'working' ? -1 : 1
         return b.assignedCount - a.assignedCount
       })
-  }, [agents.data, overview.data, board.data])
+  }, [agents.data, overview.data, board.data, allTaskFlows])
 
   const assignAgent = useMutation({
     mutationFn: async ({
@@ -691,8 +912,8 @@ export default function TaskBoardPage() {
     </Form>
   )
 
-  const pendingPlan = plans.data?.plans.find((plan) => plan.status === 'approved' && !plan.execution) ?? null
-  const failedPlan = plans.data?.plans.find((plan) => plan.execution?.status === 'failed') ?? null
+  const pendingPlan = plans.data?.plans.find((plan) => plan.status === 'approved' && !plan.execution && !plan.requirementId) ?? null
+  const failedPlan = plans.data?.plans.find((plan) => plan.execution?.status === 'failed' && !plan.requirementId) ?? null
   const startPlan = async (planId: string): Promise<void> => {
     try {
       await window.projectos.orchestration.start(planId, 2, 2)
@@ -1000,29 +1221,141 @@ export default function TaskBoardPage() {
                   <div className="po-roster-avatar-wrap">
                     <AgentAvatar
                       name={agent.name}
+                      role={agent.role}
                       personaId={agent.persona.id}
-                      size={48}
+                      size={64}
                       status={agent.status}
+                      activity={agent.workActivity}
+                      taskTitle={agent.activeTask?.title}
+                      taskDescription={agent.activeTask?.description}
+                      taskLabels={agent.activeTask?.labels}
                     />
                   </div>
                   <div className="po-roster-info">
                     <div className="po-roster-name-row">
                       <strong>{agent.name}</strong>
-                      <span className={`po-roster-status-pill is-${agent.status}`}>
+                      <span className={`po-roster-status-pill is-${agent.status}${agent.stageBadgeText?.includes('已完成') ? ' is-done-stage' : ''}`}>
                         <i />
                         {agent.status === 'working'
-                          ? '工作中'
-                          : agent.assignedCount > 0
-                            ? `${agent.assignedCount} 项`
-                            : '空闲'}
+                          ? agent.workActivity === 'writing'
+                            ? '写文档'
+                            : '编码中'
+                          : agent.stageBadgeText
+                            ? agent.stageBadgeText
+                            : agent.assignedCount > 0
+                              ? `${agent.assignedCount} 项`
+                              : '空闲'}
                       </span>
                     </div>
-                    <span className="po-roster-role">{agent.role}</span>
+                    <span className="po-roster-role" title={agent.stageSubtitle ?? agent.activeTask?.title ?? agent.role}>
+                      {agent.stageSubtitle
+                        ? agent.stageSubtitle
+                        : agent.status === 'working' && agent.activeTask
+                          ? `${agent.role} · ${agent.activeTask.title}`
+                          : agent.role}
+                    </span>
                   </div>
                 </div>
               )
             })}
           </div>
+        </section>
+      ) : null}
+
+      {requirementFlows.length > 0 ? (
+        <section className="po-req-whole-panel" aria-label="需求整体任务与阶段流转总览" data-testid="task-board-requirement-whole-panel">
+          {requirementFlows
+            .filter(({ requirement }) => !requirementFilter || requirement.id === requirementFilter)
+            .map(({ requirement, view }) => {
+              const firstFlow = view.tasks[0]
+              const steps = firstFlow?.steps ?? []
+              const completedCount = steps.filter((s) => s.status === 'completed').length
+              const activeStep = steps.find(
+                (s) => s.status === 'running' || s.status === 'starting' || s.status === 'waiting_approval',
+              )
+              const uniqueAgents = [...new Set(steps.map((s) => s.agentName).filter((n): n is string => Boolean(n)))]
+              const currentMaterials = view.materials.filter((m) => m.status === 'current')
+              return (
+                <div key={requirement.id} className="po-req-whole-card">
+                  <div className="po-req-whole-head">
+                    <div className="po-req-whole-title-group">
+                      <span className="po-req-whole-kicker">需求整体视图</span>
+                      <strong className="po-req-whole-title" title={requirement.title}>{requirement.title}</strong>
+                      <span className="po-req-whole-summary">
+                        {view.tasks.length} 个交付任务 · 阶段已完成 {completedCount}/{steps.length} · {uniqueAgents.length} 位协作 Agent · 已产出 {currentMaterials.length} 份成果
+                      </span>
+                    </div>
+                    <div className="po-req-whole-actions">
+                      {activeStep ? (
+                        <StatusPill tone="info">
+                          当前阶段：{activeStep.title}{activeStep.agentName ? ` · ${activeStep.agentName}` : ''}
+                        </StatusPill>
+                      ) : completedCount === steps.length && steps.length > 0 ? (
+                        <StatusPill tone="success">全部 {steps.length} 阶段已完成</StatusPill>
+                      ) : null}
+                      <Button size="small" onClick={() => navigate(`/projects/${projectId}/agents`)}>
+                        Agent 协作图
+                      </Button>
+                      <Button size="small" type="primary" ghost onClick={() => navigate(`/projects/${projectId}/requirements?requirement=${requirement.id}`)}>
+                        需求工作台
+                      </Button>
+                    </div>
+                  </div>
+                  {steps.length > 0 ? (
+                    <div className="po-req-stage-strip" role="list" aria-label="需求六阶段流转链">
+                      {steps.map((step, idx) => {
+                        const isDone = step.status === 'completed'
+                        const isRunning = step.status === 'running' || step.status === 'starting'
+                        const isWaiting = step.status === 'waiting_approval'
+                        const stepMats = currentMaterials.filter(
+                          (m) => m.stepId === step.id || step.artifactIds.includes(m.artifactId),
+                        )
+                        const stageDef = REQUIREMENT_STAGES[step.stage]
+                        return (
+                          <div
+                            key={step.id}
+                            role="listitem"
+                            className={`po-req-stage-card is-${step.status}`}
+                            data-testid={`board-req-stage-${step.id}`}
+                          >
+                            <div className="po-req-stage-card-top">
+                              <span className="po-req-stage-index">{isDone ? '✓' : idx + 1}</span>
+                              <strong className="po-req-stage-name">{step.title}</strong>
+                              <span className={`po-req-stage-state is-${step.status}`}>
+                                {isDone ? '已完成' : isRunning ? '执行中' : isWaiting ? '待授权' : '待流转'}
+                              </span>
+                            </div>
+                            <div className="po-req-stage-agent-row">
+                              {step.agentName ? (
+                                <>
+                                  <AgentAvatar
+                                    name={step.agentName}
+                                    size={24}
+                                    status={isRunning ? 'working' : 'idle'}
+                                    activity={workActivityForStage(step.stage, isRunning ? 'working' : 'idle', undefined, step.agentName, step.title)}
+                                  />
+                                  <span>{step.agentName}</span>
+                                </>
+                              ) : (
+                                <span className="po-muted">待分配 Agent</span>
+                              )}
+                            </div>
+                            <div className="po-req-stage-output" title={stepMats.map((m) => m.title).join('、') || stageDef?.output}>
+                              <FileTextOutlined />
+                              <span>
+                                {stepMats.length > 0
+                                  ? stepMats.map((m) => m.title.replace(/[:：].*$/, '')).join('、')
+                                  : `预期：${stageDef?.output ?? '阶段结果'}`}
+                              </span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : null}
+                </div>
+              )
+            })}
         </section>
       ) : null}
 
@@ -1067,46 +1400,140 @@ export default function TaskBoardPage() {
                       <span className={`po-column-dot is-${column.status}`} />
                       <strong>{taskStatusLabel(column.status)}</strong>
                     </div>
-                    <span className="po-column-count">{column.tasks.length}</span>
+                    <span className="po-column-count">
+                      {column.tasks.length + column.stageItems.length}
+                    </span>
                   </div>
                   <div className="po-board-column-body">
-                    {column.tasks.length === 0 ? (
+                    {column.tasks.length === 0 && column.stageItems.length === 0 ? (
                       <div className="po-column-empty">拖入任务或新建</div>
                     ) : (
-                      column.tasks.map((task) => (
-                        <TaskTile
-                          key={task.id}
-                          task={task}
-                          dragging={draggingId === task.id}
-                          agentDropActive={agentDropTaskId === task.id}
-                          draggingAgentName={draggingAgent?.name ?? null}
-                          onDragStart={() => setDraggingId(task.id)}
-                          onDragEnd={() => { setDraggingId(null); setDropTarget(null) }}
-                          onAgentDragOver={(event) => {
-                            if (!draggingAgent && !event.dataTransfer.types.includes('application/x-projectos-agent')) return
-                            event.preventDefault()
-                            event.stopPropagation()
-                            event.dataTransfer.dropEffect = 'copy'
-                            if (agentDropTaskId !== task.id) setAgentDropTaskId(task.id)
-                          }}
-                          onAgentDragLeave={() => {
-                            if (agentDropTaskId === task.id) setAgentDropTaskId(null)
-                          }}
-                          onAgentDrop={(event) => {
-                            const raw = event.dataTransfer.getData('application/x-projectos-agent')
-                            if (!raw && !draggingAgent) return
-                            event.preventDefault()
-                            event.stopPropagation()
-                            setAgentDropTaskId(null)
-                            const dropped = raw
-                              ? (JSON.parse(raw) as { id: string; name: string; role: string })
-                              : draggingAgent
-                            setDraggingAgent(null)
-                            if (dropped) handleAssignOrHandoff(task, dropped)
-                          }}
-                          onOpen={() => openTask(task)}
-                        />
-                      ))
+                      <>
+                        {column.tasks.map((task) => (
+                          <TaskTile
+                            key={task.id}
+                            task={task}
+                            taskFlow={taskFlowByTaskId.get(task.id) ?? null}
+                            materials={allMaterials}
+                            requirementTitle={task.requirementId ? requirementTitleById.get(task.requirementId) ?? null : null}
+                            dragging={draggingId === task.id}
+                            agentDropActive={agentDropTaskId === task.id}
+                            draggingAgentName={draggingAgent?.name ?? null}
+                            onDragStart={() => setDraggingId(task.id)}
+                            onDragEnd={() => { setDraggingId(null); setDropTarget(null) }}
+                            onAgentDragOver={(event) => {
+                              if (!draggingAgent && !event.dataTransfer.types.includes('application/x-projectos-agent')) return
+                              event.preventDefault()
+                              event.stopPropagation()
+                              event.dataTransfer.dropEffect = 'copy'
+                              if (agentDropTaskId !== task.id) setAgentDropTaskId(task.id)
+                            }}
+                            onAgentDragLeave={() => {
+                              if (agentDropTaskId === task.id) setAgentDropTaskId(null)
+                            }}
+                            onAgentDrop={(event) => {
+                              const raw = event.dataTransfer.getData('application/x-projectos-agent')
+                              if (!raw && !draggingAgent) return
+                              event.preventDefault()
+                              event.stopPropagation()
+                              setAgentDropTaskId(null)
+                              const dropped = raw
+                                ? (JSON.parse(raw) as { id: string; name: string; role: string })
+                                : draggingAgent
+                              setDraggingAgent(null)
+                              if (dropped) handleAssignOrHandoff(task, dropped)
+                            }}
+                            onOpen={() => openTask(task)}
+                          />
+                        ))}
+                        {column.stageItems.map(({ step, stageIndex, totalStages, task, requirementTitle, materials: stepMats }) => {
+                          const isDone = step.status === 'completed'
+                          const isRunning = step.status === 'running' || step.status === 'starting'
+                          const isWaiting = step.status === 'waiting_approval'
+                          const stageDef = REQUIREMENT_STAGES[step.stage]
+                          return (
+                            <div
+                              key={step.id}
+                              className={`po-stage-flow-tile is-${step.status}`}
+                              data-stage-step-id={step.id}
+                              onClick={() => openTask(task)}
+                              onDragOver={(event) => {
+                                if (!draggingAgent && !event.dataTransfer.types.includes('application/x-projectos-agent')) return
+                                event.preventDefault()
+                                event.stopPropagation()
+                                event.dataTransfer.dropEffect = 'copy'
+                              }}
+                              onDrop={(event) => {
+                                const raw = event.dataTransfer.getData('application/x-projectos-agent')
+                                if (!raw && !draggingAgent) return
+                                event.preventDefault()
+                                event.stopPropagation()
+                                const dropped = raw
+                                  ? (JSON.parse(raw) as { id: string; name: string; role: string })
+                                  : draggingAgent
+                                setDraggingAgent(null)
+                                if (!dropped) return
+                                if (['pending', 'ready'].includes(step.status)) {
+                                  void window.projectos.workflows
+                                    .assign({ stepId: step.id, expectedVersion: step.version, agentId: dropped.id })
+                                    .then(async () => {
+                                      await invalidate()
+                                      message.success(`已将阶段「${step.title}」交接给 ${dropped.name}`)
+                                    })
+                                    .catch((err: unknown) => message.error(errorMessage(err)))
+                                } else {
+                                  handleAssignOrHandoff(task, dropped)
+                                }
+                              }}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault()
+                                  openTask(task)
+                                }
+                              }}
+                            >
+                              <div className="po-stage-flow-top">
+                                <span className="po-stage-flow-badge">
+                                  需求阶段 {stageIndex}/{totalStages}
+                                </span>
+                                <span className={`po-stage-flow-state is-${step.status}`}>
+                                  {isDone ? '✓ 已完成' : isRunning ? '● 执行中' : isWaiting ? '⏳ 待审批' : '○ 待接力'}
+                                </span>
+                              </div>
+                              <div className="po-stage-flow-title">
+                                {step.title} · <span>{task.title}</span>
+                              </div>
+                              <div className="po-stage-flow-req">需求：{requirementTitle}</div>
+                              <div className="po-stage-flow-output">
+                                <FileTextOutlined />
+                                <span>
+                                  {stepMats.length > 0
+                                    ? `产出：${stepMats.map((m) => m.title).join('、')}`
+                                    : `目标产出：${stageDef?.output ?? '阶段结果'}`}
+                                </span>
+                              </div>
+                              <div className="po-stage-flow-foot">
+                                {step.agentName ? (
+                                  <span className="po-stage-flow-agent">
+                                    <AgentAvatar
+                                      name={step.agentName}
+                                      size={24}
+                                      status={isRunning ? 'working' : 'idle'}
+                                      activity={workActivityForStage(step.stage, isRunning ? 'working' : 'idle', undefined, step.agentName, step.title)}
+                                    />
+                                    <strong>{step.agentName}</strong>
+                                  </span>
+                                ) : (
+                                  <span className="po-muted">待分配 Agent</span>
+                                )}
+                                <span className="po-stage-flow-hint">点击查看详情</span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </>
                     )}
                   </div>
                 </section>
@@ -1159,7 +1586,11 @@ export default function TaskBoardPage() {
               </div>
               <div className="po-handoff-confirm-transfer">
                 <div className="po-handoff-agent-card">
-                  <AgentAvatar name={handoffPrompt.fromAgentName} size={46} />
+                  <AgentAvatar
+                    name={handoffPrompt.fromAgentName}
+                    size={58}
+                    taskTitle={handoffPrompt.task.title}
+                  />
                   <div>
                     <span className="po-caption po-muted">当前负责人</span>
                     <strong>{handoffPrompt.fromAgentName}</strong>
@@ -1169,7 +1600,12 @@ export default function TaskBoardPage() {
                   <SwapOutlined />
                 </span>
                 <div className="po-handoff-agent-card is-target">
-                  <AgentAvatar name={handoffPrompt.toAgentName} size={46} />
+                  <AgentAvatar
+                    name={handoffPrompt.toAgentName}
+                    role={handoffPrompt.toAgentRole}
+                    size={58}
+                    taskTitle={handoffPrompt.task.title}
+                  />
                   <div>
                     <span className="po-caption po-muted">交接给新 Agent</span>
                     <strong>{handoffPrompt.toAgentName}</strong>
@@ -1413,6 +1849,54 @@ export default function TaskBoardPage() {
                             }
                           />
                         </div>
+                        {(() => {
+                          const flow = taskFlowByTaskId.get(taskDetail.data.task.id)
+                          if (!flow || flow.steps.length === 0) return null
+                          return (
+                            <div className="po-task-stage-assign-list" style={{ marginTop: 12, display: 'grid', gap: 8 }}>
+                              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                                流程各阶段负责 Agent（与需求工作台、任务安排、Agent 协作图实时联动）
+                              </span>
+                              {flow.steps.map((step, idx) => (
+                                <div
+                                  key={step.id}
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    gap: 8,
+                                    padding: '6px 10px',
+                                    borderRadius: 8,
+                                    background: 'rgba(255,255,255,0.5)',
+                                    border: '1px solid rgba(148,163,184,0.18)',
+                                  }}
+                                >
+                                  <span style={{ fontSize: 12.5, fontWeight: 600 }}>
+                                    {idx + 1}. {step.title}
+                                  </span>
+                                  <Select
+                                    size="small"
+                                    aria-label={`${step.title}负责 Agent`}
+                                    placeholder="选择负责 Agent"
+                                    value={step.agentId ?? undefined}
+                                    disabled={!['pending', 'ready'].includes(step.status)}
+                                    options={agentOptions}
+                                    style={{ width: 210 }}
+                                    onChange={(agentId: string) => {
+                                      void window.projectos.workflows
+                                        .assign({ stepId: step.id, expectedVersion: step.version, agentId })
+                                        .then(async () => {
+                                          await invalidate()
+                                          message.success(`已更新阶段「${step.title}」负责 Agent`)
+                                        })
+                                        .catch((err: unknown) => message.error(errorMessage(err)))
+                                    }}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        })()}
                       </section>
                     </div>
                   ),

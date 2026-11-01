@@ -1,6 +1,11 @@
 import type { ReactNode } from 'react'
 import { Tooltip } from 'antd'
-import { AgentAvatar3DSvg, resolveAgentPersona3D } from './AgentAvatar3D.js'
+import {
+  AgentAvatar3DSvg,
+  resolveAgentPersona3D,
+  resolveAgentWorkActivity,
+  type AgentWorkActivity,
+} from './AgentAvatar3D.js'
 
 export * from './AgentAvatar3D.js'
 
@@ -135,10 +140,15 @@ export function KeyValueList({ items, compact = false }: { items: KeyValueItem[]
 export function AgentAvatar({
   name,
   accent,
-  size = 30,
+  size = 38,
   status,
   title,
   personaId,
+  role,
+  activity,
+  taskTitle,
+  taskDescription,
+  taskLabels,
 }: {
   name: string
   accent?: string
@@ -146,12 +156,27 @@ export function AgentAvatar({
   status?: 'working' | 'idle' | 'offline'
   title?: string
   personaId?: string
+  role?: string
+  activity?: AgentWorkActivity
+  taskTitle?: string
+  taskDescription?: string
+  taskLabels?: readonly string[]
 }) {
   const initial = [...name.trim()][0] ?? 'A'
-  const persona = resolveAgentPersona3D(name, personaId)
+  const persona = resolveAgentPersona3D(role ? `${name} ${role}` : name, personaId)
+  const workActivity = resolveAgentWorkActivity({
+    status,
+    activity,
+    role,
+    name,
+    taskTitle,
+    taskDescription,
+    taskLabels,
+    persona,
+  })
   const avatar = (
     <span
-      className={`po-avatar po-avatar-3d ${status ? `is-${status}` : ''}`.trim()}
+      className={`po-avatar po-avatar-3d ${status ? `is-${status}` : 'is-idle'} is-activity-${workActivity}`.trim()}
       style={{
         width: size,
         height: size,
@@ -159,7 +184,7 @@ export function AgentAvatar({
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        borderRadius: '50%',
+        borderRadius: '28%',
         padding: 0,
         overflow: 'visible',
         background: 'transparent',
@@ -168,8 +193,14 @@ export function AgentAvatar({
       aria-label={name}
       data-persona-id={persona.id}
       data-gender={persona.gender}
+      data-work-activity={workActivity}
     >
-      <AgentAvatar3DSvg persona={persona} size={size} status={status} />
+      <AgentAvatar3DSvg
+        persona={persona}
+        size={size}
+        status={status}
+        workActivity={workActivity}
+      />
       <span
         style={{
           position: 'absolute',

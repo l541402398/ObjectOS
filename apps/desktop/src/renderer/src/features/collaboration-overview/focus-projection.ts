@@ -4,7 +4,9 @@ import type {
   CollaborationOverview,
   CollaborationOverviewAgent,
   HandoffView,
+  RunSummary,
   TaskCard,
+  TaskFlow,
 } from '@projectos/contracts'
 
 /**
@@ -14,7 +16,8 @@ import type {
  * into the current working set and the standby set:
  *
  * - primary: agents with a real active Run (working / waiting approval), a current task, a real
- *   assignment in the current plan, or an unfinished real Handoff;
+ *   assignment in the current plan or requirement workflow, a completed/active Run on a primary task,
+ *   or an unfinished real Handoff;
  * - standby: all remaining available agents. They stay reachable in the dock but never enter ELK
  *   layout or fitView.
  */
@@ -32,11 +35,17 @@ function isAgentActive(agent: CollaborationOverviewAgent): boolean {
   return agent.pendingApprovals > 0 || agent.status === 'working' || agent.runStatus === 'waiting_approval' || agent.runStatus === 'waiting_tool'
 }
 
-export function projectCollaborationFocus(overview: Pick<
-  CollaborationOverview,
-  'agents' | 'tasks' | 'artifacts' | 'approvals' | 'handoffs' | 'plan'
->): CollaborationFocusProjection {
+export function projectCollaborationFocus(
+  overview: Pick<
+    CollaborationOverview,
+    'agents' | 'tasks' | 'artifacts' | 'approvals' | 'handoffs' | 'plan'
+  > & {
+    runs?: RunSummary[]
+    taskFlows?: TaskFlow[]
+  },
+): CollaborationFocusProjection {
   const planTaskIds = new Set(overview.plan?.taskIds ?? [])
+  const workflowTaskIds = new Set((overview.taskFlows ?? []).map((flow) => flow.taskId))
   const activeRunTaskIds = new Set(
     overview.agents
       .filter((agent) => isAgentActive(agent) && agent.taskId)
@@ -44,7 +53,18 @@ export function projectCollaborationFocus(overview: Pick<
   )
 
   let taskCandidates = overview.tasks.filter((task) => task.status !== 'cancelled')
-  if (planTaskIds.size > 0) {
+  const hasRequirementTasks = taskCandidates.some((task) => Boolean(task.requirementId))
+  if (hasRequirementTasks || workflowTaskIds.size > 0) {
+    taskCandidates = taskCandidates.filter(
+      (task) =>
+        Boolean(task.requirementId) ||
+        workflowTaskIds.has(task.id) ||
+        planTaskIds.has(task.id) ||
+        activeRunTaskIds.has(task.id) ||
+        task.status === 'running' ||
+        task.status === 'review',
+    )
+  } else if (planTaskIds.size > 0) {
     taskCandidates = taskCandidates.filter((task) => planTaskIds.has(task.id))
   } else if (activeRunTaskIds.size > 0) {
     taskCandidates = taskCandidates.filter((task) => activeRunTaskIds.has(task.id) || task.status === 'running' || task.status === 'review')
@@ -52,9 +72,20 @@ export function projectCollaborationFocus(overview: Pick<
     taskCandidates = taskCandidates.filter((task) => task.status === 'running' || task.status === 'review' || task.status === 'blocked')
   }
 
+  // Keep all tasks belonging to the same Requirement together as a single whole.
+  const activeRequirementIds = new Set(
+    taskCandidates.map((task) => task.requirementId).filter((id): id is string => Boolean(id)),
+  )
+  const primaryTaskIds = new Set(taskCandidates.map((task) => task.id))
+  for (const task of overview.tasks) {
+    if (task.status === 'cancelled') continue
+    if (task.requirementId && activeRequirementIds.has(task.requirementId)) {
+      primaryTaskIds.add(task.id)
+    }
+  }
+
   // Keep one direct dependency layer so a primary task does not appear from nowhere. This is the
   // real persisted dependency closure, not a decorative edge.
-  const primaryTaskIds = new Set(taskCandidates.map((task) => task.id))
   for (const task of taskCandidates) {
     for (const dependency of task.dependencyIds) {
       if (overview.tasks.some((item) => item.id === dependency)) primaryTaskIds.add(dependency)
@@ -68,6 +99,19 @@ export function projectCollaborationFocus(overview: Pick<
   const primaryTasks = overview.tasks.filter((task) => primaryTaskIds.has(task.id))
 
   const assignedAgentIds = new Set(primaryTasks.map((task) => task.assigneeAgentId).filter((id): id is string => Boolean(id)))
+  const workflowAgentIds = new Set<string>()
+  for (const flow of overview.taskFlows ?? []) {
+    if (!primaryTaskIds.has(flow.taskId)) continue
+    for (const step of flow.steps) {
+      if (step.agentId) workflowAgentIds.add(step.agentId)
+    }
+  }
+  const runAgentIds = new Set<string>()
+  for (const run of overview.runs ?? []) {
+    if (run.taskId && primaryTaskIds.has(run.taskId) && run.agentId) {
+      runAgentIds.add(run.agentId)
+    }
+  }
   const handoffAgentIds = new Set<string>()
   for (const handoff of overview.handoffs) {
     if (handoff.status !== 'requested' && handoff.status !== 'accepted') continue
@@ -81,6 +125,8 @@ export function projectCollaborationFocus(overview: Pick<
     isAgentActive(agent)
     || (agent.taskId ? primaryTaskIds.has(agent.taskId) : false)
     || assignedAgentIds.has(agent.id)
+    || workflowAgentIds.has(agent.id)
+    || runAgentIds.has(agent.id)
     || handoffAgentIds.has(agent.id),
   )
   const primaryAgentIds = new Set(primaryAgents.map((agent) => agent.id))

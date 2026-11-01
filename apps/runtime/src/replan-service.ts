@@ -603,6 +603,7 @@ export class ReplanService {
       values.map((value) => value.trim()).join('；').replace(/\s+/g, ' ').trim()
     const sameRequirements = (a: readonly string[], b: readonly string[]): boolean =>
       requirementText(a) === requirementText(b)
+    const directlyUnchanged = new Set<string>()
     for (const task of nextTasks) {
       const old = sourceByKey.get(task.key)
       if (!old) {
@@ -614,7 +615,8 @@ export class ReplanService {
       if (old.title !== task.title) fields.push('title')
       if (old.description !== task.description) fields.push('description')
       if (old.role !== task.role) fields.push('role')
-      if (!same(old.dependsOn, task.dependsOn)) {
+      if ((old.workType ?? 'standard') !== (task.workType ?? 'standard')) fields.push('workType')
+      if (!same([...old.dependsOn].sort(), [...task.dependsOn].sort())) {
         fields.push('dependsOn')
         dependencyChanges.push({ key: task.key, before: old.dependsOn, after: task.dependsOn })
       }
@@ -634,26 +636,48 @@ export class ReplanService {
         })
       }
       if (fields.length > 0) modified.push({ key: task.key, fields })
+      const directEquivalent =
+        old.role === task.role &&
+        (old.workType ?? 'standard') === (task.workType ?? 'standard') &&
+        old.description.replace(/\s+/g, ' ').trim() === task.description.replace(/\s+/g, ' ').trim() &&
+        same([...old.dependsOn].sort(), [...task.dependsOn].sort()) &&
+        sameRequirements(old.acceptanceCriteria, task.acceptanceCriteria) &&
+        sameRequirements(old.expectedArtifacts, task.expectedArtifacts)
+      if (directEquivalent) directlyUnchanged.add(task.key)
+    }
+
+    const validAfterClosure = new Set<string>()
+    for (const task of nextTasks) {
+      if (!directlyUnchanged.has(task.key)) continue
+      const sourceTaskId = sourceTaskIdByKey.get(task.key)
+      const sourceTask = sourceTaskId ? this.store.read.getTask(sourceTaskId) : null
+      if (sourceTask?.status !== 'done') continue
+      if (!task.dependsOn.every((depKey) => validAfterClosure.has(depKey))) continue
+      validAfterClosure.add(task.key)
+    }
+
+    for (const task of nextTasks) {
+      const old = sourceByKey.get(task.key)
+      if (!old) continue
       const sourceTaskId = sourceTaskIdByKey.get(task.key)
       if (!sourceTaskId) continue
       const sourceTask = this.store.read.getTask(sourceTaskId)
       const artifacts = this.store.read.listArtifacts(plan.projectId, sourceTaskId)
-      const requirementsUnchanged =
-        sameRequirements(old.acceptanceCriteria, task.acceptanceCriteria) &&
-        sameRequirements(old.expectedArtifacts, task.expectedArtifacts) &&
-        old.role === task.role
-      if (sourceTask?.status === 'done' && requirementsUnchanged) {
+      const reusable = validAfterClosure.has(task.key)
+      if (sourceTask?.status === 'done' && reusable) {
         reusableArtifacts.push({
           taskKey: task.key,
           sourceTaskId,
           artifactIds: artifacts.map((artifact) => artifact.id),
           artifactTitles: artifacts.map((artifact) => artifact.title),
         })
-      } else if (artifacts.some((artifact) => artifact.verifiedAt !== null) && !requirementsUnchanged) {
+      } else if (artifacts.some((artifact) => artifact.verifiedAt !== null) && !reusable) {
         revalidate.push({
           taskKey: task.key,
           sourceTaskId,
-          reason: '验收标准或预期产物发生变化，旧 Artifact 不能直接作为新证据',
+          reason: directlyUnchanged.has(task.key)
+            ? '上游依赖任务发生变更或未完成，下游旧 Artifact 需随新上游重新验证'
+            : '任务说明、依赖关系、验收标准或预期产物发生变化，旧 Artifact 不能直接作为新证据',
           artifactIds: artifacts.filter((artifact) => artifact.verifiedAt !== null).map((artifact) => artifact.id),
         })
       }

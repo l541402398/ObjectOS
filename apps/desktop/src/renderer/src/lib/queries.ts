@@ -20,6 +20,7 @@ export const qk = {
   artifacts: (projectId: string) => ['artifacts', projectId] as const,
   requirements: (projectId: string) => ['requirements', projectId] as const,
   requirementWork: (requirementId: string) => ['requirement-work', requirementId] as const,
+  projectRequirementFlows: (projectId: string) => ['project-requirement-flows', projectId] as const,
   milestones: (projectId: string) => ['milestones', projectId] as const,
   decisions: (projectId: string) => ['decisions', projectId] as const,
   providerSettings: ['providerSettings'] as const,
@@ -257,6 +258,32 @@ export function useRequirements(projectId: string | null | undefined) {
     queryKey: qk.requirements(projectId ?? ''),
     queryFn: () => window.projectos.requirements.list(projectId!),
     enabled: Boolean(projectId),
+  })
+}
+
+export function useProjectRequirementFlows(projectId: string | null | undefined) {
+  return useQuery({
+    queryKey: qk.projectRequirementFlows(projectId ?? ''),
+    queryFn: async () => {
+      const { requirements } = await window.projectos.requirements.list(projectId!)
+      const views = await Promise.all(
+        requirements.map(async (requirement) => {
+          try {
+            const view = await window.projectos.workflows.view(requirement.id)
+            return { requirement, view }
+          } catch {
+            return null
+          }
+        }),
+      )
+      return views.filter(
+        (item): item is NonNullable<typeof item> =>
+          item !== null && (item.view.tasks.length > 0 || item.view.binding !== null),
+      )
+    },
+    enabled: Boolean(projectId),
+    refetchInterval: 3_500,
+    refetchIntervalInBackground: false,
   })
 }
 

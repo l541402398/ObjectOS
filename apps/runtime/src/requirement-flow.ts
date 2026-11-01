@@ -309,6 +309,113 @@ export class RequirementFlowService {
     const agent = this.store.read.getAgent(agentId), definition = this.store.read.getAgentDefinition(agentId)
     if (!agent || !this.store.read.isAgentVisibleToProject(projectId, agentId) || (definition && definition.status !== 'active'))
       throw new AppError('CONFLICT', '此 Agent 在项目中不可用，请重新分配')
+    const profileId = definition ? definition.primaryRuntimeProfileId ?? definition.runtimeProfileIds[0] ?? null : null
+    const profile = profileId ? this.store.read.listRuntimeProfiles().find((item) => item.id === profileId) ?? null : null
+    if (profile && profile.protocol !== 'native')
+      throw new AppError('CONFLICT', '流程节点需要能保存结构化成果文档的内置 Agent，请为此节点选择内置 Agent')
+  }
+
+  private hasPassingWorkflowTests(
+    tools: Array<{ toolName: string; status: string; args?: Record<string, unknown>; result?: unknown }>,
+    fingerprint: string,
+  ): boolean {
+    const matching = tools.filter((tool) => {
+      if ((tool.toolName !== 'run_tests' && tool.toolName !== 'run_command') || tool.status !== 'completed') return false
+      const result = tool.result as { exitCode?: number; workflowTestFingerprint?: string } | null
+      return typeof result?.exitCode === 'number' && result.workflowTestFingerprint === fingerprint
+    })
+    if (!matching.length) return false
+    const latestByCommand = new Map<string, number>()
+    for (const tool of matching) {
+      const command =
+        typeof tool.args?.command === 'string' && tool.args.command.trim()
+          ? tool.args.command.trim().replace(/\s+/g, ' ')
+          : '__default__'
+      const exitCode = (tool.result as { exitCode: number }).exitCode
+      latestByCommand.set(command, exitCode)
+    }
+    return [...latestByCommand.values()].every((code) => code === 0)
+  }
+
+  /** Keeps tasks.assignee_agent_id aligned with the current active/ready/next workflow stage without bumping task.version. */
+  private syncTaskAssigneeFromFlow(taskId: string): void {
+    try {
+      const flow = this.task(taskId)
+      const active = flow.steps.find(s => ['running', 'starting', 'waiting_approval', 'failed', 'needs_reconciliation'].includes(s.status) && s.agentId)
+      const ready = flow.steps.find(s => s.status === 'ready' && s.agentId)
+      const pending = flow.steps.find(s => s.status === 'pending' && s.agentId)
+      const completed = [...flow.steps].reverse().find(s => s.status === 'completed' && s.agentId)
+      const targetAgentId = (active ?? ready ?? pending ?? completed)?.agentId ?? null
+      if (targetAgentId) {
+        this.store.db.prepare('UPDATE tasks SET assignee_agent_id=? WHERE id=? AND (assignee_agent_id IS NULL OR assignee_agent_id != ?)')
+          .run(targetAgentId, taskId, targetAgentId)
+      }
+    } catch {
+      // Ignore if task flow is not initialized
+    }
+  }
+
+  /** Syncs requirement_flow_bindings.assignments_json for a node when all tasks of the requirement share the same assigned Agent for that node (without bumping binding.version). */
+  private syncBindingDefaultForNode(requirementId: string, nodeId: string): void {
+    try {
+      const bindingRow = this.store.db.prepare('SELECT assignments_json FROM requirement_flow_bindings WHERE requirement_id=?').get(requirementId)
+      if (!bindingRow) return
+      const stepRows = this.store.db.prepare(`
+        SELECT s.agent_id AS agentId
+        FROM task_flow_steps s
+        JOIN task_flow_instances f ON f.task_id = s.task_id
+        WHERE f.requirement_id = ? AND s.node_id = ?
+      `).all(requirementId, nodeId) as Array<{ agentId: string | null }>
+      if (!stepRows.length) return
+      const firstAgentId = stepRows[0]?.agentId ?? null
+      if (!firstAgentId) return
+      const allSame = stepRows.every(r => r.agentId === firstAgentId)
+      if (!allSame) return
+      const currentAssignments = JSON.parse(String(bindingRow.assignments_json || '{}')) as Record<string, string | null>
+      const hasAnyDefault = Object.values(currentAssignments).some(Boolean)
+      const anyUnassignedStepInReq = Boolean(
+        this.store.db.prepare(`
+          SELECT 1 FROM task_flow_steps s
+          JOIN task_flow_instances f ON f.task_id = s.task_id
+          WHERE f.requirement_id = ? AND s.agent_id IS NULL
+          LIMIT 1
+        `).get(requirementId)
+      )
+      if (!hasAnyDefault && anyUnassignedStepInReq) return
+      if (currentAssignments[nodeId] !== firstAgentId) {
+        currentAssignments[nodeId] = firstAgentId
+        this.store.db.prepare('UPDATE requirement_flow_bindings SET assignments_json=? WHERE requirement_id=?')
+          .run(JSON.stringify(currentAssignments), requirementId)
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
+  /** Syncs the current/next workflow stage's Agent when a task is reassigned or handed off from the Task Board or Collaboration Overview. */
+  syncFlowFromTaskAssignee(taskId: string, agentId: string | null, source: FlowAssignmentSource = 'manual'): void {
+    if (!agentId) return
+    const task = this.store.read.getTask(taskId)
+    if (!task || !task.requirementId) return
+    if (!this.store.db.prepare('SELECT task_id FROM task_flow_instances WHERE task_id=?').get(taskId)) return
+    if (!this.usableAgent(task.projectId, agentId)) return
+    try {
+      const flow = this.task(taskId)
+      const activeStep = flow.steps.find(s => ['running', 'waiting_approval', 'starting', 'failed', 'needs_reconciliation'].includes(s.status))
+      const readyStep = flow.steps.find(s => s.status === 'ready')
+      const pendingStep = flow.steps.find(s => s.status === 'pending')
+      const targetStep = activeStep ?? readyStep ?? pendingStep
+      if (!targetStep) return
+      this.store.transaction(() => {
+        this.store.db.prepare('UPDATE task_flow_steps SET agent_id=?,assignment_source=?,version=version+1,updated_at=? WHERE id=?')
+          .run(agentId, source, now(), targetStep.id)
+        this.syncBindingDefaultForNode(task.requirementId!, targetStep.nodeId)
+        this.syncTaskAssigneeFromFlow(taskId)
+        this.event(task.projectId, task.id, 'task.workflow.assigned', `已联动更新阶段「${targetStep.title}」的负责 Agent`)
+      })
+    } catch {
+      // Ignore if flow cannot be synced
+    }
   }
 
   assign(input: ApiParsedInput<'requirement.flow.assign'>, source: FlowAssignmentSource = 'manual') {
@@ -320,6 +427,10 @@ export class RequirementFlowService {
       const result = this.store.db.prepare("UPDATE task_flow_steps SET agent_id=?,assignment_source=?,version=version+1,updated_at=? WHERE id=? AND version=? AND status='pending'")
         .run(input.agentId, source, now(), input.stepId, input.expectedVersion)
       if (!result.changes) throw new AppError('CONFLICT', '节点已开始或分配已改变，请刷新后再试')
+      if (task.requirementId) {
+        this.syncBindingDefaultForNode(task.requirementId, String(row.node_id))
+      }
+      this.syncTaskAssigneeFromFlow(task.id)
       this.event(task.projectId, task.id, 'task.workflow.assigned', '已更新流程节点的负责 Agent')
       return this.task(task.id)
     })
@@ -370,6 +481,8 @@ export class RequirementFlowService {
         if (this.requirement(requirementId).version !== requirement.version || this.view(requirementId).binding?.version !== snapshot.bindingVersion)
           throw new AppError('CONFLICT', 'AI 分配期间需求或流程已改变，请重新分配')
         for (const assignment of result.assignments) this.assign({ ...assignment, expectedVersion: steps.find(step => step.id === assignment.stepId)!.version }, 'ai')
+        for (const node of view.binding!.graph.nodes) this.syncBindingDefaultForNode(requirementId, node.id)
+        for (const taskFlow of view.tasks) this.syncTaskAssigneeFromFlow(taskFlow.taskId)
         this.store.db.prepare("UPDATE requirement_flow_ai_requests SET status='completed',response_json=?,input_tokens=?,output_tokens=?,finished_at=? WHERE id=?")
           .run(JSON.stringify(result), inputTokens, outputTokens, now(), id)
       })
@@ -532,6 +645,9 @@ export class RequirementFlowService {
         if (!fill && !swap) continue
         if (!update.run(item.defaultAgentId, now(), item.stepId, item.currentAgentId).changes) throw new AppError('CONFLICT', '节点已开始或分配已改变，请重新预览')
         if (fill) filled++; else replaced++
+      }
+      for (const taskId of new Set(preview.items.map(i => i.taskId))) {
+        this.syncTaskAssigneeFromFlow(taskId)
       }
       if (filled || replaced) this.event(requirement.projectId, requirement.id, 'task.workflow.defaults.applied', `已按默认负责人安排 ${filled + replaced} 个节点`)
       return { view: this.view(requirement.id), filled, replaced }
@@ -781,6 +897,7 @@ export class RequirementFlowService {
       }
     }
     flow = this.task(taskId)
+    this.syncTaskAssigneeFromFlow(taskId)
     if (flow.steps.every(step => step.status === 'completed')) {
       this.store.db.prepare("UPDATE task_flow_instances SET status='completed',error=NULL,version=version+1,updated_at=? WHERE task_id=?").run(now(), taskId)
       this.event(task.projectId, taskId, 'task.workflow.completed', '流程已完成，等待任务验收')
@@ -817,8 +934,16 @@ export class RequirementFlowService {
       this.store.db.prepare('UPDATE requirement_flow_bindings SET locked_at=COALESCE(locked_at,?) WHERE requirement_id=?').run(now(), requirement.id)
     })
     try {
+      const stageGuidance =
+        node.stage === 'development'
+          ? `开发节点要求：任务描述为「${task.description || task.title}」，验收标准为「${task.acceptanceCriteria.join('；')}」。请先用 read_file 查看工作区文件，再用 write_file 完成实际代码/测试文件修改，最后调用 create_artifact（metadata: { artifactType: "workflow_result" }）保存实现说明。不要调用 update_task_status。`
+          : node.stage === 'testing'
+            ? '测试节点要求：请直接调用 run_tests（例如 command: "node --test"）运行测试并确认通过，测试通过后不要再修改任何文件，随后立即调用 create_artifact（kind: "test-report", metadata: { artifactType: "workflow_result" }）保存实际测试报告。'
+            : ['requirement_review', 'design_review', 'code_review'].includes(node.stage)
+              ? `审核节点要求：调用 create_artifact 保存审核结论，metadata 必须包含 { artifactType: "workflow_result", verdict: "approved", reviewedArtifactIds: ${JSON.stringify(documents.map((d) => d.id))} }（若不通过则为 rejected）。`
+              : ''
       await this.runner.startRun({ projectId: task.projectId, taskId, sessionId: session.id, workflowStepId: next.id,
-        prompt: [`执行任务「${task.title}」的流程节点「${next.title}」。`, node.instructions,
+        prompt: [`执行任务「${task.title}」的流程节点「${next.title}」。`, node.instructions, stageGuidance,
           `本节点必须产出：${node.outputs.join('、')}。完成后通过 create_artifact 保存完整正文；metadata 包含 artifactType: workflow_result。`,
           '审核节点必须提供 verdict: approved 或 rejected，以及 reviewedArtifactIds（本次输入文档的 ID）。测试节点必须先运行 run_tests，并保存实际结果。',
           '你只完成当前节点，不得把整个任务标为完成，不得代替后续节点，也不得自动批准工具操作。',
@@ -842,10 +967,8 @@ export class RequirementFlowService {
       if (step.stage === 'testing') {
         const workspace = this.store.read.getTaskWorkspace(task.id)!
         const fingerprint = taskContent(workspace.rootPath, workspace.baseCommit, task).fingerprint
-        if (!this.store.read.getToolCalls(step.runId!).some(tool => {
-          const result = tool.result as { exitCode?: number; workflowTestFingerprint?: string } | null
-          return tool.toolName === 'run_tests' && tool.status === 'completed' && result?.exitCode === 0 && result.workflowTestFingerprint === fingerprint
-        })) throw new AppError('CONFLICT', '测试后代码已改变，请重新验证后再验收')
+        if (!this.hasPassingWorkflowTests(this.store.read.getToolCalls(step.runId!), fingerprint))
+          throw new AppError('CONFLICT', '测试后代码已改变或存在未通过的测试命令，请重新验证后再验收')
       }
     }
   }
@@ -887,9 +1010,8 @@ export class RequirementFlowService {
       if (node.stage === 'testing') {
         const workspace = this.store.read.getTaskWorkspace(task.id)!
         const fingerprint = taskContent(workspace.rootPath, workspace.baseCommit, task).fingerprint
-        if (!tools.some(tool => { const result = tool.result as { exitCode?: number; workflowTestFingerprint?: string } | null
-          return tool.toolName === 'run_tests' && tool.status === 'completed' && result?.exitCode === 0 && result.workflowTestFingerprint === fingerprint }))
-          throw new AppError('CONFLICT', '缺少针对当前代码通过的实际测试；测试说明不能代替命令执行结果')
+        if (!this.hasPassingWorkflowTests(tools, fingerprint))
+          throw new AppError('CONFLICT', '缺少针对当前代码通过的实际测试，或最后一次测试未通过；测试说明不能代替命令执行结果')
       }
       this.store.db.prepare("UPDATE requirement_materials SET status='current' WHERE step_id=? AND attempt=? AND status='draft'").run(stepId, Number(row.attempt))
       this.store.db.prepare("UPDATE task_flow_steps SET status='completed',error=NULL,version=version+1,updated_at=? WHERE id=?").run(now(), stepId)

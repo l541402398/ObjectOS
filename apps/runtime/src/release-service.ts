@@ -353,6 +353,17 @@ export class ReleaseService {
       if (candidate.status !== 'ready') throw new AppError('CONFLICT', '发布候选尚未就绪，不能创建 Release')
       if (!candidate.artifacts.length) throw new AppError('CONFLICT', '发布候选没有不可变制品清单')
       if (candidate.gateStatus !== 'passed') throw new AppError('CONFLICT', '版本门禁未通过，不能创建 Release')
+      const currentGate = this.latestGate(candidate.versionId)
+      if (!currentGate || currentGate.status !== 'passed') {
+        throw new AppError('CONFLICT', '当前版本最新门禁未通过或已失效，不能创建 Release')
+      }
+      for (const item of candidate.artifacts) {
+        if (!item.artifactId) continue
+        const liveArtifact = this.assertArtifact(candidate.projectId, item.artifactId)
+        if (artifactHash(liveArtifact) !== item.contentHash) {
+          throw new AppError('CONFLICT', `发布候选关联制品「${item.name}」内容已变更，请重新创建候选`)
+        }
+      }
       if (candidate.changeRequestId) {
         const request = this.getChangeRequest(candidate.changeRequestId)
         if (request.status !== 'approved') throw new AppError('CONFLICT', '变更申请审批未通过或已失效')

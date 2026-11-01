@@ -37,7 +37,24 @@ export function RequirementIntegrationDialog({ taskId, projectId, onClose, onRef
     <OverlayScrollArea className="rq-integration-scroll">
       {action.isError && <Alert type="error" showIcon message={errorMessage(action.error)} />}
       {preview.isLoading ? <LoadingBlock label="正在读取实际改动与验证记录" rows={6} /> : preview.isError ? <ErrorState title="无法读取任务成果" message={errorMessage(preview.error)} onRetry={() => void preview.refetch()} /> : data && <>
-        <div className="rq-integration-route"><span>任务工作区</span><span aria-hidden>→</span><strong>需求集成分支</strong><span className="rq-secondary">{data.files.length} 个改动文件</span>{data.integrated && <StatusPill tone="success">成果已合入</StatusPill>}</div>
+        <div className="rq-integration-route"><span>任务工作区</span><span aria-hidden>→</span><strong>需求集成分支</strong><span className="rq-secondary">{data.files.length} 个改动文件 · 指纹 {data.fingerprint.slice(0, 10)}</span>{data.integrated && <StatusPill tone="success">成果已合入</StatusPill>}</div>
+        <div className="rq-governance-pills rq-integration-gates" aria-label="集成三重门禁">
+          <div className={`rq-gov-pill ${data.verification.passed ? 'is-ok' : 'is-warn'}`}>
+            <span className="rq-gov-dot" aria-hidden />
+            <span className="rq-gov-label">① 独立命令验证</span>
+            <strong>{data.verification.passed ? '已通过（指纹一致）' : '待运行验证'}</strong>
+          </div>
+          <div className={`rq-gov-pill ${data.review.approved ? 'is-ok' : 'is-warn'}`}>
+            <span className="rq-gov-dot" aria-hidden />
+            <span className="rq-gov-label">② 改动全覆盖审查</span>
+            <strong>{data.review.approved ? `${data.files.length} 文件已审` : '待记录审查'}</strong>
+          </div>
+          <div className={`rq-gov-pill ${data.integrated ? 'is-ok' : data.blockers.length === 0 && data.verification.passed && data.review.approved ? 'is-ok' : 'is-neutral'}`}>
+            <span className="rq-gov-dot" aria-hidden />
+            <span className="rq-gov-label">③ 需求分支合入</span>
+            <strong>{data.integrated ? '已完成合入' : data.blockers.length === 0 && data.verification.passed && data.review.approved ? '可申请合入' : '门禁待就绪'}</strong>
+          </div>
+        </div>
         {operation && <Alert type={operation.status === 'needs_reconciliation' ? 'error' : 'info'} showIcon message={operation.status === 'waiting_approval' ? `等待批准${operation.kind === 'verify' ? '验证命令' : '合入成果'}` : operation.status === 'executing' ? '操作正在执行，可在运行记录查看输出' : operation.error ?? '结果待人工核对'} action={operation.status === 'waiting_approval' ? undefined : operation.status === 'needs_reconciliation' ? <Button loading={action.isPending} onClick={() => action.mutate('reconcile')}>核对结果</Button> : <Button onClick={() => go(`runs?run=${operation.runId}`)}>查看运行</Button>} />}
         {operation?.status === 'waiting_approval' && <RequirementApproval key={operation.approvalId} projectId={projectId} approvalId={operation.approvalId} onDecided={async () => { await preview.refetch(); await onRefresh() }} />}
         <div className="rq-integration-grid">

@@ -220,4 +220,46 @@ describe('ADR-0047 goal status distinguishes unverified / verifying / failed / p
     expect(resolution.state).toBe('stale')
     expect(resolution.artifacts[0]?.reason).toContain('不一致')
   })
+
+  it('E01: does not allow a later passing lint command to mask an earlier failed unit test command', () => {
+    const resolution = resolveTestEvidence({
+      checks: [
+        { id: 'c1', runId: 'run_1', toolName: 'run_tests', command: 'npm test', exitCode: 1, at: T0 + 100 },
+        { id: 'c2', runId: 'run_1', toolName: 'run_command', command: 'npm run lint', exitCode: 0, at: T0 + 200 },
+      ],
+      mutations: [],
+      artifacts: [],
+    })
+    expect(resolution.state).toBe('failed')
+    expect(resolution.trusted).toBe(false)
+    expect(resolution.checkVerdicts).toHaveLength(2)
+    expect(resolution.checkVerdicts?.find((v) => v.command === 'npm test')?.outcome).toBe('failed')
+    expect(resolution.checkVerdicts?.find((v) => v.command === 'npm run lint')?.outcome).toBe('passed')
+  })
+
+  it('E02: invalidates an earlier passing test-report artifact when a later run of the same command fails', () => {
+    const resolution = resolveTestEvidence({
+      checks: [
+        { id: 'c1', runId: 'run_1', toolName: 'run_tests', command: 'npm test', exitCode: 0, at: T0 + 100 },
+        { id: 'c2', runId: 'run_1', toolName: 'run_tests', command: 'npm test', exitCode: 1, at: T0 + 300 },
+      ],
+      mutations: [],
+      artifacts: [
+        {
+          id: 'art_1',
+          kind: 'test-report',
+          runId: 'run_1',
+          verifiedAt: T0 + 150,
+          createdAt: T0 + 150,
+          contentFingerprint: 'fp-1',
+          declaredBy: 'execution',
+          commands: ['npm test'],
+        },
+      ],
+      currentFingerprintFor: () => 'fp-1',
+    })
+    expect(resolution.state).toBe('failed')
+    expect(resolution.trusted).toBe(false)
+    expect(resolution.artifacts[0]?.trusted).toBe(false)
+  })
 })

@@ -22,10 +22,32 @@ export function RequirementPlanDialog({ requirement, onClose, onApplied, onStart
     <OverlayScrollArea className="rq-integration-scroll">
       {(generate.isError || approve.isError) && <Alert type="error" showIcon message={errorMessage(generate.error ?? approve.error)} />}
       {generate.isPending ? <LoadingBlock label="AI 正在结合需求与项目资料拆分任务" rows={6} /> : plans.isLoading ? <LoadingBlock label="正在读取已有草稿" rows={4} /> : plans.isError ? <ErrorState title="任务计划读取失败" message={errorMessage(plans.error)} onRetry={() => void plans.refetch()} /> : plan ? <>
-        <div className="rq-section-title"><h3>确认本次任务范围</h3><StatusPill tone="neutral">{plan.tasks.length} 项任务 · 草稿</StatusPill></div>
+        <div className="rq-section-title">
+          <h3>确认本次任务范围</h3>
+          <div className="rq-inline-actions">
+            <StatusPill tone="success">
+              全文装载 · {(requirement.body?.length ?? 0) + requirement.acceptanceCriteria.join('').length} 字
+            </StatusPill>
+            {requirement.acceptanceCriteria.length > 0 && (
+              <StatusPill tone="accent">
+                验收覆盖 {requirement.acceptanceCriteria.length}/{requirement.acceptanceCriteria.length} 项
+              </StatusPill>
+            )}
+            <StatusPill tone="neutral">{plan.tasks.length} 项任务 · 草稿 r{plan.revision}</StatusPill>
+          </div>
+        </div>
+        {plan.generation?.warnings && plan.generation.warnings.length > 0 && (
+          <Alert
+            type="info"
+            showIcon
+            style={{ marginBottom: 12 }}
+            message="规划治理与覆盖审计"
+            description={plan.generation.warnings.join('；')}
+          />
+        )}
         <ol className="rq-plan-tasks">{plan.tasks.map(task => <li key={task.key}><strong>{task.title}</strong><p>{task.description}</p><ul>{task.acceptanceCriteria.map((criterion, index) => <li key={index}>{criterion}</li>)}</ul>{task.dependsOn.length > 0 && <p className="rq-secondary">前置：{task.dependsOn.map(key => plan.tasks.find(item => item.key === key)?.title ?? key).join('、')}</p>}</li>)}</ol>
         {plan.risks.length > 0 && <Alert type="warning" showIcon message="需要留意" description={plan.risks.join('；')} />}
-      </> : <EmptyState title="让 AI 提出任务拆分" description="生成后先核对任务与依赖。确认的每个任务都将继承这个需求的完整流程。" />}
+      </> : <EmptyState title="让 AI 提出任务拆分" description="生成后先核对任务与依赖。确认的每个任务都将继承这个需求的完整流程，并完整承接每一条验收标准。" />}
     </OverlayScrollArea>
     <OverlayFooter><span className="rq-secondary">确认任务范围不代表授权写文件、执行命令或合并。</span>{plan ? <><Button danger disabled={approve.isPending} onClick={() => approve.mutate('reject')}>放弃草稿</Button>{onStart && <Button loading={approve.isPending && approve.variables === 'approve'} disabled={approve.isPending} onClick={() => approve.mutate('approve')}>确认并创建任务</Button>}<Button type="primary" loading={approve.isPending && approve.variables !== 'approve'} disabled={approve.isPending} onClick={() => approve.mutate(onStart ? 'approve_start' : 'approve')}>{onStart ? '确认并开始' : '确认并创建任务'}</Button></> : <Button type="primary" loading={generate.isPending} disabled={plans.isError} onClick={() => generate.mutate()}>生成任务草稿</Button>}</OverlayFooter>
   </DialogShell>

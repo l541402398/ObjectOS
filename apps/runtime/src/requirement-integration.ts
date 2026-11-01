@@ -103,13 +103,54 @@ export class RequirementIntegrationService {
 
   private verification(snapshot: Snapshot): TaskIntegrationPreview['verification'] {
     const row = this.store.db.prepare("SELECT run_id,tool_call_id,status,snapshot_json FROM task_integration_operations WHERE task_id=? AND kind='verify' ORDER BY created_at DESC,id DESC LIMIT 1").get(snapshot.taskId)
-    if (!row) return { passed: false, reason: '尚未运行与当前代码绑定的验证', command: null, runId: null }
+    if (!row) {
+      const flowVerify = this.workflowTestingEvidence(snapshot)
+      if (flowVerify) return flowVerify
+      return { passed: false, reason: '尚未运行与当前代码绑定的验证', command: null, runId: null }
+    }
     const call = this.store.read.getToolCalls(String(row.run_id)).find(item => item.id === row.tool_call_id)
     const before = SnapshotSchema.parse(JSON.parse(String(row.snapshot_json)))
     const result = call?.result as { exitCode?: number; contentFingerprint?: string; unchanged?: boolean } | null
     const current = before.taskVersion === snapshot.taskVersion && before.requirementVersion === snapshot.requirementVersion && before.contentFingerprint === snapshot.contentFingerprint && result?.contentFingerprint === snapshot.contentFingerprint && result?.unchanged === true
     const passed = row.status === 'completed' && result?.exitCode === 0 && current
     return { passed, reason: passed ? '当前代码已通过实际验证' : row.status === 'needs_reconciliation' ? '验证结果未知，请人工核对运行' : !current ? '代码已变化或验证中修改了源文件，请重新验证' : '最近一次验证未通过，请查看运行记录', command: before.command, runId: String(row.run_id) }
+  }
+
+  private workflowTestingEvidence(snapshot: Snapshot): TaskIntegrationPreview['verification'] | null {
+    const steps = this.store.db
+      .prepare("SELECT run_id, input_json FROM task_flow_steps WHERE task_id=? AND stage='testing' AND status='completed' AND run_id IS NOT NULL ORDER BY updated_at DESC")
+      .all(snapshot.taskId) as Array<{ run_id: string; input_json: string | null }>
+    const expectedScope = `R:${snapshot.requirementId}@${snapshot.requirementVersion}/T:${snapshot.taskId}@${snapshot.taskVersion}`
+    for (const step of steps) {
+      try {
+        const parsed = step.input_json ? (JSON.parse(step.input_json) as { scope?: string }) : null
+        if (parsed?.scope !== expectedScope) continue
+      } catch {
+        continue
+      }
+      const calls = this.store.read.getToolCalls(step.run_id).filter((tool) => {
+        if (tool.toolName !== 'run_tests' || tool.status !== 'completed') return false
+        const res = tool.result as { exitCode?: number; workflowTestFingerprint?: string } | null
+        return typeof res?.exitCode === 'number' && res.workflowTestFingerprint === snapshot.contentFingerprint
+      })
+      if (!calls.length) continue
+      const latestByCommand = new Map<string, { exitCode: number; command: string }>()
+      for (const call of calls) {
+        const cmd = typeof call.args?.command === 'string' && call.args.command.trim() ? call.args.command.trim() : 'run_tests'
+        const exitCode = (call.result as { exitCode: number }).exitCode
+        latestByCommand.set(cmd, { exitCode, command: cmd })
+      }
+      const values = [...latestByCommand.values()]
+      if (values.length > 0 && values.every((v) => v.exitCode === 0)) {
+        return {
+          passed: true,
+          reason: '已复用当前流程测试节点的通过验证证据（指纹一致）',
+          command: values.map((v) => v.command).join(' && '),
+          runId: step.run_id,
+        }
+      }
+    }
+    return null
   }
 
   preview(taskId: string): TaskIntegrationPreview {
