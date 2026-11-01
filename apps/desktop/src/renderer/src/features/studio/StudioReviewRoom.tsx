@@ -23,6 +23,9 @@ export function StudioReviewRoom(): ReactElement {
   const { projectId = '' } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const returnRequirement = searchParams.get('requirement')
+  const returnPath = returnRequirement ? `/projects/${projectId}/requirements?requirement=${encodeURIComponent(returnRequirement)}` : `/projects/${projectId}/agents`
+  const returnLabel = returnRequirement ? '返回需求工作台' : '返回协作图'
   const queryClient = useQueryClient()
   const theme = useResolvedTheme()
   const approvals = useApprovals(projectId)
@@ -80,7 +83,7 @@ export function StudioReviewRoom(): ReactElement {
   return (
     <div className="studio-review studio-theme" data-theme={theme}>
       <header className="studio-review-masthead">
-        <button type="button" className="studio-back" onClick={() => navigate(`/projects/${projectId}/agents`)}><ArrowLeft size={14} /> 返回协作图</button>
+        <button type="button" className="studio-back" onClick={() => navigate(returnPath)}><ArrowLeft size={14} /> {returnLabel}</button>
         <div>
           <span className="studio-eyebrow">REVIEW ROOM / APPROVALS</span>
           <h1>审阅与决策</h1>
@@ -98,7 +101,7 @@ export function StudioReviewRoom(): ReactElement {
           <CheckCircle2 size={24} />
           <h2>没有等待处理的审批</h2>
           <p>当真实 Run 请求工具、写入或命令授权时，会出现在这里。</p>
-          <button type="button" className="studio-cta" onClick={() => navigate(`/projects/${projectId}/agents`)}>回到协作图</button>
+          <button type="button" className="studio-cta" onClick={() => navigate(returnPath)}>{returnRequirement ? '继续需求开发' : '回到协作图'}</button>
         </div>
       ) : (
         <div className="studio-review-layout">

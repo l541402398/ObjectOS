@@ -1463,6 +1463,186 @@ CREATE TABLE worker_local_audit (
 );
 `
 
+const V38 = `
+ALTER TABLE requirements ADD COLUMN technical_design TEXT NOT NULL DEFAULT '';
+ALTER TABLE requirements ADD COLUMN design_version INTEGER NOT NULL DEFAULT 0;
+CREATE UNIQUE INDEX idx_requirement_project_identity ON requirements(project_id,id);
+CREATE TABLE requirement_use_cases (
+  id TEXT PRIMARY KEY, project_id TEXT NOT NULL, requirement_id TEXT NOT NULL,
+  code TEXT NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
+  version INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL,
+  UNIQUE(requirement_id,code),
+  FOREIGN KEY(project_id,requirement_id) REFERENCES requirements(project_id,id)
+);
+ALTER TABLE tasks ADD COLUMN requirement_id TEXT REFERENCES requirements(id);
+ALTER TABLE tasks ADD COLUMN use_case_id TEXT REFERENCES requirement_use_cases(id);
+CREATE INDEX idx_tasks_requirement_uc ON tasks(requirement_id,use_case_id);
+CREATE TRIGGER task_requirement_scope_insert BEFORE INSERT ON tasks BEGIN
+  SELECT CASE WHEN NEW.requirement_id IS NOT NULL AND NEW.use_case_id IS NULL
+  THEN RAISE(ABORT,'requirement task must belong to a UC') END;
+  SELECT CASE WHEN NEW.requirement_id IS NOT NULL AND NOT EXISTS(
+    SELECT 1 FROM requirements WHERE id=NEW.requirement_id AND project_id=NEW.project_id
+  ) THEN RAISE(ABORT,'task requirement belongs to another project') END;
+  SELECT CASE WHEN NEW.use_case_id IS NOT NULL AND NOT EXISTS(
+    SELECT 1 FROM requirement_use_cases WHERE id=NEW.use_case_id AND requirement_id=NEW.requirement_id AND project_id=NEW.project_id
+  ) THEN RAISE(ABORT,'task UC belongs to another requirement') END;
+END;
+CREATE TRIGGER task_requirement_scope_update BEFORE UPDATE OF requirement_id,use_case_id,project_id ON tasks BEGIN
+  SELECT CASE WHEN NEW.requirement_id IS NOT OLD.requirement_id OR NEW.use_case_id IS NOT OLD.use_case_id OR NEW.project_id IS NOT OLD.project_id
+  THEN RAISE(ABORT,'task delivery scope is immutable') END;
+END;
+CREATE TABLE requirement_workspaces (
+  id TEXT PRIMARY KEY, project_id TEXT NOT NULL, requirement_id TEXT NOT NULL,
+  task_id TEXT UNIQUE REFERENCES tasks(id), kind TEXT NOT NULL CHECK(kind IN ('integration','development')),
+  root_path TEXT NOT NULL UNIQUE, branch TEXT NOT NULL, base_commit TEXT NOT NULL,
+  requirement_version INTEGER NOT NULL, use_case_version INTEGER, created_at INTEGER NOT NULL,
+  FOREIGN KEY(project_id,requirement_id) REFERENCES requirements(project_id,id),
+  CHECK((kind='integration' AND task_id IS NULL) OR (kind='development' AND task_id IS NOT NULL))
+);
+CREATE UNIQUE INDEX idx_requirement_integration ON requirement_workspaces(requirement_id) WHERE kind='integration';
+CREATE TABLE task_workspace_preparations (
+  id TEXT PRIMARY KEY, task_id TEXT NOT NULL REFERENCES tasks(id), requirement_id TEXT NOT NULL REFERENCES requirements(id),
+  approval_id TEXT NOT NULL UNIQUE REFERENCES approvals(id), run_id TEXT NOT NULL REFERENCES agent_runs(id),
+  tool_call_id TEXT NOT NULL REFERENCES tool_calls(id), status TEXT NOT NULL,
+  snapshot_json TEXT NOT NULL, error TEXT, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX idx_task_workspace_inflight ON task_workspace_preparations(task_id)
+  WHERE status IN ('waiting_approval','executing','needs_reconciliation');
+`
+
+const V39 = `
+CREATE TABLE task_integration_operations (
+  id TEXT PRIMARY KEY, task_id TEXT NOT NULL REFERENCES tasks(id),
+  requirement_id TEXT NOT NULL REFERENCES requirements(id),
+  kind TEXT NOT NULL CHECK(kind IN ('verify','integrate')),
+  approval_id TEXT NOT NULL UNIQUE REFERENCES approvals(id), run_id TEXT NOT NULL REFERENCES agent_runs(id),
+  tool_call_id TEXT NOT NULL REFERENCES tool_calls(id), status TEXT NOT NULL,
+  snapshot_json TEXT NOT NULL, source_commit TEXT, result_commit TEXT,
+  error TEXT, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_task_integration_history ON task_integration_operations(task_id,created_at);
+CREATE TABLE task_integration_reviews (
+  artifact_id TEXT PRIMARY KEY REFERENCES artifacts(id), task_id TEXT NOT NULL REFERENCES tasks(id),
+  content_fingerprint TEXT NOT NULL, requirement_version INTEGER NOT NULL, use_case_version INTEGER NOT NULL, task_version INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX idx_requirement_integration_inflight ON task_integration_operations(requirement_id)
+  WHERE status IN ('waiting_approval','executing','needs_reconciliation');
+`
+
+const V40 = `
+DROP TRIGGER task_requirement_scope_insert;
+CREATE TRIGGER task_requirement_scope_insert BEFORE INSERT ON tasks BEGIN
+  SELECT CASE WHEN NEW.requirement_id IS NOT NULL AND NOT EXISTS(
+    SELECT 1 FROM requirements WHERE id=NEW.requirement_id AND project_id=NEW.project_id
+  ) THEN RAISE(ABORT,'task requirement belongs to another project') END;
+  SELECT CASE WHEN NEW.use_case_id IS NOT NULL AND NOT EXISTS(
+    SELECT 1 FROM requirement_use_cases WHERE id=NEW.use_case_id AND requirement_id=NEW.requirement_id AND project_id=NEW.project_id
+  ) THEN RAISE(ABORT,'task UC belongs to another requirement') END;
+END;
+ALTER TABLE task_integration_reviews RENAME TO task_integration_reviews_v39;
+CREATE TABLE task_integration_reviews (
+  artifact_id TEXT PRIMARY KEY REFERENCES artifacts(id), task_id TEXT NOT NULL REFERENCES tasks(id),
+  content_fingerprint TEXT NOT NULL, requirement_version INTEGER NOT NULL, use_case_version INTEGER, task_version INTEGER NOT NULL
+);
+INSERT INTO task_integration_reviews SELECT * FROM task_integration_reviews_v39;
+DROP TABLE task_integration_reviews_v39;
+`
+
+const V41 = `
+CREATE TABLE requirement_flow_templates (
+  id TEXT PRIMARY KEY, project_id TEXT REFERENCES projects(id), name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
+  builtin INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL
+);
+CREATE TABLE requirement_flow_versions (
+  id TEXT PRIMARY KEY, template_id TEXT NOT NULL REFERENCES requirement_flow_templates(id), version INTEGER NOT NULL,
+  graph_json TEXT NOT NULL, layout_json TEXT NOT NULL, checksum TEXT NOT NULL, created_at INTEGER NOT NULL,
+  UNIQUE(template_id,version)
+);
+CREATE TABLE requirement_flow_bindings (
+  requirement_id TEXT PRIMARY KEY REFERENCES requirements(id), template_version_id TEXT NOT NULL REFERENCES requirement_flow_versions(id),
+  assignment_mode TEXT NOT NULL CHECK(assignment_mode IN ('manual','ai')), assignments_json TEXT NOT NULL DEFAULT '{}',
+  version INTEGER NOT NULL DEFAULT 0, locked_at INTEGER, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+);
+CREATE TABLE task_flow_instances (
+  task_id TEXT PRIMARY KEY REFERENCES tasks(id), requirement_id TEXT NOT NULL REFERENCES requirements(id),
+  template_version_id TEXT NOT NULL REFERENCES requirement_flow_versions(id),
+  status TEXT NOT NULL DEFAULT 'idle' CHECK(status IN ('idle','running','paused','blocked','completed')),
+  version INTEGER NOT NULL DEFAULT 0, error TEXT, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+);
+CREATE TABLE task_flow_steps (
+  id TEXT PRIMARY KEY, task_id TEXT NOT NULL REFERENCES task_flow_instances(task_id), node_id TEXT NOT NULL,
+  stage TEXT NOT NULL, title TEXT NOT NULL, agent_id TEXT REFERENCES agents(id),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','starting','running','waiting_approval','completed','failed','needs_reconciliation')),
+  version INTEGER NOT NULL DEFAULT 0, attempt INTEGER NOT NULL DEFAULT 0, run_id TEXT REFERENCES agent_runs(id),
+  input_json TEXT, error TEXT, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, UNIQUE(task_id,node_id)
+);
+CREATE UNIQUE INDEX idx_flow_step_live_run ON task_flow_steps(run_id) WHERE run_id IS NOT NULL;
+CREATE INDEX idx_flow_instance_requirement ON task_flow_instances(requirement_id);
+CREATE TABLE requirement_materials (
+  artifact_id TEXT PRIMARY KEY REFERENCES artifacts(id), requirement_id TEXT NOT NULL REFERENCES requirements(id),
+  task_id TEXT REFERENCES tasks(id), step_id TEXT REFERENCES task_flow_steps(id), stage TEXT, run_id TEXT REFERENCES agent_runs(id),
+  source_tool_call_id TEXT REFERENCES tool_calls(id), attempt INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL CHECK(status IN ('draft','current','superseded','rejected')), created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_requirement_materials ON requirement_materials(requirement_id,created_at);
+CREATE TABLE task_requirement_materials (
+  task_id TEXT NOT NULL REFERENCES tasks(id), artifact_id TEXT NOT NULL REFERENCES artifacts(id), PRIMARY KEY(task_id,artifact_id)
+);
+CREATE TABLE requirement_flow_ai_requests (
+  id TEXT PRIMARY KEY, requirement_id TEXT NOT NULL REFERENCES requirements(id), kind TEXT NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('running','completed','failed')), snapshot_json TEXT NOT NULL,
+  model_id TEXT, connection_id TEXT, response_json TEXT, error TEXT, input_tokens INTEGER, output_tokens INTEGER,
+  created_at INTEGER NOT NULL, finished_at INTEGER
+);
+CREATE UNIQUE INDEX idx_flow_ai_request_active ON requirement_flow_ai_requests(requirement_id) WHERE status='running';
+`
+
+const V42 = `
+-- Preserve authored material and task associations before retiring the grouping model.
+INSERT INTO artifacts(id,project_id,kind,title,body,metadata_json,created_at)
+SELECT 'art_archive' || substr(id,5),project_id,'document',title,description,
+  json_object('source','legacy-group-material','sourceId',id,'sourceCode',code,'sourceVersion',version),created_at
+FROM requirement_use_cases;
+INSERT INTO requirement_materials(artifact_id,requirement_id,stage,attempt,status,created_at)
+SELECT 'art_archive' || substr(id,5),requirement_id,NULL,0,'current',created_at FROM requirement_use_cases;
+INSERT INTO task_requirement_materials(task_id,artifact_id)
+SELECT id,'art_archive' || substr(use_case_id,5) FROM tasks WHERE use_case_id IS NOT NULL;
+DROP TRIGGER task_requirement_scope_insert;
+DROP TRIGGER task_requirement_scope_update;
+DROP INDEX idx_tasks_requirement_uc;
+ALTER TABLE tasks DROP COLUMN use_case_id;
+ALTER TABLE requirement_workspaces DROP COLUMN use_case_version;
+ALTER TABLE task_integration_reviews DROP COLUMN use_case_version;
+DROP TABLE requirement_use_cases;
+CREATE INDEX idx_tasks_requirement ON tasks(requirement_id);
+CREATE TRIGGER task_requirement_scope_insert BEFORE INSERT ON tasks BEGIN
+  SELECT CASE WHEN NEW.requirement_id IS NOT NULL AND NOT EXISTS(
+    SELECT 1 FROM requirements WHERE id=NEW.requirement_id AND project_id=NEW.project_id
+  ) THEN RAISE(ABORT,'task requirement belongs to another project') END;
+END;
+CREATE TRIGGER task_requirement_scope_update BEFORE UPDATE OF requirement_id,project_id ON tasks BEGIN
+  SELECT CASE WHEN NEW.requirement_id IS NOT OLD.requirement_id OR NEW.project_id IS NOT OLD.project_id
+  THEN RAISE(ABORT,'task delivery scope is immutable') END;
+END;
+`
+
+const V43 = `
+ALTER TABLE task_flow_steps ADD COLUMN assignment_source TEXT CHECK(assignment_source IS NULL OR assignment_source IN ('default','manual','ai'));
+CREATE TABLE requirement_flow_start_intents (
+  id TEXT PRIMARY KEY, requirement_id TEXT NOT NULL REFERENCES requirements(id), request_key TEXT NOT NULL UNIQUE,
+  requirement_version INTEGER NOT NULL, binding_version INTEGER NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('active','completed','revoked')), revoked_reason TEXT,
+  created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_flow_start_intents ON requirement_flow_start_intents(requirement_id,status,created_at);
+CREATE TABLE requirement_flow_start_items (
+  intent_id TEXT NOT NULL REFERENCES requirement_flow_start_intents(id), task_id TEXT NOT NULL REFERENCES tasks(id),
+  scope_hash TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('waiting','started','skipped','cancelled')),
+  outcome TEXT NOT NULL, reason TEXT, updated_at INTEGER NOT NULL, PRIMARY KEY(intent_id,task_id)
+);
+CREATE INDEX idx_flow_start_items_task ON requirement_flow_start_items(task_id,status);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -1501,6 +1681,12 @@ export const MIGRATIONS: Migration[] = [
   { version: 35, name: 'plan command approval reuse', sql: V35 },
   { version: 36, name: 'command approval execution context fingerprint', sql: V36 },
   { version: 37, name: 'local worker identity and explicit project consent', sql: V37 },
+  { version: 38, name: 'requirement UC groups and approved task workspaces', sql: V38 },
+  { version: 39, name: 'reviewed task integration operations', sql: V39 },
+  { version: 40, name: 'direct requirement tasks without a use case', sql: V40 },
+  { version: 41, name: 'requirement workflow versions task steps and materials', sql: V41 },
+  { version: 42, name: 'archive group materials and retire use cases', sql: V42 },
+  { version: 43, name: 'requirement default owners and start intents', sql: V43 },
 ]
 
 function checksum(sql: string): string {

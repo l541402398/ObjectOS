@@ -1,0 +1,18 @@
+[
+  {
+    "command": "node scripts/e2e.mjs",
+    "exitCode": 0
+  },
+  {
+    "command": "node scripts/agent-e2e.mjs",
+    "exitCode": 0
+  },
+  {
+    "command": "node scripts/v12-e2e.mjs",
+    "exitCode": 0
+  },
+  {
+    "command": "node scripts/v13-e2e.mjs",
+    "exitCode": 0
+  }
+]

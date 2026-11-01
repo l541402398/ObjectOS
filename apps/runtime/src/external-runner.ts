@@ -103,6 +103,7 @@ export class ExternalAgentRunner {
   async execute(input: ExternalAgentRunInput): Promise<{ runId: string; sessionId: string; adapterId: 'claude-code' | 'codex'; readOnly: boolean }> {
     const project = this.store.read.getProject(input.projectId)
     if (!project) throw new AppError('NOT_FOUND', '项目不存在')
+    if (input.taskId && this.store.db.prepare('SELECT task_id FROM task_flow_instances WHERE task_id=?').get(input.taskId)) throw new AppError('CONFLICT', '流程任务需要从已分配的节点启动，不能通过外部执行入口跳过流程')
     assertExternalWriteAllowed(input.allowWrite)
     const installations = await listExternalAgents()
     const installation = installations.find((item) => item.adapterId === input.adapterId)

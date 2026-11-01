@@ -9,6 +9,8 @@ export const PROJECT_MODES = [
   { value: 'managed', label: '托管模式', description: '沿用项目的受限托管范围；授权与门禁仍然生效。' },
 ] as const
 
+const MODE_OPTIONS = PROJECT_MODES.map(({ value, label, description }) => ({ value, label, title: description }))
+
 export function ProjectModeControl({ projectId }: { projectId: string | null }) {
   const settings = useAutonomySettings(projectId), client = useQueryClient(), { message } = App.useApp()
   const change = useMutation({
@@ -23,9 +25,9 @@ export function ProjectModeControl({ projectId }: { projectId: string | null }) 
     },
     onError: (error) => message.error(errorMessage(error)),
   })
-  return <Select className="po-project-mode" aria-label="项目工作模式" value={settings.data?.mode}
+  return <Select className="po-project-mode" aria-label="项目工作模式" virtual={false} value={settings.data?.mode}
     placeholder={settings.isError ? '模式读取失败' : '读取工作模式'}
     disabled={!projectId || settings.isError || change.isPending} loading={settings.isLoading || change.isPending}
-    style={{ width: 152 }} options={PROJECT_MODES.map(({ value, label, description }) => ({ value, label, title: description }))}
+    style={{ width: 152 }} options={MODE_OPTIONS}
     onChange={(mode) => change.mutate(mode)} />
 }

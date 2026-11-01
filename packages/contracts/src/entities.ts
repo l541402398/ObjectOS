@@ -53,6 +53,8 @@ export const RequirementSchema = z.object({
   projectId: IdSchema,
   title: z.string().min(1).max(240),
   body: z.string().max(40_000).default(''),
+  technicalDesign: z.string().max(80_000).optional(),
+  designVersion: z.number().int().nonnegative().optional(),
   status: RequirementStatusSchema,
   source: z.string().max(240).default('local'),
   versionId: IdSchema.nullable().optional(),
@@ -79,6 +81,7 @@ export type Milestone = z.infer<typeof MilestoneSchema>
 export const TaskSchema = z.object({
   id: IdSchema,
   projectId: IdSchema,
+  requirementId: IdSchema.nullable().optional(),
   parentId: IdSchema.nullable(),
   milestoneId: IdSchema.nullable(),
   versionId: IdSchema.nullable().optional(),

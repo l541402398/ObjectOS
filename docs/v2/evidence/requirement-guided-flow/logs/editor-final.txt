@@ -1,0 +1,6 @@
+PASS Standard workflow exposes all six real nodes
+PASS Editor primary action stays reachable at 125%
+PASS Reduced motion preference is active
+PASS Editor at 125% has no axe violations
+PASS Back preserves the unsaved editor until a deliberate decision
+PASS Discard leaves the saved requirement workflow intact

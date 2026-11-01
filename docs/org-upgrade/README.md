@@ -1,5 +1,14 @@
 # ProjectOS 组织升级 · 实施索引
 
+2026-10-30 A3.2a：继续接通本地任务成果的审查、真实验证、单独合入审批和前置成果传递。
+见 [成果集成报告](../v2/evidence/requirement-integration/REPORT.md) 与 [ADR-0074](../adr/0074-reviewed-task-integration.md)。
+需求整体验收、托管任务自主调度、已有工作区同步、Agent 能力组合、可配置流程和设置整理仍待后续批次。
+
+2026-10-30：用户进一步明确“需求作为交付单元、UC 分组、开发任务隔离”。
+当前本地 A3.1 实施与验证见 [需求工作台报告](../v2/evidence/requirement-work/REPORT.md)
+和 [ADR-0073](../adr/0073-requirement-uc-task-isolation.md)。它不替代 A2.2b 远程作业桥；
+任务集成、可配置流程、Agent 能力组合和设置整理仍按后续批次推进。以下为历史阶段索引。
+
 > A1 已完成并推送，见 [A1 报告](reports/A1-report.md)。用户已授权继续 A2，当前独立子阶段
 > 是 [组织资产与版本绑定 A2.1](A2_IMPLEMENTATION.md)，结果见 [A2.1 报告](reports/A2.1-report.md)。
 > 以下 A0 是历史审计和原型索引，不代表后续阶段已交付。

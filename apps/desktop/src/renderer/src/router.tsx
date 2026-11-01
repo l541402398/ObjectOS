@@ -15,6 +15,7 @@ import ReleaseCenterPage from './pages/ReleaseCenterPage'
 import DeploymentCenterPage from './pages/DeploymentCenterPage'
 import DeliveryResourcesPage from './pages/DeliveryResourcesPage'
 import TaskBoardPage from './pages/TaskBoardPage'
+import RequirementWorkPage from './pages/RequirementWorkPage'
 import AgentWorkbenchPage from './pages/AgentWorkbenchPage'
 import CollaborationPage from './pages/CollaborationPage'
 import RunsPage from './pages/RunsPage'
@@ -81,6 +82,7 @@ export const router = createHashRouter([
           { path: 'connections', loader: projectPageLoader('connections'), element: <DeliveryResourcesPage /> },
           { path: 'overview', loader: projectPageLoader('overview'), element: <ProjectOverviewPage /> },
           { path: 'tasks', loader: projectPageLoader('tasks'), element: <TaskBoardPage /> },
+          { path: 'requirements', loader: projectPageLoader('requirements'), element: <RequirementWorkPage /> },
           { path: 'orchestration', loader: projectPageLoader('orchestration'), element: <LazyPage><OrchestrationPage /></LazyPage> },
           { path: 'agents', loader: projectPageLoader('agents'), element: <AgentWorkbenchPage /> },
           { path: 'collaboration', loader: projectPageLoader('collaboration'), element: <CollaborationPage /> },

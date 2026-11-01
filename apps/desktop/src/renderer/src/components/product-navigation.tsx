@@ -1,16 +1,37 @@
+import type { ReactNode } from 'react'
 import { Activity, BookOpen, Boxes, Building2, CloudUpload, FolderKanban, House, LayoutGrid, Rocket, Settings2, ShieldCheck, Workflow } from 'lucide-react'
 import type { SidebarNavGroup } from '@projectos/ui'
 import { PROJECT_PAGES, pageLabel } from '../page-registry'
 
 const icons = {
-  work: House, tasks: LayoutGrid, agents: Workflow, approvals: ShieldCheck, runs: Activity,
+  work: House, tasks: LayoutGrid, requirements: BookOpen, agents: Workflow, approvals: ShieldCheck, runs: Activity,
   releases: Rocket, deployments: CloudUpload, connections: Boxes, overview: FolderKanban,
   versions: Boxes, knowledge: BookOpen, 'project-settings': Settings2,
 } as const
 
+export interface ProjectHubMenuItem {
+  key: string
+  label: string
+  note: string
+  icon: ReactNode
+}
+
+/** Pinned project-level secondary menu items (项目姿态, 版本与迭代, 知识与成果, 项目设置). */
+export function projectHubNavigationItems(): ProjectHubMenuItem[] {
+  return PROJECT_PAGES.filter((page) => page.group === '项目' && page.entries.includes('nav')).map((page) => {
+    const Icon = icons[page.key as keyof typeof icons] ?? FolderKanban
+    return {
+      key: page.key,
+      label: page.label,
+      note: page.note.replace(/。$/, ''),
+      icon: <Icon size={18} strokeWidth={1.65} aria-hidden />,
+    }
+  })
+}
+
 /** Real route registry plus the two named global Settings actions. No prototype nav targets. */
 export function productNavigation(projectAvailable: boolean, taskBadge = 0, approvalBadge = 0): SidebarNavGroup[] {
-  const groups: SidebarNavGroup[] = projectAvailable ? (['研发', '交付', '项目'] as const).map((group) => ({
+  const groups: SidebarNavGroup[] = projectAvailable ? (['研发', '交付'] as const).map((group) => ({
     key: group, title: group, collapsible: true,
     items: PROJECT_PAGES.filter((page) => page.group === group && page.entries.includes('nav')).map((page) => {
       const Icon = icons[page.key as keyof typeof icons] ?? FolderKanban

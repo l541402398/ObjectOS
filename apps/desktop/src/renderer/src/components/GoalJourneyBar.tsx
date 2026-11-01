@@ -116,10 +116,22 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
     )
   }
 
+  const resolveJourneyRoute = (route: string, stageKey?: string): string => {
+    if (/\/projects\/[^/]+\/work(?:\?|$)/.test(route)) {
+      const targetProjectId = data?.projectId ?? projectId
+      if (!targetProjectId) return route
+      if (stageKey === 'requirement' || current?.key === 'requirement') {
+        return `/projects/${targetProjectId}?intent=requirement`
+      }
+      return `/projects/${targetProjectId}`
+    }
+    return route
+  }
+
   const openStage = (stage: JourneyStage): void => {
     if (stage.entry?.route) {
       setExpanded(false)
-      navigate(stage.entry.route)
+      navigate(resolveJourneyRoute(stage.entry.route, stage.key))
     }
   }
 
@@ -190,7 +202,7 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
             <button
               type="button"
               className="po-journey-action"
-              onClick={() => navigate(data.nextAction.route!)}
+              onClick={() => navigate(resolveJourneyRoute(data.nextAction.route!))}
               data-testid="journey-next"
               title={data.nextAction.detail}
             >

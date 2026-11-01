@@ -1,0 +1,56 @@
+PASS Rejected skin preference is inactive
+PASS home-1440-light optical material {"accent":"#4F64D9","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(139,124,242,.28), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(67,184,206,.22), transparent 70%), linear-gradient(132deg, #e7ecf9, #e8f4f4 54%, #e9e2f7)","frame":"linear-gradient(148deg, rgba(245,250,255,.62), rgba(245,250,255,.48))","fontStatus":"loaded"}
+PASS home-1440-light complete journey and font readiness
+PASS agents-1440-light optical material {"accent":"#4F64D9","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(139,124,242,.28), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(67,184,206,.22), transparent 70%), linear-gradient(132deg, #e7ecf9, #e8f4f4 54%, #e9e2f7)","frame":"linear-gradient(148deg, rgba(245,250,255,.62), rgba(245,250,255,.48))","fontStatus":"loaded"}
+PASS agents-1440-light complete journey and font readiness
+PASS flow-1440-light optical material {"accent":"#4F64D9","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(139,124,242,.28), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(67,184,206,.22), transparent 70%), linear-gradient(132deg, #e7ecf9, #e8f4f4 54%, #e9e2f7)","frame":"linear-gradient(148deg, rgba(245,250,255,.62), rgba(245,250,255,.48))","fontStatus":"loaded"}
+PASS flow-1440-light complete journey and font readiness
+PASS approvals-1440-light optical material {"accent":"#4F64D9","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(139,124,242,.28), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(67,184,206,.22), transparent 70%), linear-gradient(132deg, #e7ecf9, #e8f4f4 54%, #e9e2f7)","frame":"linear-gradient(148deg, rgba(245,250,255,.62), rgba(245,250,255,.48))","fontStatus":"loaded"}
+PASS approvals-1440-light complete journey and font readiness
+PASS home-1440-dark optical material {"accent":"#9BADFF","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(100,116,218,.24), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(65,183,196,.16), transparent 70%), linear-gradient(132deg, #101a30, #0c1629 54%, #18152d)","frame":"linear-gradient(148deg, rgba(17,27,48,.64), rgba(17,27,48,.50))","fontStatus":"loaded"}
+PASS home-1440-dark complete journey and font readiness
+PASS agents-1440-dark optical material {"accent":"#9BADFF","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(100,116,218,.24), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(65,183,196,.16), transparent 70%), linear-gradient(132deg, #101a30, #0c1629 54%, #18152d)","frame":"linear-gradient(148deg, rgba(17,27,48,.64), rgba(17,27,48,.50))","fontStatus":"loaded"}
+PASS agents-1440-dark complete journey and font readiness
+PASS flow-1440-dark optical material {"accent":"#9BADFF","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(100,116,218,.24), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(65,183,196,.16), transparent 70%), linear-gradient(132deg, #101a30, #0c1629 54%, #18152d)","frame":"linear-gradient(148deg, rgba(17,27,48,.64), rgba(17,27,48,.50))","fontStatus":"loaded"}
+PASS flow-1440-dark complete journey and font readiness
+PASS approvals-1440-dark optical material {"accent":"#9BADFF","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(100,116,218,.24), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(65,183,196,.16), transparent 70%), linear-gradient(132deg, #101a30, #0c1629 54%, #18152d)","frame":"linear-gradient(148deg, rgba(17,27,48,.64), rgba(17,27,48,.50))","fontStatus":"loaded"}
+PASS approvals-1440-dark complete journey and font readiness
+PASS home-1280-light optical material {"accent":"#4F64D9","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(139,124,242,.28), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(67,184,206,.22), transparent 70%), linear-gradient(132deg, #e7ecf9, #e8f4f4 54%, #e9e2f7)","frame":"linear-gradient(148deg, rgba(245,250,255,.62), rgba(245,250,255,.48))","fontStatus":"loaded"}
+PASS home-1280-light complete journey and font readiness
+PASS agents-1280-light optical material {"accent":"#4F64D9","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(139,124,242,.28), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(67,184,206,.22), transparent 70%), linear-gradient(132deg, #e7ecf9, #e8f4f4 54%, #e9e2f7)","frame":"linear-gradient(148deg, rgba(245,250,255,.62), rgba(245,250,255,.48))","fontStatus":"loaded"}
+PASS agents-1280-light complete journey and font readiness
+PASS flow-1280-light optical material {"accent":"#4F64D9","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(139,124,242,.28), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(67,184,206,.22), transparent 70%), linear-gradient(132deg, #e7ecf9, #e8f4f4 54%, #e9e2f7)","frame":"linear-gradient(148deg, rgba(245,250,255,.62), rgba(245,250,255,.48))","fontStatus":"loaded"}
+PASS flow-1280-light complete journey and font readiness
+PASS approvals-1280-light optical material {"accent":"#4F64D9","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(139,124,242,.28), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(67,184,206,.22), transparent 70%), linear-gradient(132deg, #e7ecf9, #e8f4f4 54%, #e9e2f7)","frame":"linear-gradient(148deg, rgba(245,250,255,.62), rgba(245,250,255,.48))","fontStatus":"loaded"}
+PASS approvals-1280-light complete journey and font readiness
+PASS home-1280-dark optical material {"accent":"#9BADFF","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(100,116,218,.24), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(65,183,196,.16), transparent 70%), linear-gradient(132deg, #101a30, #0c1629 54%, #18152d)","frame":"linear-gradient(148deg, rgba(17,27,48,.64), rgba(17,27,48,.50))","fontStatus":"loaded"}
+PASS home-1280-dark complete journey and font readiness
+PASS agents-1280-dark optical material {"accent":"#9BADFF","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(100,116,218,.24), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(65,183,196,.16), transparent 70%), linear-gradient(132deg, #101a30, #0c1629 54%, #18152d)","frame":"linear-gradient(148deg, rgba(17,27,48,.64), rgba(17,27,48,.50))","fontStatus":"loaded"}
+PASS agents-1280-dark complete journey and font readiness
+PASS flow-1280-dark optical material {"accent":"#9BADFF","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(100,116,218,.24), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(65,183,196,.16), transparent 70%), linear-gradient(132deg, #101a30, #0c1629 54%, #18152d)","frame":"linear-gradient(148deg, rgba(17,27,48,.64), rgba(17,27,48,.50))","fontStatus":"loaded"}
+PASS flow-1280-dark complete journey and font readiness
+PASS approvals-1280-dark optical material {"accent":"#9BADFF","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(100,116,218,.24), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(65,183,196,.16), transparent 70%), linear-gradient(132deg, #101a30, #0c1629 54%, #18152d)","frame":"linear-gradient(148deg, rgba(17,27,48,.64), rgba(17,27,48,.50))","fontStatus":"loaded"}
+PASS approvals-1280-dark complete journey and font readiness
+PASS home-1024-light optical material {"accent":"#4F64D9","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(139,124,242,.28), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(67,184,206,.22), transparent 70%), linear-gradient(132deg, #e7ecf9, #e8f4f4 54%, #e9e2f7)","frame":"linear-gradient(148deg, rgba(245,250,255,.62), rgba(245,250,255,.48))","fontStatus":"loaded"}
+PASS home-1024-light complete journey and font readiness
+PASS agents-1024-light optical material {"accent":"#4F64D9","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(139,124,242,.28), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(67,184,206,.22), transparent 70%), linear-gradient(132deg, #e7ecf9, #e8f4f4 54%, #e9e2f7)","frame":"linear-gradient(148deg, rgba(245,250,255,.62), rgba(245,250,255,.48))","fontStatus":"loaded"}
+PASS agents-1024-light complete journey and font readiness
+PASS flow-1024-light optical material {"accent":"#4F64D9","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(139,124,242,.28), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(67,184,206,.22), transparent 70%), linear-gradient(132deg, #e7ecf9, #e8f4f4 54%, #e9e2f7)","frame":"linear-gradient(148deg, rgba(245,250,255,.62), rgba(245,250,255,.48))","fontStatus":"loaded"}
+PASS flow-1024-light complete journey and font readiness
+PASS approvals-1024-light optical material {"accent":"#4F64D9","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(139,124,242,.28), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(67,184,206,.22), transparent 70%), linear-gradient(132deg, #e7ecf9, #e8f4f4 54%, #e9e2f7)","frame":"linear-gradient(148deg, rgba(245,250,255,.62), rgba(245,250,255,.48))","fontStatus":"loaded"}
+PASS approvals-1024-light complete journey and font readiness
+PASS home-1024-dark optical material {"accent":"#9BADFF","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(100,116,218,.24), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(65,183,196,.16), transparent 70%), linear-gradient(132deg, #101a30, #0c1629 54%, #18152d)","frame":"linear-gradient(148deg, rgba(17,27,48,.64), rgba(17,27,48,.50))","fontStatus":"loaded"}
+PASS home-1024-dark complete journey and font readiness
+PASS agents-1024-dark optical material {"accent":"#9BADFF","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(100,116,218,.24), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(65,183,196,.16), transparent 70%), linear-gradient(132deg, #101a30, #0c1629 54%, #18152d)","frame":"linear-gradient(148deg, rgba(17,27,48,.64), rgba(17,27,48,.50))","fontStatus":"loaded"}
+PASS agents-1024-dark complete journey and font readiness
+PASS flow-1024-dark optical material {"accent":"#9BADFF","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(100,116,218,.24), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(65,183,196,.16), transparent 70%), linear-gradient(132deg, #101a30, #0c1629 54%, #18152d)","frame":"linear-gradient(148deg, rgba(17,27,48,.64), rgba(17,27,48,.50))","fontStatus":"loaded"}
+PASS flow-1024-dark complete journey and font readiness
+PASS approvals-1024-dark optical material {"accent":"#9BADFF","ambient":"radial-gradient(70% 60% at 6% -6%, rgba(100,116,218,.24), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(65,183,196,.16), transparent 70%), linear-gradient(132deg, #101a30, #0c1629 54%, #18152d)","frame":"linear-gradient(148deg, rgba(17,27,48,.64), rgba(17,27,48,.50))","fontStatus":"loaded"}
+PASS approvals-1024-dark complete journey and font readiness
+PASS Graph task detail retained
+PASS Autonomous and assisted mode control retained
+PASS Settings remain reachable
+PASS 125% app zoom retains named journey
+PASS Actual Chinese glyphs use bundled font [{"familyName":"Noto Sans SC Thin","postScriptName":"NotoSansSC-SemiBold","isCustomFont":true,"glyphCount":2}]
+PASS Reduced-motion preference reaches browser
+PASS No renderer or CSP errors []

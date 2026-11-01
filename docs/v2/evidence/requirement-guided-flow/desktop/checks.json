@@ -1,0 +1,380 @@
+{
+  "head": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+  "profile": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\projectos-flow-e2e-JQ6HN3",
+  "checks": [
+    {
+      "name": "Drag/drop and keyboard addition create real flow nodes",
+      "status": "PASS"
+    },
+    {
+      "name": "flow editor no horizontal page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "width": 1118
+      }
+    },
+    {
+      "name": "flow editor accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "flow editor 1280 light no horizontal page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "width": 1118
+      }
+    },
+    {
+      "name": "flow editor 1280 light accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "flow editor 1280 dark no horizontal page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "width": 1118
+      }
+    },
+    {
+      "name": "flow editor 1280 dark accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "flow editor 1024 light no horizontal page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "width": 990
+      }
+    },
+    {
+      "name": "flow editor 1024 light accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "flow editor 1024 dark no horizontal page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "width": 990
+      }
+    },
+    {
+      "name": "flow editor 1024 dark accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "No UC step remains in workbench",
+      "status": "PASS"
+    },
+    {
+      "name": "AI uses actual model assignment for every stage",
+      "status": "PASS"
+    },
+    {
+      "name": "Start requests approval before creating workspace",
+      "status": "PASS"
+    },
+    {
+      "name": "Assigned Agents complete real document and review runs",
+      "status": "PASS",
+      "detail": {
+        "binding": {
+          "requirementId": "req_01m6755xbw6j2hspeh4tk8nd2r",
+          "templateVersionId": "wfv_01m6755w1jfr4d529k0y5j5xs0",
+          "templateName": "需求梳理与审核 · 团队模板",
+          "graph": {
+            "nodes": [
+              {
+                "id": "node-434a7160-7628-48fe-92cd-02ae1ad23793",
+                "kind": "agent_task",
+                "title": "需求分析",
+                "role": "product",
+                "inputs": [],
+                "outputs": [
+                  "需求文档"
+                ],
+                "optional": false,
+                "stage": "requirement_analysis",
+                "instructions": ""
+              },
+              {
+                "id": "node-c46123da-c635-4cb7-8869-f4390a11b6eb",
+                "kind": "document_gate",
+                "title": "需求审核",
+                "role": "reviewer",
+                "inputs": [],
+                "outputs": [
+                  "需求审核结论"
+                ],
+                "optional": false,
+                "stage": "requirement_review",
+                "instructions": ""
+              }
+            ],
+            "edges": [
+              {
+                "id": "edge-b9ee39f6-fed5-4e6a-b060-313bb3ca2e12",
+                "source": "node-434a7160-7628-48fe-92cd-02ae1ad23793",
+                "target": "node-c46123da-c635-4cb7-8869-f4390a11b6eb"
+              }
+            ]
+          },
+          "assignmentMode": "ai",
+          "assignments": {},
+          "version": 0,
+          "lockedAt": 1793389170242,
+          "createdAt": 1793389163901
+        },
+        "tasks": [
+          {
+            "taskId": "tsk_01m6755y477h1s0xy5gkwhcddw",
+            "requirementId": "req_01m6755xbw6j2hspeh4tk8nd2r",
+            "templateVersionId": "wfv_01m6755w1jfr4d529k0y5j5xs0",
+            "status": "completed",
+            "version": 2,
+            "steps": [
+              {
+                "id": "wfs_01m6755y48tza8ah0vy0jj9jxv",
+                "taskId": "tsk_01m6755y477h1s0xy5gkwhcddw",
+                "nodeId": "node-434a7160-7628-48fe-92cd-02ae1ad23793",
+                "stage": "requirement_analysis",
+                "title": "需求分析",
+                "agentId": "agt_product",
+                "agentName": "Avery",
+                "status": "completed",
+                "version": 4,
+                "attempt": 1,
+                "runId": "run_01m67563zm06yjtjtc9mqr4s4x",
+                "artifactIds": [
+                  "art_01m67564ekrvm0p57w12v06f9h"
+                ],
+                "error": null
+              },
+              {
+                "id": "wfs_01m6755y48ywd20ede95jtntyz",
+                "taskId": "tsk_01m6755y477h1s0xy5gkwhcddw",
+                "nodeId": "node-c46123da-c635-4cb7-8869-f4390a11b6eb",
+                "stage": "requirement_review",
+                "title": "需求审核",
+                "agentId": "agt_reviewer",
+                "agentName": "Nova",
+                "status": "completed",
+                "version": 4,
+                "attempt": 1,
+                "runId": "run_01m67565d0d1r5dmcng1h6rb5h",
+                "artifactIds": [
+                  "art_01m675669926bbc4fdvx70e8f1"
+                ],
+                "error": null
+              }
+            ],
+            "error": null,
+            "pendingApprovalId": null,
+            "workspaceReady": true
+          }
+        ],
+        "materials": [
+          {
+            "artifactId": "art_01m675669926bbc4fdvx70e8f1",
+            "requirementId": "req_01m6755xbw6j2hspeh4tk8nd2r",
+            "taskId": "tsk_01m6755y477h1s0xy5gkwhcddw",
+            "stepId": "wfs_01m6755y48ywd20ede95jtntyz",
+            "stage": "requirement_review",
+            "title": "需求审核 · 离线恢复",
+            "agentName": "Nova",
+            "attempt": 1,
+            "status": "current",
+            "createdAt": 1793389173316
+          },
+          {
+            "artifactId": "art_01m67564ekrvm0p57w12v06f9h",
+            "requirementId": "req_01m6755xbw6j2hspeh4tk8nd2r",
+            "taskId": "tsk_01m6755y477h1s0xy5gkwhcddw",
+            "stepId": "wfs_01m6755y48tza8ah0vy0jj9jxv",
+            "stage": "requirement_analysis",
+            "title": "需求文档 · 离线恢复",
+            "agentName": "Avery",
+            "attempt": 1,
+            "status": "current",
+            "createdAt": 1793389171481
+          }
+        ]
+      }
+    },
+    {
+      "name": "Journey opens the actual stored document body",
+      "status": "PASS"
+    },
+    {
+      "name": "Agent graph opens the real workflow document",
+      "status": "PASS"
+    },
+    {
+      "name": "AI draft remains unexecuted before plan approval",
+      "status": "PASS"
+    },
+    {
+      "name": "AI plan approval creates real tasks with every inherited workflow node",
+      "status": "PASS"
+    },
+    {
+      "name": "Manual Agent selection is saved through the actual control",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing assignments remain actionable, without starting a Run",
+      "status": "PASS"
+    },
+    {
+      "name": "1440 light no horizontal page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "width": 1305
+      }
+    },
+    {
+      "name": "1440 light accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1440 dark no horizontal page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "width": 1305
+      }
+    },
+    {
+      "name": "1440 dark accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1280 light no horizontal page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "width": 1145
+      }
+    },
+    {
+      "name": "1280 light accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1280 dark no horizontal page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "width": 1145
+      }
+    },
+    {
+      "name": "1280 dark accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1024 light no horizontal page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "width": 909
+      }
+    },
+    {
+      "name": "1024 light accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1024 dark no horizontal page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "width": 909
+      }
+    },
+    {
+      "name": "1024 dark accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "Keyboard detail control remains reachable at 125%",
+      "status": "PASS"
+    },
+    {
+      "name": "Template, all task steps and manual assignment survive restart",
+      "status": "PASS"
+    },
+    {
+      "name": "Custom dragged template and layout persist",
+      "status": "PASS"
+    },
+    {
+      "name": "Autonomous mode defaults to AI node assignment",
+      "status": "PASS"
+    },
+    {
+      "name": "Autonomous coordinator assigns every new task node without a manual assignment action",
+      "status": "PASS"
+    },
+    {
+      "name": "Project switch preserves the original requirement and its eight tasks",
+      "status": "PASS"
+    },
+    {
+      "name": "No renderer exceptions",
+      "status": "PASS",
+      "detail": []
+    }
+  ],
+  "captures": [
+    "empty-1440-light.png",
+    "flow-editor-1440-light.png",
+    "flow-editor-1280-light.png",
+    "flow-editor-1280-dark.png",
+    "flow-editor-1024-light.png",
+    "flow-editor-1024-dark.png",
+    "create-requirement-1440-light.png",
+    "workspace-approval-1440-light.png",
+    "completed-flow-1440-light.png",
+    "journey-material-1440-light.png",
+    "agent-material-1440-light.png",
+    "requirement-plan-1440-light.png",
+    "assignment-error-1440-light.png",
+    "workbench-1440-light.png",
+    "workbench-1440-dark.png",
+    "workbench-1280-light.png",
+    "workbench-1280-dark.png",
+    "workbench-1024-light.png",
+    "workbench-1024-dark.png",
+    "workbench-1024-dark-125-reduced.png"
+  ],
+  "errors": [],
+  "note": "Real native Electron and Runtime/SQLite/Git. Model responses are deterministic test fixtures. 125% is app zoom, not OS DPI."
+}

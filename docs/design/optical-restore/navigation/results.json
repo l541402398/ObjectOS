@@ -1,0 +1,20 @@
+{
+  "checks": [
+    {
+      "name": "Project menu opens the newly created real project",
+      "status": "PASS"
+    },
+    {
+      "name": "Restored task navigation works in the other project",
+      "status": "PASS"
+    },
+    {
+      "name": "Project menu returns to the original data scope",
+      "status": "PASS"
+    },
+    {
+      "name": "Autonomous and assisted choices remain available",
+      "status": "PASS"
+    }
+  ]
+}

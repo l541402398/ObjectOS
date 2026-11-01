@@ -1,0 +1,64 @@
+## UI Pro Max Search Results
+**Domain:** color | **Query:** soft contrast professional desktop
+**Source:** colors.csv | **Found:** 3 results
+
+### Result 1
+- **Product Type:** Parenting & Baby Tracker
+- **Primary:** #EC4899
+- **On Primary:** #000000
+- **Secondary:** #F472B6
+- **On Secondary:** #000000
+- **Accent:** #0284C7
+- **On Accent:** #000000
+- **Background:** #FDF2F8
+- **Foreground:** #0F172A
+- **Card:** #FFFFFF
+- **Card Foreground:** #0F172A
+- **Muted:** #FDF4F8
+- **Muted Foreground:** #475569
+- **Border:** #FCE9F2
+- **Destructive:** #DC2626
+- **On Destructive:** #FFFFFF
+- **Ring:** #EC4899
+- **Notes:** Soft pink + trust blue
+
+### Result 2
+- **Product Type:** Photography Studio
+- **Primary:** #18181B
+- **On Primary:** #FFFFFF
+- **Secondary:** #27272A
+- **On Secondary:** #FFFFFF
+- **Accent:** #F8FAFC
+- **On Accent:** #0F172A
+- **Background:** #000000
+- **Foreground:** #FAFAFA
+- **Card:** #0C0C0C
+- **Card Foreground:** #FAFAFA
+- **Muted:** #181818
+- **Muted Foreground:** #94A3B8
+- **Border:** #3F3F46
+- **Destructive:** #EF4444
+- **On Destructive:** #000000
+- **Ring:** #FFFFFF
+- **Notes:** Pure black + white contrast
+
+### Result 3
+- **Product Type:** Beauty/Spa/Wellness Service
+- **Primary:** #EC4899
+- **On Primary:** #000000
+- **Secondary:** #F9A8D4
+- **On Secondary:** #0F172A
+- **Accent:** #8B5CF6
+- **On Accent:** #000000
+- **Background:** #FDF2F8
+- **Foreground:** #831843
+- **Card:** #FFFFFF
+- **Card Foreground:** #831843
+- **Muted:** #F1EEF5
+- **Muted Foreground:** #475569
+- **Border:** #FBCFE8
+- **Destructive:** #DC2626
+- **On Destructive:** #FFFFFF
+- **Ring:** #EC4899
+- **Notes:** Soft pink + lavender luxury
+

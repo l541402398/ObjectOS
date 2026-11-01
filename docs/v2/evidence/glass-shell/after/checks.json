@@ -1,0 +1,303 @@
+{
+  "head": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+  "checks": [
+    {
+      "name": "home 1440 light axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 9,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"项目准备，进行中\"]",
+              "button[aria-label=\"计划，进行中\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 70
+      }
+    },
+    {
+      "name": "home 1440 light no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "overview 1440 light axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 2,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 106
+      }
+    },
+    {
+      "name": "overview 1440 light no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "requirements 1440 light axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 2,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 74
+      }
+    },
+    {
+      "name": "requirements 1440 light no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "tasks 1440 light axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 2,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 84
+      }
+    },
+    {
+      "name": "tasks 1440 light no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "agents 1440 light axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 2,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 69
+      }
+    },
+    {
+      "name": "agents 1440 light no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "home 1440 dark axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 9,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"项目准备，进行中\"]",
+              "button[aria-current=\"step\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 71
+      }
+    },
+    {
+      "name": "home 1440 dark no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "overview 1440 dark axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 2,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 107
+      }
+    },
+    {
+      "name": "overview 1440 dark no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "requirements 1440 dark axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 2,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 75
+      }
+    },
+    {
+      "name": "requirements 1440 dark no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "tasks 1440 dark axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 2,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 85
+      }
+    },
+    {
+      "name": "tasks 1440 dark no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "agents 1440 dark axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 2,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 70
+      }
+    },
+    {
+      "name": "agents 1440 dark no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "scroll rAF frame rate (requirements, 1440 light)",
+      "status": "INFO",
+      "detail": {
+        "fps": 43
+      }
+    },
+    {
+      "name": "Task Board 3D Agent Roster Bar rendered",
+      "status": "PASS",
+      "detail": {
+        "rosterCount": 5
+      }
+    },
+    {
+      "name": "Task Drawer has in-place Assign/Handoff Agent button",
+      "status": "PASS"
+    },
+    {
+      "name": "Task Handoff Confirmation Dialog opens when dropping new Agent onto assigned task",
+      "status": "PASS"
+    },
+    {
+      "name": "Orchestration Plan Hub rendered without duplicate graph canvas",
+      "status": "PASS"
+    },
+    {
+      "name": "Pinned Project Hub trigger rendered between project switcher and R&D nav",
+      "status": "PASS"
+    },
+    {
+      "name": "modal + workflow dropdown open rAF frame rate",
+      "status": "PASS",
+      "detail": {
+        "modalFps": 65
+      }
+    },
+    {
+      "name": "Cancel on Studio Home Create Requirement stays on Studio Home without switching page",
+      "status": "PASS",
+      "detail": {
+        "hashAfterCancel": "#/projects/prj_01m69gmpnrmee6x4x4737w3dqe"
+      }
+    },
+    {
+      "name": "No renderer exceptions",
+      "status": "PASS",
+      "detail": []
+    }
+  ],
+  "captures": [
+    "home-1440-light.png",
+    "overview-1440-light.png",
+    "requirements-1440-light.png",
+    "tasks-1440-light.png",
+    "agents-1440-light.png",
+    "home-1440-dark.png",
+    "overview-1440-dark.png",
+    "requirements-1440-dark.png",
+    "tasks-1440-dark.png",
+    "agents-1440-dark.png",
+    "home-1024-light.png",
+    "overview-1024-light.png",
+    "requirements-1024-light.png",
+    "tasks-1024-light.png",
+    "agents-1024-light.png",
+    "home-1024-dark.png",
+    "overview-1024-dark.png",
+    "requirements-1024-dark.png",
+    "tasks-1024-dark.png",
+    "agents-1024-dark.png",
+    "dialog-arrangement-1440-light.png",
+    "dialog-arrangement-1440-dark.png",
+    "task-drawer-1440-light.png",
+    "task-handoff-dialog-1440-light.png",
+    "tasks-assigned-1440-light.png",
+    "agents-active-1440-light.png",
+    "orchestration-hub-1440-light.png",
+    "create-project-switch-1440-light.png",
+    "sidebar-project-hub-1440-light.png",
+    "studio-home-menu-1440-light.png",
+    "studio-home-create-req-1440-light.png",
+    "create-req-workflow-select-1440-light.png",
+    "requirements-1024-light-125-reduced.png"
+  ],
+  "errors": [],
+  "note": "Real Electron capturePage. 125% is app zoom, not OS DPI. axe color-contrast cannot always resolve translucent backgrounds; incomplete counts are reported."
+}

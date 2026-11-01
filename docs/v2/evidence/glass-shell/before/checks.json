@@ -1,0 +1,255 @@
+{
+  "head": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+  "checks": [
+    {
+      "name": "home 1440 light axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 9,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"项目准备，进行中\"]",
+              "button[aria-label=\"计划，进行中\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 48
+      }
+    },
+    {
+      "name": "home 1440 light no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "overview 1440 light axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 10,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]",
+              "button[aria-label=\"项目准备，进行中\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 88
+      }
+    },
+    {
+      "name": "overview 1440 light no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "requirements 1440 light axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 2,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 54
+      }
+    },
+    {
+      "name": "requirements 1440 light no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "tasks 1440 light axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 10,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]",
+              "button[aria-label=\"项目准备，进行中\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 57
+      }
+    },
+    {
+      "name": "tasks 1440 light no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "agents 1440 light axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 10,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]",
+              "button[aria-label=\"项目准备，进行中\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 51
+      }
+    },
+    {
+      "name": "agents 1440 light no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "home 1440 dark axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 9,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"项目准备，进行中\"]",
+              "button[aria-current=\"step\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 53
+      }
+    },
+    {
+      "name": "home 1440 dark no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "overview 1440 dark axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 10,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]",
+              "button[aria-label=\"项目准备，进行中\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 93
+      }
+    },
+    {
+      "name": "overview 1440 dark no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "requirements 1440 dark axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 2,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 55
+      }
+    },
+    {
+      "name": "requirements 1440 dark no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "tasks 1440 dark axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 9,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]",
+              "button[aria-current=\"step\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 58
+      }
+    },
+    {
+      "name": "tasks 1440 dark no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "agents 1440 dark axe",
+      "status": "FAIL",
+      "detail": {
+        "violations": [
+          {
+            "id": "label-content-name-mismatch",
+            "nodes": 9,
+            "sample": [
+              ".po-command-trigger",
+              "button[aria-label=\"待办与决策\"]",
+              "button[aria-current=\"step\"]"
+            ]
+          }
+        ],
+        "contrastIncomplete": 50
+      }
+    },
+    {
+      "name": "agents 1440 dark no horizontal overflow",
+      "status": "PASS"
+    },
+    {
+      "name": "No renderer exceptions",
+      "status": "PASS",
+      "detail": []
+    }
+  ],
+  "captures": [
+    "home-1440-light.png",
+    "overview-1440-light.png",
+    "requirements-1440-light.png",
+    "tasks-1440-light.png",
+    "agents-1440-light.png",
+    "home-1440-dark.png",
+    "overview-1440-dark.png",
+    "requirements-1440-dark.png",
+    "tasks-1440-dark.png",
+    "agents-1440-dark.png",
+    "home-1024-light.png",
+    "overview-1024-light.png",
+    "requirements-1024-light.png",
+    "tasks-1024-light.png",
+    "agents-1024-light.png",
+    "home-1024-dark.png",
+    "overview-1024-dark.png",
+    "requirements-1024-dark.png",
+    "tasks-1024-dark.png",
+    "agents-1024-dark.png",
+    "dialog-arrangement-1440-light.png",
+    "dialog-arrangement-1440-dark.png",
+    "requirements-1024-light-125-reduced.png"
+  ],
+  "errors": [],
+  "note": "Real Electron capturePage. 125% is app zoom, not OS DPI. axe color-contrast cannot always resolve translucent backgrounds; incomplete counts are reported."
+}

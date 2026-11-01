@@ -8,6 +8,7 @@ import {
   Dropdown,
   Form,
   Input,
+  Popover,
   Select,
   Tabs,
   Tooltip,
@@ -22,6 +23,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   FileTextOutlined,
+  FilterOutlined,
   HistoryOutlined,
   InfoCircleOutlined,
   LinkOutlined,
@@ -31,6 +33,7 @@ import {
   RobotOutlined,
   SearchOutlined,
   StopOutlined,
+  SwapOutlined,
   UserOutlined,
 } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
@@ -50,6 +53,8 @@ import {
   PageHeader,
   SectionCard,
   StatusPill,
+  assignTeamPersonas3D,
+  resolveAgentPersona3D,
   toneForStatus,
 } from '@projectos/ui'
 import {
@@ -119,16 +124,27 @@ function TaskTile({
   onDragStart,
   onDragEnd,
   dragging,
+  agentDropActive = false,
+  draggingAgentName,
+  onAgentDragOver,
+  onAgentDragLeave,
+  onAgentDrop,
 }: {
   task: TaskCard
   onOpen: () => void
   onDragStart: () => void
   onDragEnd: () => void
   dragging: boolean
+  agentDropActive?: boolean
+  draggingAgentName?: string | null
+  onAgentDragOver?: (event: React.DragEvent<HTMLDivElement>) => void
+  onAgentDragLeave?: () => void
+  onAgentDrop?: (event: React.DragEvent<HTMLDivElement>) => void
 }) {
   return (
     <div
-      className={`po-task-tile ${dragging ? 'is-dragging' : ''}`.trim()}
+      className={`po-task-tile ${dragging ? 'is-dragging' : ''} ${agentDropActive ? 'is-agent-drop-target' : ''}`.trim()}
+      data-task-id={task.id}
       draggable
       onDragStart={(event) => {
         event.dataTransfer.effectAllowed = 'move'
@@ -136,6 +152,9 @@ function TaskTile({
         onDragStart()
       }}
       onDragEnd={onDragEnd}
+      onDragOver={onAgentDragOver}
+      onDragLeave={onAgentDragLeave}
+      onDrop={onAgentDrop}
       onClick={onOpen}
       role="button"
       tabIndex={0}
@@ -146,6 +165,13 @@ function TaskTile({
         }
       }}
     >
+      {agentDropActive ? (
+        <div className="po-task-agent-drop-hint">
+          {task.assigneeAgentId
+            ? `松开交接给 ${draggingAgentName ?? 'Agent'}`
+            : `松开指派给 ${draggingAgentName ?? 'Agent'}`}
+        </div>
+      ) : null}
       <div className="po-task-tile-top">
         <span className="po-priority-mark" style={{ background: PRIORITY_COLORS[task.priority] }} />
         <span className={`po-priority-label is-${task.priority}`}>{priorityLabel(task.priority)}</span>
@@ -213,6 +239,7 @@ export default function TaskBoardPage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [detailPending, setDetailPending] = useState(false)
+  const handledTaskLink = useRef<string | null>(null)
   const detailRequest = useRef(0)
   useEffect(() => () => { detailRequest.current++ }, [])
   const [drawerWidth, setDrawerWidth] = useState(700)
@@ -224,12 +251,29 @@ export default function TaskBoardPage() {
   }, [])
   const taskDetail = useTaskDetail(selectedTaskId)
   const [query, setQuery] = useState('')
+  const [requirementFilter, setRequirementFilter] = useState<string | null>(() => searchParams.get('requirement'))
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
   const [versionFilter, setVersionFilter] = useState<string | null>(null)
   const [iterationFilter, setIterationFilter] = useState<string | null>(null)
   const [priorityFilter, setPriorityFilter] = useState<number | null>(null)
+
+  useEffect(() => {
+    const reqParam = searchParams.get('requirement')
+    if (reqParam !== requirementFilter) setRequirementFilter(reqParam)
+  }, [searchParams, requirementFilter])
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dropTarget, setDropTarget] = useState<TaskStatus | null>(null)
+  const [draggingAgent, setDraggingAgent] = useState<{ id: string; name: string; role: string } | null>(null)
+  const [agentDropTaskId, setAgentDropTaskId] = useState<string | null>(null)
+  const [handoffPrompt, setHandoffPrompt] = useState<{
+    task: TaskCard
+    fromAgentId: string
+    fromAgentName: string
+    toAgentId: string
+    toAgentName: string
+    toAgentRole: string
+  } | null>(null)
+  const [handoffNote, setHandoffNote] = useState('')
   const [createOpen, setCreateOpen] = useState(searchParams.get('new') === '1')
   const [editingTask, setEditingTask] = useState<TaskCard | null>(null)
   const [acceptanceTask, setAcceptanceTask] = useState<TaskCard | null>(null)
@@ -396,7 +440,10 @@ export default function TaskBoardPage() {
   const tasks = useMemo(() => {
     const list = board.data?.tasks ?? []
     const normalized = query.trim().toLowerCase()
+    const validReqIds = new Set((overview.data?.requirements ?? []).map((r) => r.id))
+    const activeReqFilter = requirementFilter && (!overview.data || validReqIds.has(requirementFilter)) ? requirementFilter : null
     return list.filter((task) => {
+      if (activeReqFilter && task.requirementId !== activeReqFilter) return false
       if (normalized && !`${task.title} ${task.description} ${task.labels.join(' ')}`.toLowerCase().includes(normalized)) {
         return false
       }
@@ -406,7 +453,7 @@ export default function TaskBoardPage() {
       if (priorityFilter && task.priority !== priorityFilter) return false
       return true
     })
-  }, [board.data, query, assigneeFilter, versionFilter, iterationFilter, priorityFilter])
+  }, [board.data, overview.data, requirementFilter, query, assigneeFilter, versionFilter, iterationFilter, priorityFilter])
 
   const columns = TASK_COLUMNS.map((status) => ({
     status,
@@ -417,6 +464,86 @@ export default function TaskBoardPage() {
     value: agent.agent.id,
     label: `${agent.agent.name} · ${agent.agent.role}`,
   }))
+  const rosterAgents = useMemo(() => {
+    const rawAgents = agents.data?.agents ?? []
+    const personaMap = assignTeamPersonas3D(rawAgents.map((entry) => entry.agent))
+    const overviewAgents = new Map((overview.data?.agents ?? []).map((item) => [item.agent.id, item]))
+    const allTasks = board.data?.tasks ?? []
+    return rawAgents
+      .map((entry) => {
+        const agent = entry.agent
+        const ov = overviewAgents.get(agent.id)
+        const assignedTasks = allTasks.filter((t) => t.assigneeAgentId === agent.id && t.status !== 'cancelled')
+        const runningTasks = assignedTasks.filter((t) => t.status === 'running')
+        const isWorking = ov?.status === 'working' || runningTasks.length > 0
+        const persona = personaMap.get(agent.id) ?? resolveAgentPersona3D(`${agent.name} ${agent.role}`)
+        return {
+          id: agent.id,
+          name: agent.name,
+          role: agent.role,
+          status: (isWorking ? 'working' : 'idle') as 'working' | 'idle',
+          assignedCount: assignedTasks.length,
+          runningCount: runningTasks.length,
+          persona,
+        }
+      })
+      .sort((a, b) => {
+        if (a.status !== b.status) return a.status === 'working' ? -1 : 1
+        return b.assignedCount - a.assignedCount
+      })
+  }, [agents.data, overview.data, board.data])
+
+  const assignAgent = useMutation({
+    mutationFn: async ({
+      task,
+      toAgentId,
+    }: {
+      task: TaskCard
+      toAgentId: string
+      toAgentName: string
+      fromAgentName?: string | null
+      note?: string
+    }) => {
+      return window.projectos.tasks.update({
+        taskId: task.id,
+        expectedVersion: task.version,
+        assigneeAgentId: toAgentId,
+      })
+    },
+    onSuccess: async (_result, variables) => {
+      await invalidate()
+      setHandoffPrompt(null)
+      setHandoffNote('')
+      if (variables.fromAgentName) {
+        message.success(
+          `已完成任务交接：${variables.fromAgentName} → ${variables.toAgentName}${variables.note?.trim() ? `（${variables.note.trim()}）` : ''}`,
+        )
+      } else {
+        message.success(`已将「${variables.task.title}」指派给 ${variables.toAgentName}`)
+      }
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+
+  const handleAssignOrHandoff = (task: TaskCard, agent: { id: string; name: string; role: string }): void => {
+    if (!task.assigneeAgentId) {
+      assignAgent.mutate({ task, toAgentId: agent.id, toAgentName: agent.name })
+      return
+    }
+    if (task.assigneeAgentId === agent.id) {
+      message.info(`「${task.title}」当前已由 ${agent.name} 负责`)
+      return
+    }
+    setHandoffPrompt({
+      task,
+      fromAgentId: task.assigneeAgentId,
+      fromAgentName: task.assigneeName ?? '原负责人',
+      toAgentId: agent.id,
+      toAgentName: agent.name,
+      toAgentRole: agent.role,
+    })
+    setHandoffNote('')
+  }
   const taskOptions = (board.data?.tasks ?? [])
     .filter((task) => task.id !== selectedTaskId && task.status !== 'cancelled')
     .map((task) => ({ value: task.id, label: task.title }))
@@ -452,6 +579,19 @@ export default function TaskBoardPage() {
       dueAt: task.dueAt ? dayjs(task.dueAt) : undefined,
     })
   }
+
+  useEffect(() => {
+    const id = searchParams.get('task')
+    if (!id || !board.data || handledTaskLink.current === `${projectId}:${id}`) return
+    handledTaskLink.current = `${projectId}:${id}`
+    if (!board.data.tasks.some(task => task.id === id)) { message.error('此任务不在当前项目中'); return }
+    const request = ++detailRequest.current
+    setDetailPending(true)
+    void queryClient.ensureQueryData({ queryKey: qk.task(id), queryFn: () => window.projectos.tasks.detail(id) })
+      .then(() => { if (request === detailRequest.current) { setSelectedTaskId(id); setDrawerOpen(true) } })
+      .catch((error: unknown) => { if (request === detailRequest.current) message.error(errorMessage(error)) })
+      .finally(() => { if (request === detailRequest.current) setDetailPending(false) })
+  }, [searchParams, board.data, projectId, queryClient, message])
 
   const submitCreate = async (): Promise<void> => {
     const values = await createForm.validateFields()
@@ -612,41 +752,187 @@ export default function TaskBoardPage() {
       >
         <Button size="small">变更状态</Button>
       </Dropdown>
+      <Dropdown
+        trigger={['click']}
+        menu={{
+          items: rosterAgents.map((agent) => ({
+            key: agent.id,
+            label: (
+              <span className="po-agent-menu-item">
+                <AgentAvatar name={agent.name} personaId={agent.persona.id} size={24} status={agent.status} />
+                <strong>{agent.name}</strong>
+                <span className="po-muted po-caption">{agent.role}</span>
+                <span className={`po-roster-badge is-${agent.status}`}>
+                  {agent.status === 'working' ? '工作中' : '空闲'}
+                </span>
+              </span>
+            ),
+          })),
+          onClick: ({ key }) => {
+            const target = rosterAgents.find((item) => item.id === key)
+            if (target && taskDetail.data) {
+              handleAssignOrHandoff(taskDetail.data.task, target)
+            }
+          },
+        }}
+      >
+        <Button size="small" type="primary" icon={<RobotOutlined />} data-testid="drawer-assign-agent-btn">
+          {taskDetail.data.task.assigneeAgentId ? '交接 / 更换 Agent' : '交给 Agent'}
+        </Button>
+      </Dropdown>
       <Button
         size="small"
-        type="primary"
-        icon={<RobotOutlined />}
         onClick={() => navigate(`/projects/${projectId}/agents?task=${selectedTaskId}`)}
+        title="在 Agent 协作图中定位此任务节点"
       >
-        交给 Agent
+        协作图定位
       </Button>
     </div>
   ) : null
 
+  const activeFilterCount = [requirementFilter, assigneeFilter, versionFilter, iterationFilter, priorityFilter].filter(Boolean).length
+
+  const filterPopoverContent = (
+    <div className="po-board-filter-popover">
+      <div className="po-board-filter-popover-head">
+        <strong>高级筛选</strong>
+        {activeFilterCount > 0 ? (
+          <button
+            type="button"
+            className="po-roster-clear-filter"
+            onClick={() => {
+              setRequirementFilter(null)
+              setAssigneeFilter(null)
+              setVersionFilter(null)
+              setIterationFilter(null)
+              setPriorityFilter(null)
+              const nextParams = new URLSearchParams(searchParams)
+              nextParams.delete('requirement')
+              setSearchParams(nextParams, { replace: true })
+            }}
+          >
+            清空全部 ({activeFilterCount})
+          </button>
+        ) : null}
+      </div>
+      {(overview.data?.requirements ?? []).length > 0 ? (
+        <Select
+          allowClear
+          size="small"
+          aria-label="按需求过滤"
+          placeholder="按需求过滤"
+          value={requirementFilter}
+          onChange={(value) => {
+            const nextVal = value ?? null
+            setRequirementFilter(nextVal)
+            const nextParams = new URLSearchParams(searchParams)
+            if (nextVal) nextParams.set('requirement', nextVal)
+            else nextParams.delete('requirement')
+            setSearchParams(nextParams, { replace: true })
+          }}
+          options={(overview.data?.requirements ?? []).map((req) => ({
+            value: req.id,
+            label: req.title,
+          }))}
+          style={{ width: '100%' }}
+        />
+      ) : null}
+      <Select
+        allowClear
+        size="small"
+        aria-label="按 Agent 过滤"
+        placeholder="按 Agent 过滤"
+        value={assigneeFilter}
+        onChange={(value) => setAssigneeFilter(value ?? null)}
+        options={agentOptions}
+        style={{ width: '100%' }}
+      />
+      <Select
+        allowClear
+        size="small"
+        aria-label="按版本过滤"
+        placeholder="按版本过滤"
+        value={versionFilter}
+        onChange={(value) => setVersionFilter(value ?? null)}
+        options={(lifecycle.data?.versions ?? []).map((version) => ({
+          value: version.id,
+          label: `v${version.version}${version.isDefault ? ' · 默认' : ''}`,
+        }))}
+        style={{ width: '100%' }}
+      />
+      <Select
+        allowClear
+        size="small"
+        aria-label="按迭代过滤"
+        placeholder="按迭代过滤"
+        value={iterationFilter}
+        onChange={(value) => setIterationFilter(value ?? null)}
+        options={(lifecycle.data?.iterations ?? [])
+          .filter((iteration) => !versionFilter || iteration.versionId === versionFilter)
+          .map((iteration) => ({ value: iteration.id, label: iteration.name }))}
+        style={{ width: '100%' }}
+      />
+      <Select
+        allowClear
+        size="small"
+        aria-label="优先级"
+        placeholder="优先级"
+        value={priorityFilter}
+        onChange={(value) => setPriorityFilter(value ?? null)}
+        options={[1, 2, 3, 4].map((value) => ({ value, label: PRIORITY_LABELS[value] }))}
+        style={{ width: '100%' }}
+      />
+    </div>
+  )
+
   return (
     <div className="po-page po-page-wide po-tasks-page">
       {detailPending ? <div className="po-route-progress" role="status" aria-live="polite">正在读取任务详情…</div> : null}
-      <PageHeader
-        title="任务看板"
-        actions={
-          <>
-            <Button icon={<RobotOutlined />} onClick={() => navigate(`/projects/${projectId}/agents`)}>
-              Agent 工作台
+
+      <header className="po-board-compact-top">
+        <div className="po-board-compact-title">
+          <h1>任务看板</h1>
+          <div className="po-board-compact-stats">
+            <span>{tasks.length} 任务</span>
+            <i>·</i>
+            <span>{tasks.filter((task) => task.status === 'running').length} 执行中</span>
+            {tasks.filter((task) => task.status === 'review').length > 0 ? (
+              <>
+                <i>·</i>
+                <span>{tasks.filter((task) => task.status === 'review').length} 待审查</span>
+              </>
+            ) : null}
+          </div>
+          {assigneeFilter ? (
+            <button type="button" className="po-roster-clear-filter" onClick={() => setAssigneeFilter(null)}>
+              已按 Agent 过滤 ×
+            </button>
+          ) : null}
+        </div>
+
+        <div className="po-board-compact-controls">
+          <Input
+            allowClear
+            size="small"
+            prefix={<SearchOutlined />}
+            placeholder="搜索任务或标签…"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            className="po-board-search-compact"
+          />
+          <Popover content={filterPopoverContent} trigger="click" placement="bottomRight">
+            <Button size="small" icon={<FilterOutlined />} data-testid="board-filter-popover-btn">
+              筛选{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
             </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
-              新建任务
-            </Button>
-          </>
-        }
-        meta={
-          <>
-            <span>{tasks.length} 个任务</span>
-            <span>{tasks.filter((task) => task.status === 'running').length} 个执行中</span>
-            <span>{tasks.filter((task) => task.status === 'review').length} 个待审查</span>
-            <span>{(approvals.data?.approvals ?? []).filter((approval) => approval.status === 'pending').length} 个待授权</span>
-          </>
-        }
-      />
+          </Popover>
+          <Button size="small" icon={<RobotOutlined />} onClick={() => navigate(`/projects/${projectId}/agents`)}>
+            Agent 工作台
+          </Button>
+          <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+            新建任务
+          </Button>
+        </div>
+      </header>
 
       {pendingPlan ? (
         <div className="v17-next-step-banner">
@@ -655,8 +941,8 @@ export default function TaskBoardPage() {
             <strong>计划已批准，任务已创建</strong>
             <span>「{pendingPlan.goal}」的 {pendingPlan.createdTaskIds.length} 个任务正在等待你确认执行。</span>
           </div>
-          <Button type="primary" icon={<PlayCircleOutlined />} onClick={() => void startPlan(pendingPlan.id)}>开始执行</Button>
-          <Button onClick={() => navigate(`/projects/${projectId}/orchestration`)}>查看编排</Button>
+          <Button size="small" type="primary" icon={<PlayCircleOutlined />} onClick={() => void startPlan(pendingPlan.id)}>开始执行</Button>
+          <Button size="small" onClick={() => navigate(`/projects/${projectId}/orchestration`)}>查看计划</Button>
         </div>
       ) : null}
 
@@ -667,60 +953,78 @@ export default function TaskBoardPage() {
             <strong>计划执行失败</strong>
             <span>{failedPlan.execution?.error ?? '请查看运行审计，修复后重新执行。'}</span>
           </div>
-          <Button type="primary" onClick={() => void startPlan(failedPlan.id)}>重新执行</Button>
-          <Button onClick={() => navigate(`/projects/${projectId}/runs`)}>运行审计</Button>
+          <Button size="small" type="primary" onClick={() => void startPlan(failedPlan.id)}>重新执行</Button>
+          <Button size="small" onClick={() => navigate(`/projects/${projectId}/runs`)}>运行审计</Button>
         </div>
       ) : null}
 
-      <div className="po-board-toolbar">
-        <Input
-          allowClear
-          prefix={<SearchOutlined />}
-          placeholder="搜索任务、描述或标签"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          className="po-board-search"
-        />
-        <Select
-          allowClear
-          aria-label="按 Agent 过滤" placeholder="按 Agent 过滤"
-          value={assigneeFilter}
-          onChange={(value) => setAssigneeFilter(value ?? null)}
-          options={agentOptions}
-          style={{ width: 200 }}
-        />
-        <Select
-          allowClear
-          aria-label="按版本过滤" placeholder="按版本过滤"
-          value={versionFilter}
-          onChange={(value) => setVersionFilter(value ?? null)}
-          options={(lifecycle.data?.versions ?? []).map((version) => ({
-            value: version.id,
-            label: `v${version.version}${version.isDefault ? ' · 默认' : ''}`,
-          }))}
-          style={{ width: 160 }}
-        />
-        <Select
-          allowClear
-          aria-label="按迭代过滤" placeholder="按迭代过滤"
-          value={iterationFilter}
-          onChange={(value) => setIterationFilter(value ?? null)}
-          options={(lifecycle.data?.iterations ?? [])
-            .filter((iteration) => !versionFilter || iteration.versionId === versionFilter)
-            .map((iteration) => ({ value: iteration.id, label: iteration.name }))}
-          style={{ width: 160 }}
-        />
-        <Select
-          allowClear
-          aria-label="优先级" placeholder="优先级"
-          value={priorityFilter}
-          onChange={(value) => setPriorityFilter(value ?? null)}
-          options={[1, 2, 3, 4].map((value) => ({ value, label: PRIORITY_LABELS[value] }))}
-          style={{ width: 120 }}
-        />
-        <span className="po-grow" />
-        <span className="po-board-hint">拖动卡片更新状态</span>
-      </div>
+      {rosterAgents.length > 0 ? (
+        <section className="po-agent-roster-bar is-dock" aria-label="Agent 团队席位与拖拽指派" data-testid="agent-roster-bar">
+          <div className="po-agent-dock-label" title="直接拖动 3D 头像到任务卡即可接单；已有负责人时自动触发交接确认">
+            <span className="po-agent-roster-kicker">3D TEAM</span>
+            <span>
+              <em>{rosterAgents.filter((a) => a.status === 'working').length} 工作中</em>
+              <i>/</i>
+              {rosterAgents.filter((a) => a.status === 'idle').length} 空闲
+            </span>
+          </div>
+          <div className="po-agent-roster-track" role="list">
+            {rosterAgents.map((agent) => {
+              const isFiltered = assigneeFilter === agent.id
+              const isDraggingThis = draggingAgent?.id === agent.id
+              return (
+                <div
+                  key={agent.id}
+                  role="listitem"
+                  draggable
+                  data-testid={`roster-agent-${agent.id}`}
+                  data-agent-id={agent.id}
+                  data-agent-name={agent.name}
+                  data-agent-status={agent.status}
+                  className={`po-roster-agent is-${agent.status}${isFiltered ? ' is-selected' : ''}${isDraggingThis ? ' is-dragging' : ''}`}
+                  onDragStart={(event) => {
+                    event.dataTransfer.effectAllowed = 'copyMove'
+                    event.dataTransfer.setData(
+                      'application/x-projectos-agent',
+                      JSON.stringify({ id: agent.id, name: agent.name, role: agent.role }),
+                    )
+                    setDraggingAgent({ id: agent.id, name: agent.name, role: agent.role })
+                  }}
+                  onDragEnd={() => {
+                    setDraggingAgent(null)
+                    setAgentDropTaskId(null)
+                  }}
+                  onClick={() => setAssigneeFilter((prev) => (prev === agent.id ? null : agent.id))}
+                  title={`拖拽 ${agent.name}（${agent.persona.label}）到下方任务卡指派/交接；点击可按该 Agent 过滤`}
+                >
+                  <div className="po-roster-avatar-wrap">
+                    <AgentAvatar
+                      name={agent.name}
+                      personaId={agent.persona.id}
+                      size={48}
+                      status={agent.status}
+                    />
+                  </div>
+                  <div className="po-roster-info">
+                    <div className="po-roster-name-row">
+                      <strong>{agent.name}</strong>
+                      <span className={`po-roster-status-pill is-${agent.status}`}>
+                        <i />
+                        {agent.status === 'working'
+                          ? '工作中'
+                          : agent.assignedCount > 0
+                            ? `${agent.assignedCount} 项`
+                            : '空闲'}
+                      </span>
+                    </div>
+                    <span className="po-roster-role">{agent.role}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      ) : null}
 
       {board.isLoading ? (
         <LoadingBlock rows={7} label="正在加载任务看板" />
@@ -735,6 +1039,7 @@ export default function TaskBoardPage() {
                   key={column.status}
                   className={`po-board-column ${dropTarget === column.status ? 'is-drop-target' : ''}`.trim()}
                   onDragOver={(event) => {
+                    if (draggingAgent || event.dataTransfer.types.includes('application/x-projectos-agent')) return
                     event.preventDefault()
                     event.dataTransfer.dropEffect = 'move'
                     setDropTarget(column.status)
@@ -743,6 +1048,7 @@ export default function TaskBoardPage() {
                     if (event.currentTarget === event.target) setDropTarget(null)
                   }}
                   onDrop={(event) => {
+                    if (draggingAgent || event.dataTransfer.types.includes('application/x-projectos-agent')) return
                     event.preventDefault()
                     setDropTarget(null)
                     const taskId = event.dataTransfer.getData('text/plain') || draggingId
@@ -772,8 +1078,32 @@ export default function TaskBoardPage() {
                           key={task.id}
                           task={task}
                           dragging={draggingId === task.id}
+                          agentDropActive={agentDropTaskId === task.id}
+                          draggingAgentName={draggingAgent?.name ?? null}
                           onDragStart={() => setDraggingId(task.id)}
                           onDragEnd={() => { setDraggingId(null); setDropTarget(null) }}
+                          onAgentDragOver={(event) => {
+                            if (!draggingAgent && !event.dataTransfer.types.includes('application/x-projectos-agent')) return
+                            event.preventDefault()
+                            event.stopPropagation()
+                            event.dataTransfer.dropEffect = 'copy'
+                            if (agentDropTaskId !== task.id) setAgentDropTaskId(task.id)
+                          }}
+                          onAgentDragLeave={() => {
+                            if (agentDropTaskId === task.id) setAgentDropTaskId(null)
+                          }}
+                          onAgentDrop={(event) => {
+                            const raw = event.dataTransfer.getData('application/x-projectos-agent')
+                            if (!raw && !draggingAgent) return
+                            event.preventDefault()
+                            event.stopPropagation()
+                            setAgentDropTaskId(null)
+                            const dropped = raw
+                              ? (JSON.parse(raw) as { id: string; name: string; role: string })
+                              : draggingAgent
+                            setDraggingAgent(null)
+                            if (dropped) handleAssignOrHandoff(task, dropped)
+                          }}
                           onOpen={() => openTask(task)}
                         />
                       ))
@@ -799,6 +1129,97 @@ export default function TaskBoardPage() {
           ) : null}
         </>
       )}
+
+      <DialogShell
+        open={Boolean(handoffPrompt)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setHandoffPrompt(null)
+            setHandoffNote('')
+          }
+        }}
+        ariaLabel="任务交接确认"
+        width={520}
+        testId="task-handoff-dialog"
+      >
+        <OverlayHeader
+          eyebrow="AGENT HANDOFF"
+          title="确认进行任务交接？"
+          closeLabel="关闭交接确认"
+        />
+        <OverlayScrollArea className="po-dialog-form-scroll">
+          {handoffPrompt ? (
+            <div className="po-handoff-confirm">
+              <div className="po-handoff-confirm-task">
+                <span className="po-caption po-muted">目标任务</span>
+                <strong>{handoffPrompt.task.title}</strong>
+                <StatusPill tone={toneForStatus(handoffPrompt.task.status)}>
+                  {taskStatusLabel(handoffPrompt.task.status)}
+                </StatusPill>
+              </div>
+              <div className="po-handoff-confirm-transfer">
+                <div className="po-handoff-agent-card">
+                  <AgentAvatar name={handoffPrompt.fromAgentName} size={46} />
+                  <div>
+                    <span className="po-caption po-muted">当前负责人</span>
+                    <strong>{handoffPrompt.fromAgentName}</strong>
+                  </div>
+                </div>
+                <span className="po-handoff-arrow" aria-hidden="true">
+                  <SwapOutlined />
+                </span>
+                <div className="po-handoff-agent-card is-target">
+                  <AgentAvatar name={handoffPrompt.toAgentName} size={46} />
+                  <div>
+                    <span className="po-caption po-muted">交接给新 Agent</span>
+                    <strong>{handoffPrompt.toAgentName}</strong>
+                    <small>{handoffPrompt.toAgentRole}</small>
+                  </div>
+                </div>
+              </div>
+              <p className="po-handoff-confirm-desc">
+                该任务已有 Agent（<strong>{handoffPrompt.fromAgentName}</strong>）接收。确认交接后，任务负责人将变更为{' '}
+                <strong>{handoffPrompt.toAgentName}</strong>，并保留原执行与审批记录。
+              </p>
+              <Input.TextArea
+                rows={2}
+                value={handoffNote}
+                onChange={(event) => setHandoffNote(event.target.value)}
+                placeholder="可选：填写交接原因或上下文说明"
+                maxLength={500}
+              />
+            </div>
+          ) : null}
+        </OverlayScrollArea>
+        <OverlayFooter>
+          <Button
+            onClick={() => {
+              setHandoffPrompt(null)
+              setHandoffNote('')
+            }}
+          >
+            取消
+          </Button>
+          <Button
+            type="primary"
+            icon={<SwapOutlined />}
+            loading={assignAgent.isPending}
+            data-testid="confirm-task-handoff-btn"
+            onClick={() => {
+              if (!handoffPrompt) return
+              assignAgent.mutate({
+                task: handoffPrompt.task,
+                toAgentId: handoffPrompt.toAgentId,
+                toAgentName: handoffPrompt.toAgentName,
+                fromAgentName: handoffPrompt.fromAgentName,
+                note: handoffNote,
+              })
+            }}
+          >
+            确认交接
+          </Button>
+        </OverlayFooter>
+      </DialogShell>
 
       <DialogShell open={createOpen} onOpenChange={(open) => { if (!open) setCreateOpen(false) }} ariaLabel="新建任务" width={620}>
         <OverlayHeader eyebrow="TASK BOARD" title="新建任务" closeLabel="关闭新建任务" />
@@ -919,6 +1340,7 @@ export default function TaskBoardPage() {
           eyebrow="任务详情"
           title={taskDetail.data?.task.title ?? '加载中…'}
           closeLabel="关闭任务详情"
+          actions={taskDetail.data?.task.requirementId ? <Button type="text" onClick={() => navigate(`/projects/${projectId}/requirements?requirement=${taskDetail.data!.task.requirementId}`)}>所属需求 <ArrowRightOutlined /></Button> : undefined}
           meta={taskDetail.data ? <><StatusPill tone={toneForStatus(taskDetail.data.task.status)}>{taskStatusLabel(taskDetail.data.task.status)}</StatusPill><StatusPill tone={taskDetail.data.task.priority === 1 ? 'danger' : 'neutral'} dot={false}>{priorityLabel(taskDetail.data.task.priority)}优先级</StatusPill><span>v{taskDetail.data.task.version}</span>{taskDetail.data.task.assigneeName ? <span>指派给 {taskDetail.data.task.assigneeName}</span> : <span>未指派</span>}</> : null}
         />
         <OverlayScrollArea className="po-task-detail-scroll">

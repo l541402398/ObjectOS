@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react'
 import { Tooltip } from 'antd'
+import { AgentAvatar3DSvg, resolveAgentPersona3D } from './AgentAvatar3D.js'
+
+export * from './AgentAvatar3D.js'
 
 export interface PageHeaderProps {
+  /** @deprecated Product navigation already identifies the category; omit decorative duplicate labels. */
   eyebrow?: ReactNode
   title: ReactNode
   description?: ReactNode
@@ -10,11 +14,10 @@ export interface PageHeaderProps {
   compact?: boolean
 }
 
-export function PageHeader({ eyebrow, title, description, actions, meta, compact = false }: PageHeaderProps) {
+export function PageHeader({ title, description, actions, meta, compact = false }: PageHeaderProps) {
   return (
     <header className={`po-page-header ${compact ? 'is-compact' : ''}`.trim()}>
       <div className="po-page-heading">
-        {eyebrow ? <div className="po-eyebrow">{eyebrow}</div> : null}
         <h1 className="po-page-title">{title}</h1>
         {description ? <p className="po-page-description">{description}</p> : null}
         {meta ? <div className="po-page-meta">{meta}</div> : null}
@@ -131,33 +134,57 @@ export function KeyValueList({ items, compact = false }: { items: KeyValueItem[]
 
 export function AgentAvatar({
   name,
-  accent = '#4C8DFF',
+  accent,
   size = 30,
   status,
   title,
+  personaId,
 }: {
   name: string
   accent?: string
   size?: number
   status?: 'working' | 'idle' | 'offline'
   title?: string
+  personaId?: string
 }) {
   const initial = [...name.trim()][0] ?? 'A'
+  const persona = resolveAgentPersona3D(name, personaId)
   const avatar = (
     <span
-      className={`po-avatar ${status ? `is-${status}` : ''}`.trim()}
+      className={`po-avatar po-avatar-3d ${status ? `is-${status}` : ''}`.trim()}
       style={{
         width: size,
         height: size,
-        fontSize: Math.max(12, Math.round(size * 0.38)),
-        background: 'var(--ui-accent-soft)',
-        color: 'var(--ui-accent-strong)',
-        borderColor: accent,
+        position: 'relative',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '50%',
+        padding: 0,
+        overflow: 'visible',
+        background: 'transparent',
+        borderColor: accent ?? persona.ring,
       }}
       aria-label={name}
+      data-persona-id={persona.id}
+      data-gender={persona.gender}
     >
-      {initial}
-      {status ? <i className="po-avatar-status" /> : null}
+      <AgentAvatar3DSvg persona={persona} size={size} status={status} />
+      <span
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+      >
+        {initial}
+      </span>
     </span>
   )
   return title ? <Tooltip title={title}>{avatar}</Tooltip> : avatar

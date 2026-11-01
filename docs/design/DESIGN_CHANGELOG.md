@@ -1,5 +1,63 @@
 # ProjectOS UI Design Changelog
 
+## 2026-10-31 — visible glass shell (user-directed) and requirement start controls
+
+- User asked to prioritise UI: refined, commercial glass; fewer flat white rectangles. Chosen scope: global shell first, glass strength close to the approved Design Lab. Added `styles/glass-system.css` (Lab recipes, frozen blue/cyan palette): coloured static light field, translucent workspace/rail, translucent content sheets with hairline + highlight, glass controls, frosted overlays, reduced-transparency fallbacks.
+- Live backdrop blur on the scrolling workspace measured 61 → 10 fps and was removed there; kept only on overlays/popups. Composited pixel contrast 24/24 ≥ 4.5:1. [Evidence](../v2/evidence/glass-shell/REPORT.md).
+- Round 2 de-carding: unified 4-card stat grids (`.po-metric-grid`, `.v16-stat-grid`) into a single hairline-divided glass telemetry strip without boxy corner icon badges; converted nested boxed rows (`.po-milestone`, `.po-requirement`, `.po-decision`, `.po-gate`, `.wc-task-row`, `.wc-agent`, `.v16-team-row`) into hairline-divided ledger rows; transformed `.v16-project-visual` into a compact horizontal glass card (removing the 108px blank cover box and redundant quick-action/placeholder chart cards); flattened `.po-board-toolbar` and fixed the `.ant-input-affix-wrapper > input.ant-input` white inner box on `TaskBoardPage`.
+- Round 3 optical refraction & Batch 2 unified journey/materials (ADR-0078): ported Design Lab's radial indigo/cyan/violet refraction recipes (`--gl-optical`, `--gl-canvas`, `--gl-lane`) to eliminate flat white-on-white translucency; de-boxed `.nx-center-hero` and `.po-lifecycle-card` headers; restructured `RequirementWorkPage` header with `.rq-eyebrow` and borderless right-hand tabular metrics (`任务项 / 流程阶段 / 产出资料`) matching `.pdl-plan-head`; styled `.rq-flow-journey` and `.po-journey` with `.pdl-stop-orb`-style glass markers; replaced opaque `#F4F7FD` on `.aco-deck.pw-theme` with Design Lab's radial optical canvas + `22px` dot grid; unified top-bar requirement journey (`RequirementJourneyBar`) and stage material provenance/stale/superseded reader (`RequirementMaterials`). [Glass evidence](../v2/evidence/glass-shell/REPORT.md), [Batch 2 evidence](../v2/evidence/requirement-journey-materials/REPORT.md).
+- Requirement workbench gained one state-driven primary action, a task-arrangement dialog and start results (ADR-0077). [Evidence](../v2/evidence/requirement-defaults-start/REPORT.md).
+- Round 4 UX & 3D Avatar Polish: compacted `TaskBoardPage` header and `RequirementJourneyBar` (`compact` variant) with folded filter popover; upgraded `.ant-switch` transitions and fixed `.pui-overlay-surface` button reset specificity; styled `WorkCenterPage` `...` popover with `.po-glass-action-menu`; unified `WorkCenterPage` `+ 提出需求` with `RequirementWorkPage` modal (`?create=1`); reordered left sidebar navigation in lifecycle execution order and promoted `项目档案与配置` to a pinned top trigger beneath the project switcher with a right-hand glass secondary menu popover (`.po-project-hub-popover`); upgraded `AgentAvatar3D` (`packages/ui/src/components/AgentAvatar3D.tsx`) to 52px Doubao-AI style 3D anthropomorphic portraits (`packages/ui/src/components/agent-portraits-data.ts`) with natural blinking (`po-avatar-eye-blink`) and occasional side glances (`po-avatar-look-left` / `po-avatar-look-right`), preserving original Gaussian blur (`backdrop-filter`) and drop-shadow effects while memoizing `WorkEditor` options and pausing `.po-shell` background animations when a modal backdrop is active.
+
+## 2026-10-30 — requirement-owned workflows, without UC grouping
+
+- The user's latest instruction supersedes the earlier UC design. Requirements directly contain tasks;
+  each task inherits the requirement's versioned workflow. Legacy group documents and links are preserved.
+- Retain the approved blue/cyan optical theme. Reuse the existing guarded overlay for inline workflow
+  creation, real React Flow editing, keyboard alternatives, compact task rows and contextual approvals.
+  Named stage navigation and Agent details open actual stored materials; no placeholder progress.
+- Native AI assignment respects manual choices during automatic completion. Real node execution,
+  document review, testing and recovery retain existing Runtime and human-approval boundaries.
+- Consulted local UI UX Pro Max, Vercel, Impeccable, actual Sim source and installed React Flow;
+  unavailable skill loaders and unchanged optical-effect limits are explicitly recorded.
+- [Evidence](../v2/evidence/requirement-guided-flow/REPORT.md): 74 native checks, 41 final screenshots,
+  light/dark and 1440/1280/1024 plus app zoom/reduced motion. Full tests: 613 PASS / 1 timeout / 4 SKIP;
+  the entire timed-out test module separately passes 15/15, and final flow/coordinator tests pass 18/18.
+  Build, typecheck, lint and packaged EXE smoke pass. No claim of full-suite or user visual acceptance.
+
+## 2026-10-30 — A3.2a reviewed task results and requirement integration
+
+- Keep the restored blue/cyan optical materials and shared guarded DialogShell. Add a real result
+  review surface with code first, current verification and human review alongside, and Git details
+  collapsed. Narrow windows use one reading column with the primary action still reachable.
+- Distinguish task acceptance from result review. Verification, Git permission, task acceptance and
+  requirement delivery remain separate facts. No static progress or implicit blanket authorization.
+- Native screenshots, command results, source references and remaining limits are recorded in
+  [A3.2a evidence](../v2/evidence/requirement-integration/REPORT.md). Earlier screenshots stay intact.
+
+## 2026-10-30 — A3.1 real requirement workbench, UC groups and isolated task workspaces
+
+- Extend the restored blue/cyan optical system with one real requirement route; reuse semantic tokens,
+  bundled Chinese typography and shared guarded overlays. No palette replacement or graph redesign.
+- Wide requirement rail becomes a named selector in narrow windows; UC sections contain real task
+  rows and explicit workspace/approval/error states. Draft documents never imply review approval.
+- New requirement scope does not display the legacy plan journey, which incorrectly implied AI work
+  while the user was editing a draft. All existing plan journeys/routes remain.
+- Actual Sim source, local UI UX Pro Max/Vercel/Impeccable files and queries, unavailable loader and
+  retained optical-effect limitations are recorded with [A3.1 evidence](../v2/evidence/requirement-work/REPORT.md).
+- 17 final native screenshots, six viewport/theme axe checks, 30 real desktop checks and full command
+  results accompany that report. No final aesthetic approval, OS-DPI or live-model acceptance claimed.
+
+## 2026-10-30 — restore blue/cyan optical glass after user rejection of Soft Studio
+
+- Explicit user correction supersedes the new package: restore the pre-package optical theme,
+  navigation and page composition, retaining earlier source adaptations and uncommitted work.
+- Reconstruct the pre-package snapshot from HEAD `f71d33e` plus the saved existing diff. No repository
+  reset, database edit, remote push or rollback of the completed font/startup/journey work.
+- Remove the Soft Studio activation and palette preference from production. The alternative token,
+  layout helper and tests are archived locally; ADR-0072 is withdrawn. The original UI contract remains.
+- Real restored-app screenshots, source hashes and command status: [restoration report](optical-restore/REPORT.md).
+
 ## 2026-10-30 — restore optical startup and the visible global journey
 
 - User feedback supersedes the overly compact global journey: nine named stages are visible, the

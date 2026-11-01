@@ -1,3 +1,4 @@
+import { RequirementFlowService } from './requirement-flow.js'
 import {
   AIConnectionProbeSchema,
   AIRegistryActionSchema,
@@ -60,6 +61,8 @@ import { seedDemo } from './demo.js'
 import { OrchestrationScheduler } from './orchestrator.js'
 import { ResourceService } from './resource-service.js'
 import { LocalWorkerService } from './local-worker.js'
+import { RequirementWorkService } from './requirement-work.js'
+import { RequirementIntegrationService } from './requirement-integration.js'
 import { agentForPlannedTask } from '@projectos/planning'
 import { planGroupTitle } from '@projectos/session-manager'
 
@@ -83,6 +86,9 @@ export interface DispatcherDeps {
 }
 
 export class RuntimeDispatcher {
+  private readonly requirementFlow: RequirementFlowService
+  private readonly requirementWork: RequirementWorkService
+  private readonly requirementIntegration: RequirementIntegrationService
   private readonly localWorker: LocalWorkerService
   private readonly aiConnections: AIConnectionService
   private readonly planGrants: PlanGrantService
@@ -109,8 +115,11 @@ export class RuntimeDispatcher {
   private readonly groupDiscussions = new Map<string, Promise<void>>()
 
   constructor(private readonly deps: DispatcherDeps) {
+    this.requirementWork = new RequirementWorkService(deps.store, deps.config.dataDir)
+    this.requirementIntegration = new RequirementIntegrationService(deps.store)
     this.localWorker = new LocalWorkerService(deps.store)
     this.aiConnections = new AIConnectionService(deps.store)
+    this.requirementFlow = new RequirementFlowService(deps.store, deps.services, deps.runner, this.requirementWork, new AiPlannerModelSource(deps.provider, this.aiConnections), projectId => this.actions.autonomySettings(projectId).mode === 'autonomous')
     this.planGrants = new PlanGrantService(deps.store, deps.logger)
     this.runtimeSettings = new RuntimeSettingsService(deps.store, (limits) => deps.runner.setLimits(limits))
     this.runtimeSettings.apply()
@@ -186,7 +195,10 @@ export class RuntimeDispatcher {
         if (result.actions.length === 0) return
         deps.logger.info({ projectId: result.projectId, advanced: result.advanced.length, nudged: result.nudgedPlans.length }, 'autonomy coordination pass')
       },
-      this.autopilot,
+      { advance: (projectId) => {
+        this.autopilot.advance(projectId)
+        void this.requirementFlow.advance(projectId).catch(error => deps.logger.warn({ err: error, projectId }, 'requirement flow coordination failed'))
+      } },
     )
   }
 
@@ -240,6 +252,7 @@ export class RuntimeDispatcher {
     for (const timer of this.eventChecks.values()) clearTimeout(timer)
     this.eventChecks.clear()
     this.autonomy.dispose()
+    this.requirementFlow.dispose()
     this.scheduler.shutdown()
   }
 
@@ -1138,8 +1151,36 @@ export class RuntimeDispatcher {
       }
       case 'requirement.create': {
         const input = this.parse('requirement.create', rawInput)
-        return { requirement: services.projects.createRequirement(input) }
+        return { requirement: services.projects.createRequirement({ ...input, workflow: input.workflow ?? { templateVersionId: 'wfv_standard1', assignmentMode: 'manual', assignments: {} } }) }
       }
+      case 'workflow.materials': { const input = this.parse('workflow.materials', rawInput); return this.requirementFlow.materials(input.projectId, input.agentId) }
+      case 'workflow.templates': return this.requirementFlow.templates(this.parse('workflow.templates', rawInput).projectId)
+      case 'workflow.save': return this.requirementFlow.save(this.parse('workflow.save', rawInput))
+      case 'requirement.flow': return this.requirementFlow.view(this.parse('requirement.flow', rawInput).requirementId)
+      case 'requirement.flow.bind': return this.requirementFlow.bind(this.parse('requirement.flow.bind', rawInput))
+      case 'requirement.flow.assign': return this.requirementFlow.assign(this.parse('requirement.flow.assign', rawInput))
+      case 'requirement.flow.assignAI': return this.requirementFlow.assignAI(this.parse('requirement.flow.assignAI', rawInput).requirementId)
+      case 'requirement.flow.start': return this.requirementFlow.start(this.parse('requirement.flow.start', rawInput).taskId)
+      case 'requirement.flow.pause': return this.requirementFlow.pause(this.parse('requirement.flow.pause', rawInput).taskId)
+      case 'requirement.flow.reconcile': return this.requirementFlow.reconcile(this.parse('requirement.flow.reconcile', rawInput))
+      case 'requirement.flow.retry': return this.requirementFlow.retry(this.parse('requirement.flow.retry', rawInput))
+      case 'requirement.flow.defaults': return this.requirementFlow.setDefaults(this.parse('requirement.flow.defaults', rawInput))
+      case 'requirement.flow.assignment.preview': return this.requirementFlow.previewAssignments(this.parse('requirement.flow.assignment.preview', rawInput).requirementId)
+      case 'requirement.flow.assignment.apply': return this.requirementFlow.applyAssignments(this.parse('requirement.flow.assignment.apply', rawInput))
+      case 'requirement.flow.startAll': return this.requirementFlow.startAll(this.parse('requirement.flow.startAll', rawInput))
+      case 'requirement.flow.stopAll': return this.requirementFlow.stopAll(this.parse('requirement.flow.stopAll', rawInput))
+      case 'requirement.work': {
+        const input = this.parse('requirement.work', rawInput)
+        this.requirementIntegration.list(input.requirementId)
+        return this.requirementWork.view(input.requirementId)
+      }
+      case 'requirement.update': return this.requirementWork.update(this.parse('requirement.update', rawInput))
+      case 'task.integration.preview': return this.requirementIntegration.preview(this.parse('task.integration.preview', rawInput).taskId)
+      case 'task.integration.review': return this.requirementIntegration.recordReview(this.parse('task.integration.review', rawInput))
+      case 'task.integration.request': return this.requirementIntegration.request(this.parse('task.integration.request', rawInput))
+      case 'task.integration.reconcile': return this.requirementIntegration.reconcile(this.parse('task.integration.reconcile', rawInput).operationId)
+      case 'task.workspace.request': return this.requirementWork.request(this.parse('task.workspace.request', rawInput))
+      case 'task.workspace.reconcile': return this.requirementWork.reconcile(this.parse('task.workspace.reconcile', rawInput).preparationId)
       case 'requirement.setStatus': {
         const input = this.parse('requirement.setStatus', rawInput)
         return { requirement: services.projects.setRequirementStatus(input.requirementId, input.status) }
@@ -1381,7 +1422,9 @@ export class RuntimeDispatcher {
       }
       case 'approval.decide': {
         const input = this.parse('approval.decide', rawInput)
-        await runner.decideApproval(input.approvalId, input.decision, input.note)
+        if (this.requirementIntegration.ownsApproval(input.approvalId)) await this.requirementIntegration.decide(input.approvalId, input.decision, input.note)
+        else if (this.requirementWork.ownsApproval(input.approvalId)) await this.requirementWork.decide(input.approvalId, input.decision, input.note)
+        else await runner.decideApproval(input.approvalId, input.decision, input.note)
         const view = store.read.getApprovalView(input.approvalId)
         if (!view) throw new AppError('NOT_FOUND', '授权请求不存在')
         return { approval: view satisfies ApprovalView }
@@ -1606,6 +1649,7 @@ export class RuntimeDispatcher {
         const input = this.parse('plan.generate', rawInput)
         return this.orchestration.generateAIPlan({
           projectId: input.projectId,
+          requirementId: input.requirementId,
           goal: input.goal,
           mode: input.mode,
           allowRuleFallback: input.allowRuleFallback,

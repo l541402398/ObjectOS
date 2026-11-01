@@ -1,0 +1,151 @@
+{
+  "restoredSourceFilesMatchingManifest": 44,
+  "completedFeaturesMatchBase": [
+    "apps/desktop/src/renderer/src/components/BootScreen.tsx",
+    "apps/desktop/src/renderer/src/components/GoalJourneyBar.tsx",
+    "apps/desktop/src/renderer/src/components/ProjectModeControl.tsx",
+    "packages/design-tokens/src/unified.css"
+  ],
+  "screenshots": [
+    {
+      "file": "docs/design/optical-restore/after/agent-detail-1440-light.png",
+      "sha256": "1271e6c53cde835281e47744353e232b0cfb5f18c836156bcac5926b14b7ab0f"
+    },
+    {
+      "file": "docs/design/optical-restore/after/agents-1024-dark.png",
+      "sha256": "96bd990c8a85473dddf06ec69e87cfde0e110529180b978ac7703288185650c6"
+    },
+    {
+      "file": "docs/design/optical-restore/after/agents-1024-light-125.png",
+      "sha256": "7303b2a40b7c3d977b8d640eb0dc9068f1e6ea8e84125ce605ecd11363c8cfb4"
+    },
+    {
+      "file": "docs/design/optical-restore/after/agents-1024-light.png",
+      "sha256": "12a9117820d56cb4d7d1a3449bb97ec6fdcc49ed8863c8e72cc6d7e490d342cc"
+    },
+    {
+      "file": "docs/design/optical-restore/after/agents-1280-dark.png",
+      "sha256": "a85857aa9e4b3104c37f25bc79a9acd3e26590fae2d3ef4d397b37c8ec48722a"
+    },
+    {
+      "file": "docs/design/optical-restore/after/agents-1280-light.png",
+      "sha256": "76cfce5b9099bb5466c47930b6643992f8ac05c046da8f1f500cf5c14b1ffa42"
+    },
+    {
+      "file": "docs/design/optical-restore/after/agents-1440-dark.png",
+      "sha256": "708c5a5c05004a15dff8f73e62a18f4a29b46a2a5d466ccfb028c28a3aff64ec"
+    },
+    {
+      "file": "docs/design/optical-restore/after/agents-1440-light.png",
+      "sha256": "2b6c2e4d7eb8a9532ff06018f2db6fec52ec0d01c250e80cc93dbc550bb7feb9"
+    },
+    {
+      "file": "docs/design/optical-restore/after/approvals-1024-dark.png",
+      "sha256": "6995eed5d5f2bdc99c7d5704aa5b78cdc7bd270badf0e94622c6bd7a3238733c"
+    },
+    {
+      "file": "docs/design/optical-restore/after/approvals-1024-light.png",
+      "sha256": "f76a05b44262a8415ae755467aad60da19f1a4da28949160cf83e43faf058bc6"
+    },
+    {
+      "file": "docs/design/optical-restore/after/approvals-1280-dark.png",
+      "sha256": "dd21f015f5d1b53244b7966511ca76748d6d64304b02130c0270a1d176fff931"
+    },
+    {
+      "file": "docs/design/optical-restore/after/approvals-1280-light.png",
+      "sha256": "71a05c8440d4ca02a6fe70d7e18f1bf3b8aa3e129003ae8c87f39e80cbc04e80"
+    },
+    {
+      "file": "docs/design/optical-restore/after/approvals-1440-dark.png",
+      "sha256": "af95474a184bf0d86f538dd032614cbf8f4bf0c41a2280711bf1dc059404ea13"
+    },
+    {
+      "file": "docs/design/optical-restore/after/approvals-1440-light.png",
+      "sha256": "9d359e47048443301e1b03f0c45b0d6336335db1c2e912b977b20f149a983da8"
+    },
+    {
+      "file": "docs/design/optical-restore/after/flow-1024-dark.png",
+      "sha256": "20a6e3f58ddbf7a3f72f6db86a88a6aaada26d9ee19a16d6e0c027d672dcd17c"
+    },
+    {
+      "file": "docs/design/optical-restore/after/flow-1024-light.png",
+      "sha256": "6f4c8b6ba01f52d09e3bdec664fbe1191dd23d0b360174576385b83831e235cb"
+    },
+    {
+      "file": "docs/design/optical-restore/after/flow-1280-dark.png",
+      "sha256": "a1a38e02f620d008e004add69bcac609daa2dd22fc4a0f74b4f4df5b02c77c36"
+    },
+    {
+      "file": "docs/design/optical-restore/after/flow-1280-light.png",
+      "sha256": "00cb43761011ab30a4285a2027d4c3b2a3630b56179f659e85af76bf0bc6120e"
+    },
+    {
+      "file": "docs/design/optical-restore/after/flow-1440-dark.png",
+      "sha256": "6dce145ff11c748eb16805c6d794ae0d6f37edbf2f3a6350aa90c86c20cbaada"
+    },
+    {
+      "file": "docs/design/optical-restore/after/flow-1440-light.png",
+      "sha256": "7feeb8f3e3efd96080114beb4f9114eae0dcc25b91ab6872ec1ee0159f8d02ad"
+    },
+    {
+      "file": "docs/design/optical-restore/after/home-1024-dark.png",
+      "sha256": "ce8dbaab7f39af71079693e9397a6603362d9c688fb65570e1e9c126d9bc5c64"
+    },
+    {
+      "file": "docs/design/optical-restore/after/home-1024-light.png",
+      "sha256": "0965ec3162747d8c10b8847b2b06983bfbac6d964c945a6c3405887dd1edac9d"
+    },
+    {
+      "file": "docs/design/optical-restore/after/home-1280-dark.png",
+      "sha256": "b1a48a4265b19d6dcb7ffd5061be84a7d16b1888d87577b518e661f5af56ca29"
+    },
+    {
+      "file": "docs/design/optical-restore/after/home-1280-light.png",
+      "sha256": "15d75a1eb39968f789ee20055881d7a340804cf1b113832ae133cc7a4f5aa0d5"
+    },
+    {
+      "file": "docs/design/optical-restore/after/home-1440-dark.png",
+      "sha256": "080fcb41d342ae5e05c613b9a16cf051f75bc0e76db84fae65be878556bbe88a"
+    },
+    {
+      "file": "docs/design/optical-restore/after/home-1440-light.png",
+      "sha256": "88b47c0a7bbd3c3b337d2922d743e12f65f3f9a0762f4ea1fdc6be4040eb0da0"
+    },
+    {
+      "file": "docs/design/optical-restore/after/settings-1440-light.png",
+      "sha256": "a529adaf5e460a849bac211661b15631001d32b183c0b789a7226fad1266e045"
+    },
+    {
+      "file": "docs/design/optical-restore/navigation/project-return.png",
+      "sha256": "6e4acc6bae179ff2849060e08cd7adc872bb2f788c24a3cafdcfcb3c302b8305"
+    },
+    {
+      "file": "docs/design/optical-restore/startup/details-1024-dark-125.png",
+      "sha256": "44e863d894833db3a7a08f5355eb93441e88e8a758d2e0d14503ca795a9f48ec"
+    },
+    {
+      "file": "docs/design/optical-restore/startup/details-1440-light.png",
+      "sha256": "6168d0459de547e848e742f943b156f4d8b7b488a3fc12ac9590a419d6b7da37"
+    },
+    {
+      "file": "docs/design/optical-restore/startup/journey-1024-dark-125.png",
+      "sha256": "91fd699c829d211c9c6397283407f18832f799b25c2f80a39be161916b9dbeb1"
+    },
+    {
+      "file": "docs/design/optical-restore/startup/journey-1440-light.png",
+      "sha256": "e82e26472bd00010c7899bf238742ac9318f7ced564531d11df8fcec8ec82aa2"
+    },
+    {
+      "file": "docs/design/optical-restore/startup/startup-1024-dark-125.png",
+      "sha256": "411ee4356d2c1a849844cd4a645e59da7f6a6416b53eea9ca99d84587d0f2143"
+    },
+    {
+      "file": "docs/design/optical-restore/startup/startup-1440-light.png",
+      "sha256": "83edd1c3295ad815fa90390aadedfc7b4a9ac520a0a9f5237c379bfe9eeffc9a"
+    },
+    {
+      "file": "docs/design/optical-restore/startup/startup-reduced-motion.png",
+      "sha256": "1501c4ffbd1cc6adc06cce16bb503e7632fd56b77c606535a90c31324b5581cc"
+    }
+  ]
+}

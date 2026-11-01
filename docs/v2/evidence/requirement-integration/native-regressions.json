@@ -1,0 +1,27 @@
+[
+  {
+    "command": "node scripts/e2e.mjs",
+    "exitCode": 0,
+    "log": "docs/v2/evidence/requirement-integration/logs/e2e.log"
+  },
+  {
+    "command": "node scripts/agent-e2e.mjs",
+    "exitCode": 0,
+    "log": "docs/v2/evidence/requirement-integration/logs/agent-e2e.log"
+  },
+  {
+    "command": "node scripts/v12-e2e.mjs",
+    "exitCode": 0,
+    "log": "docs/v2/evidence/requirement-integration/logs/v12-e2e.log"
+  },
+  {
+    "command": "node scripts/v13-e2e.mjs",
+    "exitCode": 0,
+    "log": "docs/v2/evidence/requirement-integration/logs/v13-e2e.log"
+  },
+  {
+    "command": "pnpm test:package",
+    "exitCode": 0,
+    "log": "docs/v2/evidence/requirement-integration/logs/package-smoke.log"
+  }
+]

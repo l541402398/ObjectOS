@@ -95,8 +95,13 @@ export class AutonomyCoordinator {
   ) {}
 
   /** Records an event as a coordination intent. Returns false when deduplicated. */
-  enqueue(event: Pick<ProjectEvent, 'id' | 'eventType' | 'projectId'>): boolean {
-    const kind = classifyEvent(event.eventType)
+  enqueue(event: Pick<ProjectEvent, 'id' | 'eventType' | 'projectId'> & Partial<Pick<ProjectEvent, 'payload'>>): boolean {
+    // Workspace preparation and integration retain their historical custom-event envelope.
+    // Their settled facts must wake an explicitly started requirement flow in every mode.
+    const detailKind = event.payload?.kind
+    const eventType = event.eventType === 'project.event' && typeof detailKind === 'string' &&
+      (detailKind.startsWith('task.workspace.') || detailKind.startsWith('task.integration.')) ? detailKind : event.eventType
+    const kind = classifyEvent(eventType)
     if (!kind) return false
     const result = this.store.db
       .prepare(

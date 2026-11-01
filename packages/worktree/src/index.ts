@@ -149,9 +149,20 @@ export async function ensureBaselineCommit(
 }
 
 export class WorktreeManager {
-  async create(repoRoot: string, worktreePath: string, branch: string): Promise<WorktreeRef> {
+  async create(repoRoot: string, worktreePath: string, branch: string, baseCommit?: string): Promise<WorktreeRef> {
     if (!existsSync(`${repoRoot}/.git`)) {
       throw new Error('项目不是 Git 仓库，无法创建工作树')
+    }
+    // A pinned creation is a one-shot approved operation, never an adoption/retry.
+    if (baseCommit) {
+      if (!/^[a-f0-9]{40,64}$/i.test(baseCommit)) throw new Error('工作区必须使用明确的提交版本')
+      if (existsSync(worktreePath)) throw new Error('目标工作区已存在，请先人工核对')
+      const branchExists = await runGit(['rev-parse', '--verify', `refs/heads/${branch}`], repoRoot)
+      if (branchExists.code === 0) throw new Error('目标分支已存在，请先人工核对')
+      mkdirSync(dirname(worktreePath), { recursive: true })
+      const created = await runGit(['worktree', 'add', '-b', branch, worktreePath, baseCommit], repoRoot)
+      if (created.code !== 0) throw new Error(created.stderr.trim() || '工作区创建结果不确定，请人工核对')
+      return { path: worktreePath, branch, baseHead: await this.head(worktreePath) }
     }
     const reuse = async (): Promise<WorktreeRef | null> => {
       if (!existsSync(worktreePath)) return null

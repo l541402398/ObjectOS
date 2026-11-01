@@ -71,6 +71,7 @@ export function planFingerprint(plan: PlanDraft): string {
     revision: plan.revision,
     goal: plan.goal,
     createdTaskIds: plan.createdTaskIds,
+    ...(plan.requirementId ? { requirementId: plan.requirementId, requirementVersion: plan.requirementVersion, requirementFlowVersionId: plan.requirementFlowVersionId } : {}),
     tasks: plan.tasks.map((task) => ({
       key: task.key,
       title: task.title,

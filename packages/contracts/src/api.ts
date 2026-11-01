@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { RequirementWorkApiSchemas } from './requirement-work.js'
+import { RequirementFlowApiSchemas } from './requirement-flow.js'
 import { ORGANIZATION_MAIN_METHODS, OrganizationApiSchemas } from './organization.js'
 import { ProjectJourneySchema } from './journey.js'
 import {
@@ -160,6 +162,7 @@ export type UpdateProjectInput = z.infer<typeof UpdateProjectInputSchema>
 
 export const CreateTaskInputSchema = z.object({
   projectId: IdSchema,
+  requirementId: IdSchema.nullable().optional(),
   title: z.string().trim().min(1).max(240),
   description: z.string().max(40_000).default(''),
   priority: PrioritySchema.default(3),
@@ -237,6 +240,7 @@ export const CreateRequirementInputSchema = z.object({
   versionId: IdSchema.nullable().optional(),
   iterationId: IdSchema.nullable().optional(),
   source: z.string().trim().max(240).default('local'),
+  workflow: z.object({ templateVersionId: IdSchema, assignmentMode: z.enum(['manual', 'ai']), assignments: z.record(z.string(), IdSchema.nullable()) }).optional(),
 })
 export type CreateRequirementInput = z.infer<typeof CreateRequirementInputSchema>
 
@@ -356,6 +360,8 @@ const projectIdInput = z.object({ projectId: IdSchema })
 
 /** Renderer → Main → Runtime request catalogue. Inputs are validated at both boundaries. */
 export const ApiSchemas = {
+  ...RequirementWorkApiSchemas,
+  ...RequirementFlowApiSchemas,
   ...OrganizationApiSchemas,
   'app.bootstrap': {
     input: empty,
@@ -1394,6 +1400,7 @@ export const ApiSchemas = {
     // and fixtures. The product UI explicitly asks for AI with mode: 'ai'.
     input: z.object({
       projectId: IdSchema,
+      requirementId: IdSchema.optional(),
       goal: z.string().trim().min(3).max(8000),
       mode: z.enum(['ai', 'local']).default('local'),
       allowRuleFallback: z.boolean().default(false),

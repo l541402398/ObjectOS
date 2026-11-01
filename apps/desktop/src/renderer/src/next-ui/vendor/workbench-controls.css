@@ -1,0 +1,32 @@
+.pui-tabs { display: flex; flex-direction: column; min-width: 0; }
+.pui-tabs-list { display: inline-flex; flex: none; align-items: center; gap: 4px; min-height: 36px; }
+.pui-tabs-trigger {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 7px 10px; min-height: 36px; border: 0; border-radius: 6px; background: transparent;
+  color: var(--ui-ink-2); font: 400 13px/1.5 var(--ui-font); white-space: nowrap; cursor: pointer;
+}
+.pui-tabs-trigger:hover { color: var(--ui-ink); background: var(--ui-surface-hover); }
+.pui-tabs-trigger[data-state='active'] { color: var(--ui-ink); font-weight: 550; }
+.pui-tabs-list[data-variant='line'] .pui-tabs-trigger[data-state='active']::after {
+  content: ''; position: absolute; bottom: 0; inset-inline: 10px; height: 2px; border-radius: 2px; background: var(--ui-accent);
+}
+.pui-tabs-list[data-variant='default'] { padding: 3px; border-radius: 8px; background: var(--ui-surface-sunken); }
+.pui-tabs-list[data-variant='default'] .pui-tabs-trigger[data-state='active'] { background: var(--ui-surface-raised); box-shadow: var(--ui-shadow-sm); }
+.pui-tabs-content { flex: 1; min-width: 0; min-height: 0; outline: none; }
+.pui-tabs-trigger:focus-visible, .pui-tabs-content:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 2px; }
+.pui-tabs-trigger:disabled { cursor: default; color: var(--ui-faint); }
+.pui-canvas-controls {
+  position: absolute; bottom: 12px; left: 12px; z-index: 10; display: flex; align-items: center; gap: 2px;
+  height: 36px; padding: 3px; border: 1px solid var(--ui-border); border-radius: 8px;
+  background: var(--ui-surface); box-shadow: var(--ui-shadow-sm); pointer-events: auto;
+}
+.pui-canvas-controls button {
+  display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 5px;
+  background: transparent; color: var(--ui-ink-2); cursor: pointer; font: 400 12px/1 var(--ui-font);
+}
+.pui-canvas-controls button:hover { background: var(--ui-surface-hover); color: var(--ui-ink); }
+.pui-canvas-controls button:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 1px; }
+.pui-canvas-controls button:disabled { cursor: default; color: var(--ui-faint); }
+.pui-canvas-controls .pui-canvas-zoom { width: 44px; font-variant-numeric: tabular-nums; }
+.pui-canvas-divider { width: 1px; height: 18px; margin-inline: 3px; background: var(--ui-border); }
+@media (pointer: coarse) { .pui-canvas-controls { height: 48px; } .pui-canvas-controls button { width: 40px; height: 40px; } }

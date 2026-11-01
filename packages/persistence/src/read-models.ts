@@ -48,6 +48,7 @@ import {
   type ProjectStats,
   type ProjectSummary,
   type Requirement,
+  type TaskWorkspace,
   type Product,
   type ProductVersion,
   type Iteration,
@@ -328,6 +329,17 @@ export class ReadModels {
   getMilestone(id: string): Milestone | null {
     const row = this.get<MilestoneRow>('SELECT * FROM milestones WHERE id = ?', id)
     return row ? toMilestone(row) : null
+  }
+
+  getTaskFlowBlockers(taskId: string): string[] {
+    return this.db.prepare("SELECT title FROM task_flow_steps WHERE task_id=? AND status!='completed' ORDER BY created_at,id")
+      .all(taskId).map(row => `流程尚未完成：${String(row.title)}`)
+  }
+
+  getTaskWorkspace(taskId: string): TaskWorkspace | null {
+    return this.get<TaskWorkspace>(`SELECT id, project_id AS projectId, requirement_id AS requirementId, task_id AS taskId,
+      kind, root_path AS rootPath, branch, base_commit AS baseCommit, requirement_version AS requirementVersion,
+      created_at AS createdAt FROM requirement_workspaces WHERE task_id=?`, taskId) ?? null
   }
 
   getDecision(id: string): Decision | null {

@@ -1,0 +1,30 @@
+PASS Soft Studio is active
+PASS flow-1440-light-100 accessibility: []
+PASS flow-1440-light-100 geometry and secondary type: {"viewport":[1440,900],"bounds":[249,188,1178,683],"overflow":false,"small":[]}
+PASS flow-1440-light-100 contrast: {"min":4.728072699455853,"count":33,"failures":[]}
+PASS 1440-light-100 every task projected
+PASS 1440-light-100 canvas remains usable
+PASS list-1440-light-100 accessibility: []
+PASS list-1440-light-100 geometry and secondary type: {"viewport":[1440,900],"bounds":[273,387.3125,1121,706.046875],"overflow":false,"small":[]}
+PASS list-1440-light-100 contrast: {"min":4.837057347053687,"count":50,"failures":[]}
+PASS home-1440-light-100 accessibility: []
+FAIL home-1440-light-100 geometry and secondary type: {"viewport":[1440,900],"bounds":[249,188,1178,683],"overflow":false,"small":[{"text":"3 项待办","size":"12px"},{"text":"工具授权","size":"12px"},{"text":"Run 失败","size":"12px"},{"text":"版本门禁","size":"12px"}]}
+PASS home-1440-light-100 contrast: {"min":4.728072699455853,"count":71,"failures":[]}
+PASS agents-1440-light-100 accessibility: []
+PASS agents-1440-light-100 geometry and secondary type: {"viewport":[1440,900],"bounds":[249,188,1178,683],"overflow":false,"small":[]}
+PASS agents-1440-light-100 contrast: {"min":4.707640956616393,"count":99,"failures":[]}
+PASS flow-1024-dark-100 accessibility: []
+PASS flow-1024-dark-100 geometry and secondary type: {"viewport":[1024,768],"bounds":[93,188,914,551],"overflow":false,"small":[]}
+PASS flow-1024-dark-100 contrast: {"min":7.094065447481401,"count":21,"failures":[]}
+PASS 1024-dark-100 every task projected
+PASS 1024-dark-100 canvas remains usable
+PASS list-1024-dark-100 accessibility: []
+PASS list-1024-dark-100 geometry and secondary type: {"viewport":[1024,768],"bounds":[113,427,865,706.046875],"overflow":false,"small":[]}
+PASS list-1024-dark-100 contrast: {"min":6.5208931637401655,"count":30,"failures":[]}
+PASS home-1024-dark-100 accessibility: []
+PASS home-1024-dark-100 geometry and secondary type: {"viewport":[1024,768],"bounds":[93,188,914,551],"overflow":false,"small":[]}
+PASS home-1024-dark-100 contrast: {"min":7.094065447481401,"count":44,"failures":[]}
+PASS agents-1024-dark-100 accessibility: []
+PASS agents-1024-dark-100 geometry and secondary type: {"viewport":[1024,768],"bounds":[93,188,914,551],"overflow":false,"small":[]}
+PASS agents-1024-dark-100 contrast: {"min":6.1296023736238965,"count":60,"failures":[]}
+PASS No renderer errors: []

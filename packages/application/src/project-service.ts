@@ -242,6 +242,7 @@ export class ProjectService {
     }
     return this.store.transaction(() => {
       this.store.createRequirement(requirement)
+      if (input.workflow) this.store.initializeRequirementFlow(requirement, input.workflow)
       this.store.appendEvent(project.id, requirement.id, PROJECT_EVENT_TYPES.requirementCreated, {
         title: requirement.title,
         actor,

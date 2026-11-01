@@ -25,6 +25,7 @@ import { ProductDialogs } from './next-ui/overlay/ProductDialogs'
 import { OverlayRoot } from './next-ui/overlay/overlay-context'
 import { useResolvedTheme, useUiEffects } from './stores/ui'
 import { BootError } from './components/BootScreen'
+import './styles/glass-system.css'
 
 interface ErrorBoundaryState {
   error: Error | null
@@ -57,7 +58,12 @@ function Root() {
   const themeConfig = React.useMemo(() => createAntdTheme(theme), [theme])
   return (
     <QueryClientProvider client={queryClient}>
-      <ConfigProvider theme={themeConfig} locale={zhCN}>
+      <ConfigProvider
+        theme={themeConfig}
+        locale={zhCN}
+        wave={{ disabled: true }}
+        getPopupContainer={(trigger) => trigger?.closest<HTMLElement>('.pui-overlay-content') ?? document.body}
+      >
         <XProvider>
           <AntApp message={{ maxCount: 3, duration: 2.6 }} notification={{ maxCount: 4 }}>
             <OverlayRoot><ProductDialogs><RouterProvider router={router} /></ProductDialogs></OverlayRoot>

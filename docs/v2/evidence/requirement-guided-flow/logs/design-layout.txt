@@ -1,0 +1,37 @@
+## UI Pro Max Search Results
+**Domain:** ux | **Query:** responsive detail panel desktop
+**Source:** ux-guidelines.csv | **Found:** 3 results
+
+### Result 1
+- **Category:** Responsive
+- **Issue:** Horizontal Scroll
+- **Platform:** Web
+- **Description:** Avoid horizontal scrolling
+- **Do:** Ensure content fits viewport width
+- **Don't:** Content wider than viewport
+- **Code Example Good:** max-w-full overflow-x-hidden
+- **Code Example Bad:** Horizontal scrollbar on mobile
+- **Severity:** High
+
+### Result 2
+- **Category:** Responsive
+- **Issue:** Viewport Meta
+- **Platform:** Web
+- **Description:** Set viewport for mobile devices
+- **Do:** Use width=device-width initial-scale=1
+- **Don't:** Missing or incorrect viewport
+- **Code Example Good:** <meta name='viewport'...>
+- **Code Example Bad:** No viewport meta tag
+- **Severity:** High
+
+### Result 3
+- **Category:** Responsive
+- **Issue:** Table Handling
+- **Platform:** Web
+- **Description:** Tables can overflow on mobile
+- **Do:** Use horizontal scroll or card layout
+- **Don't:** Wide tables breaking layout
+- **Code Example Good:** overflow-x-auto wrapper
+- **Code Example Bad:** Table overflows viewport
+- **Severity:** Medium
+

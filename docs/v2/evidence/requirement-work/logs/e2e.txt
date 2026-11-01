@@ -1,0 +1,32 @@
+warning: in the working copy of 'AGENTS.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+PASS Create requirement from UI persists
+PASS UC and two independently assigned tasks persist
+PASS No filesystem work before human decision
+PASS Approved task and requirement workspaces exist
+PASS Workspace bindings survive desktop restart
+PASS Workspace authorization does not authorize write_file
+PASS Approved write affects only isolated task root
+PASS Real task details deep link
+PASS 1440 light readable and no page overflow
+PASS 1440 light accessibility
+PASS 1440 dark readable and no page overflow
+PASS 1440 dark accessibility
+PASS 1280 light readable and no page overflow
+PASS 1280 light accessibility
+PASS 1280 dark readable and no page overflow
+PASS 1280 dark accessibility
+PASS 1024 light readable and no page overflow
+PASS 1024 light accessibility
+PASS 1024 dark readable and no page overflow
+PASS 1024 dark accessibility
+PASS Dirty form has discard guard
+PASS Keyboard focus stays visible
+PASS Reduced motion enabled
+PASS Project switching never shows foreign requirement
+PASS Original project data returns
+PASS Dirty baseline error stays visible
+PASS Dense list remains scrollable to its final task
+PASS Background refresh cannot overwrite a concurrent document revision
+PASS Version conflict preserves unsaved form content
+PASS No renderer errors

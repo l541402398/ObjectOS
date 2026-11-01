@@ -673,7 +673,7 @@
   color: var(--color-text-tertiary);
 }
 
-.wc-next-head strong { font-size: 12px; font-weight: 600; }
+.wc-next-head h2 { margin: 0; font-size: 12px; font-weight: 600; }
 .wc-next-count { margin-left: auto; font-size: 12px; line-height: 16px; }
 
 .wc-next-body {

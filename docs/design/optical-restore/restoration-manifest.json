@@ -1,0 +1,322 @@
+{
+  "base": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+  "preservedPriorPatch": "docs/design/soft-studio/baseline/pre-existing-work.patch",
+  "records": [
+    {
+      "file": "apps/desktop/src/renderer/public/startup-preferences.js",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "1393cd6de55bc5c7710f2096cb1fff46139e25abe3f3d0ee41abb987418c0d41",
+      "afterSha256": "09a56e395144611e43aa37baecb1e75a26444604856e3cad28698d15fd39af40"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/components/AppLayout.tsx",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "963cc24b9d5423b572d9996a6ad6b5b870454e15c7bd649b8ee10ae8c1978683",
+      "afterSha256": "157d1aa2c6fbbcdc41da39514ab0dacfcc7a981da9beaf22accb4be83b7e4549"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/components/NextStepPanel.tsx",
+      "source": "pre-package working snapshot",
+      "beforeSha256": "d592d11b911a63e5384f747d81a7122da794bfb5c0e1089af3b570340aca647e",
+      "afterSha256": "76b80dc575306ed5fc95f3440f6eb7b89d3b05c2bda048eeb47df333e43bab79"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/components/action-center.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "055a642982153b87f861ea9f16e2f1f4aa10238f4bdc63e2723c8dae2a311ed6",
+      "afterSha256": "e4909d755b09c72206f6b43ed604ee0dffd07a1555a7f1bcb7b5040984bd6ded"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "bac864d2240e6347ccb511647b967e6bc8d2e6753bd8f3c908e2dcd70032e7ec",
+      "afterSha256": "6cf8e18f93c9ec3424567e05e42f64f29b9c7ddf68b5ea9dd784f76d8c6d9dde"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/components/product-navigation.tsx",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "be88b6f47419c19cae3f787cd2636c687645dbb48bc12c6b4817f26ac949bc10",
+      "afterSha256": "4d58f88163e4bb405e7ba61bcbef63e13b7a5d9404f55c0178024043eb5a0bc2"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "d5c7f4b585b1ae1ab539e8eb15faa33e0ff13f6a987e706acc1072ab79eb6915",
+      "afterSha256": "920a8f7f12dc5b413ac44dc24622cc5df42bd7f1d80f5baa3990b7688f150bb9"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/components/release.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "a799e00b775c1cbbea9f60a5baf5e17c8635100e69db0ec5a056a1e592025173",
+      "afterSha256": "bd1c8bb4cdbbbcb32b2e2e2bb5e366399ab607d26e8ec835f98ead8a66f65213"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationGraph.tsx",
+      "source": "pre-package working snapshot",
+      "beforeSha256": "191856340c9e581cf9ae0de71e11a34d384d2b28f109319de4cc6f76af429a6a",
+      "afterSha256": "cd8f8c12924a3b997ebb7c1cfcba48062a9290f9f154e354b1adf88f55ecea06"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationOverview.tsx",
+      "source": "pre-package working snapshot",
+      "beforeSha256": "dc3a7026df7aa3e9defc00f5ed9998280e2794172c8765101643b11e8095a4e9",
+      "afterSha256": "2d9ff59251fbc83c0cf3307fab6b19c5acaf93e6db17ce05c24ef7bb5e24fb96"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/collaboration-overview/collaboration-overview.css",
+      "source": "pre-package working snapshot",
+      "beforeSha256": "cbca86d8d78f459a36a9862906e324b90ad1377219aecf80293a4b957921858c",
+      "afterSha256": "427d1f8ff087f1d7c14fc2b87bbcfaba35c6ce0866944e0064cd1dda0559ee65"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/orchestration/pages/OrchestrationWorkspace.tsx",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "8e7d477d889fa83a4230946af9f9ce6c1d68a4140f95762affdc40fc455d5bb0",
+      "afterSha256": "b507e5c2e321441aa489fa2e1fadcbaaadc6029e80b78afe288427075829a0f3"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/orchestration/pages/orchestration.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "fb3e8b8fe919140095506e3ddbc1e3d4dcd12f2297c0b773066961afdfb8f8cd",
+      "afterSha256": "417aaa83ea1e9544aa0c9776ec4bfad3d29827fb7fb9658cc469261a26b8a337"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/settings/AboutSettingsPanel.tsx",
+      "source": "pre-package working snapshot",
+      "beforeSha256": "8cadb5831be2fb0ab0381ebb2f0219552052ddaf4fbef63a04194137d6da74b4",
+      "afterSha256": "8b26da41aec90b492c45ed7aec54ae328905250f576ab8772e7a12cb8b285246"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/settings/PreferencesSettingsPanel.tsx",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "63a6a09899a8d185808b9c29faa3848f85a866256ae3b753cb093aa2e1b436d1",
+      "afterSha256": "6f2c844823be1cd548d380edbcf407c6a4dacb115899599a84268e878487bdbc"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/settings/RuntimeSettingsPanel.tsx",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "812a94551287b14868c716a6532c801b86a50b2516f400731aea46278752e6d7",
+      "afterSha256": "82603b0942bfac7fb911a4cf7ee847f75274bdd91842b0c93a4b24f60cac1df0"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/settings/organization/assets.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "5c631ad97c0e836cfa4408dd295e7c5bac8ae63216763e737553c70e8e0155b6",
+      "afterSha256": "a7c8282d079d4dde6af9faedfe1c73acdc8e84552f9552132a79c0bfe424de11"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/settings/organization/organization.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "23334c15116b8b66a1c1c1f0967852bb19a80c92ca1da1c81cd71fd158f4081e",
+      "afterSha256": "1dcd3209ddfb66d64b09c5a6bdb53ee1567652f5d9a3a473a48b81babe2ca7c0"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/settings/organization/workers.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "bcfe6db28d844436fe06b16d3a69f4c5ea9105d19ee709f139323b7a814286fe",
+      "afterSha256": "d56ab8e80fdec53baaaddb53df1be7136959e8178956de0c8e6c07ead2ddb31c"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/settings/settings.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "1977cbfdfdbae39c3147b24988caf6fbc36d32793477c4ae51011dc305c90077",
+      "afterSha256": "8cc4f41040aa75e16ecb1fe6ea9e8d3c527fa03e427962c6ad44b943f5d06a12"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/studio/StudioProjectHome.tsx",
+      "source": "pre-package working snapshot",
+      "beforeSha256": "89411a30d65e274b14c761365b4c90bdf2b1b32be46d0c2c182334419891cd67",
+      "afterSha256": "e560cf92ecf588a6765335210ebce2f2d20c73e810156e0b18a7dc103e3dd761"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/studio/studio.css",
+      "source": "pre-package working snapshot",
+      "beforeSha256": "badda544e4adedf0bedc6a6900c824443b0ec0b4ee311cb03a57336a512533d2",
+      "afterSha256": "5eae3ab464b31f4bcaba5462e0828ac8da09a7c124759267038b26205edf6e43"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/main.tsx",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "5671e9fb8a3fc668338f0f498b2089db3bcdf403ad1a4945524fd9957de02bcd",
+      "afterSha256": "5be0d6de47dcce715d710bf6e241eb2f2e1e56a30499ad66cea0c2e2d9cc8e79"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/next-ui/overlay/overlay.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "d76ba2195e431137f224889adad351bdf51fb850382e9e4bc42fdc5be0b6392d",
+      "afterSha256": "c8807caf807bf3779b34209d345c077c71c8b49699648495c933f06b969917a9"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/page-registry.ts",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "4b2cb5e7af97c45729c278b52d5e4d1ade0a10ee79d29fb606335d73b44e2cce",
+      "afterSha256": "823b79279584f6789e5143284da4b6482578d0989b30b6bb67d7e1f092f1b66d"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/pages/ProjectOverviewPage.tsx",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "783c8a40fc863c0fb031878278ef49592e836f27f9305ce869547b1af722b1f9",
+      "afterSha256": "109a46f669b1a041ab00e8e98e2a8845e8cde4cd5e84bb3ad415e7b0d0f07a46"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/pages/TaskBoardPage.tsx",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "716f470e23025af1656ece2649d4daf32e00d0864b53708f66bb14639ae1cc40",
+      "afterSha256": "c67d9cbf4b68ae806d78b9574b37af28075cf77ed134dd28715217e1ef5bd719"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "cf4790eeb94b6b87b4ca784985b2c3a840258b5f8101488e065f5bca98cae83a",
+      "afterSha256": "16a4a37b47ec8481b416a6da8b5afc558630acfa514acd93f9142f0b1be42f6f"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/pages/delivery.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "f219a7f51e27624ac8ddb4531ebfce4e1bb934f948015f83b9af949764406acf",
+      "afterSha256": "261892aaa8f231885abe2e1f8b3f999de351f646be639e47140f6972caf73b35"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "414205e3cfd8d34e8b7752feb4fde1f54d5957f1edfea07f73dd6d8a47a924ca",
+      "afterSha256": "2ce71f1d5978847198fdfd83e4830a4e4dd71c2f1344ce17b5f5ee8e6df36ffc"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "28c8477c4e222d1925085600f557a559bc00325313168852b1a5fdc148ee47e8",
+      "afterSha256": "e2ccefd7729b48a72403b3d0bed07bfa22ebcff3c83164d25038a646485cedce"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/pages/work-center.css",
+      "source": "pre-package working snapshot",
+      "beforeSha256": "651dfb65f7fd36a94985d481fd13e9aaf7938ef57294040df3b5f68f4adeddf1",
+      "afterSha256": "c980ed478bd745eadf3980bfcee44a41418889de90191adfa1d85a65ebb534fd"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/stores/ui.ts",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "5846eeb8e512710876678c85bf6f3d37511c7047712c9aa3d51fe57e68c9842f",
+      "afterSha256": "031b002f455e398e82ccbb297c554f67a78f5c69c4088120339ad66170919ae9"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/styles/app.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "d9986a316dc90bcf35b60503b1b35435dd3453f92fc50b6d96699b7ebd8cc031",
+      "afterSha256": "4eb1d180aaf5d4542bfa8679c1be0ced343bd77351d20e3aacd3d676d309f610"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/styles/boot.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "6eb14eb2184994772293c8c679f742193248a8c419f0e642d213e59bf542fa04",
+      "afterSha256": "0489a0a512f608f214862af6c8826f2a7ef98d941e158d10e2c60fb4f2787e04"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "d2905df06f58985577e3fe15d93f7d96b2d7e027949069b5770ce26d8a6be4ee",
+      "afterSha256": "4035b4a5ae83adb97d49db89cefa1ebf7f765dc415f04af4aabafe34a4a963de"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/styles/system-premium.css",
+      "source": "pre-package working snapshot",
+      "beforeSha256": "0f378cc9f1eebfce52eac96df3c3b1b210f66e609272912d72bbf65a4c330f09",
+      "afterSha256": "de42d62341d54a022da13e911215b0ffd292e0e37686f700fb50146b197e78ff"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/styles/v16.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "7c9861d7baa0e1935968c536245b3ff23df6be07df51a866a1515d502ff75fb7",
+      "afterSha256": "7f4eb308aeb4e645fe7a5bc84c2cda40e0c1d1c7caebbe1d1ba64b34b8f639c5"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/styles/v17.css",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "469bced0234a9dd41b92572b279c0d62c9a29691344e0d5f547cbf36b75a115e",
+      "afterSha256": "5bd1166d280d0a82110b687a05ff7023db35af6a84551775e303dd952beeaf5e"
+    },
+    {
+      "file": "docs/design/DESIGN_CHANGELOG.md",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "18af2aef885e33e32fe34dbd6aa7ed4ffee69ef2ca50d5e205299d3aa2486ddc",
+      "afterSha256": "e78d92fde37004ff1b3b37863b6f8754aeec4d068165924c6f6780c4cbbfedf1"
+    },
+    {
+      "file": "docs/design/PROJECTOS_UI_CONTRACT.md",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "e085d7c483228378592d4185cb37703bbaf9f9425baba181cba9b4de216ff5a7",
+      "afterSha256": "af8db530f363a6e6a6fa160e79261db599a8bb856c7ef7ca0b9e756812fd4e11"
+    },
+    {
+      "file": "packages/design-tokens/package.json",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "c3288bcf53de85c2480f8e5c9077da2be08d2570e17d5ba469af541e75d7200a",
+      "afterSha256": "1d5993a96c6a0b0401bff7259773bffe4ffbdce8047093b7b1e3ac78ed04bd01"
+    },
+    {
+      "file": "packages/design-tokens/src/index.ts",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "b4e262b8588cdba6febada2bb21e903fa640bee177dd18747a1b1a117b94f4e4",
+      "afterSha256": "d762107dfae54d820b165756427306007bac56ed14f664a075b8504fb25ff375"
+    },
+    {
+      "file": "packages/ui/src/components/PageElements.tsx",
+      "source": "pre-package working snapshot",
+      "beforeSha256": "311fd5f6ccd8162de553cb0582bd4feb92160face95e8b9ba9e335f3020d371b",
+      "afterSha256": "11245b48f84aebcfbd493629a043c6bd7dcc7ca9277ad942c54e525f2a7bfb9d"
+    },
+    {
+      "file": "packages/ui/src/theme.ts",
+      "source": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+      "beforeSha256": "044649aae16390fafacdea8b7a22ba65fdeaee64685e481f2451fc7200e6437f",
+      "afterSha256": "ec1c2323ec8904a081478bf459282291cd8d49804eba7389f05435f20997298b"
+    },
+    {
+      "file": "scripts/agent-overview-e2e.mjs",
+      "source": "pre-package working snapshot",
+      "beforeSha256": "e34a2e32e637f6bbd6d090c6a8d441159173243cbdb6ee4eac1075ce230942bd",
+      "afterSha256": "e34a2e32e637f6bbd6d090c6a8d441159173243cbdb6ee4eac1075ce230942bd"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/orchestration/pages/workbench.css",
+      "action": "archived inactive new file",
+      "backup": ".tmp\\soft-studio-withdrawn\\inactive\\apps\\desktop\\src\\renderer\\src\\features\\orchestration\\pages\\workbench.css"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/features/orchestration/workbench-layout.ts",
+      "action": "archived inactive new file",
+      "backup": ".tmp\\soft-studio-withdrawn\\inactive\\apps\\desktop\\src\\renderer\\src\\features\\orchestration\\workbench-layout.ts"
+    },
+    {
+      "file": "apps/desktop/src/renderer/src/lib/navigation-model.ts",
+      "action": "archived inactive new file",
+      "backup": ".tmp\\soft-studio-withdrawn\\inactive\\apps\\desktop\\src\\renderer\\src\\lib\\navigation-model.ts"
+    },
+    {
+      "file": "packages/design-tokens/src/soft-studio.json",
+      "action": "archived inactive new file",
+      "backup": ".tmp\\soft-studio-withdrawn\\inactive\\packages\\design-tokens\\src\\soft-studio.json"
+    },
+    {
+      "file": "packages/design-tokens/src/workbench.css",
+      "action": "archived inactive new file",
+      "backup": ".tmp\\soft-studio-withdrawn\\inactive\\packages\\design-tokens\\src\\workbench.css"
+    },
+    {
+      "file": "scripts/soft-studio-tokens.mjs",
+      "action": "archived inactive new file",
+      "backup": ".tmp\\soft-studio-withdrawn\\inactive\\scripts\\soft-studio-tokens.mjs"
+    },
+    {
+      "file": "tests/soft-studio-navigation-layout.test.ts",
+      "action": "archived inactive new file",
+      "backup": ".tmp\\soft-studio-withdrawn\\inactive\\tests\\soft-studio-navigation-layout.test.ts"
+    },
+    {
+      "file": "scripts/soft-studio-e2e.mjs",
+      "action": "archived inactive new file",
+      "backup": ".tmp\\soft-studio-withdrawn\\inactive\\scripts\\soft-studio-e2e.mjs"
+    }
+  ]
+}

@@ -121,6 +121,7 @@ export const TOOL_DEFINITIONS: ToolDefinition[] = [
     description: '在当前项目创建任务，必须提供可验收的验收标准。写入项目数据库并记录审计事件。',
     parameters: object(
       {
+        requirementId: string('所属需求 id；任务运行中创建子任务时自动继承当前需求与流程'),
         title: string('任务标题'),
         description: string('任务背景与范围'),
         acceptanceCriteria: stringArray('验收标准列表，至少一项', 20),

@@ -1409,6 +1409,28 @@
 .aco-deck .aco-gnode-title { font-size: 13px; }
 .aco-deck .aco-activity { border-radius: 12px; background: var(--ui-surface); }
 .aco-deck .aco-mode { display: none; }
+/* Product workbench: Sim's compact header/canvas/action-bar composition; shared optical palette. */
+.aco-deck.aco-workbench { padding-block: 14px 10px; gap: 10px; }
+.aco-workbench .aco-head { align-items: center; justify-content: flex-start; gap: 20px; min-height: 38px; }
+.aco-workbench-title { flex: none; margin: 0; font: 550 18px/1.5 var(--ui-font); color: var(--ui-ink); letter-spacing: -.01em; }
+.aco-workbench .aco-head-actions { margin-left: auto; gap: 4px; }
+.aco-workbench .aco-head-actions .aco-btn { border-color: transparent; background: transparent; box-shadow: none; padding-inline: 8px; min-height: 32px; }
+.aco-workbench .aco-head-actions .aco-btn:hover { background: var(--ui-surface-hover); }
+.aco-workbench .aco-icon-btn { border-color: transparent; background: transparent; }
+.aco-object-tabs { min-width: 0; }
+.aco-tab-count { color: var(--ui-ink-2); font-size: 12px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.aco-workbench .aco-canvas-wrap { border-radius: 12px; box-shadow: none; }
+.aco-workbench .aco-activity { padding: 2px 0; min-height: 34px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.aco-workbench .aco-activity .aco-btn { border-color: transparent; background: transparent; }
+.aco-workbench .aco-activity .aco-pill { padding-inline: 0; border: 0; background: transparent; }
+.aco-workbench .aco-canvas-bar { min-height: 38px; padding-block: 5px; }
+.aco-workbench .aco-canvas-hint { border: 0; background: transparent; padding-inline: 0; }
+.aco-workbench .aco-gnode { border-radius: 8px; box-shadow: var(--ui-shadow-sm); }
+@media (max-width: 1180px) {
+  .aco-workbench .aco-head { gap: 12px; flex-wrap: wrap; }
+  .aco-workbench .aco-object-tabs { order: 3; flex-basis: 100%; }
+  .aco-workbench .aco-head-actions { margin-left: auto; }
+}
 .aco-context { margin-top:22px; padding-top:18px; border-top:1px solid var(--ui-divider); color:var(--ui-ink); }
 .aco-context-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
 .aco-context-heading h3 { margin:0; font-size:16px; line-height:1.4; font-weight:650; }

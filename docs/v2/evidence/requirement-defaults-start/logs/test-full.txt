@@ -1,0 +1,865 @@
+
+> projectos@1.7.0 test C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4
+> vitest run "--maxWorkers=2"
+
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90mC:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4[39m
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/teamwork-relay.test.ts[2m > [22m[2mAgent teamwork relay[2m > [22m[2mpasses a real design artifact and real file changes down a DAG
+[22m[39m[relay] design=art_01m6887006nbea8jhrs4h1wr67 developerRun=run_01m68872tf8a05y2cm1kwc6zt5 injected=2 testReports=2 files=src/rbac.ts+test-evidence.txt order=1793425899531->1793425902415->1793425902445->1793425907290 worktree=C:\Users\ADMINI~1\AppData\Local\Temp\projectos-relay-yj3GkF\worktrees\prj_01m6886ysyc63gp399r6v56144\pln_01m6886z3dc2ahhe681rd4qk7j
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/teamwork-relay.test.ts[2m > [22m[2mAgent teamwork relay[2m > [22m[2mauto-accepts a low-risk handoff and lets the scheduler start the receiver after the source releases the lease
+[22m[39m[handoff] id=hnd_01m6887fncz3atxhay97xkps0h status=accepted sourceRun=run_01m6887fmy8xxjbahk96efb839 targetRun=run_01m6887j3dk1sbhcx2w7j7xw16 continuedAt=1793425918068 task=done assignee=agt_qa
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/teamwork-relay.test.ts[2m > [22m[2mAgent teamwork relay[2m > [22m[2mdiscovers collaborators and sends a message by stable Agent id
+[22m[39m[discovery] inbox=inb_01m6887qx0c6eydkrg56awtrnn status=completed targetSession=ses_01m6887q01z1v8qv9a4667kh48 targetRun=run_01m6887qx3yx8s68eh7v8e6rfe
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/teamwork-relay.test.ts[2m > [22m[2mAgent teamwork relay[2m > [22m[2mdoes not write a file when a dangerous tool approval is rejected
+[22m[39m[rejected] run=run_01m68881h0xcmdmfrv227xzbcw toolCall=tol_01m68881herw64s7a2syzqgatn status=denied task=review plan=paused fileWritten=false
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/teamwork-relay.test.ts[2m > [22m[2mAgent teamwork relay[2m > [22m[2mdoes not treat a skipped quality gate as a passed test report
+[22m[39m[no-script] plan=paused task=review gate=art_01m6888bsrvsp50r1mpmwbn34m verified=false
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/teamwork-relay.test.ts[2m > [22m[2mAgent teamwork relay[2m > [22m[2mkeeps a reviewer task incomplete until a real review Artifact exists
+[22m[39m[reviewer] plan=completed task=done artifacts=2
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/teamwork-relay.test.ts[2m > [22m[2mAgent teamwork relay[2m > [22m[2mkeeps a reviewer task in review when the Agent only claims completion
+[22m[39m[reviewer-claim] plan=paused task=review
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/teamwork-relay.test.ts[2m > [22m[2mAgent teamwork relay[2m > [22m[2mretries a delivered inbox exactly once and marks it completed
+[22m[39m[inbox-retry] inbox=inb_01m6888ss06x4rrawa51sq5mv9 status=completed runs=1
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/teamwork-relay.test.ts[2m > [22m[2mAgent teamwork relay[2m > [22m[2mstarts a prepared handoff exactly once after a simulated restart
+[22m[39m[prepared] handoff=hnd_01m6888tgtttpxgg30gy65j7ks runs=1 targetRun=run_01m6888vd5hz8bk226982bnbx9 plan=completed
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/teamwork-relay.test.ts[2m > [22m[2mAgent teamwork relay[2m > [22m[2mdoes not start a second target run when a target Run exists before continuedAt
+[22m[39m[continued-window] handoff=hnd_01m68892w9s9anmpg1dbn7d0y1 runs=1 targetRun=run_01m68892wdfkv4nvvw6n807sar
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/teamwork-relay.test.ts[2m > [22m[2mAgent teamwork relay[2m > [22m[2mrecords a receiver start failure without a fake run or done task
+[22m[39m[target-start-failure] plan=paused task=blocked runs=0 reassignment=needs_confirmation error=Agent 绑定的 Runtime「Flaky Target Runtime」当前不可用（unavailable），请先
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/teamwork-relay.test.ts[2m > [22m[2mAgent teamwork relay[2m > [22m[2msupersedes old tasks on revision without deleting history
+[22m[39m[revision] old=pln_01m68898z2xym084ypk9mwjhbt status=superseded by=pln_01m68898zvyk9qgp2qmwvr3nyb oldTasks=cancelled,cancelled
+
+ [32m✓[39m tests/teamwork-relay.test.ts [2m([22m[2m12 tests[22m[2m)[22m[33m 76322[2mms[22m[39m
+   [32m✓[39m Agent teamwork relay [2m(12)[22m
+     [33m[2m✓[22m[39m passes a real design artifact and real file changes down a DAG[33m 16020[2mms[22m[39m
+     [33m[2m✓[22m[39m auto-accepts a low-risk handoff and lets the scheduler start the receiver after the source releases the lease[33m 8458[2mms[22m[39m
+     [33m[2m✓[22m[39m discovers collaborators and sends a message by stable Agent id[33m 5933[2mms[22m[39m
+     [33m[2m✓[22m[39m does not write a file when a dangerous tool approval is rejected[33m 6960[2mms[22m[39m
+     [33m[2m✓[22m[39m does not treat a skipped quality gate as a passed test report[33m 9412[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a reviewer task incomplete until a real review Artifact exists[33m 6396[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a reviewer task in review when the Agent only claims completion[33m 6896[2mms[22m[39m
+     [33m[2m✓[22m[39m retries a delivered inbox exactly once and marks it completed[33m 758[2mms[22m[39m
+     [33m[2m✓[22m[39m starts a prepared handoff exactly once after a simulated restart[33m 8566[2mms[22m[39m
+     [33m[2m✓[22m[39m does not start a second target run when a target Run exists before continuedAt[33m 4540[2mms[22m[39m
+     [33m[2m✓[22m[39m records a receiver start failure without a fake run or done task[33m 1732[2mms[22m[39m
+     [33m[2m✓[22m[39m supersedes old tasks on revision without deleting history[33m 647[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r1-handoff-reassign.test.ts[2m > [22m[2mR1-D safe Handoff receiver fallback[2m > [22m[2mreassigns a low-risk handoff to a legal substitute and starts it via the scheduler
+[22m[39m[handoff-structured] handoff=hnd_01m6889bpyknc2mrb954afek2j from=agt_qa to=agt_01m6889aqv53dd6bpbtdgk30nw artifact=art_01m6889bpry4wxzymtbq2aaww7 downstreamRun=run_01m6889gk79t2zz99hy6jdxy89 artifactRefs=1 contextStep=stp_01m6889gk9xeaa7m6r26dfrb6g
+
+[90mstdout[2m | tests/r1-handoff-reassign.test.ts[2m > [22m[2mR1-D safe Handoff receiver fallback[2m > [22m[2mreassigns a low-risk handoff to a legal substitute and starts it via the scheduler
+[22m[39m[r1d-auto] handoff=hnd_01m6889bpyknc2mrb954afek2j from=agt_qa failedReceiver=agt_01m6889aqv53dd6bpbtdgk30nw to=agt_qa runs=2 task=done
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r1-handoff-reassign.test.ts[2m > [22m[2mR1-D safe Handoff receiver fallback[2m > [22m[2mblocks with an explicit reason when no legal substitute exists
+[22m[39m[r1d-none] status=none task=blocked runs=1
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r1-handoff-reassign.test.ts[2m > [22m[2mR1-D safe Handoff receiver fallback[2m > [22m[2mnever silently replaces an explicitly assigned Agent and applies it only after confirmation
+[22m[39m[r1d-explicit] proposal=needs_confirmation confirmed=confirmed runs=1->2
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r1-handoff-reassign.test.ts[2m > [22m[2mR1-D safe Handoff receiver fallback[2m > [22m[2mrequires confirmation when the substitute would expand permissions
+[22m[39m[r1d-expansion] reasons=["替代 Agent 权限更大（新增能力：review）"]
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r1-handoff-reassign.test.ts[2m > [22m[2mR1-D safe Handoff receiver fallback[2m > [22m[2mrejects candidates from another project scope and reports why
+[22m[39m[r1d-invisible] hidden=agt_01m688a9zy1j2xz6450wnzcdfz rejected=5 candidates=1
+
+ [32m✓[39m tests/r1-handoff-reassign.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 41558[2mms[22m[39m
+   [32m✓[39m R1-D safe Handoff receiver fallback [2m(5)[22m
+     [33m[2m✓[22m[39m reassigns a low-risk handoff to a legal substitute and starts it via the scheduler[33m 14099[2mms[22m[39m
+     [33m[2m✓[22m[39m blocks with an explicit reason when no legal substitute exists[33m 4023[2mms[22m[39m
+     [33m[2m✓[22m[39m never silently replaces an explicitly assigned Agent and applies it only after confirmation[33m 8441[2mms[22m[39m
+     [33m[2m✓[22m[39m requires confirmation when the substitute would expand permissions[33m 3980[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects candidates from another project scope and reports why[33m 11011[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/direct-requirement-tasks.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 28582[2mms[22m[39m
+   [32m✓[39m direct requirement → task → Agent [2m(3)[22m
+     [33m[2m✓[22m[39m integrates a task and prepares its successor without creating a synthetic UC[33m 23710[2mms[22m[39m
+     [33m[2m✓[22m[39m runs an assigned Agent with frozen requirement context and independent tool approval[33m 4863[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/worktree.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 21161[2mms[22m[39m
+   [32m✓[39m worktree isolation [2m(9)[22m
+     [33m[2m✓[22m[39m creates a branch worktree, captures diff, and merges only clean changes[33m 2919[2mms[22m[39m
+     [33m[2m✓[22m[39m commits untracked Agent files before merging so they are actually delivered[33m 2682[2mms[22m[39m
+     [33m[2m✓[22m[39m merges with ProjectOS identity when the repository has no git user configured[33m 2816[2mms[22m[39m
+     [33m[2m✓[22m[39m aborts a conflicting merge and leaves the main workspace clean[33m 2687[2mms[22m[39m
+     [33m[2m✓[22m[39m captures untracked files in diff without polluting the index[33m 1739[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses to auto-commit sensitive files[33m 1931[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses files outside the authorized PlanGrant paths[33m 1719[2mms[22m[39m
+     [33m[2m✓[22m[39m retries cleanly after a crash-like failed merge and delivers authorized files[33m 3247[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses to merge into a dirty main workspace[33m 1417[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-quality-evidence-reconcile.test.ts[2m > [22m[2mR2 P0-03: project quality policy in the Scheduler[2m > [22m[2mfails the gate when a required script is missing and passes when it exists
+[22m[39m[r2-policy] missing=paused passing=completed task=done
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-quality-evidence-reconcile.test.ts[2m > [22m[2mR2 P0-05: evidence supplement success[2m > [22m[2mruns a bounded evidence retry and completes the task when real evidence arrives
+[22m[39m[r2-evidence] plan=completed task=done runs=2 retries=1 codeArtifacts=1
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-quality-evidence-reconcile.test.ts[2m > [22m[2mR2 P0-06: reconcile resumes the plan[2m > [22m[2mauto-resumes a paused plan after a retry reconciliation and starts exactly one new run
+[22m[39m[r2-reconcile] reconciled=failed plan=completed runs=completed,failed
+
+ [32m✓[39m tests/r2-quality-evidence-reconcile.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 32197[2mms[22m[39m
+   [32m✓[39m R2 P0-03: project quality policy in the Scheduler [2m(1)[22m
+     [33m[2m✓[22m[39m fails the gate when a required script is missing and passes when it exists[33m 16234[2mms[22m[39m
+   [32m✓[39m R2 P0-05: evidence supplement success [2m(1)[22m
+     [33m[2m✓[22m[39m runs a bounded evidence retry and completes the task when real evidence arrives[33m 7462[2mms[22m[39m
+   [32m✓[39m R2 P0-06: reconcile resumes the plan [2m(1)[22m
+     [33m[2m✓[22m[39m auto-resumes a paused plan after a retry reconciliation and starts exactly one new run[33m 8496[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/requirement-work.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 36250[2mms[22m[39m
+   [32m✓[39m requirement delivery scope and isolated development work [2m(14)[22m
+     [33m[2m✓[22m[39m retains legacy tasks, rejects foreign requirement links and uses optimistic document edits[33m 1144[2mms[22m[39m
+     [33m[2m✓[22m[39m does not mutate Git before approval; rejection is terminal and re-request has a fresh approval[33m 2257[2mms[22m[39m
+     [33m[2m✓[22m[39m creates two separate task worktrees on one frozen requirement base and preserves them on reassignment[33m 6433[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses a stale documents approval without creating workspaces[33m 1795[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses a stale base approval without creating workspaces[33m 2077[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses a stale task approval without creating workspaces[33m 1170[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses a stale expiry approval without creating workspaces[33m 1236[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses a stale cancel approval without creating workspaces[33m 1195[2mms[22m[39m
+     [33m[2m✓[22m[39m does not prepare tasks with unintegrated dependencies or a dirty base[33m 1072[2mms[22m[39m
+     [33m[2m✓[22m[39m marks interrupted preparation unknown and never retries or cleans up automatically[33m 1178[2mms[22m[39m
+     [33m[2m✓[22m[39m never adopts an unknown branch or directory during pinned worktree creation[33m 1653[2mms[22m[39m
+     [33m[2m✓[22m[39m reconciles interrupted preparation from actual state without repeating writes (task created: false)[33m 4536[2mms[22m[39m
+     [33m[2m✓[22m[39m reconciles interrupted preparation from actual state without repeating writes (task created: true)[33m 5622[2mms[22m[39m
+     [33m[2m✓[22m[39m runs native tools only in the task root, with an independent write approval and frozen documents[33m 4877[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/requirement-flow.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 32070[2mms[22m[39m
+   [32m✓[39m requirement owned workflows [2m(11)[22m
+     [33m[2m✓[22m[39m inherits every task, versions templates, preserves frozen bindings and blocks premature acceptance[33m 4081[2mms[22m[39m
+     [33m[2m✓[22m[39m runs distinct assigned Agents, binds real documents to review and advances only after evidence[33m 5505[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a claimed completion with no real output and does not loop or replay it[33m 4232[2mms[22m[39m
+     [33m[2m✓[22m[39m uses model choices for complete assignment and rejects invented Agents atomically[33m 665[2mms[22m[39m
+     [33m[2m✓[22m[39m fills missing autonomous assignments without replacing an explicit human choice[33m 620[2mms[22m[39m
+     [33m[2m✓[22m[39m requires a successful real test command and rejects code modified after that test[33m 8104[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves rejected reviews and lets the user rework the source document without skipping stages[33m 5394[2mms[22m[39m
+     [33m[2m✓[22m[39m does not replay an interrupted step; reconciliation with no created Run only enables explicit retry[33m 631[2mms[22m[39m
+     [33m[2m✓[22m[39m archives legacy authored group documents with task links while preserving versions and audit JSON[33m 2140[2mms[22m[39m
+     [33m[2m✓[22m[39m creates all approved requirement-bound plan tasks and their inherited node instances in one transaction[33m 687[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [31m❯[39m tests/requirement-integration.test.ts [2m([22m[2m15 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 288076[2mms[22m[39m
+   [31m❯[39m reviewed requirement task integration [2m(15)[22m
+[31m     [31m×[31m uses real reviewed, verified output; separately approves integration and prepares a dependent task with that content[39m[33m 30150[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects changed file conditions before Git mutation[33m 18921[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects changed target conditions before Git mutation[33m 19053[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects changed document conditions before Git mutation[33m 18493[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects changed task conditions before Git mutation[33m 18666[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects changed expiry conditions before Git mutation[33m 17100[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects changed cancel conditions before Git mutation[33m 17989[2mms[22m[39m
+     [33m[2m✓[22m[39m retains failed verification and invalidates old passing evidence on source edits[33m 24265[2mms[22m[39m
+     [33m[2m✓[22m[39m does not count a renderer-supplied review snapshot as a trusted human review[33m 9728[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects sensitive content and keeps rejected approval terminal without writes[33m 9537[2mms[22m[39m
+     [33m[2m✓[22m[39m serializes operations per requirement and never replays an interrupted operation[33m 12559[2mms[22m[39m
+     [33m[2m✓[22m[39m does not release a task to an Agent while a cancelled verification still has executing effects[33m 6989[2mms[22m[39m
+     [33m[2m✓[22m[39m reconciles interruption before-commit without repeating any Git write[33m 19716[2mms[22m[39m
+     [33m[2m✓[22m[39m reconciles interruption after-merge without repeating any Git write[33m 21484[2mms[22m[39m
+     [33m[2m✓[22m[39m aborts a conflicting merge and preserves both accepted task commits[33m 43421[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/requirement-defaults-start.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 25709[2mms[22m[39m
+   [32m✓[39m requirement default owners (ADR-0077) [2m(3)[22m
+     [33m[2m✓[22m[39m shares six-stage defaults across three tasks, keeps a single-task override and never rebuilds instances[33m 788[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects stale binding versions, unknown nodes and unavailable Agents without partial writes[33m 658[2mms[22m[39m
+     [33m[2m✓[22m[39m does not change started steps[33m 599[2mms[22m[39m
+   [32m✓[39m requirement start intents (ADR-0077) [2m(7)[22m
+     [33m[2m✓[22m[39m starts eligible tasks once even when the same or a different request is submitted concurrently[33m 5010[2mms[22m[39m
+     [33m[2m✓[22m[39m reports missing owners, unavailable Agents and stale versions explicitly[33m 671[2mms[22m[39m
+     [33m[2m✓[22m[39m waits for dependencies across a restart and continues only inside an unchanged scope[33m 4631[2mms[22m[39m
+     [33m[2m✓[22m[39m does not continue after the intent is revoked, a task is paused or its owners change[33m 4415[2mms[22m[39m
+     [33m[2m✓[22m[39m stops automatic progress when revoked and does not mark waiting work complete[33m 3481[2mms[22m[39m
+     [33m[2m✓[22m[39m runs nodes only after the separate workspace approval; one Run per node with repeated starts[33m 4289[2mms[22m[39m
+     [33m[2m✓[22m[39m autonomous AI assignment fills missing owners before a requested start[33m 1165[2mms[22m[39m
+ [32m✓[39m tests/org-local-worker.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 19091[2mms[22m[39m
+   [32m✓[39m A2.2 device identity and grants — actual PostgreSQL / HTTP [2m(5)[22m
+     [33m[2m✓[22m[39m idempotently enrolls one device, hashes its proof and exposes no path/secret/session[33m 317[2mms[22m[39m
+ [32m✓[39m tests/org-assets.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 14657[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/gone.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p288-auto-review.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 18675[2mms[22m[39m
+   [32m✓[39m ADR-0028 automatic re-review after a content change [2m(6)[22m
+     [33m[2m✓[22m[39m reopens the existing review task instead of creating a new plan revision[33m 2893[2mms[22m[39m
+     [33m[2m✓[22m[39m is idempotent: the same content fingerprint is never reviewed twice[33m 4325[2mms[22m[39m
+     [33m[2m✓[22m[39m does not schedule a re-review while a verification still fails[33m 2075[2mms[22m[39m
+     [33m[2m✓[22m[39m reports needs-replan when the plan has no review task to reuse[33m 775[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses to start a re-review when the execution grant is revoked[33m 2634[2mms[22m[39m
+     [33m[2m✓[22m[39m does nothing when the current content already has an approving review[33m 2078[2mms[22m[39m
+   [32m✓[39m ADR-0028 snapshot authenticity boundaries [2m(2)[22m
+     [33m[2m✓[22m[39m distinguishes a real Git deletion from a path that never existed[33m 2606[2mms[22m[39m
+     [33m[2m✓[22m[39m an incomplete snapshot can never approve, even if fingerprints match[33m 1286[2mms[22m[39m
+ [32m✓[39m tests/p287-review-snapshot.test.ts [2m([22m[2m22 tests[22m[2m)[22m[33m 24251[2mms[22m[39m
+   [32m✓[39m ADR-0025 trusted review snapshot [2m(13)[22m
+     [33m[2m✓[22m[39m hashes the real reviewed file content[33m 589[2mms[22m[39m
+     [33m[2m✓[22m[39m invalidates an approval when the file changes but git HEAD does not[33m 1609[2mms[22m[39m
+     [33m[2m✓[22m[39m treats untracked files as reviewed content, not invisible work[33m 1602[2mms[22m[39m
+     [33m[2m✓[22m[39m records staged, unstaged, deleted and renamed changes of the worktree[33m 1840[2mms[22m[39m
+     [33m[2m✓[22m[39m widens the snapshot only when the review explicitly says it is project-wide[33m 1809[2mms[22m[39m
+     [33m[2m✓[22m[39m never follows a symlink out of the workspace and records the rejection[33m 1157[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses a structured approved verdict once the content moved on[33m 1815[2mms[22m[39m
+     [33m[2m✓[22m[39m fails closed when a review carries no snapshot at all[33m 644[2mms[22m[39m
+     [33m[2m✓[22m[39m ignores paths that escape the workspace[33m 616[2mms[22m[39m
+     [33m[2m✓[22m[39m records deleted files as null instead of pretending they exist[33m 801[2mms[22m[39m
+     [33m[2m✓[22m[39m does not invalidate a review just because the same bytes were committed[33m 1878[2mms[22m[39m
+     [33m[2m✓[22m[39m round-trips a v2 snapshot through storage and keeps the scope and changes[33m 1072[2mms[22m[39m
+   [32m✓[39m ADR-0024 shared review evidence resolution [2m(7)[22m
+     [33m[2m✓[22m[39m approves only when the current content review is positive[33m 1097[2mms[22m[39m
+     [33m[2m✓[22m[39m does not let a structured approved verdict bypass the version check[33m 1732[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a historical negative review for audit but does not let it block a re-reviewed version[33m 1733[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses to let one positive review override a current contradictory review[33m 1096[2mms[22m[39m
+     [33m[2m✓[22m[39m blocks while a current review records an unresolved blocker[33m 1096[2mms[22m[39m
+     [33m[2m✓[22m[39m cannot approve anything when the version cannot be verified[33m 478[2mms[22m[39m
+     [33m[2m✓[22m[39m does not approve on stale reviews alone[33m 1580[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-phase1.test.ts[2m > [22m[2mR2 Phase 1: missing R1 verification[2m > [22m[2mmigrates a V18 database to V38 without losing existing data
+[22m[39m[r2-migrate] v18 -> v24 versions=39,40,41,42,43 project=Legacy V18 Project preserved
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-phase1.test.ts[2m > [22m[2mR2 Phase 1: missing R1 verification[2m > [22m[2mrequires confirmation when the substitute Runtime raises the risk level
+[22m[39m[r2-risk] candidate=agt_01m688hds64r9kpa073pvtxv2d reasons=["替代 Runtime 风险更高（ACP R2 ACP Profile → CLI R2 CLI Profile）"]
+
+[90mstdout[2m | tests/r1-concurrency.test.ts[2m > [22m[2mR1-A atomic global Agent capacity[2m > [22m[2mnever lets two plans run the same Agent at once and still completes both
+[22m[39m[r1a-two-schedulers] peakActiveRuns=1 peakSlots=1 runsA=1 runsB=1 plans=completed
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-phase1.test.ts[2m > [22m[2mR2 Phase 1: missing R1 verification[2m > [22m[2mstops a Run before the tool side effect when its capacity slot was fenced
+[22m[39m[r2-fencing] run=run_01m688hhsb49ze27phscz4n5jv status=failed artifacts=0 thiefSlot=run_thief
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r1-concurrency.test.ts[2m > [22m[2mR1-A atomic global Agent capacity[2m > [22m[2mqueues instead of failing the plan when another plan owns the Agent slot
+[22m[39m[r1a-queue] holderCancelled run=run_01m688hhvnkpktgy4f2padcjxy queuedPlan=completed
+
+ [32m✓[39m tests/r1-concurrency.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 16160[2mms[22m[39m
+   [32m✓[39m R1-A atomic global Agent capacity [2m(3)[22m
+     [33m[2m✓[22m[39m never lets two plans run the same Agent at once and still completes both[33m 6229[2mms[22m[39m
+     [33m[2m✓[22m[39m queues instead of failing the plan when another plan owns the Agent slot[33m 9807[2mms[22m[39m
+[90mstdout[2m | tests/r2-phase1.test.ts[2m > [22m[2mR2 Phase 1: missing R1 verification[2m > [22m[2mcancels one plan, releases the Agent slot and lets a queued plan finish
+[22m[39m[r2-cross-plan-cancel] peak=1 planA=cancelled planB=completed runsB=1 slot=free
+
+ [32m✓[39m tests/r2-phase1.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 18208[2mms[22m[39m
+   [32m✓[39m R2 Phase 1: missing R1 verification [2m(4)[22m
+     [33m[2m✓[22m[39m migrates a V18 database to V38 without losing existing data[33m 1649[2mms[22m[39m
+     [33m[2m✓[22m[39m requires confirmation when the substitute Runtime raises the risk level[33m 4138[2mms[22m[39m
+     [33m[2m✓[22m[39m stops a Run before the tool side effect when its capacity slot was fenced[33m 1029[2mms[22m[39m
+     [33m[2m✓[22m[39m cancels one plan, releases the Agent slot and lets a queued plan finish[33m 11390[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/planner.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 13144[2mms[22m[39m
+   [32m✓[39m Phase 2B-1 AI Planner [2m(15)[22m
+     [33m[2m✓[22m[39m produces a small, dynamic button-style plan from provider output[33m 933[2mms[22m[39m
+     [33m[2m✓[22m[39m plans a larger permission DAG with parallel work instead of a fixed four-node template[33m 876[2mms[22m[39m
+     [33m[2m✓[22m[39m puts measurement and profiling before optimization for a performance request[33m 860[2mms[22m[39m
+     [33m[2m✓[22m[39m repairs one invalid model answer within the bounded budget[33m 846[2mms[22m[39m
+     [33m[2m✓[22m[39m fails clearly after bounded repair and never saves a half-valid DAG[33m 829[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects cyclic or self-referential model DAGs[33m 955[2mms[22m[39m
+     [33m[2m✓[22m[39m times out a hung model call without saving a plan[33m 1036[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses a paid planning call when the project soft budget is exhausted[33m 860[2mms[22m[39m
+     [33m[2m✓[22m[39m adds standard structured artifact labels and ignores model-supplied Agent IDs[33m 844[2mms[22m[39m
+     [33m[2m✓[22m[39m falls back to local rules only when explicitly allowed and marks the real source[33m 906[2mms[22m[39m
+     [33m[2m✓[22m[39m reports a missing provider instead of pretending a model generated the plan[33m 871[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a draft with blocked assignments when no Agent can be resolved, and blocks approval[33m 884[2mms[22m[39m
+     [33m[2m✓[22m[39m builds bounded, secret-safe context from real files[33m 896[2mms[22m[39m
+     [33m[2m✓[22m[39m still reads plans written before generation/capability fields existed[33m 628[2mms[22m[39m
+     [33m[2m✓[22m[39m does not let a provider smuggle tool calls into planning[33m 916[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/org-persistent-server.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 15275[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/r2b3-replan.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 9424[2mms[22m[39m
+   [32m✓[39m Phase 2B-3 dynamic replan proposals [2m(11)[22m
+     [33m[2m✓[22m[39m does not propose a revision for a plan with no exhausted execution fact[33m 645[2mms[22m[39m
+     [33m[2m✓[22m[39m builds a revision proposal with diff, agent change and re-authorization requirement[33m 620[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses to apply while a Run is active and keeps the old plan untouched when rejected[33m 640[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects an invalid DAG without persisting proposed tasks[33m 573[2mms[22m[39m
+     [33m[2m✓[22m[39m applies a proposal as a new draft revision and invalidates the old grant[33m 640[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects stale proposals after a new Run or source task change[33m 607[2mms[22m[39m
+     [33m[2m✓[22m[39m allows only one atomic claim for a proposal[33m 791[2mms[22m[39m
+     [33m[2m✓[22m[39m suppresses Replan for provider protocol failures and allows Agent unavailability[33m 662[2mms[22m[39m
+     [33m[2m✓[22m[39m triggers automatically from a scheduler state change, not a direct propose call[33m 1581[2mms[22m[39m
+     [33m[2m✓[22m[39m does not trigger when a plan starts with all tasks already complete[33m 1997[2mms[22m[39m
+     [33m[2m✓[22m[39m enforces the per-plan proposal/model-call limit[33m 665[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/r2b2-plan-grant.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 8508[2mms[22m[39m
+   [32m✓[39m Phase 2B-2 plan execution grants [2m(13)[22m
+     [33m[2m✓[22m[39m binds a grant to the approved revision, tasks and current Agents and consumes starts atomically[33m 721[2mms[22m[39m
+     [33m[2m✓[22m[39m reserves start capacity, releases only its own failed reservation, and is idempotent[33m 649[2mms[22m[39m
+     [33m[2m✓[22m[39m releases stale reservations without a Run and consumes stale reservations with a real execution[33m 713[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects absolute, traversal, empty and sensitive grant paths[33m 663[2mms[22m[39m
+     [33m[2m✓[22m[39m revocation, expiry and Agent reassignment invalidate the grant and deny writes[33m 673[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects over-budget opt-in without an explicit reason and denies an expired grant[33m 646[2mms[22m[39m
+     [33m[2m✓[22m[39m blocks a symlink escape even when the lexical path is inside the allowed directory[33m 606[2mms[22m[39m
+     [33m[2m✓[22m[39m distinguishes hard role capabilities from soft preferences[33m 608[2mms[22m[39m
+     [33m[2m✓[22m[39m lets a real AgentRunner write through an active scoped grant without a per-call approval[33m 758[2mms[22m[39m
+     [33m[2m✓[22m[39m requires the grant itself to opt into an over-budget start[33m 675[2mms[22m[39m
+     [33m[2m✓[22m[39m does not inherit the old grant into a superseding revision[33m 632[2mms[22m[39m
+     [33m[2m✓[22m[39m records Planner usage per attempt with real/unknown costs and no duplicate accumulation[33m 580[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects plan start through the trusted dispatcher when no grant exists[33m 580[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p288-parallel-agents.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 9468[2mms[22m[39m
+   [32m✓[39m parallel Agents inside one project [2m(2)[22m
+     [33m[2m✓[22m[39m runs two independent tasks on two different Agents at the same time[33m 1532[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps a single Agent serial even when the plan allows more slots[33m 7933[2mms[22m[39m
+ [32m✓[39m tests/operations.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 11167[2mms[22m[39m
+   [32m✓[39m operations service [2m(11)[22m
+     [33m[2m✓[22m[39m deduplicates a repeatedly failing check into one finding with history[33m 2292[2mms[22m[39m
+     [33m[2m✓[22m[39m redacts secrets in evidence[33m 1212[2mms[22m[39m
+     [33m[2m✓[22m[39m reopens a finding that recurs after its proposal was merged[33m 2183[2mms[22m[39m
+     [33m[2m✓[22m[39m coalesces concurrent triggers into one check run[33m 1473[2mms[22m[39m
+     [33m[2m✓[22m[39m does not re-propose rejected findings or findings out of repair attempts[33m 3180[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p287-autonomy-pipeline.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 7077[2mms[22m[39m
+   [32m✓[39m ADR-0026 product autonomy pipeline [2m(5)[22m
+     [33m[2m✓[22m[39m starts an approved plan that already has an active grant, without any script call[33m 1603[2mms[22m[39m
+     [33m[2m✓[22m[39m preflights a task contract and refuses one that no Agent can fulfil[33m 589[2mms[22m[39m
+     [33m[2m✓[22m[39m applies a revision that stays inside the granted envelope and restarts execution[33m 1416[2mms[22m[39m
+     [33m[2m✓[22m[39m asks the user, with the exact delta, when the revision needs an Agent outside the grant[33m 587[2mms[22m[39m
+     [33m[2m✓[22m[39m stops auto-revising once the project policy limit is reached[33m 557[2mms[22m[39m
+   [33m[2m✓[22m[39m keeps the approved Agent binding when a revision repairs the same task[33m 578[2mms[22m[39m
+   [33m[2m✓[22m[39m assigns a newly added repair task to an Agent the user already authorized[33m 593[2mms[22m[39m
+   [33m[2m✓[22m[39m counts plan starts, not task runs, against the Run budget[33m 575[2mms[22m[39m
+   [32m✓[39m ADR-0027 approval park is not "running" [2m(1)[22m
+     [33m[2m✓[22m[39m detects a run parked on an undecided approval and reports the exact object[33m 576[2mms[22m[39m
+ [32m✓[39m tests/runtime-protocol.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 8477[2mms[22m[39m
+   [32m✓[39m runtime protocol [2m(3)[22m
+     [33m[2m✓[22m[39m handshakes, persists a project, and recovers it after restart[33m 4593[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects invalid parameters and unknown methods with typed errors[33m 1921[2mms[22m[39m
+     [33m[2m✓[22m[39m saves a message but returns a warning when no provider is configured[33m 1961[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-revision-inbox-legacy.test.ts[2m > [22m[2mR2 P0-08A: revision supersede and reuse rule[2m > [22m[2mkeeps completed work, cancels unfinished tasks and records reuse references without re-running old tasks
+[22m[39m[r2-revision] old=superseded new=r2 doneKept=tsk_01m688kavz8caavbsya6n0zc1r cancelled=tsk_01m688kaw1ks1fxrdrcdz189wy reuse=tsk_01m688kavz8caavbsya6n0zc1r artifacts=1 newRuns=0
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-revision-inbox-legacy.test.ts[2m > [22m[2mR2 P0-08C: inbox priority, backoff, max retry and restart[2m > [22m[2mdelivers by priority, backs off, stops at max attempts and resumes after a restart
+[22m[39m[r2-inbox] order=inb_01m688kbg73za9gyttf224j4e3,inb_01m688kbg9t4a2ekjvab3wxzx5,inb_01m688kbgas39e3w2q482788qf backoffMs=9999 exhausted=failed stale=failed restarted=completed
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r1-budgets.test.ts[2m > [22m[2mR1-C hard Run/Plan budgets[2m > [22m[2mterminates a hanging Run at its wall-clock deadline with an audit step
+[22m[39m[r1c-wallclock] run=run_01m688kbbecryqwbqsqz18fw7c status=timed_out elapsedMs=1065
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r1-budgets.test.ts[2m > [22m[2mR1-C hard Run/Plan budgets[2m > [22m[2mstops after the step budget and executes no further tool after the limit
+[22m[39m[r1c-steps] run=run_01m688kd0sbewdx7eydz90gx0w status=budget_exhausted toolCalls=2
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r1-budgets.test.ts[2m > [22m[2mR1-C hard Run/Plan budgets[2m > [22m[2mrefuses a tool call beyond the tool-call budget without creating a ToolCall row
+[22m[39m[r1c-tools] run=run_01m688kdrrrfj441bt49n9zbg8 status=budget_exhausted toolCalls=1
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r1-budgets.test.ts[2m > [22m[2mR1-C hard Run/Plan budgets[2m > [22m[2mfails the Plan at its total wall-clock limit and stops the running Run
+[22m[39m[r1c-plan] plan=pln_01m688keh4c52kbq7scd0q6205 status=failed reason=plan_wall_clock run=run_01m688kfcw8qgr5dpydd9qk6jh/timed_out task=blocked
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r1-budgets.test.ts[2m > [22m[2mR1-C hard Run/Plan budgets[2m > [22m[2mkeeps the remaining budget across a restart and blocks the approved tool
+[22m[39m[r1c-restart] run=run_01m688kjj3f5dsw15ksms9n9s6 deadlinePersisted=1793426431747 final=timed_out fileWritten=false
+
+ [32m✓[39m tests/r1-budgets.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 8130[2mms[22m[39m
+   [32m✓[39m R1-C hard Run/Plan budgets [2m(5)[22m
+     [33m[2m✓[22m[39m terminates a hanging Run at its wall-clock deadline with an audit step[33m 1684[2mms[22m[39m
+     [33m[2m✓[22m[39m stops after the step budget and executes no further tool after the limit[33m 854[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses a tool call beyond the tool-call budget without creating a ToolCall row[33m 763[2mms[22m[39m
+     [33m[2m✓[22m[39m fails the Plan at its total wall-clock limit and stops the running Run[33m 4010[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the remaining budget across a restart and blocks the approved tool[33m 817[2mms[22m[39m
+[90mstdout[2m | tests/r2-revision-inbox-legacy.test.ts[2m > [22m[2mR2 P0-12: legacy structured artifact compatibility[2m > [22m[2mrefuses automatic completion for a legacy design artifact and accepts explicit human review
+[22m[39m[r2-legacy] artifact=art_01m688kfshb5s2h7za37ma28pm metadata=none task=review->done acceptance=art_01m688kj8047v7j8kpmb17yx0h plan=completed
+
+ [32m✓[39m tests/r2-revision-inbox-legacy.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 8688[2mms[22m[39m
+   [32m✓[39m R2 P0-08A: revision supersede and reuse rule [2m(1)[22m
+     [33m[2m✓[22m[39m keeps completed work, cancels unfinished tasks and records reuse references without re-running old tasks[33m 708[2mms[22m[39m
+   [32m✓[39m R2 P0-08C: inbox priority, backoff, max retry and restart [2m(1)[22m
+     [33m[2m✓[22m[39m delivers by priority, backs off, stops at max attempts and resumes after a restart[33m 676[2mms[22m[39m
+   [32m✓[39m R2 P0-12: legacy structured artifact compatibility [2m(1)[22m
+     [33m[2m✓[22m[39m refuses automatic completion for a legacy design artifact and accepts explicit human review[33m 7300[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/orchestration.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 4982[2mms[22m[39m
+   [32m✓[39m quality gate [2m(4)[22m
+     [33m[2m✓[22m[39m runs project test scripts and reports failures[33m 2111[2mms[22m[39m
+     [33m[2m✓[22m[39m kills a hanging check tree on timeout and reports error, not failed[33m 1739[2mms[22m[39m
+     [33m[2m✓[22m[39m enforces a project-specific required/optional quality policy[33m 1067[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p287-reliability.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 5081[2mms[22m[39m
+   [32m✓[39m Phase 2.8.7 reliability [2m(8)[22m
+     [33m[2m✓[22m[39m treats a duplicate business event as already coordinated[33m 587[2mms[22m[39m
+     [33m[2m✓[22m[39m records autonomy coordination intents for plan lifecycle events[33m 567[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses to derive a grant that would widen the Agent scope[33m 617[2mms[22m[39m
+     [33m[2m✓[22m[39m counts every policy revision, not just the newest event window[33m 866[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses to apply a proposal whose source plan was already superseded[33m 600[2mms[22m[39m
+     [33m[2m✓[22m[39m does nothing when the project policy is not autonomous[33m 592[2mms[22m[39m
+     [33m[2m✓[22m[39m resumes a plan that was paused only because it waited for an approval[33m 598[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the existing start guard: an autonomous start needs an active grant[33m 650[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p29-goal-journey.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 4243[2mms[22m[39m
+   [32m✓[39m ADR-0053 project journey projection [2m(6)[22m
+     [33m[2m✓[22m[39m starts at requirement for a fresh project and points the user at the right page[33m 725[2mms[22m[39m
+     [33m[2m✓[22m[39m shows a draft as "waiting for your review" rather than "no plan"[33m 737[2mms[22m[39m
+     [33m[2m✓[22m[39m separates "approved but not authorized" from "no plan" and from "started"[33m 703[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the goal visible when the execution failed and points at the real cause[33m 756[2mms[22m[39m
+     [33m[2m✓[22m[39m never claims verification while the run is paused on stale evidence[33m 715[2mms[22m[39m
+     [33m[2m✓[22m[39m reports a delivered goal as done with its merge commit and evidence[33m 604[2mms[22m[39m
+ [32m✓[39m tests/p288-delivery-lineage.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 5909[2mms[22m[39m
+   [32m✓[39m ADR-0029 revision budget belongs to the goal lineage [2m(2)[22m
+     [33m[2m✓[22m[39m derives the lineage root from the persisted plan chain[33m 614[2mms[22m[39m
+     [33m[2m✓[22m[39m counts policy revisions across the whole chain, regardless of age or event volume[33m 927[2mms[22m[39m
+   [32m✓[39m ADR-0030 delivery preconditions and post-merge verification [2m(3)[22m
+     [33m[2m✓[22m[39m re-runs only the verification commands that really passed[33m 614[2mms[22m[39m
+     [33m[2m✓[22m[39m reports the real result of the post-merge verification commands[33m 924[2mms[22m[39m
+     [33m[2m✓[22m[39m detects conflicts and rewritten history before merging[33m 2826[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p29-worktree-baseline.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 4121[2mms[22m[39m
+   [32m✓[39m ADR-0050 a git repository without commits can still host a plan worktree [2m(4)[22m
+     [33m[2m✓[22m[39m reports the real cause instead of "invalid reference: projectos/plan-…"[33m 755[2mms[22m[39m
+     [33m[2m✓[22m[39m creates the baseline commit from the folder content, then the worktree works[33m 1771[2mms[22m[39m
+     [33m[2m✓[22m[39m handles a completely empty repository with an empty commit[33m 779[2mms[22m[39m
+     [33m[2m✓[22m[39m never rewrites an existing history[33m 813[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p27-autonomy-coordinator.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 3585[2mms[22m[39m
+   [32m✓[39m Phase 2.7 autonomy coordination [2m(7)[22m
+     [33m[2m✓[22m[39m deduplicates the same source event (idempotent enqueue)[33m 675[2mms[22m[39m
+     [33m[2m✓[22m[39m recognizes settled workspace facts inside historical custom events in assisted mode[33m 598[2mms[22m[39m
+     [33m[2m✓[22m[39m records a durable pass result and replays pending intents after restart[33m 580[2mms[22m[39m
+     [33m[2m✓[22m[39m advances a gate-passing phase without any human action[33m 569[2mms[22m[39m
+     [33m[2m✓[22m[39m does not advance anything in assist mode[33m 535[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps coordination history for diagnostics[33m 622[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-human-acceptance.test.ts[2m > [22m[2mR2.1 P0-04 risk-tiered human acceptance[2m > [22m[2mcompletes a normal task with a recorded owner, time and reason
+[22m[39m[r21-normal] task=tsk_01m688m3ypxvmb8r5er4nk62qp risk=normal operator=local-user artifact=art_01m688m3z13gndda812qq6fb6c
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-human-acceptance.test.ts[2m > [22m[2mR2.1 P0-04 risk-tiered human acceptance[2m > [22m[2mrequires explicit high-risk confirmation and extra evidence, and audits overridden requirements
+[22m[39m[r21-high] task=tsk_01m688m4j98bm694pn04en7894 risk=high override=true evidenceFiles=1
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-human-acceptance.test.ts[2m > [22m[2mR2.1 P0-04 risk-tiered human acceptance[2m > [22m[2mrejects a high-risk task when no persisted extra evidence exists
+[22m[39m[r21-no-evidence] task=tsk_01m688m55shz9ft723ffq4fyhn blocked=高风险验收必须提供额外的持久化证据（已验证 Artifact、真实工具结果或文件
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-human-acceptance.test.ts[2m > [22m[2mR2.1 P0-04 risk-tiered human acceptance[2m > [22m[2mrequires an approved acceptance Approval for critical risk and audits the approval id
+[22m[39m[r21-critical] approval=apr_01m688m5syg4n4dx2wrm9c92cn rejectedThenApproved=true task=done
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-human-acceptance.test.ts[2m > [22m[2mR2.1 P0-04 risk-tiered human acceptance[2m > [22m[2menforces owner permission and prevents Agent acceptance spoofing
+[22m[39m[r21-permission] intruder=FORBIDDEN agent=CONFLICT metadataSpoof=CONFLICT
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-human-acceptance.test.ts[2m > [22m[2mR2.1 P0-04 risk-tiered human acceptance[2m > [22m[2mkeeps legacy acceptance artifacts readable and rejects duplicate completion
+[22m[39m[r21-history] legacyArtifact=art_01m688m6zaphst6ttkpc30jx53 metadata={} duplicate=CONFLICT
+
+ [32m✓[39m tests/r2-human-acceptance.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 3691[2mms[22m[39m
+   [32m✓[39m R2.1 P0-04 risk-tiered human acceptance [2m(6)[22m
+     [33m[2m✓[22m[39m completes a normal task with a recorded owner, time and reason[33m 630[2mms[22m[39m
+     [33m[2m✓[22m[39m requires explicit high-risk confirmation and extra evidence, and audits overridden requirements[33m 601[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a high-risk task when no persisted extra evidence exists[33m 614[2mms[22m[39m
+     [33m[2m✓[22m[39m requires an approved acceptance Approval for critical risk and audits the approval id[33m 643[2mms[22m[39m
+     [33m[2m✓[22m[39m enforces owner permission and prevents Agent acceptance spoofing[33m 578[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps legacy acceptance artifacts readable and rejects duplicate completion[33m 621[2mms[22m[39m
+ [32m✓[39m tests/agent-studio.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 2939[2mms[22m[39m
+   [32m✓[39m agent studio [2m(5)[22m
+     [33m[2m✓[22m[39m detects installed runtimes without claiming missing ones[33m 2396[2mms[22m[39m
+ [32m✓[39m tests/agent-runner-guards.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 2426[2mms[22m[39m
+   [32m✓[39m agent runner guards [2m(14)[22m
+     [33m[2m✓[22m[39m creates a real ProjectOS Approval for an ACP permission request[33m 383[2mms[22m[39m
+[90mstderr[2m | tests/org-server-poc.test.ts[2m > [22m[2morganization control plane (A0 PoC, real HTTP)[2m > [22m[2mrenders a hard-locked login page and enforces authorize/consent validation
+[22m[39m2026-10-31T05:58:58.190Z WARN [Better Auth]: Invalid password
+
+ [32m✓[39m tests/org-server-poc.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 2785[2mms[22m[39m
+   [32m✓[39m organization control plane (A0 PoC, real HTTP) [2m(8)[22m
+     [33m[2m✓[22m[39m signs up accounts and creates organizations through better-auth HTTP endpoints[33m 407[2mms[22m[39m
+     [33m[2m✓[22m[39m scopes project requirements to project membership, not organization membership[33m 313[2mms[22m[39m
+     [33m[2m✓[22m[39m grants read-only organization access after invitation acceptance[33m 311[2mms[22m[39m
+     [33m[2m✓[22m[39m renders a hard-locked login page and enforces authorize/consent validation[33m 540[2mms[22m[39m
+[90mstdout[2m | tests/agent-completion-tool.test.ts[2m > [22m[2mAgent update_task_status(done) evidence gate[2m > [22m[2mblocks a done claim with no artifact, file or accepted criteria
+[22m[39m[done-gate] no-evidence task=review tool=failed
+
+ [32m✓[39m tests/group-discussion.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 2448[2mms[22m[39m
+   [32m✓[39m group discussion [2m(2)[22m
+     [33m[2m✓[22m[39m lets all four Agents speak, one turn at a time, and reports real counts[33m 1187[2mms[22m[39m
+     [33m[2m✓[22m[39m stops and reports a timeout without leaving the group session busy[33m 1258[2mms[22m[39m
+[90mstdout[2m | tests/agent-completion-tool.test.ts[2m > [22m[2mAgent update_task_status(done) evidence gate[2m > [22m[2mblocks a done claim when the necessary write approval was rejected
+[22m[39m[done-gate] denied-write task=review write=denied done=failed
+
+[90mstdout[2m | tests/agent-completion-tool.test.ts[2m > [22m[2mAgent update_task_status(done) evidence gate[2m > [22m[2mblocks a done claim when an artifact exists but does not match expectedArtifacts
+[22m[39m[done-gate] wrong-artifact task=review tool=failed
+
+[90mstdout[2m | tests/agent-completion-tool.test.ts[2m > [22m[2mAgent update_task_status(done) evidence gate[2m > [22m[2mallows a done claim when a valid expected Artifact exists
+[22m[39m[done-gate] valid-artifact task=done tool=completed acceptance=art_01m688meza1f6ygg90zhfqwbrg
+
+[90mstdout[2m | tests/agent-completion-tool.test.ts[2m > [22m[2mAgent update_task_status(done) evidence gate[2m > [22m[2mkeeps a blocking review conclusion from being auto-accepted
+[22m[39m[done-gate] blocking-review task=done tool=completed
+
+[90mstdout[2m | tests/agent-completion-tool.test.ts[2m > [22m[2mAgent update_task_status(done) evidence gate[2m > [22m[2mkeeps human acceptance distinct from agent automatic acceptance
+[22m[39m[done-gate] human task=done acceptance=art_01m688mfardh2vmy057r1119tf body=人工验收：由 你 于 2026/10/30 22:59:01 确认。
+风险等级：normal
+风险依据：无写入/进程/敏感路径 
+验收理由：人工确认已核对代码与
+
+[90mstdout[2m | tests/agent-completion-tool.test.ts[2m > [22m[2mAgent update_task_status(done) evidence gate[2m > [22m[2mblocks a tester done claim when no real test evidence exists
+[22m[39m[done-gate] no-test task=review tool=failed
+
+[90mstdout[2m | tests/agent-completion-tool.test.ts[2m > [22m[2mAgent update_task_status(done) evidence gate[2m > [22m[2mdoes not create duplicate acceptance records on repeated done submissions
+[22m[39m[done-gate] duplicate task=done acceptance=1
+
+ [32m✓[39m tests/agent-completion-tool.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 1736[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p29-unborn-project-start.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1978[2mms[22m[39m
+   [32m✓[39m ADR-0050 starting a plan on an unborn repository [2m(1)[22m
+     [33m[2m✓[22m[39m creates the baseline commit, records it, and starts the run in an isolated worktree[33m 1975[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p29-goal-verification-states.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 2136[2mms[22m[39m
+   [32m✓[39m ADR-0048 goal verification states come from real evidence [2m(3)[22m
+     [33m[2m✓[22m[39m reports unverified for a paused plan even though it has an execution record[33m 734[2mms[22m[39m
+     [33m[2m✓[22m[39m reports passed only after a real passing check, and stale once the code changes again[33m 776[2mms[22m[39m
+     [33m[2m✓[22m[39m reports failed when the newest real check exited non-zero[33m 623[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/lifecycle.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 1707[2mms[22m[39m
+   [32m✓[39m V25 lifecycle domain [2m(3)[22m
+     [33m[2m✓[22m[39m creates default product/version/environment/focus with a project[33m 547[2mms[22m[39m
+     [33m[2m✓[22m[39m supports parallel versions, iterations, environments and focus without currentStage[33m 568[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects stale evidence and concurrent phase changes before the gate commit[33m 588[2mms[22m[39m
+ [32m✓[39m tests/org-desktop-login.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 1798[2mms[22m[39m
+   [32m✓[39m desktop loopback login (A0 PoC) [2m(10)[22m
+     [33m[2m✓[22m[39m fails cleanly on timeout and closes the listener[33m 561[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p288-delivery-claim.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 1826[2mms[22m[39m
+   [32m✓[39m ADR-0043 single-flight delivery claim [2m(3)[22m
+     [33m[2m✓[22m[39m lets exactly one claim win and blocks the second[33m 614[2mms[22m[39m
+     [33m[2m✓[22m[39m allows a takeover only after the claim is stale[33m 597[2mms[22m[39m
+     [33m[2m✓[22m[39m refuses to claim a plan that is already merged, and releases a failed attempt[33m 613[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p29-run-tests-grant.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 1263[2mms[22m[39m
+   [32m✓[39m ADR-0056 run-tests grant action [2m(3)[22m
+     [33m[2m✓[22m[39m allows allowlisted commands only when the grant carries run-tests[33m 691[2mms[22m[39m
+     [33m[2m✓[22m[39m does not broaden anything without the action[33m 561[2mms[22m[39m
+ [32m✓[39m tests/org-worker-runtime.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 1247[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/release.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1421[2mms[22m[39m
+   [32m✓[39m Phase 2 release and deployment domain [2m(2)[22m
+     [33m[2m✓[22m[39m creates a change request, candidate, immutable release and records deployment provenance[33m 830[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects reuse of an approval after change content changes and blocks adapter execution[33m 588[2mms[22m[39m
+ [32m✓[39m tests/org-connection.test.ts [2m([22m[2m26 tests[22m[2m)[22m[33m 1316[2mms[22m[39m
+ [32m✓[39m tests/ai-connections.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 1178[2mms[22m[39m
+ [32m✓[39m tests/runtime-worktree.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1257[2mms[22m[39m
+   [32m✓[39m runtime worktree [2m(1)[22m
+     [33m[2m✓[22m[39m executes a CLI runtime in an isolated git worktree[33m 1254[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p29-auto-draft-plan.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1274[2mms[22m[39m
+   [32m✓[39m ADR-0051 autonomous planning from a requirement [2m(2)[22m
+     [33m[2m✓[22m[39m drafts exactly once for the newest requirement, and never approves or authorizes by itself[33m 673[2mms[22m[39m
+     [33m[2m✓[22m[39m does nothing in assist mode[33m 597[2mms[22m[39m
+ [32m✓[39m tests/demo.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1211[2mms[22m[39m
+   [32m✓[39m demo seed [2m(1)[22m
+     [33m[2m✓[22m[39m creates a complete lifecycle demo with real workspace files[33m 1208[2mms[22m[39m
+ [32m✓[39m tests/application.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 945[2mms[22m[39m
+ [32m✓[39m tests/collaboration-handoff.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 953[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-file-attribution.test.ts[2m > [22m[2mR2 P0-01: per-Run file change attribution[2m > [22m[2mattributes only files written by the external Runtime Run, not pre-existing dirty files
+[22m[39m[r2-attribution] run=run_01m688n4eqbyd27c57dbwa9ajg attributed=generated/a.txt,generated/b.txt dirtyExcluded=true rows=2 stepCount=2
+
+ [32m✓[39m tests/r2-file-attribution.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 841[2mms[22m[39m
+   [32m✓[39m R2 P0-01: per-Run file change attribution [2m(1)[22m
+     [33m[2m✓[22m[39m attributes only files written by the external Runtime Run, not pre-existing dirty files[33m 838[2mms[22m[39m
+ [32m✓[39m tests/p25-file-approval.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 643[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/delivery-adapter.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 853[2mms[22m[39m
+   [32m✓[39m Phase 2.2 local delivery adapter [2m(1)[22m
+     [33m[2m✓[22m[39m executes a frozen artifact with real hash verification and health evidence[33m 850[2mms[22m[39m
+ [32m✓[39m tests/acp-client.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 649[2mms[22m[39m
+   [32m✓[39m acp client [2m(1)[22m
+     [33m[2m✓[22m[39m initializes a session over JSON-RPC stdio[33m 645[2mms[22m[39m
+ [32m✓[39m tests/persistence.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 627[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p29-start-idempotent.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 632[2mms[22m[39m
+   [32m✓[39m ADR-0060 start is idempotent while a plan is running [2m(1)[22m
+     [33m[2m✓[22m[39m returns the running plan instead of throwing or starting again[33m 629[2mms[22m[39m
+ [32m✓[39m tests/p283-command-context.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 576[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p288-review-task-guard.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 678[2mms[22m[39m
+   [32m✓[39m ADR-0033 review tasks are read-only [2m(1)[22m
+     [33m[2m✓[22m[39m denies write_file on a review task and allows it on a developer task[33m 675[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p29-plan-generation-race.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 666[2mms[22m[39m
+   [32m✓[39m ADR-0051 plan revision allocation is serialized per project [2m(1)[22m
+     [33m[2m✓[22m[39m two concurrent AI generations both persist, with distinct revisions[33m 663[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p288-autonomy-policy-persist.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 589[2mms[22m[39m
+   [32m✓[39m ADR-0041 autonomy policy persists all fields [2m(1)[22m
+     [33m[2m✓[22m[39m stores autoDeliver, autoStartPlans, autoApplyReplans and maxAutoReplans[33m 584[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p25-rollback.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 594[2mms[22m[39m
+   [32m✓[39m Phase 2.5 rollback creates a new deployment [2m(1)[22m
+     [33m[2m✓[22m[39m inserts a distinct awaiting_approval deployment linked to the source[33m 592[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p288-canonical-root.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 649[2mms[22m[39m
+   [32m✓[39m ADR-0036 canonical workspace containment [2m(2)[22m
+     [33m[2m✓[22m[39m accepts a workspace-relative write through a grant whose root has a trailing separator and different case[33m 641[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/resources.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 614[2mms[22m[39m
+   [32m✓[39m Phase 2.3 resources and credentials [2m(1)[22m
+     [33m[2m✓[22m[39m stores resource/profile metadata without secrets and links deployment targets[33m 610[2mms[22m[39m
+ [32m✓[39m tests/p286-npm-script-context.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 439[2mms[22m[39m
+ [32m✓[39m tests/runtime-run.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 375[2mms[22m[39m
+ [32m✓[39m tests/recovery.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 295[2mms[22m[39m
+ [32m✓[39m tests/runtime-executor.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 275[2mms[22m[39m
+ [32m✓[39m tests/phase0-migration.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 281[2mms[22m[39m
+ [32m✓[39m tests/workspace.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 150[2mms[22m[39m
+ [32m✓[39m tests/collaboration-overview.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 143[2mms[22m[39m
+[90mstderr[2m | tests/ui-readiness.test.ts[2m > [22m[2mdestination readiness with delayed real-query contracts[2m > [22m[2mholds the project center until the most recent project agent summary is ready
+[22m[39m[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+
+[90mstderr[2m | tests/ui-readiness.test.ts[2m > [22m[2mdestination readiness with delayed real-query contracts[2m > [22m[2mholds a cold settings opening until its content is available
+[22m[39m[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+
+[90mstderr[2m | tests/ui-readiness.test.ts[2m > [22m[2mdestination readiness with delayed real-query contracts[2m > [22m[2mholds a cold settings opening until its content is available
+[22m[39m[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+
+[90mstderr[2m | tests/ui-readiness.test.ts[2m > [22m[2mdestination readiness with delayed real-query contracts[2m > [22m[2mholds a cold settings opening until its content is available
+[22m[39m[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+
+[90mstderr[2m | tests/ui-readiness.test.ts[2m > [22m[2mdestination readiness with delayed real-query contracts[2m > [22m[2mkeeps the current panel while switching and does not reopen after close
+[22m[39m[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+
+[90mstderr[2m | tests/ui-readiness.test.ts[2m > [22m[2mdestination readiness with delayed real-query contracts[2m > [22m[2mkeeps the current panel while switching and does not reopen after close
+[22m[39m[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+
+[90mstderr[2m | tests/ui-readiness.test.ts[2m > [22m[2mdestination readiness with delayed real-query contracts[2m > [22m[2mkeeps the current panel while switching and does not reopen after close
+[22m[39m[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+
+[90mstderr[2m | tests/ui-readiness.test.ts[2m > [22m[2mdestination readiness with delayed real-query contracts[2m > [22m[2mignores a slow earlier tab when a later choice completes first
+[22m[39m[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+
+[90mstderr[2m | tests/ui-readiness.test.ts[2m > [22m[2mdestination readiness with delayed real-query contracts[2m > [22m[2mignores a slow earlier tab when a later choice completes first
+[22m[39m[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+
+[90mstderr[2m | tests/ui-readiness.test.ts[2m > [22m[2mdestination readiness with delayed real-query contracts[2m > [22m[2mignores a slow earlier tab when a later choice completes first
+[22m[39m[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+
+[90mstderr[2m | tests/ui-readiness.test.ts[2m > [22m[2mdestination readiness with delayed real-query contracts[2m > [22m[2mwaits for a selected connection and its dependent model catalog
+[22m[39m[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+
+[90mstderr[2m | tests/ui-readiness.test.ts[2m > [22m[2mdestination readiness with delayed real-query contracts[2m > [22m[2mprepares a cold run page with the mounted 100-record key and deep-linked detail
+[22m[39m[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+
+[90mstderr[2m | tests/ui-readiness.test.ts[2m > [22m[2mdestination readiness with delayed real-query contracts[2m > [22m[2munblocks an aborted route without waiting for an old read
+[22m[39m[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+
+[90mstderr[2m | tests/ui-readiness.test.ts[2m > [22m[2mdestination readiness with delayed real-query contracts[2m > [22m[2mretains read errors for recovery instead of caching an empty successful result
+[22m[39m[zustand persist middleware] Unable to update item 'projectos.ui', the given storage is currently unavailable.
+
+ [32m✓[39m tests/ui-readiness.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 150[2mms[22m[39m
+ [32m✓[39m tests/runtime-settings.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 130[2mms[22m[39m
+ [32m✓[39m tests/knowledge.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 134[2mms[22m[39m
+ [32m✓[39m tests/provider.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 93[2mms[22m[39m
+ [32m✓[39m tests/provider-responses.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 83[2mms[22m[39m
+ [32m✓[39m tests/project-analyzer.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+ [32m✓[39m tests/executable-resolver.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m tests/assignment-resolver.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m tests/policy.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m tests/org-contracts.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m tests/p288-event-copy.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m tests/design-tokens.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m tests/p285-review-and-effective-args.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/domain.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m tests/p288-role-reuse.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m tests/agent-protocol.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/agent-loop.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/p288-write-path.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/failure-classifier.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/p29-trusted-test-evidence.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/p283-diagnostic-completion.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/p288-repair-demotion.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/plan-review.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/collaboration-focus.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/p286-review-verdict.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/p288-assignment-reasons.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/external-agent.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/p29-review-coverage.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/p288-readonly-approvals.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/p288-review-prose.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/phase0-security.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/graph-performance.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/orchestrator-selection.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/agent-context.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/p29-runtime-heartbeat.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [2m[90m↓[39m[22m tests/r2-real-harness.test.ts [2m([22m[2m3 tests[22m[2m | [22m[33m3 skipped[39m[2m)[22m
+ [2m[90m↓[39m[22m tests/ssh-adapter-e2e.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/requirement-integration.test.ts[2m > [22mreviewed requirement task integration[2m > [22muses real reviewed, verified output; separately approves integration and prepares a dependent task with that content
+[31m[1mError[22m: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".[39m
+[36m [2m❯[22m tests/requirement-integration.test.ts:[2m41:3[22m[39m
+    [90m 39|[39m
+    [90m 40|[39m describe('reviewed requirement task integration', () => {
+    [90m 41|[39m   it('uses real reviewed, verified output; separately approves integra…
+    [90m   |[39m   [31m^[39m
+    [90m 42|[39m     const f = await fixture(), task = f.task(), dependent = f.task('读取…
+    [90m 43|[39m     const root = await f.prepare(task.id); code(root); f.accept(task.i…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m106 passed[39m[22m[2m | [22m[33m2 skipped[39m[90m (109)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m624 passed[39m[22m[2m | [22m[33m4 skipped[39m[90m (629)[39m
+[2m   Start at [22m 22:51:36
+[2m   Duration [22m 492.98s[2m (tests 91%, import 8%)[22m
+
+[2m    Isolate [22m [33m109 workers spawned[39m[2m · ~308ms startup each (spawn + environment, per file)[22m
+[2m            [22m [2mat least ~16.46s faster with [22m[33misolate: false[39m[2m — reuses workers across files instead of one per file[22m
+
+ ELIFECYCLE  Test failed. See above for more details.

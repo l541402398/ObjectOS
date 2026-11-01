@@ -1,3 +1,6 @@
+import { AgentAvatar } from '@projectos/ui'
+import { AgentWorkflowMaterials } from '../../pages/RequirementMaterials'
+import '../../pages/requirement-flow.css'
 import { useEffect, useMemo, useState, type ReactElement, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
@@ -25,6 +28,7 @@ import { OverlayFooter, OverlayHeader, OverlayScrollArea, InspectorShell } from 
 import { CollaborationGraph, type GraphSelection } from './CollaborationGraph'
 import { projectCollaborationFocus } from './focus-projection'
 import { AgentContextActions } from './AgentContextActions'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../next-ui/vendor/tabs'
 import '@projectos/design-tokens/precision.css'
 import './collaboration-overview.css'
 
@@ -91,12 +95,14 @@ export function CollaborationOverview({
   onManageAgents,
   requestedAgentId,
   requestedSessionId,
+  requestedTaskId,
   onContextRequestHandled,
 }: {
   projectId: string
   onManageAgents: () => void
   requestedAgentId?: string | null
   requestedSessionId?: string | null
+  requestedTaskId?: string | null
   onContextRequestHandled: () => void
 }): ReactElement {
   const navigate = useNavigate()
@@ -154,11 +160,16 @@ export function CollaborationOverview({
   const pendingApprovals = useMemo(() => approvals.filter((approval) => approval.status === 'pending'), [approvals])
   const plan = data?.plan ?? null
   useEffect(()=>{
+    if(requestedTaskId&&data?.tasks.some((task)=>task.id===requestedTaskId)){
+      setSelection({kind:'task',id:requestedTaskId})
+      onContextRequestHandled()
+      return
+    }
     if(!requestedAgentId||!data?.agents.some((agent)=>agent.id===requestedAgentId))return
     setSelection({kind:'agent',id:requestedAgentId})
     setRequestedContext({agentId:requestedAgentId,sessionId:requestedSessionId??null})
     onContextRequestHandled()
-  },[requestedAgentId,requestedSessionId,data?.agents,onContextRequestHandled])
+  },[requestedAgentId,requestedSessionId,requestedTaskId,data?.agents,data?.tasks,onContextRequestHandled])
   const metrics = data?.metrics ?? null
   const focus = useMemo(
     () => projectCollaborationFocus({ agents, tasks, artifacts, approvals, handoffs, plan }),
@@ -306,9 +317,7 @@ export function CollaborationOverview({
       return (
         <>
           <div className="aco-inspector-hero">
-            <span className="aco-avatar is-large" style={{ color: selectedAgent.accent || undefined, borderColor: selectedAgent.accent ? `${selectedAgent.accent}55` : undefined }}>
-              {selectedAgent.name.slice(0, 1)}
-            </span>
+            <AgentAvatar name={selectedAgent.name} size={44} status={selectedAgent.status === "working" ? "working" : "idle"} />
             <div>
               <strong>{selectedAgent.role}</strong>
               <span>{selectedAgent.taskTitle ?? '暂无进行中的任务'}</span>
@@ -327,6 +336,7 @@ export function CollaborationOverview({
           {selectedAgent.pendingApprovals > 0 ? (
             <div className="aco-callout is-warn"><ShieldAlert size={13} /> 该 Agent 正在等待人工审批；Run 已暂停，不会继续写入。</div>
           ) : null}
+          <AgentWorkflowMaterials key={selectedAgent.id} projectId={projectId} agentId={selectedAgent.id} />
           <AgentContextActions key={selectedAgent.id} projectId={projectId} agent={selectedAgent}
             preferredSessionId={requestedContext?.agentId===selectedAgent.id?requestedContext.sessionId:null}
             onClose={()=>setSelection(null)} />
@@ -337,6 +347,18 @@ export function CollaborationOverview({
       const run = runs.find((item) => item.taskId === selectedTask.id) ?? null
       return (
         <>
+          <div className="aco-inspector-hero">
+            {selectedTask.assigneeName ? (
+              <AgentAvatar name={selectedTask.assigneeName} size={42} />
+            ) : (
+              <span className="aco-avatar is-large">?</span>
+            )}
+            <div>
+              <strong>{selectedTask.assigneeName ? `负责人 · ${selectedTask.assigneeName}` : "暂未指派 Agent"}</strong>
+              <span>{run ? `最近运行 · ${runStatusLabel(run.status)}` : "尚未启动执行 Run"}</span>
+            </div>
+            <span className={`aco-pill is-${selectedTask.status === "blocked" ? "warn" : selectedTask.status === "running" ? "accent" : "neutral"}`}><i />{taskStatusLabel(selectedTask.status)}</span>
+          </div>
           <dl className="aco-detail-list">
             <div><dt>任务状态</dt><dd>{taskStatusLabel(selectedTask.status)}</dd></div>
             <div><dt>负责人</dt><dd>{selectedTask.assigneeName ?? '未分配'}</dd></div>
@@ -478,62 +500,31 @@ export function CollaborationOverview({
   ) : null
 
   return (
-    <div className="aco-root pw-theme aco-deck" data-theme={theme}>
+    <Tabs value={filter} onValueChange={(value) => changeFilter(value as Filter)} className="aco-root pw-theme aco-deck aco-workbench" data-theme={theme}>
       <header className="aco-head">
-        <div className="aco-head-copy">
-          <div className="aco-title-line">
-            <h1>Agent 协作</h1>
-            <span className="aco-live-badge"><i />本地实时</span>
-          </div>
-          <p className="aco-subtitle" title={plan?.goal ?? undefined}>
-            {plan ? plan.goal : '当前项目尚未生成执行计划'}
-          </p>
-        </div>
-        <div className="aco-head-actions">
-          <button
-            type="button"
-            className="aco-icon-btn"
-            aria-label="刷新协作数据"
-            onClick={() => void overview.refetch()}
-            disabled={overview.isFetching}
-          >
-            <RefreshCw size={14} className={overview.isFetching ? 'is-spinning' : undefined} />
-          </button>
-        </div>
-      </header>
-
-      <div className="aco-toolbar">
-        <div className="aco-filters" role="group" aria-label="筛选图中的真实对象">
+        <h1 className="aco-workbench-title">Agent 协作</h1>
+        <TabsList aria-label="筛选图中的真实对象" className="aco-object-tabs">
           {([
             ['all', '全部', counts.all],
             ['agents', 'Agent', counts.agents],
             ['tasks', '任务', counts.tasks],
             ['outputs', '成果与审批', counts.outputs],
           ] as const).map(([value, label, count]) => (
-            <button
-              key={value}
-              type="button"
-              className={filter === value ? 'is-active' : ''}
-              aria-pressed={filter === value}
-              onClick={() => changeFilter(value)}
-            >
-              {label}<em>{count}</em>
-            </button>
+            <TabsTrigger key={value} value={value}>
+              {label}<span className="aco-tab-count">{count}</span>
+            </TabsTrigger>
           ))}
+        </TabsList>
+        <div className="aco-head-actions">
+          <button type="button" className="aco-btn" onClick={openOrchestration} title={plan?.goal ?? '打开计划'}><Workflow size={14} />计划与授权</button>
+          <button type="button" className="aco-btn" onClick={onManageAgents}><Bot size={14} />Agent 管理</button>
+          <button type="button" className="aco-icon-btn" aria-label="刷新协作数据" onClick={() => void overview.refetch()} disabled={overview.isFetching}>
+            <RefreshCw size={14} className={overview.isFetching ? 'is-spinning' : undefined} />
+          </button>
         </div>
-        <div className="aco-metrics" role="status" aria-live="polite">
-          <span><i className="is-accent" />{metrics.workingAgents} 工作中</span>
-          <span><i className={metrics.pendingApprovals ? 'is-warn' : 'is-neutral'} />{metrics.pendingApprovals} 待审批</span>
-          <span><i className={metrics.blockedTasks ? 'is-warn' : 'is-neutral'} />{metrics.blockedTasks} 依赖等待</span>
-          <span><i className="is-ok" />{metrics.artifacts} 产物</span>
-          <span><i className="is-neutral" />{metrics.pendingHandoffs} 交接</span>
-        </div>
-        <span className="aco-toolbar-spacer" />
-        <button type="button" className="aco-link" onClick={openOrchestration}><Workflow size={12} /> 计划 DAG</button>
-        <button type="button" className="aco-link" onClick={onManageAgents}><Bot size={12} /> Agent 管理</button>
-      </div>
+      </header>
 
-      <div className="aco-canvas-wrap">
+      <TabsContent value={filter} className="aco-canvas-wrap">
         <CollaborationGraph
           agents={focus.primaryAgents}
           standbyAgents={focus.standbyAgents}
@@ -551,12 +542,12 @@ export function CollaborationOverview({
           showTasks={filter === 'all' || filter === 'tasks'}
           showOutputs={filter === 'all' || filter === 'outputs'}
         />
-      </div>
+      </TabsContent>
 
       <footer className={`aco-activity is-${activityStatus.tone}`} aria-label="实时活动">
-        <span className="aco-activity-label">
+        <span className="aco-activity-label" title={`${metrics.workingAgents} 工作中 · ${metrics.pendingApprovals} 待审批 · ${metrics.blockedTasks} 依赖等待 · ${metrics.artifacts} 产物 · ${metrics.pendingHandoffs} 交接`}>
           <i className={`aco-live-dot${pageActive ? ' is-on' : ''}`} />
-          最新活动
+          {metrics.workingAgents > 0 ? `${metrics.workingAgents} 工作中` : '实时活动'}
         </span>
         <div className="aco-activity-main">
           {latestActivity ? (
@@ -566,7 +557,7 @@ export function CollaborationOverview({
               <time className="aco-mono">{formatRelative(latestActivity.createdAt)}</time>
             </>
           ) : (
-            <span>还没有运行事件。启动计划后，这里只显示真实的 Run / Approval / Handoff 事件。</span>
+            <span>暂无运行活动</span>
           )}
         </div>
         <span className={`aco-pill is-${activityStatus.tone}`}>{activityStatus.label}</span>
@@ -660,6 +651,6 @@ export function CollaborationOverview({
           </motion.span>
         ) : null}
       </AnimatePresence>
-    </div>
+    </Tabs>
   )
 }

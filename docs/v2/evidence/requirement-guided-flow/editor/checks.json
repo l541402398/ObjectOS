@@ -1,0 +1,37 @@
+{
+  "profile": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\projectos-flow-e2e-JQ6HN3",
+  "checks": [
+    {
+      "name": "Standard workflow exposes all six real nodes",
+      "status": "PASS"
+    },
+    {
+      "name": "Editor primary action stays reachable at 125%",
+      "status": "PASS"
+    },
+    {
+      "name": "Reduced motion preference is active",
+      "status": "PASS"
+    },
+    {
+      "name": "Editor at 125% has no axe violations",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "Back preserves the unsaved editor until a deliberate decision",
+      "status": "PASS"
+    },
+    {
+      "name": "Discard leaves the saved requirement workflow intact",
+      "status": "PASS"
+    }
+  ],
+  "captures": [
+    "six-stages-1440-light.png",
+    "six-stages-1440-dark.png",
+    "six-stages-1024-dark-125-reduced.png",
+    "unsaved-flow-1024-dark-125.png"
+  ],
+  "note": "Native Electron; existing real template from previous integration test; 125% app zoom, not OS DPI."
+}

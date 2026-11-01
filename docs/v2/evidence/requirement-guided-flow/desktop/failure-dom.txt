@@ -1,0 +1,100 @@
+- link "跳到主内容":
+  - /url: "#po-main"
+- banner:
+  - button "切换侧边栏"
+  - button "ProjectOS 项目中心": PROJECTOS
+  - button "返回上一页":
+    - img "arrow-left"
+  - navigation "导航路径":
+    - button "Aurora Notes · 流程验收"
+    - text: 研发 需求工作台
+  - button "搜索或跳转": 搜索或跳转 Ctrl K
+  - text: 本机就绪
+  - button "待办与决策":
+    - img "bell"
+  - button "主题":
+    - img "sun"
+  - button "最小化":
+    - img "minus"
+  - button "最大化":
+    - img "border"
+  - button "关闭":
+    - img "close"
+- complementary "主导航":
+  - button "切换项目：Aurora Notes · 流程验收"
+  - button "研发工作中心"
+  - button "任务看板"
+  - button "需求工作台"
+  - button "Agent 协作"
+  - button "审批"
+  - button "运行审计"
+  - button "发布中心"
+  - button "部署中心"
+  - button "资源与连接"
+  - button "项目姿态"
+  - button "版本与迭代"
+  - button "知识与成果"
+  - button "项目设置"
+  - button "项目中心"
+  - button "账号与组织"
+  - button "设置"
+- main:
+  - heading "需求工作台" [level=1]
+  - button "刷新需求"
+  - button "新建需求"
+  - navigation "需求列表":
+    - text: 项目需求 1
+    - button "离线笔记的保存与恢复 草稿 · 版本 0":
+      - strong: 离线笔记的保存与恢复
+      - text: 草稿 · 版本 0
+  - region "离线笔记的保存与恢复":
+    - text: 草稿
+    - heading "离线笔记的保存与恢复" [level=2]
+    - button "编辑需求"
+    - navigation "需求流程旅程":
+      - button "1 需求分析 尚未开始":
+        - text: "1"
+        - strong: 需求分析
+        - text: 尚未开始
+      - button "2 需求审核 尚未开始":
+        - text: "2"
+        - strong: 需求审核
+        - text: 尚未开始
+    - text: 需求梳理与审核 · 团队模板 · AI 自动分配
+    - button "调整流程"
+    - tablist:
+      - tab "任务 1" [selected]
+      - tab "需求说明"
+      - tab "产出资料 0"
+    - tabpanel "任务 1":
+      - heading "这次交付的任务" [level=3]
+      - button "AI 拆分任务"
+      - button "AI 分配 Agent"
+      - button "添加任务"
+      - list:
+        - listitem:
+          - button "定义离线恢复行为与边界"
+          - text: 需求分析 · 可开始 Avery
+          - button "查看进度"
+      - complementary "任务流程详情":
+        - heading "节点与负责人" [level=3]
+        - button "收起任务流程详情"
+        - list:
+          - listitem:
+            - text: "1"
+            - strong: 需求分析
+            - text: 可开始 Avery · 产品负责人
+            - combobox "需求分析负责 Agent"
+            - img "down"
+          - listitem:
+            - text: "2"
+            - strong: 需求审核
+            - text: 等待前序 Nova · 代码审查员
+            - combobox "需求审核负责 Agent"
+            - img "down"
+        - button "暂停后续节点"
+        - button "成果审查与合入"
+        - button "任务详情与验收"
+- contentinfo:
+  - img "folder-open"
+  - text: C:\Users\Administrator\AppData\Local\Temp\projectos-flow-e2e-kfAUMj\project ⑂ master 干净 阶段 构思 本地工作区

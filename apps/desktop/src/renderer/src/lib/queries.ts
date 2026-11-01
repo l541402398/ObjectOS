@@ -19,6 +19,7 @@ export const qk = {
   knowledge: (projectId: string) => ['knowledge', projectId] as const,
   artifacts: (projectId: string) => ['artifacts', projectId] as const,
   requirements: (projectId: string) => ['requirements', projectId] as const,
+  requirementWork: (requirementId: string) => ['requirement-work', requirementId] as const,
   milestones: (projectId: string) => ['milestones', projectId] as const,
   decisions: (projectId: string) => ['decisions', projectId] as const,
   providerSettings: ['providerSettings'] as const,

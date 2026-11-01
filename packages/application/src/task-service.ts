@@ -38,6 +38,10 @@ interface HumanAcceptanceAudit {
 
 
 export class TaskService {
+  private workflowCompletionValidator: ((task: Task) => void) | null = null
+  /** Runtime installs current-evidence checks; application has no filesystem dependency. */
+  setWorkflowCompletionValidator(validate: (task: Task) => void): void { this.workflowCompletionValidator = validate }
+
   constructor(private readonly store: CoreStore) {}
 
   board(projectId: string) {
@@ -68,6 +72,13 @@ export class TaskService {
     if (!this.store.read.getAgent(agentId)) throw new AppError('NOT_FOUND', '指定的 Agent 不存在')
   }
 
+  private executionRoot(task: Task, fallback: string): string {
+    if (!task.requirementId) return fallback
+    const workspace = this.store.read.getTaskWorkspace(task.id)
+    if (!workspace) throw new AppError('CONFLICT', '请先准备此开发任务的独立工作区')
+    return workspace.rootPath
+  }
+
   private validateDependencies(projectId: string, taskId: string, dependsOn: string[]): void {
     const existing = this.store.read.listDependencies(projectId)
     for (const dependencyId of dependsOn) {
@@ -86,12 +97,19 @@ export class TaskService {
   create(input: CreateTaskInput, actor: ActionActor = USER_ACTOR): TaskCard {
     const project = this.getProject(input.projectId)
     this.assertAgent(input.assigneeAgentId)
+    if (input.requirementId) {
+      const requirement = this.store.read.getRequirement(input.requirementId)
+      if (!requirement || requirement.projectId !== project.id) throw new AppError('CONFLICT', '需求不属于当前项目')
+      if (requirement.status === 'implemented') throw new AppError('CONFLICT', '已交付需求不能新增开发任务')
+      if (input.workType && input.workType !== 'development') throw new AppError('BAD_REQUEST', '此批需求工作区仅支持开发任务')
+    }
     const taskId = newId('tsk')
     this.validateDependencies(input.projectId, taskId, input.dependsOn)
     const timestamp = now()
     const task: Task = {
       id: taskId,
       projectId: input.projectId,
+      requirementId: input.requirementId ?? null,
       parentId: null,
       milestoneId: input.milestoneId,
       versionId: input.versionId ?? null,
@@ -128,6 +146,7 @@ export class TaskService {
 
   update(input: UpdateTaskInput, actor: ActionActor = USER_ACTOR): TaskCard {
     const task = this.getTask(input.taskId)
+    if (task.requirementId && input.workType && input.workType !== 'development') throw new AppError('BAD_REQUEST', '已关联需求的开发任务不能改成其他工作类型')
     this.assertAgent(input.assigneeAgentId ?? null)
     return this.store.transaction(() => {
       const updated = this.store.updateTask(input.taskId, input.expectedVersion, {
@@ -177,7 +196,7 @@ export class TaskService {
       const runs = this.taskRuns(task)
       if (actor.kind === 'user') {
         this.assertLocalOwner(actor)
-        const automatic = this.completionDecision(task, card, 'system', null, artifacts, runs, project.rootPath)
+        const automatic = this.completionDecision(task, card, 'system', null, artifacts, runs, this.executionRoot(task, project.rootPath))
         const policy = evaluateHumanAcceptance({ task: card, artifacts, runs, automatic })
         const acceptance = input.acceptance
         const reason = (acceptance?.reason ?? input.note ?? '').trim()
@@ -233,7 +252,7 @@ export class TaskService {
           override,
         })
       }
-      const decision = this.completionDecision(task, card, actor.kind, input.note ?? null, artifacts, runs, project.rootPath)
+      const decision = this.completionDecision(task, card, actor.kind, input.note ?? null, artifacts, runs, this.executionRoot(task, project.rootPath))
       if (!decision.ok) {
         throw new AppError('CONFLICT', `任务缺少有效完成依据：${decision.reasons.join('；')}`, {
           details: decision,
@@ -382,7 +401,7 @@ export class TaskService {
     const project = this.getProject(task.projectId)
     const artifacts = this.taskArtifacts(task)
     const runs = this.taskRuns(task)
-    const automatic = this.completionDecision(task, card, 'system', null, artifacts, runs, project.rootPath)
+    const automatic = this.completionDecision(task, card, 'system', null, artifacts, runs, this.executionRoot(task, project.rootPath))
     return evaluateHumanAcceptance({ task: card, artifacts, runs, automatic })
   }
 
@@ -512,7 +531,7 @@ export class TaskService {
     const project = this.getProject(task.projectId)
     const artifacts = this.taskArtifacts(task)
     const runs = this.taskRuns(task)
-    const automatic = this.completionDecision(task, card, 'system', null, artifacts, runs, project.rootPath)
+    const automatic = this.completionDecision(task, card, 'system', null, artifacts, runs, this.executionRoot(task, project.rootPath))
     const policy = evaluateHumanAcceptance({ task: card, artifacts, runs, automatic })
     if (!policy.requiresApproval) {
       throw new AppError('CONFLICT', '任务风险已变化，不再需要验收审批')
@@ -538,6 +557,9 @@ export class TaskService {
     decision: CompletionDecision,
     audit?: HumanAcceptanceAudit,
   ): TaskCard {
+    const flowBlockers = this.store.read.getTaskFlowBlockers(task.id)
+    if (flowBlockers.length) throw new AppError('CONFLICT', flowBlockers.join('；'))
+    this.workflowCompletionValidator?.(task)
     const timestamp = now()
     return this.store.transaction(() => {
       const evidence = decision.requirements

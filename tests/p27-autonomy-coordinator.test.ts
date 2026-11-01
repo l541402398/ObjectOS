@@ -50,6 +50,15 @@ describe('Phase 2.7 autonomy coordination', () => {
     expect(Number(rows.n)).toBe(1)
   })
 
+  it('recognizes settled workspace facts inside historical custom events in assisted mode', async () => {
+    const { h, coordinator, actions } = harness('assist')
+    const project = await createGitProject(h.services, h.dataDir, 'workflow-workspace-event')
+    actions.setAutonomySettings(project.id, { mode: 'assist' })
+    expect(coordinator.enqueue({ id: 'evt_workspace', eventType: 'project.event', projectId: project.id, payload: { kind: 'task.workspace.updated' } })).toBe(true)
+    expect(coordinator.enqueue({ id: 'evt_unrelated', eventType: 'project.event', projectId: project.id, payload: { kind: 'unrelated.note' } })).toBe(false)
+    expect(coordinator.history(project.id)[0]?.kind).toBe('task.settled')
+  })
+
   it('records a durable pass result and replays pending intents after restart', async () => {
     const { h, coordinator } = harness()
     const project = await createGitProject(h.services, h.dataDir, 'p27-replay')

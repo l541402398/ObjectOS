@@ -12,7 +12,7 @@ afterEach(() => {
 })
 
 describe('Phase 0 V24 historical database fixture', () => {
-  it('keeps the V24 fixture readable and upgrades it to V37 with lifecycle and local Worker defaults', () => {
+  it('keeps the V24 fixture readable and upgrades it to V38 with lifecycle and local Worker defaults', () => {
     const dir = mkdtempSync(join(tmpdir(), 'projectos-v24-fixture-'))
     cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
     const dbPath = join(dir, 'v24-copy.sqlite')
@@ -34,7 +34,7 @@ describe('Phase 0 V24 historical database fixture', () => {
 
     const store = new SqliteStore({ filePath: dbPath })
     try {
-      expect(Number(store.db.prepare('SELECT MAX(version) AS version FROM schema_migrations').get()?.version)).toBe(37)
+      expect(Number(store.db.prepare('SELECT MAX(version) AS version FROM schema_migrations').get()?.version)).toBe(43)
       const tables = new Set(
         (store.db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as Array<{ name: string }>).map((row) => row.name),
       )
@@ -44,8 +44,15 @@ describe('Phase 0 V24 historical database fixture', () => {
       expect(tables.has('releases')).toBe(true)
       expect(tables.has('deployments')).toBe(true)
       expect(tables.has('deployment_events')).toBe(true)
+      expect(tables.has('requirement_use_cases')).toBe(false)
+      expect(tables.has('requirement_flow_versions')).toBe(true)
+      expect(tables.has('task_flow_steps')).toBe(true)
+      expect(tables.has('requirement_workspaces')).toBe(true)
+      expect(tables.has('task_workspace_preparations')).toBe(true)
       expect(store.read.getProject('prj_v24_fixture')?.currentStage).toBe('testing')
       expect(store.read.getTask('tsk_v24_fixture')?.title).toBe('Legacy V24 task')
+      expect(store.read.getTask('tsk_v24_fixture')?.requirementId).toBeNull()
+      expect(store.read.getTaskWorkspace('tsk_v24_fixture')).toBeNull()
       expect(store.read.listProducts('prj_v24_fixture')).toHaveLength(1)
       expect(store.read.listProductVersions('prj_v24_fixture')[0]?.version).toBe('0.1.0')
       expect(store.read.listEnvironments('prj_v24_fixture')[0]?.key).toBe('local')
@@ -58,7 +65,7 @@ describe('Phase 0 V24 historical database fixture', () => {
       const backup = new DatabaseSync(backupPath, { readOnly: true })
       try {
         expect((backup.prepare('PRAGMA integrity_check').get() as { integrity_check: string }).integrity_check).toBe('ok')
-        expect(Number((backup.prepare('SELECT MAX(version) AS version FROM schema_migrations').get() as { version: number }).version)).toBe(37)
+        expect(Number((backup.prepare('SELECT MAX(version) AS version FROM schema_migrations').get() as { version: number }).version)).toBe(43)
         expect(Number((backup.prepare('SELECT COUNT(*) AS count FROM projects WHERE id=?').get('prj_v24_fixture') as { count: number }).count)).toBe(1)
         expect(Number((backup.prepare('SELECT COUNT(*) AS count FROM releases').get() as { count: number }).count)).toBe(0)
       } finally {

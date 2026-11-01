@@ -143,7 +143,33 @@ export interface ProjectOSDesktopApi {
     addDependency: (taskId: string, dependsOnId: string) => Promise<Out<'task.addDependency'>>
     removeDependency: (taskId: string, dependsOnId: string) => Promise<Out<'task.removeDependency'>>
   }
+  workflows: {
+    materials: (projectId: string, agentId: string) => Promise<Out<'workflow.materials'>>
+    templates: (projectId: string) => Promise<Out<'workflow.templates'>>
+    save: (input: In<'workflow.save'>) => Promise<Out<'workflow.save'>>
+    view: (requirementId: string) => Promise<Out<'requirement.flow'>>
+    bind: (input: In<'requirement.flow.bind'>) => Promise<Out<'requirement.flow.bind'>>
+    assign: (input: In<'requirement.flow.assign'>) => Promise<Out<'requirement.flow.assign'>>
+    assignAI: (requirementId: string) => Promise<Out<'requirement.flow.assignAI'>>
+    start: (taskId: string) => Promise<Out<'requirement.flow.start'>>
+    pause: (taskId: string) => Promise<Out<'requirement.flow.pause'>>
+    reconcile: (input: In<'requirement.flow.reconcile'>) => Promise<Out<'requirement.flow.reconcile'>>
+    retry: (input: In<'requirement.flow.retry'>) => Promise<Out<'requirement.flow.retry'>>
+    setDefaults: (input: In<'requirement.flow.defaults'>) => Promise<Out<'requirement.flow.defaults'>>
+    previewAssignments: (requirementId: string) => Promise<Out<'requirement.flow.assignment.preview'>>
+    applyAssignments: (input: In<'requirement.flow.assignment.apply'>) => Promise<Out<'requirement.flow.assignment.apply'>>
+    startAll: (input: In<'requirement.flow.startAll'>) => Promise<Out<'requirement.flow.startAll'>>
+    stopAll: (input: In<'requirement.flow.stopAll'>) => Promise<Out<'requirement.flow.stopAll'>>
+  }
   requirements: {
+    integrationPreview: (taskId: string) => Promise<Out<'task.integration.preview'>>
+    reviewIntegration: (input: In<'task.integration.review'>) => Promise<Out<'task.integration.review'>>
+    requestIntegration: (input: In<'task.integration.request'>) => Promise<Out<'task.integration.request'>>
+    reconcileIntegration: (operationId: string) => Promise<Out<'task.integration.reconcile'>>
+    work: (requirementId: string) => Promise<Out<'requirement.work'>>
+    update: (input: In<'requirement.update'>) => Promise<Out<'requirement.update'>>
+    requestWorkspace: (input: In<'task.workspace.request'>) => Promise<Out<'task.workspace.request'>>
+    reconcileWorkspace: (preparationId: string) => Promise<Out<'task.workspace.reconcile'>>
     list: (projectId: string) => Promise<Out<'requirement.list'>>
     create: (input: In<'requirement.create'>) => Promise<Out<'requirement.create'>>
     setStatus: (requirementId: string, status: In<'requirement.setStatus'>['status']) => Promise<Out<'requirement.setStatus'>>
@@ -269,6 +295,7 @@ export interface ProjectOSDesktopApi {
       projectId: string,
       goal: string,
       options?: {
+        requirementId?: string
         mode?: 'ai' | 'local'
         allowRuleFallback?: boolean
         maxTasks?: number

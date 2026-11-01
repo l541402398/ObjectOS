@@ -1,5 +1,31 @@
 # ProjectOS Next UI — Open Issues
 
+2026-10-31: open — (1) full Vitest has the same requirement-integration timeout (module alone 15/15); (2) requirement-integration-e2e times out waiting for the truncated-diff notice, cause not located; (3) plan execution grants are not linked to requirement start intents; (4) page-level card structure still reads as generic cards (overview stat row, lifecycle block); (5) glass frame frame-rate is a rough rAF sample (48–61 fps), no GPU profile; OS DPI/screen reader/user visual acceptance unverified.
+
+2026-10-30 requirement-owned workflows supersede the configurable-workflow / UC gaps below. Live UC
+types, APIs and storage grouping are removed with document-preserving migration. Task workflow inheritance,
+drag/drop templates, document gates, native node execution and automatic Agent assignment are implemented.
+Remaining: per-task explicit start before continuous execution; no external CLI workflow adapter; the
+clickable material journey is currently on the requirement workbench, not every global route. Requirement-wide
+acceptance/delivery, bulk manual assignment, Agent composition, settings consolidation, prepared-workspace
+base synchronization, conflict UI and A2.2b remote jobs remain open. Final full test run has one timeout
+(613 PASS / 4 SKIP); its entire module passes separately 15/15, final flow tests 18/18. Do not call that run
+all green. See [current report, screenshots and command output](../v2/evidence/requirement-guided-flow/REPORT.md).
+
+2026-10-30 A3.2a supersedes the integration gap in the A3.1 note below: task integration and preparation
+of new dependent workspaces are implemented. Remaining: requirement-wide verification/delivery,
+automatic synchronization of an already-prepared task base, conflict-resolution UI, managed autonomous
+scheduling, Agent composition, configurable document gates/workflows, settings consolidation and A2.2b
+remote jobs. Details and actual acceptance status: [A3.2a report](../v2/evidence/requirement-integration/REPORT.md).
+
+2026-10-30 A3.1: new requirement workbench evidence is in
+[requirement-work/REPORT.md](../v2/evidence/requirement-work/REPORT.md). Requirement/UC/task grouping,
+independent worktree approvals and local native execution are real. Integration of reviewed task
+outputs, dependent-task baselines, requirement-level verification/delivery, Agent composition,
+workflow configuration and settings consolidation remain open. New managed tasks with prerequisites
+are explicitly blocked until integration is connected; old plan paths are retained. The requirement
+page uses its own actual state instead of the legacy plan journey, which could imply nonexistent AI work.
+
 2026-10-30 current system migration: the five Lab fixes and shared shell/page/overlay implementation
 are in this working branch. See the current [report and validation](../design/system-premium/REPORT.md)
 for actual PASS/FAIL/SKIP, including defects found by the full native matrix and their rechecks.

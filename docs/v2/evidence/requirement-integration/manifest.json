@@ -1,0 +1,419 @@
+{
+  "recordedAt": "2026-10-30T17:53:42.196558+00:00",
+  "baseHead": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+  "branch": "codex/premium-system",
+  "state": "Uncommitted; existing work preserved. No push, merge or release. Frozen before manual-flow UX follow-up.",
+  "fullSuiteTiming": "601 PASS / 4 SKIP before final duplicate-integration guard; 31 targeted PASS and all delivery desktop checks after it.",
+  "deliveryBuild": {
+    "lint": 0,
+    "typecheck": 0,
+    "packageBuild": 0
+  },
+  "deliveryChecks": [
+    {
+      "command": "node scripts/requirement-integration-e2e.mjs",
+      "exitCode": 0,
+      "log": "docs/v2/evidence/requirement-integration/logs/requirement-integration-e2e-delivery.log"
+    },
+    {
+      "command": "node scripts/requirement-work-e2e.mjs",
+      "exitCode": 0,
+      "log": "docs/v2/evidence/requirement-integration/logs/requirement-work-e2e-delivery.log"
+    },
+    {
+      "command": "node scripts/e2e.mjs",
+      "exitCode": 0,
+      "log": "docs/v2/evidence/requirement-integration/logs/e2e-delivery.log"
+    },
+    {
+      "command": "node scripts/agent-e2e.mjs",
+      "exitCode": 0,
+      "log": "docs/v2/evidence/requirement-integration/logs/agent-e2e-delivery.log"
+    },
+    {
+      "command": "node scripts/v12-e2e.mjs",
+      "exitCode": 0,
+      "log": "docs/v2/evidence/requirement-integration/logs/v12-e2e-delivery.log"
+    },
+    {
+      "command": "node scripts/v13-e2e.mjs",
+      "exitCode": 0,
+      "log": "docs/v2/evidence/requirement-integration/logs/v13-e2e-delivery.log"
+    },
+    {
+      "command": "pnpm test:package",
+      "exitCode": 0,
+      "log": "docs/v2/evidence/requirement-integration/logs/package-smoke-delivery.log"
+    }
+  ],
+  "sources": [
+    {
+      "path": "apps/runtime/src/requirement-integration.ts",
+      "sha256": "06aaed53c7af85a7239153522dfe9b6815ac5c40a8a22fc3ecd7334dc5c5093f",
+      "bytes": 31212
+    },
+    {
+      "path": "apps/runtime/src/requirement-git.ts",
+      "sha256": "f7517cdc6094f37fbfdaafb2112ac5121afc41cc80333e49165f8a917180a368",
+      "bytes": 11316
+    },
+    {
+      "path": "apps/runtime/src/requirement-work.ts",
+      "sha256": "61d2c6e09a3dc55ac3dd3db047377430f31a69a6de6fe50d9bf08093076cddd2",
+      "bytes": 27292
+    },
+    {
+      "path": "apps/runtime/src/dispatcher.ts",
+      "sha256": "2369e45fdc63e68283f01fdb85471c542819e61cc7e9e4f13d69a0b3c4982f8f",
+      "bytes": 87475
+    },
+    {
+      "path": "apps/runtime/src/agent-runner.ts",
+      "sha256": "ec20fab3530fe585c6da3043a0744bf1ff469946d912b7d411868df54082f567",
+      "bytes": 138078
+    },
+    {
+      "path": "packages/contracts/src/requirement-work.ts",
+      "sha256": "1c32aeb6d9e4a739cbc47e07535bfa8961d43059f7e6864b7f7614d823e20de5",
+      "bytes": 5027
+    },
+    {
+      "path": "packages/contracts/src/desktop-api.ts",
+      "sha256": "4ef72ace02e7a3e465d2a6479687e8020b6ac6eb676f6d413ecd2f2a583679ff",
+      "bytes": 23232
+    },
+    {
+      "path": "packages/persistence/src/migrations.ts",
+      "sha256": "0bacd296c30541c4a9584be42057a260c38489736a32bcbc4943842b11684d48",
+      "bytes": 61751
+    },
+    {
+      "path": "packages/policy/src/index.ts",
+      "sha256": "764026869fb899e4cf718392f2baf973f16cf4e681441646c093a5322b7bfeb6",
+      "bytes": 5283
+    },
+    {
+      "path": "apps/desktop/src/preload/index.ts",
+      "sha256": "1bdf886e0dcaad79c06b2945f613b2be656f2b09037b8a3b278b4e934461ae2c",
+      "bytes": 21456
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/RequirementWorkPage.tsx",
+      "sha256": "eff5df21bca1bbd40a19ae165f7641db91c5e93271d96c09e97031e29cf13fbc",
+      "bytes": 20853
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/RequirementIntegrationDialog.tsx",
+      "sha256": "bd25c8b59f72981929a1f6e6b4cea7256851faa6d035a8f5967c43c90f1375f8",
+      "bytes": 8646
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/requirement-work.css",
+      "sha256": "414cfddca3c901fb23c8a8d456ce9cbb29511f342f84ed3075420de8bf38c2a5",
+      "bytes": 9176
+    },
+    {
+      "path": "tests/requirement-integration.test.ts",
+      "sha256": "4eedb6ba5a2ecd37f12c61f97c05a3d7bc2d9521b435373243c6b625b97a53e0",
+      "bytes": 14802
+    },
+    {
+      "path": "tests/requirement-work.test.ts",
+      "sha256": "9aef8d6e3fcaf419559d018ae76569fb01a52e59fe3ff81e52b3f069ee2c188f",
+      "bytes": 13126
+    },
+    {
+      "path": "scripts/requirement-integration-e2e.mjs",
+      "sha256": "07e5b0dea1306cc89e2dc90790afa5d2f865946a7db908f89e9667bda5657a4e",
+      "bytes": 13830
+    },
+    {
+      "path": "scripts/requirement-work-e2e.mjs",
+      "sha256": "401bfa6336f502c1b47f4871ed8054fcdcfceafb8d8148aefa4643af879823b5",
+      "bytes": 20113
+    },
+    {
+      "path": "docs/adr/0074-reviewed-task-integration.md",
+      "sha256": "3fc022849a4b741acdbe517b1c0c0876ddb47a4f76e6bfcd506ae887f3a890f3",
+      "bytes": 4007
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/v2/evidence/requirement-integration/integrate-approval-1440-light.png",
+      "sha256": "51c812e8f7d18290020fcf377b887c4af942dbe54dd701594a43e691f4a09626",
+      "bytes": 482232,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/integrated-workbench-1440-light.png",
+      "sha256": "8af7a4dcd9a63bec32c1dd8f89f8d171563ee8f6e773c54e3dcb8b4a1ec1b74d",
+      "bytes": 696059,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/native-regression/v12-collapsed.png",
+      "sha256": "894e427a721566e8700ac1a78d565482c8187a4da41094eed420f634c79ec494",
+      "bytes": 578246,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/native-regression/v13-connection-editor.png",
+      "sha256": "9857941484878886b41700317a9de8b5b3328e50dda1f8c05d002884a79c38d5",
+      "bytes": 399432,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/native-regression/v13-orchestration.png",
+      "sha256": "26763e57279b2b62f7b952c590b63afa04a882e4f87fb624df018682dfd142d0",
+      "bytes": 607842,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/review-1024-dark-125-reduced.png",
+      "sha256": "dde5184da3519560c669f47793e94dc8a54be1d46e6eea2513599da6e8762b99",
+      "bytes": 224906,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/review-1024-dark.png",
+      "sha256": "79103f02222a631217be9904d4473f06e09d93e6174b1c096de0ca5852f3d8c8",
+      "bytes": 192558,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/review-1024-light.png",
+      "sha256": "c48a412771f842c65b392ea742f5b12dde26f1f09d28e5d8c002ef85b075ad7d",
+      "bytes": 192008,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/review-1280-dark.png",
+      "sha256": "a90b42abd58ef7a932ec9c63786884c049d78757037b9bb7286dcf3429e1a9e3",
+      "bytes": 248811,
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/review-1280-light.png",
+      "sha256": "2d5ad4a2835293425a4e3247bf3f8ffb5d594e81a59f428d81942d888f2501aa",
+      "bytes": 262937,
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/review-1440-dark.png",
+      "sha256": "bcf3c4b63bfa1d6465b20448b185b0939d42ac351d24bd4833f6792f38a115b0",
+      "bytes": 264920,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/review-1440-light.png",
+      "sha256": "25676c94fbd89737726d3e9d8eef1b33b2b10f2aafc4f9a334ace2dc6014ffc0",
+      "bytes": 287252,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/review-dense-long-1440-light.png",
+      "sha256": "edea372b78b5528107bb08a1b69b4761e883d964b30280ab42e1a597b2c249bd",
+      "bytes": 342529,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/review-dense-scroll-1440-light.png",
+      "sha256": "a314fe13db6fb573fe70cdbba7dd0b95df682f172e744fb16b90d6708436ddea",
+      "bytes": 501696,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/review-empty-1440-light.png",
+      "sha256": "4741512b7c9394a059d8c4c253be68e3751b640c732d19ecebbf75faf35a98d3",
+      "bytes": 229939,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/review-initial-1440-light.png",
+      "sha256": "86f136c75756ee1e49daa6ba86b79b1f2fc9cf06f13a7263283c95933a580660",
+      "bytes": 229235,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/review-integrated-1440-light.png",
+      "sha256": "cdefff6e1a46ee0a8c12f2ad2f5de714478ae17f24d00b2da4bd1091b0c189ab",
+      "bytes": 313910,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/review-loading-1440-light.png",
+      "sha256": "cce9086667dd112d4a473e4c64558de1eb4a9d5169fb5432d52ef4a44a07f065",
+      "bytes": 215073,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/stale-review-error-1440-light.png",
+      "sha256": "3199efa1ec7c22d8ddb02599b5c6c2ac51dc4ec2dc9f6b2b1caf84e3421f8550",
+      "bytes": 296878,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/verify-approval-1440-light.png",
+      "sha256": "02b2aca840f41a3deed239a7e96408b15b34edc54f9763d08cf377bc1d2d6b0b",
+      "bytes": 475843,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/dense-bottom-1440-light.png",
+      "sha256": "49928ea064074c6f821545fc86e67ec47024746495cf0465ac9b2120b1daec1b",
+      "bytes": 539295,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/dirty-base-error-1440-light.png",
+      "sha256": "25c5bfe7f5133142b138e6bd3ae61d13f16b714a4db30a9b2066a196c9225412",
+      "bytes": 673476,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/document-version-conflict-1440-light.png",
+      "sha256": "9a792855db7ade380f90b240bf7c7a4fb5b49d2b00052da0a0ede249d5f23b47",
+      "bytes": 242141,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/documents-editor-1024-dark-125.png",
+      "sha256": "cc358d783fb5a28e299aed057b7fd3c8d9b2347c5957fe4f265b90eab955603e",
+      "bytes": 138054,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/documents-editor-1440-light.png",
+      "sha256": "9bb0e2254508f849da51b801532ba62eacdadd4f69bd3b5b8c902026cce0385d",
+      "bytes": 220713,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/empty-1440-light.png",
+      "sha256": "fc25a1e18292d386d4403ec991f0649a93c7628dd26de0c8e43b1c25a7aad82e",
+      "bytes": 593251,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/missing-requirement-1024-dark-125.png",
+      "sha256": "a0d6d3a89bd2477e7edf2371b0f49c1ebfbf15a80dbe2410108d3e8250fcb15d",
+      "bytes": 353766,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/requirements-1024-dark-125-reduced.png",
+      "sha256": "094d1cb17c0625a04fc0e8c9189deca05860fa27de44d51063a8d16e1c118397",
+      "bytes": 393518,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/requirements-1024-dark.png",
+      "sha256": "1a0ed0d4d284e65d0b792ed6a15578e20a00c67ed3196e96b85d39d02d8e5f43",
+      "bytes": 390204,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/requirements-1024-light.png",
+      "sha256": "37d2b00d646af1c2f3085c272457594c5cc24044cba705a0533d97513c20c883",
+      "bytes": 450122,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/requirements-1280-dark.png",
+      "sha256": "eb51206a592358cad53c0096ba45a64d64aa8bf420b2a5be2899e5784aa7d1eb",
+      "bytes": 504649,
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/requirements-1280-light.png",
+      "sha256": "267dbf3cd1c8594bc9db10eb792697fd28016f0a3783c77eb90146c445659600",
+      "bytes": 583598,
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/requirements-1440-dark.png",
+      "sha256": "8502bc9e7ee41de9b3429aceefa39c062cd12d0909a75ca7162f1b4cc9fcd353",
+      "bytes": 591641,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/requirements-1440-light.png",
+      "sha256": "9de7c433e5908a2c786ae09637138d1ab1f800f2e3018725b22e9a419105a8e7",
+      "bytes": 676465,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/task-detail-1440-light.png",
+      "sha256": "290b0fd18016220da9347776c59ef478f9ddd5d795bb04b87dd8039a1a6ba4b7",
+      "bytes": 589822,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/workspace-approval-1440-light.png",
+      "sha256": "629d5fb5461f77a7037ed4792ecafd172226972e029561b30e6822e45a420902",
+      "bytes": 475291,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "docs/v2/evidence/requirement-integration/workspace-regression/workspace-pending-1440-light.png",
+      "sha256": "369b24821d5a8e51d7e4e36b3c006c48e8dd48cb3cfe0ae4cb26ad7a317acaab",
+      "bytes": 689002,
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "release/win-unpacked/ProjectOS.exe",
+      "sha256": "9c924f8aee4ac239a69204e8c756eda5703f07f94d53517c4163fe04e161b880",
+      "bytes": 239400448
+    },
+    {
+      "path": "release/win-unpacked/resources/app.asar",
+      "sha256": "bca7a9554b06c36f0f7575b6965fc112fa824a232f49a457e73962ca7af4e93b",
+      "bytes": 43624628
+    },
+    {
+      "path": "release/win-unpacked/resources/runtime/index.mjs",
+      "sha256": "cce28947ef7681bef72dce73eb36beeeef13dcfc4a4ae23eced3104e69fa9229",
+      "bytes": 2656818
+    }
+  ]
+}

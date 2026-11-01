@@ -216,6 +216,8 @@ export class OrchestrationScheduler {
       }
     }
     if (!plan.createdTaskIds.length) throw new AppError('CONFLICT', '计划没有已创建的任务')
+    if (plan.createdTaskIds.some(id => this.store.read.getTask(id)?.requirementId))
+      throw new AppError('CONFLICT', '需求任务已继承节点流程，请在需求工作台启动；每个节点沿用工具审批与独立工作区')
     // ADR-0060: a manual click and the autonomous starter can race. Returning the plan that is
     // already running is the idempotent answer — it starts nothing twice and tells the UI the truth.
     if (plan.execution?.status === 'running') return plan

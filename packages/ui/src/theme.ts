@@ -56,9 +56,9 @@ export function createAntdTheme(mode: ThemeMode): ThemeConfig {
       boxShadow: '0 10px 30px -16px rgba(15,26,45,.20), 0 2px 6px rgba(15,26,45,.05)',
       boxShadowSecondary: '0 24px 60px -28px rgba(15,26,45,.30), 0 6px 18px -10px rgba(15,26,45,.14)',
       boxShadowTertiary: '0 1px 3px rgba(15,26,45,.06)',
-      motionDurationFast: '0.16s',
-      motionDurationMid: '0.26s',
-      motionDurationSlow: '0.4s',
+      motionDurationFast: '0.12s',
+      motionDurationMid: '0.16s',
+      motionDurationSlow: '0.24s',
     },
     components: {
       Button: {

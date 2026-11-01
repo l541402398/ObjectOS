@@ -1,0 +1,24 @@
+PASS light page title 22px 10:1
+PASS light requirement title 24px 9.44:1
+PASS light journey stage 14px 5.88:1
+PASS light journey state (13px) 13px 5.98:1
+PASS light facts 14px 6.63:1
+PASS light task title 14px 9.72:1
+PASS light task meta (13px) 13px 6.05:1
+PASS light list label (13px) 13px 4.9:1
+PASS light requirement item meta 13px 5.86:1
+PASS light sidebar status bar (12px) 12px 5.56:1
+PASS light default button 14px 10.69:1
+PASS light primary button 14px 4.89:1
+PASS dark page title 22px 14.42:1
+PASS dark requirement title 24px 14.69:1
+PASS dark journey stage 14px 8.99:1
+PASS dark journey state (13px) 13px 8.92:1
+PASS dark facts 14px 7.8:1
+PASS dark task title 14px 14.73:1
+PASS dark task meta (13px) 13px 9:1
+PASS dark list label (13px) 13px 7:1
+PASS dark requirement item meta 13px 8.86:1
+PASS dark sidebar status bar (12px) 12px 15.64:1
+PASS dark default button 14px 12.31:1
+PASS dark primary button 14px 9.38:1

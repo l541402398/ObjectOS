@@ -57,8 +57,33 @@ export async function prepareProjectPage(key: string, projectId: string, search 
   const agents = () => read(['agents', projectId], () => api.agents.list(projectId))
   const artifacts = () => read(qk.artifacts(projectId), () => api.artifacts.list(projectId, null))
   const lifecycle = () => read(qk.lifecycle(projectId), () => api.lifecycle.overview(projectId))
+  let storedReqId: string | undefined
+  try {
+    const persisted = JSON.parse(localStorage.getItem('projectos.ui') ?? '{}') as {
+      state?: { selectedRequirementByProject?: Record<string, string> }
+    }
+    storedReqId = persisted.state?.selectedRequirementByProject?.[projectId]
+  } catch {
+    storedReqId = undefined
+  }
+  const preloadRequirementContext = async (includeWork = false) => {
+    const result = await read(qk.requirements(projectId), () => api.requirements.list(projectId)).catch(() => null)
+    const list = result?.requirements ?? []
+    if (!list.length) return
+    const requested = new URLSearchParams(search).get('requirement')
+    const requirementId = (requested && list.some(r => r.id === requested))
+      ? requested
+      : (storedReqId && list.some(r => r.id === storedReqId))
+        ? storedReqId
+        : list[0]?.id
+    if (requirementId) {
+      if (includeWork) read(qk.requirementWork(requirementId), () => api.requirements.work(requirementId))
+      read(['requirement-flow', requirementId], () => api.workflows.view(requirementId))
+      artifacts()
+    }
+  }
   if (key === 'home' || key === 'work') {
-    const planned = plans(); board(); approvals(); runs(key === 'home' ? 40 : 30); agents()
+    const planned = plans(); board(); approvals(); runs(key === 'home' ? 40 : 30); agents(); void preloadRequirementContext()
     read(['work', 'journey', projectId], () => api.work.journey(projectId))
     read(['action-center', projectId], () => api.actions.center(projectId))
     read(['autonomy-settings', projectId], () => api.actions.autonomy(projectId))
@@ -67,12 +92,16 @@ export async function prepareProjectPage(key: string, projectId: string, search 
       const plan = (await planned.catch(() => null))?.plans[0]
       if (plan) read(qk.planGrant(plan.id), () => api.plans.grant.get(plan.id))
     }
-  } else if (key === 'tasks') { board(); agents(); plans(); lifecycle(); overview(); approvals() }
-  else if (key === 'agents') read(qk.collaborationOverview(projectId), () => api.collaboration.overview(projectId))
-  else if (key === 'approvals') approvals()
+  } else if (key === 'tasks') { board(); agents(); plans(); lifecycle(); overview(); approvals(); void preloadRequirementContext() }
+  else if (key === 'requirements') {
+    await preloadRequirementContext(true)
+    agents()
+  }
+  else if (key === 'agents') { read(qk.collaborationOverview(projectId), () => api.collaboration.overview(projectId)); void preloadRequirementContext() }
+  else if (key === 'approvals') { approvals(); void preloadRequirementContext() }
   else if (key === 'approval-center') { approvals(); read(['release-approvals', projectId], () => api.release.approvals(projectId)) }
   else if (key === 'runs') {
-    runs(100); approvals(); read([...qk.events(projectId), 100], () => api.events.list({ projectId, limit: 100, offset: 0 }))
+    runs(100); approvals(); read([...qk.events(projectId), 100], () => api.events.list({ projectId, limit: 100, offset: 0 })); void preloadRequirementContext()
     const runId = new URLSearchParams(search).get('run')
     if (runId) read(qk.run(runId), () => api.runs.get(runId))
   }
@@ -96,7 +125,7 @@ export async function prepareProjectPage(key: string, projectId: string, search 
     read(['skills'], () => api.skills.list())
     read(qk.aiConnections, () => api.aiConnections.list())
   }
-  else if (key === 'overview' || key === 'project-settings') overview()
+  else if (key === 'overview' || key === 'project-settings') { overview(); if (key === 'overview') void preloadRequirementContext() }
   else if (key === 'knowledge') { read(qk.knowledge(projectId), () => api.knowledge.list(projectId)); artifacts() }
   else if (key === 'workspace') {
     jobs.push(import('../pages/WorkspacePage'))

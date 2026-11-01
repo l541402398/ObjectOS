@@ -1,0 +1,196 @@
+{
+  "head": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+  "profile": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\projectos-requirement-e2e-xwdjc1",
+  "note": "Real Electron/SQLite/Git with test content and deterministic local provider. 125% is app zoom; OS DPI and live external models not verified.",
+  "checks": [
+    {
+      "name": "Create requirement from UI persists",
+      "status": "PASS"
+    },
+    {
+      "name": "UC and two independently assigned tasks persist",
+      "status": "PASS"
+    },
+    {
+      "name": "No filesystem work before human decision",
+      "status": "PASS"
+    },
+    {
+      "name": "Approved task and requirement workspaces exist",
+      "status": "PASS"
+    },
+    {
+      "name": "Workspace bindings survive desktop restart",
+      "status": "PASS"
+    },
+    {
+      "name": "Workspace authorization does not authorize write_file",
+      "status": "PASS"
+    },
+    {
+      "name": "Approved write affects only isolated task root",
+      "status": "PASS"
+    },
+    {
+      "name": "Real task details deep link",
+      "status": "PASS"
+    },
+    {
+      "name": "1440 light readable and no page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "secondary": "13px",
+        "heading": "\"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "allTextVisible": true
+      }
+    },
+    {
+      "name": "1440 light accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1440 dark readable and no page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "secondary": "13px",
+        "heading": "\"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "allTextVisible": true
+      }
+    },
+    {
+      "name": "1440 dark accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1280 light readable and no page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "secondary": "13px",
+        "heading": "\"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "allTextVisible": true
+      }
+    },
+    {
+      "name": "1280 light accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1280 dark readable and no page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "secondary": "13px",
+        "heading": "\"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "allTextVisible": true
+      }
+    },
+    {
+      "name": "1280 dark accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1024 light readable and no page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "secondary": "13px",
+        "heading": "\"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "allTextVisible": true
+      }
+    },
+    {
+      "name": "1024 light accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1024 dark readable and no page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "font": "14px",
+        "secondary": "13px",
+        "heading": "\"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "allTextVisible": true
+      }
+    },
+    {
+      "name": "1024 dark accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "Dirty form has discard guard",
+      "status": "PASS"
+    },
+    {
+      "name": "Keyboard focus stays visible",
+      "status": "PASS"
+    },
+    {
+      "name": "Reduced motion enabled",
+      "status": "PASS"
+    },
+    {
+      "name": "Project switching never shows foreign requirement",
+      "status": "PASS"
+    },
+    {
+      "name": "Original project data returns",
+      "status": "PASS"
+    },
+    {
+      "name": "Dirty baseline error stays visible",
+      "status": "PASS"
+    },
+    {
+      "name": "Dense list remains scrollable to its final task",
+      "status": "PASS"
+    },
+    {
+      "name": "Background refresh cannot overwrite a concurrent document revision",
+      "status": "PASS"
+    },
+    {
+      "name": "Version conflict preserves unsaved form content",
+      "status": "PASS"
+    },
+    {
+      "name": "No renderer errors",
+      "status": "PASS",
+      "detail": []
+    }
+  ],
+  "captures": [
+    "empty-1440-light.png",
+    "documents-editor-1440-light.png",
+    "workspace-pending-1440-light.png",
+    "workspace-approval-1440-light.png",
+    "task-detail-1440-light.png",
+    "requirements-1440-light.png",
+    "requirements-1440-dark.png",
+    "requirements-1280-light.png",
+    "requirements-1280-dark.png",
+    "requirements-1024-light.png",
+    "requirements-1024-dark.png",
+    "requirements-1024-dark-125-reduced.png",
+    "documents-editor-1024-dark-125.png",
+    "missing-requirement-1024-dark-125.png",
+    "dirty-base-error-1440-light.png",
+    "dense-bottom-1440-light.png",
+    "document-version-conflict-1440-light.png"
+  ],
+  "errors": []
+}

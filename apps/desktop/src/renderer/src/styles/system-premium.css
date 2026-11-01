@@ -57,14 +57,14 @@
 .po-shell .po-sidenav-group + .po-sidenav-group { margin-top: 12px; }
 .po-shell .po-sidenav-title { color: var(--ui-ink-2); font-size: 12px; letter-spacing: .06em; padding: 8px 12px; }
 .po-shell .po-nav-item {
-  min-height: 40px; height: 40px; margin: 2px 0; border: 1px solid transparent; border-radius: 12px;
+  min-height: 36px; height: 36px; margin: 2px 0; border: 1px solid transparent; border-radius: 8px;
   padding: 0 12px; color: var(--ui-ink-2); background: transparent; box-shadow: none;
   font-size: 13px;
 }
 .po-shell .po-nav-item:hover { color: var(--ui-ink); background: var(--ui-surface-hover); }
 .po-shell .po-nav-item.is-active {
-  color: var(--ui-accent-strong); background: var(--ui-accent-soft); border-color: var(--ui-accent-line);
-  box-shadow: inset 0 1px 0 var(--ui-glass-highlight);
+  color: var(--ui-accent-strong); background: var(--ui-accent-soft); border-color: transparent;
+  box-shadow: none;
 }
 .po-shell .po-nav-item.is-active::before { content: none; }
 .po-shell .po-nav-icon { width: 20px; flex-basis: 20px; height: 20px; }
@@ -116,8 +116,8 @@
 :root .v16-project-visual .v16-project-cover::before { content: none; }
 :root .v16-stat-card .v16-stat-icon { background: var(--ui-accent-soft); color: var(--ui-accent-strong); }
 :root .po-page { padding: 24px; gap: 20px; }
-:root .po-page-title { font-size: 26px; line-height: 1.24; font-weight: 660; color: var(--ui-ink); text-shadow: none; }
-:root .po-page-description { font-size: 14px; color: var(--ui-ink-2); }
+:root .po-page-title { color: var(--ui-ink); text-shadow: none; }
+:root .po-page-description { font-size: 13px; color: var(--ui-ink-2); }
 :root :is(.po-section-title, .v16-section-title, .po-card-title) { font-size: 16px; font-weight: 650; }
 :root :is(.v16-stat-icon, .v17-settings-card-icon) { background: var(--ui-accent-soft); color: var(--ui-accent-strong); box-shadow: none; }
 :root :is(.v16-stat-icon, .v17-settings-card-icon)::before { content: none; }
@@ -201,7 +201,7 @@
 :root .po-command-item.is-active .po-command-label { color: var(--ui-accent-strong); }
 /* Shared reading rhythm, using the approved Lab's typeface and discrete type hierarchy. */
 .po-shell, .pui-overlay-surface, .pui-overlay-popover { font-synthesis: none; }
-:root :is(.po-page-title, .studio-masthead-id h1, .studio-review-masthead h1, .dc-head h1, .rw-head h1, .rc-head h1) { font-size: var(--ui-text-title); font-weight: 600; line-height: 1.35; letter-spacing: -.015em; }
+.po-shell :is(.po-page-title, .studio-masthead-id h1, .studio-review-masthead h1, .dc-head h1, .rw-head h1, .rc-head h1) { font-size: 22px; font-weight: 550; line-height: 1.4; letter-spacing: -.01em; }
 :root :is(.po-section-title, .po-card-title, .v16-section-title) { font-size: var(--ui-text-section); font-weight: 600; line-height: 1.5; letter-spacing: normal; }
 :root :is(.po-page-description, .po-section-subtitle) { line-height: 1.65; }
 :root .po-eyebrow { font-size: var(--ui-text-label); font-weight: 500; letter-spacing: .09em; }
@@ -217,7 +217,7 @@
 :root .studio-focus-main strong, :root .studio-approval-row strong { font-size: var(--ui-text-body); font-weight: 500; }
 :root .studio-hero, :root .studio-focus, :root .studio-ledger, :root .studio-timeline { border-radius: 16px; }
 :root .wc-next { padding: 20px; gap: 16px; background: var(--ui-surface); border-color: var(--ui-border); }
-:root .wc-next-head strong { font-size: var(--ui-text-section); font-weight: 600; }
+:root .wc-next-head h2 { font-size: var(--ui-text-section); font-weight: 600; }
 :root .wc-next-title h3 { font-size: var(--ui-text-body); font-weight: 600; }
 :root .wc-next-reason, :root .wc-next-decision, :root .wc-next-resume { font-size: var(--ui-text-secondary); line-height: 1.65; }
 :root .wc-next-main { gap: 6px; }

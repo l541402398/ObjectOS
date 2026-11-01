@@ -32,8 +32,8 @@ import {
   UnorderedListOutlined,
 } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
-import { Sparkles } from 'lucide-react'
-import { productNavigation } from './product-navigation'
+import { ChevronRight, FolderKanban, Sparkles } from 'lucide-react'
+import { productNavigation, projectHubNavigationItems } from './product-navigation'
 import { useCompactNavigation } from '../hooks/useCompactNavigation'
 import { PopoverShell } from '../next-ui/overlay/overlay-shell'
 import type { RuntimeStatus } from '@projectos/contracts'
@@ -46,7 +46,7 @@ import {
   toneForStatus,
 } from '@projectos/ui'
 import { BootError, BootScreen } from './BootScreen'
-import { GoalJourneyBar } from './GoalJourneyBar'
+import { TopJourneyBar } from './RequirementJourneyBar'
 import { CommandPalette, type PaletteCommand } from './CommandPalette'
 import { SettingsModal } from '../features/settings/SettingsModal'
 import { ActionCenterButton } from './ActionCenterPanel'
@@ -114,6 +114,7 @@ export default function AppLayout() {
   const [commandOpen, setCommandOpen] = useState(false)
   const [maximized, setMaximized] = useState(false)
   const [navigationOpen, setNavigationOpen] = useState(false)
+  const [projectHubOpen, setProjectHubOpen] = useState(false)
   const narrow = useCompactNavigation()
   const compact = collapsed || narrow
   const isMac = window.projectos.system.platform === 'darwin'
@@ -185,6 +186,10 @@ export default function AppLayout() {
         void queryClient.invalidateQueries({ queryKey: ['action-center', eventProjectId] })
         void queryClient.invalidateQueries({ queryKey: ['lifecycle', eventProjectId] })
         void queryClient.invalidateQueries({ queryKey: ['gate-overview', eventProjectId] })
+        void queryClient.invalidateQueries({ queryKey: ['requirements', eventProjectId] })
+        void queryClient.invalidateQueries({ queryKey: ['requirement-flow'] })
+        void queryClient.invalidateQueries({ queryKey: ['artifacts', eventProjectId] })
+        void queryClient.invalidateQueries({ queryKey: ['agent-workflow-materials', eventProjectId] })
         // ADR-0053: the journey bar follows real business events, not only the 5s fallback poll.
         void queryClient.invalidateQueries({ queryKey: ['work', 'journey'] })
       }
@@ -344,6 +349,19 @@ export default function AppLayout() {
   const approvalBadge = pendingApprovals.filter((approval) => !projectId || approval.projectId === projectId).length
 
   const navGroups = productNavigation(Boolean(projectId && currentProject), taskBadge, approvalBadge)
+  const projectHubItems = projectHubNavigationItems()
+  const mobileNavGroups =
+    projectId && currentProject
+      ? [
+          {
+            key: '项目',
+            title: '项目档案与配置',
+            collapsible: false,
+            items: projectHubItems.map((item) => ({ key: item.key, label: item.label, icon: item.icon })),
+          },
+          ...navGroups,
+        ]
+      : navGroups
 
   const projectMenuItems: MenuProps['items'] = [
     ...projects.map((project) => ({
@@ -373,7 +391,7 @@ export default function AppLayout() {
             {compact ? <ExpandOutlined aria-hidden /> : <CompressOutlined aria-hidden />}
           </button>
         }>
-          <SidebarNavigation groups={navGroups.map((group) => ({ ...group, placement: 'main', collapsible: false }))} activeKey={activeKey} onSelect={(key) => { setNavigationOpen(false); handleNavigate(key) }} />
+          <SidebarNavigation groups={mobileNavGroups.map((group) => ({ ...group, placement: 'main', collapsible: false }))} activeKey={activeKey} onSelect={(key) => { setNavigationOpen(false); handleNavigate(key) }} />
         </PopoverShell>
         <button type="button" className="po-titlebar-brand" onClick={() => navigate('/')} aria-label="ProjectOS 项目中心">
           <Logo /><span>PROJECTOS</span>
@@ -516,6 +534,72 @@ export default function AppLayout() {
           </div>
         ) : null}
       </div>
+      {currentProject && projectId ? (
+        <div className="po-project-hub-slot">
+          <PopoverShell
+            ariaLabel="项目档案与配置"
+            open={projectHubOpen}
+            onOpenChange={setProjectHubOpen}
+            side="right"
+            align="start"
+            className="po-project-hub-popover"
+            trigger={
+              <button
+                type="button"
+                className={`po-project-hub-trigger ${activeGroup === '项目' ? 'is-active' : ''} ${projectHubOpen ? 'is-open' : ''}`.trim()}
+                aria-label="项目档案与配置"
+                title={compact ? `项目档案与配置${activeGroup === '项目' ? ` · ${PAGE_LABELS[activeKey]}` : ''}` : undefined}
+                data-testid="project-hub-trigger"
+              >
+                <span className="po-project-hub-icon" aria-hidden>
+                  <FolderKanban size={18} strokeWidth={1.7} />
+                </span>
+                {!compact ? (
+                  <>
+                    <span className="po-project-hub-copy">
+                      <strong>项目档案与配置</strong>
+                      <span>{activeGroup === '项目' ? `当前：${PAGE_LABELS[activeKey]}` : '姿态 · 版本 · 知识 · 设置'}</span>
+                    </span>
+                    <ChevronRight size={15} className="po-project-hub-arrow" aria-hidden />
+                  </>
+                ) : null}
+              </button>
+            }
+          >
+            <div className="po-project-hub-menu" role="menu" aria-label="项目档案与配置二级菜单">
+              <div className="po-project-hub-head">
+                <span className="po-project-hub-kicker">PROJECT HUB</span>
+                <strong>{truncate(currentProject.name, 22)} · 项目档案与配置</strong>
+              </div>
+              <div className="po-project-hub-list">
+                {projectHubItems.map((item) => {
+                  const isItemActive = activeKey === item.key
+                  return (
+                    <button
+                      type="button"
+                      key={item.key}
+                      aria-label={item.label}
+                      aria-current={isItemActive ? 'page' : undefined}
+                      className={`po-project-hub-item ${isItemActive ? 'is-active' : ''}`.trim()}
+                      onClick={() => {
+                        setProjectHubOpen(false)
+                        handleNavigate(item.key)
+                      }}
+                    >
+                      <span className="po-project-hub-item-icon" aria-hidden>{item.icon}</span>
+                      <span className="po-project-hub-item-text">
+                        <strong>{item.label}</strong>
+                        <small>{item.note}</small>
+                      </span>
+                      <ChevronRight size={14} className="po-project-hub-item-chevron" aria-hidden />
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </PopoverShell>
+        </div>
+      ) : null}
       <SidebarNavigation
         groups={navGroups}
         activeKey={activeKey}
@@ -558,7 +642,7 @@ export default function AppLayout() {
         sidebar={sidebar}
         footer={statusbar}
         collapsed={compact}
-        subheader={<GoalJourneyBar projectId={projectId} />}
+        subheader={activeKey === 'requirements' ? undefined : <TopJourneyBar projectId={projectId} />}
       >
         {navigation.state === 'loading' ? <div className="po-route-progress" role="status" aria-live="polite">正在打开{pageLabel(currentPageKey(navigation.location?.pathname ?? ''))}…</div> : null}
         {settingsPending ? <div className="po-route-progress" role="status">正在读取设置…</div> : null}

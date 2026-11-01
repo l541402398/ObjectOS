@@ -1,0 +1,2084 @@
+[
+  {
+    "file": "apps/desktop/src/renderer/src/styles/app.css",
+    "selector": ".po-crumbs",
+    "value": "12.5px",
+    "line": 165
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/app.css",
+    "selector": ".po-crumb-back",
+    "value": "12px",
+    "line": 181
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/app.css",
+    "selector": ".po-crumb-link",
+    "value": "12.5px",
+    "line": 211
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/app.css",
+    "selector": ".po-task-drawer-kicker",
+    "value": "12px",
+    "line": 2200
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/app.css",
+    "selector": ".po-task-drawer-meta",
+    "value": "12px",
+    "line": 2219
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/app.css",
+    "selector": ".po-task-tab-count",
+    "value": "12px",
+    "line": 2253
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/app.css",
+    "selector": ".po-detail-block-head span",
+    "value": "12px",
+    "line": 2292
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/app.css",
+    "selector": ".po-task-fact-grid span",
+    "value": "12px",
+    "line": 2333
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/app.css",
+    "selector": ".po-criteria-index",
+    "value": "12px",
+    "line": 2370
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/app.css",
+    "selector": ".po-drawer-empty-line",
+    "value": "12px",
+    "line": 2385
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/app.css",
+    "selector": ".po-agent-studio-item span",
+    "value": "12px",
+    "line": 4272
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/app.css",
+    "selector": ".po-agent-preview",
+    "value": "12px",
+    "line": 4276
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/app.css",
+    "selector": ".po-notfound-path",
+    "value": "12px",
+    "line": 4302
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-stat-hint",
+    "value": "12px",
+    "line": 74
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-section-head span",
+    "value": "12px",
+    "line": 100
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-project-more",
+    "value": "12px",
+    "line": 169
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-project-body p",
+    "value": "12px",
+    "line": 187
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-project-meta",
+    "value": "12px",
+    "line": 201
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-project-progress > span",
+    "value": "12px",
+    "line": 212
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-quick small",
+    "value": "12px",
+    "line": 253
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-card-title span",
+    "value": "12px",
+    "line": 283
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-bar-value",
+    "value": "12px",
+    "line": 317
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-bar-column > span",
+    "value": "12px",
+    "line": 337
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-donut-center span",
+    "value": "12px",
+    "line": 379
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-legend",
+    "value": "12px",
+    "line": 381
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-card-link",
+    "value": "12px",
+    "line": 400
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-activity-line strong",
+    "value": "12px",
+    "line": 420
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-activity-line span",
+    "value": "12px",
+    "line": 421
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-table-head",
+    "value": "12px",
+    "line": 431
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-table-row",
+    "value": "12px",
+    "line": 440
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-table-name strong",
+    "value": "12px",
+    "line": 445
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-table-avatar",
+    "value": "12px",
+    "line": 446
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-table-progress em",
+    "value": "12px",
+    "line": 449
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-rail-empty",
+    "value": "12px",
+    "line": 451
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-approval-item strong, .v16-agent-row strong",
+    "value": "12px",
+    "line": 469
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-approval-item small, .v16-agent-row small",
+    "value": "12px",
+    "line": 470
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-agent-avatar",
+    "value": "12px",
+    "line": 472
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-resource-list span",
+    "value": "12px",
+    "line": 476
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-resource-list strong",
+    "value": "12px",
+    "line": 477
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-studio-head p",
+    "value": "12px",
+    "line": 540
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-studio-search input",
+    "value": "12px",
+    "line": 575
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-studio-group-title",
+    "value": "12px",
+    "line": 586
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-template-item strong",
+    "value": "12px",
+    "line": 610
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-template-item small",
+    "value": "12px",
+    "line": 611
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-studio-form .ant-form-item-label > label",
+    "value": "12px",
+    "line": 676
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-avatar-options button",
+    "value": "12px",
+    "line": 696
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-readonly-field",
+    "value": "12px",
+    "line": 708
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-readonly-field strong",
+    "value": "12px",
+    "line": 710
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-tab-heading span",
+    "value": "12px",
+    "line": 720
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-skill-check",
+    "value": "12px",
+    "line": 736
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-skill-card p, .v16-runtime-card p",
+    "value": "12px",
+    "line": 739
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-skill-card div span",
+    "value": "12px",
+    "line": 741
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-runtime-selected",
+    "value": "12px",
+    "line": 745
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-runtime-detail span",
+    "value": "12px",
+    "line": 748
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-runtime-detail strong",
+    "value": "12px",
+    "line": 749
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-permission-list strong",
+    "value": "12px",
+    "line": 754
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-permission-list small",
+    "value": "12px",
+    "line": 755
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-advanced-note",
+    "value": "12px",
+    "line": 756
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-danger-row strong",
+    "value": "12px",
+    "line": 758
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-danger-row span",
+    "value": "12px",
+    "line": 759
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-inline-note",
+    "value": "12px",
+    "line": 760
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-empty-inline",
+    "value": "12px",
+    "line": 761
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-mono-input textarea",
+    "value": "12px",
+    "line": 762
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-preview-role",
+    "value": "12px",
+    "line": 805
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-preview-desc",
+    "value": "12px",
+    "line": 806
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-preview-list span",
+    "value": "12px",
+    "line": 810
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-preview-list strong",
+    "value": "12px",
+    "line": 811
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-preview-check > strong",
+    "value": "12px",
+    "line": 814
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-preview-check > div strong",
+    "value": "12px",
+    "line": 819
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-preview-check > div small",
+    "value": "12px",
+    "line": 820
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".po-setting-row span",
+    "value": "12px",
+    "line": 946
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".po-settings-section-title",
+    "value": "12px",
+    "line": 952
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-shortcut-grid > div",
+    "value": "12px",
+    "line": 971
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-shortcut-grid kbd",
+    "value": "12px",
+    "line": 982
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-team-card strong, .v16-team-row strong",
+    "value": "12px",
+    "line": 1012
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-team-card span, .v16-team-row span",
+    "value": "12px",
+    "line": 1013
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-tool-card > div:first-child strong",
+    "value": "12px",
+    "line": 1020
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-tool-card > span",
+    "value": "12px",
+    "line": 1021
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-resource-cards span",
+    "value": "12px",
+    "line": 1036
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-resource-file",
+    "value": "12px",
+    "line": 1040
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-filter-tabs button",
+    "value": "12px",
+    "line": 1046
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-approval-card header span",
+    "value": "12px",
+    "line": 1053
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-approval-task",
+    "value": "12px",
+    "line": 1055
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-approval-detail",
+    "value": "12px",
+    "line": 1056
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-setting-kv",
+    "value": "12px",
+    "line": 1090
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".po-task-assignee-row > span:first-child",
+    "value": "12px",
+    "line": 1103
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".po-orch-kind-filter button",
+    "value": "12px",
+    "line": 1113
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".po-orch-log-head",
+    "value": "12px",
+    "line": 1121
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".po-orch-log-head span:first-child",
+    "value": "12px",
+    "line": 1122
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".po-orch-log-head button",
+    "value": "12px",
+    "line": 1123
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".po-orch-log-row",
+    "value": "12px",
+    "line": 1125
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-permission-agent-head strong",
+    "value": "12px",
+    "line": 1135
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-permission-agent-head span",
+    "value": "12px",
+    "line": 1136
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-permission-switches label",
+    "value": "12px",
+    "line": 1138
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".po-runtime-test-inline",
+    "value": "12px",
+    "line": 1162
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".po-settings-panel-head p",
+    "value": "12px",
+    "line": 1195
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-skill-library-card strong",
+    "value": "12px",
+    "line": 1206
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-skill-library-card p",
+    "value": "12px",
+    "line": 1207
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-skill-library-card span",
+    "value": "12px",
+    "line": 1208
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v16.css",
+    "selector": ".v16-skill-content",
+    "value": "12px",
+    "line": 1209
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-settings-stats span",
+    "value": "12px",
+    "line": 14
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-settings-card small",
+    "value": "12px",
+    "line": 32
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-next-step-copy span",
+    "value": "12px",
+    "line": 89
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-plan-notification-body p",
+    "value": "12px",
+    "line": 92
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-group-participant",
+    "value": "12px",
+    "line": 111
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-group-participant i",
+    "value": "12px",
+    "line": 115
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-group-message.is-system",
+    "value": "12px",
+    "line": 124
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-group-message-meta strong",
+    "value": "12px",
+    "line": 126
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-group-message-meta span",
+    "value": "12px",
+    "line": 127
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-group-message p",
+    "value": "12px",
+    "line": 128
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-group-plan-context strong",
+    "value": "12px",
+    "line": 143
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-group-plan-context span",
+    "value": "12px",
+    "line": 144
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-kb-summary span",
+    "value": "12px",
+    "line": 286
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-kb-summary strong",
+    "value": "12px",
+    "line": 287
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-kb-summary strong.is-mono",
+    "value": "12px",
+    "line": 288
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-kb-section > span",
+    "value": "12px",
+    "line": 290
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-kb-tags .ant-tag",
+    "value": "12px",
+    "line": 292
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-kb-tags em",
+    "value": "12px",
+    "line": 293
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-kb-warning",
+    "value": "12px",
+    "line": 294
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-collab-group strong",
+    "value": "12px",
+    "line": 337
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-collab-group small",
+    "value": "12px",
+    "line": 338
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-session-switch strong",
+    "value": "12px",
+    "line": 384
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-session-switch em",
+    "value": "12px",
+    "line": 385
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-session-dropdown .po-session-title",
+    "value": "12px",
+    "line": 407
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-session-dropdown .po-session-sub, .v17-session-dropdown .po-session-time",
+    "value": "12px",
+    "line": 408
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-run-bookmark",
+    "value": "12px",
+    "line": 425
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-group-badge",
+    "value": "12px",
+    "line": 485
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-stats span",
+    "value": "12px",
+    "line": 505
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-filter button",
+    "value": "12px",
+    "line": 510
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-hint",
+    "value": "12px",
+    "line": 515
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-title span",
+    "value": "12px",
+    "line": 544
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-meta span",
+    "value": "12px",
+    "line": 547
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-meta strong, .v17-runtime-meta code",
+    "value": "12px",
+    "line": 548
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-caps .ant-tag",
+    "value": "12px",
+    "line": 551
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-warning",
+    "value": "12px",
+    "line": 554
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-test strong",
+    "value": "12px",
+    "line": 561
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-test pre",
+    "value": "12px",
+    "line": 562
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-health span",
+    "value": "12px",
+    "line": 584
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-healthbar .is-status strong",
+    "value": "12px",
+    "line": 608
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-healthbar .is-metrics em",
+    "value": "12px",
+    "line": 611
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-healthbar .is-metrics strong",
+    "value": "12px",
+    "line": 612
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-summary",
+    "value": "12px",
+    "line": 613
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".v17-runtime-summary strong",
+    "value": "12px",
+    "line": 614
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".po-chat-idle",
+    "value": "12px",
+    "line": 638
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".po-chat-handoff-hint",
+    "value": "12px",
+    "line": 645
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".po-composer-prompts .ant-prompts-item",
+    "value": "12px",
+    "line": 686
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".po-chat-task-pill",
+    "value": "12px",
+    "line": 710
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".po-chat-task-pill em",
+    "value": "12px",
+    "line": 721
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/v17.css",
+    "selector": ".po-chat-context-hint",
+    "value": "12px",
+    "line": 723
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-page-description",
+    "value": "12.5px",
+    "line": 21
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-board-column-head",
+    "value": "12px",
+    "line": 66
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-task-tile-title",
+    "value": "12.5px",
+    "line": 94
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-task-tile-desc",
+    "value": "12px",
+    "line": 101
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-task-meta",
+    "value": "12px",
+    "line": 107
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".v16-project-body > p",
+    "value": "12px",
+    "line": 150
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".v16-project-meta",
+    "value": "12px",
+    "line": 156
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".nx-hero-kicker",
+    "value": "12px",
+    "line": 212
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".nx-hero-copy p",
+    "value": "12.5px",
+    "line": 214
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".nx-hero-meta",
+    "value": "12px",
+    "line": 215
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".nx-hero-tasks-head span",
+    "value": "12px",
+    "line": 220
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".nx-hero-tasks-note",
+    "value": "12px",
+    "line": 221
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".nx-hero-progress span",
+    "value": "12px",
+    "line": 225
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".v16-approvals-page .v16-approval-detail",
+    "value": "12px",
+    "line": 305
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-operations-card-head strong",
+    "value": "12.5px",
+    "line": 317
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".v16-health-page .v16-team-row strong,\r\n.v16-notifications-page .v16-team-row strong",
+    "value": "12.5px",
+    "line": 367
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".v16-health-page .v16-team-row span,\r\n.v16-notifications-page .v16-team-row span",
+    "value": "12px",
+    "line": 369
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-editor-surface .cm-editor",
+    "value": "12px",
+    "line": 379
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-task-tile-desc",
+    "value": "12.5px",
+    "line": 397
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".v16-stat-label, .v16-stat-hint",
+    "value": "12px",
+    "line": 398
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".v16-activity-line strong",
+    "value": "12px",
+    "line": 399
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".v16-activity-line span",
+    "value": "12px",
+    "line": 400
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".v16-project-meta",
+    "value": "12px",
+    "line": 401
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-plan-status-pill",
+    "value": "12px",
+    "line": 472
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-plan-agent-chip",
+    "value": "12px",
+    "line": 482
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-plan-agent-chip i",
+    "value": "12px",
+    "line": 493
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-plan-task-state",
+    "value": "12px",
+    "line": 501
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-plan-readiness-score em",
+    "value": "12px",
+    "line": 512
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-plan-readiness-copy",
+    "value": "12px",
+    "line": 513
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-plan-readiness-stats span",
+    "value": "12px",
+    "line": 516
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-plan-dag-code",
+    "value": "12px",
+    "line": 528
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-plan-dag-title",
+    "value": "12px",
+    "line": 530
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-plan-dag-foot",
+    "value": "12px",
+    "line": 531
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-plan-dag-agent i",
+    "value": "12px",
+    "line": 533
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".po-plan-dag-legend",
+    "value": "12px",
+    "line": 535
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/styles/next-ui-app.css",
+    "selector": ".pdl-panel-actions .pdl-quiet",
+    "value": "12px",
+    "line": 547
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/next-ui/overlay/overlay.css",
+    "selector": ".pui-overlay-eyebrow",
+    "value": "12px",
+    "line": 40
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/next-ui/overlay/overlay.css",
+    "selector": ".pui-overlay-meta",
+    "value": "12px",
+    "line": 42
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/next-ui/overlay/overlay.css",
+    "selector": ".pui-overlay-footer-meta",
+    "value": "12px",
+    "line": 50
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/next-ui/overlay/overlay.css",
+    "selector": ".pui-overlay-button",
+    "value": "12.5px",
+    "line": 52
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/next-ui/overlay/overlay.css",
+    "selector": ".pui-inspector-section-head",
+    "value": "12px",
+    "line": 59
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/next-ui/overlay/overlay.css",
+    "selector": ".pui-overlay-popover",
+    "value": "12.5px",
+    "line": 60
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/delivery.css",
+    "selector": ".delivery-empty",
+    "value": "12px",
+    "line": 19
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/delivery.css",
+    "selector": ".delivery-summary-item span",
+    "value": "12px",
+    "line": 39
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/delivery.css",
+    "selector": ".delivery-summary-item small",
+    "value": "12px",
+    "line": 41
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-metric span",
+    "value": "12px",
+    "line": 25
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-metric small",
+    "value": "12px",
+    "line": 38
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-badge",
+    "value": "12px",
+    "line": 96
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-version-meta",
+    "value": "12px",
+    "line": 112
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-retired",
+    "value": "12px",
+    "line": 158
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-iteration strong",
+    "value": "12px",
+    "line": 205
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-iteration span",
+    "value": "12px",
+    "line": 213
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-environment strong",
+    "value": "12px",
+    "line": 254
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-environment small",
+    "value": "12px",
+    "line": 259
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-posture span",
+    "value": "12px",
+    "line": 280
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-posture strong",
+    "value": "12px",
+    "line": 287
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-gate-status",
+    "value": "12px",
+    "line": 302
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-gate-error",
+    "value": "12px",
+    "line": 312
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-gate-def strong",
+    "value": "12px",
+    "line": 333
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-gate-def span",
+    "value": "12px",
+    "line": 338
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-evidence-count",
+    "value": "12px",
+    "line": 343
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-empty",
+    "value": "12px",
+    "line": 352
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-form label",
+    "value": "12px",
+    "line": 366
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-hint",
+    "value": "12px",
+    "line": 379
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".v16-delivery-approvals-head span",
+    "value": "12px",
+    "line": 425
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-relationship small",
+    "value": "12px",
+    "line": 446
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/lifecycle.css",
+    "selector": ".lc-relationship-arrow",
+    "value": "12px",
+    "line": 447
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-tabs button",
+    "value": "12px",
+    "line": 50
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-row-main strong",
+    "value": "12px",
+    "line": 74
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-row-main em",
+    "value": "12px",
+    "line": 75
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-row-meta",
+    "value": "12px",
+    "line": 76
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-detail-head p",
+    "value": "12px",
+    "line": 93
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-status",
+    "value": "12px",
+    "line": 94
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-section-title",
+    "value": "12px",
+    "line": 96
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-profile strong",
+    "value": "12px",
+    "line": 107
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-profile span",
+    "value": "12px",
+    "line": 108
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-fingerprint",
+    "value": "12px",
+    "line": 110
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-callout",
+    "value": "12px",
+    "line": 120
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-test",
+    "value": "12px",
+    "line": 124
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-test span",
+    "value": "12px",
+    "line": 125
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-test em",
+    "value": "12px",
+    "line": 129
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-inspector h2",
+    "value": "12px",
+    "line": 143
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-inspector p",
+    "value": "12px",
+    "line": 144
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-empty, .rc-empty-inline",
+    "value": "12px",
+    "line": 147
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-form label",
+    "value": "12px",
+    "line": 151
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/resource-center.css",
+    "selector": ".rc-form-note",
+    "value": "12px",
+    "line": 153
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-filters button,\n.ap-scopes button",
+    "value": "12px",
+    "line": 87
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-row-title strong",
+    "value": "12px",
+    "line": 131
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-row-title em",
+    "value": "12px",
+    "line": 132
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-row-meta",
+    "value": "12px",
+    "line": 133
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-kind",
+    "value": "12px",
+    "line": 139
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-facts",
+    "value": "12px",
+    "line": 175
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-facts b",
+    "value": "12px",
+    "line": 179
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-section",
+    "value": "12px",
+    "line": 181
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-code",
+    "value": "12px",
+    "line": 191
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-callout",
+    "value": "12px",
+    "line": 203
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-callout strong",
+    "value": "12px",
+    "line": 208
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-kv-grid",
+    "value": "12px",
+    "line": 215
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-kv-grid b",
+    "value": "12px",
+    "line": 219
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-kv-grid code",
+    "value": "12px",
+    "line": 220
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-action h3",
+    "value": "12px",
+    "line": 235
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-risk",
+    "value": "12px",
+    "line": 243
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-muted",
+    "value": "12px",
+    "line": 251
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-note",
+    "value": "12px",
+    "line": 261
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-scope-copy",
+    "value": "12px",
+    "line": 273
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-empty",
+    "value": "12px",
+    "line": 284
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/pages/approvals-workbench.css",
+    "selector": ".ap-diff",
+    "value": "12px",
+    "line": 327
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-panel-title",
+    "value": "12px",
+    "line": 59
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-target-main strong",
+    "value": "12px",
+    "line": 90
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-target-main em",
+    "value": "12px",
+    "line": 91
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-target-meta",
+    "value": "12px",
+    "line": 94
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-empty-block strong",
+    "value": "12px",
+    "line": 108
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-empty-block p",
+    "value": "12px",
+    "line": 109
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-adapter",
+    "value": "12px",
+    "line": 124
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-empty-center p",
+    "value": "12px",
+    "line": 162
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-release-options button",
+    "value": "12px",
+    "line": 164
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-steps > div",
+    "value": "12px",
+    "line": 186
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-facts",
+    "value": "12px",
+    "line": 203
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-facts b",
+    "value": "12px",
+    "line": 207
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-evidence h2,\r\n.dc-history h2",
+    "value": "12px",
+    "line": 212
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-health",
+    "value": "12px",
+    "line": 224
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-health strong",
+    "value": "12px",
+    "line": 228
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-note,\r\n.dc-muted",
+    "value": "12px",
+    "line": 234
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-receipt",
+    "value": "12px",
+    "line": 244
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-history-row",
+    "value": "12px",
+    "line": 260
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-inspector h2",
+    "value": "12px",
+    "line": 278
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-kv",
+    "value": "12px",
+    "line": 280
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-rail-copy",
+    "value": "12px",
+    "line": 285
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-execute-error",
+    "value": "12px",
+    "line": 301
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-timeline h2",
+    "value": "12px",
+    "line": 320
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-op-head",
+    "value": "12px",
+    "line": 341
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-op-head small",
+    "value": "12px",
+    "line": 343
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-op-step",
+    "value": "12px",
+    "line": 350
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-op-phase",
+    "value": "12px",
+    "line": 368
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-op-ref",
+    "value": "12px",
+    "line": 370
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-op-error",
+    "value": "12px",
+    "line": 377
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-delivery-map small",
+    "value": "12px",
+    "line": 397
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-map-destination > div",
+    "value": "12px",
+    "line": 399
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/deployment-console.css",
+    "selector": ".dc-readiness-top",
+    "value": "12px",
+    "line": 406
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-capabilities",
+    "value": "12px",
+    "line": 8
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-column-title",
+    "value": "12px",
+    "line": 36
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-item-head strong",
+    "value": "12px",
+    "line": 64
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-item p",
+    "value": "12px",
+    "line": 72
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-meta",
+    "value": "12px",
+    "line": 78
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-hash,\n.rel-artifact code",
+    "value": "12px",
+    "line": 85
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-artifact",
+    "value": "12px",
+    "line": 95
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-empty,\n.rel-skeleton,\n.rel-error",
+    "value": "12px",
+    "line": 103
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-form label > span",
+    "value": "12px",
+    "line": 125
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-hint",
+    "value": "12px",
+    "line": 130
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-env-fact",
+    "value": "12px",
+    "line": 163
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-env-fact small",
+    "value": "12px",
+    "line": 168
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-deploy-releases > span",
+    "value": "12px",
+    "line": 185
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-deploy-releases > small",
+    "value": "12px",
+    "line": 186
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-view-tabs button",
+    "value": "12px",
+    "line": 207
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release.css",
+    "selector": ".rel-fact-row",
+    "value": "12px",
+    "line": 224
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-tabs button",
+    "value": "12px",
+    "line": 151
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-row-main strong",
+    "value": "12px",
+    "line": 206
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-row-main em",
+    "value": "12px",
+    "line": 212
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-row-meta",
+    "value": "12px",
+    "line": 217
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-facts",
+    "value": "12px",
+    "line": 270
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-facts b",
+    "value": "12px",
+    "line": 278
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-section-title",
+    "value": "12px",
+    "line": 284
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-table-row",
+    "value": "12px",
+    "line": 301
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-table-row code",
+    "value": "12px",
+    "line": 307
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-hint,\r\n.rw-note",
+    "value": "12px",
+    "line": 322
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-rail h2",
+    "value": "12px",
+    "line": 338
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-check",
+    "value": "12px",
+    "line": 348
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-check strong",
+    "value": "12px",
+    "line": 371
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-approval",
+    "value": "12px",
+    "line": 386
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/release-workbench.css",
+    "selector": ".rw-rail-copy",
+    "value": "12px",
+    "line": 397
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/action-center.css",
+    "selector": ".ac-head span",
+    "value": "12px",
+    "line": 29
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/action-center.css",
+    "selector": ".ac-mode-hint",
+    "value": "12px",
+    "line": 38
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/action-center.css",
+    "selector": ".ac-section",
+    "value": "12px",
+    "line": 53
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/action-center.css",
+    "selector": ".ac-row-head strong",
+    "value": "12px",
+    "line": 108
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/action-center.css",
+    "selector": ".ac-kind",
+    "value": "12px",
+    "line": 118
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/action-center.css",
+    "selector": ".ac-reason,\n.ac-decision,\n.ac-resume",
+    "value": "12px",
+    "line": 125
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/action-center.css",
+    "selector": ".ac-go",
+    "value": "12px",
+    "line": 135
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/components/action-center.css",
+    "selector": ".ac-foot span",
+    "value": "12px",
+    "line": 149
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/assets.css",
+    "selector": ".org-asset-status",
+    "value": "12px",
+    "line": 48
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/assets.css",
+    "selector": ".org-asset-facts dt,\n.org-asset-definition dt",
+    "value": "12px",
+    "line": 91
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/organization.css",
+    "selector": ".org-connection-status",
+    "value": "12px",
+    "line": 8
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/organization.css",
+    "selector": ".org-security-note",
+    "value": "12px",
+    "line": 17
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/organization.css",
+    "selector": ".org-field-hint",
+    "value": "12px",
+    "line": 28
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/organization.css",
+    "selector": ".org-account-identity>span",
+    "value": "12px",
+    "line": 45
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/organization.css",
+    "selector": ".org-role",
+    "value": "12px",
+    "line": 53
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/organization.css",
+    "selector": ".org-section-heading p",
+    "value": "12px",
+    "line": 60
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/organization.css",
+    "selector": ".org-table th",
+    "value": "12px",
+    "line": 63
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/organization.css",
+    "selector": ".org-item-sub",
+    "value": "12px",
+    "line": 74
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/organization.css",
+    "selector": ".org-you",
+    "value": "12px",
+    "line": 76
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/organization.css",
+    "selector": ".org-boundary-note",
+    "value": "12px",
+    "line": 77
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/workers.css",
+    "selector": ".ow-local-tag",
+    "value": "12px",
+    "line": 50
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/workers.css",
+    "selector": ".ow-status",
+    "value": "12px",
+    "line": 64
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/workers.css",
+    "selector": ".ow-facts dt",
+    "value": "12px",
+    "line": 182
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/workers.css",
+    "selector": ".ow-local-path > span",
+    "value": "12px",
+    "line": 226
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/workers.css",
+    "selector": ".ow-permission label span",
+    "value": "12px",
+    "line": 256
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/workers.css",
+    "selector": ".ow-consent-footer > span",
+    "value": "12px",
+    "line": 276
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/workers.css",
+    "selector": ".ow-grant-state",
+    "value": "12px",
+    "line": 323
+  },
+  {
+    "file": "apps/desktop/src/renderer/src/features/settings/organization/workers.css",
+    "selector": ".ow-grant-scope",
+    "value": "12px",
+    "line": 343
+  }
+]

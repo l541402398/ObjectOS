@@ -22,8 +22,8 @@ import type { PlannerModelSource, PlannerModelTarget } from './planner-provider.
 
 export interface PlannerAttemptUsage {
   projectId: string
-  planId: string
-  revision: number
+  planId: string | null
+  revision: number | null
   requestId: string
   attempt: number
   connectionId: string | null

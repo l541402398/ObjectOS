@@ -28,6 +28,7 @@ interface UiState {
   reduceMotion: boolean
   sidebarCollapsed: boolean
   lastProjectId: string | null
+  selectedRequirementByProject: Record<string, string>
   settingsOpen: boolean
   settingsSection: SettingsSection
   settingsConnectionId: string | null
@@ -38,6 +39,7 @@ interface UiState {
   toggleSidebar: () => void
   setSidebarCollapsed: (value: boolean) => void
   setLastProjectId: (id: string | null) => void
+  setSelectedRequirement: (projectId: string, requirementId: string | null) => void
   openSettings: (section?: SettingsSection, connectionId?: string | null) => void
   closeSettings: () => void
   setSettingsSection: (section: SettingsSection) => void
@@ -52,6 +54,7 @@ export const useUiStore = create<UiState>()(
       reduceMotion: false,
       sidebarCollapsed: true,
       lastProjectId: null,
+      selectedRequirementByProject: {},
       settingsOpen: false,
       settingsSection: 'ai-connections',
       settingsConnectionId: null,
@@ -62,6 +65,13 @@ export const useUiStore = create<UiState>()(
       toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
       setLastProjectId: (lastProjectId) => set({ lastProjectId }),
+      setSelectedRequirement: (projectId, requirementId) =>
+        set((state) => {
+          const next = { ...state.selectedRequirementByProject }
+          if (!requirementId) delete next[projectId]
+          else next[projectId] = requirementId
+          return { selectedRequirementByProject: next }
+        }),
       openSettings: (section = 'ai-connections', connectionId) => {
         const request = ++settingsRequest
         const selectedConnection = connectionId === undefined ? get().settingsConnectionId : connectionId
@@ -83,13 +93,21 @@ export const useUiStore = create<UiState>()(
     }),
     {
       name: 'projectos.ui',
-      version: 1,
+      version: 2,
+      migrate: (persistedState: unknown) => {
+        const state = (persistedState && typeof persistedState === 'object' ? persistedState : {}) as Record<string, unknown>
+        return {
+          ...state,
+          reduceMotion: false,
+        }
+      },
       partialize: (state) => ({
         themeMode: state.themeMode,
         reduceTransparency: state.reduceTransparency,
         reduceMotion: state.reduceMotion,
         sidebarCollapsed: state.sidebarCollapsed,
         lastProjectId: state.lastProjectId,
+        selectedRequirementByProject: state.selectedRequirementByProject,
       }),
     },
   ),

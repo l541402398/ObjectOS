@@ -1,0 +1,17 @@
+HEAD f71d33e8acd70ec579501873c327e5b1180ee02a (uncommitted working tree)
+lint                         exit=0 64s  pnpm lint
+typecheck                    exit=0 45s  pnpm typecheck
+unit-flow-targeted           exit=0 82s  pnpm exec vitest run tests/requirement-defaults-start.test.ts tests/requirement-flow.test.ts tests/p27-autonomy-coordinator.test.ts tests/phase0-migration.test.ts tests/r2-phase1.test.ts --maxWorkers=1
+unit-integration             exit=0 274s  pnpm exec vitest run tests/requirement-integration.test.ts --maxWorkers=1
+build                        exit=0 21s  pnpm build
+e2e-defaults-start           exit=0 61s  node scripts/requirement-defaults-start-e2e.mjs
+e2e-requirement-flow         exit=0 47s  node scripts/requirement-flow-e2e.mjs
+e2e-requirement-integration  exit=1 98s  node scripts/requirement-integration-e2e.mjs
+e2e                          exit=0 7s  node scripts/e2e.mjs
+agent-e2e                    exit=0 11s  node scripts/agent-e2e.mjs
+v12-e2e                      exit=0 17s  node scripts/v12-e2e.mjs
+v13-e2e                      exit=0 12s  node scripts/v13-e2e.mjs
+test-full                    exit=1 495s  pnpm run test --maxWorkers=2
+package-dir                  exit=0 60s  pnpm package:dir
+test-package                 exit=0 8s  pnpm test:package
+DONE

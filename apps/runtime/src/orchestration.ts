@@ -56,6 +56,7 @@ export function mergeAssignmentReasons(
 const LOCAL_RULES_PROMPT_VERSION = 'local-rules-v1'
 
 export interface AiPlanGenerationInput {
+  requirementId?: string
   projectId: string
   goal: string
   mode: 'ai' | 'local'
@@ -464,7 +465,11 @@ export class OrchestrationService {
   }
 
   private async generateAIPlanLocked(input: AiPlanGenerationInput): Promise<PlanDraft> {
-    const goal = input.goal.trim()
+    const requirement = input.requirementId ? this.store.read.getRequirement(input.requirementId) : null
+    const binding = requirement ? this.store.db.prepare('SELECT template_version_id FROM requirement_flow_bindings WHERE requirement_id=?').get(requirement.id) : null
+    if (input.requirementId && (!requirement || requirement.projectId !== input.projectId || !binding)) throw new AppError('CONFLICT', '需求或已选流程不可用')
+    if (requirement && input.mode !== 'ai') throw new AppError('BAD_REQUEST', '需求拆分请使用 AI 规划或手动添加任务')
+    const goal = requirement ? `${input.goal.trim()}\n\n需求：${requirement.title}\n${requirement.body.slice(0, 4500)}\n验收：${requirement.acceptanceCriteria.join('；').slice(0, 1500)}\n按可独立交付的功能拆分任务，不按需求分析/设计/审核等角色拆任务；每个任务会继承已选流程的全部阶段。` : input.goal.trim()
     if (goal.length < 3) throw new AppError('BAD_REQUEST', '计划目标至少需要 3 个字符')
 
     if (input.mode === 'local') {
@@ -493,7 +498,7 @@ export class OrchestrationService {
         allowOverBudget: input.allowOverBudget,
       })
     } catch (error) {
-      if (!input.allowRuleFallback) throw error
+      if (!input.allowRuleFallback || requirement) throw error
       const message = error instanceof Error ? error.message : String(error)
       const errorDetails = error instanceof AppError && error.details && typeof error.details === 'object'
         ? (error.details as Record<string, unknown>)
@@ -531,7 +536,8 @@ export class OrchestrationService {
         status: 'draft',
         goal,
         // Model plans may omit the reviewer; without it the delivery gate can never be satisfied.
-        tasks: ensureReviewTask(goal, generated.tasks),
+        tasks: requirement ? generated.tasks : ensureReviewTask(goal, generated.tasks),
+        ...(requirement && binding ? { requirementId: requirement.id, requirementVersion: requirement.version, requirementFlowVersionId: String(binding.template_version_id) } : {}),
         assumptions: generated.assumptions,
         risks: generated.risks,
         generatedBy: 'provider',
@@ -725,6 +731,14 @@ export class OrchestrationService {
   approvePlan(planId: string): { plan: PlanDraft; taskIds: string[] } {
     const plan = this.assignPlanAgents(this.getPlan(planId))
     if (plan.status !== 'draft') throw new AppError('CONFLICT', '计划不是草稿状态')
+    if (plan.requirementId) {
+      const requirement = this.store.read.getRequirement(plan.requirementId)
+      const binding = this.store.db.prepare('SELECT template_version_id FROM requirement_flow_bindings WHERE requirement_id=?').get(plan.requirementId)
+      if (!requirement || requirement.projectId !== plan.projectId || requirement.version !== plan.requirementVersion || binding?.template_version_id !== plan.requirementFlowVersionId)
+        throw new AppError('CONFLICT', '需求或流程在拆分后已改变，请重新生成任务计划')
+      if (plan.tasks.some(task => task.reuseFromTaskId)) throw new AppError('CONFLICT', '需求计划不能复用其他交付单元的任务，请创建继承本需求流程的新任务')
+    }
+
     validatePlanDraft(plan)
     this.validatePlanAgents(plan, true)
     this.ensurePlanCollaboration(plan)
@@ -760,6 +774,7 @@ export class OrchestrationService {
         const assigneeAgentId = planned.agentId ?? agentForPlannedTask(planned)
         const task = this.services.tasks.create({
           projectId: plan.projectId,
+          requirementId: plan.requirementId ?? null,
           title: planned.title,
           description: planned.description,
           priority: 2,
@@ -772,7 +787,7 @@ export class OrchestrationService {
           iterationId: plan.iterationId ?? null,
           dependsOn,
           dueAt: null,
-          ...(planned.workType ? { workType: planned.workType } : {}),
+          ...(plan.requirementId ? { workType: 'development' as const } : planned.workType ? { workType: planned.workType } : {}),
         })
         taskIdByKey.set(planned.key, task.id)
         ids.push(task.id)

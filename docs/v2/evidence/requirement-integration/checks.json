@@ -1,0 +1,182 @@
+{
+  "head": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+  "profile": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\projectos-integration-e2e-DLeBYK",
+  "checks": [
+    {
+      "name": "Actual loading state shows a labelled placeholder",
+      "status": "PASS"
+    },
+    {
+      "name": "Empty task shows no fabricated diff or enabled merge",
+      "status": "PASS"
+    },
+    {
+      "name": "Integration requires both review and verification",
+      "status": "PASS"
+    },
+    {
+      "name": "Stale visible review rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "Reopened review displays the command that actually ran",
+      "status": "PASS"
+    },
+    {
+      "name": "Real command exit unlocks current verification",
+      "status": "PASS"
+    },
+    {
+      "name": "1440 light readable without page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "scroll": false,
+        "body": "14px",
+        "code": "13px"
+      }
+    },
+    {
+      "name": "1440 light accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1440 dark readable without page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "scroll": false,
+        "body": "14px",
+        "code": "13px"
+      }
+    },
+    {
+      "name": "1440 dark accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1280 light readable without page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "scroll": false,
+        "body": "14px",
+        "code": "13px"
+      }
+    },
+    {
+      "name": "1280 light accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1280 dark readable without page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "scroll": false,
+        "body": "14px",
+        "code": "13px"
+      }
+    },
+    {
+      "name": "1280 dark accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1024 light readable without page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "scroll": true,
+        "body": "14px",
+        "code": "13px"
+      }
+    },
+    {
+      "name": "1024 light accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "1024 dark readable without page overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "scroll": true,
+        "body": "14px",
+        "code": "13px"
+      }
+    },
+    {
+      "name": "1024 dark accessibility",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "Keyboard primary action remains visible at 125%",
+      "status": "PASS"
+    },
+    {
+      "name": "Git unchanged while integration awaits approval",
+      "status": "PASS"
+    },
+    {
+      "name": "Pending integration survives desktop restart",
+      "status": "PASS"
+    },
+    {
+      "name": "Approved integration persists actual commit",
+      "status": "PASS"
+    },
+    {
+      "name": "Project root and requirement delivery state unchanged",
+      "status": "PASS"
+    },
+    {
+      "name": "Dependent task receives predecessor code in its own directory",
+      "status": "PASS"
+    },
+    {
+      "name": "Integrated current content cannot request a duplicate merge",
+      "status": "PASS"
+    },
+    {
+      "name": "Long real diff explicitly reports truncation",
+      "status": "PASS"
+    },
+    {
+      "name": "Additional uncommitted files invalidate existing verification and review",
+      "status": "PASS"
+    },
+    {
+      "name": "No renderer errors",
+      "status": "PASS",
+      "detail": []
+    }
+  ],
+  "captures": [
+    "review-loading-1440-light.png",
+    "review-empty-1440-light.png",
+    "review-initial-1440-light.png",
+    "stale-review-error-1440-light.png",
+    "verify-approval-1440-light.png",
+    "review-1440-light.png",
+    "review-1440-dark.png",
+    "review-1280-light.png",
+    "review-1280-dark.png",
+    "review-1024-light.png",
+    "review-1024-dark.png",
+    "review-1024-dark-125-reduced.png",
+    "integrate-approval-1440-light.png",
+    "integrated-workbench-1440-light.png",
+    "review-integrated-1440-light.png",
+    "review-dense-long-1440-light.png",
+    "review-dense-scroll-1440-light.png"
+  ],
+  "errors": [],
+  "note": "Real Electron/Runtime/SQLite/Git with explicit fixture content. 125% is app zoom, not OS DPI."
+}

@@ -366,6 +366,8 @@ export interface RequirementRow {
   project_id: string
   title: string
   body: string
+  technical_design?: string
+  design_version?: number
   status: string
   source: string
   version_id?: string | null
@@ -390,6 +392,7 @@ export interface MilestoneRow {
 export interface TaskRow {
   id: string
   project_id: string
+  requirement_id?: string | null
   parent_id: string | null
   milestone_id: string | null
   version_id?: string | null
@@ -649,6 +652,8 @@ export function toRequirement(row: RequirementRow): Requirement {
     projectId: row.project_id,
     title: row.title,
     body: row.body,
+    technicalDesign: row.technical_design ?? '',
+    designVersion: row.design_version ?? 0,
     status: row.status as RequirementStatus,
     source: row.source,
     versionId: row.version_id ?? null,
@@ -677,6 +682,7 @@ export function toTask(row: TaskRow): Task {
   return {
     id: row.id,
     projectId: row.project_id,
+    requirementId: row.requirement_id ?? null,
     parentId: row.parent_id,
     milestoneId: row.milestone_id,
     versionId: row.version_id ?? null,

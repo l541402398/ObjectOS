@@ -1,0 +1,942 @@
+{
+  "generatedAt": "2026-10-30T19:48:17.6694968Z",
+  "head": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+  "branch": "codex/premium-system",
+  "dirty": true,
+  "provenance": "Current uncommitted working tree; includes preserved earlier implementation. No commit, push, merge or release. Not a claim that source matches base HEAD.",
+  "commands": [
+    {
+      "status": "PASS",
+      "command": "pnpm typecheck",
+      "log": "typecheck-delivery.txt",
+      "exitCode": 0
+    },
+    {
+      "warnings": 24,
+      "status": "PASS",
+      "command": "pnpm lint",
+      "log": "lint-delivery.txt",
+      "exitCode": 0
+    },
+    {
+      "status": "PASS",
+      "includes": "pnpm build (Runtime + desktop + server), directory packaging",
+      "command": "pnpm package:dir",
+      "log": "package-final.txt",
+      "exitCode": 0
+    },
+    {
+      "status": "PASS",
+      "command": "pnpm test:package",
+      "log": "package-smoke-final.txt",
+      "exitCode": 0
+    },
+    {
+      "log": "test-full-flow-2.txt",
+      "note": "30s timeout in after-merge interruption recovery. This full run preceded the final preserve-manual-assignment correction; targeted final tests below cover that correction. No third full run.",
+      "exitCode": 1,
+      "status": "FAIL",
+      "failed": 1,
+      "skipped": 4,
+      "command": "pnpm run test --maxWorkers=2",
+      "passed": 613
+    },
+    {
+      "log": "integration-unit-final.txt",
+      "note": "Entire timed-out module rerun separately, unchanged assertions and timeout.",
+      "status": "PASS",
+      "exitCode": 0,
+      "command": "pnpm exec vitest run tests/requirement-integration.test.ts --maxWorkers=1",
+      "passed": 15
+    },
+    {
+      "log": "flow-unit-final.txt",
+      "status": "PASS",
+      "command": "pnpm exec vitest run tests/requirement-flow.test.ts tests/p27-autonomy-coordinator.test.ts --maxWorkers=1",
+      "passed": 18,
+      "exitCode": 0
+    },
+    {
+      "status": "PASS",
+      "command": "node scripts/e2e.mjs",
+      "log": "e2e.txt",
+      "exitCode": 0
+    },
+    {
+      "status": "PASS",
+      "command": "node scripts/agent-e2e.mjs",
+      "log": "agent-e2e.txt",
+      "exitCode": 0
+    },
+    {
+      "status": "PASS",
+      "command": "node scripts/v12-e2e.mjs",
+      "log": "v12-e2e.txt",
+      "exitCode": 0
+    },
+    {
+      "status": "PASS",
+      "command": "node scripts/v13-e2e.mjs",
+      "log": "v13-e2e.txt",
+      "exitCode": 0
+    },
+    {
+      "status": "PASS",
+      "command": "node scripts/requirement-flow-e2e.mjs",
+      "log": "desktop-final.txt",
+      "exitCode": 0
+    },
+    {
+      "status": "PASS",
+      "command": "node scripts/requirement-integration-e2e.mjs",
+      "log": "integration-flow-2.txt",
+      "exitCode": 0
+    },
+    {
+      "status": "PASS",
+      "command": "node scripts/requirement-flow-visual-e2e.mjs",
+      "log": "editor-final.txt",
+      "exitCode": 0
+    },
+    {
+      "status": "PASS",
+      "command": "pnpm exec eslint scripts/requirement-flow-visual-e2e.mjs",
+      "log": "editor-script-lint.txt",
+      "exitCode": 0
+    }
+  ],
+  "nativeSuites": [
+    {
+      "name": "desktop",
+      "results": {
+        "path": "docs/v2/evidence/requirement-guided-flow/desktop/checks.json",
+        "sha256": "9396060b56197183832e6760660ee0e55b9478c5d8ca59ae80eb8089bb98acc0",
+        "bytes": 10700
+      },
+      "passed": 40,
+      "failed": 0,
+      "screenshots": 20
+    },
+    {
+      "name": "integration",
+      "results": {
+        "path": "docs/v2/evidence/requirement-guided-flow/integration/checks.json",
+        "sha256": "31c3995c81c8f8d9b08a748824ee03ee249e57494b00a289ed86a9caaa517354",
+        "bytes": 4471
+      },
+      "passed": 28,
+      "failed": 0,
+      "screenshots": 17
+    },
+    {
+      "name": "editor",
+      "results": {
+        "path": "docs/v2/evidence/requirement-guided-flow/editor/checks.json",
+        "sha256": "a1d316e4d167fe4f6853e3c12198170a67817441cacefcb8985c0cb01a5feb5a",
+        "bytes": 1001
+      },
+      "passed": 6,
+      "failed": 0,
+      "screenshots": 4
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/empty-1440-light.png",
+      "sha256": "02b78bc378e4a3c4de0f44c551c4c0129c9ce6e3d9ca1159c3345f8187a8aeab",
+      "bytes": 595213
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/flow-editor-1440-light.png",
+      "sha256": "e02a9754d33e164ce9d0ab5304b667ad4a8b4b91e8fe90ac30210d891fa1b01f",
+      "bytes": 278845
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/flow-editor-1280-light.png",
+      "sha256": "073c507796cf48c60f2e8ca60bdab33caa66207a1425be54531c8ecc86efc834",
+      "bytes": 243881
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/flow-editor-1280-dark.png",
+      "sha256": "c02084c6c6afbeef91e59d3705cba7824944336273473f210ac0cadd7011383f",
+      "bytes": 232612
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/flow-editor-1024-light.png",
+      "sha256": "4161f5ec703b449be9ac7a9f04159feaf5213f5b23abcce75449ce57168c8ed1",
+      "bytes": 191754
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/flow-editor-1024-dark.png",
+      "sha256": "dfd31f77ae5c0e109f6271b10fd1542483081a204f21c6ec692932552e33b544",
+      "bytes": 184611
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/create-requirement-1440-light.png",
+      "sha256": "44e1f546191004eac2bbe9bc00fc828a3e32fcb0de22f1c9250c7f19fa0d4df9",
+      "bytes": 168433
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/workspace-approval-1440-light.png",
+      "sha256": "0a21ca89765e66de00939962db557fecd97f9c76b5f15027c513346c6512e0da",
+      "bytes": 739183
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/completed-flow-1440-light.png",
+      "sha256": "62b6c0ef30b7aefe2a6f554f5a6f1e14d042451fb302d5600c602c5a61d951f0",
+      "bytes": 687698
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/journey-material-1440-light.png",
+      "sha256": "f7991a12f94fae6521fa57f29bc158ee6e8db8b53d63ac9a935c7bf12136de3e",
+      "bytes": 212160
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/agent-material-1440-light.png",
+      "sha256": "373d5543d29a36379b0503ae14f74841eac2fe9eaa308ac0df643ea4d159a392",
+      "bytes": 508184
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/requirement-plan-1440-light.png",
+      "sha256": "080f00045101ac38c574494dc6547b5313ec8b05ba396e079978757a7961451b",
+      "bytes": 227289
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/assignment-error-1440-light.png",
+      "sha256": "155dee34c4c412de753620185bd60eaf1dee9ea01caccb40e81c943f4adf23bb",
+      "bytes": 652194
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/workbench-1440-light.png",
+      "sha256": "b4e4edd701c5c2d64437d24d0557e975f12c81848176a88aeda3b23e393aa37d",
+      "bytes": 736861
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/workbench-1440-dark.png",
+      "sha256": "e7bd47af213fa9bbdaf98ad8dda4fdc95364297150fdf938af1b063d99c74fab",
+      "bytes": 608313
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/workbench-1280-light.png",
+      "sha256": "366d983ae03b31da901c2d5ace2229b472d253d68220ae6f717ee8ffaeebf274",
+      "bytes": 629742
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/workbench-1280-dark.png",
+      "sha256": "4177aa82b06473a130df4666df65b3d49eae12a825d561cfcd5cf6bfeb5c8763",
+      "bytes": 527642
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/workbench-1024-light.png",
+      "sha256": "37c075769c5e8b90304aa312f2d4ff669add6c786527b72664a478da7d1dc97a",
+      "bytes": 461793
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/workbench-1024-dark.png",
+      "sha256": "a33175f60c9323852cf9490b38c3e0fc669f0ea2446f9a28d05a0e4e169a3ba6",
+      "bytes": 377887
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/desktop/workbench-1024-dark-125-reduced.png",
+      "sha256": "a3fdfe9ce29638e01a0f7d28af250d2de032cb43e616f7d7d1c4edab351036f3",
+      "bytes": 408421
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/review-loading-1440-light.png",
+      "sha256": "894c20a369431abbc0c39ed89e86f1f7f199ecdf1657654e4b2b054582a9e4cf",
+      "bytes": 219085
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/review-empty-1440-light.png",
+      "sha256": "67c59f86edad0edb902af6078e457a61a8f6b607a503f6111310df81bd9e734d",
+      "bytes": 236726
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/review-initial-1440-light.png",
+      "sha256": "dc8de7afecbe8012471db7bf09f6b1782d7f01d577365c7e641b2156102512f7",
+      "bytes": 227470
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/stale-review-error-1440-light.png",
+      "sha256": "c0632c913a52750677665e880d059788af373c7c993c334f44324e719ea8ac6a",
+      "bytes": 296334
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/verify-approval-1440-light.png",
+      "sha256": "62e7fdfc7a49f987eca0c99cc4792ae1b43068a779d7a546e2678608439d0447",
+      "bytes": 367337
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/review-1440-light.png",
+      "sha256": "f277f3f4edf76dfa065a6ae87ce3d6e6d203403410e35151114ca993fc93dcfb",
+      "bytes": 283550
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/review-1440-dark.png",
+      "sha256": "cf8713e8af6fa5aa522a36756b1bb6a85cabafdc2c9e12ee907c5e6b4d884197",
+      "bytes": 264524
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/review-1280-light.png",
+      "sha256": "d14cc9dcc9caa8d84d15fa019ab5a113a634833a3aa4add6270cb8dc16cb5a28",
+      "bytes": 254029
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/review-1280-dark.png",
+      "sha256": "af2265d282e98b39d00f598e921b1a6f7c9e18caa3bc654438bc7222e34808cd",
+      "bytes": 240373
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/review-1024-light.png",
+      "sha256": "4edbf80588ee88acb050a4f57e548b388306edd57727c18833d23e38245e7977",
+      "bytes": 187139
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/review-1024-dark.png",
+      "sha256": "547bd906229d9ddd6a77b9b934d07b4969f606e38ad6ef0679d5607c510cfa9a",
+      "bytes": 187575
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/review-1024-dark-125-reduced.png",
+      "sha256": "e1a1c532217dd7ee516c440bb5dcd53465e56c200403364ce03d305bf3df8519",
+      "bytes": 219719
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/integrate-approval-1440-light.png",
+      "sha256": "6ba378a63ea1228e8041843edb40d6e0002f844329bec54266e3462a186e3553",
+      "bytes": 345748
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/integrated-workbench-1440-light.png",
+      "sha256": "a7b5212f126f9e3763055af801412fdbf87effca4b7e286b155ed18c13ff6891",
+      "bytes": 727369
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/review-integrated-1440-light.png",
+      "sha256": "413a1ff703535fcfe52ef1703d8e9bacc851b5915052457926654f7e554b2fd6",
+      "bytes": 311647
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/review-dense-long-1440-light.png",
+      "sha256": "4cd14325c19e11839031ebfef384621197d4a5847a8a436299ed0fb8b46a8f0d",
+      "bytes": 338366
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/integration/review-dense-scroll-1440-light.png",
+      "sha256": "4f202732c18c4b8e02e42447afec58e9dccbaa732642c84d5597f282e67a5b71",
+      "bytes": 496664
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/editor/six-stages-1440-light.png",
+      "sha256": "2ab354a91f7cf4056952131a91d2dca338c6f89704c8db52c120f583223d317c",
+      "bytes": 320121
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/editor/six-stages-1440-dark.png",
+      "sha256": "b3981cb45f21376c0f292458b0ef402a6e1f71118158fc3a48ebb50516211f2b",
+      "bytes": 285249
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/editor/six-stages-1024-dark-125-reduced.png",
+      "sha256": "ce8113180f5abf84959e5d8955d3f275fb887a7d8e96c1d87b8a92a0e120c9dd",
+      "bytes": 229735
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/editor/unsaved-flow-1024-dark-125.png",
+      "sha256": "41c3fe20ffd9dcf159bbe57ac90890534e546990220d9da9d5e48a2c2a33a6d7",
+      "bytes": 200176
+    }
+  ],
+  "commandLogs": [
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/typecheck-delivery.txt",
+      "sha256": "2c91cbfb819ee4d0864ee0cec9cc4d9ff779454a82535ef0935d3077b2fc0688",
+      "bytes": 129
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/lint-delivery.txt",
+      "sha256": "531c7026c7af587207716e13bbac219d21abeb30524fcea83fa0c02238b6eaaf",
+      "bytes": 5528
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/package-final.txt",
+      "sha256": "707bf0c283f5b825165533454031c46a9f420e09c179376804833cadfc1d993d",
+      "bytes": 15384
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/package-smoke-final.txt",
+      "sha256": "3f628e7e9f6a2e33dfded658bf84d88752cefc0b3cf677df9b476b99735a74b7",
+      "bytes": 475
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/test-full-flow-2.txt",
+      "sha256": "20a8e2526790d8608cf04e6a690538d2f6c1544f6601a620e7fa8fcbf7746655",
+      "bytes": 22434
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/integration-unit-final.txt",
+      "sha256": "f72772959e84ed11a610bbc3b5b6a0496d6d582f31daf8513834c3fe98529feb",
+      "bytes": 2166
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/flow-unit-final.txt",
+      "sha256": "b1e41e1ad442c04956c579002867f60bc4894b232c58841a012561c03db1c86d",
+      "bytes": 2190
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/e2e.txt",
+      "sha256": "4f24be0044ec9b38f4902a243c15e5b16be813eb62f7340715cb3a6fc977a9d4",
+      "bytes": 176
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/agent-e2e.txt",
+      "sha256": "bce017595b6768b7d9e01f297efd16efd20b77e77e6a50adb7ab119a2bd2c4ff",
+      "bytes": 164
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/v12-e2e.txt",
+      "sha256": "75d7c76d8923aab25c11a2a3b0e2120c04ff8ad5036231c59cbf99219276b81a",
+      "bytes": 212
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/v13-e2e.txt",
+      "sha256": "9060dfb3e2d2bf70fa92f8d91916818551c5d22d9ecd42d49120440627d87512",
+      "bytes": 323
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/desktop-final.txt",
+      "sha256": "6113eaffff50eef3b17aeaf606ad37a56295e7db3226776d3e8fd9127adaac00",
+      "bytes": 2192
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/integration-flow-2.txt",
+      "sha256": "2f37dfc2bb6c78313340471b8b7a12f44091d5c26c1d2deafdccc1351804a330",
+      "bytes": 1553
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/editor-final.txt",
+      "sha256": "306c43c93765004c798dbaf530b83e7b863ad7524d58c58d34a223bbc0fc4875",
+      "bytes": 315
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/logs/editor-script-lint.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  ],
+  "sourceSnapshot": [
+    {
+      "path": "apps/desktop/src/preload/index.ts",
+      "sha256": "ffb4535b8dc194da61624ff5d76d016518a312d05d0a92990220854fd8eb2ed8",
+      "bytes": 22103
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/components/AppLayout.tsx",
+      "sha256": "b8a78441f2b357d1768ba9f2ccbe067c0e1121e7ddac9ca078570ade994f1984",
+      "bytes": 23958
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/components/NextStepPanel.tsx",
+      "sha256": "76b80dc575306ed5fc95f3440f6eb7b89d3b05c2bda048eeb47df333e43bab79",
+      "bytes": 4233
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/components/product-navigation.tsx",
+      "sha256": "60b46e766db86ad31ac2d31b9e36dbf91b4d8453dce561f99e8240aff9677f68",
+      "bytes": 1868
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/collaboration-overview/collaboration-overview.css",
+      "sha256": "427d1f8ff087f1d7c14fc2b87bbcfaba35c6ce0866944e0064cd1dda0559ee65",
+      "bytes": 31553
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationGraph.tsx",
+      "sha256": "cd8f8c12924a3b997ebb7c1cfcba48062a9290f9f154e354b1adf88f55ecea06",
+      "bytes": 30301
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationOverview.tsx",
+      "sha256": "2e2412fb1d0fa855be7e327d7979df0ba20e22ecfc58d14e8da6b3122759309d",
+      "bytes": 30985
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/settings/AboutSettingsPanel.tsx",
+      "sha256": "8b26da41aec90b492c45ed7aec54ae328905250f576ab8772e7a12cb8b285246",
+      "bytes": 1686
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/studio/studio.css",
+      "sha256": "5eae3ab464b31f4bcaba5462e0828ac8da09a7c124759267038b26205edf6e43",
+      "bytes": 20576
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/studio/StudioProjectHome.tsx",
+      "sha256": "e560cf92ecf588a6765335210ebce2f2d20c73e810156e0b18a7dc103e3dd761",
+      "bytes": 10267
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/studio/StudioReviewRoom.tsx",
+      "sha256": "f8de87fa9315c7be4bf6e637705e5c18d635446cd57537eeb9c169d10aeeaf35",
+      "bytes": 11066
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/lib/queries.ts",
+      "sha256": "433ea8c8f513e17008baa9327460375ff054f12d4f804bca1d63798785cb2cbb",
+      "bytes": 13146
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/lib/route-readiness.ts",
+      "sha256": "f1aac79bb3cbfeecb909b8b8e4248d6dba044893046791c404baa4dbe51eba17",
+      "bytes": 9983
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/next-ui/vendor/CanvasControls.tsx",
+      "sha256": "b05b5fbf23b741ad2c47462542f85441dd8e7f075a6723db73b6bc756c09f089",
+      "bytes": 2248
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/next-ui/vendor/tabs.tsx",
+      "sha256": "02e5bdb7e68afc9aa276b4066edb8f0d45099145339d9f229a80f59e0e99950b",
+      "bytes": 1425
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/next-ui/vendor/workbench-controls.css",
+      "sha256": "ceb9ad9e64ede259818cec8b773d8b0654f99a085bfc74883dfce3bef64948eb",
+      "bytes": 2592
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/page-registry.ts",
+      "sha256": "d9f0a9db8eaf0406c98a4a261842d5a054598d1ad1c3cf4e733d966c043c5620",
+      "bytes": 7979
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/requirement-flow.css",
+      "sha256": "8e97cfdfef79b46d9f3e5fc7b2fd2aee788ff1173eb66d4261ac20360da1c57d",
+      "bytes": 9106
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/requirement-work.css",
+      "sha256": "6b2f79aaad485821fbaf90f5336d5566191192e3ca59c0b97d46c6f3eb6a718c",
+      "bytes": 8461
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/RequirementApproval.tsx",
+      "sha256": "0c2bdda4d33ef953dea8011da610d42961813337e881279eb196a25423bdc6fb",
+      "bytes": 4418
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/RequirementFlowEditor.tsx",
+      "sha256": "de888c65c08b5f2705c378d1297415997af659106316a8ac65e3968e08761e34",
+      "bytes": 11162
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/RequirementIntegrationDialog.tsx",
+      "sha256": "09285072557f5d5dc32c314762c2994c2da4ce99463d2f994ac6f656b05fa1d2",
+      "bytes": 8851
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/RequirementMaterials.tsx",
+      "sha256": "a5e99862930d80b24cd4c68e6e6bada00d6d3b81c62dfe51e62e0800fbf0af84",
+      "bytes": 4156
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/RequirementPlanDialog.tsx",
+      "sha256": "d337279eeba6d0d0c47487282206b9b8725358ede64cb02b78760335053d8704",
+      "bytes": 3713
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/RequirementWorkPage.tsx",
+      "sha256": "0b6db720e09e4d27058808dc265de25d3abfce71b10980c0d1575f707874148a",
+      "bytes": 25796
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/TaskBoardPage.tsx",
+      "sha256": "dfcde1a819ca61543b9dfc5363400b9a3ef2e75c0c141a602d393e757080731e",
+      "bytes": 52341
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/work-center.css",
+      "sha256": "c980ed478bd745eadf3980bfcee44a41418889de90191adfa1d85a65ebb534fd",
+      "bytes": 16302
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/router.tsx",
+      "sha256": "468c621d0ec24bc96e8bbf94e569a10367638ab2b3c34c85d37d231119c2a25b",
+      "bytes": 5928
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/styles/system-premium.css",
+      "sha256": "de42d62341d54a022da13e911215b0ffd292e0e37686f700fb50146b197e78ff",
+      "bytes": 18883
+    },
+    {
+      "path": "apps/runtime/src/agent-runner.ts",
+      "sha256": "1ee7220f2c152de6e6f71fa4e02ae640c4190b53c1b2753feb350aec93f134d3",
+      "bytes": 140910
+    },
+    {
+      "path": "apps/runtime/src/autonomy-coordinator.ts",
+      "sha256": "0d3079067324224d3b611934bae5c24e5a0b062bd8ed95816adb0f115f9e1f39",
+      "bytes": 10243
+    },
+    {
+      "path": "apps/runtime/src/dispatcher.ts",
+      "sha256": "bcb6c16850c9c9e1c14f8663e74f3d5677891dbef50c219729838fa22ed32055",
+      "bytes": 89407
+    },
+    {
+      "path": "apps/runtime/src/external-runner.ts",
+      "sha256": "a417f6723e200ef8c9b1017ce8abe95f83f8cfeeaad13ace2a0a42ab4dcfc703",
+      "bytes": 16030
+    },
+    {
+      "path": "apps/runtime/src/orchestration.ts",
+      "sha256": "2ca4794e19c6c0594e68e4292c84a2ff6ed3352a71f5248e8266c63902788f67",
+      "bytes": 38350
+    },
+    {
+      "path": "apps/runtime/src/orchestrator.ts",
+      "sha256": "618eb1929a48f6cebcc80cf1e1b3cf1473167a3db98648898017290ac923e483",
+      "bytes": 81435
+    },
+    {
+      "path": "apps/runtime/src/plan-grant.ts",
+      "sha256": "4a3ee279ed185ed1d8071d6b033cef5092488c2ca6a82b89eb5030b4426fcea4",
+      "bytes": 51612
+    },
+    {
+      "path": "apps/runtime/src/planner.ts",
+      "sha256": "4265345b8b134ea53ff9234d00e136820af7f61550331644a69b2a65a187b209",
+      "bytes": 18655
+    },
+    {
+      "path": "apps/runtime/src/replan-autopilot.ts",
+      "sha256": "686f64deebe34bd82b9ea050a1caf7e1503193b2876ef02164971ff7c36c0e90",
+      "bytes": 45115
+    },
+    {
+      "path": "apps/runtime/src/requirement-flow.ts",
+      "sha256": "40c6c1d5fcc8b104740410798c52fd14ce1effbb628ff7773c1efee9fdcb5880",
+      "bytes": 39417
+    },
+    {
+      "path": "apps/runtime/src/requirement-git.ts",
+      "sha256": "f7517cdc6094f37fbfdaafb2112ac5121afc41cc80333e49165f8a917180a368",
+      "bytes": 11316
+    },
+    {
+      "path": "apps/runtime/src/requirement-integration.ts",
+      "sha256": "480cc6aed5ce766c44da002ea06eb4c789446e6946d20a6330f045b1460c8cb2",
+      "bytes": 30972
+    },
+    {
+      "path": "apps/runtime/src/requirement-work.ts",
+      "sha256": "04fd5f1ddcab91f54636b98b50be9f56e7dce8393cf4f3d9fd71f79603fb9ce0",
+      "bytes": 24721
+    },
+    {
+      "path": "packages/application/src/ports.ts",
+      "sha256": "7c8841bfdef83fd75b048ae544ac8ffa2cadf94e49b67fa6d6b9c7a44b93a302",
+      "bytes": 7788
+    },
+    {
+      "path": "packages/application/src/project-service.ts",
+      "sha256": "9eed1de09cf14bedb7c97697468ae5fa6ea9dc3e52196300575382ad1b57198e",
+      "bytes": 15472
+    },
+    {
+      "path": "packages/application/src/task-service.ts",
+      "sha256": "a977ccfc763af5de44c55557223104d0e73e8a020e1ee36f591154a9e81af182",
+      "bytes": 29238
+    },
+    {
+      "path": "packages/contracts/src/api.ts",
+      "sha256": "3798c6efcf02195c679ffbcf6143e716d66ec8ad5fc6dee867dc956465d6aa5c",
+      "bytes": 57476
+    },
+    {
+      "path": "packages/contracts/src/common.ts",
+      "sha256": "ebbea496a49c982f228281b40fc1747f71959e6a121b01bb2ac16626074c4935",
+      "bytes": 2957
+    },
+    {
+      "path": "packages/contracts/src/desktop-api.ts",
+      "sha256": "71073da286511a78fb35df7612ed0da095c00c4c1a583608dbce80663a787245",
+      "bytes": 23984
+    },
+    {
+      "path": "packages/contracts/src/entities.ts",
+      "sha256": "74c391e99d18ffe17647573f7b72d0c8dff106a633d93ca72f3c6f48105a4da2",
+      "bytes": 24747
+    },
+    {
+      "path": "packages/contracts/src/index.ts",
+      "sha256": "6ec0219751d1b86b942dd88c071bf85dbd34237e192b8fa0c9ed314ee594c84c",
+      "bytes": 712
+    },
+    {
+      "path": "packages/contracts/src/orchestration.ts",
+      "sha256": "93fe43d36e788c6e1acc0f0e53f2f48f7cb7e08bc0ee56e903bd24faf7e39e23",
+      "bytes": 15237
+    },
+    {
+      "path": "packages/contracts/src/requirement-flow.ts",
+      "sha256": "2f12e9b55f568ab46508149c7b3373bf7b9b58cffbd1378033badda7db7f14f5",
+      "bytes": 8743
+    },
+    {
+      "path": "packages/contracts/src/requirement-work.ts",
+      "sha256": "2c02109a35a237b3c80e87db49c0d4b5fd3613c15ffaaec666f5e530ad367d97",
+      "bytes": 4199
+    },
+    {
+      "path": "packages/domain/src/index.ts",
+      "sha256": "a1b579501244196619616457c9364816d000a4ccdd4a1d1b55dca3f170aedafa",
+      "bytes": 95
+    },
+    {
+      "path": "packages/domain/src/requirement-flow.ts",
+      "sha256": "f131f1b291b88aed9d8b53fca8eb78eaa8000b4e1ab60670c2fbbd79e33f9752",
+      "bytes": 2591
+    },
+    {
+      "path": "packages/persistence/src/index.ts",
+      "sha256": "9e9b8031077483e30b1faf54293d7cda4ada6db5581142cac2b26e97cdcc9da4",
+      "bytes": 161
+    },
+    {
+      "path": "packages/persistence/src/migrations.ts",
+      "sha256": "71d28df7c44117b94e61265b872b4082218fdff1363ecdf235b9d7898e4a33ff",
+      "bytes": 68427
+    },
+    {
+      "path": "packages/persistence/src/read-models.ts",
+      "sha256": "fd9d115b3f6bd1f67085e08becc0583167c243576bc72d41135b0df032acb465",
+      "bytes": 80657
+    },
+    {
+      "path": "packages/persistence/src/requirement-flow.ts",
+      "sha256": "6d6c49f53343180a4eadd3819d5729229c68d8be38db4577abe12ecfa07af866",
+      "bytes": 4241
+    },
+    {
+      "path": "packages/persistence/src/rows.ts",
+      "sha256": "a4fcf9d51fa7d9d2600258631a185d42859dd952755514ce4a5405bc5b10d211",
+      "bytes": 29245
+    },
+    {
+      "path": "packages/persistence/src/store.ts",
+      "sha256": "96c2b1c0dee1d0aa3ef140efbe2718028876157b43870d6a6649954349fd7ac9",
+      "bytes": 104502
+    },
+    {
+      "path": "packages/policy/src/index.ts",
+      "sha256": "764026869fb899e4cf718392f2baf973f16cf4e681441646c093a5322b7bfeb6",
+      "bytes": 5283
+    },
+    {
+      "path": "packages/tools/src/index.ts",
+      "sha256": "84be202c2ecd8d982ff345e53f694b94374b7a2efa502abf1b4af040269c525f",
+      "bytes": 12373
+    },
+    {
+      "path": "packages/ui/src/components/PageElements.tsx",
+      "sha256": "11245b48f84aebcfbd493629a043c6bd7dcc7ca9277ad942c54e525f2a7bfb9d",
+      "bytes": 5384
+    },
+    {
+      "path": "packages/worktree/src/index.ts",
+      "sha256": "a870b2c84eb1e1b98947850d405c42764052acd503475b73d29ba97a3c7daaf1",
+      "bytes": 13685
+    },
+    {
+      "path": "scripts/agent-overview-e2e.mjs",
+      "sha256": "e34a2e32e637f6bbd6d090c6a8d441159173243cbdb6ee4eac1075ce230942bd",
+      "bytes": 40699
+    },
+    {
+      "path": "scripts/helpers/requirement-flow-model.mjs",
+      "sha256": "7c6f7e6083eb3308b318905dd04fd3494e5d933e566bc8f126886f0482614d73",
+      "bytes": 4036
+    },
+    {
+      "path": "scripts/optical-project-switch-e2e.mjs",
+      "sha256": "cd0c5678c37140c166410a35095f02edb4a53431e6e6a05badf7dfee21defa1e",
+      "bytes": 3157
+    },
+    {
+      "path": "scripts/optical-restore-e2e.mjs",
+      "sha256": "f1c1d01d14add8b15ba34d1251248301ffddb996ac898873fa9f2608819e720e",
+      "bytes": 6352
+    },
+    {
+      "path": "scripts/p29-settings-probe.mjs",
+      "sha256": "5906a2001ec8833491077742637fb2b0d8dee0dcd3855dec31134c8df5c52d4c",
+      "bytes": 2706
+    },
+    {
+      "path": "scripts/product-workbench-e2e.mjs",
+      "sha256": "b55b5f151edbbe90baf2d8113b722a05f77d46c60433b85a04d735e31e5ed08d",
+      "bytes": 13540
+    },
+    {
+      "path": "scripts/requirement-flow-e2e.mjs",
+      "sha256": "448b6fa5bc38eb8b494d40a6a133a05405b9f701281f1e61a86090d518698026",
+      "bytes": 18911
+    },
+    {
+      "path": "scripts/requirement-flow-visual-e2e.mjs",
+      "sha256": "332d02154c915fbb0b6f1ae36863f6af8f262e3d2816d3ef972331b1268e87c5",
+      "bytes": 4423
+    },
+    {
+      "path": "scripts/requirement-integration-e2e.mjs",
+      "sha256": "9fc90e04e1ac51ffef787251e7252a0ae9401ca8cace0c402fa1ca556be8d6ea",
+      "bytes": 15183
+    },
+    {
+      "path": "scripts/requirement-work-e2e.mjs",
+      "sha256": "3fee0ba06237f83aa59709a5dd28ecad76f1160c40593fa43fc25b95938535a9",
+      "bytes": 215
+    },
+    {
+      "path": "scripts/soft-studio-baseline.mjs",
+      "sha256": "14dcecbf7d85c332dbd9cc6063a2275438b54323184e3d183136f7d05b50f13f",
+      "bytes": 4639
+    },
+    {
+      "path": "scripts/startup-journey-e2e.mjs",
+      "sha256": "0747d7f8a36ee93b37eeb521660b7ac7873c2b63b2165cad342cb46b14a8e4cf",
+      "bytes": 13813
+    },
+    {
+      "path": "tests/direct-requirement-tasks.test.ts",
+      "sha256": "b316da02181c390c3bb077dc1094f94de13f65d8ab3ab4d53b05bf0fdb8ecc6e",
+      "bytes": 7168
+    },
+    {
+      "path": "tests/p27-autonomy-coordinator.test.ts",
+      "sha256": "4bd8701f2c80067d94059acf588e1da22cfd3046be7d8bd5414d17e09486d86b",
+      "bytes": 6252
+    },
+    {
+      "path": "tests/phase0-migration.test.ts",
+      "sha256": "0f0dbbc4d7391ff5ff8e35cf19b46d97840779862d82963fc2ddb2b31f52301c",
+      "bytes": 4193
+    },
+    {
+      "path": "tests/r2-phase1.test.ts",
+      "sha256": "58394905ad69064833e45c0b3ce34cb068178316ad131bf9888282ac13901a6a",
+      "bytes": 15490
+    },
+    {
+      "path": "tests/requirement-flow.test.ts",
+      "sha256": "a85f0dfc02de02ca8a0c1d09852b09500ef9da561f4750ddb7185c697e681375",
+      "bytes": 17268
+    },
+    {
+      "path": "tests/requirement-integration.test.ts",
+      "sha256": "362f94c60f862c90e478660597bcb34a8e081b653a96b6dbc18442668067d862",
+      "bytes": 14669
+    },
+    {
+      "path": "tests/requirement-work.test.ts",
+      "sha256": "300843e567295ad0902afd1c09a1327e079634b325e21b6d998026a2098672c7",
+      "bytes": 12788
+    },
+    {
+      "path": "docs/adr/0075-direct-requirement-tasks.md",
+      "sha256": "d63cf0b95162cda6aa22e6c6c51637751a72b142757b1dd6376252b9022859eb",
+      "bytes": 2651
+    },
+    {
+      "path": "docs/adr/0076-requirement-owned-workflows.md",
+      "sha256": "d98b61982c1c35e3c7d2611eecd34a492926d38ea2deff94492c4ab5c11c0417",
+      "bytes": 4491
+    },
+    {
+      "path": "docs/design/DESIGN_CHANGELOG.md",
+      "sha256": "0b4358440ddb6fa3d223fcb5628530af29b3b29d5047cb5e64fc35a55ce55fa0",
+      "bytes": 36275
+    },
+    {
+      "path": "docs/next-ui/MIGRATION_PROGRESS.md",
+      "sha256": "03b315e333e41da2b500b11a907ba25a228d327b9a4828856e4ea6ba16f081c0",
+      "bytes": 30696
+    },
+    {
+      "path": "docs/next-ui/OPEN_ISSUES.md",
+      "sha256": "eb90e0b0319bdb2f84238fc8651bf860ef0c957132f951a459dcfb68903fcfc8",
+      "bytes": 8794
+    },
+    {
+      "path": "docs/v2/evidence/requirement-guided-flow/REPORT.md",
+      "sha256": "54bfc0dc0060f093e1dd9869c5ebdc6548e36f1e547010ceecb13ab2fa9dad22",
+      "bytes": 12001
+    }
+  ],
+  "builtArtifacts": [
+    {
+      "path": "apps/runtime/dist/index.mjs",
+      "sha256": "dc17eedcd19040d89fb89063ae8228bcf00c023aefd30a877506b81372a26c44",
+      "bytes": 2726066
+    },
+    {
+      "path": "apps/desktop/out/main/index.js",
+      "sha256": "ed245b157db380992caf680096428cdcb7c58d6cf65254b8dc8efbaadd03c734",
+      "bytes": 1061012
+    },
+    {
+      "path": "apps/desktop/out/preload/index.js",
+      "sha256": "556d38ae24e01a896916c86180abbec47b522b815c76677da27cede84d8c1f4c",
+      "bytes": 20953
+    },
+    {
+      "path": "apps/desktop/out/renderer/index.html",
+      "sha256": "e56b2f5fd6f0f8c26997e7140a6992f07730209d13a79bebd00793db028cb8c2",
+      "bytes": 2171
+    },
+    {
+      "path": "release/win-unpacked/ProjectOS.exe",
+      "sha256": "58b81babadaa86777a803c96980720db033aa98bc3980efa2eef6c1b866bd00d",
+      "bytes": 239400448
+    },
+    {
+      "path": "release/win-unpacked/resources/app.asar",
+      "sha256": "bd031860da0edca8ddc705ad925d0895d1d6bf732e3ceffbd914aac0661b466e",
+      "bytes": 43687618
+    },
+    {
+      "path": "release/win-unpacked/resources/runtime/index.mjs",
+      "sha256": "dc17eedcd19040d89fb89063ae8228bcf00c023aefd30a877506b81372a26c44",
+      "bytes": 2726066
+    }
+  ],
+  "scopeNotes": [
+    "41 final native Electron screenshots; historical failure.png files are diagnostics and excluded.",
+    "Actual Runtime/SQLite/Git; local deterministic model fixture, not external model quality acceptance.",
+    "125% means app zoom, not OS DPI.",
+    "Full suite has one timeout and four existing skips; successful targeted reruns do not turn that full run into a pass."
+  ],
+  "unverified": [
+    "External model quality",
+    "External CLI workflow execution adapter",
+    "System DPI 125%",
+    "Manual screen-reader listening",
+    "Touch input",
+    "New GPU/FPS measurement",
+    "Final user aesthetic approval"
+  ],
+  "incomplete": [
+    "Global journey integration on other pages",
+    "Requirement-wide automatic acceptance/delivery",
+    "Automatic flow start from legacy plan grants",
+    "Bulk manual node assignment",
+    "Plugin Agent composition",
+    "Settings consolidation",
+    "Prepared-workspace base synchronization",
+    "Conflict resolution UI",
+    "A2.2b remote jobs"
+  ]
+}

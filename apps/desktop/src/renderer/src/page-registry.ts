@@ -33,14 +33,15 @@ export interface PageDefinition {
 
 export const PROJECT_PAGES: PageDefinition[] = [
   { key: 'work', path: '', label: '研发工作中心', group: '研发', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '目标状态、下一步与交付进度的唯一入口。' },
+  { key: 'requirements', path: '/requirements', label: '需求工作台', group: '研发', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '需求流程、任务分工、产出资料与独立开发工作区。' },
   { key: 'tasks', path: '/tasks', label: '任务看板', group: '研发', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '任务与验收；链接编排与工作区。' },
   { key: 'agents', path: '/agents', label: 'Agent 协作', group: '研发', status: 'KEEP', entries: ['nav', 'palette'], note: 'Agent 工作台，含协作与交接。' },
   { key: 'approvals', path: '/approvals', label: '审批', group: '研发', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '工具权限与交付审批。' },
   { key: 'runs', path: '/runs', label: '运行审计', group: '研发', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: 'Run、工具调用与项目事件流。' },
   { key: 'orchestration', path: '/orchestration', label: '编排工作台', group: '研发', status: 'KEEP', entries: ['palette', 'link'], note: '计划 DAG 与审批；由工作中心/任务看板进入。' },
+  { key: 'connections', path: '/connections', label: '资源与连接', group: '交付', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '资源、连接 Profile 与凭据元信息。' },
   { key: 'releases', path: '/releases', label: '发布中心', group: '交付', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '版本发布与交付记录。' },
   { key: 'deployments', path: '/deployments', label: '部署中心', group: '交付', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '部署执行与对账。' },
-  { key: 'connections', path: '/connections', label: '资源与连接', group: '交付', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '资源、连接 Profile 与凭据元信息。' },
   { key: 'overview', path: '/overview', label: '项目姿态', group: '项目', status: 'KEEP', entries: ['nav', 'palette'], note: '项目度量与阶段。' },
   { key: 'versions', path: '/versions', label: '版本与迭代', group: '项目', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '版本、迭代与门禁。' },
   { key: 'knowledge', path: '/knowledge', label: '知识与成果', group: '项目', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '知识条目与交付物。' },

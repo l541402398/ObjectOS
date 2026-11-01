@@ -1,0 +1,93 @@
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90mC:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4[39m
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/requirement-flow.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 29141[2mms[22m[39m
+   [32m✓[39m requirement owned workflows [2m(11)[22m
+     [33m[2m✓[22m[39m inherits every task, versions templates, preserves frozen bindings and blocks premature acceptance[33m 3666[2mms[22m[39m
+     [33m[2m✓[22m[39m runs distinct assigned Agents, binds real documents to review and advances only after evidence[33m 4939[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a claimed completion with no real output and does not loop or replay it[33m 3936[2mms[22m[39m
+     [33m[2m✓[22m[39m uses model choices for complete assignment and rejects invented Agents atomically[33m 595[2mms[22m[39m
+     [33m[2m✓[22m[39m fills missing autonomous assignments without replacing an explicit human choice[33m 544[2mms[22m[39m
+     [33m[2m✓[22m[39m requires a successful real test command and rejects code modified after that test[33m 7494[2mms[22m[39m
+     [33m[2m✓[22m[39m preserves rejected reviews and lets the user rework the source document without skipping stages[33m 4936[2mms[22m[39m
+     [33m[2m✓[22m[39m does not replay an interrupted step; reconciliation with no created Run only enables explicit retry[33m 539[2mms[22m[39m
+     [33m[2m✓[22m[39m archives legacy authored group documents with task links while preserving versions and audit JSON[33m 1901[2mms[22m[39m
+     [33m[2m✓[22m[39m creates all approved requirement-bound plan tasks and their inherited node instances in one transaction[33m 582[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/requirement-defaults-start.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 24347[2mms[22m[39m
+   [32m✓[39m requirement default owners (ADR-0077) [2m(3)[22m
+     [33m[2m✓[22m[39m shares six-stage defaults across three tasks, keeps a single-task override and never rebuilds instances[33m 649[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects stale binding versions, unknown nodes and unavailable Agents without partial writes[33m 586[2mms[22m[39m
+     [33m[2m✓[22m[39m does not change started steps[33m 588[2mms[22m[39m
+   [32m✓[39m requirement start intents (ADR-0077) [2m(7)[22m
+     [33m[2m✓[22m[39m starts eligible tasks once even when the same or a different request is submitted concurrently[33m 4629[2mms[22m[39m
+     [33m[2m✓[22m[39m reports missing owners, unavailable Agents and stale versions explicitly[33m 602[2mms[22m[39m
+     [33m[2m✓[22m[39m waits for dependencies across a restart and continues only inside an unchanged scope[33m 4257[2mms[22m[39m
+     [33m[2m✓[22m[39m does not continue after the intent is revoked, a task is paused or its owners change[33m 4368[2mms[22m[39m
+     [33m[2m✓[22m[39m stops automatic progress when revoked and does not mark waiting work complete[33m 3345[2mms[22m[39m
+     [33m[2m✓[22m[39m runs nodes only after the separate workspace approval; one Run per node with repeated starts[33m 4156[2mms[22m[39m
+     [33m[2m✓[22m[39m autonomous AI assignment fills missing owners before a requested start[33m 1165[2mms[22m[39m
+[90mstdout[2m | tests/r2-phase1.test.ts[2m > [22m[2mR2 Phase 1: missing R1 verification[2m > [22m[2mmigrates a V18 database to V38 without losing existing data
+[22m[39m[r2-migrate] v18 -> v24 versions=39,40,41,42,43 project=Legacy V18 Project preserved
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-phase1.test.ts[2m > [22m[2mR2 Phase 1: missing R1 verification[2m > [22m[2mrequires confirmation when the substitute Runtime raises the risk level
+[22m[39m[r2-risk] candidate=agt_01m687nfvfxnercs324h29e18s reasons=["替代 Runtime 风险更高（ACP R2 ACP Profile → CLI R2 CLI Profile）"]
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-phase1.test.ts[2m > [22m[2mR2 Phase 1: missing R1 verification[2m > [22m[2mstops a Run before the tool side effect when its capacity slot was fenced
+[22m[39m[r2-fencing] run=run_01m687nkqjgjfar592ksv4zzz9 status=failed artifacts=0 thiefSlot=run_thief
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[90mstdout[2m | tests/r2-phase1.test.ts[2m > [22m[2mR2 Phase 1: missing R1 verification[2m > [22m[2mcancels one plan, releases the Agent slot and lets a queued plan finish
+[22m[39m[r2-cross-plan-cancel] peak=1 planA=cancelled planB=completed runsB=1 slot=free
+
+ [32m✓[39m tests/r2-phase1.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 17572[2mms[22m[39m
+   [32m✓[39m R2 Phase 1: missing R1 verification [2m(4)[22m
+     [33m[2m✓[22m[39m migrates a V18 database to V38 without losing existing data[33m 1406[2mms[22m[39m
+     [33m[2m✓[22m[39m requires confirmation when the substitute Runtime raises the risk level[33m 3960[2mms[22m[39m
+     [33m[2m✓[22m[39m stops a Run before the tool side effect when its capacity slot was fenced[33m 1009[2mms[22m[39m
+     [33m[2m✓[22m[39m cancels one plan, releases the Agent slot and lets a queued plan finish[33m 11194[2mms[22m[39m
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/p27-autonomy-coordinator.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 3428[2mms[22m[39m
+   [32m✓[39m Phase 2.7 autonomy coordination [2m(7)[22m
+     [33m[2m✓[22m[39m deduplicates the same source event (idempotent enqueue)[33m 635[2mms[22m[39m
+     [33m[2m✓[22m[39m recognizes settled workspace facts inside historical custom events in assisted mode[33m 533[2mms[22m[39m
+     [33m[2m✓[22m[39m records a durable pass result and replays pending intents after restart[33m 557[2mms[22m[39m
+     [33m[2m✓[22m[39m advances a gate-passing phase without any human action[33m 584[2mms[22m[39m
+     [33m[2m✓[22m[39m does not advance anything in assist mode[33m 556[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps coordination history for diagnostics[33m 554[2mms[22m[39m
+ [32m✓[39m tests/phase0-migration.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 241[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[32m33 passed[39m[22m[90m (33)[39m
+[2m   Start at [22m 22:41:06
+[2m   Duration [22m 80.55s[2m (tests 95%, import 4%, transform 1%)[22m
+

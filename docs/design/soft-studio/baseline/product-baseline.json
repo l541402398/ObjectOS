@@ -1,0 +1,151 @@
+{
+  "head": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+  "scope": "Current compiled working branch before Soft Studio activation, persisted isolated demo and actual native Electron capture. Earlier source adaptations are preserved.",
+  "records": [
+    {
+      "file": "product-before-home-1440-light.png",
+      "width": 1440,
+      "height": 900,
+      "mode": "light",
+      "heading": [
+        "Aurora Notes · 示例项目"
+      ]
+    },
+    {
+      "file": "product-before-home-1440-dark.png",
+      "width": 1440,
+      "height": 900,
+      "mode": "dark",
+      "heading": [
+        "Aurora Notes · 示例项目"
+      ]
+    },
+    {
+      "file": "product-before-home-1024-light.png",
+      "width": 1024,
+      "height": 768,
+      "mode": "light",
+      "heading": [
+        "Aurora Notes · 示例项目"
+      ]
+    },
+    {
+      "file": "product-before-home-1024-dark.png",
+      "width": 1024,
+      "height": 768,
+      "mode": "dark",
+      "heading": [
+        "Aurora Notes · 示例项目"
+      ]
+    },
+    {
+      "file": "product-before-flow-1440-light.png",
+      "width": 1440,
+      "height": 900,
+      "mode": "light",
+      "heading": [
+        "Aurora Notes · 示例项目"
+      ]
+    },
+    {
+      "file": "product-before-flow-1440-dark.png",
+      "width": 1440,
+      "height": 900,
+      "mode": "dark",
+      "heading": [
+        "Aurora Notes · 示例项目"
+      ]
+    },
+    {
+      "file": "product-before-flow-1024-light.png",
+      "width": 1024,
+      "height": 768,
+      "mode": "light",
+      "heading": [
+        "Aurora Notes · 示例项目"
+      ]
+    },
+    {
+      "file": "product-before-flow-1024-dark.png",
+      "width": 1024,
+      "height": 768,
+      "mode": "dark",
+      "heading": [
+        "Aurora Notes · 示例项目"
+      ]
+    },
+    {
+      "file": "product-before-overview-1440-light.png",
+      "width": 1440,
+      "height": 900,
+      "mode": "light",
+      "heading": [
+        "Aurora Notes · 示例项目示例数据"
+      ]
+    },
+    {
+      "file": "product-before-overview-1440-dark.png",
+      "width": 1440,
+      "height": 900,
+      "mode": "dark",
+      "heading": [
+        "Aurora Notes · 示例项目示例数据"
+      ]
+    },
+    {
+      "file": "product-before-overview-1024-light.png",
+      "width": 1024,
+      "height": 768,
+      "mode": "light",
+      "heading": [
+        "Aurora Notes · 示例项目示例数据"
+      ]
+    },
+    {
+      "file": "product-before-overview-1024-dark.png",
+      "width": 1024,
+      "height": 768,
+      "mode": "dark",
+      "heading": [
+        "Aurora Notes · 示例项目示例数据"
+      ]
+    },
+    {
+      "file": "product-before-agents-1440-light.png",
+      "width": 1440,
+      "height": 900,
+      "mode": "light",
+      "heading": [
+        "Agent 协作"
+      ]
+    },
+    {
+      "file": "product-before-agents-1440-dark.png",
+      "width": 1440,
+      "height": 900,
+      "mode": "dark",
+      "heading": [
+        "Agent 协作"
+      ]
+    },
+    {
+      "file": "product-before-agents-1024-light.png",
+      "width": 1024,
+      "height": 768,
+      "mode": "light",
+      "heading": [
+        "Agent 协作"
+      ]
+    },
+    {
+      "file": "product-before-agents-1024-dark.png",
+      "width": 1024,
+      "height": 768,
+      "mode": "dark",
+      "heading": [
+        "Agent 协作"
+      ]
+    }
+  ],
+  "errors": []
+}

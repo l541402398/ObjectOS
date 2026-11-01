@@ -22,7 +22,15 @@ const RISK_LABEL: Record<string, string> = { low: '低风险', medium: '需确�
  * It is a projection of the action center, so it can never disagree with the
  * approvals/gates/deployments modules.
  */
-export function NextStepPanel({ projectId, navigate }: { projectId: string; navigate: NavigateFunction }) {
+export function NextStepPanel({
+  projectId,
+  navigate,
+  onCreateRequirement,
+}: {
+  projectId: string
+  navigate: NavigateFunction
+  onCreateRequirement?: () => void
+}) {
   const actions = useActionCenter(projectId)
   const journey = useQuery({ queryKey: ['work', 'journey', projectId], queryFn: () => window.projectos.work.journey(projectId), staleTime: 2000, refetchInterval: 5000 })
   const next = journey.data?.nextAction
@@ -30,13 +38,24 @@ export function NextStepPanel({ projectId, navigate }: { projectId: string; navi
   const first = items[0] ?? null
   const rest = items.slice(1)
 
+  const handleNextAction = (route: string) => {
+    if (/\/projects\/[^/]+\/work(?:\?|$)/.test(route)) {
+      if (onCreateRequirement) {
+        onCreateRequirement()
+        return
+      }
+      navigate(`/projects/${projectId}?intent=requirement`)
+      return
+    }
+    navigate(route)
+  }
+
   if (actions.isError) return <section className="wc-next" aria-label="当前待办"><div className="wc-next-body"><p role="alert">待办读取失败，暂时无法确认需要处理的事项。</p><Button onClick={() => void actions.refetch()}>重新读取</Button></div></section>
 
   return (
     <section className="wc-next" data-testid="next-step-panel">
       <header className="wc-next-head">
-        <span className="wc-next-kicker">NEXT STEP</span>
-        <strong>{first ? '现在需要你决定' : next ? JOURNEY_OWNER_LABEL[next.owner] : '正在读取当前进度'}</strong>
+        <h2>{first ? '现在需要你决定' : next ? JOURNEY_OWNER_LABEL[next.owner] : '正在读取当前进度'}</h2>
         <Tag className="wc-next-count">{items.length} 项待办</Tag>
       </header>
       {first ? (
@@ -63,7 +82,7 @@ export function NextStepPanel({ projectId, navigate }: { projectId: string; navi
             </p>
             {next?.detail ? <p className="wc-next-resume">{next.detail}</p> : null}
           </div>
-          {next?.route ? <Button type="primary" onClick={() => navigate(next.route!)}>{journeyActionLabel(next)}</Button> : journey.isError ? <Button onClick={() => void journey.refetch()}>重试</Button> : null}
+          {next?.route ? <Button type="primary" onClick={() => handleNextAction(next.route!)}>{journeyActionLabel(next)}</Button> : journey.isError ? <Button onClick={() => void journey.refetch()}>重试</Button> : null}
         </div>
       )}
       {rest.length > 0 ? (

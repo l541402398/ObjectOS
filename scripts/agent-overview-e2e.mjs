@@ -327,9 +327,10 @@ try {
   await page.evaluate((id) => { window.location.hash = `#/projects/${id}` }, projectId)
   await page.waitForSelector('.studio-home', { timeout: 20_000 })
   await page.waitForTimeout(900)
+  await page.getByRole('tab', { name: /待审批/ }).click()
   const homeFacts = await page.evaluate(() => ({
     heading: document.querySelector('.studio-home h1')?.textContent ?? '',
-    mission: document.querySelector('.studio-hero h2')?.textContent ?? '',
+    mission: document.querySelector('.po-journey-goal')?.textContent ?? '',
     pending: document.querySelectorAll('.studio-approval-row').length,
   }))
   record('项目首页使用真实项目/计划/审批数据', homeFacts.heading.includes('Agent Overview E2E') && homeFacts.pending >= 1, JSON.stringify(homeFacts))
@@ -616,13 +617,13 @@ try {
   await page.waitForTimeout(600)
   const narrow = await page.evaluate(() => ({
     canvas: Boolean(document.querySelector('.aco-canvas')),
-    filters: document.querySelectorAll('.aco-filters button').length,
+    filters: document.querySelectorAll('.aco-object-tabs [role="tab"]').length,
     overflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     visibleTasks: [...document.querySelectorAll('.aco-gnode-task')].filter((node) => getComputedStyle(node).display !== 'none').length,
   }))
   record('1024 保持全图而非三栏', narrow.canvas && narrow.filters === 4 && narrow.overflowX === 0 && narrow.visibleTasks >= 3, JSON.stringify(narrow))
   await shot('overview-1024-all.png')
-  await page.locator('.aco-filters button').nth(1).click()
+  await page.locator('.aco-object-tabs [role="tab"]').nth(1).click()
   await page.waitForTimeout(600)
   const agentFilter = await page.evaluate(() => ({
     agents: [...document.querySelectorAll('.aco-gnode-agent')].filter((node) => getComputedStyle(node).display !== 'none').length,
@@ -630,10 +631,10 @@ try {
   }))
   record('1024 图内筛选只显示 Agent', agentFilter.agents >= 4 && agentFilter.tasks === 0, JSON.stringify(agentFilter))
   await shot('overview-1024-agents.png')
-  await page.locator('.aco-filters button').nth(2).click()
+  await page.locator('.aco-object-tabs [role="tab"]').nth(2).click()
   await page.waitForTimeout(500)
   await shot('overview-1024-tasks.png')
-  await page.locator('.aco-filters button').nth(0).click()
+  await page.locator('.aco-object-tabs [role="tab"]').nth(0).click()
   await setWindow(1440, 900)
 
   await win.evaluate((w) => w.webContents.setZoomFactor(1.25))

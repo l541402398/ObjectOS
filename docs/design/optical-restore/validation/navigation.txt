@@ -1,0 +1,4 @@
+PASS Project menu opens the newly created real project
+PASS Restored task navigation works in the other project
+PASS Project menu returns to the original data scope
+PASS Autonomous and assisted choices remain available

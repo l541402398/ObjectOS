@@ -1,0 +1,158 @@
+{
+  "scope": "Supplied HTML design reference only; NOT product acceptance",
+  "inspection": [
+    {
+      "action": "Open supplied prototype",
+      "heading": "ProjectOS · Soft Studio 交互原型"
+    },
+    {
+      "action": "Toggle theme",
+      "actual": "dark"
+    },
+    {
+      "action": "Open overview",
+      "actual": "今天，继续推进项目\n示例"
+    },
+    {
+      "action": "Inspect real prototype controls",
+      "controls": [
+        {
+          "text": "1 项待确认",
+          "attrs": []
+        },
+        {
+          "text": "暂停执行",
+          "attrs": []
+        },
+        {
+          "text": "列表",
+          "attrs": [
+            [
+              "data-view",
+              "list"
+            ]
+          ]
+        },
+        {
+          "text": "看板",
+          "attrs": [
+            [
+              "data-view",
+              "board"
+            ]
+          ]
+        },
+        {
+          "text": "流程",
+          "attrs": [
+            [
+              "data-view",
+              "flow"
+            ]
+          ]
+        },
+        {
+          "text": "",
+          "attrs": []
+        },
+        {
+          "text": "",
+          "attrs": []
+        },
+        {
+          "text": "",
+          "attrs": []
+        },
+        {
+          "text": "架架构 Agent01梳理需求已完成1 个交付物",
+          "attrs": [
+            [
+              "data-select",
+              "0"
+            ]
+          ]
+        },
+        {
+          "text": "开开发 Agent02实现登录等待授权2 个变更",
+          "attrs": [
+            [
+              "data-select",
+              "1"
+            ]
+          ]
+        },
+        {
+          "text": "审审查 Agent03代码审查等待前置任务尚未开始",
+          "attrs": [
+            [
+              "data-select",
+              "2"
+            ]
+          ]
+        },
+        {
+          "text": "测测试 Agent04运行测试等待前置任务尚未开始",
+          "attrs": [
+            [
+              "data-select",
+              "3"
+            ]
+          ]
+        },
+        {
+          "text": "",
+          "attrs": []
+        },
+        {
+          "text": "",
+          "attrs": []
+        },
+        {
+          "text": "",
+          "attrs": []
+        },
+        {
+          "text": "",
+          "attrs": []
+        },
+        {
+          "text": "",
+          "attrs": []
+        },
+        {
+          "text": "拒绝",
+          "attrs": []
+        },
+        {
+          "text": "允许此次",
+          "attrs": []
+        },
+        {
+          "text": "查看变更 →",
+          "attrs": [
+            [
+              "data-hint",
+              "这是文件入口示意；原型不会访问磁盘或打开真实差异。"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "action": "Switch 列表",
+      "actual": "Aurora Notes / 任务\n登录模块改造\n示例\n计划 r3 · 4 项任务 · 1 项已完成\n1 项待确认\n暂停执行\n列表\n看板\n流程\n最后更新 · 示例时间\n所有任务\n示例列表 · 4 项\n任务\t状态\t负责人\n梳理需求\t\n已完成\t架构 Agent\n实现登录\t\n等待授权\t开发 Agent\n代码审查\t\n等待前置任务\t审查 Agent\n运行测试\t\n等待前置任务\t测试 Agent\n任务详情\n任务 02\n实现登录\n等待授权\n等待你的确认\n\n开发 Agent 请求在当前项目执行测试。\n\npnpm test\n\n范围：当前项目目录 · 仅此次\n这是示例授权，不"
+    },
+    {
+      "action": "Switch 看板",
+      "actual": "Aurora Notes / 任务\n登录模块改造\n示例\n计划 r3 · 4 项任务 · 1 项已完成\n1 项待确认\n暂停执行\n列表\n看板\n流程\n最后更新 · 示例时间\n按进度查看\n不演示真实拖拽／门禁\n待开始\n2\n代码审查\n等待前置任务\n\n审查 Agent\n\n运行测试\n等待前置任务\n\n测试 Agent\n\n进行中\n1\n实现登录\n等待授权\n\n开发 Agent\n\n已完成\n1\n梳理需求\n已完成\n\n架构 Agent\n\n任务详情\n任务 02\n实现登录\n等待授权\n等待你的确认\n\n开发 Agent 请求在当前项目执行测试。\n\npnpm test\n\n范围：当前项目目录 ·"
+    },
+    {
+      "action": "Switch 流程",
+      "actual": "Aurora Notes / 任务\n登录模块改造\n示例\n计划 r3 · 4 项任务 · 1 项已完成\n1 项待确认\n暂停执行\n列表\n看板\n流程\n最后更新 · 示例时间\n任务依赖\n显示全部 4 项\n计划 r3 · 任务按依赖顺序执行\n架\n架构 Agent\n01\n梳理需求\n已完成\n1 个交付物\n开\n开发 Agent\n02\n实现登录\n等待授权\n2 个变更\n审\n审查 Agent\n03\n代码审查\n等待前置任务\n尚未开始\n测\n测试 Agent\n04\n运行测试\n等待前置任务\n尚未开始\n100%\n完成\n待确认\n任务详情\n任务 02\n实现登录\n等待授权\n等待你的确认\n\n开"
+    },
+    {
+      "action": "Open task detail",
+      "actual": "Aurora Notes / 任务\n登录模块改造\n示例\n计划 r3 · 4 项任务 · 1 项已完成\n1 项待确认\n暂停执行\n列表\n看板\n流程\n最后更新 · 示例时间\n任务依赖\n显示全部 4 项\n计划 r3 · 任务按依赖顺序执行\n架\n架构 Agent\n01\n梳理需求\n已完成\n1 个交付物\n开\n开发 Agent\n02\n实现登录\n等待授权\n2 个变更\n审\n审查 Agent\n03\n代码审查\n等待前置任务\n尚未开始\n测\n测试 Agent\n04\n运行测试\n等待前置任务\n尚未开始\n100%\n完成\n待确认\n任务详情\n任务 01\n梳理需求\n已完成\n任务与文件均为示例内容，不连接真实服务。\n负责人\n架\n架构 Agent\n所属计划\n登录模块改造 · r3\n优先级\n普通\n目标\n\n整理登录需求、数据边界和可验证的验收标准。\n\n相关交付\ndocs/auth-plan.md\n查看交付物 →"
+    }
+  ]
+}

@@ -1,4 +1,7 @@
 import fontLicense from '../../assets/fonts/OFL-NotoSansSC.txt?raw'
+import simLicense from '../../next-ui/vendor/LICENSE-Sim.txt?raw'
+import simNotice from '../../next-ui/vendor/NOTICE-Sim.txt?raw'
+import shadcnLicense from '../../next-ui/vendor/LICENSE-shadcn.txt?raw'
 
 export function AboutSettingsPanel() {
   return (
@@ -39,6 +42,11 @@ export function AboutSettingsPanel() {
       <details className="po-font-license">
         <summary>字体许可 · Noto Sans SC</summary>
         <pre>{fontLicense}</pre>
+      </details>
+      <details className="po-font-license">
+        <summary>界面组件许可 · Sim Studio / shadcn/ui</summary>
+        <p>画布工具栏基于 Sim Studio，标签页组件基于 shadcn/ui；均已适配 ProjectOS。</p>
+        <pre>{simNotice}{'\n\n'}{simLicense}{'\n\n'}{shadcnLicense}</pre>
       </details>
     </div>
   )

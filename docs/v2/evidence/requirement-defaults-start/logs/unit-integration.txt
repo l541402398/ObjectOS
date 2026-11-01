@@ -1,0 +1,44 @@
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90mC:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4[39m
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ [32m✓[39m tests/requirement-integration.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 271033[2mms[22m[39m
+   [32m✓[39m reviewed requirement task integration [2m(15)[22m
+     [33m[2m✓[22m[39m uses real reviewed, verified output; separately approves integration and prepares a dependent task with that content[33m 28793[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects changed file conditions before Git mutation[33m 17966[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects changed target conditions before Git mutation[33m 18115[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects changed document conditions before Git mutation[33m 17919[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects changed task conditions before Git mutation[33m 18058[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects changed expiry conditions before Git mutation[33m 16404[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects changed cancel conditions before Git mutation[33m 16554[2mms[22m[39m
+     [33m[2m✓[22m[39m retains failed verification and invalidates old passing evidence on source edits[33m 22305[2mms[22m[39m
+     [33m[2m✓[22m[39m does not count a renderer-supplied review snapshot as a trusted human review[33m 8867[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects sensitive content and keeps rejected approval terminal without writes[33m 9125[2mms[22m[39m
+     [33m[2m✓[22m[39m serializes operations per requirement and never replays an interrupted operation[33m 11697[2mms[22m[39m
+     [33m[2m✓[22m[39m does not release a task to an Agent while a cancelled verification still has executing effects[33m 6814[2mms[22m[39m
+     [33m[2m✓[22m[39m reconciles interruption before-commit without repeating any Git write[33m 18178[2mms[22m[39m
+     [33m[2m✓[22m[39m reconciles interruption after-merge without repeating any Git write[33m 19700[2mms[22m[39m
+     [33m[2m✓[22m[39m aborts a conflicting merge and preserves both accepted task commits[33m 40533[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m15 passed[39m[22m[90m (15)[39m
+[2m   Start at [22m 22:42:28
+[2m   Duration [22m 272.67s[2m (tests 100%)[22m
+

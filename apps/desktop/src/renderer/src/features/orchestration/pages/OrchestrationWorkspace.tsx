@@ -1523,69 +1523,137 @@ export default function OrchestrationWorkspace() {
         ) : null}
 
         <div className="po-orch-main">
-        <section className="po-orch-canvas-card po-orch-canvas-full">
-            <div className="po-orch-canvas-toolbar">
-              <div className="po-orch-kind-filter">
-                <button type="button" className={kindFilter === 'all' ? 'is-active' : ''} onClick={() => setKindFilter('all')}>全部 {counts.agents + counts.tasks + 1}</button>
-                <button type="button" className={kindFilter === 'orchestrator' ? 'is-active' : ''} onClick={() => setKindFilter('orchestrator')}>总控 1</button>
-                <button type="button" className={kindFilter === 'agent' ? 'is-active' : ''} onClick={() => setKindFilter('agent')}>Agent {counts.agents}</button>
-                <button type="button" className={kindFilter === 'task' ? 'is-active' : ''} onClick={() => setKindFilter('task')}>任务 {counts.tasks}</button>
+          <section className="po-orch-plan-hub" aria-label="计划与任务拆解总览">
+            <div className="po-orch-hub-col po-orch-hub-plans">
+              <div className="po-orch-hub-head">
+                <div>
+                  <span className="po-orch-kicker">PLAN VERSIONS</span>
+                  <h2>计划版本与执行授权</h2>
+                </div>
+                <Button size="small" type="primary" icon={<PlusOutlined />} onClick={openPlanModal}>
+                  生成新计划
+                </Button>
               </div>
-              <span className="po-orch-seq" title={`同步序号 ${seqCursor}`}>{seqGap ? '已补齐同步' : '已同步'}</span>
-              <Input
-                size="small"
-                allowClear
-                value={nodeFilter}
-                onChange={(event) => setNodeFilter(event.target.value)}
-                placeholder="筛选节点（f 适配 / s 保存 / Esc 清除）"
-                className="po-orch-filter"
-              />
-              <span className="po-grow" />
-              <Button size="small" icon={<SaveOutlined />} loading={savingLayout} onClick={() => void saveLayout()}>保存布局</Button>
-              <Button size="small" icon={<CompressOutlined />} onClick={() => void flowRef.current?.fitView({ padding: 0.04 })}>适配</Button>
-              <Button size="small" icon={<ReloadOutlined />} onClick={() => void graphQuery.refetch()} />
+              <div className="po-orch-hub-list">
+                {plansQuery.data?.plans.length ? (
+                  plansQuery.data.plans.map((plan) => (
+                    <div
+                      key={plan.id}
+                      className={`po-orch-plan-item ${latestPlan?.id === plan.id ? 'is-active' : ''}`}
+                      onClick={() => {
+                        setDraft(plan)
+                        setPlanOpen(true)
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          setDraft(plan)
+                          setPlanOpen(true)
+                        }
+                      }}
+                    >
+                      <div className="po-orch-plan-item-top">
+                        <strong>r{plan.revision} · {plan.goal}</strong>
+                        <StatusPill
+                          tone={
+                            plan.status === 'approved'
+                              ? 'success'
+                              : plan.status === 'rejected'
+                                ? 'danger'
+                                : 'warning'
+                          }
+                        >
+                          {plan.status === 'approved'
+                            ? '已批准'
+                            : plan.status === 'rejected'
+                              ? '已拒绝'
+                              : plan.status === 'superseded'
+                                ? '历史版本'
+                                : '草稿'}
+                        </StatusPill>
+                      </div>
+                      <div className="po-orch-plan-item-meta">
+                        <span>{plan.tasks.length} 项拆解任务</span>
+                        <span>更新于 {formatRelative(plan.updatedAt)}</span>
+                        <span className="po-orch-link-hint">点击查看或配置授权 →</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="po-inspector-empty">
+                    尚未生成计划草稿。可点击右上角「生成新计划」，或前往「需求工作台」按需求拆解任务。
+                  </div>
+                )}
+              </div>
             </div>
-            <div className={`po-orch-canvas${compactGraph ? ' is-compact' : ''}`}>
-              <ReactFlow
-                nodes={visibleNodes}
-                edges={visibleEdges}
-                nodeTypes={nodeTypes}
-                fitView
-                fitViewOptions={{ padding: 0.02, maxZoom: 1.1 }}
-                minZoom={0.3}
-                maxZoom={1.5}
-                onInit={(flow) => {
-                  flowRef.current = flow
-                  setCompactGraph(flow.getZoom() < COMPACT_GRAPH_ZOOM)
-                }}
-                onMove={(_event, viewport) => setCompactGraph(viewport.zoom < COMPACT_GRAPH_ZOOM)}
-                onNodesChange={(changes: NodeChange<FlowNode>[]) => setFlowNodes((current) => applyNodeChanges(changes, current))}
-                onNodeClick={(_event, node) => {
-                  const graph = graphQuery.data?.nodes.find((item) => item.id === node.id) ?? null
-                  setSelected(graph)
-                  setInspectorTab('overview')
-                  setDetailTab('node')
-                }}
-                onPaneClick={() => setSelected(null)}
-                proOptions={{ hideAttribution: true }}
-              >
-                <Background gap={20} size={1} color={resolvedTheme === "dark" ? "#202a39" : "#d5dce8"} />
-                <Controls showInteractive={false} />
-                <MiniMap pannable zoomable nodeColor={(node) => {
-                  const graph = (node.data as WorkbenchData).graph
-                  if (graph.status === 'running' || graph.status === 'queued') return '#3b82f6'
-                  if (graph.status === 'blocked' || graph.status === 'failed') return '#ef4444'
-                  if (graph.status === 'completed') return '#22c55e'
-                  return '#556173'
-                }} />
-              </ReactFlow>
-              <div className="po-orch-legend">
-                <span><i className="is-agent" /> Agent</span>
-                <span><i className="is-task" /> Task</span>
-                <span><i className="is-running" /> 运行中</span>
-                <span><i className="is-completed" /> 完成</span>
-                <span><i className="is-blocked" /> 阻塞</span>
-                <span>每 Agent 最多显示 2 个任务</span>
+
+            <div className="po-orch-hub-col po-orch-hub-tasks">
+              <div className="po-orch-hub-head">
+                <div>
+                  <span className="po-orch-kicker">PLANNED TASKS</span>
+                  <h2>已拆解任务清单 ({counts.tasks})</h2>
+                </div>
+                <div className="po-orch-hub-actions">
+                  <Input
+                    size="small"
+                    allowClear
+                    value={nodeFilter}
+                    onChange={(event) => setNodeFilter(event.target.value)}
+                    placeholder="搜索任务或负责 Agent"
+                    className="po-orch-filter"
+                  />
+                  <Button size="small" onClick={() => navigate(`/projects/${projectId}/tasks`)}>
+                    前往任务看板
+                  </Button>
+                  <Button size="small" onClick={() => navigate(`/projects/${projectId}/agents`)}>
+                    前往 Agent 协作图
+                  </Button>
+                </div>
+              </div>
+              <div className="po-orch-task-ledger">
+                {(graphQuery.data?.nodes ?? [])
+                  .filter(
+                    (node) =>
+                      node.kind === 'task' &&
+                      (!nodeFilter.trim() ||
+                        `${node.label} ${node.subtitle ?? ''}`
+                          .toLowerCase()
+                          .includes(nodeFilter.trim().toLowerCase())),
+                  )
+                  .map((taskNode) => (
+                    <div
+                      key={taskNode.id}
+                      className={`po-orch-task-row react-flow__node ${selected?.id === taskNode.id ? 'is-selected' : ''}`}
+                      onClick={() => {
+                        setSelected(taskNode)
+                        setInspectorTab('overview')
+                        setDetailTab('node')
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          setSelected(taskNode)
+                          setInspectorTab('overview')
+                          setDetailTab('node')
+                        }
+                      }}
+                    >
+                      <div className="po-orch-task-row-main">
+                        <strong>{taskNode.label}</strong>
+                        <span>{taskNode.subtitle || '点击查看节点详情、运行日志与依赖链'}</span>
+                      </div>
+                      <StatusPill tone={STATUS_TONE[taskNode.status]}>
+                        {STATUS_TEXT[taskNode.status] ?? taskNode.status}
+                      </StatusPill>
+                    </div>
+                  ))}
+                {(graphQuery.data?.nodes ?? []).filter((n) => n.kind === 'task').length === 0 ? (
+                  <div className="po-inspector-empty">当前还没有已拆解的任务节点。</div>
+                ) : null}
               </div>
             </div>
           </section>

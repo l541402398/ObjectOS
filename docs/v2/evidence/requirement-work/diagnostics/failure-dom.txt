@@ -1,0 +1,4 @@
+- main "无法启动 ProjectOS":
+  - heading "无法启动 ProjectOS" [level=1]
+  - alert: Runtime bundle 不存在：C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\runtime\dist\index.mjs。请先运行 pnpm build:runtime。
+  - button "重试启动"

@@ -1,4 +1,5 @@
 import { useProductDialogs } from '../next-ui/overlay/ProductDialogs'
+import { RequirementCreateModal } from './RequirementWorkPage'
 import { FormDialog } from '../next-ui/overlay/FormDialog'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -910,8 +911,9 @@ export default function WorkCenterPage() {
         </aside>
       </div>
 
+      {requirementOpen ? <RequirementCreateModal projectId={projectId} onClose={() => setRequirementOpen(false)} onCreated={async (id) => { await invalidate(); navigate(`/projects/${projectId}/requirements?requirement=${id}`) }} /> : null}
       <FormDialog
-        open={requirementOpen}
+        open={false}
         title="记录需求"
         okText="保存"
         cancelText="取消"

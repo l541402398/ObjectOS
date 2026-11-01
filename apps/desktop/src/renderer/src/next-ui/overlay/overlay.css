@@ -23,10 +23,10 @@
   line-height: 1.65;
 }
 .pui-overlay-surface *, .pui-overlay-surface *::before, .pui-overlay-surface *::after { box-sizing: border-box; }
-:where(.pui-overlay-surface) :where(button,input,textarea,select) { margin: 0; border: 0; background: none; color: inherit; font: inherit; }
+:where(.pui-overlay-surface) :where(button:not(.ant-switch):not(.ant-btn),input,textarea,select) { margin: 0; border: 0; background: none; color: inherit; font: inherit; }
 .pui-overlay-surface button { cursor: pointer; }
 .pui-overlay-surface button:focus-visible, .pui-overlay-surface input:focus-visible, .pui-overlay-surface textarea:focus-visible, .pui-overlay-surface select:focus-visible { outline: 2px solid color-mix(in srgb, var(--pui-ov-accent) 66%, transparent); outline-offset: 2px; }
-.pui-overlay-backdrop { position: fixed; inset: 0; background: var(--ui-scrim); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); animation: pui-overlay-fade-in 180ms ease-out; }
+.pui-overlay-backdrop { position: fixed; inset: 0; background: var(--ui-scrim); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); will-change: opacity; animation: pui-overlay-fade-in 180ms ease-out; }
 .pui-overlay-dialog { position: fixed; inset: 0; display: flex; width: min(520px, calc(100vw - 32px)); height: fit-content; max-height: min(82vh, 820px); flex-direction: column; margin: auto; overflow: hidden; border: 1px solid rgba(255, 255, 255, .78); border-radius: 20px; background: var(--pui-ov-solid); box-shadow: var(--pui-ov-shadow), inset 0 1px 0 rgba(255, 255, 255, .8); }
 .pui-overlay-surface[data-theme='dark'].pui-overlay-dialog { border-color: var(--pui-ov-line-strong); box-shadow: var(--pui-ov-shadow), inset 0 1px 0 rgba(255, 255, 255, .1); }
 .pui-overlay-dialog-sm { width: min(380px, calc(100vw - 32px)) !important; }

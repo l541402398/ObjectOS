@@ -1,0 +1,26 @@
+- dialog "成果审查":
+  - heading "成果审查" [level=2]
+  - text: 实现可靠的笔记存储与恢复，并补充回归测试
+  - button "刷新成果"
+  - button "关闭"
+  - text: 任务工作区
+  - strong: 需求集成分支
+  - text: 2 个改动文件
+  - region "实际代码改动":
+    - heading "代码改动" [level=3]
+    - group: 文件列表
+    - text: 新增文件：notes.cjs exports.restore = value => String(value) 新增文件：notes.test.cjs const assert = require('node:assert/strict'); require('node:test')('离线正文可恢复', () => assert.equal(require('./notes.cjs').restore('一段离线保存的正文'), '一段离线保存的正文'))
+  - complementary "验证与审查":
+    - heading "实际验证" [level=3]
+    - text: 已通过
+    - paragraph: 当前代码已通过实际验证
+    - button "查看验证输出"
+    - text: 验证命令
+    - textbox "验证命令": node --test notes.test.cjs
+    - button "申请运行验证"
+    - heading "人工审查" [level=3]
+    - text: 已通过
+    - paragraph: 当前改动已记录审查结论。
+  - group: 分支与操作记录
+  - text: 合入后，后续任务才能取得此成果。需求仍需整体验收。
+  - button "申请合入需求"

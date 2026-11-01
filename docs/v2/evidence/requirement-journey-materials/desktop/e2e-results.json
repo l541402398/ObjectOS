@@ -1,0 +1,229 @@
+{
+  "checks": [
+    {
+      "name": "Requirements page shows exactly 1 primary journey bar",
+      "status": "PASS"
+    },
+    {
+      "name": "Stage 1 with 1/2 completed tasks shows truthful count (已完成 1/2 · 未开始 1) and is NOT marked allCompleted",
+      "status": "PASS",
+      "detail": {
+        "stage1Text": "1\n需求分析\n已完成 1/2 · 未开始 1",
+        "stage1CompleteClass": false
+      }
+    },
+    {
+      "name": "Route \"overview\" has exactly 1 unified primary journey bar with no UC step",
+      "status": "PASS"
+    },
+    {
+      "name": "unified journey overview no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 1440
+      }
+    },
+    {
+      "name": "unified journey overview accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "Route \"tasks\" has exactly 1 unified primary journey bar with no UC step",
+      "status": "PASS"
+    },
+    {
+      "name": "unified journey tasks no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 1440
+      }
+    },
+    {
+      "name": "unified journey tasks accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "Route \"agents\" has exactly 1 unified primary journey bar with no UC step",
+      "status": "PASS"
+    },
+    {
+      "name": "unified journey agents no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 1440
+      }
+    },
+    {
+      "name": "unified journey agents accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "Titlebar back button is enabled after cross-page navigation",
+      "status": "PASS"
+    },
+    {
+      "name": "Titlebar back button navigates back to previous route (tasks)",
+      "status": "PASS"
+    },
+    {
+      "name": "Stage materials dialog displays multi-task breakdown (共 2 个任务 / 已完成 1/2 / 未开始 1)",
+      "status": "PASS",
+      "detail": "共 2 个任务\n已完成 1/2\n未开始 1"
+    },
+    {
+      "name": "Material detail displays complete provenance (所属需求, 所属任务, 流程节点, 产出 Agent, 版本状态, 审核结果, 查看运行记录)",
+      "status": "PASS",
+      "detail": "需求文档 · 离线恢复\n当前版本\n审核已通过\n\nAvery · 2026/10/31 05:48 · 第 1 次执行\n\n所属需求\n多端笔记同步与冲突恢复\n所属任务\n设计离线恢复状态机与长正文快照\n查看任务\n流程节点\n需求分析\n产出 Agent\nAvery\n版本状态\n第 1 版 · 当前版本\n审核结果\n审核已通过（Nova）\n运行记录\n查看运行记录 (run_01m6902594dnanvj4hvdqx1hnp)\n离线笔记恢复\n\n目标\n用户关闭应用并重新打开后，可以继续编辑最后保存的正文。\n\n验收标准\n1. 离线保存后恢复原文。\n2. 空内容不覆盖已有正文。\n3. 长文本保持完整。\n\n范围\n本次聚焦正文恢复，不包含多端冲突合并。\n\n这份文档由验收测试模型通过真实 Runtime 工具保存。"
+    },
+    {
+      "name": "stage materials dialog no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 998
+      }
+    },
+    {
+      "name": "stage materials dialog accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "Filtering by unstarted task shows truthful empty state for that task",
+      "status": "PASS"
+    },
+    {
+      "name": "Escape closes the stage materials dialog",
+      "status": "PASS"
+    },
+    {
+      "name": "Deep link (?requirement=...&stage=stage-1&task=...) opens the stage materials dialog directly on the target task",
+      "status": "PASS"
+    },
+    {
+      "name": "Journey bar flags stage-2 as stale (已过期) after requirement document update",
+      "status": "PASS",
+      "detail": "2\n需求审核\n已过期 1 · 未开始 1"
+    },
+    {
+      "name": "Stage 2 material shows 已过期失效 and 旧审核已失效 alert after upstream scope update",
+      "status": "PASS",
+      "detail": "需求审核\n共 2 个任务\n已完成 0/2\n已过期 1\n未开始 1\n全部任务 (1)\n设计离线恢复状态机与长正文快照 · 已过期 (1)\n验证弱网增量同步边界 · 未开始 (0)\n需求审核 · 离线恢复\n设计离线恢复状态机与长正文快照 · v1 · 已过期失效\n需求审核 · 离线恢复\n已过期失效\n旧审核已失效\n\nNova · 2026/10/31 05:48 · 第 1 次执行\n\n所属需求\n多端笔记同步与冲突恢复\n所属任务\n设计离线恢复状态机与长正文快照\n查看任务\n流程节点\n需求审核\n产出 Agent\nNova\n版本状态\n第 1 版 · 已过期失效\n审核结果\n旧审核已失效（Nova）\n运行记录\n查看运行记录 (run_01m690274h9bb1295bdvy1hyg6)\n已过期失效（文档或需求范围已更新）\n需求文档已更新（当前版本 v1），基于 v0 的产出与审核已过期失效\n审核结论：通过。\n\n已检查离线编辑、恢复路径与验收标准；建议在后续开发中覆盖重复保存与重启边界。\n\n这份报告由验收测试模型通过真实 Runtime 工具保存。\n关 闭"
+    },
+    {
+      "name": "Retried stage lists both 当前版本 (attempt 2) and 废弃版本 (superseded attempt 1)",
+      "status": "PASS",
+      "detail": "需求文档 · 离线恢复\n设计离线恢复状态机与长正文快照 · v2 · 当前版本\n需求文档 · 离线恢复\n设计离线恢复状态机与长正文快照 · v1 · 废弃版本"
+    },
+    {
+      "name": "Parallel DAG requirement renders all 4 workflow nodes (including parallel branches stage-2a and stage-2b)",
+      "status": "PASS",
+      "detail": 4
+    },
+    {
+      "name": "Switching requirement isolates materials state and never shows previous requirement cached documents",
+      "status": "PASS",
+      "detail": "需求分析\n尚无产出资料\n节点完成后，文档和审核结论会显示在这里。\n关 闭"
+    },
+    {
+      "name": "Switching to a second project with no workflow requirement falls back cleanly without leaking Project 1 requirement",
+      "status": "PASS",
+      "detail": {
+        "p2BarCount": 1
+      }
+    },
+    {
+      "name": "tasks journey 1440 light no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 1440
+      }
+    },
+    {
+      "name": "tasks journey 1440 light accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "tasks journey 1440 dark no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 1440
+      }
+    },
+    {
+      "name": "tasks journey 1440 dark accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "tasks journey 1024 light no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 1024
+      }
+    },
+    {
+      "name": "tasks journey 1024 light accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "tasks journey 1024 dark no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 1024
+      }
+    },
+    {
+      "name": "tasks journey 1024 dark accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "tasks journey 1024 dark 125% reduced no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 819
+      }
+    },
+    {
+      "name": "tasks journey 1024 dark 125% reduced accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "Zero uncaught renderer page errors",
+      "status": "PASS",
+      "detail": []
+    }
+  ],
+  "captures": [
+    "requirements-multi-task-journey-1440-light.png",
+    "unified-journey-overview-1440-light.png",
+    "unified-journey-tasks-1440-light.png",
+    "unified-journey-agents-1440-light.png",
+    "stage-materials-provenance-1440-light.png",
+    "stage-materials-task-filter-empty-1440-light.png",
+    "stage-materials-stale-review-1440-light.png",
+    "stage-materials-superseded-vs-current-1440-light.png",
+    "stage-materials-empty-isolated-1440-light.png",
+    "tasks-journey-1440-light.png",
+    "tasks-journey-1440-dark.png",
+    "tasks-journey-1024-light.png",
+    "tasks-journey-1024-dark.png",
+    "tasks-journey-1024-dark-125-reduced.png"
+  ],
+  "errors": []
+}

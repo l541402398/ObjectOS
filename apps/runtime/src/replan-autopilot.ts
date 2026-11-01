@@ -226,6 +226,7 @@ export class ReplanAutopilot {
           (event as unknown as { payload?: { requirementId?: string } }).payload?.requirementId === requirement.id,
       )
     if (alreadyDrafted) return []
+    const flowBinding = this.store.db.prepare('SELECT requirement_id FROM requirement_flow_bindings WHERE requirement_id=?').get(requirement.id)
     const goal = `${requirement.title}${requirement.body ? `
 
 ${requirement.body}` : ''}`.trim()
@@ -233,9 +234,10 @@ ${requirement.body}` : ''}`.trim()
     try {
       const draft = await this.orchestration.generateAIPlan({
         projectId,
-        goal,
+        ...(flowBinding ? { requirementId: requirement.id } : {}),
+        goal: goal.slice(0, 3000),
         mode: 'ai',
-        allowRuleFallback: true,
+        allowRuleFallback: !flowBinding,
         maxTasks: 8,
         allowOverBudget: false,
       })
@@ -337,7 +339,7 @@ ${requirement.body}` : ''}`.trim()
     const outcomes: AutonomyOutcome[] = []
     const candidates = this.store.read
       .listAllPlanRevisions()
-      .filter((plan) => plan.projectId === projectId && plan.status === 'approved')
+      .filter((plan) => plan.projectId === projectId && plan.status === 'approved' && !plan.requirementId)
       .filter((plan) => !plan.execution || !['running', 'paused', 'completed'].includes(plan.execution.status))
       .sort((a, b) => b.revision - a.revision)
     for (const plan of candidates) {

@@ -470,8 +470,15 @@ export default function ProjectOverviewPage() {
                         <span className="po-muted">+{requirement.acceptanceCriteria.length - 3} 项验收标准</span>
                       ) : null}
                     </div>
-                    {requirement.status === 'draft' || requirement.status === 'review' ? (
-                      <div className="po-requirement-actions">
+                    <div className="po-requirement-actions">
+                      <Button
+                        type="link"
+                        size="small"
+                        onClick={() => navigate(`/projects/${projectId}/requirements?requirement=${requirement.id}`)}
+                      >
+                        打开需求流程
+                      </Button>
+                      {requirement.status === 'draft' || requirement.status === 'review' ? (
                         <Button
                           type="link"
                           size="small"
@@ -482,9 +489,7 @@ export default function ProjectOverviewPage() {
                         >
                           批准需求
                         </Button>
-                      </div>
-                    ) : requirement.status === 'approved' ? (
-                      <div className="po-requirement-actions">
+                      ) : requirement.status === 'approved' ? (
                         <Button
                           type="link"
                           size="small"
@@ -498,8 +503,8 @@ export default function ProjectOverviewPage() {
                         >
                           标记已实现
                         </Button>
-                      </div>
-                    ) : null}
+                      ) : null}
+                    </div>
                   </div>
                 ))}
               </div>

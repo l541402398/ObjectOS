@@ -1,0 +1,391 @@
+{
+  "generatedAtUtc": "2026-10-30T16:05:39.2402809Z",
+  "head": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+  "branch": "codex/premium-system",
+  "uncommitted": true,
+  "scope": "A3.1 local requirement/UC/task workspaces. Existing uncommitted edits retained. No push, merge or publication.",
+  "unitTests": {
+    "status": "PASS",
+    "skipped": 4,
+    "passed": 586
+  },
+  "desktop": {
+    "status": "PASS",
+    "failures": 0,
+    "checks": 30,
+    "rendererErrors": 0,
+    "matrix": "1440/1280/1024 light/dark; 1024 dark 125% app zoom"
+  },
+  "checks": {
+    "v12Settings": "PASS",
+    "desktopCreateRestart": "PASS",
+    "impeccableDetect": "PASS (empty results)",
+    "typecheck": "PASS",
+    "agentApprovalLoop": "PASS",
+    "lint": "PASS (24 existing warnings)",
+    "build": "PASS",
+    "v13PlanGraphLayout": "PASS",
+    "packageSmoke": "PASS"
+  },
+  "limitations": [
+    "No task integration/dependency execution or requirement delivery yet",
+    "No organization member assignment or remote job bridge",
+    "Agent composition, configurable workflows and settings consolidation remain",
+    "Four existing environment tests skipped",
+    "Old extra orchestration reReview timeout remains; not rerun",
+    "OS DPI, manual screen reader and real external provider not verified",
+    "Loading state reused, no dedicated loading capture",
+    "User aesthetic acceptance pending"
+  ],
+  "sources": [
+    {
+      "path": "apps/desktop/src/preload/index.ts",
+      "sha256": "428d960bbda136862bbdf8da5c1c93e069b01d814cf71b5c3328bdb335b8071c"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/components/AppLayout.tsx",
+      "sha256": "b8a78441f2b357d1768ba9f2ccbe067c0e1121e7ddac9ca078570ade994f1984"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/components/NextStepPanel.tsx",
+      "sha256": "76b80dc575306ed5fc95f3440f6eb7b89d3b05c2bda048eeb47df333e43bab79"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/components/product-navigation.tsx",
+      "sha256": "60b46e766db86ad31ac2d31b9e36dbf91b4d8453dce561f99e8240aff9677f68"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/collaboration-overview/collaboration-overview.css",
+      "sha256": "427d1f8ff087f1d7c14fc2b87bbcfaba35c6ce0866944e0064cd1dda0559ee65"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationGraph.tsx",
+      "sha256": "cd8f8c12924a3b997ebb7c1cfcba48062a9290f9f154e354b1adf88f55ecea06"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationOverview.tsx",
+      "sha256": "2d9ff59251fbc83c0cf3307fab6b19c5acaf93e6db17ce05c24ef7bb5e24fb96"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/settings/AboutSettingsPanel.tsx",
+      "sha256": "8b26da41aec90b492c45ed7aec54ae328905250f576ab8772e7a12cb8b285246"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/studio/studio.css",
+      "sha256": "5eae3ab464b31f4bcaba5462e0828ac8da09a7c124759267038b26205edf6e43"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/studio/StudioProjectHome.tsx",
+      "sha256": "e560cf92ecf588a6765335210ebce2f2d20c73e810156e0b18a7dc103e3dd761"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/features/studio/StudioReviewRoom.tsx",
+      "sha256": "f8de87fa9315c7be4bf6e637705e5c18d635446cd57537eeb9c169d10aeeaf35"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/lib/queries.ts",
+      "sha256": "433ea8c8f513e17008baa9327460375ff054f12d4f804bca1d63798785cb2cbb"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/lib/route-readiness.ts",
+      "sha256": "f1aac79bb3cbfeecb909b8b8e4248d6dba044893046791c404baa4dbe51eba17"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/page-registry.ts",
+      "sha256": "31f7bce3f9019405ec217b0cb77027599bc26dacf4822a83472715a44bb7e780"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/requirement-work.css",
+      "sha256": "1e51d71085451fff9a35992272460c781bf1fab89af5cc622aaf3c713d03f9eb"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/RequirementWorkPage.tsx",
+      "sha256": "929eaf968c6f492f8d1100e0132790d64475a234ccc408a3594681728f9f86e3"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/TaskBoardPage.tsx",
+      "sha256": "dfcde1a819ca61543b9dfc5363400b9a3ef2e75c0c141a602d393e757080731e"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/work-center.css",
+      "sha256": "c980ed478bd745eadf3980bfcee44a41418889de90191adfa1d85a65ebb534fd"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/router.tsx",
+      "sha256": "468c621d0ec24bc96e8bbf94e569a10367638ab2b3c34c85d37d231119c2a25b"
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/styles/system-premium.css",
+      "sha256": "de42d62341d54a022da13e911215b0ffd292e0e37686f700fb50146b197e78ff"
+    },
+    {
+      "path": "apps/runtime/src/agent-runner.ts",
+      "sha256": "0ee6ff632a1c341153ace00db62b9a7cd132ba8fb8c3ea20d2cbe1446bd74fc2"
+    },
+    {
+      "path": "apps/runtime/src/dispatcher.ts",
+      "sha256": "25c8f3c02abfadc8eccf1ca74ff94fc74ed62b0260f500ab081889623414c2dd"
+    },
+    {
+      "path": "apps/runtime/src/orchestrator.ts",
+      "sha256": "47eb7492c76eccfcabcd7286cb3ef9111f60c8c28aeb02b333c95629e62521c4"
+    },
+    {
+      "path": "apps/runtime/src/requirement-work.ts",
+      "sha256": "692c5aeeb595ee377d3af531eb69dfee1be3cd1cf1b2e8ec67f02139e872a557"
+    },
+    {
+      "path": "packages/application/src/ports.ts",
+      "sha256": "bf28b82dba09200f4a6b1f4c24698195ce0126c8e95ef1f6aa20e1d1fe5398f6"
+    },
+    {
+      "path": "packages/application/src/task-service.ts",
+      "sha256": "11dceb69f3167fc86b608ebde072dfcb674b266f5eba0bee17c2c4ac6c7f4b30"
+    },
+    {
+      "path": "packages/contracts/src/api.ts",
+      "sha256": "54137c8dd93ad8f713597327b0fa9a7163d5c41a66d323e3930e05211630cdc5"
+    },
+    {
+      "path": "packages/contracts/src/common.ts",
+      "sha256": "5d5dd46d90ace2daa45f70a96e890e0ca2a450fa2a926b5917cc444e9beccf70"
+    },
+    {
+      "path": "packages/contracts/src/desktop-api.ts",
+      "sha256": "9d0d248068e55b4aefb06a96f73001af9247233d468a122c9473d8aea1b358f9"
+    },
+    {
+      "path": "packages/contracts/src/entities.ts",
+      "sha256": "11ca12ee5babb7ce7491478d1a0d61a53644eaf1f933351998044f23006d91b0"
+    },
+    {
+      "path": "packages/contracts/src/index.ts",
+      "sha256": "9dd0072972a2e54b2107a17e9d296a7972990929b624fa16aa616b71247f2828"
+    },
+    {
+      "path": "packages/contracts/src/requirement-work.ts",
+      "sha256": "118128fe03b5f82d8bd03d3b3a513d872d0b7f61c50ae13c66726ffbfc26aaa4"
+    },
+    {
+      "path": "packages/design-tokens/src/unified.css",
+      "sha256": "6997109fd006f037357ddac35374ab23d2fd4a8d443b2599062cd92deb527cb6"
+    },
+    {
+      "path": "packages/persistence/src/migrations.ts",
+      "sha256": "882776b2b8b5011387542c486bbe47e8474d4c2d7114093bca81460a08e0c0d4"
+    },
+    {
+      "path": "packages/persistence/src/read-models.ts",
+      "sha256": "9e3f9f4959cded947f919128f5fa3fee9ef33e744f10c4b6b66e6002a13bf6f0"
+    },
+    {
+      "path": "packages/persistence/src/rows.ts",
+      "sha256": "15c562296d02909d47c361ceb59980259a06ed3d5edb01f8602e65751c770754"
+    },
+    {
+      "path": "packages/persistence/src/store.ts",
+      "sha256": "bf0a5d5e4fb81d997b6b47ed117f4756d989ac587c0def3b0f3ce14d07d3d627"
+    },
+    {
+      "path": "packages/policy/src/index.ts",
+      "sha256": "1ca4a6cf22ab45944cf5892d8be52ba1f6fdaaf4785e3f3e2d08332058a0feb2"
+    },
+    {
+      "path": "packages/ui/src/components/PageElements.tsx",
+      "sha256": "11245b48f84aebcfbd493629a043c6bd7dcc7ca9277ad942c54e525f2a7bfb9d"
+    },
+    {
+      "path": "packages/worktree/src/index.ts",
+      "sha256": "a870b2c84eb1e1b98947850d405c42764052acd503475b73d29ba97a3c7daaf1"
+    },
+    {
+      "path": "scripts/agent-overview-e2e.mjs",
+      "sha256": "e34a2e32e637f6bbd6d090c6a8d441159173243cbdb6ee4eac1075ce230942bd"
+    },
+    {
+      "path": "scripts/requirement-work-e2e.mjs",
+      "sha256": "5445119ae820b1580a566ccbb04b64ecbbf3015f9ca02e40a781c04e6831cb21"
+    },
+    {
+      "path": "scripts/startup-journey-e2e.mjs",
+      "sha256": "0747d7f8a36ee93b37eeb521660b7ac7873c2b63b2165cad342cb46b14a8e4cf"
+    },
+    {
+      "path": "tests/phase0-migration.test.ts",
+      "sha256": "f984ca3e3134a898ec6f225d036897794e2e91e0e6da56ab188e07dbe8880dcc"
+    },
+    {
+      "path": "tests/r2-phase1.test.ts",
+      "sha256": "7a3b41ce404986e20d716ae09ffa162e7653930e88a0a945c812714a68123cfe"
+    },
+    {
+      "path": "tests/requirement-work.test.ts",
+      "sha256": "9aef8d6e3fcaf419559d018ae76569fb01a52e59fe3ff81e52b3f069ee2c188f"
+    }
+  ],
+  "images": [
+    {
+      "path": "empty-1440-light.png",
+      "bytes": 593319,
+      "sha256": "5e6b3784cdb17654c41d3324220e506ee6e84aa05c32ce2c2ef13e6be7476350"
+    },
+    {
+      "path": "documents-editor-1440-light.png",
+      "bytes": 220713,
+      "sha256": "f81f83c363b9e92adeab3ca80f8731f536c9fa56ad99794e4f8e7335555ddeb0"
+    },
+    {
+      "path": "workspace-pending-1440-light.png",
+      "bytes": 689309,
+      "sha256": "420d59218e2f45cc7d0d73f53e3179699bdece032f671a96dbb84b65b99808dd"
+    },
+    {
+      "path": "workspace-approval-1440-light.png",
+      "bytes": 474756,
+      "sha256": "30cadcabc81f80de767bc415d48f95a85e9851968bf15a3c6162991181fc1454"
+    },
+    {
+      "path": "task-detail-1440-light.png",
+      "bytes": 589942,
+      "sha256": "98e301b245165b17c151667ec518cb3c54824ce133d718a34709e5ce8d4b1949"
+    },
+    {
+      "path": "requirements-1440-light.png",
+      "bytes": 674178,
+      "sha256": "2e5d3c88e68b9da98ee4bd40859c911fe4618df6d1067eb34389a1bb25adc14a"
+    },
+    {
+      "path": "requirements-1440-dark.png",
+      "bytes": 592376,
+      "sha256": "0cf022de1a8a9682f8b8c187c13292f04c0c251c57bad9477f7846e59baf1e04"
+    },
+    {
+      "path": "requirements-1280-light.png",
+      "bytes": 582159,
+      "sha256": "df93ec3249ea6ab4fb27e46a9ef733321a6dc619766fa1f0cd24b4fc4a46724b"
+    },
+    {
+      "path": "requirements-1280-dark.png",
+      "bytes": 504056,
+      "sha256": "9bd53a600febd4afcf412764cd6618265bfdc9cd0ccba44066bfa369fca67f1e"
+    },
+    {
+      "path": "requirements-1024-light.png",
+      "bytes": 446936,
+      "sha256": "df7da562c7f0af53a8c611e1470c386ea57124187a73d06bcb360050220655ba"
+    },
+    {
+      "path": "requirements-1024-dark.png",
+      "bytes": 387920,
+      "sha256": "3ee1bacaaab1643eeee1b71342df09dd8b39eb093d2fa0145a29bb921e8e383c"
+    },
+    {
+      "path": "requirements-1024-dark-125-reduced.png",
+      "bytes": 393482,
+      "sha256": "bfcd510a22955c1b3789a8f9e41cafc79c52554a9668edd4b049079941f8be8a"
+    },
+    {
+      "path": "documents-editor-1024-dark-125.png",
+      "bytes": 138062,
+      "sha256": "982b29d5a819b14c9a367a7c99090fd394c1299f599937fb144fdb54df192eba"
+    },
+    {
+      "path": "missing-requirement-1024-dark-125.png",
+      "bytes": 353493,
+      "sha256": "a5e13bc816b85d2b13bcf29cf35e67d22fd9fe9f731d08ead16782cd7bf14522"
+    },
+    {
+      "path": "dirty-base-error-1440-light.png",
+      "bytes": 671728,
+      "sha256": "3d7b3d0c15ca4f84e9ff8bf8b5ac1de55baa99333279bf4967af1801c3a533d2"
+    },
+    {
+      "path": "dense-bottom-1440-light.png",
+      "bytes": 540012,
+      "sha256": "cc17b23d037a70b5eff3dcdf2859c2dd7c95c591a5dd026c2f59b031fed12c36"
+    },
+    {
+      "path": "document-version-conflict-1440-light.png",
+      "bytes": 239754,
+      "sha256": "5755c956c2a354e71d0ef5e4803fca26c30534c2c72da1ca179dca468ed6dc7a"
+    }
+  ],
+  "logs": [
+    {
+      "path": "logs/agent-regression.txt",
+      "sha256": "13bed6108912f7d692e8260e66247721c60fb1a6e5d8eb9bcc73f4e49c0244a9"
+    },
+    {
+      "path": "logs/all-tests.txt",
+      "sha256": "7a066041effa28740fd781f729fb6d2e3a2f2768058bdd1f6bb2d29e0c59f228"
+    },
+    {
+      "path": "logs/build.txt",
+      "sha256": "77c54245f0336ace4e2c43bc1960baed1fc78a6c1b757e4601b7b089dd2cf207"
+    },
+    {
+      "path": "logs/desktop-regression.txt",
+      "sha256": "72711799703e0cbdb813c14d437a7807cef5c0a716e78b7a41039b4d59b1a5ec"
+    },
+    {
+      "path": "logs/e2e.txt",
+      "sha256": "462c9c7ded6f77a4a244aacf611b1d23d3bf05704e4881e397ca560b8d6c0913"
+    },
+    {
+      "path": "logs/lint.txt",
+      "sha256": "531c7026c7af587207716e13bbac219d21abeb30524fcea83fa0c02238b6eaaf"
+    },
+    {
+      "path": "logs/migration-tests.txt",
+      "sha256": "8939fc304b7183ce501bda686973080b621d8f694d39293a86e69b5a89222a34"
+    },
+    {
+      "path": "logs/package-build.txt",
+      "sha256": "47002b550f245f007dcd7855edf357f7ebc554ec9014ba046a6aafb16b2e638f"
+    },
+    {
+      "path": "logs/package-smoke.txt",
+      "sha256": "3f628e7e9f6a2e33dfded658bf84d88752cefc0b3cf677df9b476b99735a74b7"
+    },
+    {
+      "path": "logs/tests.txt",
+      "sha256": "2c8a79494dc0e65e9736ba0b2a5401332bbc60803792ef15705f03ba67ad5918"
+    },
+    {
+      "path": "logs/typecheck.txt",
+      "sha256": "2c91cbfb819ee4d0864ee0cec9cc4d9ff779454a82535ef0935d3077b2fc0688"
+    },
+    {
+      "path": "logs/v12-regression.txt",
+      "sha256": "75d7c76d8923aab25c11a2a3b0e2120c04ff8ad5036231c59cbf99219276b81a"
+    },
+    {
+      "path": "logs/v13-regression.txt",
+      "sha256": "9060dfb3e2d2bf70fa92f8d91916818551c5d22d9ecd42d49120440627d87512"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "release/win-unpacked/ProjectOS.exe",
+      "bytes": 239400448,
+      "sha256": "2bda020722e5b20ccffe7212419cb6925b42c3f74770e9c0bdbfcb1335a0f679"
+    },
+    {
+      "path": "release/win-unpacked/resources/app.asar",
+      "bytes": 43603319,
+      "sha256": "b5341d30e2c0674c0f9b1b4583a7cd7ace96b9a644683b2a1e68d1cf179d2524"
+    },
+    {
+      "path": "release/win-unpacked/resources/runtime/index.mjs",
+      "bytes": 2606087,
+      "sha256": "4b7a54c0a7213f4497c5a85e317dc24f141b99020cca353b5fb6bb8ce461c6d9"
+    }
+  ],
+  "exeSignature": "NotSigned",
+  "references": {
+    "skillsLoader": "Not exposed; local SKILL.md files and their scripts read/run",
+    "simFile": "apps/sim/app/o/[organizationId]/components/organization-sidebar/components/organization-header/organization-header.tsx",
+    "simBlob": "a5790cd9e3571bc8cc7dc033750599c2c861e318",
+    "approvedVisual": "docs/design/baselines/2026-10-29-user-confirmed-DAG.png"
+  }
+}

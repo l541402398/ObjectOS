@@ -209,6 +209,9 @@ export const PlanGenerationSchema = z.object({
 export type PlanGeneration = z.infer<typeof PlanGenerationSchema>
 
 export const PlanDraftSchema = z.object({
+  requirementId: IdSchema.optional(),
+  requirementVersion: z.number().int().nonnegative().optional(),
+  requirementFlowVersionId: IdSchema.optional(),
   id: IdSchema,
   projectId: IdSchema,
   revision: z.number().int().positive(),

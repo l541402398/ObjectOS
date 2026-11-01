@@ -1,8 +1,11 @@
-import { useMemo, type ReactElement } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useMemo, useState, type ReactElement } from 'react'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
+  Activity,
   ArrowRight,
   ArrowUpRight,
+  BookOpen,
+  FolderKanban,
   MoreHorizontal,
   Plus,
   CheckCircle2,
@@ -10,12 +13,12 @@ import {
   Clock3,
   GitBranch,
   Layers3,
+  Settings2,
   ShieldAlert,
-  Sparkles,
 } from 'lucide-react'
 import { useResolvedTheme } from '../../stores/ui'
 import { formatRelative, formatDateTime } from '../../lib/format'
-import { runStatusLabel, stageLabel, taskStatusLabel } from '../../lib/labels'
+import { runStatusLabel, taskStatusLabel } from '../../lib/labels'
 import { useAgents, useApprovals, useBootstrap, usePlans, useRuns, useTaskBoard } from '../../lib/queries'
 import './studio.css'
 import { ProjectModeControl } from '../../components/ProjectModeControl'
@@ -23,11 +26,27 @@ import { NextStepPanel } from '../../components/NextStepPanel'
 import { PopoverShell } from '../../next-ui/overlay/overlay-shell'
 import { ErrorState } from '@projectos/ui'
 import { errorMessage } from '../../lib/errors'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../next-ui/vendor/tabs'
+import { RequirementCreateModal } from '../../pages/RequirementWorkPage'
 
 export function StudioProjectHome(): ReactElement {
   const { projectId = '' } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
+  const [search, setSearch] = useSearchParams()
+  const [createRequirementOpen, setCreateRequirementOpen] = useState(() => search.get('intent') === 'requirement')
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false)
   const theme = useResolvedTheme()
+
+  useEffect(() => {
+    if (search.get('intent') === 'requirement') {
+      setCreateRequirementOpen(true)
+      setSearch((current) => {
+        const next = new URLSearchParams(current)
+        next.delete('intent')
+        return next
+      }, { replace: true })
+    }
+  }, [search, setSearch])
   const bootstrap = useBootstrap()
   const plans = usePlans(projectId)
   const board = useTaskBoard(projectId)
@@ -41,7 +60,6 @@ export function StudioProjectHome(): ReactElement {
   const pending = useMemo(() => (approvals.data?.approvals ?? []).filter((approval) => approval.status === 'pending'), [approvals.data])
   const activeTasks = tasks.filter((task) => task.status === 'running' || task.status === 'review')
   const doneTasks = tasks.filter((task) => task.status === 'done')
-  const running = (runs.data?.runs ?? []).filter((run) => ['running', 'waiting_approval', 'waiting_tool', 'verifying'].includes(run.status))
   const workingAgents = (agents.data?.agents ?? []).filter((agent) => agent.status === 'working')
   const latestRuns = [...(runs.data?.runs ?? [])].sort((a, b) => (b.startedAt ?? b.createdAt) - (a.startedAt ?? a.createdAt)).slice(0, 6)
 
@@ -64,66 +82,69 @@ export function StudioProjectHome(): ReactElement {
     )
   }
 
-  const progress = tasks.length > 0 ? Math.round((doneTasks.length / tasks.length) * 100) : 0
-
   return (
-    <div className="studio-home studio-theme" data-theme={theme}>
+    <div className="studio-home studio-theme studio-workbench" data-theme={theme}>
       <header className="studio-masthead">
         <div className="studio-masthead-id">
-          <span className="studio-eyebrow">项目 · {stageLabel(project.currentStage)}</span>
           <h1 className="po-page-title">{project.name}</h1>
           <span className="studio-muted">{project.description || '本地优先项目工作区'}</span>
         </div>
         <div className="studio-masthead-actions">
           <ProjectModeControl projectId={projectId} />
-          <button type="button" className="studio-cta" onClick={() => navigate(`/projects/${projectId}/work?intent=requirement`)}><Plus size={14} />提出需求</button>
-          <PopoverShell ariaLabel="更多项目操作" trigger={<button type="button" className="studio-ghost" aria-label="更多项目操作"><MoreHorizontal size={18} /></button>} className="pdl-plan-menu" align="end">
-            <button type="button" onClick={() => navigate(`/projects/${projectId}/work`)}>详细工作控制台</button>
-            <button type="button" onClick={() => navigate(`/projects/${projectId}/project-settings`)}>项目设置</button>
-            <button type="button" onClick={() => navigate(`/projects/${projectId}/health`)}>项目健康</button>
+          <button type="button" className="studio-cta" onClick={() => setCreateRequirementOpen(true)}><Plus size={14} />提出需求</button>
+          <PopoverShell
+            ariaLabel="更多项目操作"
+            open={moreMenuOpen}
+            onOpenChange={setMoreMenuOpen}
+            trigger={<button type="button" className="studio-ghost" aria-label="更多项目操作"><MoreHorizontal size={18} /></button>}
+            className="pdl-plan-menu po-glass-action-menu"
+            align="end"
+          >
+            <button type="button" onClick={() => { setMoreMenuOpen(false); navigate(`/projects/${projectId}/requirements`) }}>
+              <BookOpen size={15} />
+              <span>需求工作台</span>
+            </button>
+            <button type="button" onClick={() => { setMoreMenuOpen(false); navigate(`/projects/${projectId}/overview`) }}>
+              <FolderKanban size={15} />
+              <span>项目姿态</span>
+            </button>
+            <button type="button" onClick={() => { setMoreMenuOpen(false); navigate(`/projects/${projectId}/health`) }}>
+              <Activity size={15} />
+              <span>项目健康</span>
+            </button>
+            <button type="button" onClick={() => { setMoreMenuOpen(false); navigate(`/projects/${projectId}/project-settings`) }}>
+              <Settings2 size={15} />
+              <span>项目设置</span>
+            </button>
           </PopoverShell>
         </div>
       </header>
 
-      <section className="studio-hero">
-        <div className="studio-hero-copy">
-          <span className="studio-kicker"><Sparkles size={13} /> 当前目标</span>
-          <h2>{plan?.goal ?? '还没有执行计划'}</h2>
-          <div className="studio-hero-meta">
-            <span>{plan ? `计划 r${plan.revision} · ${plan.status === 'approved' ? '已批准' : plan.status === 'draft' ? '待审核' : plan.status === 'rejected' ? '已拒绝' : plan.status}` : '等待生成计划'}</span>
-            <span>{stageLabel(project.currentStage)} 阶段</span>
-            <span>{workingAgents.length} 位 Agent 正在工作</span>
-          </div>
-          <div className="studio-hero-actions">
-            {plan ? (
-              <button type="button" className="studio-ghost" onClick={() => navigate(`/projects/${projectId}/orchestration?plan=${plan.id}`)}>
-                查看计划 <ArrowRight size={14} />
-              </button>
-            ) : (
-              <button type="button" className="studio-cta" onClick={() => navigate(`/projects/${projectId}/orchestration`)}>生成计划 <ArrowRight size={14} /></button>
-            )}
-            <button type="button" className="studio-ghost" onClick={() => navigate(`/projects/${projectId}/agents`)}>进入协作图 <ArrowRight size={14} /></button>
-          </div>
+      <section className="studio-project-summary" aria-label="项目概况">
+        <div className="studio-summary-progress">
+          <span>任务完成 <strong>{doneTasks.length} / {tasks.length}</strong></span>
+          <progress value={doneTasks.length} max={tasks.length || 1} aria-label="任务完成进度" />
         </div>
-        <div className="studio-progress">
-          <div className="studio-progress-ring" style={{ '--studio-progress': `${progress}%` } as React.CSSProperties}>
-            <strong>{progress}%</strong>
-            <span>任务完成</span>
-          </div>
-          <dl>
-            <div><dt>任务</dt><dd>{doneTasks.length} / {tasks.length}</dd></div>
-            <div><dt>执行中</dt><dd>{activeTasks.length}</dd></div>
-            <div><dt>待审批</dt><dd className={pending.length ? 'is-warn' : ''}>{pending.length}</dd></div>
-            <div><dt>活动 Run</dt><dd>{running.length}</dd></div>
-          </dl>
+        {workingAgents.length > 0 ? <span className="studio-summary-status">{workingAgents.length} 位 Agent 工作中</span> : null}
+        {plan ? <span className="studio-summary-plan">计划 r{plan.revision} · {plan.status === 'approved' ? '已批准' : plan.status === 'draft' ? '待审核' : plan.status === 'rejected' ? '已拒绝' : plan.status}</span> : null}
+        <div className="studio-summary-actions">
+          <button type="button" className="studio-link" onClick={() => navigate(plan ? `/projects/${projectId}/orchestration?plan=${plan.id}` : `/projects/${projectId}/orchestration`)}>
+            {plan ? '查看计划' : '生成计划'} <ArrowRight size={13} />
+          </button>
+          <button type="button" className="studio-link" onClick={() => navigate(`/projects/${projectId}/agents`)}>进入协作图 <ArrowRight size={13} /></button>
         </div>
       </section>
 
-      <NextStepPanel projectId={projectId} navigate={navigate} />
+      <NextStepPanel projectId={projectId} navigate={navigate} onCreateRequirement={() => setCreateRequirementOpen(true)} />
 
-      <div className="studio-home-grid">
+      <Tabs defaultValue="active" className="studio-records">
+        <TabsList aria-label="项目记录">
+          <TabsTrigger value="active">进行中 <span>{activeTasks.length}</span></TabsTrigger>
+          <TabsTrigger value="approvals">待审批 <span>{pending.length}</span></TabsTrigger>
+          <TabsTrigger value="runs">最近运行</TabsTrigger>
+        </TabsList>
+        <TabsContent value="active">
         <section className="studio-focus">
-          <header><strong>正在发生</strong><em>{activeTasks.length}</em></header>
           {activeTasks.length === 0 ? (
             <div className="studio-inline-empty">
               <Layers3 size={16} />
@@ -152,9 +173,9 @@ export function StudioProjectHome(): ReactElement {
             <button type="button" className="studio-link" onClick={() => navigate(`/projects/${projectId}/agents`)}>在协作图中查看 <ArrowRight size={12} /></button>
           </footer>
         </section>
-
+        </TabsContent>
+        <TabsContent value="approvals">
         <aside className="studio-ledger">
-          <header><strong>待处理</strong><em>{pending.length}</em></header>
           {pending.length === 0 ? (
             <div className="studio-inline-empty"><CheckCircle2 size={16} /><span>没有等待你的审批。</span></div>
           ) : (
@@ -172,11 +193,11 @@ export function StudioProjectHome(): ReactElement {
             <Clock3 size={13} />
             <span>处理后，关联任务会按现有授权继续。</span>
           </div>
+          <footer className="studio-section-foot"><button type="button" className="studio-link" onClick={() => navigate(`/projects/${projectId}/approvals`)}>全部审批 <ArrowRight size={12} /></button></footer>
         </aside>
-      </div>
-
+        </TabsContent>
+        <TabsContent value="runs">
       <section className="studio-timeline">
-        <header><strong>最近运行</strong><button type="button" className="studio-link" onClick={() => navigate(`/projects/${projectId}/runs`)}>全部记录 <ArrowRight size={12} /></button></header>
         {latestRuns.length === 0 ? (
           <div className="studio-inline-empty"><GitBranch size={16} /><span>还没有运行记录。</span></div>
         ) : (
@@ -190,12 +211,18 @@ export function StudioProjectHome(): ReactElement {
             ))}
           </div>
         )}
+        <footer className="studio-section-foot"><button type="button" className="studio-link" onClick={() => navigate(`/projects/${projectId}/runs`)}>全部记录 <ArrowRight size={12} /></button></footer>
       </section>
+        </TabsContent>
+      </Tabs>
 
-      <footer className="studio-colophon">
-        <span>{project.rootPath}</span>
-        <span>本地工作区</span>
-      </footer>
+      {createRequirementOpen ? (
+        <RequirementCreateModal
+          projectId={projectId}
+          onClose={() => setCreateRequirementOpen(false)}
+          onCreated={(id) => navigate(`/projects/${projectId}/requirements?requirement=${id}`)}
+        />
+      ) : null}
     </div>
   )
 }

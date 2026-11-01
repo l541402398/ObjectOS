@@ -3,6 +3,8 @@ import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'node:path'
 import { canonicalWorkspaceRoot } from './plan-grant.js'
+import { managedTaskRoot } from './requirement-work.js'
+import { assertIntegratedDependencies, assertNoTaskIntegrationOperation, taskContent } from './requirement-git.js'
 import {
   AppError,
   TASK_STATUSES,
@@ -71,6 +73,8 @@ import type { RuntimeEventHub } from './events.js'
 import type { Logger } from './logger.js'
 
 export interface StartRunInput {
+  /** Internal workflow reservation; never accepted by the public run.start input. */
+  workflowStepId?: string
   projectId: string
   sessionId: string
   taskId?: string | null
@@ -333,6 +337,8 @@ export class AgentRunner {
       if (card.blockedBy.length > 0) {
         throw new AppError('CONFLICT', '存在未完成的依赖任务，无法启动 Agent 运行')
       }
+      managedTaskRoot(this.store, task)
+      assertNoTaskIntegrationOperation(this.store, task)
     }
 
     const definition = this.store.read.getAgentDefinition(agent.id)
@@ -382,6 +388,18 @@ export class AgentRunner {
   async startRun(input: StartRunInput): Promise<StartRunResult> {
     const target = this.resolveRunTarget(input)
     const { project, session, agent, task, definition, runtimeProfile, useRuntime, provider, routed } = target
+    const flow = task ? this.store.db.prepare('SELECT task_id FROM task_flow_instances WHERE task_id=?').get(task.id) : null
+    if (flow) {
+      const step = input.workflowStepId ? this.store.db.prepare('SELECT * FROM task_flow_steps WHERE id=?').get(input.workflowStepId) : null
+      if (!step || step.task_id !== task!.id || step.agent_id !== agent.id || step.status !== 'starting' || step.run_id)
+        throw new AppError('CONFLICT', '此任务需要从需求流程的当前节点启动，不能跳过流程直接运行')
+      if (useRuntime) throw new AppError('CONFLICT', '此流程需要支持文档产出的原生 Agent，请选择原生模型执行配置')
+    }
+
+    if (task?.requirementId) {
+      input.workspaceRoot = managedTaskRoot(this.store, task, input.workspaceRoot)!
+      assertIntegratedDependencies(this.store, task, input.workspaceRoot)
+    }
     if (!input.messageId) {
       const message = this.store.appendMessage({
         sessionId: session.id,
@@ -464,6 +482,11 @@ export class AgentRunner {
           createdAt: timestamp,
         }
         this.store.createRun(run)
+        if (input.workflowStepId) {
+          const bound = this.store.db.prepare("UPDATE task_flow_steps SET run_id=?,status='running',version=version+1,updated_at=? WHERE id=? AND task_id=? AND agent_id=? AND status='starting' AND run_id IS NULL")
+            .run(runId, timestamp, input.workflowStepId, task!.id, agent.id)
+          if (!bound.changes) throw new AppError('CONFLICT', '流程启动条件已改变')
+        }
         this.store.createRunSnapshot(snapshot)
         this.store.appendRunStep({
           runId,
@@ -479,6 +502,7 @@ export class AgentRunner {
             promptMessageId: input.messageId,
             inboxId: input.inboxId ?? null,
             workspaceRoot: input.workspaceRoot ?? project.rootPath,
+            requirementContext: task?.requirementId ? this.captureRequirementContext(task) : null,
           },
         })
         if (task) {
@@ -1138,7 +1162,7 @@ export class AgentRunner {
     const taskText = task
       ? `# Task\n${task.title}\n${task.description}\nAcceptance: ${task.acceptanceCriteria.join('; ')}`
       : ''
-    const prompt = [structured, skillText, taskText, `# User request\n${userPrompt}`].filter(Boolean).join('\n\n')
+    const prompt = [structured, skillText, this.requirementContextForRun(state.runId), taskText, `# User request\n${userPrompt}`].filter(Boolean).join('\n\n')
     this.store.appendRunStep({
       runId: state.runId,
       kind: 'status',
@@ -1265,11 +1289,11 @@ export class AgentRunner {
     const task = state.taskId ? this.store.read.getTask(state.taskId) : null
     const agent = this.store.read.getAgent(state.agentId)
     if (!agent) throw new AppError('NOT_FOUND', 'Agent 不存在')
-    const requirements = this.store.read.listRequirements(project.id)
+    const requirements = task?.requirementId ? [] : this.store.read.listRequirements(project.id)
     const decisions = this.store.read.listDecisions(project.id)
     const artifacts = this.store.read.listArtifacts(project.id, task?.id ?? null)
     const knowledge = this.store.read.listKnowledge(project.id)
-    const agentsFile = listProjectAgentsFile(project.rootPath)
+    const agentsFile = listProjectAgentsFile(state.workspaceRoot)
     const snapshot = state.snapshot
     const skills = snapshot.skills
       .filter((skill) => skill.enabled)
@@ -1313,7 +1337,7 @@ export class AgentRunner {
       return true
     })
     const toolPrompt = tools.map((tool) => `- ${tool.name}：${tool.description}`).join('\n')
-    const system = `${context.system}\n\n## 可用工具\n${toolPrompt || '无'}\n`
+    const system = `${context.system}\n\n${this.requirementContextForRun(run.id)}\n\n## 可用工具\n${toolPrompt || '无'}\n`
     if (!resume) {
       this.store.appendRunStep({
         runId: run.id,
@@ -1802,6 +1826,14 @@ export class AgentRunner {
   }
 
   private async executeTool(state: ActiveRun, invocation: ToolInvocation): Promise<ToolOutcome> {
+    if (state.taskId) {
+      const task = this.store.read.getTask(state.taskId)
+      if (task?.requirementId) {
+        managedTaskRoot(this.store, task, state.workspaceRoot)
+        assertNoTaskIntegrationOperation(this.store, task)
+        assertIntegratedDependencies(this.store, task, state.workspaceRoot)
+      }
+    }
     // Hard budgets are checked before any side effect. A run that reached its
     // wall clock, step or tool-call limit must not start another tool.
     const currentRun = this.store.read.getRun(state.runId)
@@ -2072,7 +2104,15 @@ export class AgentRunner {
       }
       case 'run_tests': {
         const command = typeof args.command === 'string' && args.command.trim() ? args.command.trim() : 'pnpm test'
-        return await runApprovedCommand(state.workspaceRoot, command, 120_000)
+        const flowStep = this.store.db.prepare('SELECT id FROM task_flow_steps WHERE run_id=?').get(state.runId)
+        const flowTask = flowStep && state.taskId ? this.store.read.getTask(state.taskId) : null
+        const workspace = flowTask ? this.store.read.getTaskWorkspace(flowTask.id) : null
+        const before = flowTask && workspace ? taskContent(workspace.rootPath, workspace.baseCommit, flowTask).fingerprint : null
+        const result = await runApprovedCommand(state.workspaceRoot, command, 120_000)
+        if (!flowTask || !workspace) return result
+        const after = taskContent(workspace.rootPath, workspace.baseCommit, flowTask).fingerprint
+        return { ...result, workflowTestFingerprint: before === after ? after : null }
+
       }
       case 'list_tasks': {
         const tasks = this.store.read.listTasks(project.id)
@@ -2092,6 +2132,7 @@ export class AgentRunner {
         const card = this.services.tasks.create(
           {
             projectId: project.id,
+            requirementId: taskId ? this.store.read.getTask(taskId)?.requirementId ?? null : typeof args.requirementId === 'string' ? args.requirementId : null,
             title: requiredString(args, 'title'),
             description: typeof args.description === 'string' ? args.description : '',
             priority: priorityArg(args.priority),
@@ -2163,6 +2204,7 @@ export class AgentRunner {
               ? args.acceptanceCriteria.filter((value): value is string => typeof value === 'string')
               : [],
             source: 'agent',
+            workflow: { templateVersionId: 'wfv_standard1', assignmentMode: 'ai', assignments: {} },
           },
           actor,
         )
@@ -2202,6 +2244,16 @@ export class AgentRunner {
           args.metadata && typeof args.metadata === 'object' && !Array.isArray(args.metadata)
             ? (args.metadata as Record<string, unknown>)
             : {}
+        const flowStep = this.store.db.prepare('SELECT id,stage,attempt,input_json FROM task_flow_steps WHERE run_id=?').get(state.runId)
+        if (flowStep) {
+          rawMetadata.workflowStepId = String(flowStep.id)
+          rawMetadata.workflowStage = String(flowStep.stage)
+          rawMetadata.workflowAttempt = Number(flowStep.attempt)
+        } else {
+          delete rawMetadata.workflowStepId
+          delete rawMetadata.workflowStage
+          delete rawMetadata.workflowAttempt
+        }
         if (String(rawMetadata.artifactType ?? '').toLowerCase() === 'review') {
           const errors = validateReviewArtifactMetadata(rawMetadata)
           if (errors.length > 0) {
@@ -2428,10 +2480,8 @@ export class AgentRunner {
     if (decision === 'approved') {
       // Use the same root the snapshot was captured against (the active run's
       // workspace), falling back to the project root for recovered runs.
-      const projectRoot = this.active.get(run.id)?.workspaceRoot
-        ?? this.store.read.getProject(run.projectId)?.rootPath
-        ?? process.cwd()
       try {
+        const projectRoot = this.executionRootForRun(run)
         assertApprovalSnapshotValid(this.store, approvalId, projectRoot)
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
@@ -2520,7 +2570,7 @@ export class AgentRunner {
             toolName,
             command,
             approvalId,
-            workspaceRoot: this.active.get(run.id)?.workspaceRoot ?? this.store.read.getProject(run.projectId)?.rootPath ?? undefined,
+            workspaceRoot: this.executionRootForRun(run),
           })
         } catch (error) {
           void error
@@ -2720,6 +2770,34 @@ export class AgentRunner {
     return updated
   }
 
+  private captureRequirementContext(task: Task): string {
+    const requirement = task.requirementId ? this.store.read.getRequirement(task.requirementId) : null
+    if (!requirement || requirement.projectId !== task.projectId) throw new AppError('CONFLICT', '需求或关联资料不存在，无法固定执行上下文')
+    const bounded = (value: string, max: number) => value.length <= max ? value : `${value.slice(0, max)}\n[文档较长，后续内容未注入；请向用户确认范围，不要猜测]`
+    return [
+      `## 本次任务所属需求（运行开始时的文档快照，不表示已经评审或交付）`,
+      `${requirement.title} · 需求版本 ${requirement.version} · 设计版本 ${requirement.designVersion ?? 0}`,
+      bounded(requirement.body, 8000),
+      `验收标准：\n${requirement.acceptanceCriteria.join('\n')}`,
+      `### 技术设计\n${bounded(requirement.technicalDesign ?? '', 16000)}`,
+      ...this.store.db.prepare('SELECT a.title,a.body FROM task_requirement_materials m JOIN artifacts a ON a.id=m.artifact_id WHERE m.task_id=?').all(task.id).map(material => `### ${String(material.title)}\n${bounded(String(material.body ?? ''), 8000)}`),
+      '只在当前开发任务工作区执行。本次授权不包含合并、交付或其他工具操作的自动批准。',
+    ].join('\n\n')
+  }
+
+  private requirementContextForRun(runId: string): string {
+    const context = this.store.read.getRunSteps(runId).find((step) => typeof step.payload.requirementContext === 'string')
+    return typeof context?.payload.requirementContext === 'string' ? context.payload.requirementContext : ''
+  }
+
+  private executionRootForRun(run: Run): string {
+    const task = run.taskId ? this.store.read.getTask(run.taskId) : null
+    const recorded = this.active.get(run.id)?.workspaceRoot
+      ?? this.store.read.getRunSteps(run.id).find((step) => typeof step.payload.workspaceRoot === 'string')?.payload.workspaceRoot as string | undefined
+    return (task && managedTaskRoot(this.store, task, recorded))
+      || recorded || this.store.read.getProject(run.projectId)?.rootPath || process.cwd()
+  }
+
   private async requireState(runId: string): Promise<ActiveRun> {
     const existing = this.active.get(runId)
     if (existing) return existing
@@ -2761,8 +2839,9 @@ export class AgentRunner {
     const workspaceStep = this.store.read
       .getRunSteps(run.id)
       .find((step) => typeof step.payload.workspaceRoot === 'string')
-    const workspaceRoot =
-      (workspaceStep?.payload.workspaceRoot as string | undefined) ?? project?.rootPath ?? process.cwd()
+    const storedRoot = workspaceStep?.payload.workspaceRoot as string | undefined
+    const workspaceRoot = (task && managedTaskRoot(this.store, task, storedRoot))
+      || storedRoot || project?.rootPath || process.cwd()
     const storedLease = run.taskId ? this.store.read.getTaskLease(run.taskId) : null
     const lease =
       storedLease && storedLease.holderId === `run:${runId}` && storedLease.expiresAt > now()

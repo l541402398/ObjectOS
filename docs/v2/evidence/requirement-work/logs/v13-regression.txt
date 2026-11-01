@@ -1,0 +1,5 @@
+V1.3 E2E PASS — scan, plan DAG approval, real graph projection, saved layout, inline connection editor and restart recovery.
+  project: V1.3 RBAC Project
+  stack: TypeScript / JavaScript · React / Vite / Electron / Ant Design / Monorepo / TypeScript
+  plan: r1 · 4 tasks · superseded
+  graph: 10 nodes / 12 edges

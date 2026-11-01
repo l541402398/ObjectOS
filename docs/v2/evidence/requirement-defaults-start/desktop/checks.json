@@ -1,0 +1,482 @@
+{
+  "head": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+  "profile": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\projectos-defaults-e2e-u9XgOD",
+  "checks": [
+    {
+      "name": "Unassigned requirement shows one primary action: 确认安排",
+      "status": "PASS"
+    },
+    {
+      "name": "Defaults saved at requirement level without rebuilding task instances",
+      "status": "PASS"
+    },
+    {
+      "name": "Preview keeps the single-task override as an explicit, unchecked replacement",
+      "status": "PASS"
+    },
+    {
+      "name": "arrangement-preview 1440 light no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 878
+      }
+    },
+    {
+      "name": "arrangement-preview 1440 light accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "arrangement-preview 1440 dark no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 878
+      }
+    },
+    {
+      "name": "arrangement-preview 1440 dark accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "arrangement-preview 1280 light no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 878
+      }
+    },
+    {
+      "name": "arrangement-preview 1280 light accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "arrangement-preview 1280 dark no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 878
+      }
+    },
+    {
+      "name": "arrangement-preview 1280 dark accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "arrangement-preview 1024 light no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 878
+      }
+    },
+    {
+      "name": "arrangement-preview 1024 light accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "arrangement-preview 1024 dark no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 878
+      }
+    },
+    {
+      "name": "arrangement-preview 1024 dark accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "arrangement-preview 1024 dark 125% no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 786
+      }
+    },
+    {
+      "name": "arrangement-preview 1024 dark 125% accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "Three tasks share the six-stage defaults",
+      "status": "PASS"
+    },
+    {
+      "name": "Single-task manual override is preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "Applying defaults starts nothing",
+      "status": "PASS"
+    },
+    {
+      "name": "First task waits for its workspace approval; the second queues instead of creating a conflicting request",
+      "status": "PASS",
+      "detail": {
+        "id": "wsi_01m690azpg71wb16q4sh5jcdwx",
+        "requirementId": "req_01m690ad1f56majegqc2n85wsr",
+        "status": "active",
+        "revokedReason": null,
+        "bindingVersion": 1,
+        "createdAt": 1793451196112,
+        "updatedAt": 1793451196112,
+        "items": [
+          {
+            "taskId": "tsk_01m690ad23kg0p605z1n5xmghq",
+            "title": "保存草稿并在重启后恢复",
+            "status": "started",
+            "outcome": "waiting_approval",
+            "reason": "等待批准准备独立工作区"
+          },
+          {
+            "taskId": "tsk_01m690ad3d74cz3j4g73cb8m3p",
+            "title": "断网期间的编辑冲突提示",
+            "status": "waiting",
+            "outcome": "waiting_workspace",
+            "reason": "等待首个任务工作区准备完成后再申请"
+          },
+          {
+            "taskId": "tsk_01m690ad4xfyzcxg542hbqhxm1",
+            "title": "长文本恢复的性能边界",
+            "status": "waiting",
+            "outcome": "waiting_dependency",
+            "reason": "等待前置任务「保存草稿并在重启后恢复」验收并合入"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Dependent task waits for its prerequisite instead of being started",
+      "status": "PASS"
+    },
+    {
+      "name": "No node Run starts before workspace approval",
+      "status": "PASS"
+    },
+    {
+      "name": "A repeated start creates no extra workspace request or Run",
+      "status": "PASS",
+      "detail": {
+        "id": "wsi_01m690b0jbdmrr6q21fcd8x3xt",
+        "requirementId": "req_01m690ad1f56majegqc2n85wsr",
+        "status": "active",
+        "revokedReason": null,
+        "bindingVersion": 1,
+        "createdAt": 1793451197004,
+        "updatedAt": 1793451197004,
+        "items": [
+          {
+            "taskId": "tsk_01m690ad23kg0p605z1n5xmghq",
+            "title": "保存草稿并在重启后恢复",
+            "status": "started",
+            "outcome": "waiting_approval",
+            "reason": null
+          },
+          {
+            "taskId": "tsk_01m690ad3d74cz3j4g73cb8m3p",
+            "title": "断网期间的编辑冲突提示",
+            "status": "waiting",
+            "outcome": "waiting_workspace",
+            "reason": "等待首个任务工作区准备完成后再申请"
+          },
+          {
+            "taskId": "tsk_01m690ad4xfyzcxg542hbqhxm1",
+            "title": "长文本恢复的性能边界",
+            "status": "waiting",
+            "outcome": "waiting_dependency",
+            "reason": "等待前置任务「保存草稿并在重启后恢复」验收并合入"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Stale binding version fails explicitly",
+      "status": "PASS",
+      "detail": "流程或默认负责人已更新，请刷新后再开始"
+    },
+    {
+      "name": "start-results 1440 light no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 1305
+      }
+    },
+    {
+      "name": "start-results 1440 light accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "start-results 1440 dark no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 1305
+      }
+    },
+    {
+      "name": "start-results 1440 dark accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "start-results 1280 light no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 1145
+      }
+    },
+    {
+      "name": "start-results 1280 light accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "start-results 1280 dark no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 1145
+      }
+    },
+    {
+      "name": "start-results 1280 dark accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "start-results 1024 light no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 909
+      }
+    },
+    {
+      "name": "start-results 1024 light accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "start-results 1024 dark no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 909
+      }
+    },
+    {
+      "name": "start-results 1024 dark accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "start-results 1024 dark 125% no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 705
+      }
+    },
+    {
+      "name": "start-results 1024 dark 125% accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "Workspace approval lets the started flow run its first node",
+      "status": "PASS"
+    },
+    {
+      "name": "The queued task requests its own workspace approval after the first workspace exists",
+      "status": "PASS"
+    },
+    {
+      "name": "Stop revokes the intent, pauses running flows and cancels waiting continuation",
+      "status": "PASS",
+      "detail": [
+        [
+          "tsk_01m690ad23kg0p605z1n5xmghq",
+          "paused"
+        ],
+        [
+          "tsk_01m690ad3d74cz3j4g73cb8m3p",
+          "paused"
+        ],
+        [
+          "tsk_01m690ad4xfyzcxg542hbqhxm1",
+          "idle"
+        ]
+      ]
+    },
+    {
+      "name": "No new node starts after the stop, even after a later workspace approval",
+      "status": "PASS",
+      "detail": [
+        [
+          "tsk_01m690ad23kg0p605z1n5xmghq",
+          "paused",
+          2
+        ],
+        [
+          "tsk_01m690ad3d74cz3j4g73cb8m3p",
+          "paused",
+          0
+        ],
+        [
+          "tsk_01m690ad4xfyzcxg542hbqhxm1",
+          "idle",
+          0
+        ]
+      ]
+    },
+    {
+      "name": "Waiting, paused and stopped work is not marked complete",
+      "status": "PASS"
+    },
+    {
+      "name": "Restart keeps the revoked intent, paused flows and per-node owners",
+      "status": "PASS"
+    },
+    {
+      "name": "Restart does not resume a paused or revoked flow",
+      "status": "PASS"
+    },
+    {
+      "name": "Plan draft remains unexecuted before confirmation",
+      "status": "PASS"
+    },
+    {
+      "name": "plan confirm no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 898
+      }
+    },
+    {
+      "name": "plan confirm accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "Confirm-and-start inherits defaults and stops at the separate workspace approval",
+      "status": "PASS",
+      "detail": {
+        "tasks": [
+          [
+            "running",
+            "apr_01m690c900v0n638hqnh159s8f",
+            [
+              [
+                "agt_product",
+                "default",
+                null
+              ],
+              [
+                "agt_reviewer",
+                "default",
+                null
+              ]
+            ]
+          ],
+          [
+            "idle",
+            null,
+            [
+              [
+                "agt_product",
+                "default",
+                null
+              ],
+              [
+                "agt_reviewer",
+                "default",
+                null
+              ]
+            ]
+          ]
+        ],
+        "intent": {
+          "id": "wsi_01m690c8cchvyp40695ke8e1yc",
+          "requirementId": "req_01m690c62y293605xss1qyph1r",
+          "status": "active",
+          "revokedReason": null,
+          "bindingVersion": 0,
+          "createdAt": 1793451237773,
+          "updatedAt": 1793451237773,
+          "items": [
+            {
+              "taskId": "tsk_01m690c89hys2h9hhja4n6ttde",
+              "title": "同时编辑、断网重连后完整保留两份长文本内容并展示可理解的恢复路径",
+              "status": "started",
+              "outcome": "waiting_approval",
+              "reason": "等待批准准备独立工作区"
+            },
+            {
+              "taskId": "tsk_01m690c89kpmp5r7mmvhh14xhz",
+              "title": "保护空内容与恢复历史",
+              "status": "waiting",
+              "outcome": "waiting_workspace",
+              "reason": "等待首个任务工作区准备完成后再申请"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "plan start results no horizontal overflow",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 1305
+      }
+    },
+    {
+      "name": "plan start results accessibility (axe)",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "No renderer exceptions",
+      "status": "PASS",
+      "detail": []
+    }
+  ],
+  "captures": [
+    "arrange-needed-1440-light.png",
+    "arrangement-defaults-1440-light.png",
+    "arrangement-preview-1440-light.png",
+    "arrangement-preview-1440-dark.png",
+    "arrangement-preview-1280-light.png",
+    "arrangement-preview-1280-dark.png",
+    "arrangement-preview-1024-light.png",
+    "arrangement-preview-1024-dark.png",
+    "arrangement-preview-1024-dark-125-reduced.png",
+    "ready-to-start-1440-light.png",
+    "start-results-1440-light.png",
+    "start-results-1440-dark.png",
+    "start-results-1280-light.png",
+    "start-results-1280-dark.png",
+    "start-results-1024-light.png",
+    "start-results-1024-dark.png",
+    "start-results-1024-dark-125-reduced.png",
+    "approval-in-context-1440-light.png",
+    "stopped-1440-light.png",
+    "after-restart-1440-light.png",
+    "plan-confirm-start-1440-light.png",
+    "plan-start-results-1440-light.png"
+  ],
+  "errors": [],
+  "note": "Real native Electron and Runtime/SQLite/Git. Model responses are deterministic test fixtures. 125% is app zoom, not OS DPI."
+}

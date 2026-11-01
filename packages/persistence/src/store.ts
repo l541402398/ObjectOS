@@ -1,3 +1,4 @@
+import { seedRequirementFlows, initializeRequirementFlow, initializeTaskFlow, type FlowSelection } from './requirement-flow.js'
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { DatabaseSync } from './sqlite.js'
@@ -210,6 +211,7 @@ export class SqliteStore {
     this.read = new ReadModels(this.db)
     this.onEvents = options.onEvents
     this.ensureBuiltinAgents()
+    seedRequirementFlows(this)
   }
 
   close(): void {
@@ -623,11 +625,15 @@ export class SqliteStore {
     })
   }
 
+  initializeRequirementFlow(requirement: Requirement, selection: FlowSelection): void {
+    initializeRequirementFlow(this, requirement, selection)
+  }
+
   createTask(task: Task, dependencies: string[] = []): Task {
     return this.write(() => {
       this.run(
-        `INSERT INTO tasks (id, project_id, parent_id, milestone_id, version_id, iteration_id, work_type, title, description, status, priority, assignee_agent_id, acceptance_json, expected_artifacts_json, labels_json, version, due_at, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO tasks (id, project_id, parent_id, milestone_id, version_id, iteration_id, work_type, title, description, status, priority, assignee_agent_id, acceptance_json, expected_artifacts_json, labels_json, version, due_at, created_at, updated_at, requirement_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         task.id,
         task.projectId,
         task.parentId,
@@ -647,7 +653,9 @@ export class SqliteStore {
         task.dueAt,
         task.createdAt,
         task.updatedAt,
+        task.requirementId ?? null,
       )
+      initializeTaskFlow(this, task)
       for (const dependency of dependencies) {
         this.run(
           'INSERT INTO task_dependencies (task_id, depends_on_id) VALUES (?, ?)',

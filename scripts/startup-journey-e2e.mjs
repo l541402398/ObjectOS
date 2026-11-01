@@ -8,7 +8,7 @@ import { execFileSync } from 'node:child_process'
 import { compositeContrast } from './lib/premium-contrast.mjs'
 
 const quick = process.argv.includes('--quick')
-const out = resolve('docs/design/startup-journey', quick ? 'probe' : 'after')
+const out = process.env.PROJECTOS_UI_EVIDENCE_DIR ? resolve(process.env.PROJECTOS_UI_EVIDENCE_DIR) : resolve('docs/design/startup-journey', quick ? 'probe' : 'after')
 mkdirSync(out, { recursive: true })
 const profile = mkdtempSync(join(tmpdir(), 'projectos-startup-journey-'))
 const env = { ...process.env, PROJECTOS_DATA_DIR: join(profile, 'data'), PROJECTOS_SEED_DEMO: '1', PROJECTOS_WINDOW_WIDTH: '1440', PROJECTOS_WINDOW_HEIGHT: '900' }

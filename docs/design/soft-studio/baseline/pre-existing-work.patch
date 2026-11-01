@@ -1,0 +1,726 @@
+diff --git a/apps/desktop/src/renderer/src/components/NextStepPanel.tsx b/apps/desktop/src/renderer/src/components/NextStepPanel.tsx
+index 47ff06b..10d773d 100644
+--- a/apps/desktop/src/renderer/src/components/NextStepPanel.tsx
++++ b/apps/desktop/src/renderer/src/components/NextStepPanel.tsx
+@@ -35,8 +35,7 @@ export function NextStepPanel({ projectId, navigate }: { projectId: string; navi
+   return (
+     <section className="wc-next" data-testid="next-step-panel">
+       <header className="wc-next-head">
+-        <span className="wc-next-kicker">NEXT STEP</span>
+-        <strong>{first ? '现在需要你决定' : next ? JOURNEY_OWNER_LABEL[next.owner] : '正在读取当前进度'}</strong>
++        <h2>{first ? '现在需要你决定' : next ? JOURNEY_OWNER_LABEL[next.owner] : '正在读取当前进度'}</h2>
+         <Tag className="wc-next-count">{items.length} 项待办</Tag>
+       </header>
+       {first ? (
+diff --git a/apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationGraph.tsx b/apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationGraph.tsx
+index 9881cc0..d83cf30 100644
+--- a/apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationGraph.tsx
++++ b/apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationGraph.tsx
+@@ -5,7 +5,6 @@ import ELK from 'elkjs/lib/elk.bundled.js'
+ import '@xyflow/react/dist/style.css'
+ import {
+   Background,
+-  Controls,
+   Handle,
+   Position,
+   ReactFlow,
+@@ -33,6 +32,7 @@ import type {
+   TaskCard,
+ } from '@projectos/contracts'
+ import { runStatusLabel, taskStatusLabel } from '../../lib/labels'
++import { CanvasControls } from '../../next-ui/vendor/CanvasControls'
+ 
+ export type GraphSelection =
+   | { kind: 'agent'; id: string }
+@@ -604,13 +604,13 @@ export function CollaborationGraph({
+         nodesDraggable={false}
+         nodesConnectable={false}
+         elementsSelectable
+-        minZoom={0.35}
++        minZoom={0.1}
+         maxZoom={1.4}
+         zoomOnDoubleClick={false}
+         proOptions={{ hideAttribution: true }}
+       >
+         <Background gap={20} size={1.1} color="var(--pw-grid-dot)" />
+-        <Controls showInteractive={false} />
++        <CanvasControls />
+       </ReactFlow>
+       <RelationshipLayer
+         relationships={relationships}
+diff --git a/apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationOverview.tsx b/apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationOverview.tsx
+index 60dc17f..85b46bf 100644
+--- a/apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationOverview.tsx
++++ b/apps/desktop/src/renderer/src/features/collaboration-overview/CollaborationOverview.tsx
+@@ -25,6 +25,7 @@ import { OverlayFooter, OverlayHeader, OverlayScrollArea, InspectorShell } from
+ import { CollaborationGraph, type GraphSelection } from './CollaborationGraph'
+ import { projectCollaborationFocus } from './focus-projection'
+ import { AgentContextActions } from './AgentContextActions'
++import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../next-ui/vendor/tabs'
+ import '@projectos/design-tokens/precision.css'
+ import './collaboration-overview.css'
+ 
+@@ -478,62 +479,31 @@ export function CollaborationOverview({
+   ) : null
+ 
+   return (
+-    <div className="aco-root pw-theme aco-deck" data-theme={theme}>
++    <Tabs value={filter} onValueChange={(value) => changeFilter(value as Filter)} className="aco-root pw-theme aco-deck aco-workbench" data-theme={theme}>
+       <header className="aco-head">
+-        <div className="aco-head-copy">
+-          <div className="aco-title-line">
+-            <h1>Agent 协作</h1>
+-            <span className="aco-live-badge"><i />本地实时</span>
+-          </div>
+-          <p className="aco-subtitle" title={plan?.goal ?? undefined}>
+-            {plan ? plan.goal : '当前项目尚未生成执行计划'}
+-          </p>
+-        </div>
+-        <div className="aco-head-actions">
+-          <button
+-            type="button"
+-            className="aco-icon-btn"
+-            aria-label="刷新协作数据"
+-            onClick={() => void overview.refetch()}
+-            disabled={overview.isFetching}
+-          >
+-            <RefreshCw size={14} className={overview.isFetching ? 'is-spinning' : undefined} />
+-          </button>
+-        </div>
+-      </header>
+-
+-      <div className="aco-toolbar">
+-        <div className="aco-filters" role="group" aria-label="筛选图中的真实对象">
++        <h1 className="aco-workbench-title">Agent 协作</h1>
++        <TabsList aria-label="筛选图中的真实对象" className="aco-object-tabs">
+           {([
+             ['all', '全部', counts.all],
+             ['agents', 'Agent', counts.agents],
+             ['tasks', '任务', counts.tasks],
+             ['outputs', '成果与审批', counts.outputs],
+           ] as const).map(([value, label, count]) => (
+-            <button
+-              key={value}
+-              type="button"
+-              className={filter === value ? 'is-active' : ''}
+-              aria-pressed={filter === value}
+-              onClick={() => changeFilter(value)}
+-            >
+-              {label}<em>{count}</em>
+-            </button>
++            <TabsTrigger key={value} value={value}>
++              {label}<span className="aco-tab-count">{count}</span>
++            </TabsTrigger>
+           ))}
++        </TabsList>
++        <div className="aco-head-actions">
++          <button type="button" className="aco-btn" onClick={openOrchestration} title={plan?.goal ?? '打开计划'}><Workflow size={14} />计划 DAG</button>
++          <button type="button" className="aco-btn" onClick={onManageAgents}><Bot size={14} />Agent 管理</button>
++          <button type="button" className="aco-icon-btn" aria-label="刷新协作数据" onClick={() => void overview.refetch()} disabled={overview.isFetching}>
++            <RefreshCw size={14} className={overview.isFetching ? 'is-spinning' : undefined} />
++          </button>
+         </div>
+-        <div className="aco-metrics" role="status" aria-live="polite">
+-          <span><i className="is-accent" />{metrics.workingAgents} 工作中</span>
+-          <span><i className={metrics.pendingApprovals ? 'is-warn' : 'is-neutral'} />{metrics.pendingApprovals} 待审批</span>
+-          <span><i className={metrics.blockedTasks ? 'is-warn' : 'is-neutral'} />{metrics.blockedTasks} 依赖等待</span>
+-          <span><i className="is-ok" />{metrics.artifacts} 产物</span>
+-          <span><i className="is-neutral" />{metrics.pendingHandoffs} 交接</span>
+-        </div>
+-        <span className="aco-toolbar-spacer" />
+-        <button type="button" className="aco-link" onClick={openOrchestration}><Workflow size={12} /> 计划 DAG</button>
+-        <button type="button" className="aco-link" onClick={onManageAgents}><Bot size={12} /> Agent 管理</button>
+-      </div>
++      </header>
+ 
+-      <div className="aco-canvas-wrap">
++      <TabsContent value={filter} className="aco-canvas-wrap">
+         <CollaborationGraph
+           agents={focus.primaryAgents}
+           standbyAgents={focus.standbyAgents}
+@@ -551,12 +521,12 @@ export function CollaborationOverview({
+           showTasks={filter === 'all' || filter === 'tasks'}
+           showOutputs={filter === 'all' || filter === 'outputs'}
+         />
+-      </div>
++      </TabsContent>
+ 
+       <footer className={`aco-activity is-${activityStatus.tone}`} aria-label="实时活动">
+-        <span className="aco-activity-label">
++        <span className="aco-activity-label" title={`${metrics.workingAgents} 工作中 · ${metrics.pendingApprovals} 待审批 · ${metrics.blockedTasks} 依赖等待 · ${metrics.artifacts} 产物 · ${metrics.pendingHandoffs} 交接`}>
+           <i className={`aco-live-dot${pageActive ? ' is-on' : ''}`} />
+-          最新活动
++          {metrics.workingAgents > 0 ? `${metrics.workingAgents} 工作中` : '实时活动'}
+         </span>
+         <div className="aco-activity-main">
+           {latestActivity ? (
+@@ -566,7 +536,7 @@ export function CollaborationOverview({
+               <time className="aco-mono">{formatRelative(latestActivity.createdAt)}</time>
+             </>
+           ) : (
+-            <span>还没有运行事件。启动计划后，这里只显示真实的 Run / Approval / Handoff 事件。</span>
++            <span>暂无运行活动</span>
+           )}
+         </div>
+         <span className={`aco-pill is-${activityStatus.tone}`}>{activityStatus.label}</span>
+@@ -660,6 +630,6 @@ export function CollaborationOverview({
+           </motion.span>
+         ) : null}
+       </AnimatePresence>
+-    </div>
++    </Tabs>
+   )
+ }
+diff --git a/apps/desktop/src/renderer/src/features/collaboration-overview/collaboration-overview.css b/apps/desktop/src/renderer/src/features/collaboration-overview/collaboration-overview.css
+index 908b9c8..ff8a026 100644
+--- a/apps/desktop/src/renderer/src/features/collaboration-overview/collaboration-overview.css
++++ b/apps/desktop/src/renderer/src/features/collaboration-overview/collaboration-overview.css
+@@ -1409,6 +1409,28 @@
+ .aco-deck .aco-gnode-title { font-size: 13px; }
+ .aco-deck .aco-activity { border-radius: 12px; background: var(--ui-surface); }
+ .aco-deck .aco-mode { display: none; }
++/* Product workbench: Sim's compact header/canvas/action-bar composition; shared optical palette. */
++.aco-deck.aco-workbench { padding-block: 14px 10px; gap: 10px; }
++.aco-workbench .aco-head { align-items: center; justify-content: flex-start; gap: 20px; min-height: 38px; }
++.aco-workbench-title { flex: none; margin: 0; font: 550 18px/1.5 var(--ui-font); color: var(--ui-ink); letter-spacing: -.01em; }
++.aco-workbench .aco-head-actions { margin-left: auto; gap: 4px; }
++.aco-workbench .aco-head-actions .aco-btn { border-color: transparent; background: transparent; box-shadow: none; padding-inline: 8px; min-height: 32px; }
++.aco-workbench .aco-head-actions .aco-btn:hover { background: var(--ui-surface-hover); }
++.aco-workbench .aco-icon-btn { border-color: transparent; background: transparent; }
++.aco-object-tabs { min-width: 0; }
++.aco-tab-count { color: var(--ui-ink-2); font-size: 12px; font-weight: 400; font-variant-numeric: tabular-nums; }
++.aco-workbench .aco-canvas-wrap { border-radius: 12px; box-shadow: none; }
++.aco-workbench .aco-activity { padding: 2px 0; min-height: 34px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
++.aco-workbench .aco-activity .aco-btn { border-color: transparent; background: transparent; }
++.aco-workbench .aco-activity .aco-pill { padding-inline: 0; border: 0; background: transparent; }
++.aco-workbench .aco-canvas-bar { min-height: 38px; padding-block: 5px; }
++.aco-workbench .aco-canvas-hint { border: 0; background: transparent; padding-inline: 0; }
++.aco-workbench .aco-gnode { border-radius: 8px; box-shadow: var(--ui-shadow-sm); }
++@media (max-width: 1180px) {
++  .aco-workbench .aco-head { gap: 12px; flex-wrap: wrap; }
++  .aco-workbench .aco-object-tabs { order: 3; flex-basis: 100%; }
++  .aco-workbench .aco-head-actions { margin-left: auto; }
++}
+ .aco-context { margin-top:22px; padding-top:18px; border-top:1px solid var(--ui-divider); color:var(--ui-ink); }
+ .aco-context-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+ .aco-context-heading h3 { margin:0; font-size:16px; line-height:1.4; font-weight:650; }
+diff --git a/apps/desktop/src/renderer/src/features/settings/AboutSettingsPanel.tsx b/apps/desktop/src/renderer/src/features/settings/AboutSettingsPanel.tsx
+index a0d614a..9d6a525 100644
+--- a/apps/desktop/src/renderer/src/features/settings/AboutSettingsPanel.tsx
++++ b/apps/desktop/src/renderer/src/features/settings/AboutSettingsPanel.tsx
+@@ -1,4 +1,7 @@
+ import fontLicense from '../../assets/fonts/OFL-NotoSansSC.txt?raw'
++import simLicense from '../../next-ui/vendor/LICENSE-Sim.txt?raw'
++import simNotice from '../../next-ui/vendor/NOTICE-Sim.txt?raw'
++import shadcnLicense from '../../next-ui/vendor/LICENSE-shadcn.txt?raw'
+ 
+ export function AboutSettingsPanel() {
+   return (
+@@ -40,6 +43,11 @@ export function AboutSettingsPanel() {
+         <summary>字体许可 · Noto Sans SC</summary>
+         <pre>{fontLicense}</pre>
+       </details>
++      <details className="po-font-license">
++        <summary>界面组件许可 · Sim Studio / shadcn/ui</summary>
++        <p>画布工具栏基于 Sim Studio，标签页组件基于 shadcn/ui；均已适配 ProjectOS。</p>
++        <pre>{simNotice}{'\n\n'}{simLicense}{'\n\n'}{shadcnLicense}</pre>
++      </details>
+     </div>
+   )
+ }
+diff --git a/apps/desktop/src/renderer/src/features/studio/StudioProjectHome.tsx b/apps/desktop/src/renderer/src/features/studio/StudioProjectHome.tsx
+index 37ad67e..ee7434e 100644
+--- a/apps/desktop/src/renderer/src/features/studio/StudioProjectHome.tsx
++++ b/apps/desktop/src/renderer/src/features/studio/StudioProjectHome.tsx
+@@ -11,11 +11,10 @@ import {
+   GitBranch,
+   Layers3,
+   ShieldAlert,
+-  Sparkles,
+ } from 'lucide-react'
+ import { useResolvedTheme } from '../../stores/ui'
+ import { formatRelative, formatDateTime } from '../../lib/format'
+-import { runStatusLabel, stageLabel, taskStatusLabel } from '../../lib/labels'
++import { runStatusLabel, taskStatusLabel } from '../../lib/labels'
+ import { useAgents, useApprovals, useBootstrap, usePlans, useRuns, useTaskBoard } from '../../lib/queries'
+ import './studio.css'
+ import { ProjectModeControl } from '../../components/ProjectModeControl'
+@@ -23,6 +22,7 @@ import { NextStepPanel } from '../../components/NextStepPanel'
+ import { PopoverShell } from '../../next-ui/overlay/overlay-shell'
+ import { ErrorState } from '@projectos/ui'
+ import { errorMessage } from '../../lib/errors'
++import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../next-ui/vendor/tabs'
+ 
+ export function StudioProjectHome(): ReactElement {
+   const { projectId = '' } = useParams<{ projectId: string }>()
+@@ -41,7 +41,6 @@ export function StudioProjectHome(): ReactElement {
+   const pending = useMemo(() => (approvals.data?.approvals ?? []).filter((approval) => approval.status === 'pending'), [approvals.data])
+   const activeTasks = tasks.filter((task) => task.status === 'running' || task.status === 'review')
+   const doneTasks = tasks.filter((task) => task.status === 'done')
+-  const running = (runs.data?.runs ?? []).filter((run) => ['running', 'waiting_approval', 'waiting_tool', 'verifying'].includes(run.status))
+   const workingAgents = (agents.data?.agents ?? []).filter((agent) => agent.status === 'working')
+   const latestRuns = [...(runs.data?.runs ?? [])].sort((a, b) => (b.startedAt ?? b.createdAt) - (a.startedAt ?? a.createdAt)).slice(0, 6)
+ 
+@@ -64,13 +63,10 @@ export function StudioProjectHome(): ReactElement {
+     )
+   }
+ 
+-  const progress = tasks.length > 0 ? Math.round((doneTasks.length / tasks.length) * 100) : 0
+-
+   return (
+-    <div className="studio-home studio-theme" data-theme={theme}>
++    <div className="studio-home studio-theme studio-workbench" data-theme={theme}>
+       <header className="studio-masthead">
+         <div className="studio-masthead-id">
+-          <span className="studio-eyebrow">项目 · {stageLabel(project.currentStage)}</span>
+           <h1 className="po-page-title">{project.name}</h1>
+           <span className="studio-muted">{project.description || '本地优先项目工作区'}</span>
+         </div>
+@@ -85,45 +81,31 @@ export function StudioProjectHome(): ReactElement {
+         </div>
+       </header>
+ 
+-      <section className="studio-hero">
+-        <div className="studio-hero-copy">
+-          <span className="studio-kicker"><Sparkles size={13} /> 当前目标</span>
+-          <h2>{plan?.goal ?? '还没有执行计划'}</h2>
+-          <div className="studio-hero-meta">
+-            <span>{plan ? `计划 r${plan.revision} · ${plan.status === 'approved' ? '已批准' : plan.status === 'draft' ? '待审核' : plan.status === 'rejected' ? '已拒绝' : plan.status}` : '等待生成计划'}</span>
+-            <span>{stageLabel(project.currentStage)} 阶段</span>
+-            <span>{workingAgents.length} 位 Agent 正在工作</span>
+-          </div>
+-          <div className="studio-hero-actions">
+-            {plan ? (
+-              <button type="button" className="studio-ghost" onClick={() => navigate(`/projects/${projectId}/orchestration?plan=${plan.id}`)}>
+-                查看计划 <ArrowRight size={14} />
+-              </button>
+-            ) : (
+-              <button type="button" className="studio-cta" onClick={() => navigate(`/projects/${projectId}/orchestration`)}>生成计划 <ArrowRight size={14} /></button>
+-            )}
+-            <button type="button" className="studio-ghost" onClick={() => navigate(`/projects/${projectId}/agents`)}>进入协作图 <ArrowRight size={14} /></button>
+-          </div>
++      <section className="studio-project-summary" aria-label="项目概况">
++        <div className="studio-summary-progress">
++          <span>任务完成 <strong>{doneTasks.length} / {tasks.length}</strong></span>
++          <progress value={doneTasks.length} max={tasks.length || 1} aria-label="任务完成进度" />
+         </div>
+-        <div className="studio-progress">
+-          <div className="studio-progress-ring" style={{ '--studio-progress': `${progress}%` } as React.CSSProperties}>
+-            <strong>{progress}%</strong>
+-            <span>任务完成</span>
+-          </div>
+-          <dl>
+-            <div><dt>任务</dt><dd>{doneTasks.length} / {tasks.length}</dd></div>
+-            <div><dt>执行中</dt><dd>{activeTasks.length}</dd></div>
+-            <div><dt>待审批</dt><dd className={pending.length ? 'is-warn' : ''}>{pending.length}</dd></div>
+-            <div><dt>活动 Run</dt><dd>{running.length}</dd></div>
+-          </dl>
++        {workingAgents.length > 0 ? <span className="studio-summary-status">{workingAgents.length} 位 Agent 工作中</span> : null}
++        {plan ? <span className="studio-summary-plan">计划 r{plan.revision} · {plan.status === 'approved' ? '已批准' : plan.status === 'draft' ? '待审核' : plan.status === 'rejected' ? '已拒绝' : plan.status}</span> : null}
++        <div className="studio-summary-actions">
++          <button type="button" className="studio-link" onClick={() => navigate(plan ? `/projects/${projectId}/orchestration?plan=${plan.id}` : `/projects/${projectId}/orchestration`)}>
++            {plan ? '查看计划' : '生成计划'} <ArrowRight size={13} />
++          </button>
++          <button type="button" className="studio-link" onClick={() => navigate(`/projects/${projectId}/agents`)}>进入协作图 <ArrowRight size={13} /></button>
+         </div>
+       </section>
+ 
+       <NextStepPanel projectId={projectId} navigate={navigate} />
+ 
+-      <div className="studio-home-grid">
++      <Tabs defaultValue="active" className="studio-records">
++        <TabsList aria-label="项目记录">
++          <TabsTrigger value="active">进行中 <span>{activeTasks.length}</span></TabsTrigger>
++          <TabsTrigger value="approvals">待审批 <span>{pending.length}</span></TabsTrigger>
++          <TabsTrigger value="runs">最近运行</TabsTrigger>
++        </TabsList>
++        <TabsContent value="active">
+         <section className="studio-focus">
+-          <header><strong>正在发生</strong><em>{activeTasks.length}</em></header>
+           {activeTasks.length === 0 ? (
+             <div className="studio-inline-empty">
+               <Layers3 size={16} />
+@@ -152,9 +134,9 @@ export function StudioProjectHome(): ReactElement {
+             <button type="button" className="studio-link" onClick={() => navigate(`/projects/${projectId}/agents`)}>在协作图中查看 <ArrowRight size={12} /></button>
+           </footer>
+         </section>
+-
++        </TabsContent>
++        <TabsContent value="approvals">
+         <aside className="studio-ledger">
+-          <header><strong>待处理</strong><em>{pending.length}</em></header>
+           {pending.length === 0 ? (
+             <div className="studio-inline-empty"><CheckCircle2 size={16} /><span>没有等待你的审批。</span></div>
+           ) : (
+@@ -172,11 +154,11 @@ export function StudioProjectHome(): ReactElement {
+             <Clock3 size={13} />
+             <span>处理后，关联任务会按现有授权继续。</span>
+           </div>
++          <footer className="studio-section-foot"><button type="button" className="studio-link" onClick={() => navigate(`/projects/${projectId}/approvals`)}>全部审批 <ArrowRight size={12} /></button></footer>
+         </aside>
+-      </div>
+-
++        </TabsContent>
++        <TabsContent value="runs">
+       <section className="studio-timeline">
+-        <header><strong>最近运行</strong><button type="button" className="studio-link" onClick={() => navigate(`/projects/${projectId}/runs`)}>全部记录 <ArrowRight size={12} /></button></header>
+         {latestRuns.length === 0 ? (
+           <div className="studio-inline-empty"><GitBranch size={16} /><span>还没有运行记录。</span></div>
+         ) : (
+@@ -190,12 +172,11 @@ export function StudioProjectHome(): ReactElement {
+             ))}
+           </div>
+         )}
++        <footer className="studio-section-foot"><button type="button" className="studio-link" onClick={() => navigate(`/projects/${projectId}/runs`)}>全部记录 <ArrowRight size={12} /></button></footer>
+       </section>
++        </TabsContent>
++      </Tabs>
+ 
+-      <footer className="studio-colophon">
+-        <span>{project.rootPath}</span>
+-        <span>本地工作区</span>
+-      </footer>
+     </div>
+   )
+ }
+diff --git a/apps/desktop/src/renderer/src/features/studio/studio.css b/apps/desktop/src/renderer/src/features/studio/studio.css
+index 5b8faef..f973a92 100644
+--- a/apps/desktop/src/renderer/src/features/studio/studio.css
++++ b/apps/desktop/src/renderer/src/features/studio/studio.css
+@@ -125,68 +125,35 @@
+ 
+ .studio-home > * { position: relative; max-width: 1420px; margin-left: auto; margin-right: auto; }
+ 
+-.studio-hero {
+-  display: grid;
+-  grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.72fr);
+-  gap: 0;
+-  margin-bottom: 16px;
+-  overflow: hidden;
+-  border: 1px solid var(--studio-line);
+-  border-radius: 14px;
+-  background: var(--studio-surface);
+-  box-shadow: var(--studio-shadow);
+-}
+-
+-.studio-hero-copy { padding: 30px 32px 26px; }
+-.studio-hero-copy h2 {
+-  margin: 9px 0 10px;
+-  max-width: 900px;
+-  color: var(--studio-ink);
+-  font-size: 24px;
+-  font-weight: 600;
+-  letter-spacing: -.015em;
+-  line-height: 1.5;
+-}
+-
+-.studio-hero-meta { display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--studio-muted); font-size: 12px; }
+-.studio-hero-meta span { display: inline-flex; align-items: center; gap: 5px; }
+-.studio-hero-meta span + span::before { content: ""; width: 3px; height: 3px; border-radius: 50%; background: var(--studio-line-strong); margin-right: 6px; }
+-.studio-hero-actions { display: flex; gap: 8px; margin-top: 20px; }
+-
+-.studio-progress {
+-  display: flex;
+-  flex-direction: column;
+-  justify-content: space-between;
+-  gap: 14px;
+-  padding: 24px 24px 20px;
+-  border-left: 1px solid var(--studio-line);
+-  background:
+-    linear-gradient(180deg, var(--studio-accent-soft), transparent 70%),
+-    var(--studio-raised);
++/* Compact project summary and shared shadcn/Radix record tabs replace the hero card grid. */
++.studio-workbench { padding-top: 22px; }
++.studio-workbench .studio-masthead { align-items: center; margin-bottom: 16px; }
++.studio-project-summary { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 24px; padding: 14px 0 20px; color: var(--ui-ink-2); font-size: 13px; }
++.studio-summary-progress { display: flex; align-items: center; gap: 14px; }
++.studio-summary-progress strong { font-weight: 500; color: var(--ui-ink); font-variant-numeric: tabular-nums; margin-left: 6px; }
++.studio-summary-progress progress { appearance: none; width: 100px; height: 4px; border: 0; border-radius: 2px; overflow: hidden; background: var(--ui-border); }
++.studio-summary-progress progress::-webkit-progress-bar { background: var(--ui-border); }
++.studio-summary-progress progress::-webkit-progress-value { background: var(--ui-accent); border-radius: 2px; }
++.studio-summary-actions { display: flex; align-items: center; gap: 18px; margin-left: auto; }
++.studio-workbench .wc-next { padding: 18px 20px; gap: 12px; margin-bottom: 24px; border-radius: 10px; box-shadow: none; }
++.studio-workbench .wc-next-head h2 { font-size: 14px; font-weight: 550; }
++.studio-workbench .wc-next-count { border: 0; background: transparent; padding: 0; }
++.studio-workbench .wc-next-body { align-items: center; }
++.studio-records > .pui-tabs-list { align-self: stretch; border-bottom: 1px solid var(--ui-border); gap: 14px; margin-bottom: 4px; }
++.studio-records > .pui-tabs-list span { color: var(--ui-ink-2); font-weight: 400; font-size: 12px; font-variant-numeric: tabular-nums; }
++.studio-workbench .studio-records :is(.studio-focus, .studio-ledger, .studio-timeline) { border: 0; border-radius: 0; background: transparent; padding: 0; margin: 0; box-shadow: none; }
++.studio-workbench .studio-records :is(.studio-focus-row, .studio-approval-row, .studio-run) { padding: 16px 10px; }
++.studio-workbench .studio-focus-main strong, .studio-workbench .studio-approval-row strong { font-size: 14px; font-weight: 500; line-height: 1.65; }
++.studio-workbench .studio-section-foot { padding: 12px 10px; }
++.studio-workbench .studio-ledger-note { padding: 12px 10px; border: 0; }
++.studio-workbench .studio-run-strip { display: flex; flex-direction: column; gap: 0; }
++.studio-workbench .studio-run { border: 0; border-bottom: 1px solid var(--ui-border); border-radius: 0; background: transparent; }
++.studio-workbench .studio-run:hover { background: var(--ui-surface-hover); }
++.studio-workbench .studio-run strong { font-size: 14px; font-weight: 500; }
++@container (max-width: 760px) {
++  .studio-workbench .studio-masthead { align-items: flex-start; flex-direction: column; gap: 14px; }
++  .studio-summary-actions { margin-left: 0; }
+ }
+-
+-.studio-progress-ring {
+-  display: grid;
+-  place-content: center;
+-  width: 126px;
+-  height: 126px;
+-  margin: 0 auto;
+-  border-radius: 50%;
+-  background: conic-gradient(var(--studio-accent) var(--studio-progress), var(--studio-line) 0);
+-  position: relative;
+-}
+-
+-.studio-progress-ring::after { content: ""; position: absolute; inset: 9px; border-radius: 50%; background: var(--studio-raised); }
+-.studio-progress-ring strong, .studio-progress-ring span { position: relative; z-index: 1; text-align: center; }
+-.studio-progress-ring strong { font-size: 27px; font-weight: 650; letter-spacing: -0.04em; }
+-.studio-progress-ring span { color: var(--studio-muted); font-size: 12px; }
+-.studio-progress dl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; margin: 0; }
+-.studio-progress dl > div { display: flex; justify-content: space-between; gap: 8px; border-top: 1px solid var(--studio-line); padding-top: 6px; }
+-.studio-progress dt { color: var(--studio-muted); font-size: 12px; }
+-.studio-progress dd { margin: 0; color: var(--studio-ink); font-family: var(--pw-mono, monospace); font-size: 12px; }
+-.studio-progress dd.is-warn { color: var(--studio-warn); }
+-
+-.studio-home-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.85fr); gap: 16px; margin-bottom: 16px; }
+ .studio-focus, .studio-ledger { border: 1px solid var(--studio-line); border-radius: 12px; background: var(--studio-surface); overflow: hidden; }
+ .studio-focus > header, .studio-ledger > header {
+   display: flex;
+@@ -319,9 +286,6 @@
+ @media (max-width: 1180px) {
+   .studio-theme { padding: 18px 18px 14px; }
+   .studio-masthead-id h1 { font-size: 26px; }
+-  .studio-hero { grid-template-columns: minmax(0, 1fr) 230px; }
+-  .studio-hero-copy { padding: 22px 22px 20px; }
+-  .studio-home-grid { grid-template-columns: minmax(0, 1.2fr) minmax(250px, 0.8fr); }
+   .studio-run-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+   .studio-review-document { padding: 22px 24px 18px; }
+ }
+@@ -329,11 +293,6 @@
+ @media (max-width: 900px) {
+   .studio-masthead { flex-direction: column; gap: 12px; }
+   .studio-masthead-actions { justify-content: flex-start; }
+-  .studio-hero { grid-template-columns: 1fr; }
+-  .studio-progress { flex-direction: row; align-items: center; border-left: 0; border-top: 1px solid var(--studio-line); }
+-  .studio-progress-ring { width: 92px; height: 92px; margin: 0; }
+-  .studio-progress dl { flex: 1; }
+-  .studio-home-grid { grid-template-columns: 1fr; }
+   .studio-review-layout { grid-template-columns: 1fr; }
+   .studio-review-index { border-right: 0; border-bottom: 1px solid var(--studio-line); }
+   .studio-review-queue { max-height: 180px; }
+diff --git a/apps/desktop/src/renderer/src/pages/work-center.css b/apps/desktop/src/renderer/src/pages/work-center.css
+index 164253f..380de40 100644
+--- a/apps/desktop/src/renderer/src/pages/work-center.css
++++ b/apps/desktop/src/renderer/src/pages/work-center.css
+@@ -673,7 +673,7 @@
+   color: var(--color-text-tertiary);
+ }
+ 
+-.wc-next-head strong { font-size: 12px; font-weight: 600; }
++.wc-next-head h2 { margin: 0; font-size: 12px; font-weight: 600; }
+ .wc-next-count { margin-left: auto; font-size: 12px; line-height: 16px; }
+ 
+ .wc-next-body {
+diff --git a/apps/desktop/src/renderer/src/styles/system-premium.css b/apps/desktop/src/renderer/src/styles/system-premium.css
+index a3038dc..44b310a 100644
+--- a/apps/desktop/src/renderer/src/styles/system-premium.css
++++ b/apps/desktop/src/renderer/src/styles/system-premium.css
+@@ -57,14 +57,14 @@
+ .po-shell .po-sidenav-group + .po-sidenav-group { margin-top: 12px; }
+ .po-shell .po-sidenav-title { color: var(--ui-ink-2); font-size: 12px; letter-spacing: .06em; padding: 8px 12px; }
+ .po-shell .po-nav-item {
+-  min-height: 40px; height: 40px; margin: 2px 0; border: 1px solid transparent; border-radius: 12px;
++  min-height: 36px; height: 36px; margin: 2px 0; border: 1px solid transparent; border-radius: 8px;
+   padding: 0 12px; color: var(--ui-ink-2); background: transparent; box-shadow: none;
+   font-size: 13px;
+ }
+ .po-shell .po-nav-item:hover { color: var(--ui-ink); background: var(--ui-surface-hover); }
+ .po-shell .po-nav-item.is-active {
+-  color: var(--ui-accent-strong); background: var(--ui-accent-soft); border-color: var(--ui-accent-line);
+-  box-shadow: inset 0 1px 0 var(--ui-glass-highlight);
++  color: var(--ui-accent-strong); background: var(--ui-accent-soft); border-color: transparent;
++  box-shadow: none;
+ }
+ .po-shell .po-nav-item.is-active::before { content: none; }
+ .po-shell .po-nav-icon { width: 20px; flex-basis: 20px; height: 20px; }
+@@ -116,8 +116,8 @@
+ :root .v16-project-visual .v16-project-cover::before { content: none; }
+ :root .v16-stat-card .v16-stat-icon { background: var(--ui-accent-soft); color: var(--ui-accent-strong); }
+ :root .po-page { padding: 24px; gap: 20px; }
+-:root .po-page-title { font-size: 26px; line-height: 1.24; font-weight: 660; color: var(--ui-ink); text-shadow: none; }
+-:root .po-page-description { font-size: 14px; color: var(--ui-ink-2); }
++:root .po-page-title { color: var(--ui-ink); text-shadow: none; }
++:root .po-page-description { font-size: 13px; color: var(--ui-ink-2); }
+ :root :is(.po-section-title, .v16-section-title, .po-card-title) { font-size: 16px; font-weight: 650; }
+ :root :is(.v16-stat-icon, .v17-settings-card-icon) { background: var(--ui-accent-soft); color: var(--ui-accent-strong); box-shadow: none; }
+ :root :is(.v16-stat-icon, .v17-settings-card-icon)::before { content: none; }
+@@ -201,7 +201,7 @@
+ :root .po-command-item.is-active .po-command-label { color: var(--ui-accent-strong); }
+ /* Shared reading rhythm, using the approved Lab's typeface and discrete type hierarchy. */
+ .po-shell, .pui-overlay-surface, .pui-overlay-popover { font-synthesis: none; }
+-:root :is(.po-page-title, .studio-masthead-id h1, .studio-review-masthead h1, .dc-head h1, .rw-head h1, .rc-head h1) { font-size: var(--ui-text-title); font-weight: 600; line-height: 1.35; letter-spacing: -.015em; }
++.po-shell :is(.po-page-title, .studio-masthead-id h1, .studio-review-masthead h1, .dc-head h1, .rw-head h1, .rc-head h1) { font-size: 22px; font-weight: 550; line-height: 1.4; letter-spacing: -.01em; }
+ :root :is(.po-section-title, .po-card-title, .v16-section-title) { font-size: var(--ui-text-section); font-weight: 600; line-height: 1.5; letter-spacing: normal; }
+ :root :is(.po-page-description, .po-section-subtitle) { line-height: 1.65; }
+ :root .po-eyebrow { font-size: var(--ui-text-label); font-weight: 500; letter-spacing: .09em; }
+@@ -217,7 +217,7 @@
+ :root .studio-focus-main strong, :root .studio-approval-row strong { font-size: var(--ui-text-body); font-weight: 500; }
+ :root .studio-hero, :root .studio-focus, :root .studio-ledger, :root .studio-timeline { border-radius: 16px; }
+ :root .wc-next { padding: 20px; gap: 16px; background: var(--ui-surface); border-color: var(--ui-border); }
+-:root .wc-next-head strong { font-size: var(--ui-text-section); font-weight: 600; }
++:root .wc-next-head h2 { font-size: var(--ui-text-section); font-weight: 600; }
+ :root .wc-next-title h3 { font-size: var(--ui-text-body); font-weight: 600; }
+ :root .wc-next-reason, :root .wc-next-decision, :root .wc-next-resume { font-size: var(--ui-text-secondary); line-height: 1.65; }
+ :root .wc-next-main { gap: 6px; }
+diff --git a/packages/design-tokens/package.json b/packages/design-tokens/package.json
+index 0c8c875..19e3c89 100644
+--- a/packages/design-tokens/package.json
++++ b/packages/design-tokens/package.json
+@@ -7,7 +7,8 @@
+     ".": "./src/index.ts",
+     "./tokens.css": "./src/tokens.css",
+     "./precision.css": "./src/precision.css",
+-    "./unified.css": "./src/unified.css"
++    "./unified.css": "./src/unified.css",
++    "./workbench.css": "./src/workbench.css"
+   },
+   "dependencies": {}
+ }
+diff --git a/packages/design-tokens/src/index.ts b/packages/design-tokens/src/index.ts
+index ede5193..de5f29b 100644
+--- a/packages/design-tokens/src/index.ts
++++ b/packages/design-tokens/src/index.ts
+@@ -130,6 +130,25 @@ export function paletteFor(mode: ThemeMode): ThemePalette {
+   return mode === 'dark' ? darkPalette : lightPalette
+ }
+ 
++/** Product palette for ADR-0072. Historical optical Lab palettes remain available above. */
++export function workbenchPaletteFor(mode: ThemeMode): ThemePalette {
++  return mode === 'dark' ? {
++    ...darkPalette, canvas: '#1B1D21', canvasElevated: '#202227', surface: '#23262B', surfaceRaised: '#2A2D34', surfaceSunken: '#1B1D21', surfaceHover: '#333741', overlay: '#272A30',
++    textPrimary: '#E9EAEE', textSecondary: '#B7BDC7', textTertiary: '#B7BDC7', textDisabled: '#747C89', textInverse: '#1B1D21',
++    accent: '#A7B7D5', accentStrong: '#BCCBE4', accentSoft: '#313B4D', accentBorder: '#5E6F8D', accentContrast: '#1B1D21',
++    success: '#94C5A7', warning: '#D8B579', danger: '#E79BA3', info: '#A7B7D5',
++    border: '#393D45', borderStrong: '#515865', divider: '#34373F', focusRing: 'rgba(167,183,213,.32)',
++    glassBg: '#202227', glassBorder: '#393D45', glassHighlight: 'transparent', codeBg: '#1B1D21', codeBorder: '#393D45', scrim: 'rgba(0,0,0,.5)',
++  } : {
++    ...lightPalette, canvas: '#F2F3F5', canvasElevated: '#F8F9FA', surface: '#FFFFFF', surfaceRaised: '#FFFFFF', surfaceSunken: '#F1F2F4', surfaceHover: '#E9ECF1', overlay: '#FFFFFF',
++    textPrimary: '#292D35', textSecondary: '#58606D', textTertiary: '#58606D', textDisabled: '#9297A1', textInverse: '#FFFFFF',
++    accent: '#536582', accentStrong: '#405572', accentSoft: '#E8EDF4', accentBorder: '#B6C2D3', accentContrast: '#FFFFFF',
++    success: '#286449', warning: '#805B17', danger: '#A53D48', info: '#536582',
++    border: '#DFE2E7', borderStrong: '#C6CBD3', divider: '#E7E9ED', focusRing: 'rgba(83,101,130,.25)',
++    glassBg: '#F8F9FA', glassBorder: '#DFE2E7', glassHighlight: 'transparent', codeBg: '#F1F2F4', codeBorder: '#DFE2E7', scrim: 'rgba(25,29,36,.32)',
++  }
++}
++
+ export const fonts = {
+   sans: '"ProjectOS Sans", "PingFang SC", "Microsoft YaHei UI", system-ui, sans-serif',
+   mono: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, "ProjectOS Sans", monospace',
+diff --git a/packages/ui/src/components/PageElements.tsx b/packages/ui/src/components/PageElements.tsx
+index 5554afc..d5e01b6 100644
+--- a/packages/ui/src/components/PageElements.tsx
++++ b/packages/ui/src/components/PageElements.tsx
+@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
+ import { Tooltip } from 'antd'
+ 
+ export interface PageHeaderProps {
++  /** @deprecated Product navigation already identifies the category; omit decorative duplicate labels. */
+   eyebrow?: ReactNode
+   title: ReactNode
+   description?: ReactNode
+@@ -10,11 +11,10 @@ export interface PageHeaderProps {
+   compact?: boolean
+ }
+ 
+-export function PageHeader({ eyebrow, title, description, actions, meta, compact = false }: PageHeaderProps) {
++export function PageHeader({ title, description, actions, meta, compact = false }: PageHeaderProps) {
+   return (
+     <header className={`po-page-header ${compact ? 'is-compact' : ''}`.trim()}>
+       <div className="po-page-heading">
+-        {eyebrow ? <div className="po-eyebrow">{eyebrow}</div> : null}
+         <h1 className="po-page-title">{title}</h1>
+         {description ? <p className="po-page-description">{description}</p> : null}
+         {meta ? <div className="po-page-meta">{meta}</div> : null}
+diff --git a/packages/ui/src/theme.ts b/packages/ui/src/theme.ts
+index 2a9f657..17a281f 100644
+--- a/packages/ui/src/theme.ts
++++ b/packages/ui/src/theme.ts
+@@ -1,8 +1,8 @@
+ import { theme as antdTheme, type ThemeConfig } from 'antd'
+-import { fonts, paletteFor, type ThemeMode } from '@projectos/design-tokens'
++import { fonts, paletteFor, workbenchPaletteFor, type ThemeMode } from '@projectos/design-tokens'
+ 
+-export function createAntdTheme(mode: ThemeMode): ThemeConfig {
+-  const palette = paletteFor(mode)
++export function createAntdTheme(mode: ThemeMode, workbench = false): ThemeConfig {
++  const palette = workbench ? workbenchPaletteFor(mode) : paletteFor(mode)
+   const isDark = mode === 'dark'
+   return {
+     algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+@@ -48,9 +48,9 @@ export function createAntdTheme(mode: ThemeMode): ThemeConfig {
+       controlHeight: 36,
+       controlHeightSM: 28,
+       controlHeightLG: 40,
+-      borderRadius: 12,
+-      borderRadiusSM: 9,
+-      borderRadiusLG: 20,
++      borderRadius: workbench ? 6 : 12,
++      borderRadiusSM: workbench ? 4 : 9,
++      borderRadiusLG: workbench ? 8 : 20,
+       borderRadiusXS: 6,
+       wireframe: false,
+       boxShadow: '0 10px 30px -16px rgba(15,26,45,.20), 0 2px 6px rgba(15,26,45,.05)',
+@@ -66,8 +66,8 @@ export function createAntdTheme(mode: ThemeMode): ThemeConfig {
+         defaultShadow: 'none',
+         dangerShadow: 'none',
+         fontWeight: 500,
+-        borderRadius: 10,
+-        borderRadiusLG: 12,
++        borderRadius: workbench ? 6 : 10,
++        borderRadiusLG: workbench ? 8 : 12,
+         defaultBorderColor: palette.border,
+         defaultColor: palette.textPrimary,
+         defaultBg: palette.surface,
+diff --git a/scripts/agent-overview-e2e.mjs b/scripts/agent-overview-e2e.mjs
+index 2fa598a..f642dd0 100644
+--- a/scripts/agent-overview-e2e.mjs
++++ b/scripts/agent-overview-e2e.mjs
+@@ -327,9 +327,10 @@ try {
+   await page.evaluate((id) => { window.location.hash = `#/projects/${id}` }, projectId)
+   await page.waitForSelector('.studio-home', { timeout: 20_000 })
+   await page.waitForTimeout(900)
++  await page.getByRole('tab', { name: /待审批/ }).click()
+   const homeFacts = await page.evaluate(() => ({
+     heading: document.querySelector('.studio-home h1')?.textContent ?? '',
+-    mission: document.querySelector('.studio-hero h2')?.textContent ?? '',
++    mission: document.querySelector('.po-journey-goal')?.textContent ?? '',
+     pending: document.querySelectorAll('.studio-approval-row').length,
+   }))
+   record('项目首页使用真实项目/计划/审批数据', homeFacts.heading.includes('Agent Overview E2E') && homeFacts.pending >= 1, JSON.stringify(homeFacts))
+@@ -616,13 +617,13 @@ try {
+   await page.waitForTimeout(600)
+   const narrow = await page.evaluate(() => ({
+     canvas: Boolean(document.querySelector('.aco-canvas')),
+-    filters: document.querySelectorAll('.aco-filters button').length,
++    filters: document.querySelectorAll('.aco-object-tabs [role="tab"]').length,
+     overflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+     visibleTasks: [...document.querySelectorAll('.aco-gnode-task')].filter((node) => getComputedStyle(node).display !== 'none').length,
+   }))
+   record('1024 保持全图而非三栏', narrow.canvas && narrow.filters === 4 && narrow.overflowX === 0 && narrow.visibleTasks >= 3, JSON.stringify(narrow))
+   await shot('overview-1024-all.png')
+-  await page.locator('.aco-filters button').nth(1).click()
++  await page.locator('.aco-object-tabs [role="tab"]').nth(1).click()
+   await page.waitForTimeout(600)
+   const agentFilter = await page.evaluate(() => ({
+     agents: [...document.querySelectorAll('.aco-gnode-agent')].filter((node) => getComputedStyle(node).display !== 'none').length,
+@@ -630,10 +631,10 @@ try {
+   }))
+   record('1024 图内筛选只显示 Agent', agentFilter.agents >= 4 && agentFilter.tasks === 0, JSON.stringify(agentFilter))
+   await shot('overview-1024-agents.png')
+-  await page.locator('.aco-filters button').nth(2).click()
++  await page.locator('.aco-object-tabs [role="tab"]').nth(2).click()
+   await page.waitForTimeout(500)
+   await shot('overview-1024-tasks.png')
+-  await page.locator('.aco-filters button').nth(0).click()
++  await page.locator('.aco-object-tabs [role="tab"]').nth(0).click()
+   await setWindow(1440, 900)
+ 
+   await win.evaluate((w) => w.webContents.setZoomFactor(1.25))

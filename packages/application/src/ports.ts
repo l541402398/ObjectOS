@@ -38,6 +38,7 @@ import type {
   TaskBoard,
   TaskCard,
   TaskDetail,
+  TaskWorkspace,
   WorkspaceEntry,
 } from '@projectos/contracts'
 
@@ -54,6 +55,7 @@ export interface ReadPort {
   getProjectActivity(projectId: string, limit?: number): ProjectOverview['activity']
   listRequirements(projectId: string): Requirement[]
   getRequirement(id: string): Requirement | null
+  getTaskWorkspace(taskId: string): TaskWorkspace | null
   listMilestones(projectId: string): Milestone[]
   getMilestone(id: string): Milestone | null
   listDecisions(projectId: string): Decision[]
@@ -66,6 +68,7 @@ export interface ReadPort {
   listSkills(): Skill[]
   listRuntimeProfiles(): RuntimeProfile[]
   getAgentViews(projectId: string): AgentView[]
+  getTaskFlowBlockers(taskId: string): string[]
   getTask(id: string): Task | null
   listTasks(projectId: string): Task[]
   listTaskCards(projectId: string): TaskCard[]
@@ -107,6 +110,7 @@ export interface CoreStore {
     patch: { name?: string; description?: string; status?: Project['status']; currentStage?: StageKey },
   ): Project
   setStageStatus(projectId: string, stage: string, status: string): void
+  initializeRequirementFlow(requirement: Requirement, selection: { templateVersionId: string; assignmentMode: 'manual' | 'ai'; assignments: Record<string, string | null> }): void
   createRequirement(requirement: Requirement): Requirement
   setRequirementStatus(id: string, status: Requirement['status']): Requirement
   createMilestone(milestone: Milestone): Milestone

@@ -1,0 +1,55 @@
+warning: in the working copy of 'AGENTS.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+PASS Unassigned requirement shows one primary action: 确认安排
+PASS Defaults saved at requirement level without rebuilding task instances
+PASS Preview keeps the single-task override as an explicit, unchecked replacement
+PASS arrangement-preview 1440 light no horizontal overflow
+PASS arrangement-preview 1440 light accessibility (axe)
+PASS arrangement-preview 1440 dark no horizontal overflow
+PASS arrangement-preview 1440 dark accessibility (axe)
+PASS arrangement-preview 1280 light no horizontal overflow
+PASS arrangement-preview 1280 light accessibility (axe)
+PASS arrangement-preview 1280 dark no horizontal overflow
+PASS arrangement-preview 1280 dark accessibility (axe)
+PASS arrangement-preview 1024 light no horizontal overflow
+PASS arrangement-preview 1024 light accessibility (axe)
+PASS arrangement-preview 1024 dark no horizontal overflow
+PASS arrangement-preview 1024 dark accessibility (axe)
+PASS arrangement-preview 1024 dark 125% no horizontal overflow
+PASS arrangement-preview 1024 dark 125% accessibility (axe)
+PASS Three tasks share the six-stage defaults
+PASS Single-task manual override is preserved
+PASS Applying defaults starts nothing
+PASS First task waits for its workspace approval; the second queues instead of creating a conflicting request
+PASS Dependent task waits for its prerequisite instead of being started
+PASS No node Run starts before workspace approval
+PASS A repeated start creates no extra workspace request or Run
+PASS Stale binding version fails explicitly
+PASS start-results 1440 light no horizontal overflow
+PASS start-results 1440 light accessibility (axe)
+PASS start-results 1440 dark no horizontal overflow
+PASS start-results 1440 dark accessibility (axe)
+PASS start-results 1280 light no horizontal overflow
+PASS start-results 1280 light accessibility (axe)
+PASS start-results 1280 dark no horizontal overflow
+PASS start-results 1280 dark accessibility (axe)
+PASS start-results 1024 light no horizontal overflow
+PASS start-results 1024 light accessibility (axe)
+PASS start-results 1024 dark no horizontal overflow
+PASS start-results 1024 dark accessibility (axe)
+PASS start-results 1024 dark 125% no horizontal overflow
+PASS start-results 1024 dark 125% accessibility (axe)
+PASS Workspace approval lets the started flow run its first node
+PASS The queued task requests its own workspace approval after the first workspace exists
+PASS Stop revokes the intent, pauses running flows and cancels waiting continuation
+PASS No new node starts after the stop, even after a later workspace approval
+PASS Waiting, paused and stopped work is not marked complete
+PASS Restart keeps the revoked intent, paused flows and per-node owners
+PASS Restart does not resume a paused or revoked flow
+PASS Plan draft remains unexecuted before confirmation
+PASS plan confirm no horizontal overflow
+PASS plan confirm accessibility (axe)
+PASS Confirm-and-start inherits defaults and stops at the separate workspace approval
+PASS plan start results no horizontal overflow
+PASS plan start results accessibility (axe)
+PASS No renderer exceptions

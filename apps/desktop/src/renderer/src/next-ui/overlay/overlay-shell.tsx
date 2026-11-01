@@ -13,7 +13,7 @@ import { motion } from 'motion/react'
 import { useReducedMotionPreference as useReducedMotion } from '../../hooks/useReducedMotionPreference'
 import { useLatestEvent } from '../../hooks/useLatestEvent'
 import { X } from 'lucide-react'
-import { ConfigProvider } from 'antd'
+
 import { cn } from '../cn'
 import { useOverlayLayer } from './overlay-context'
 import { useResolvedTheme } from '../../stores/ui'
@@ -344,7 +344,7 @@ function ModalShell({
             <span className="pui-overlay-opaque" aria-hidden />
             <div className="pui-overlay-content">
               <DismissContext.Provider value={guard.requestClose}>
-                <ConfigProvider getPopupContainer={(trigger) => trigger?.closest<HTMLElement>('.pui-overlay-content') ?? document.body}>{children}</ConfigProvider>
+                {children}
               </DismissContext.Provider>
             </div>
           </motion.div>
@@ -479,7 +479,7 @@ export function InspectorShell({
               transition={{ duration: reduce ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
             >
               <DismissContext.Provider value={guard.requestClose}>
-                <ConfigProvider getPopupContainer={(trigger) => trigger?.closest<HTMLElement>('.pui-overlay-content') ?? document.body}>{children}</ConfigProvider>
+                {children}
               </DismissContext.Provider>
             </motion.div>
           </div>

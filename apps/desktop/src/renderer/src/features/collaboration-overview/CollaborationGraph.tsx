@@ -1,3 +1,4 @@
+import { AgentAvatar } from '@projectos/ui'
 import { useEffect, useId, useMemo, useRef, useState, type ReactElement } from 'react'
 import { motion } from 'motion/react'
 import { useReducedMotionPreference } from '../../hooks/useReducedMotionPreference'
@@ -5,7 +6,6 @@ import ELK from 'elkjs/lib/elk.bundled.js'
 import '@xyflow/react/dist/style.css'
 import {
   Background,
-  Controls,
   Handle,
   Position,
   ReactFlow,
@@ -33,6 +33,7 @@ import type {
   TaskCard,
 } from '@projectos/contracts'
 import { runStatusLabel, taskStatusLabel } from '../../lib/labels'
+import { CanvasControls } from '../../next-ui/vendor/CanvasControls'
 
 export type GraphSelection =
   | { kind: 'agent'; id: string }
@@ -71,7 +72,7 @@ function AgentNode({ data }: NodeProps<Node<AgentData, 'aco-agent'>>): ReactElem
     <div className={`aco-gnode aco-gnode-agent${data.selected ? ' is-selected' : ''}${data.related ? ' is-related' : ''}`} data-testid={`collaboration-agent-${agent.id}`}>
       <Handle type="target" position={Position.Left} className="aco-port" isConnectable={false} />
       <div className="aco-gnode-agent-top">
-        <span className="aco-avatar" style={{ color: agent.accent || undefined, borderColor: agent.accent ? `${agent.accent}55` : undefined }}>{agent.name.slice(0, 1)}</span>
+        <AgentAvatar name={agent.name} size={30} />
         <span className="aco-gnode-agent-copy">
           <strong>{agent.name}</strong>
           <span>{agent.role}</span>
@@ -102,7 +103,7 @@ function TaskNode({ data }: NodeProps<Node<TaskData, 'aco-task'>>): ReactElement
       </div>
       <strong className="aco-gnode-title" title={data.task.title}>{data.task.title}</strong>
       <div className="aco-gnode-foot">
-        <span className="aco-gnode-assignee"><i>{data.agentName.slice(0, 1)}</i>{data.agentName}</span>
+        <span className="aco-gnode-assignee"><AgentAvatar name={data.agentName} size={18} />{data.agentName}</span>
         <span className={data.runStatus === 'waiting_approval' ? 'aco-warn-text' : ''}>
           {data.runStatus === 'waiting_approval' ? '等待审批' : data.runStatus ? runStatusLabel(data.runStatus) : '未启动'}
         </span>
@@ -604,13 +605,13 @@ export function CollaborationGraph({
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable
-        minZoom={0.35}
+        minZoom={0.1}
         maxZoom={1.4}
         zoomOnDoubleClick={false}
         proOptions={{ hideAttribution: true }}
       >
         <Background gap={20} size={1.1} color="var(--pw-grid-dot)" />
-        <Controls showInteractive={false} />
+        <CanvasControls />
       </ReactFlow>
       <RelationshipLayer
         relationships={relationships}

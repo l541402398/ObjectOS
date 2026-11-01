@@ -1,0 +1,37 @@
+[
+  {
+    "command": "node scripts/requirement-integration-e2e.mjs",
+    "exitCode": 0,
+    "log": "docs/v2/evidence/requirement-integration/logs/requirement-integration-e2e-delivery.log"
+  },
+  {
+    "command": "node scripts/requirement-work-e2e.mjs",
+    "exitCode": 0,
+    "log": "docs/v2/evidence/requirement-integration/logs/requirement-work-e2e-delivery.log"
+  },
+  {
+    "command": "node scripts/e2e.mjs",
+    "exitCode": 0,
+    "log": "docs/v2/evidence/requirement-integration/logs/e2e-delivery.log"
+  },
+  {
+    "command": "node scripts/agent-e2e.mjs",
+    "exitCode": 0,
+    "log": "docs/v2/evidence/requirement-integration/logs/agent-e2e-delivery.log"
+  },
+  {
+    "command": "node scripts/v12-e2e.mjs",
+    "exitCode": 0,
+    "log": "docs/v2/evidence/requirement-integration/logs/v12-e2e-delivery.log"
+  },
+  {
+    "command": "node scripts/v13-e2e.mjs",
+    "exitCode": 0,
+    "log": "docs/v2/evidence/requirement-integration/logs/v13-e2e-delivery.log"
+  },
+  {
+    "command": "pnpm test:package",
+    "exitCode": 0,
+    "log": "docs/v2/evidence/requirement-integration/logs/package-smoke-delivery.log"
+  }
+]

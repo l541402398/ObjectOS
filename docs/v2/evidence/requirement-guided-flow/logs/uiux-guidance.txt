@@ -1,0 +1,15 @@
+## UI Pro Max Search Results
+**Domain:** ux | **Query:** progressive disclosure fewer steps task focused workflow primary action
+**Source:** ux-guidelines.csv | **Found:** 1 results
+
+### Result 1
+- **Category:** Typography
+- **Issue:** Heading Line Balance
+- **Platform:** Web
+- **Description:** Short multi-line headings may use balanced wrapping as a progressive visual heuristic
+- **Do:** Bound the measure and test natural-wrap fallback across widths fonts and locales
+- **Don't:** Promise an exact final line or insert blanket nonbreaking spaces or hardcoded br tags
+- **Code Example Good:** .hero-title { max-inline-size: 20ch; text-wrap: balance; }
+- **Code Example Bad:** Heading copy rewritten with forced last-line breaks
+- **Severity:** Medium
+

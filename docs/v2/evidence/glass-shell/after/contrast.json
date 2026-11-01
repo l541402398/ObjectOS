@@ -1,0 +1,414 @@
+{
+  "head": "f71d33e8acd70ec579501873c327e5b1180ee02a",
+  "method": "Text hidden, 1px composited pixel at the text box centre captured with webContents.capturePage; compared with computed text colour (WCAG 2.x).",
+  "results": [
+    {
+      "theme": "light",
+      "name": "page title",
+      "size": "22px",
+      "text": [
+        44,
+        59,
+        86
+      ],
+      "background": [
+        229,
+        242,
+        248
+      ],
+      "ratio": 9.85,
+      "status": "PASS"
+    },
+    {
+      "theme": "light",
+      "name": "requirement title",
+      "size": "25px",
+      "text": [
+        44,
+        59,
+        86
+      ],
+      "background": [
+        228,
+        241,
+        248
+      ],
+      "ratio": 9.77,
+      "status": "PASS"
+    },
+    {
+      "theme": "light",
+      "name": "journey stage",
+      "size": "14px",
+      "text": [
+        75,
+        90,
+        115
+      ],
+      "background": [
+        228,
+        232,
+        252
+      ],
+      "ratio": 5.73,
+      "status": "PASS"
+    },
+    {
+      "theme": "light",
+      "name": "journey state (13px)",
+      "size": "13px",
+      "text": [
+        75,
+        90,
+        115
+      ],
+      "background": [
+        232,
+        239,
+        252
+      ],
+      "ratio": 6.04,
+      "status": "PASS"
+    },
+    {
+      "theme": "light",
+      "name": "facts",
+      "size": "14px",
+      "text": [
+        75,
+        90,
+        115
+      ],
+      "background": [
+        233,
+        238,
+        252
+      ],
+      "ratio": 6.01,
+      "status": "PASS"
+    },
+    {
+      "theme": "light",
+      "name": "task title",
+      "size": "14px",
+      "text": [
+        44,
+        59,
+        86
+      ],
+      "background": [
+        219,
+        239,
+        245
+      ],
+      "ratio": 9.47,
+      "status": "PASS"
+    },
+    {
+      "theme": "light",
+      "name": "task meta (13px)",
+      "size": "13px",
+      "text": [
+        75,
+        90,
+        115
+      ],
+      "background": [
+        215,
+        238,
+        244
+      ],
+      "ratio": 5.79,
+      "status": "PASS"
+    },
+    {
+      "theme": "light",
+      "name": "list label (13px)",
+      "size": "13px",
+      "text": [
+        75,
+        90,
+        115
+      ],
+      "background": [
+        207,
+        208,
+        249
+      ],
+      "ratio": 4.67,
+      "status": "PASS"
+    },
+    {
+      "theme": "light",
+      "name": "requirement item meta",
+      "size": "13px",
+      "text": [
+        75,
+        90,
+        115
+      ],
+      "background": [
+        219,
+        228,
+        250
+      ],
+      "ratio": 5.48,
+      "status": "PASS"
+    },
+    {
+      "theme": "light",
+      "name": "sidebar status bar (12px)",
+      "size": "12px",
+      "text": [
+        44,
+        59,
+        86
+      ],
+      "background": [
+        155,
+        173,
+        221
+      ],
+      "ratio": 5.04,
+      "status": "PASS"
+    },
+    {
+      "theme": "light",
+      "name": "default button",
+      "size": "14px",
+      "text": [
+        44,
+        59,
+        86
+      ],
+      "background": [
+        228,
+        241,
+        251
+      ],
+      "ratio": 9.79,
+      "status": "PASS"
+    },
+    {
+      "theme": "light",
+      "name": "primary button",
+      "size": "14px",
+      "text": [
+        255,
+        255,
+        255
+      ],
+      "background": [
+        87,
+        106,
+        224
+      ],
+      "ratio": 4.62,
+      "status": "PASS"
+    },
+    {
+      "theme": "dark",
+      "name": "page title",
+      "size": "22px",
+      "text": [
+        239,
+        244,
+        255
+      ],
+      "background": [
+        20,
+        31,
+        57
+      ],
+      "ratio": 14.83,
+      "status": "PASS"
+    },
+    {
+      "theme": "dark",
+      "name": "requirement title",
+      "size": "25px",
+      "text": [
+        239,
+        244,
+        255
+      ],
+      "background": [
+        20,
+        31,
+        56
+      ],
+      "ratio": 14.85,
+      "status": "PASS"
+    },
+    {
+      "theme": "dark",
+      "name": "journey stage",
+      "size": "14px",
+      "text": [
+        181,
+        194,
+        217
+      ],
+      "background": [
+        42,
+        59,
+        104
+      ],
+      "ratio": 6.07,
+      "status": "PASS"
+    },
+    {
+      "theme": "dark",
+      "name": "journey state (13px)",
+      "size": "13px",
+      "text": [
+        181,
+        194,
+        217
+      ],
+      "background": [
+        35,
+        52,
+        89
+      ],
+      "ratio": 6.84,
+      "status": "PASS"
+    },
+    {
+      "theme": "dark",
+      "name": "facts",
+      "size": "14px",
+      "text": [
+        181,
+        194,
+        217
+      ],
+      "background": [
+        39,
+        56,
+        99
+      ],
+      "ratio": 6.38,
+      "status": "PASS"
+    },
+    {
+      "theme": "dark",
+      "name": "task title",
+      "size": "14px",
+      "text": [
+        239,
+        244,
+        255
+      ],
+      "background": [
+        19,
+        30,
+        56
+      ],
+      "ratio": 15,
+      "status": "PASS"
+    },
+    {
+      "theme": "dark",
+      "name": "task meta (13px)",
+      "size": "13px",
+      "text": [
+        181,
+        194,
+        217
+      ],
+      "background": [
+        18,
+        30,
+        55
+      ],
+      "ratio": 9.22,
+      "status": "PASS"
+    },
+    {
+      "theme": "dark",
+      "name": "list label (13px)",
+      "size": "13px",
+      "text": [
+        164,
+        180,
+        208
+      ],
+      "background": [
+        33,
+        44,
+        80
+      ],
+      "ratio": 6.5,
+      "status": "PASS"
+    },
+    {
+      "theme": "dark",
+      "name": "requirement item meta",
+      "size": "13px",
+      "text": [
+        181,
+        194,
+        217
+      ],
+      "background": [
+        22,
+        33,
+        62
+      ],
+      "ratio": 8.84,
+      "status": "PASS"
+    },
+    {
+      "theme": "dark",
+      "name": "sidebar status bar (12px)",
+      "size": "12px",
+      "text": [
+        239,
+        244,
+        255
+      ],
+      "background": [
+        20,
+        25,
+        54
+      ],
+      "ratio": 15.59,
+      "status": "PASS"
+    },
+    {
+      "theme": "dark",
+      "name": "default button",
+      "size": "14px",
+      "text": [
+        239,
+        244,
+        255
+      ],
+      "background": [
+        41,
+        58,
+        85
+      ],
+      "ratio": 10.41,
+      "status": "PASS"
+    },
+    {
+      "theme": "dark",
+      "name": "primary button",
+      "size": "14px",
+      "text": [
+        11,
+        18,
+        35
+      ],
+      "background": [
+        164,
+        180,
+        255
+      ],
+      "ratio": 9.38,
+      "status": "PASS"
+    }
+  ]
+}

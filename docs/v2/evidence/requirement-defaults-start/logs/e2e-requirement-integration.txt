@@ -1,0 +1,37 @@
+warning: in the working copy of 'AGENTS.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+PASS Actual loading state shows a labelled placeholder
+PASS Empty task shows no fabricated diff or enabled merge
+PASS Integration requires both review and verification
+PASS Stale visible review rejected
+PASS Reopened review displays the command that actually ran
+PASS Real command exit unlocks current verification
+PASS 1440 light readable without page overflow
+PASS 1440 light accessibility
+PASS 1440 dark readable without page overflow
+PASS 1440 dark accessibility
+PASS 1280 light readable without page overflow
+PASS 1280 light accessibility
+PASS 1280 dark readable without page overflow
+PASS 1280 dark accessibility
+PASS 1024 light readable without page overflow
+PASS 1024 light accessibility
+PASS 1024 dark readable without page overflow
+PASS 1024 dark accessibility
+PASS Keyboard primary action remains visible at 125%
+PASS Git unchanged while integration awaits approval
+PASS Pending integration survives desktop restart
+PASS Approved integration persists actual commit
+PASS Project root and requirement delivery state unchanged
+PASS Dependent task receives predecessor code in its own directory
+PASS Integrated current content cannot request a duplicate merge
+locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('dialog', { name: '成果审查', exact: true }).getByText('改动较大，预览已截断；请在任务工作区检查完整内容后再记录审查。', { exact: true }) to be visible[22m
+
+    at C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\scripts\requirement-integration-e2e.mjs:119:74 {
+  log: [
+    "  - waiting for getByRole('dialog', { name: '成果审查', exact: true }).getByText('改动较大，预览已截断；请在任务工作区检查完整内容后再记录审查。', { exact: true }) to be visible"
+  ],
+  name: 'TimeoutError'
+}

@@ -1,5 +1,29 @@
 # ProjectOS Next UI — Migration Progress
 
+2026-10-31: batch 1 (ADR-0077) adds requirement default owners, previewed batch application, persisted/revocable start intents and a single state-driven primary action. Global glass shell round 1 (glass-system.css) is applied across routes; page-level structure is next. See [batch 1](../v2/evidence/requirement-defaults-start/REPORT.md) and [glass shell](../v2/evidence/glass-shell/REPORT.md). Full Vitest: 624 PASS / 1 timeout / 4 SKIP; requirement-integration desktop regression fails at the truncated-diff notice — both unresolved.
+
+2026-10-30 requirement-owned workflows: the latest user instruction removes UC from the live product.
+Requirements now directly own tasks, with a selected/saved workflow inherited by every generated task.
+Real drag/drop editing, six built-in stage types, per-node Agent selection, autonomous AI assignment,
+native execution, document gates and materials in the requirement journey / Agent inspector are implemented.
+The restored blue/cyan theme and previous task isolation / integration work remain. ADR-0076 supersedes
+the older grouping semantics; historic evidence below is retained rather than rewritten.
+See [current implementation and actual verification](../v2/evidence/requirement-guided-flow/REPORT.md).
+Flow start still requires a user action per task; external CLI flow execution, requirement-wide delivery,
+Agent composition, settings consolidation and global-journey integration remain open.
+
+2026-10-30 A3.2a: reviewed task results can now be verified with a separately approved command and
+merged into the requirement branch under a separate Git approval. Newly prepared dependent task
+workspaces contain those real predecessor commits. See [current evidence](../v2/evidence/requirement-integration/REPORT.md).
+Requirement-wide acceptance, existing-workspace synchronization, managed autonomous scheduling,
+Agent composition, configurable workflows and settings consolidation remain next batches.
+
+2026-10-30 A3.1: the user chose requirement delivery → UC groups → isolated development tasks.
+The restored blue/cyan optical theme remains. A real local requirement workbench and approved
+task workspace preparation/execution are implemented; task integration, configurable workflows,
+Agent composition and settings consolidation remain subsequent batches. See
+[A3.1 report](../v2/evidence/requirement-work/REPORT.md) and ADR-0073. This does not enable A2.2b remote jobs.
+
 2026-10-30 follow-up: the user's startup animation and collapsed `3/9` journey feedback is addressed
 in [startup-journey/REPORT.md](../design/startup-journey/REPORT.md). Its separate eight-state native
 evidence supersedes only these surfaces. The protected Lab route and previous system evidence remain.

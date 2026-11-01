@@ -1,0 +1,65 @@
+[FAIL] home-1440-light accessibility [{"id":"heading-order","nodes":[{"target":["h3"],"failureSummary":"Fix any of the following:\n  Heading order invalid"}]}]
+[FAIL] home-1440-light native contrast min=4.39, samples=53
+[PASS] home-1440-light fits and readable type {"viewport":[1440,900],"width":1314,"overflow":false,"small":[]}
+[PASS] 1440-light explicit journey 
+[PASS] 1440-light keyboard opens approvals 
+[PASS] home-approvals-1440-light accessibility []
+[PASS] home-approvals-1440-light native contrast min=4.60, samples=11
+[PASS] home-approvals-1440-light fits and readable type {"viewport":[1440,900],"width":1254,"overflow":false,"small":[]}
+[FAIL] 1440-light keyboard reaches recent runs 
+[PASS] 1440-light Home key returns to first tab 
+[PASS] agents-1440-light accessibility []
+[PASS] agents-1440-light native contrast min=5.15, samples=100
+[PASS] agents-1440-light fits and readable type {"viewport":[1440,900],"width":1314,"overflow":false,"small":[]}
+[PASS] 1440-light fit reveals whole graph {"height":546,"nodes":13,"fits":true}
+[PASS] 1440-light agent tab filters actual nodes 
+[PASS] 1440-light task tab filters actual nodes 
+[PASS] 1440-light all objects restore 
+[PASS] tasks-1440-light accessibility []
+[PASS] tasks-1440-light native contrast min=5.05, samples=88
+[PASS] tasks-1440-light fits and readable type {"viewport":[1440,900],"width":1314,"overflow":false,"small":[]}
+[PASS] deployments-1440-light accessibility []
+[PASS] deployments-1440-light native contrast min=4.71, samples=29
+[PASS] deployments-1440-light fits and readable type {"viewport":[1440,900],"width":1314,"overflow":false,"small":[]}
+[FAIL] home-1024-dark-125 accessibility [{"id":"heading-order","nodes":[{"target":["h3"],"failureSummary":"Fix any of the following:\n  Heading order invalid"}]}]
+[PASS] home-1024-dark-125 native contrast min=7.24, samples=31
+[PASS] home-1024-dark-125 fits and readable type {"viewport":[819,720],"width":713.6000366210938,"overflow":false,"small":[]}
+[PASS] 1024-dark-125 explicit journey 
+[FAIL] 1024-dark-125 keyboard opens approvals 
+[PASS] home-approvals-1024-dark-125 accessibility []
+[PASS] home-approvals-1024-dark-125 native contrast min=8.21, samples=11
+[PASS] home-approvals-1024-dark-125 fits and readable type {"viewport":[819,720],"width":668.7999877929688,"overflow":false,"small":[]}
+[FAIL] 1024-dark-125 keyboard reaches recent runs 
+[PASS] 1024-dark-125 Home key returns to first tab 
+[PASS] agents-1024-dark-125 accessibility []
+[PASS] agents-1024-dark-125 native contrast min=6.66, samples=96
+[PASS] agents-1024-dark-125 fits and readable type {"viewport":[819,720],"width":713.6000366210938,"overflow":false,"small":[]}
+[PASS] 1024-dark-125 fit reveals whole graph {"height":288.20001220703125,"nodes":13,"fits":true}
+[PASS] 1024-dark-125 agent tab filters actual nodes 
+[PASS] 1024-dark-125 task tab filters actual nodes 
+[PASS] 1024-dark-125 all objects restore 
+[PASS] tasks-1024-dark-125 accessibility []
+[PASS] tasks-1024-dark-125 native contrast min=5.95, samples=32
+[PASS] tasks-1024-dark-125 fits and readable type {"viewport":[819,720],"width":713.6000366210938,"overflow":false,"small":[]}
+[PASS] deployments-1024-dark-125 accessibility []
+[PASS] deployments-1024-dark-125 native contrast min=8.37, samples=14
+[PASS] deployments-1024-dark-125 fits and readable type {"viewport":[819,720],"width":713.6000366210938,"overflow":false,"small":[]}
+[PASS] Next step matches persisted action 
+[PASS] 自主模式 persists via existing API 
+[PASS] 托管模式 persists via existing API 
+[PASS] 辅助模式 persists via existing API 
+[PASS] Mode persists across reload 
+[PASS] Propose requirement retains direct form entry 
+[PASS] Navigation keeps populated page at 4x CPU 54 frames
+[PASS] Toolbar resets to 100% 
+[PASS] Toolbar zooms out 
+[PASS] Toolbar zooms in 
+[PASS] Graph detail and directional pulses remain 
+[PASS] task-inspector accessibility []
+[PASS] task-inspector native contrast min=5.05, samples=29
+[PASS] task-inspector fits and readable type {"viewport":[1440,900],"width":480,"overflow":false,"small":[]}
+[PASS] Pulse pause works 
+[PASS] Live reduced-motion removes pulses 
+[PASS] Reduced-motion zoom is immediate 
+[PASS] Upstream licenses and NOTICE ship with app 
+[PASS] No renderer or CSP exceptions 

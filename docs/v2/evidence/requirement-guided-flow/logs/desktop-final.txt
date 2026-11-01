@@ -1,0 +1,42 @@
+warning: in the working copy of 'AGENTS.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+PASS Drag/drop and keyboard addition create real flow nodes
+PASS flow editor no horizontal page overflow
+PASS flow editor accessibility
+PASS flow editor 1280 light no horizontal page overflow
+PASS flow editor 1280 light accessibility
+PASS flow editor 1280 dark no horizontal page overflow
+PASS flow editor 1280 dark accessibility
+PASS flow editor 1024 light no horizontal page overflow
+PASS flow editor 1024 light accessibility
+PASS flow editor 1024 dark no horizontal page overflow
+PASS flow editor 1024 dark accessibility
+PASS No UC step remains in workbench
+PASS AI uses actual model assignment for every stage
+PASS Start requests approval before creating workspace
+PASS Assigned Agents complete real document and review runs
+PASS Journey opens the actual stored document body
+PASS Agent graph opens the real workflow document
+PASS AI draft remains unexecuted before plan approval
+PASS AI plan approval creates real tasks with every inherited workflow node
+PASS Manual Agent selection is saved through the actual control
+PASS Missing assignments remain actionable, without starting a Run
+PASS 1440 light no horizontal page overflow
+PASS 1440 light accessibility
+PASS 1440 dark no horizontal page overflow
+PASS 1440 dark accessibility
+PASS 1280 light no horizontal page overflow
+PASS 1280 light accessibility
+PASS 1280 dark no horizontal page overflow
+PASS 1280 dark accessibility
+PASS 1024 light no horizontal page overflow
+PASS 1024 light accessibility
+PASS 1024 dark no horizontal page overflow
+PASS 1024 dark accessibility
+PASS Keyboard detail control remains reachable at 125%
+PASS Template, all task steps and manual assignment survive restart
+PASS Custom dragged template and layout persist
+PASS Autonomous mode defaults to AI node assignment
+PASS Autonomous coordinator assigns every new task node without a manual assignment action
+PASS Project switch preserves the original requirement and its eight tasks
+PASS No renderer exceptions
