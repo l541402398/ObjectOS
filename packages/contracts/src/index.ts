@@ -22,3 +22,4 @@ export * from './plugins.js'
 export * from './organization.js'
 
 
+export * from './git-delivery.js'

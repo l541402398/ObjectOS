@@ -59,6 +59,7 @@ import {
   listProjectAgentsFile,
   readTextFile,
   readWorkspaceTree,
+  resolveWorkspacePath,
   runApprovedCommand,
   writeTextFile,
   diffFileFingerprints,
@@ -73,6 +74,8 @@ import type { RuntimeEventHub } from './events.js'
 import type { Logger } from './logger.js'
 
 export interface StartRunInput {
+  /** Trusted internal authority; not part of run.start IPC. Never contains persisted secrets. */
+  authority?: NativeRunAuthority
   /** Internal workflow reservation; never accepted by the public run.start input. */
   workflowStepId?: string
   projectId: string
@@ -87,6 +90,17 @@ export interface StartRunInput {
   agentId?: string
   /** Replaces the visible user message only for this run's model context. */
   promptOverride?: string
+}
+
+export interface NativeRunAuthority {
+  kind: 'git-resolution' | 'organization-job'
+  reference: string
+  allowedTools: string[]
+  maxToolCalls: number
+  provenance: Record<string, unknown>
+  isolatedContext?: boolean
+  agentConfig?: Pick<RunSnapshot, 'agentName' | 'agentRole' | 'agentDescription' | 'agentCapabilities' | 'persona' | 'skills'>
+  check: (invocation: ToolInvocation, executing: boolean) => Promise<void>
 }
 
 export interface StartRunResult {
@@ -176,6 +190,7 @@ function relativeOf(root: string, absolute: string): string | null {
 }
 
 interface ActiveRun {
+  authority?: NativeRunAuthority
   runId: string
   projectId: string
   sessionId: string
@@ -432,6 +447,14 @@ export class AgentRunner {
       routed,
       createdAt: timestamp,
     })
+    if (input.authority) {
+      if (useRuntime) throw new AppError('POLICY_DENIED', '受限工作区只允许内置原生执行器')
+      const { kind, reference, allowedTools, maxToolCalls, provenance } = input.authority
+      if (input.authority.agentConfig) Object.assign(snapshot, input.authority.agentConfig)
+      snapshot.authority = { kind, reference, allowedTools: [...allowedTools], maxToolCalls, provenance }
+      snapshot.permissions = { tools: [...allowedTools], files: allowedTools.includes('write_file'), shell: false, network: false }
+      budget.maxToolCalls = budget.maxToolCalls > 0 ? Math.min(budget.maxToolCalls, maxToolCalls) : maxToolCalls
+    }
     let lease: { token: number; expiresAt: number } | null = null
     let slot: { token: number; expiresAt: number } | null = null
     try {
@@ -588,6 +611,7 @@ export class AgentRunner {
       agentId: agent.id,
       taskId: task?.id ?? null,
       workspaceRoot: input.workspaceRoot ?? project.rootPath,
+      authority: input.authority,
       snapshot,
       provider,
       connectionId: routed?.connectionId ?? null,
@@ -1311,7 +1335,7 @@ export class AgentRunner {
     const decisions = this.store.read.listDecisions(project.id)
     const artifacts = this.store.read.listArtifacts(project.id, task?.id ?? null)
     const knowledge = this.store.read.listKnowledge(project.id)
-    const agentsFile = listProjectAgentsFile(state.workspaceRoot)
+    const agentsFile = state.authority?.isolatedContext ? null : listProjectAgentsFile(state.workspaceRoot)
     const snapshot = state.snapshot
     const skills = snapshot.skills
       .filter((skill) => skill.enabled)
@@ -1337,19 +1361,20 @@ export class AgentRunner {
       ? collectUpstreamContext(this.store, project, task)
       : { items: [], audit: { artifacts: [], runIds: [], skipped: [] } }
     const context = buildContext({
-      project,
+      project: state.authority?.isolatedContext ? { ...project, rootPath: state.workspaceRoot, description: '' } : project,
       task,
       agent: contextAgent,
-      requirements,
-      decisions,
-      artifacts: task ? artifacts : artifacts.slice(0, 8),
-      knowledge,
+      requirements: state.authority?.isolatedContext ? [] : requirements,
+      decisions: state.authority?.isolatedContext ? [] : decisions,
+      artifacts: state.authority?.isolatedContext ? [] : task ? artifacts : artifacts.slice(0, 8),
+      knowledge: state.authority?.isolatedContext ? [] : knowledge,
       agentsFile,
       skills,
-      handoffSummary: handoff?.summary ?? null,
-      upstream: upstream.items,
+      handoffSummary: state.authority?.isolatedContext ? null : handoff?.summary ?? null,
+      upstream: state.authority?.isolatedContext ? [] : upstream.items,
     })
     const tools = toolCatalogForAgent(contextAgent.capabilities).filter((tool) => {
+      if (snapshot.authority && !snapshot.authority.allowedTools.includes(tool.name)) return false
       if (tool.name === 'write_file') return snapshot.permissions.files
       if (tool.name === 'run_command' || tool.name === 'run_tests') return snapshot.permissions.shell
       return true
@@ -1638,6 +1663,7 @@ export class AgentRunner {
       }
     }
     this.store.updateTaskAttemptStatus(state.runId, 'failed')
+    state.abort.abort()
     this.cleanup(state, 'failed')
   }
 
@@ -1876,6 +1902,14 @@ export class AgentRunner {
   }
 
   private async executeTool(state: ActiveRun, invocation: ToolInvocation): Promise<ToolOutcome> {
+    if (state.snapshot.authority && !state.authority) throw new AppError('APPROVAL_REQUIRED', '受限运行授权未恢复，请先核对；不会重放工具')
+    try { await state.authority?.check(invocation, false) }
+    catch(error) {
+      const message=redactSecrets(error instanceof Error?error.message:String(error))
+      this.store.appendRunStep({runId:state.runId,kind:'tool_result',title:`受限授权拒绝：${invocation.name}`,payload:{name:invocation.name,ok:false,error:message}})
+      await this.failRun(state,message)
+      return {status:'denied',error:message}
+    }
     if (state.taskId) {
       const task = this.store.read.getTask(state.taskId)
       if (task?.requirementId) {
@@ -2096,6 +2130,11 @@ export class AgentRunner {
   }
 
   private async executeToolHandler(state: ActiveRun, invocation: ToolInvocation): Promise<unknown> {
+    if (state.snapshot.authority) {
+      if (!state.authority || !state.snapshot.authority.allowedTools.includes(invocation.name)) throw new AppError('POLICY_DENIED', '工具不在本次受限授权中')
+      try { await state.authority.check(invocation, true) }
+      catch(error) { await this.failRun(state,redactSecrets(error instanceof Error?error.message:String(error)));throw error }
+    }
     const project = this.store.read.getProject(state.projectId)
     const session = this.store.read.getSession(state.sessionId)
     const agent = this.store.read.getAgent(state.agentId)
@@ -2122,15 +2161,13 @@ export class AgentRunner {
     }
     switch (invocation.name) {
       case 'list_directory': {
-        const subPath = typeof args.path === 'string' ? args.path.replace(/^\.\/?/, '').replace(/\/$/, '') : ''
-        const entries = readWorkspaceTree(state.workspaceRoot, { maxDepth: 5, maxEntries: 500 })
-        const filtered = subPath
-          ? entries.filter((entry) => entry.path === subPath || entry.path.startsWith(`${subPath}/`))
-          : entries
+        const directory=resolveWorkspacePath(state.workspaceRoot,typeof args.path==='string'?args.path:'.')
+        const prefix=relative(state.workspaceRoot,directory).replace(/\\/g,'/')
+        const entries = readWorkspaceTree(directory, { maxDepth: 5, maxEntries: 500 })
         return {
           root: state.workspaceRoot,
-          entries: filtered.slice(0, 300).map((entry) => `${entry.type === 'directory' ? '📁' : '📄'} ${entry.path}`),
-          truncated: filtered.length > 300,
+          entries: entries.slice(0, 300).map((entry) => `${entry.type === 'directory' ? '📁' : '📄'} ${prefix?prefix+'/':''}${entry.path}`),
+          truncated: entries.length > 300,
         }
       }
       case 'read_file': {

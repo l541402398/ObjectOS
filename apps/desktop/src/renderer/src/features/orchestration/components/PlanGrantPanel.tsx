@@ -250,14 +250,13 @@ export function PlanGrantPanel({
                 onChange={(event) => setRunTests(event.target.checked)}
                 data-testid="plan-grant-run-tests"
               >
-                允许测试与只读检查命令（白名单）
+                允许自动测试与只读检查
               </Checkbox>
             </div>
             {runTests ? (
               <div className="po-grant-form-field">
                 <em>
-                  仅覆盖 node --test、npm/pnpm/yarn test、vitest、jest、pytest、go/cargo test、git status/diff/log/rev-parse/ls-files
-                  以及 node --version；含 && ; | $() 等组合的命令一律仍需逐次审批。
+                  仅覆盖受支持的测试、代码状态和环境检查。其他程序执行仍需逐次审批。
                 </em>
               </div>
             ) : null}
@@ -337,7 +336,7 @@ export function PlanGrantPanel({
             </Checkbox>
             <div className="po-grant-warning">
               <SafetyCertificateOutlined />
-              <span>计划授权不等于 shell 权限。run_command / run_tests / git_commit / runtime.* 仍逐次审批；破坏性命令与敏感路径不会被本授权放行。</span>
+              <span>计划授权仅覆盖这里列出的操作。其他程序运行、代码合入与发布仍需单独审批，受保护文件禁止访问。</span>
             </div>
             <div className="po-grant-actions">
               <Button loading={busy} disabled={!canIssue} onClick={() => void issue(false)} data-testid="plan-grant-issue">

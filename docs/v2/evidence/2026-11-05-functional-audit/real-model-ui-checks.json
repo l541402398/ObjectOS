@@ -1,0 +1,40 @@
+{
+  "model": "deepseek-flash",
+  "checks": [
+    {
+      "name": "DeepSeek real inference through desktop",
+      "status": "PASS"
+    },
+    {
+      "name": "Six model-driven workflow stages complete",
+      "status": "PASS"
+    },
+    {
+      "name": "Writes paused until separate scoped UI approval",
+      "status": "PASS"
+    },
+    {
+      "name": "Real test command passed",
+      "status": "PASS"
+    },
+    {
+      "name": "Independent verification and explicit Git approval",
+      "status": "PASS"
+    },
+    {
+      "name": "Main workspace unchanged",
+      "status": "PASS"
+    },
+    {
+      "name": "Integrated review and verification recovered after restart",
+      "status": "PASS"
+    }
+  ],
+  "mergeCommit": "f140df7c27cd459357fe26d90837da05e4633604",
+  "interaction": "Actual Electron UI, manual browser authentication, credentials entered only into desktop password field, audit extraction read-only",
+  "limits": [
+    "No remote push or release",
+    "No GUI conflict-resolution scenario",
+    "No organization remote jobs"
+  ]
+}

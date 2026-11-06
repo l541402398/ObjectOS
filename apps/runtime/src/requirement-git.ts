@@ -43,8 +43,7 @@ export function assertIdleGit(root: string, gitDir = repositoryIdentity(root).gi
 }
 
 /** One complete capture. Git supplies paths/identity; Runtime hashes real bytes once. */
-export function taskContent(root: string, baseCommit: string, task: Task) {
-  const identity = repositoryIdentity(root)
+export function taskContent(root: string, baseCommit: string, task: Pick<Task, 'id' | 'projectId'>, identity = repositoryIdentity(root)) {
   assertIdleGit(root, identity.gitDir)
   const entries = gitPaths(root, 'ls-files', '--cached', '--others', '--exclude-standard', '--stage', '-z')
   const modes = new Map<string, string>(), untracked = new Set<string>()
@@ -100,16 +99,16 @@ export function assertSafeGitAttributes(root: string, paths: string[]) {
   }).split('\0')
   for (let index = 0; index + 2 < attributes.length; index += 3) {
     const [path, attribute, value] = attributes.slice(index, index + 3)
-    const allowed = attribute === 'filter' ? ['unspecified', 'unset'] : ['unspecified', 'unset', 'set', 'text', 'binary', 'union']
+    const allowed = attribute === 'filter' ? ['unspecified', 'unset'] : ['unspecified', 'unset', 'set', 'text', 'binary']
     if (!allowed.includes(value!)) throw new AppError('CONFLICT', `文件启用了自定义 Git 过滤器或合并驱动，请先人工处理集成：${path}`)
   }
 }
 
-export function integrationRoot(store: SqliteStore, task: Task) {
+export function integrationRoot(store: SqliteStore, task: Task, knownProjectIdentity?: ReturnType<typeof repositoryIdentity>) {
   const row = store.db.prepare("SELECT root_path,branch FROM requirement_workspaces WHERE requirement_id=? AND kind='integration'").get(task.requirementId!)
   if (!row || !existsSync(String(row.root_path))) throw new AppError('CONFLICT', '需求集成工作区缺失，请先核对')
   const root = String(row.root_path), project = store.read.getProject(task.projectId)!
-  const identity = repositoryIdentity(root), projectIdentity = repositoryIdentity(project.rootPath)
+  const identity = repositoryIdentity(root), projectIdentity = knownProjectIdentity ?? repositoryIdentity(project.rootPath)
   if (!sameRoot(root, realpathSync.native(root)) || identity.branch !== row.branch || !sameRoot(identity.commonDir, projectIdentity.commonDir))
     throw new AppError('CONFLICT', '需求集成工作区归属、目录或分支已改变')
   assertIdleGit(root, identity.gitDir)

@@ -1,0 +1,7 @@
+
+> projectos@1.7.0 typecheck C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4
+> tsc -p tsconfig.json --noEmit
+
+apps/runtime/src/requirement-integration.ts(229,7): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+ ELIFECYCLE  Command failed with exit code 2.

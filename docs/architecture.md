@@ -1,5 +1,19 @@
 # ProjectOS 架构说明
 
+## A2.2b 与 Git 交付闭环（2026-11-05）
+
+PostgreSQL 迁移 4 与 SQLite 迁移 44 追加远程任务、固定发布配置、租约 fencing、
+本机接收记录及 Git 操作审批账本。组织任务由所属桌面明确接收，复用现有 Native
+AgentRunner 和模型连接；每次工具执行及写入审批之后均重验服务端权限与本机目录范围。
+当前远程能力限定为已授权目录的浏览、读取、写入，不引入远程 Shell/MCP 或第二执行器。
+
+获取、同步、冲突解决、验证、合入和推送分别记录固定内容、审批、Run、ToolCall 与真实
+提交结果。旧 worktree 合并入口进入同一审批链路；Agent 生成冲突方案，人工与 Agent
+两种模式均需当前内容审查、实际测试和单独合入授权，发布仍单独授权。未知结果不重放。
+验证方式由 Runtime 读取项目配置确定，主流程无需填写命令。
+决策与证据见 ADR-0081～0083 和 `docs/v2/evidence/delivery-organization-closure/REPORT.md`。
+下列 A2.2a/A2.1 段落保留各阶段当时的能力边界。
+
 ## A2.2a 本机设备与授权增量（2026-10-29）
 
 追加 PostgreSQL 迁移 3 和 SQLite 迁移 37，保留全部旧迁移校验和。Main 在 safeStorage

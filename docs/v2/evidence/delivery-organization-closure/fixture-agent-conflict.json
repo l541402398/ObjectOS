@@ -1,0 +1,8 @@
+{
+  "phase": "agent-conflict",
+  "root": "C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\.tmp\\functional-desktop-0fiOh2\\delivery-project",
+  "remote": "C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\.tmp\\functional-desktop-0fiOh2\\delivery-remote.git",
+  "other": "C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\.tmp\\functional-desktop-0fiOh2\\delivery-peer",
+  "local": "621936d6d5f8909a792dc589e65ab5cbcd140602",
+  "remoteHead": "7421156a6c42c6788c2d9873c8f94d49f8d474d3"
+}

@@ -1,0 +1,35 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ ❯ tests/org-job-runtime.test.ts (2 tests | 1 failed) 2002ms
+   × rechecks live authority after write approval, keeps the file untouched and persists no bearer 1121ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/org-job-runtime.test.ts > rechecks live authority after write approval, keeps the file untouched and persists no bearer
+AssertionError: expected 'denied' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "denied"
+
+ ❯ tests/org-job-runtime.test.ts:34:96
+     32|   await waitFor(()=>f.store.read.listApprovalViews(f.project.id,run.ru…
+     33|   const approval=f.store.read.listApprovalViews(f.project.id,run.runId…
+     34|   expect(f.store.read.getToolCalls(run.runId).find(call=>call.toolName…
+       |                                                                                                ^
+     35|   expect(existsSync(join(f.project.rootPath,'src/hello.txt'))).toBe(fa…
+     36|   f.revoke()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  22:12:11
+   Duration  4.55s (tests 54%, transform 25%, import 20%)
+

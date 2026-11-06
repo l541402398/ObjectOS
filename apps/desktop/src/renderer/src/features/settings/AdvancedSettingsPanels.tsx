@@ -87,7 +87,7 @@ export function AppearanceSettingsPanel() {
       <div className="po-setting-row"><div><strong>减少动效</strong></div><Switch checked={reduceMotion} onChange={setReduceMotion} /></div>
       <div className="po-setting-row"><div><strong>减少透明度</strong></div><Switch checked={reduceTransparency} onChange={setReduceTransparency} /></div>
       <div className="v16-shortcut-grid">
-        <div><kbd>Ctrl</kbd><kbd>K</kbd><span>命令面板</span></div>
+        <div><kbd>Ctrl</kbd><kbd>K</kbd><span>搜索或跳转</span></div>
         <div><kbd>Esc</kbd><span>关闭弹层</span></div>
         <div><kbd>Tab</kbd><span>焦点移动</span></div>
         <div><kbd>Enter</kbd><span>确认操作</span></div>

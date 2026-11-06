@@ -1,0 +1,140 @@
+跳到主内容
+PROJECTOS
+同步与冲突闭环验收
+›
+研发
+›
+工作区
+搜索或跳转
+Ctrl K
+本机就绪
+3
+同
+1
+1
+目标旅程
+同步与冲突闭环验收
+1 个审批待处理
+当前阶段
+需求
+进行中
+需要你操作
+处理审批
+项目准备
+2
+需求
+3
+计划
+4
+审核
+5
+授权
+6
+执行
+7
+验证
+8
+审查
+9
+交付
+delivery-project
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\.tmp\functional-desktop-0fiOh2\delivery-project
+⑂ main
+工作区干净
+3 个条目
+查看代码变更
+代码同步与合入
+打开目录
+刷新
+文件
+只读 · 已忽略依赖目录
+remote-note.txt
+value.cjs
+value.test.cjs
+remote-note.txt
+×
+plaintext
+54 B
+1
+2
+Synchronized through approved desktop fetch and pull.
+ 文件改动
+没有可显示的差异
+工作区可能没有 Git 仓库，或所有变更都已提交。未跟踪文件不会出现在 git diff 中。
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\.tmp\functional-desktop-0fiOh2\delivery-project
+⑂ main
+干净
+阶段
+构思
+本地工作区
+PROJECTOS 1.7.0
+设置
+设置概览
+账号与组织
+AI 连接
+模型目录
+运行时
+通用与限制
+工具与插件
+Skills 管理
+工具权限
+存储与安全
+用量与价格
+OpenSpec
+偏好设置
+关于
+账号与组织
+组织已连接
+阿
+阿帆
+[隐藏邮箱]
+http://127.0.0.1:55119
+刷新连接
+退出账号
+当前组织
+选择组织
+远程执行验收组织
+所有者
+创建组织
+共享项目
+组织资产
+执行端
+组织成员
+待接受邀请
+返回资产列表
+远程验收工程师
+
+Agent · 组织共享
+
+新建版本
+当前版本
+1.0.0 · 已发布
+已发布
+下线版本
+撤销版本
+校验摘要
+sha256:a18a05a123c8f67b…
+发布时间
+2026/11/5 21:49:22
+配置与权限
+人物角色
+工程师
+工作指令
+使用本机已授权工具处理任务。只按任务要求读取和写入明确指定的文件。写入等待人工审批。不能执行 Git、程序或发布。完成后提供已执行事实。
+运行方式
+native
+技能版本
+fc1f1651-d321-4b77-971f-909033a2eceb
+工具名称
+list_directory、read_file、write_file
+项目版本绑定
+你有权查看的项目资产绑定
+项目	固定版本	版本状态
+远程执行闭环	1.0.0	已发布
+绑定到项目
+选择项目
+远程执行闭环
+固定到 1.0.0
+解除绑定
+
+此处保存共享定义与版本绑定，暂不安装工具或启动本机执行。

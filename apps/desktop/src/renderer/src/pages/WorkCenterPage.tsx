@@ -576,7 +576,7 @@ export default function WorkCenterPage() {
                     type="primary"
                     icon={<ThunderboltOutlined />}
                     loading={generate.isPending && generate.variables === 'ai'}
-                    disabled={goal.trim().length < 3}
+                    disabled={goal.trim().length < 3 || generate.isPending}
                     onClick={() => generate.mutate('ai')}
                   >
                     生成 AI 计划
@@ -585,7 +585,7 @@ export default function WorkCenterPage() {
                     size="small"
                     type="text"
                     loading={generate.isPending && generate.variables === 'local'}
-                    disabled={goal.trim().length < 3}
+                    disabled={goal.trim().length < 3 || generate.isPending}
                     onClick={() => generate.mutate('local')}
                   >
                     无模型时生成规则草案

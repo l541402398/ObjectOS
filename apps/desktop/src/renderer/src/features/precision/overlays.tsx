@@ -425,7 +425,7 @@ export function CommandPalette({
         <div className="pw-portal pw-theme" data-theme={theme}>
         <Dialog.Overlay className="pw-dialog-overlay" />
         <Dialog.Content className="pw-command" aria-describedby={undefined}>
-          <Dialog.Title className="pw-sr-only">命令面板</Dialog.Title>
+          <Dialog.Title className="pw-sr-only">搜索或跳转</Dialog.Title>
           <div className="pw-command-input">
             <Command size={16} aria-hidden="true" />
             <input
@@ -447,16 +447,16 @@ export function CommandPalette({
                   if (command) run(command)
                 }
               }}
-              placeholder="输入命令或搜索页面…"
-              aria-label="命令搜索"
+              placeholder="搜索页面或操作…"
+              aria-label="搜索页面或操作"
               autoComplete="off"
               spellCheck={false}
             />
             <kbd>ESC</kbd>
           </div>
-          <div className="pw-command-list" role="listbox" aria-label="命令列表">
+          <div className="pw-command-list" role="listbox" aria-label="搜索结果">
             {filtered.length === 0 ? (
-              <p className="pw-command-empty">没有匹配的命令。尝试“需求”“流程”或“主题”。</p>
+              <p className="pw-command-empty">没有匹配的操作。尝试“需求”“流程”或“主题”。</p>
             ) : (
               filtered.map((command, index) => (
                 <button

@@ -1,0 +1,22 @@
+[PASS] Manually authenticated session survives desktop restart
+[PASS] Create organization through desktop UI
+[PASS] Create shared project through desktop UI
+[PASS] Owner membership is visible
+locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for getByTestId('worker-enroll')
+    - locator resolved to <button type="button" aria-expanded="false" data-testid="worker-enroll" class="org-button is-primary">…</button>
+  - attempting click action
+    - waiting for element to be visible, enabled and stable
+  - element was detached from the DOM, retrying
+
+    at C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\scripts\organization-desktop-ui-e2e.mjs:58:45 {
+  log: [
+    "  - waiting for getByTestId('worker-enroll')",
+    '    - locator resolved to <button type="button" aria-expanded="false" data-testid="worker-enroll" class="org-button is-primary">…</button>',
+    '  - attempting click action',
+    '    - waiting for element to be visible, enabled and stable',
+    '  - element was detached from the DOM, retrying'
+  ],
+  name: 'TimeoutError'
+}

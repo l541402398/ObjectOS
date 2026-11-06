@@ -1,0 +1,258 @@
+[
+  {
+    "theme": "light",
+    "width": 1440,
+    "height": 900,
+    "zoom": 1,
+    "innerWidth": 1440,
+    "innerHeight": 900,
+    "dpr": 1,
+    "editor": {
+      "x": 37,
+      "y": 241.328125,
+      "width": 1366,
+      "height": 577.671875,
+      "bottom": 819
+    },
+    "footer": {
+      "x": 37,
+      "y": 831,
+      "width": 1366,
+      "height": 36,
+      "bottom": 867
+    },
+    "sliders": [
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)"
+    ],
+    "screenshot": "screenshots/final-code-light-1440-100.png"
+  },
+  {
+    "theme": "light",
+    "width": 1440,
+    "height": 900,
+    "zoom": 1.25,
+    "innerWidth": 1152,
+    "innerHeight": 720,
+    "dpr": 1.25,
+    "editor": {
+      "x": 36.79999923706055,
+      "y": 240.9499969482422,
+      "width": 1078.4000244140625,
+      "height": 398.25,
+      "bottom": 639.1999969482422
+    },
+    "footer": {
+      "x": 36.79999923706055,
+      "y": 651.2000122070312,
+      "width": 1078.4000244140625,
+      "height": 36,
+      "bottom": 687.2000122070312
+    },
+    "sliders": [
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)"
+    ],
+    "screenshot": "screenshots/final-code-light-1440-125.png"
+  },
+  {
+    "theme": "light",
+    "width": 1024,
+    "height": 768,
+    "zoom": 1,
+    "innerWidth": 1024,
+    "innerHeight": 768,
+    "dpr": 1,
+    "editor": {
+      "x": 37,
+      "y": 241.328125,
+      "width": 950,
+      "height": 445.671875,
+      "bottom": 687
+    },
+    "footer": {
+      "x": 37,
+      "y": 699,
+      "width": 950,
+      "height": 36,
+      "bottom": 735
+    },
+    "sliders": [
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)"
+    ],
+    "screenshot": "screenshots/final-code-light-1024-100.png"
+  },
+  {
+    "theme": "light",
+    "width": 1024,
+    "height": 768,
+    "zoom": 1.25,
+    "innerWidth": 819,
+    "innerHeight": 614,
+    "dpr": 1.25,
+    "editor": {
+      "x": 28.80000114440918,
+      "y": 236.9499969482422,
+      "width": 761.6000366210938,
+      "height": 300.6499938964844,
+      "bottom": 537.5999908447266
+    },
+    "footer": {
+      "x": 28.80000114440918,
+      "y": 549.6000366210938,
+      "width": 761.6000366210938,
+      "height": 36,
+      "bottom": 585.6000366210938
+    },
+    "sliders": [
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)",
+      "rgba(66, 88, 132, 0.18)"
+    ],
+    "screenshot": "screenshots/final-code-light-1024-125.png"
+  },
+  {
+    "theme": "dark",
+    "width": 1024,
+    "height": 768,
+    "zoom": 1.25,
+    "innerWidth": 819,
+    "innerHeight": 614,
+    "dpr": 1.25,
+    "editor": {
+      "x": 28.80000114440918,
+      "y": 236.9499969482422,
+      "width": 761.6000366210938,
+      "height": 300.6499938964844,
+      "bottom": 537.5999908447266
+    },
+    "footer": {
+      "x": 28.80000114440918,
+      "y": 549.6000366210938,
+      "width": 761.6000366210938,
+      "height": 36,
+      "bottom": 585.6000366210938
+    },
+    "sliders": [
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)"
+    ],
+    "screenshot": "screenshots/final-code-dark-1024-125.png"
+  },
+  {
+    "theme": "dark",
+    "width": 1024,
+    "height": 768,
+    "zoom": 1,
+    "innerWidth": 1024,
+    "innerHeight": 768,
+    "dpr": 1,
+    "editor": {
+      "x": 37,
+      "y": 241.328125,
+      "width": 950,
+      "height": 445.671875,
+      "bottom": 687
+    },
+    "footer": {
+      "x": 37,
+      "y": 699,
+      "width": 950,
+      "height": 36,
+      "bottom": 735
+    },
+    "sliders": [
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)"
+    ],
+    "screenshot": "screenshots/final-code-dark-1024-100.png"
+  },
+  {
+    "theme": "dark",
+    "width": 1440,
+    "height": 900,
+    "zoom": 1,
+    "innerWidth": 1440,
+    "innerHeight": 900,
+    "dpr": 1,
+    "editor": {
+      "x": 37,
+      "y": 241.328125,
+      "width": 1366,
+      "height": 577.671875,
+      "bottom": 819
+    },
+    "footer": {
+      "x": 37,
+      "y": 831,
+      "width": 1366,
+      "height": 36,
+      "bottom": 867
+    },
+    "sliders": [
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)"
+    ],
+    "screenshot": "screenshots/final-code-dark-1440-100.png"
+  },
+  {
+    "theme": "dark",
+    "width": 1440,
+    "height": 900,
+    "zoom": 1.25,
+    "innerWidth": 1152,
+    "innerHeight": 720,
+    "dpr": 1.25,
+    "editor": {
+      "x": 36.79999923706055,
+      "y": 240.9499969482422,
+      "width": 1078.4000244140625,
+      "height": 398.25,
+      "bottom": 639.1999969482422
+    },
+    "footer": {
+      "x": 36.79999923706055,
+      "y": 651.2000122070312,
+      "width": 1078.4000244140625,
+      "height": 36,
+      "bottom": 687.2000122070312
+    },
+    "sliders": [
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)",
+      "rgba(217, 230, 255, 0.16)"
+    ],
+    "screenshot": "screenshots/final-code-dark-1440-125.png"
+  }
+]

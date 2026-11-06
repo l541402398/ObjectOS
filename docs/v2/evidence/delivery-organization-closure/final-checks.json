@@ -1,0 +1,62 @@
+{
+  "head": "0c2973ef4efbc0f6c5a1b512c55533d4c206ce00",
+  "sourceHash": "67fa422bfa1fcc34fa19e1493e4de02706c50475bc7761f9e4fcfd16e4430c9c",
+  "checks": [
+    {
+      "command": "pnpm lint",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-06T07:13:59.245Z",
+      "finishedAt": "2026-11-06T07:15:00.974Z",
+      "log": "lint-verified.log"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-06T07:15:00.975Z",
+      "finishedAt": "2026-11-06T07:15:52.857Z",
+      "log": "typecheck-verified.log"
+    },
+    {
+      "command": "pnpm exec vitest run tests/org-job-runtime.test.ts tests/org-local-worker.test.ts --maxWorkers=1",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-06T07:15:52.858Z",
+      "finishedAt": "2026-11-06T07:16:16.251Z",
+      "log": "remote-final-tests.log"
+    },
+    {
+      "command": "C:\\Program Files\\nodejs\\node.exe scripts/v13-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-06T07:16:16.253Z",
+      "finishedAt": "2026-11-06T07:16:32.738Z",
+      "log": "v13-e2e.log"
+    },
+    {
+      "command": "pnpm package:dir",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-06T07:16:32.739Z",
+      "finishedAt": "2026-11-06T07:17:24.127Z",
+      "log": "package-dir.log"
+    },
+    {
+      "command": "pnpm test:package",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-06T07:17:24.129Z",
+      "finishedAt": "2026-11-06T07:17:34.884Z",
+      "log": "package-smoke.log"
+    },
+    {
+      "command": "C:\\Program Files\\nodejs\\node.exe scripts/delivery-desktop-audit.mjs --packaged",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-06T07:17:34.884Z",
+      "finishedAt": "2026-11-06T07:19:23.146Z",
+      "log": "packaged-ui-session.log"
+    }
+  ]
+}

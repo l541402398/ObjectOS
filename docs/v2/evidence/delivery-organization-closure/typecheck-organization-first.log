@@ -1,0 +1,6 @@
+
+> projectos@1.7.0 typecheck C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4
+> tsc -p tsconfig.json --noEmit
+
+apps/runtime/src/organization-jobs.ts(47,157): error TS2322: Type '"todo"' is not assignable to type '"done" | "cancelled" | "backlog" | "ready" | "running" | "review" | "blocked"'.
+ ELIFECYCLE  Command failed with exit code 2.

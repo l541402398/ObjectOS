@@ -449,6 +449,7 @@ export class ActionCenter {
       if (!settings.autoAdvancePhases.includes(version.phase)) continue
       const next = this.lifecycle.nextGatedPhase(version.phase)
       if (!next) continue
+      if (!this.lifecycle.canTransitionVersion(version.id, next)) continue
       try {
         const updated = this.lifecycle.transitionVersion({ versionId: version.id, to: next })
         advanced.push({ versionId: version.id, from: version.phase, to: updated.phase })

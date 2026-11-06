@@ -6,6 +6,8 @@ import {
   WorkerInternalSchemas,
   WorkerGrantInputSchema,
   WorkerServerListSchema,
+  WorkerJobInternalSchemas,
+  WorkerJobLeaseSchema,
   type LocalWorkerGrant,
   type WorkerInternalScope,
   type WorkerDesktopList,
@@ -40,6 +42,11 @@ export interface WorkerHost {
   persist: (worker: StoredWorker) => void
 }
 type WorkerMethod =
+  | 'organization.workerJobs'
+  | 'organization.submitWorkerJob'
+  | 'organization.acceptWorkerJob'
+  | 'organization.cancelWorkerJob'
+  | 'organization.reconcileWorkerJob'
   | 'organization.workers'
   | 'organization.enrollWorker'
   | 'organization.changeWorker'
@@ -47,6 +54,7 @@ type WorkerMethod =
   | 'organization.revokeWorkerGrant'
 export const isWorkerMethod = (method: string): method is WorkerMethod =>
   [
+    'organization.workerJobs', 'organization.submitWorkerJob', 'organization.acceptWorkerJob', 'organization.cancelWorkerJob','organization.reconcileWorkerJob',
     'organization.workers',
     'organization.enrollWorker',
     'organization.changeWorker',
@@ -128,6 +136,24 @@ export class OrganizationWorkerBridge {
   async execute(host: WorkerHost, method: WorkerMethod, raw: unknown): Promise<unknown> {
     const input = OrganizationApiSchemas[method].input.parse(raw)
     const credential = host.credential()
+    const jobsPrefix = `/v1/organizations/${encodeURIComponent(host.scope.organizationId)}/worker-jobs`
+    if (method === 'organization.workerJobs') return host.request(jobsPrefix)
+    if (method === 'organization.submitWorkerJob') return host.request(jobsPrefix, 'POST', { ...OrganizationApiSchemas[method].input.parse(input), id: randomUUID() })
+    if (method === 'organization.cancelWorkerJob') return host.request(`${jobsPrefix}/${OrganizationApiSchemas[method].input.parse(input).jobId}`, 'DELETE')
+    if(method==='organization.reconcileWorkerJob'){const {jobId,note}=OrganizationApiSchemas[method].input.parse(input);return host.request(`${jobsPrefix}/${jobId}/reconcile`,'POST',{note})}
+    if (method === 'organization.acceptWorkerJob') {
+      if (!credential) throw new AppError('FORBIDDEN', '请先登记此设备并授权本机目录。')
+      const { jobId } = OrganizationApiSchemas[method].input.parse(input)
+      const local = await this.local(host)
+      if (local.instanceId !== credential.instanceId) throw new AppError('FORBIDDEN', '本机实例已经改变。')
+      const lease = WorkerJobLeaseSchema.parse(await host.request(`${jobsPrefix}/${jobId}/workers/${credential.registrationId}/claim`, 'POST', {}, credential.secret))
+      host.assertCurrent()
+      // A lost claim response is not retried. A started lease cannot be reclaimed.
+      const payload = WorkerJobInternalSchemas['runtime.worker.acceptJob'].input.parse({ ...host.scope, lease, secret: credential.secret })
+      const result = await this.ports.runtime('runtime.worker.acceptJob', payload)
+      host.assertCurrent()
+      return WorkerJobInternalSchemas['runtime.worker.acceptJob'].output.parse(result)
+    }
     if (method === 'organization.workers') {
       await this.sync(host)
       return this.view(host)

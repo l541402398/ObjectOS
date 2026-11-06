@@ -1,4 +1,7 @@
 import { z } from 'zod'
+import { WorkerJobSubmitSchema, WorkerJobSchema, WorkerJobsSchema } from '@projectos/organization-contracts'
+export { WorkerJobInternalSchemas, WorkerJobLeaseSchema, WorkerJobSchema, WorkerJobsSchema } from '@projectos/organization-contracts'
+export type { WorkerJob } from '@projectos/organization-contracts'
 import {
   WorkerDesktopListSchema,
   WorkerStateInputSchema,
@@ -51,6 +54,7 @@ export type {
 /** Renderer-safe views: the bearer token is deliberately absent from every IPC output. */
 export const OrganizationSessionViewSchema = DesktopSessionSchema.omit({ token: true })
 export const OrganizationConnectionViewSchema = z.object({
+  loginPending:z.boolean().optional(), loginServerUrl:z.string().optional(),
   status: z.enum(['local', 'connected', 'offline', 'expired']),
   serverUrl: z.string().nullable(),
   session: OrganizationSessionViewSchema.nullable(),
@@ -102,6 +106,11 @@ const empty = z.object({}).strict()
 const ok = z.object({ ok: z.literal(true) })
 const id = z.string().min(1).max(128)
 export const OrganizationApiSchemas = {
+  'organization.workerJobs': { input: empty, output: WorkerJobsSchema },
+  'organization.submitWorkerJob': { input: WorkerJobSubmitSchema.omit({ id: true }), output: WorkerJobSchema },
+  'organization.acceptWorkerJob': { input: z.object({ jobId: z.uuid() }).strict(), output: z.object({ runId: id }) },
+  'organization.cancelWorkerJob': { input: z.object({ jobId: z.uuid() }).strict(), output: ok },
+  'organization.reconcileWorkerJob': { input: z.object({jobId:z.uuid(),note:z.string().trim().min(8).max(2000)}).strict(),output:ok },
   'organization.workers': { input: empty, output: WorkerDesktopListSchema },
   'organization.enrollWorker': {
     input: z.object({ name: z.string().trim().min(1).max(60) }).strict(),

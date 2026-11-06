@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { GitDeliveryApiSchemas } from './git-delivery.js'
 import { RequirementWorkApiSchemas } from './requirement-work.js'
 import { RequirementFlowApiSchemas } from './requirement-flow.js'
 import { ORGANIZATION_MAIN_METHODS, OrganizationApiSchemas } from './organization.js'
@@ -360,6 +361,7 @@ const projectIdInput = z.object({ projectId: IdSchema })
 
 /** Renderer → Main → Runtime request catalogue. Inputs are validated at both boundaries. */
 export const ApiSchemas = {
+  ...GitDeliveryApiSchemas,
   ...RequirementWorkApiSchemas,
   ...RequirementFlowApiSchemas,
   ...OrganizationApiSchemas,

@@ -1,0 +1,16 @@
+ M apps/desktop/src/renderer/src/features/orchestration/pages/OrchestrationWorkspace.tsx
+ M apps/desktop/src/renderer/src/pages/ProjectCenterPage.tsx
+ M apps/desktop/src/renderer/src/pages/RequirementPlanDialog.tsx
+ M apps/desktop/src/renderer/src/pages/RequirementWorkPage.tsx
+ M apps/desktop/src/renderer/src/pages/WorkCenterPage.tsx
+ M apps/desktop/src/renderer/src/pages/requirement-work.css
+ M apps/runtime/src/action-center.ts
+ M apps/runtime/src/dispatcher.ts
+ M apps/runtime/src/lifecycle.ts
+ M apps/runtime/src/orchestration.ts
+ M apps/runtime/src/planner-context.ts
+ M apps/runtime/src/requirement-flow.ts
+ M apps/runtime/src/requirement-work.ts
+ M docs/design/DESIGN_CHANGELOG.md
+ M packages/worktree/src/index.ts
+?? pelican-bicycle-2d.html

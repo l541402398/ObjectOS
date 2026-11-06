@@ -1,0 +1,9 @@
+[PASS] Create local project through UI and write real README 
+[PASS] Create requirement with persisted workflow through UI 
+[PASS] Create requirement-owned task through UI 
+[PASS] Project, requirement and task survive real desktop restart 
+[PASS] Personal mode remains available without organization login 
+[PASS] Desktop opens real browser login request 
+USER_ACTION: Complete registration/sign-in and device consent in the opened local browser.
+[PASS] Real browser PKCE login returns to desktop 
+[PASS] No renderer exceptions 

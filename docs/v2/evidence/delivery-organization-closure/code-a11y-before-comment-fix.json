@@ -1,0 +1,156 @@
+{
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "nodes": [
+        {
+          "target": [
+            ".view-line:nth-child(2) > span > .mtk9:nth-child(1)"
+          ],
+          "html": "<span class=\"mtk9\">//&nbsp;Review&nbsp;line&nbsp;71:&nbsp;original&nbsp;source&nbsp;remains&nbsp;availab</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(2) > span > .mtk9:nth-child(2)"
+          ],
+          "html": "<span class=\"mtk9\">le&nbsp;through&nbsp;vertical&nbsp;scrolling.</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(3) > span > .mtk9:nth-child(1)"
+          ],
+          "html": "<span class=\"mtk9\">//&nbsp;Review&nbsp;line&nbsp;72:&nbsp;original&nbsp;source&nbsp;remains&nbsp;availab</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(3) > span > .mtk9:nth-child(2)"
+          ],
+          "html": "<span class=\"mtk9\">le&nbsp;through&nbsp;vertical&nbsp;scrolling.</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(4) > span > .mtk9:nth-child(1)"
+          ],
+          "html": "<span class=\"mtk9\">//&nbsp;Review&nbsp;line&nbsp;73:&nbsp;original&nbsp;source&nbsp;remains&nbsp;availab</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(4) > span > .mtk9:nth-child(2)"
+          ],
+          "html": "<span class=\"mtk9\">le&nbsp;through&nbsp;vertical&nbsp;scrolling.</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(5) > span > .mtk9:nth-child(1)"
+          ],
+          "html": "<span class=\"mtk9\">//&nbsp;Review&nbsp;line&nbsp;74:&nbsp;original&nbsp;source&nbsp;remains&nbsp;availab</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(5) > span > .mtk9:nth-child(2)"
+          ],
+          "html": "<span class=\"mtk9\">le&nbsp;through&nbsp;vertical&nbsp;scrolling.</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(6) > span > .mtk9:nth-child(1)"
+          ],
+          "html": "<span class=\"mtk9\">//&nbsp;Review&nbsp;line&nbsp;75:&nbsp;original&nbsp;source&nbsp;remains&nbsp;availab</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(6) > span > .mtk9:nth-child(2)"
+          ],
+          "html": "<span class=\"mtk9\">le&nbsp;through&nbsp;vertical&nbsp;scrolling.</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(7) > span > .mtk9:nth-child(1)"
+          ],
+          "html": "<span class=\"mtk9\">//&nbsp;Review&nbsp;line&nbsp;76:&nbsp;original&nbsp;source&nbsp;remains&nbsp;availab</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(7) > span > .mtk9:nth-child(2)"
+          ],
+          "html": "<span class=\"mtk9\">le&nbsp;through&nbsp;vertical&nbsp;scrolling.</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(8) > span > .mtk9:nth-child(1)"
+          ],
+          "html": "<span class=\"mtk9\">//&nbsp;Review&nbsp;line&nbsp;77:&nbsp;original&nbsp;source&nbsp;remains&nbsp;availab</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(8) > span > .mtk9:nth-child(2)"
+          ],
+          "html": "<span class=\"mtk9\">le&nbsp;through&nbsp;vertical&nbsp;scrolling.</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(9) > span > .mtk9:nth-child(1)"
+          ],
+          "html": "<span class=\"mtk9\">//&nbsp;Review&nbsp;line&nbsp;78:&nbsp;original&nbsp;source&nbsp;remains&nbsp;availab</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(9) > span > .mtk9:nth-child(2)"
+          ],
+          "html": "<span class=\"mtk9\">le&nbsp;through&nbsp;vertical&nbsp;scrolling.</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(10) > span > .mtk9:nth-child(1)"
+          ],
+          "html": "<span class=\"mtk9\">//&nbsp;Review&nbsp;line&nbsp;79:&nbsp;original&nbsp;source&nbsp;remains&nbsp;availab</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(10) > span > .mtk9:nth-child(2)"
+          ],
+          "html": "<span class=\"mtk9\">le&nbsp;through&nbsp;vertical&nbsp;scrolling.</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(11) > span > .mtk9:nth-child(1)"
+          ],
+          "html": "<span class=\"mtk9\">//&nbsp;Review&nbsp;line&nbsp;80:&nbsp;original&nbsp;source&nbsp;remains&nbsp;availab</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            ".view-line:nth-child(11) > span > .mtk9:nth-child(2)"
+          ],
+          "html": "<span class=\"mtk9\">le&nbsp;through&nbsp;vertical&nbsp;scrolling.</span>",
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.3 (foreground color: #4b5a73, background color: #b8d0ce, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    }
+  ],
+  "incomplete": [
+    {
+      "id": "color-contrast",
+      "nodes": 30
+    }
+  ]
+}

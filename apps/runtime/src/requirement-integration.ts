@@ -6,7 +6,8 @@ import type { SqliteStore } from '@projectos/persistence'
 import { evaluateToolPolicy } from '@projectos/policy'
 import { runApprovedCommand } from '@projectos/workspace'
 import { PROJECT_EVENT_TYPES } from '@projectos/domain'
-import { managedTaskRoot } from './requirement-work.js'
+import { managedTaskWorkspace } from './requirement-work.js'
+import { projectVerification } from './verification-choice.js'
 import { recollectForReview } from './review-snapshot-collector.js'
 import { assertSafeGitAttributes, assertIntegratedDependencies, gitPaths, gitText, hash, integrationDiff, integrationRoot, requirementGit, taskContent } from './requirement-git.js'
 
@@ -38,15 +39,30 @@ export class RequirementIntegrationService {
     return this.store.db.prepare(`SELECT ${COLUMNS} FROM task_integration_operations WHERE requirement_id=? ORDER BY created_at DESC,id DESC LIMIT 200`).all(requirementId).map(row => TaskIntegrationOperationSchema.parse(row))
   }
 
+  resolvedGate(taskId: string) {
+    const { snapshot, content, blockers, integrated } = this.capture(taskId)
+    if (integrated) blockers.push('成果已经合入')
+    if (!this.review(snapshot,content.snapshot).approved) blockers.push('任务当前成果需要完整审查')
+    if (!this.verification(snapshot).passed) blockers.push('任务当前成果需要实际验证')
+    if (blockers.length) throw new AppError('CONFLICT',blockers.join('；'))
+    return snapshot
+  }
+  recordResolved(snapshot: ReturnType<RequirementIntegrationService['resolvedGate']>, operation: {id:string;approvalId:string;runId:string;toolCallId:string}, resultCommit:string) {
+    this.store.db.prepare(`INSERT INTO task_integration_operations(id,task_id,requirement_id,kind,approval_id,run_id,tool_call_id,status,snapshot_json,source_commit,result_commit,created_at,updated_at) VALUES(?,?,?,'integrate',?,?,?,'completed',?,?,?,?,?)`)
+      .run(operation.id,snapshot.taskId,snapshot.requirementId,operation.approvalId,operation.runId,operation.toolCallId,JSON.stringify(snapshot),snapshot.sourceHead,resultCommit,now(),now())
+    this.event(snapshot,'task.integration.updated','冲突解决结果经独立审批合入需求分支')
+  }
+
   private capture(taskId: string, ownRunId?: string) {
     const task = this.store.read.getTask(taskId)
     if (!task?.requirementId) throw new AppError('BAD_REQUEST', '请选择需求中的开发任务')
-    const sourceRoot = managedTaskRoot(this.store, task)!
+    const managed = managedTaskWorkspace(this.store, task)!
+    const sourceRoot = managed.root
     const workspace = this.store.read.getTaskWorkspace(task.id)!
-    const target = integrationRoot(this.store, task)
+    const target = integrationRoot(this.store, task, managed.projectIdentity)
     const requirement = this.store.read.getRequirement(task.requirementId)!
     if (!requirement || requirement.projectId !== task.projectId) throw new AppError('CONFLICT', '需求与任务归属不一致')
-    const content = taskContent(sourceRoot, workspace.baseCommit, task)
+    const content = taskContent(sourceRoot, workspace.baseCommit, task, managed.identity)
     const dependencies = assertIntegratedDependencies(this.store, task, sourceRoot)
     const active = this.store.read.getActiveRunForTask(task.id)
     const lease = this.store.read.getTaskLease(task.id)
@@ -208,9 +224,9 @@ export class RequirementIntegrationService {
       if (!this.verification(snapshot).passed) blockers.push('当前代码尚未通过实际验证')
       if (blockers.length) throw new AppError('CONFLICT', blockers.join('；'))
     } else {
-      if (!input.command?.trim()) throw new AppError('BAD_REQUEST', '请填写实际验证命令')
+      if (!input.command?.trim()) input={...input,command:projectVerification(snapshot.sourceRoot).command}
       if (task.status === 'cancelled') throw new AppError('CONFLICT', '已取消任务不能验证')
-      snapshot.command = input.command
+      snapshot.command = input.command!
     }
     const toolName = TOOL_NAMES[input.kind]
     if (evaluateToolPolicy({ rootPath: snapshot.sourceRoot, toolName, args: { ...snapshot, command: snapshot.command } }).decision !== 'require_approval') throw new AppError('POLICY_DENIED', '此操作需要独立人工授权')
@@ -223,7 +239,7 @@ export class RequirementIntegrationService {
       const args = { ...snapshot, operation: input.kind }
       const tool = this.store.createToolCall({ runId, toolName, idempotencyKey: id, status: 'waiting_approval', argsHash: hash(args), args })
       const approval = this.store.createApproval({ projectId: task.projectId, runId, toolCallId: tool.id, title: `${TITLES[input.kind]} · ${task.title}`.slice(0, 240),
-        detail: input.kind === 'verify' ? `在任务独立目录执行：${snapshot.command}。命令可能修改文件；只有源内容保持一致且退出成功才算验证通过。`
+        detail: input.kind === 'verify' ? '在任务独立目录运行项目自动测试。测试可能修改文件；只有源内容保持一致且执行成功才算验证通过。具体程序与范围请展开执行详情核对。'
           : `提交本次审查的 ${snapshot.files.length} 个改动文件，并合入需求分支 ${snapshot.targetBranch}。合并冲突时中止本次合并；不修改项目主分支，不推送，不交付需求。`,
         request: { toolName, args, risk: input.kind === 'verify' ? 'process' : 'git-write', reason: '仅授权本次固定内容和目标的操作' }, expiresAt: timestamp + 10 * 60_000 })
       this.store.db.prepare(`INSERT INTO task_integration_operations(id,task_id,requirement_id,kind,approval_id,run_id,tool_call_id,status,snapshot_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,'waiting_approval',?,?,?)`)

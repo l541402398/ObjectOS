@@ -172,6 +172,19 @@ describe('Main organization connection — real HTTP login and safe session stat
     ).toBe(401)
   })
 
+  it('exposes pending login after settings remount without exposing PKCE or bearer material',async()=>{
+    const opened=deferred<string>()
+    const f=setup({openExternal:async url=>{opened.resolve(url)}})
+    const connecting=connect(f.connection)
+    await opened.promise
+    const waiting=await f.connection.status()
+    expect(waiting).toMatchObject({status:'local',loginPending:true,loginServerUrl:origin})
+    expect(JSON.stringify(waiting)).not.toMatch(/code_challenge|verifier|state=/)
+    await browser(await opened.promise)
+    const completed=await connecting
+    expect(completed.status).toBe('connected');expect(completed.loginPending).toBeUndefined()
+  })
+
   it('signs out while Runtime is unavailable and durably clears local authority after recovery', async () => {
     const fixture = setup()
     await connect(fixture.connection)

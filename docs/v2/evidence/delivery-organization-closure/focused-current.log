@@ -1,0 +1,125 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ ❯ tests/requirement-work.test.ts (16 tests | 1 failed) 30159ms
+   ❯ requirement delivery scope and isolated development work (16)
+     × never stages or commits an unborn project while preparing an approval preview 937ms
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ ❯ tests/org-job-runtime.test.ts (2 tests | 2 failed) 30064ms
+   × rechecks live authority after write approval, keeps the file untouched and persists no bearer 15038ms
+   × rejects a path outside the granted directory before creating a file approval 15023ms
+ ❯ tests/verification-choice.test.ts (3 tests | 1 failed) 74ms
+   × requires real discoverable tests, ignores dependencies and never turns missing tests into success 33ms
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/org-job-runtime.test.ts > rechecks live authority after write approval, keeps the file untouched and persists no bearer
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/org-job-runtime.test.ts:30:1
+     28|   return {...h,project,local,grant,job,token,secret,scope,jobs,revoke:…
+     29| }
+     30| it('rechecks live authority after write approval, keeps the file untou…
+       | ^
+     31|   const f=await fixture(),run=await f.accept()
+     32|   await waitFor(()=>f.store.read.listApprovalViews(f.project.id,run.ru…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/org-job-runtime.test.ts > rejects a path outside the granted directory before creating a file approval
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/org-job-runtime.test.ts:44:1
+     42|   await expect(f.accept()).rejects.toThrow(/记录/)
+     43| },15000)
+     44| it('rejects a path outside the granted directory before creating a fil…
+       | ^
+     45|   const f=await fixture('outside.txt'),run=await f.accept()
+     46|   await waitFor(()=>f.store.read.getRun(run.runId)?.status==='failed')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/requirement-work.test.ts > requirement delivery scope and isolated development work > never stages or commits an unborn project while preparing an approval preview
+AssertionError: expected [Function] to throw error matching /初始提交/ but got '项目尚无有效代码基线，请先完成项目初始化后重试；准备预览不会自动提交文件'
+
+- Expected:
+/初始提交/
+
++ Received:
+"项目尚无有效代码基线，请先完成项目初始化后重试；准备预览不会自动提交文件"
+
+ ❯ tests/requirement-work.test.ts:47:86
+     45|     writeFileSync(join(project.rootPath, '.env'), 'LOCAL_TEST_SECRET=n…
+     46|     const before = git(project.rootPath, 'status', '--porcelain=v1', '…
+     47|     expect(() => f.work.request({ taskId: task.id, expectedVersion: ta…
+       |                                                                                      ^
+     48|     expect(git(project.rootPath, 'status', '--porcelain=v1', '-uall'))…
+     49|     expect(git(project.rootPath, 'diff', '--cached', '--name-only')).t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/verification-choice.test.ts > requires real discoverable tests, ignores dependencies and never turns missing tests into success
+AssertionError: expected [Function] to throw error matching /补充测试/ but got '文件不存在：pytest.ini'
+
+- Expected:
+/补充测试/
+
++ Received:
+"文件不存在：pytest.ini"
+
+ ❯ tests/verification-choice.test.ts:16:41
+     14|   const root=fixture();mkdirSync(join(root,'node_modules'));writeFileS…
+     15|   writeFileSync(join(root,'package.json'),JSON.stringify({scripts:{tes…
+     16|   expect(()=>projectVerification(root)).toThrow(/补充测试/)
+       |                                         ^
+     17|   writeFileSync(join(root,'storage.test.cjs'),"require('node:test')('r…
+     18|   expect(projectVerification(root).command).toBe('node --test')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  3 failed | 3 passed (6)
+      Tests  4 failed | 47 passed (51)
+   Start at  21:24:17
+   Duration  216.85s (tests 97%, import 2%)
+

@@ -81,6 +81,7 @@ export class OrganizationConnection {
   private readonly path: string
   private vault = emptyVault()
   private login: AbortController | null = null
+  private loginServerUrl: string | null = null
   private generation = 0
   private offline = false
   private contextChanging = false
@@ -161,6 +162,7 @@ export class OrganizationConnection {
     const connection = this.vault.connection
     return this.publicValue(
       OrganizationConnectionViewSchema.parse({
+        ...(this.login&&!connection ? {loginPending:true,loginServerUrl:this.loginServerUrl??undefined}:{}),
         status: !connection
           ? 'local'
           : connection.invalidated || connection.session.expiresAt <= Date.now()
@@ -483,6 +485,7 @@ export class OrganizationConnection {
       const serverUrl = organizationOrigin(String(input.serverUrl))
       const controller = new AbortController()
       this.login = controller
+      this.loginServerUrl=serverUrl
       let issuedToken: string | null = null
       try {
         await this.revokePending()
@@ -518,7 +521,7 @@ export class OrganizationConnection {
           throw new AppError('TIMEOUT', '登录等待已超时，请重新连接。', { retryable: true })
         throw new AppError('BAD_REQUEST', '组织登录未完成，请检查服务地址或重试。')
       } finally {
-        if (this.login === controller) this.login = null
+        if (this.login === controller) {this.login = null;this.loginServerUrl=null}
       }
     }
     if (method === 'organization.disconnect') {

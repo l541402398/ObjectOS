@@ -52,7 +52,7 @@ export function CommandPalette({
   }
 
   return (
-    <DialogShell open={open} onOpenChange={(next) => { if (!next) onClose() }} ariaLabel="命令面板" width={640}>
+    <DialogShell open={open} onOpenChange={(next) => { if (!next) onClose() }} ariaLabel="搜索或跳转" width={640}>
       <div className="po-command">
         <div className="po-command-input">
           <SearchOutlined />
@@ -81,7 +81,7 @@ export function CommandPalette({
         </div>
         <div className="po-command-results">
           {filtered.length === 0 ? (
-            <div className="po-command-empty">没有匹配的命令</div>
+            <div className="po-command-empty">没有匹配的操作</div>
           ) : (
             filtered.map((command, index) => {
               const showGroup = index === 0 || filtered[index - 1]?.group !== command.group

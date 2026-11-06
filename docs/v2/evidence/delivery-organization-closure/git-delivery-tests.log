@@ -1,0 +1,76 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ ❯ tests/git-delivery.test.ts (3 tests | 2 failed) 61645ms
+   ❯ audited Git delivery (3)
+     × fetches and fast forwards only after approval, records side effects and separately reviews/verifies exact push 13957ms
+     × fully manually resolves in isolation, retains original three-way content after staging and gates integration 37254ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/git-delivery.test.ts > audited Git delivery > fetches and fast forwards only after approval, records side effects and separately reviews/verifies exact push
+AssertionError: expected 'remote\r\n' to be 'remote\n' // Object.is equality
+
+- Expected
++ Received
+
+- remote
++ remote
+
+
+ ❯ tests/git-delivery.test.ts:29:117
+     27|     expect((await f.approve(fetch)).status).toBe('completed')
+     28|     const pull=f.request('pull');expect(gitText(f.root,'rev-parse','HE…
+     29|     expect((await f.approve(pull)).status).toBe('completed');expect(re…
+       |                                                                                                                     ^
+     30|     f.commit(f.root,'local.txt','local\n');expect(()=>f.request('push'…
+     31|     f.service.review({subject:f.subject,resolutionId:'project',fingerp…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/git-delivery.test.ts > audited Git delivery > fully manually resolves in isolation, retains original three-way content after staging and gates integration
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/git-delivery.test.ts:37:3
+     35|     const detail=f.store.read.getRunDetail(push.runId)!;expect(detail.…
+     36|   },30000)
+     37|   it('fully manually resolves in isolation, retains original three-way…
+       |   ^
+     38|     const f=await fixture();f.commit(f.root,'shared.txt','base\n');git…
+     39|     f.commit(f.root,'shared.txt','ours\n');f.commit(f.other,'shared.tx…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+Error: database is not open
+ ❯ GitDeliveryService.row apps/runtime/src/git-delivery.ts:56:31
+
+ ❯ GitDeliveryService.finish apps/runtime/src/git-delivery.ts:439:22
+ ❯ apps/runtime/src/git-delivery.ts:258:56
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'ERR_INVALID_STATE' }
+This error originated in "tests/git-delivery.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The last test to run before this error was "invalidates changed approvals and never retries unknown external outcomes". This means either:
+- the error was thrown while Vitest was running this test, or
+- the error was thrown after the test completed, and this was the most recent test at that point.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+     Errors  1 error
+   Start at  19:42:58
+   Duration  64.74s (tests 96%, transform 2%, import 2%)
+

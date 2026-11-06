@@ -1,0 +1,14 @@
+warning: in the working copy of 'apps/desktop/src/renderer/src/features/orchestration/pages/OrchestrationWorkspace.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/desktop/src/renderer/src/pages/RequirementPlanDialog.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/desktop/src/renderer/src/pages/RequirementWorkPage.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/desktop/src/renderer/src/pages/WorkCenterPage.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/desktop/src/renderer/src/pages/requirement-work.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/runtime/src/action-center.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/runtime/src/dispatcher.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/runtime/src/lifecycle.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/runtime/src/orchestration.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/runtime/src/planner-context.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/runtime/src/requirement-flow.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/runtime/src/requirement-work.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/design/DESIGN_CHANGELOG.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'packages/worktree/src/index.ts', LF will be replaced by CRLF the next time Git touches it

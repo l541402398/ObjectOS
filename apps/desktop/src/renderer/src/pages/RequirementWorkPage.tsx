@@ -1,5 +1,5 @@
 import { RequirementPlanDialog } from './RequirementPlanDialog'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Form, Input, Select, Tabs, Radio, Tooltip } from 'antd'
@@ -79,15 +79,22 @@ function WorkEditor({ editor, projectId, view, onSaved, onClose }: {
     [selectedVersion, templates.data?.templates],
   )
   const title = editor.kind === 'requirement' ? '新建需求' : editor.kind === 'documents' ? '编辑需求文档' : '添加任务'
+  const saveLockRef = useRef(false)
   const save = useMutation({ mutationFn: async () => {
-    const values = await form.validateFields()
-    if (editor.kind === 'requirement') return (await window.projectos.requirements.create({ projectId, title: values.title, body: values.body ?? '', acceptanceCriteria: parseLines(values.acceptance ?? ''), source: 'local',
-      workflow: { templateVersionId: values.templateVersionId, assignmentMode: values.assignmentMode, assignments: {} } })).requirement.id
-    if (!req) throw new Error('需求已不可用，请重新打开')
-    if (editor.kind === 'documents') await window.projectos.requirements.update({ requirementId: req.id, expectedVersion: req.version, title: values.title, body: values.body ?? '', technicalDesign: values.technicalDesign ?? '', acceptanceCriteria: parseLines(values.acceptance ?? '') })
-    else await window.projectos.tasks.create({ projectId, requirementId: req.id, title: values.title, description: values.description ?? '', acceptanceCriteria: parseLines(values.acceptance ?? ''), dependsOn: values.dependsOn ?? [], workType: 'development' })
-    return req.id
-  }, onSuccess: async id => { setDirty(false); await onSaved(id); onClose() } })
+    if (saveLockRef.current) return undefined
+    saveLockRef.current = true
+    try {
+      const values = await form.validateFields()
+      if (editor.kind === 'requirement') return (await window.projectos.requirements.create({ projectId, title: values.title, body: values.body ?? '', acceptanceCriteria: parseLines(values.acceptance ?? ''), source: 'local',
+        workflow: { templateVersionId: values.templateVersionId, assignmentMode: values.assignmentMode, assignments: {} } })).requirement.id
+      if (!req) throw new Error('需求已不可用，请重新打开')
+      if (editor.kind === 'documents') await window.projectos.requirements.update({ requirementId: req.id, expectedVersion: req.version, title: values.title, body: values.body ?? '', technicalDesign: values.technicalDesign ?? '', acceptanceCriteria: parseLines(values.acceptance ?? '') })
+      else await window.projectos.tasks.create({ projectId, requirementId: req.id, title: values.title, description: values.description ?? '', acceptanceCriteria: parseLines(values.acceptance ?? ''), dependsOn: values.dependsOn ?? [], workType: 'development' })
+      return req.id
+    } finally {
+      saveLockRef.current = false
+    }
+  }, onSuccess: async id => { if (!id && editor.kind === 'requirement') return; setDirty(false); await onSaved(id); onClose() } })
   return <DialogShell open onOpenChange={open => { if (!open && !save.isPending) onClose() }} dirty={dirty} ariaLabel={flowEditor ? '创建流程' : title} width={flowEditor ? 1120 : 720}>
     <OverlayHeader title={flowEditor ? '创建流程' : title} />
     <OverlayScrollArea className="po-dialog-form-scroll rq-editor">
@@ -334,10 +341,39 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
   const effectiveSelectedTaskId = selectedTaskId ?? (!detailDismissed ? (data?.tasks[0]?.taskId ?? view.tasks[0]?.id ?? null) : null)
   const selectedFlow = data?.tasks.find(task => task.taskId === effectiveSelectedTaskId)
   const parallel = binding && data ? summarizeParallelStages(binding.graph, data.tasks) : null
+  const actionLockRef = useRef(false)
+  const assignAILockRef = useRef(false)
+  const [startingTaskId, setStartingTaskId] = useState<string | null>(null)
   const refresh = async () => { await Promise.all([onRefresh(), flow.refetch(), flow.data ? Promise.resolve() : Promise.resolve()]) }
-  const action = useMutation({ mutationFn: async (operation: () => Promise<unknown>) => { await operation(); await refresh() } })
+  const action = useMutation({ mutationFn: async (operation: () => Promise<unknown>) => {
+    if (actionLockRef.current) return
+    actionLockRef.current = true
+    try {
+      await operation()
+      await refresh()
+    } finally {
+      actionLockRef.current = false
+    }
+  } })
+  const assignAIMutation = useMutation({ mutationFn: async () => {
+    if (assignAILockRef.current) return
+    assignAILockRef.current = true
+    try {
+      await window.projectos.workflows.assignAI(req.id)
+      await refresh()
+    } finally {
+      assignAILockRef.current = false
+    }
+  } })
   const go = (path: string) => navigate(`/projects/${req.projectId}/${path}`)
-  const start = (taskId: string) => { setDetailDismissed(false); setSelectedTaskId(taskId); action.mutate(() => window.projectos.workflows.start(taskId)) }
+  const start = (taskId: string) => {
+    setDetailDismissed(false)
+    setSelectedTaskId(taskId)
+    setStartingTaskId(taskId)
+    action.mutate(() => window.projectos.workflows.start(taskId), {
+      onSettled: () => setStartingTaskId((curr) => (curr === taskId ? null : curr)),
+    })
+  }
   const bind = (templateVersionId: string) => action.mutate(() => window.projectos.workflows.bind({ requirementId: req.id, expectedRequirementVersion: req.version, templateVersionId, assignmentMode: binding?.assignmentMode ?? 'manual', assignments: {} }))
   const stageCount = binding?.graph.nodes.length ?? 0
   const materialCount = data?.materials.length ?? 0
@@ -411,7 +447,7 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
         <Button icon={<EditOutlined aria-hidden />} onClick={() => onEdit({ kind: 'documents' })}>编辑需求</Button>
       </div>
     </div>
-    {action.isError && <Alert type="error" showIcon message={errorMessage(action.error)} />}
+    {(action.isError || assignAIMutation.isError) && <Alert type="error" showIcon message={errorMessage(action.error ?? assignAIMutation.error)} />}
     {flow.isLoading ? <LoadingBlock label="正在读取需求流程" rows={3} /> : flow.isError ? <ErrorState title="流程读取失败" message={errorMessage(flow.error)} onRetry={() => void flow.refetch()} /> : !binding ? <div className="rq-bind-flow"><h3>先为这个需求选择流程</h3><div className="rq-inline-actions"><Select aria-label="选择需求流程" value={bindingVersion} onChange={setBindingVersion} options={templates.data?.templates.map(template => ({ value: template.versionId, label: template.name }))} /><Button type="primary" onClick={() => bind(bindingVersion)}>使用这个流程</Button><Button onClick={() => setTemplateEditor('new')}>新建流程</Button></div></div> : <>
       {data && <RequirementJourneyTrack
         projectId={req.projectId}
@@ -541,11 +577,11 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
                 )}
               </div>
               <div className="rq-inline-actions">
-                <Button disabled={!binding || req.status === 'implemented'} onClick={() => setPlanOpen(true)}>AI 拆分任务</Button>
+                <Button disabled={!binding || req.status === 'implemented' || planOpen || action.isPending || assignAIMutation.isPending} onClick={() => setPlanOpen(true)}>AI 拆分任务</Button>
                 {binding && view.tasks.length > 0 && (
-                  <Button loading={action.isPending} onClick={() => action.mutate(() => window.projectos.workflows.assignAI(req.id))}>AI 分配 Agent</Button>
+                  <Button loading={assignAIMutation.isPending} disabled={assignAIMutation.isPending || action.isPending} onClick={() => assignAIMutation.mutate()}>AI 分配 Agent</Button>
                 )}
-                <Button type={view.tasks.length ? 'default' : 'primary'} icon={<PlusOutlined aria-hidden />} disabled={!binding || req.status === 'implemented'} onClick={() => onEdit({ kind: 'task' })}>添加任务</Button>
+                <Button type={view.tasks.length ? 'default' : 'primary'} icon={<PlusOutlined aria-hidden />} disabled={!binding || req.status === 'implemented' || action.isPending || assignAIMutation.isPending} onClick={() => onEdit({ kind: 'task' })}>添加任务</Button>
               </div>
             </div>
 
@@ -637,7 +673,8 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
                               {taskFlow ? (
                                 <Button
                                   type={taskFlow.status === 'completed' || taskFlow.pendingApprovalId ? 'primary' : 'default'}
-                                  loading={action.isPending && selected}
+                                  loading={action.isPending && startingTaskId === task.id}
+                                  disabled={action.isPending && startingTaskId === task.id}
                                   onClick={() => {
                                     if (taskFlow.pendingApprovalId) {
                                       focusStepInDetail(task.id, activeSteps[0]?.id, true)

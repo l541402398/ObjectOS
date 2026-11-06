@@ -37,7 +37,7 @@ import { DesktopSessionSchema, type DesktopSession } from '@projectos/organizati
 const LOOPBACK_HOST = '127.0.0.1'
 const CALLBACK_PATH = '/callback'
 const CLIENT_ID = 'projectos-desktop'
-const DEFAULT_TIMEOUT_MS = 180_000
+const DEFAULT_TIMEOUT_MS = 10 * 60_000
 
 export interface DesktopLoginOptions {
   signal?: AbortSignal
@@ -47,7 +47,7 @@ export interface DesktopLoginOptions {
   openExternal: (authorizeUrl: string) => void | Promise<void>
   /** Injectable fetch for tests; defaults to global fetch (Node 24). */
   fetchImpl?: typeof fetch
-  /** Maximum time to wait for the browser callback. Default 180s. */
+  /** Human consent window, matching the server's ten-minute consent TTL. Code TTL stays 120s. */
   timeoutMs?: number
 }
 

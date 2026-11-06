@@ -33,7 +33,7 @@ const COORDINATION_TOOLS = new Set([
   'handoff_task',
 ])
 const PROCESS_TOOLS = new Set(['run_command', 'run_tests'])
-const GIT_WRITE_TOOLS = new Set(['git_commit', 'prepare_task_workspace', 'integrate_requirement_task'])
+const GIT_WRITE_TOOLS = new Set(['git_commit', 'prepare_task_workspace', 'integrate_requirement_task', 'git_delivery'])
 
 const PROTECTED_PATH_PATTERNS = [
   /(^|\/)\.git(\/|$)/i,

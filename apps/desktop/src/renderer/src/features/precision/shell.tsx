@@ -207,7 +207,7 @@ export function Sidebar({
               <div className="pw-pop-divider" />
               <button type="button" className="pw-pop-action" onClick={() => { setAccountOpen(false); onCommand() }}>
                 <span className="pw-pop-action-icon"><Command size={14} /></span>
-                命令面板
+                搜索或跳转
                 <kbd className="pw-kbd">Ctrl K</kbd>
               </button>
               <button type="button" className="pw-pop-action" onClick={onToggleTheme}>
@@ -282,7 +282,7 @@ export function TopBar({
           <SearchInput value={query} onChange={onQuery} placeholder="搜索需求" label="搜索需求和项目" shortcut="Ctrl K" />
         </div>
 
-        <button type="button" className="pw-icon-btn pw-command-trigger" aria-label="打开命令面板" title="命令面板 (Ctrl K)" onClick={onCommand}>
+        <button type="button" className="pw-icon-btn pw-command-trigger" aria-label="搜索或跳转" title="搜索或跳转 (Ctrl K)" onClick={onCommand}>
           <Command size={15} />
         </button>
 

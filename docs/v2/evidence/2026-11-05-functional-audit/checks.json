@@ -1,0 +1,92 @@
+[
+  {
+    "status": "PASS",
+    "detail": "Already up to date; HEAD=origin/codex/premium-system",
+    "command": "git fetch + git pull --ff-only"
+  },
+  {
+    "status": "PASS",
+    "detail": "0 errors, 44 warnings; boundaries OK",
+    "command": "pnpm lint"
+  },
+  {
+    "status": "PASS",
+    "command": "pnpm typecheck"
+  },
+  {
+    "status": "FAIL",
+    "detail": "637 passed, 1 timeout, 4 skipped; before compact-path fix",
+    "command": "pnpm run test --maxWorkers=2"
+  },
+  {
+    "status": "PASS",
+    "detail": "34 tests after final functional fix",
+    "command": "vitest requirement-work + worktree --maxWorkers=1"
+  },
+  {
+    "status": "FAIL",
+    "detail": "14 passed, same 30-second scenario timed out under concurrent work",
+    "command": "vitest requirement-integration --maxWorkers=1"
+  },
+  {
+    "status": "PASS",
+    "detail": "Final isolated run 29.76s, unchanged timeout/assertions; 14 filtered tests not executed",
+    "command": "vitest requirement-integration selected scenario --maxWorkers=1"
+  },
+  {
+    "status": "PASS",
+    "command": "pnpm build / pnpm package:dir"
+  },
+  {
+    "status": "PASS",
+    "command": "node scripts/e2e.mjs"
+  },
+  {
+    "status": "PASS",
+    "detail": "Local test provider regression, distinct from real DeepSeek UI acceptance",
+    "command": "node scripts/agent-e2e.mjs"
+  },
+  {
+    "status": "PASS",
+    "detail": "Local test provider regression",
+    "command": "node scripts/v12-e2e.mjs"
+  },
+  {
+    "status": "PASS",
+    "command": "node scripts/v13-e2e.mjs"
+  },
+  {
+    "status": "PASS",
+    "command": "pnpm test:package"
+  },
+  {
+    "status": "PASS",
+    "detail": "8 checks; real UI and user browser login",
+    "command": "functional-desktop-ui-e2e"
+  },
+  {
+    "status": "PASS",
+    "detail": "13 checks; failure attempts preserved",
+    "command": "organization-desktop-ui-e2e"
+  },
+  {
+    "status": "PASS",
+    "detail": "See real-model-audit.json and real-model-ui-checks.json",
+    "command": "real DeepSeek UI workflow, integration and restart"
+  },
+  {
+    "status": "SKIP",
+    "detail": "Windows tool capture/geometry failure; no mocked confirmation counted",
+    "command": "native physical input / native project consent"
+  },
+  {
+    "status": "SKIP",
+    "detail": "A2.2b not implemented; executionReady=false",
+    "command": "organization remote Job/lease execution"
+  },
+  {
+    "status": "SKIP",
+    "detail": "Not implemented or claimed",
+    "command": "GUI automatic conflict resolution / remote pull-push-release"
+  }
+]

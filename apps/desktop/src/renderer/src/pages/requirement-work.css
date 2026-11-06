@@ -75,6 +75,25 @@
 .rq-integration-details li span { display: block; margin-top: 6px; color: var(--ui-danger); }
 .rq-integration-details button { border: 0; padding: 0; background: transparent; color: var(--ui-accent-strong); font: inherit; cursor: pointer; }
 .rq-integration-scroll :is(summary, button, pre):focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 3px; }
+.rq-plan-context-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 10px 14px; margin-bottom: 14px; border-radius: var(--ui-radius-md); border: 1px solid var(--ui-border); background: var(--ui-surface-2); }
+.rq-plan-context-info { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
+.rq-plan-progress-card { padding: 20px; border-radius: var(--ui-radius-lg); border: 1px solid var(--ui-border); background: var(--ui-surface-2); display: flex; flex-direction: column; gap: 16px; }
+.rq-plan-progress-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.rq-plan-progress-title { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.rq-plan-progress-spinner { font-size: 20px; color: var(--ui-accent-strong); margin-top: 2px; }
+.rq-plan-progress-title h4 { margin: 0; font-size: 15px; font-weight: 600; color: var(--ui-ink-1); }
+.rq-plan-progress-title p { margin: 4px 0 0; font-size: var(--ui-text-secondary); color: var(--ui-ink-2); }
+.rq-plan-progress-steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.rq-plan-progress-step { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: var(--ui-radius-md); border: 1px solid var(--ui-border); background: var(--ui-surface); transition: border-color 160ms ease, background 160ms ease; }
+.rq-plan-progress-step.is-active { border-color: var(--ui-accent); background: var(--ui-accent-soft, rgba(59, 130, 246, 0.06)); }
+.rq-plan-progress-step.is-done { opacity: 0.88; }
+.rq-plan-progress-step.is-pending { opacity: 0.56; }
+.rq-plan-progress-step-icon { width: 22px; height: 22px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--ui-ink-2); background: var(--ui-surface-2); flex-shrink: 0; margin-top: 1px; }
+.rq-plan-progress-step.is-done .rq-plan-progress-step-icon { color: var(--ui-success, #16a34a); background: transparent; font-size: 15px; }
+.rq-plan-progress-step.is-active .rq-plan-progress-step-icon { color: var(--ui-accent-strong); background: transparent; font-size: 15px; }
+.rq-plan-progress-step-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rq-plan-progress-step-body strong { font-size: 13px; color: var(--ui-ink-1); }
+.rq-plan-progress-step-body span { font-size: 12px; color: var(--ui-ink-2); }
 @media (max-width: 1050px) {
   .rq-integration-grid { grid-template-columns: minmax(0, 1fr); }
   .rq-integration-checks { border-left: 0; border-top: 1px solid var(--ui-border); padding: 20px 0 0; }

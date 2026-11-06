@@ -1,0 +1,20 @@
+[PASS] Manually authenticated session survives desktop restart
+[PASS] Create organization through desktop UI
+[PASS] Create shared project through desktop UI
+[PASS] Owner membership is visible
+[PASS] Enroll real local worker through desktop UI
+[PASS] Worker explicitly does not advertise unfinished task execution
+[PASS] Pause local worker through UI
+[PASS] Resume local worker through UI
+[PASS] Organization and shared project survive desktop restart
+[PASS] Sign out returns to local mode
+locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for getByRole('button', { name: '关闭设置', exact: true })
+
+    at C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\scripts\organization-desktop-ui-e2e.mjs:87:65 {
+  log: [
+    "  - waiting for getByRole('button', { name: '关闭设置', exact: true })"
+  ],
+  name: 'TimeoutError'
+}

@@ -1,0 +1,29 @@
+{
+  "violations": [
+    {
+      "id": "aria-input-field-name",
+      "impact": "serious",
+      "description": "Ensure every ARIA input field has an accessible name",
+      "nodes": [
+        {
+          "target": [
+            ".original-in-monaco-diff-editor > .overflow-guard[data-mprt=\"3\"] > .native-edit-context[aria-label=\"\"][autocorrect=\"off\"]"
+          ],
+          "summary": "Fix any of the following:\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+        },
+        {
+          "target": [
+            ".modified-in-monaco-diff-editor > .overflow-guard[data-mprt=\"3\"] > .native-edit-context[aria-label=\"\"][autocorrect=\"off\"]"
+          ],
+          "summary": "Fix any of the following:\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+        }
+      ]
+    }
+  ],
+  "incomplete": [
+    {
+      "id": "color-contrast",
+      "nodes": 18
+    }
+  ]
+}

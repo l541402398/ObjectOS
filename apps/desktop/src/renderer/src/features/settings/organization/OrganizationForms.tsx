@@ -3,8 +3,8 @@ import { ArrowRight, Building2, ExternalLink, Plus, ShieldCheck } from 'lucide-r
 import { useMutation } from '@tanstack/react-query'
 import { OrganizationError, OrganizationField } from './OrganizationPrimitives'
 
-export function ConnectOrganizationForm({ onConnect, pending, error }: {
-  onConnect: (serverUrl: string) => void; pending: boolean; error: unknown
+export function ConnectOrganizationForm({ onConnect, pending, error,serverUrl }: {
+  onConnect: (serverUrl: string) => void; pending: boolean; error: unknown;serverUrl?:string
 }) {
   const [url, setUrl] = useState('')
   return <section className="org-connect-surface" aria-labelledby="org-connect-title">
@@ -15,7 +15,7 @@ export function ConnectOrganizationForm({ onConnect, pending, error }: {
       <span className="org-security-note"><ShieldCheck size={16} aria-hidden />账号登录在系统浏览器中完成</span>
     </div>
     <form className="org-connect-form" onSubmit={(event) => { event.preventDefault(); onConnect(url.trim()) }}>
-      <OrganizationField label="组织服务地址" hint="使用团队提供的 HTTPS 地址；本机测试支持回环地址。">{(id) => <input id={id} data-testid="org-server-url" name="serverUrl" type="url" autoComplete="url" placeholder="https://team.example.com" required value={url} onChange={(event) => setUrl(event.target.value)} disabled={pending} />}</OrganizationField>
+      <OrganizationField label="组织服务地址" hint="使用团队提供的 HTTPS 地址；本机测试支持回环地址。">{(id) => <input id={id} data-testid="org-server-url" name="serverUrl" type="url" autoComplete="url" placeholder="https://team.example.com" required value={pending?serverUrl??url:url} onChange={(event) => setUrl(event.target.value)} disabled={pending} />}</OrganizationField>
       <OrganizationError error={error} />
       {pending ? <div className="org-awaiting" role="status"><span className="org-status-dot" />等待浏览器登录<button className="org-link" type="button" data-testid="org-cancel" onClick={() => void window.projectos.organization.cancel()}>取消登录</button></div> : null}
       <button type="submit" className="org-button is-primary" data-testid="org-connect" disabled={pending}><ExternalLink size={15} aria-hidden />{pending ? '登录进行中' : '在浏览器中登录'}<ArrowRight size={15} aria-hidden /></button>

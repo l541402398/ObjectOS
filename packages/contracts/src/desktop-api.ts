@@ -21,7 +21,19 @@ type ProviderInfo = z.infer<typeof ProviderInfoSchema>
  * schema-validated request; there is no generic channel or filesystem access.
  */
 export interface ProjectOSDesktopApi {
+  gitDelivery: {
+    changes: (input: In<'gitDelivery.changes'>) => Promise<Out<'gitDelivery.changes'>>
+    state: (input: In<'gitDelivery.state'>) => Promise<Out<'gitDelivery.state'>>
+    request: (input: In<'gitDelivery.request'>) => Promise<Out<'gitDelivery.request'>>
+    review: (input: In<'gitDelivery.review'>) => Promise<Out<'gitDelivery.review'>>
+    reconcile: (input: In<'gitDelivery.reconcile'>) => Promise<Out<'gitDelivery.reconcile'>>
+  }
   organization: {
+    workerJobs: () => Promise<Out<'organization.workerJobs'>>
+    submitWorkerJob: (input: In<'organization.submitWorkerJob'>) => Promise<Out<'organization.submitWorkerJob'>>
+    acceptWorkerJob: (input: In<'organization.acceptWorkerJob'>) => Promise<Out<'organization.acceptWorkerJob'>>
+    cancelWorkerJob: (input: In<'organization.cancelWorkerJob'>) => Promise<Out<'organization.cancelWorkerJob'>>
+    reconcileWorkerJob: (input: In<'organization.reconcileWorkerJob'>) => Promise<Out<'organization.reconcileWorkerJob'>>
     workers: () => Promise<Out<'organization.workers'>>
     enrollWorker: (input: In<'organization.enrollWorker'>) => Promise<Out<'organization.enrollWorker'>>
     changeWorker: (input: In<'organization.changeWorker'>) => Promise<Out<'organization.changeWorker'>>

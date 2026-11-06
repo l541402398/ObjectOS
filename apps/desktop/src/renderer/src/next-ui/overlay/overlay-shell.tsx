@@ -303,6 +303,8 @@ function ModalShell({
           onCloseAutoFocus={(event) => { event.preventDefault(); if (returnFocus.current?.isConnected) returnFocus.current.focus({ preventScroll: true }) }}
           onEscapeKeyDown={(event) => {
             event.preventDefault()
+            // An expanded combobox owns the first Escape; keep its containing review open.
+            if(event.target instanceof Element&&event.target.closest('[role="combobox"][aria-expanded="true"], .ant-select-open'))return
             if (isTop) guard.requestClose()
           }}
           onPointerDownOutside={(event) => {

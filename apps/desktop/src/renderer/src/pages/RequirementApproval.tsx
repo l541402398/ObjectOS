@@ -31,12 +31,12 @@ export function RequirementApproval({ projectId, approvalId, approveLabel = '允
   const pending = approval.status === 'pending' && !expired
   const request = approval.request as { args?: Record<string, unknown> }
   const args = request.args ?? {}
-  const scopeNames: Record<string, string> = { command: '执行命令', taskRoot: '任务目录', sourceRoot: '执行目录', targetRoot: '合入目录', integrationRoot: '需求目录', sourceBranch: '来源分支', targetBranch: '目标分支', path: '文件', content: '写入内容' }
+  const scopeNames: Record<string, string> = { taskRoot: '任务目录', sourceRoot: '执行目录', targetRoot: '合入目录', integrationRoot: '需求目录', sourceBranch: '来源分支', targetBranch: '目标分支', path: '文件', content: '写入内容' }
   return <section className="rq-approval-card" aria-label="本次操作授权">
     <div className="rq-review-heading"><h3>{approval.title}</h3><StatusPill tone={pending ? 'warning' : approval.status === 'approved' ? 'success' : 'neutral'}>{pending ? '待授权' : expired && approval.status === 'pending' ? '已过期' : ({ approved: '已批准', rejected: '已拒绝', expired: '已过期', cancelled: '已取消', pending: '待授权' })[approval.status]}</StatusPill></div>
     <p className="rq-approval-detail">{approval.detail}</p>
     <dl className="rq-approval-scope">{Object.entries(scopeNames).filter(([key]) => typeof args[key] === 'string').map(([key, label]) => <div key={key}><dt>{label}</dt><dd><code>{String(args[key])}</code></dd></div>)}</dl>
-    <details className="rq-approval-parameters"><summary>完整授权参数{approval.expiresAt ? ` · 有效至 ${formatDateTime(approval.expiresAt)}` : ''}</summary><pre tabIndex={0}>{JSON.stringify(approval.request, null, 2)}</pre></details>
+    <details className="rq-approval-parameters"><summary>执行详情与授权范围{approval.expiresAt ? ` · 有效至 ${formatDateTime(approval.expiresAt)}` : ''}</summary><pre tabIndex={0}>{JSON.stringify(approval.request, null, 2)}</pre></details>
     {decision.isError && <Alert type="error" showIcon message={errorMessage(decision.error)} />}
     {pending && <>
       <Checkbox checked={confirmed} disabled={decision.isPending} onChange={event => setConfirmed(event.target.checked)}>我已核对本次操作范围</Checkbox>

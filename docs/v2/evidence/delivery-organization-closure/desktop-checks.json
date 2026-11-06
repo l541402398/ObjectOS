@@ -1,0 +1,117 @@
+{
+  "checks": [
+    {
+      "name": "Real desktop fetch and fast-forward pull completed",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Divergent pull stops without merging",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Verification action has no command input",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Conflict editor uses almost full window height",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Manual resolution does not change target before integration",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Manual resolution integrated with both changes",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Manual flow separately pushed the exact merged commit",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Browser device authorization returns to real desktop",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Native system consent activates only the scoped directory",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Latest integrated resolution does not reopen older failed workspaces",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "DeepSeek corrected result separately pushed to real fixture remote",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Organization task pauses before file creation",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Real organization job created and verified the authorized file",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Packaged select Escape keeps the code review open",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "1024 window at 125 percent keeps editor and footer visible",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Long lines can be viewed without wrapping",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Final packaged visual matrix covers eight native window/theme/zoom combinations",
+      "status": "PASS",
+      "detail": "See visual-matrix.json"
+    },
+    {
+      "name": "Final packaged comments contrast regression has zero axe violations",
+      "status": "PASS",
+      "detail": "29 contrast nodes remain incomplete; no claim of comprehensive WCAG certification"
+    },
+    {
+      "name": "Final packaged long file end is keyboard reachable",
+      "status": "PASS",
+      "detail": "Ctrl+End reaches Review line 80"
+    },
+    {
+      "name": "Final packaged select Escape keeps parent open",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Final packaged repeated model switches and close produce no page errors",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Final packaged scrollbars use semantic colors",
+      "status": "PASS",
+      "detail": ""
+    }
+  ],
+  "interaction": "real Electron UI, no direct business API",
+  "complete": true,
+  "finalPackage": true
+}

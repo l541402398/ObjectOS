@@ -1,0 +1,109 @@
+跳到主内容
+同步与冲突闭环验收
+›
+工作区
+3
+同
+1
+同步与冲突闭环验收
+当前阶段
+需求
+进行中
+需要你操作
+打开当前工作
+项目准备
+2
+需求
+3
+计划
+4
+审核
+5
+授权
+6
+执行
+7
+验证
+8
+审查
+9
+交付
+delivery-project
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\.tmp\functional-desktop-0fiOh2\delivery-project
+⑂ main
+2 个变更
+6 个条目
+查看代码变更
+代码同步与合入
+打开目录
+刷新
+文件
+只读 · 已忽略依赖目录
+org
+long-line.js
+remote-result.txt
+remote-note.txt
+value.cjs
+value.test.cjs
+long-line.js
+×
+javascript
+7.4 KB
+1
+// Long-line and scrolling fixture for the real 
+ 文件改动 · 2 个文件
+全部变更
+M · value.cjs
+?? · org/
+diff --git a/value.cjs b/value.cjs
+
+index 482c7ce..46193cc 100644
+
+--- a/value.cjs
+
++++ b/value.cjs
+
+@@ -1 +1 @@
+
+-module.exports = { greeting: 'Welcome', suffix: '!!!' };
+
++module.exports = { greeting: 'Welcome desktop', suffix: '!!!' };
+
+ 
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\.tmp\functional-desktop-0fiOh2\delivery-project
+⑂ main
+2 个变更
+阶段
+构思
+本地工作区
+代码变更对比
+org/long-line.js
+收起全屏
+org/long-line.js · 新增
+org/long-line.js · 新增
+并排对比
+自动换行
+上一处改动
+下一处改动
+− 删除内容
++ 新增内容
+变更前
+变更后
+1
+1
+2
+// Long-line and scrolling fixture for the real desktop comparison viewer.
+module.exports = "Long line readable at 1024 and 125 percent. Long line readable at 
+1024 and 125 percent. Long line readable at 1024 and 125 percent. Long line readable 
+at 1024 and 125 percent. Long line readable at 1024 and 125 percent. Long line 
+readable at 1024 and 125 percent. Long line readable at 1024 and 125 percent. Long 
+line readable at 1024 and 125 percent. Long line readable at 1024 and 125 percent. 
+Long line readable at 1024 and 125 percent. Long line readable at 1024 and 125 
+percent. Long line readable at 1024 and 125 percent. Long line readable at 1024 and 
+125 percent. Long line readable at 1024 and 125 percent. Long line readable at 1024 
+and 125 percent. Long line readable at 1024 and 125 percent. Long line readable at 
+1024 and 125 percent. Long line readable at 1024 and 125 percent. Long line readable 
+at 1024 and 125 percent. Long line readable at 1024 and 125 percent. Long line 
+readable at 1024 and 125 percent. Long line readable at 1024 and 125 percent. Long 
+返回审查与审批

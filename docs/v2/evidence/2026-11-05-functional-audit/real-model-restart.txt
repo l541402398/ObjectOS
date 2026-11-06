@@ -1,0 +1,74 @@
+成果审查
+实现 add 函数与三个测试
+任务工作区
+→
+需求集成分支
+2 个改动文件 · 指纹 19df02274f
+成果已合入
+① 独立命令验证
+已通过（指纹一致）
+② 改动全覆盖审查
+2 文件已审
+③ 需求分支合入
+已完成合入
+代码改动
+文件列表
+diff --git a/add.cjs b/add.cjs
+new file mode 100644
+index 0000000..f1ae948
+--- /dev/null
++++ b/add.cjs
+@@ -0,0 +1,12 @@
++'use strict';
++
++/**
++ * 返回两个 number 的算术和。
++ * 范围说明：本任务仅约定 number 入参（2+3、-2+3、0+0）；
++ * 类型校验/异常策略为非目标，此处不做强制转换。
++ */
++function add(a, b) {
++  return a + b;
++}
++
++module.exports = { add };
+diff --git a/add.test.cjs b/add.test.cjs
+new file mode 100644
+index 0000000..956ef21
+--- /dev/null
++++ b/add.test.cjs
+@@ -0,0 +1,18 @@
++'use strict';
++
++const test = require('node:test');
++const assert = require('node:assert/strict');
++
++const { add } = require('./add.cjs');
++
++test('add(2, 3) 返回 5', () => {
++  assert.strictEqual(add(2, 3), 5);
++});
++
++test('add(-2, 3) 返回 1', () => {
++  assert.strictEqual(add(-2, 3), 1);
++});
++
++test('add(0, 0) 返回 0', () => {
++  assert.strictEqual(add(0, 0), 0);
++});
+
+实际验证
+已通过
+
+当前代码已通过实际验证
+
+查看验证输出
+验证命令
+申请运行验证
+人工审查
+已通过
+
+当前改动已记录审查结论。
+
+分支与操作记录
+合入后，后续任务才能取得此成果。需求仍需整体验收。
+已合入需求

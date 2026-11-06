@@ -59,7 +59,7 @@ export const LocalWorkerViewSchema = z.object({
   revision: z.number().int().positive(),
   lastSeenAt: timestamp.nullable(),
   createdAt: timestamp,
-  executionReady: z.literal(false),
+  executionReady: z.boolean(),
   canManage: z.boolean(),
 })
 export const WorkerStateInputSchema = z

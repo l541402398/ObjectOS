@@ -1643,6 +1643,27 @@ CREATE TABLE requirement_flow_start_items (
 CREATE INDEX idx_flow_start_items_task ON requirement_flow_start_items(task_id,status);
 `
 
+const V44 = `
+CREATE TABLE git_delivery_operations (
+  id TEXT PRIMARY KEY, project_id TEXT NOT NULL REFERENCES projects(id), kind TEXT NOT NULL,
+  subject_json TEXT NOT NULL, snapshot_json TEXT NOT NULL, parent_id TEXT,
+  run_id TEXT NOT NULL REFERENCES agent_runs(id), tool_call_id TEXT NOT NULL REFERENCES tool_calls(id),
+  approval_id TEXT NOT NULL REFERENCES approvals(id), status TEXT NOT NULL,
+  result_json TEXT, error TEXT, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+);
+CREATE INDEX idx_git_delivery_project ON git_delivery_operations(project_id,created_at);
+CREATE INDEX idx_git_delivery_approval ON git_delivery_operations(approval_id);
+CREATE TABLE git_resolution_reviews (
+  resolution_id TEXT PRIMARY KEY, fingerprint TEXT NOT NULL,
+  artifact_id TEXT NOT NULL REFERENCES artifacts(id), note TEXT NOT NULL, created_at INTEGER NOT NULL
+);
+CREATE TABLE worker_job_receipts (
+  job_id TEXT PRIMARY KEY, server_url TEXT NOT NULL, organization_id TEXT NOT NULL, account_id TEXT NOT NULL,
+  grant_id TEXT NOT NULL, fencing INTEGER NOT NULL, status TEXT NOT NULL, run_id TEXT REFERENCES agent_runs(id),
+  frozen_json TEXT NOT NULL, error TEXT, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -1687,6 +1708,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 41, name: 'requirement workflow versions task steps and materials', sql: V41 },
   { version: 42, name: 'archive group materials and retire use cases', sql: V42 },
   { version: 43, name: 'requirement default owners and start intents', sql: V43 },
+  { version: 44, name: 'audited Git delivery resolution and organization job receipts', sql: V44 },
 ]
 
 function checksum(sql: string): string {

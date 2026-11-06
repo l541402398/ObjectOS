@@ -3,7 +3,7 @@ import { SerializedAppErrorSchema } from './errors.js'
 import { TimestampSchema } from './common.js'
 import { ApprovalStatusSchema, RunStatusSchema, TaskStatusSchema } from './enums.js'
 import { RuntimeStatusSchema } from './entities.js'
-import { WorkerInternalSchemas } from '@projectos/organization-contracts'
+import { WorkerInternalSchemas, WorkerJobInternalSchemas } from '@projectos/organization-contracts'
 
 export const RUNTIME_PROTOCOL_VERSION = 1
 
@@ -163,6 +163,7 @@ export type ProviderRuntimeConfig = z.infer<typeof ProviderRuntimeConfigSchema>
 
 /** Internal methods accepted by the runtime beyond the renderer catalogue. */
 export const RUNTIME_INTERNAL_METHODS = [
+  ...Object.keys(WorkerJobInternalSchemas),
   ...Object.keys(WorkerInternalSchemas),
   'runtime.health',
   'runtime.shutdown',

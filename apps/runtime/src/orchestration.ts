@@ -469,6 +469,7 @@ export class OrchestrationService {
    * Plan revisions for one project are now allocated inside a per-project queue.
    */
   private readonly planWriteChains = new Map<string, Promise<unknown>>()
+  private readonly inFlightPlanGenerations = new Map<string, Promise<PlanDraft>>()
 
   private withPlanLock<T>(projectId: string, action: () => Promise<T> | T): Promise<T> {
     const previous = this.planWriteChains.get(projectId) ?? Promise.resolve()
@@ -482,7 +483,18 @@ export class OrchestrationService {
 
   async generateAIPlan(input: AiPlanGenerationInput): Promise<PlanDraft> {
     if (!this.store.read.getProject(input.projectId)) throw new AppError('NOT_FOUND', '项目不存在')
-    return this.withPlanLock(input.projectId, () => this.generateAIPlanLocked(input))
+    const dedupeKey = `${input.projectId}::${input.mode}::${input.requirementId ?? input.goal.trim()}`
+    const existingInFlight = this.inFlightPlanGenerations.get(dedupeKey)
+    if (existingInFlight) {
+      return existingInFlight
+    }
+    const promise = this.withPlanLock(input.projectId, () => this.generateAIPlanLocked(input)).finally(() => {
+      if (this.inFlightPlanGenerations.get(dedupeKey) === promise) {
+        this.inFlightPlanGenerations.delete(dedupeKey)
+      }
+    })
+    this.inFlightPlanGenerations.set(dedupeKey, promise)
+    return promise
   }
 
   private async generateAIPlanLocked(input: AiPlanGenerationInput): Promise<PlanDraft> {
@@ -490,6 +502,13 @@ export class OrchestrationService {
     const binding = requirement ? this.store.db.prepare('SELECT template_version_id FROM requirement_flow_bindings WHERE requirement_id=?').get(requirement.id) : null
     if (input.requirementId && (!requirement || requirement.projectId !== input.projectId || !binding)) throw new AppError('CONFLICT', '需求或已选流程不可用')
     if (requirement && input.mode !== 'ai') throw new AppError('BAD_REQUEST', '需求拆分请使用 AI 规划或手动添加任务')
+    if (!this.store.read.getLatestProjectSnapshot(input.projectId)) {
+      try {
+        await this.scan(input.projectId)
+      } catch {
+        // Best-effort auto-scan before planning so greenfield and legacy projects both have a snapshot.
+      }
+    }
     const MAX_REQ_BODY_CHARS = 24_000
     const MAX_REQ_ACCEPTANCE_CHARS = 8_000
     const numberedCriteria = requirement

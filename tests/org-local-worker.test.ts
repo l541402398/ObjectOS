@@ -7,6 +7,7 @@ import {
   ORGANIZATION_SCHEMA_VERSION,
 } from '../apps/server/src/postgres-store.js'
 import { reserveOrganizationTestPort, startOrganizationTestDatabase } from './helpers/org-postgres.js'
+import { canonicalAssetDefinition } from '@projectos/organization-contracts'
 
 describe('A2.2 device identity and grants — actual PostgreSQL / HTTP', () => {
   let database: Awaited<ReturnType<typeof startOrganizationTestDatabase>>,
@@ -71,7 +72,7 @@ describe('A2.2 device identity and grants — actual PostgreSQL / HTTP', () => {
         )
       ).rows,
     ).toEqual(old)
-    expect(ORGANIZATION_SCHEMA_VERSION).toBe(3)
+    expect(ORGANIZATION_SCHEMA_VERSION).toBe(4)
     for (const id of [owner, admin, member])
       await database.pool.query('INSERT INTO "user"(id,name,email,"emailVerified") VALUES($1,$1,$2,false)', [
         id,
@@ -133,7 +134,7 @@ describe('A2.2 device identity and grants — actual PostgreSQL / HTTP', () => {
     expect(JSON.stringify(listed.body)).not.toContain(rows[0].desktop_session_hash)
     expect(listed.body.workers.find((w: any) => w.id === value.registrationId)).toMatchObject({
       status: 'offline',
-      executionReady: false,
+      executionReady: true,
     })
     expect((await request(`/${value.registrationId}/heartbeat`, {}, value.secret)).status).toBe(200)
     expect((await request('')).body.workers.find((w: any) => w.id === value.registrationId).status).toBe(
@@ -262,6 +263,34 @@ describe('A2.2 device identity and grants — actual PostgreSQL / HTTP', () => {
       'INSERT INTO member(id,"organizationId","userId",role,"createdAt") VALUES($1,$2,$3,\'owner\',now())',
       [randomUUID(), org, owner],
     )
+  })
+  it('pins published assets, fences one native job and rejects revoked authority after approval', async () => {
+    const value=enrollment();await request('',value)
+    const consent={...grant(),scope:{directories:['src'],tools:['read_file','write_file'],maxToolCalls:2}}
+    expect((await request(`/${value.registrationId}/grants`,consent,value.secret)).status).toBe(200)
+    const assetId=randomUUID(),versionId=randomUUID(),definition={kind:'agent' as const,role:'工程师',instructions:'只在授权目录处理任务',runtime:'native' as const,skillVersionIds:[],toolIds:['read_file','write_file']}
+    const checksum='sha256:'+createHash('sha256').update(canonicalAssetDefinition(definition)).digest('hex')
+    await database.pool.query("INSERT INTO organization_assets(id,organization_id,name,kind,visibility,created_by,created_at) VALUES($1,$2,'组织工程师','agent','organization',$3,1)",[assetId,org,owner])
+    await database.pool.query("INSERT INTO organization_asset_versions(id,organization_id,asset_id,version,definition,checksum,status,created_by,created_at,published_at) VALUES($1,$2,$3,'1.0.0',$4,$5,'published',$6,1,1)",[versionId,org,assetId,JSON.stringify(definition),checksum,owner])
+    const call=async(path:string,body?:unknown,bearer=tokens.get(owner)!,method=body?'POST':'GET')=>{const r=await fetch(`${origin}/v1/organizations/${org}/worker-jobs${path}`,{method,headers:{authorization:`Bearer ${bearer}`,...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});return {status:r.status,body:await r.json() as any}}
+    const input={id:randomUUID(),grantId:consent.id,agentVersionId:versionId,prompt:'在 src 读取并更新代码'}
+    expect((await call('',input)).status).toBe(403)
+    await database.pool.query('INSERT INTO organization_asset_bindings(organization_id,project_id,asset_id,version_id,updated_by,updated_at) VALUES($1,$2,$3,$4,$5,1)',[org,project,assetId,versionId,owner])
+    expect((await call('',input)).status).toBe(200);expect((await call('',input)).status).toBe(200)
+    const prefix=`/${input.id}/workers/${value.registrationId}`
+    const claimed=await call(prefix+'/claim',{},value.secret);expect(claimed.status).toBe(200)
+    expect((await call(prefix+'/claim',{},value.secret)).status).toBe(409)
+    const proof={token:claimed.body.token,fencing:claimed.body.job.fencing}
+    const saved=(await database.pool.query('SELECT * FROM organization_worker_jobs WHERE id=$1',[input.id])).rows[0]
+    expect(saved.lease_hash).not.toBe(proof.token);expect(JSON.stringify(saved)).not.toContain(value.secret)
+    expect((await call(prefix+'/check',{...proof,fencing:proof.fencing+1,tool:'write_file',consume:true},value.secret)).status).toBe(409)
+    expect((await call(prefix+'/check',{...proof,tool:'run_command',consume:true},value.secret)).status).toBe(400)
+    expect((await call(prefix+'/check',{...proof,tool:'write_file',consume:false},value.secret)).status).toBe(200)
+    await request('/grants/'+consent.id,undefined,owner,'DELETE')
+    expect((await call(prefix+'/check',{...proof,tool:'write_file',consume:true},value.secret)).status).toBe(403)
+    expect((await call(prefix+'/finish',{...proof,status:'completed',runId:'run_native'},value.secret)).status).toBe(403)
+    const listed=await call('');expect(JSON.stringify(listed.body)).not.toContain(proof.token)
+    expect((await database.pool.query('SELECT tool_calls FROM organization_worker_jobs WHERE id=$1',[input.id])).rows[0].tool_calls).toBe(0)
   })
   it('ties device authority to a live login and records real audit facts', async () => {
     const value = enrollment()

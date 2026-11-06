@@ -246,7 +246,7 @@ function relevantFiles(input: {
       // Best effort only.
     }
   }
-  if (selected.length === 0) {
+  if (selected.length === 0 && candidates.length > 0) {
     input.warnings.push('没有找到与需求匹配的文件摘要；计划仅依据项目元数据、Agent 与历史数据')
   }
   return selected
@@ -282,6 +282,7 @@ function snapshotSection(store: SqliteStore, projectId: string, warnings: string
     priority: 1,
     body: [
       `扫描时间：${new Date(snapshot.scannedAt).toISOString()}`,
+      `项目形态：${snapshot.languages.length === 0 && snapshot.frameworks.length === 0 && snapshot.modules.length === 0 ? '全新空白项目（当前工作区尚无存量代码文件，请从零规划项目结构）' : '存量代码项目'}`,
       `Git HEAD：${snapshot.gitHead ?? '未知'}`,
       `语言：${snapshot.languages.join(' / ') || '未知'}`,
       `框架：${snapshot.frameworks.map((item) => item.name).join(' / ') || '未知'}`,

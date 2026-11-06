@@ -9,6 +9,7 @@ import {
   RUNTIME_METHODS,
   isMainMethod,
   WorkerInternalSchemas,
+  WorkerJobInternalSchemas,
   newId,
   type AIConnectionView,
   type ApiMethod,
@@ -61,8 +62,11 @@ import { seedDemo } from './demo.js'
 import { OrchestrationScheduler } from './orchestrator.js'
 import { ResourceService } from './resource-service.js'
 import { LocalWorkerService } from './local-worker.js'
+import { OrganizationJobService } from './organization-jobs.js'
+import { GitDeliveryService } from './git-delivery.js'
 import { RequirementWorkService } from './requirement-work.js'
 import { RequirementIntegrationService } from './requirement-integration.js'
+import { ensureBaselineCommit } from '@projectos/worktree'
 import { agentForPlannedTask } from '@projectos/planning'
 import { planGroupTitle } from '@projectos/session-manager'
 
@@ -86,10 +90,12 @@ export interface DispatcherDeps {
 }
 
 export class RuntimeDispatcher {
+  private readonly gitDelivery: GitDeliveryService
   private readonly requirementFlow: RequirementFlowService
   private readonly requirementWork: RequirementWorkService
   private readonly requirementIntegration: RequirementIntegrationService
   private readonly localWorker: LocalWorkerService
+  private readonly organizationJobs: OrganizationJobService
   private readonly aiConnections: AIConnectionService
   private readonly planGrants: PlanGrantService
   private readonly runtimeSettings: RuntimeSettingsService
@@ -118,6 +124,7 @@ export class RuntimeDispatcher {
     this.requirementWork = new RequirementWorkService(deps.store, deps.config.dataDir)
     this.requirementIntegration = new RequirementIntegrationService(deps.store)
     this.localWorker = new LocalWorkerService(deps.store)
+    this.organizationJobs = new OrganizationJobService(deps.store,deps.runner,this.localWorker)
     this.aiConnections = new AIConnectionService(deps.store)
     this.requirementFlow = new RequirementFlowService(deps.store, deps.services, deps.runner, this.requirementWork, new AiPlannerModelSource(deps.provider, this.aiConnections), projectId => this.actions.autonomySettings(projectId).mode === 'autonomous')
     this.planGrants = new PlanGrantService(deps.store, deps.logger)
@@ -171,6 +178,21 @@ export class RuntimeDispatcher {
       },
     )
     this.preflight = new TaskContractPreflightService(deps.store)
+    this.gitDelivery = new GitDeliveryService(deps.store, deps.config.dataDir, deps.runner,
+      planId => this.planGrants.assertExecutionActive(deps.store.read.getPlanRevision(planId)!),
+      (projectId, versionId) => {
+        const gate = this.lifecycle.evaluateDeliveryGate(projectId, versionId)
+        if (gate && gate.status !== 'passed') throw new AppError('CONFLICT', '版本交付门禁尚未通过')
+      }, this.requirementIntegration)
+    this.scheduler.setMergeAuthorizer(async planId => {
+      const plan = deps.store.read.getPlanRevision(planId)
+      if (!plan) throw new AppError('NOT_FOUND', '计划不存在')
+      const subject = { projectId: plan.projectId, planId, taskId: null }
+      const state = this.gitDelivery.state(subject)
+      if (!state.operations.some(op => op.kind === 'merge_plan' && ['waiting_approval', 'executing', 'needs_reconciliation'].includes(op.status)))
+        this.gitDelivery.request({ subject, kind: 'merge_plan', fingerprint: state.fingerprint, remote: 'origin', mode: 'manual', agentId: 'agt_engineer' })
+      throw new AppError('APPROVAL_REQUIRED', '合入审批已记录，请在代码同步与合入或审批中心处理；待审批不等于已经合入')
+    })
     this.reviews = new ReviewCoordinator(deps.store, deps.services, this.planGrants, this.scheduler, deps.logger)
     this.autopilot = new ReplanAutopilot(
       deps.store,
@@ -674,6 +696,7 @@ export class RuntimeDispatcher {
   }
 
   async dispatch(method: string, rawInput: unknown): Promise<unknown> {
+    if (method === 'runtime.worker.acceptJob') return WorkerJobInternalSchemas[method].output.parse(await this.organizationJobs.accept(rawInput))
     if (Object.hasOwn(WorkerInternalSchemas, method)) {
       const key = method as keyof typeof WorkerInternalSchemas
       return WorkerInternalSchemas[key].output.parse(this.localWorker.dispatch(key, rawInput))
@@ -687,6 +710,14 @@ export class RuntimeDispatcher {
     }
     const { store, services, runner, provider, hub, config } = this.deps
     switch (method) {
+      case 'gitDelivery.state': return this.gitDelivery.state(this.parse('gitDelivery.state', rawInput))
+      case 'gitDelivery.changes': return this.gitDelivery.changes(this.parse('gitDelivery.changes',rawInput))
+      case 'gitDelivery.request': return this.gitDelivery.request(this.parse('gitDelivery.request', rawInput))
+      case 'gitDelivery.review': return this.gitDelivery.review(this.parse('gitDelivery.review', rawInput))
+      case 'gitDelivery.reconcile': {
+        const input = this.parse('gitDelivery.reconcile', rawInput)
+        return this.gitDelivery.reconcile(input.operationId, input.note)
+      }
       case 'runtime.health':
         return {
           ok: true,
@@ -862,7 +893,12 @@ export class RuntimeDispatcher {
       }
       case 'project.create': {
         const input = this.parse('project.create', rawInput)
-        return { project: await services.projects.create(input) }
+        const project = await services.projects.create(input)
+        if (input.initGit) {
+          await ensureBaselineCommit(project.rootPath).catch(() => undefined)
+        }
+        await this.orchestration.scan(project.id).catch(() => undefined)
+        return { project }
       }
       case 'project.overview': {
         const input = this.parse('project.overview', rawInput)
@@ -1426,7 +1462,8 @@ export class RuntimeDispatcher {
       }
       case 'approval.decide': {
         const input = this.parse('approval.decide', rawInput)
-        if (this.requirementIntegration.ownsApproval(input.approvalId)) await this.requirementIntegration.decide(input.approvalId, input.decision, input.note)
+        if (this.gitDelivery.ownsApproval(input.approvalId)) await this.gitDelivery.decide(input.approvalId, input.decision, input.note)
+        else if (this.requirementIntegration.ownsApproval(input.approvalId)) await this.requirementIntegration.decide(input.approvalId, input.decision, input.note)
         else if (this.requirementWork.ownsApproval(input.approvalId)) await this.requirementWork.decide(input.approvalId, input.decision, input.note)
         else await runner.decideApproval(input.approvalId, input.decision, input.note)
         const view = store.read.getApprovalView(input.approvalId)

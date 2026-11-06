@@ -1,0 +1,47 @@
+{
+  "profile": "C:\\Users\\Administrator\\Desktop\\workplace\\ProjectOS-v2-phase2.4\\.tmp\\functional-desktop-0fiOh2",
+  "checks": [
+    {
+      "name": "Create local project through UI and write real README",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Create requirement with persisted workflow through UI",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Create requirement-owned task through UI",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Project, requirement and task survive real desktop restart",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Personal mode remains available without organization login",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Desktop opens real browser login request",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Real browser PKCE login returns to desktop",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "No renderer exceptions",
+      "status": "PASS",
+      "detail": ""
+    }
+  ],
+  "errors": [],
+  "interaction": "real Electron UI locators; no business API or database seeding"
+}

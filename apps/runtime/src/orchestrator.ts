@@ -129,6 +129,8 @@ export function selectStartableTasks(input: {
 }
 
 export class OrchestrationScheduler {
+  private mergeAuthorizer?: (planId: string) => Promise<WorktreeInfo>
+  setMergeAuthorizer(authorizer: (planId: string) => Promise<WorktreeInfo>) { this.mergeAuthorizer = authorizer }
   private readonly timers = new Map<string, NodeJS.Timeout>()
   private readonly ticking = new Set<string>
   private readonly workspaceInflight = new Map<string, Promise<string>>()
@@ -335,6 +337,7 @@ export class OrchestrationScheduler {
   }
 
   async merge(planId: string): Promise<WorktreeInfo> {
+    if (this.mergeAuthorizer) return this.mergeAuthorizer(planId)
     const plan = this.getPlan(planId)
     const execution = plan.execution
     if (!execution?.branch || !execution.workspaceRef) throw new AppError('CONFLICT', '该计划没有可合并的 Worktree')

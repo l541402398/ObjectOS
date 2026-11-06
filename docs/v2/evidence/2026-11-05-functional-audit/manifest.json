@@ -1,0 +1,185 @@
+{
+  "baseHead": "0c2973ef4efbc0f6c5a1b512c55533d4c206ce00",
+  "branch": "codex/premium-system",
+  "committed": false,
+  "sourceAndBuild": [
+    {
+      "path": "packages/worktree/src/index.ts",
+      "sha256": "C5AD518807E73F316B11ADC39E478F7D17B29B57424238609BEDA53218CF13C0"
+    },
+    {
+      "path": "apps/runtime/src/requirement-work.ts",
+      "sha256": "F497974FF350C12FBA7E2D2C91162092CF864D3AAC161A3896FAD95E61DCB58E"
+    },
+    {
+      "path": "tests/worktree.test.ts",
+      "sha256": "AAC35FE7470746BE2D5829A18C1CCE7CD769AC7C851DE947E694AA90BD3E94E4"
+    },
+    {
+      "path": "tests/requirement-work.test.ts",
+      "sha256": "DBD1B726A89489B1F4D29D4FA96BE82E172B3E0157F8A78F9866A452D559FECC"
+    },
+    {
+      "path": "docs/adr/0079-worktree-identity-and-merge-boundary.md",
+      "sha256": "F87B674361FCF5B55001A2FCBF5E7863240E13C295681B648271ACD0195F6972"
+    },
+    {
+      "path": "docs/adr/0080-compact-requirement-workspaces.md",
+      "sha256": "CE8EB52120F34FA99DDAAA1D619281F2B2648ABC1167115A856102B8940605CB"
+    },
+    {
+      "path": "release/win-unpacked/ProjectOS.exe",
+      "sha256": "ADCC45AAF5F904D1364766EBECC520011CEA22E0C2BD9376CABA66D2A857A154"
+    },
+    {
+      "path": "apps/runtime/dist/index.mjs",
+      "sha256": "40A60A0EB5BCF9F239F842CF511B10B4D571BE43F15952B8486B577E23CD4DF1"
+    },
+    {
+      "path": "release/win-unpacked/resources/runtime/index.mjs",
+      "sha256": "40A60A0EB5BCF9F239F842CF511B10B4D571BE43F15952B8486B577E23CD4DF1"
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "01-personal-empty.png",
+      "sha256": "B95ED4914BEE03BFC714F32256B5F44C4D1AE3B3DE3C5DB45F920F279A1041C6"
+    },
+    {
+      "name": "02-project-created.png",
+      "sha256": "280D5AE6C2BB1797EB769AD8FF8343A97645739FB98A0869EF230BE30D1A2F55"
+    },
+    {
+      "name": "03-requirement-created.png",
+      "sha256": "1B2C4357FF3C36A8FA639F33D8DCE220E3EC67AD02FAF83F29152C2B6673516B"
+    },
+    {
+      "name": "04-task-created.png",
+      "sha256": "D39A85927E40822F0B97580F4FDEB152E11F5A64F91C34661D9F110632D5BF7E"
+    },
+    {
+      "name": "05-restart-recovered.png",
+      "sha256": "A0D32B1533CF983E01FC248A7F4A4CB36B618BE236294DBA9685691EF663FBCE"
+    },
+    {
+      "name": "06-organization-local.png",
+      "sha256": "04F6DB34F8CF8DA36233093181AFFEC482153C2431BBF5C17D53F517F138B70C"
+    },
+    {
+      "name": "07-browser-login-pending.png",
+      "sha256": "455325B7E113A61B0CCAD97EECE5B3191E2F5237BDBD605C143A4ED93B83232C"
+    },
+    {
+      "name": "08-organization-connected.png",
+      "sha256": "14DB4A95BF4531CA35923E76CA231DB0927EF9F3775A76A9456470A85D35F16E"
+    },
+    {
+      "name": "09-organization-created.png",
+      "sha256": "1070C7EBD09B8A5E26378AADFEFCADB5C90A7EECEEADE65FA6B68CA130EC0559"
+    },
+    {
+      "name": "10-shared-project-created.png",
+      "sha256": "1070C7EBD09B8A5E26378AADFEFCADB5C90A7EECEEADE65FA6B68CA130EC0559"
+    },
+    {
+      "name": "11-organization-members.png",
+      "sha256": "31B378B5DF1B56ABB4E3748E7350370C416A5498FDF26C66B8DD0042173C083A"
+    },
+    {
+      "name": "12-worker-enrolled.png",
+      "sha256": "2824A368FA7F17073C4ACF23106C96601D4762FAB9E04B13062F7F8F844F35AB"
+    },
+    {
+      "name": "13-worker-paused.png",
+      "sha256": "945A4ABA42D824F60C5F32980910DFE1B8C17F941219FB1E0FCC2D3497DF03F7"
+    },
+    {
+      "name": "14-worker-resumed.png",
+      "sha256": "47FF15A25E599F3F32C0DBE9B309DD7EC70BB9EEBCD8640BB54FA14BFE49596B"
+    },
+    {
+      "name": "15-organization-recovered.png",
+      "sha256": "6330EB946ACC023D536D4C48F241BBA745FCC729CD0091D4ACB166AAE07BD493"
+    },
+    {
+      "name": "16-organization-signed-out.png",
+      "sha256": "A8CEEE4F6E10C0A7B6300EAEBB25EDC7618E3143767229479EEA5A8A1249D4F9"
+    },
+    {
+      "name": "17-signed-out-recovered.png",
+      "sha256": "1C935EC43659724EF9283BEE673EF1F6A0FFA30C9296191260391EC2F3E42A00"
+    },
+    {
+      "name": "18-model-before.png",
+      "sha256": "A812D72657DDA5E7A0D4C517A25AFB83DD8403CE45D0C4D25C3F10071640CE37"
+    },
+    {
+      "name": "19-real-deepseek-connection.png",
+      "sha256": "CF3107D77A2939366DCA46647BF1AFFA9D37F6EA07D589873818FC7CA210E231"
+    },
+    {
+      "name": "20-real-agent-flow-start.png",
+      "sha256": "A5E05C02EBBE538CC1FBF6551C39C2EE99C8922057C2126B5CE6FCA8684DA8AE"
+    },
+    {
+      "name": "21-worktree-approved.png",
+      "sha256": "87CEECA6D1A2103F4C3808A49CA063FAA48987033974D226734D852075314A3D"
+    },
+    {
+      "name": "22-real-agent-progress.png",
+      "sha256": "3F1A8C041D06634E0186D697430CFF8E2B6ED488B0B491B0A523262956B0A2E0"
+    },
+    {
+      "name": "23-compact-workspace-approval.png",
+      "sha256": "E32D728F8A06558D7A9D8F788294D764BAA70845745E7F059F097545AE357738"
+    },
+    {
+      "name": "24-real-model-running.png",
+      "sha256": "DEFB374F0739FF2F654BF6C18F140D0E1A7A9C4D02370D3A349A25CDFCD64866"
+    },
+    {
+      "name": "25-real-model-design.png",
+      "sha256": "0A7808E1AC57801D405CEBF06E6CC9AF55A81034AE36897AEB2FA939A0171A02"
+    },
+    {
+      "name": "26-real-model-review.png",
+      "sha256": "0DF7DD817B58C9813AF620288CA89C503013349E99F0821C932DAE5701EA6322"
+    },
+    {
+      "name": "27-real-test-file-approval.png",
+      "sha256": "6EA612F14CAB3ED9B52637145FEA9FEAE8908B976BCE69ABA7BD5968CFB2A009"
+    },
+    {
+      "name": "28-real-test-command-approval.png",
+      "sha256": "DEC21470A3E0B605E8566146685DAA68594E4B88C1B20A2CC7A96B9D5365FB42"
+    },
+    {
+      "name": "29-real-six-stages-completed.png",
+      "sha256": "5FA32A74E5B3D4D088DD3B35E49353FBEA1F63E85F45D55BEF78B9518EEF61BA"
+    },
+    {
+      "name": "30-real-results-review.png",
+      "sha256": "6EF6E9DE9F83D0520472EA0B908DE6E307502A9EEA07553AD168C3C80D88B2DA"
+    },
+    {
+      "name": "31-independent-verification-approval.png",
+      "sha256": "08D40C308042EEEEF790102CF423C5D3ADC4A3A29CE4E939B4610D1CECDBE223"
+    },
+    {
+      "name": "32-integration-approval.png",
+      "sha256": "B00569340191E583C4EE9C5DD789608EE68E74BC8C868594B8467D3D67596B04"
+    },
+    {
+      "name": "33-real-model-integrated.png",
+      "sha256": "E431BBE806FF3F51A84266FE18400599E2777DB92E2425B3C8778F2BB9D6FF9F"
+    },
+    {
+      "name": "34-integrated-restart-recovered.png",
+      "sha256": "B03ECCC15D8D51C6C8A21F094343B7164DE6937C983D5EF77089481F39742E7C"
+    },
+    {
+      "name": "organization-failure.png",
+      "sha256": "C999B1C4771ED5E4890F9D89E37BC4F1389AC4E0E7844CAEF2165F1C61FD1832"
+    }
+  ]
+}

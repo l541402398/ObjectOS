@@ -22,7 +22,7 @@ const uuid = z.uuid()
 export class OrganizationWorkers {
   constructor(private readonly pool: Pool) {}
 
-  private scope<T>(
+  scope<T>(
     orgId: string,
     accountId: string,
     session: string,
@@ -44,7 +44,7 @@ export class OrganizationWorkers {
     })
   }
 
-  private async device(client: PoolClient, orgId: string, workerId: string, secret: string, owner?: string) {
+  async device(client: PoolClient, orgId: string, workerId: string, secret: string, owner?: string) {
     const row = (
       await client.query(
         `SELECT w.* FROM organization_workers w
@@ -140,9 +140,9 @@ export class OrganizationWorkers {
                   ? 'online'
                   : 'offline',
         canManage: w.ownerId === accountId || role === 'owner' || role === 'admin',
-        executionReady: false,
+        executionReady: true,
       }))
-      // A local consent is visible only to its owner and the project's actual members.
+      // Only actual project members can discover opaque grants; absolute local paths never leave Main.
       const grants = (
         await client.query(
           `SELECT g.id,g.worker_id AS "workerId",g.project_id AS "projectId",p.name AS "projectName",g.workspace_ref AS "workspaceRef",g.scope,g.scope_digest AS "scopeDigest",g.expires_at::float8 AS "expiresAt",g.created_at::float8 AS "createdAt",g.revoked_at,
@@ -150,7 +150,7 @@ export class OrganizationWorkers {
         JOIN organization_workers w ON w.organization_id=g.organization_id AND w.id=g.worker_id
         JOIN organization_projects p ON p.organization_id=g.organization_id AND p.id=g.project_id
         JOIN organization_project_members pm ON pm.organization_id=g.organization_id AND pm.project_id=g.project_id AND pm.account_id=$2
-        WHERE g.organization_id=$1 AND w.owner_id=$2 ORDER BY g.created_at DESC,g.id LIMIT 200`,
+        WHERE g.organization_id=$1 ORDER BY g.created_at DESC,g.id LIMIT 200`,
           [orgId, accountId],
         )
       ).rows.map(({ revoked_at, project_status, project_role, ...g }) => ({
@@ -211,7 +211,7 @@ export class OrganizationWorkers {
         workerId,
         Date.now(),
       ])
-      return { ok: true, executionReady: false }
+      return { ok: true, executionReady: true }
     })
   }
 

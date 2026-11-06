@@ -38,7 +38,7 @@ function samePath(a: string, b: string): boolean {
 }
 
 /** Stored bindings are authoritative; neither a caller nor a legacy plan can override this root. */
-export function managedTaskRoot(store: SqliteStore, task: Task, requestedRoot?: string): string | null {
+export function managedTaskWorkspace(store: SqliteStore, task: Task, requestedRoot?: string) {
   if (!task.requirementId) return null
   const record = store.read.getTaskWorkspace(task.id)
   if (!record) throw new AppError('CONFLICT', '请在需求工作台准备并批准此任务的独立工作区')
@@ -51,7 +51,11 @@ export function managedTaskRoot(store: SqliteStore, task: Task, requestedRoot?: 
   const identity = repositoryIdentity(root), expected = repositoryIdentity(project.rootPath)
   if (!samePath(identity.commonDir, expected.commonDir) || identity.branch !== record.branch)
     throw new AppError('CONFLICT', '任务工作区的仓库或分支已改变，请先核对')
-  return root
+  return { root, identity, projectIdentity: expected }
+}
+
+export function managedTaskRoot(store: SqliteStore, task: Task, requestedRoot?: string): string | null {
+  return managedTaskWorkspace(store, task, requestedRoot)?.root ?? null
 }
 
 export class RequirementWorkService {
@@ -132,20 +136,31 @@ export class RequirementWorkService {
     const projectRoot = canonical(project.rootPath)
     const integration = this.store.db.prepare(`SELECT ${WORKSPACE_COLUMNS} FROM requirement_workspaces WHERE requirement_id=? AND kind='integration'`).get(requirement.id)
     const existing = integration ? TaskWorkspaceSchema.parse(integration) : null
-    const parent = join(canonical(this.dataDir), 'requirement-workspaces', project.id, requirement.id)
-    const integrationRoot = existing?.rootPath ?? join(parent, 'integration')
-    const taskRoot = join(parent, 'tasks', task.id)
+    let projectIdentity: ReturnType<typeof repositoryIdentity>
+    try { projectIdentity=repositoryIdentity(projectRoot) }
+    catch { throw new AppError('CONFLICT', '项目尚无有效代码基线，请先完成项目初始化后重试；准备预览不会自动提交文件') }
+    // Full IDs stay in SQLite/approvals; compact filesystem names avoid Windows Git path limits.
+    const scope = createHash('sha256').update(JSON.stringify([project.id, requirement.id])).digest('hex').slice(0, 24)
+    const taskKey = createHash('sha256').update(task.id).digest('hex').slice(0, 24)
+    const parent = join(canonical(this.dataDir), 'w', scope)
+    const integrationRoot = existing?.rootPath ?? join(parent, 'i')
+    const taskRoot = join(parent, `t-${taskKey}`)
+    if (process.platform === 'win32' && Math.max(integrationRoot.length, taskRoot.length) > 240) {
+      throw new AppError('CONFLICT', '工作区路径过长，请将数据目录放到较短路径后重新申请；没有创建目录或分支')
+    }
     this.safeDestination(integrationRoot); this.safeDestination(taskRoot)
     if (existsSync(taskRoot) || (!existing && existsSync(integrationRoot))) throw new AppError('CONFLICT', '目标目录已存在但未登记，请先核对，不会覆盖已有文件')
     const source = existing ? integrationRoot : projectRoot
     const dependencies = assertIntegratedDependencies(this.store, task, source)
-    if (existing && (!existsSync(source) || git(source, 'branch', '--show-current') !== existing.branch)) throw new AppError('CONFLICT', '需求集成工作区缺失或分支已改变')
-    if (existing && !samePath(git(source, 'rev-parse', '--path-format=absolute', '--git-common-dir'), git(projectRoot, 'rev-parse', '--path-format=absolute', '--git-common-dir')))
+    if(existing&&!existsSync(source))throw new AppError('CONFLICT','需求集成工作区缺失，请先核对')
+    const sourceIdentity=existing?repositoryIdentity(source):projectIdentity
+    if (existing && sourceIdentity.branch !== existing.branch) throw new AppError('CONFLICT', '需求集成工作区缺失或分支已改变')
+    if (existing && !samePath(sourceIdentity.commonDir,projectIdentity.commonDir))
       throw new AppError('CONFLICT', '需求集成工作区不属于当前仓库')
-    if (git(projectRoot, 'branch', '--list', `projectos/task-${task.id}`) || (!existing && git(projectRoot, 'branch', '--list', `projectos/requirement-${requirement.id}`)))
+    if (git(projectRoot, 'branch', '--list', `projectos/task-${task.id}`,...(!existing?[`projectos/requirement-${requirement.id}`]:[])))
       throw new AppError('CONFLICT', '目标分支已存在但未登记，请先核对，不会复用未知分支')
     if (git(source, 'status', '--porcelain').length) throw new AppError('CONFLICT', '代码基线存在未提交修改，请先处理后准备任务工作区')
-    const baseCommit = git(source, 'rev-parse', '--verify', 'HEAD')
+    const baseCommit = sourceIdentity.head
     return { projectId: project.id, requirementId: requirement.id, taskId: task.id, taskVersion: task.version,
       requirementVersion: requirement.version, projectRoot, integrationRoot,
       integrationBranch: existing?.branch ?? `projectos/requirement-${requirement.id}`, integrationExists: Boolean(existing),

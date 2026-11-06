@@ -31,6 +31,7 @@ import {
 } from './OrganizationPrimitives'
 import { organizationScopeKey } from './useOrganization'
 import './workers.css'
+import { OrganizationJobs } from './OrganizationJobs'
 
 const STATUS = {
   online: '在线',
@@ -515,7 +516,7 @@ export function OrganizationWorkers({ connection }: { connection: OrganizationCo
                 </div>
                 <div>
                   <dt>任务接收</dt>
-                  <dd>尚未启用</dd>
+                  <dd>{selected.executionReady ? '支持原生任务 · 逐次审批' : '尚未启用'}</dd>
                 </div>
                 <div>
                   <dt>设备标识</dt>
@@ -805,6 +806,7 @@ export function OrganizationWorkers({ connection }: { connection: OrganizationCo
           )}
         </>
       ) : null}
+      {data&&!granting&&!enrolling&&<OrganizationJobs connection={connection} workers={data}/>}
       {!granting ? <OrganizationError error={save.error} /> : null}
       <OrganizationError error={revoke.error} />
       {notice ? (

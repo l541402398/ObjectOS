@@ -1,0 +1,119 @@
+跳到主内容
+PROJECTOS
+同步与冲突闭环验收
+›
+研发
+›
+工作区
+搜索或跳转
+Ctrl K
+本机就绪
+3
+同
+1
+1
+目标旅程
+同步与冲突闭环验收
+1 个审批待处理
+当前阶段
+需求
+进行中
+需要你操作
+处理审批
+项目准备
+2
+需求
+3
+计划
+4
+审核
+5
+授权
+6
+执行
+7
+验证
+8
+审查
+9
+交付
+delivery-project
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\.tmp\functional-desktop-0fiOh2\delivery-project
+⑂ main
+工作区干净
+3 个条目
+查看代码变更
+代码同步与合入
+打开目录
+刷新
+文件
+只读 · 已忽略依赖目录
+remote-note.txt
+value.cjs
+value.test.cjs
+remote-note.txt
+×
+plaintext
+54 B
+1
+2
+Synchronized through approved desktop fetch and pull.
+ 文件改动
+没有可显示的差异
+工作区可能没有 Git 仓库，或所有变更都已提交。未跟踪文件不会出现在 git diff 中。
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\.tmp\functional-desktop-0fiOh2\delivery-project
+⑂ main
+干净
+阶段
+构思
+本地工作区
+PROJECTOS 1.7.0
+设置
+设置概览
+账号与组织
+AI 连接
+模型目录
+运行时
+通用与限制
+工具与插件
+Skills 管理
+工具权限
+存储与安全
+用量与价格
+OpenSpec
+偏好设置
+关于
+账号与组织
+组织已连接
+阿
+阿帆
+[隐藏邮箱]
+http://127.0.0.1:55119
+刷新连接
+退出账号
+当前组织
+选择组织
+远程执行验收组织
+所有者
+创建组织
+共享项目
+组织资产
+执行端
+组织成员
+待接受邀请
+共享项目
+
+仅显示你拥有项目访问权限的记录。
+
+创建项目
+当前组织共享项目
+项目	我的权限	
+操作
+
+
+远程执行闭环
+DELIV
+	项目所有者	
+成员权限
+
+共享项目用于团队协作，不会自动关联本机目录或获得本机执行权限。

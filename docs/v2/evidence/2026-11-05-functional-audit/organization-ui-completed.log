@@ -1,0 +1,3 @@
+[PASS] Signed out state survives desktop restart
+[PASS] Sign out preserves personal local project
+[PASS] No renderer exceptions

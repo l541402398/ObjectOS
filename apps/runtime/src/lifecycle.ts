@@ -92,6 +92,49 @@ export class LifecycleService {
   }
 
   /**
+   * Checks whether a version has entered active gate evaluation context (evidence recorded,
+   * completed plan bound to this version, or version-bound tasks in review/done).
+   * Prevents newly created projects or early requirement-workbench projects from showing a
+   * premature "版本 v0.1.0 无法进入开发中" blocker before any version delivery work exists.
+   */
+  private hasActiveVersionGateContext(projectId: string, versionId: string): boolean {
+    if (this.listEvidence('version', versionId).length > 0) return true
+
+    const hasCompletedPlan = this.store.read
+      .listAllPlanRevisions()
+      .some(
+        (plan) =>
+          plan.projectId === projectId &&
+          plan.versionId === versionId &&
+          plan.status === 'approved' &&
+          plan.execution?.status === 'completed',
+      )
+    if (hasCompletedPlan) return true
+
+    return this.store.read
+      .listTaskCards(projectId)
+      .some((task) => task.versionId === versionId && (task.status === 'review' || task.status === 'done'))
+  }
+
+  /**
+   * Read-only precheck used by autonomous tick so it does not seed default gates or
+   * persist failed gate evaluations on untouched placeholder versions.
+   */
+  canTransitionVersion(versionId: string, to: VersionPhase): boolean {
+    try {
+      const version = this.getVersion(versionId)
+      const allowed = VERSION_TRANSITIONS[version.phase] ?? []
+      if (!allowed.includes(to)) return false
+      if (!GATE_FOR_TARGET[to]) return true
+      if (!this.hasActiveVersionGateContext(version.projectId, version.id)) return false
+      this.ensureDefaultGates(version.projectId)
+      return this.computeVersionGate(version, to).status === 'passed'
+    } catch {
+      return false
+    }
+  }
+
+  /**
    * Versions whose next gated hop is currently blocked, with the concrete reasons.
    * Read-only: the action center turns these into explicit "what is missing" items.
    */
@@ -101,6 +144,7 @@ export class LifecycleService {
     for (const version of versions) {
       const to = this.nextGatedPhase(version.phase)
       if (!to) continue
+      if (!this.hasActiveVersionGateContext(projectId, version.id)) continue
       let evaluation: GateEvaluation
       try {
         evaluation = this.computeVersionGate(version, to)

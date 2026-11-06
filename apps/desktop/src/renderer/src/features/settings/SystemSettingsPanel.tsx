@@ -46,7 +46,7 @@ export function SystemSettingsPanel() {
 
       <div className="po-settings-section-title">快捷键</div>
       <div className="v16-shortcut-grid">
-        <div><kbd>Ctrl</kbd><kbd>K</kbd><span>命令面板</span></div>
+        <div><kbd>Ctrl</kbd><kbd>K</kbd><span>搜索或跳转</span></div>
         <div><kbd>Esc</kbd><span>关闭弹层</span></div>
         <div><kbd>Tab</kbd><span>焦点移动</span></div>
         <div><kbd>Enter</kbd><span>确认操作</span></div>

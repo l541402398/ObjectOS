@@ -1,3 +1,4 @@
+import { GitDeliveryDialog } from '../../../pages/GitDeliveryDialog'
 import { useProductDialogs } from '../../../next-ui/overlay/ProductDialogs'
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -567,6 +568,7 @@ export default function OrchestrationWorkspace() {
   }
 
   const generate = async (mode: 'ai' | 'local' = planMode): Promise<void> => {
+    if (generating) return
     if (goal.trim().length < 3) {
       message.warning('请输入目标')
       return
@@ -1019,19 +1021,10 @@ export default function OrchestrationWorkspace() {
     }
   }
 
+  const [deliveryOpen,setDeliveryOpen]=useState(false)
   const mergeWorktree = async (): Promise<void> => {
-    if (!draft) return
-    try {
-      const info = await window.projectos.worktrees.merge(draft.id)
-      setWorktreeInfo(info)
-      setDraft(await window.projectos.plans.get(draft.id))
-      await invalidate()
-      message.success('已合并到主分支')
-    } catch (error) {
-      message.error(errorMessage(error))
-    }
+    setDeliveryOpen(true)
   }
-
   const discardWorktree = async (): Promise<void> => {
     if (!draft) return
     try {
@@ -1445,6 +1438,7 @@ export default function OrchestrationWorkspace() {
 
   return (
     <div className={`po-page po-page-wide po-orchestration-page${selected ? ' is-inspector-open' : ''}`}>
+        {deliveryOpen&&draft&&<GitDeliveryDialog subject={{projectId,planId:draft.id,taskId:null}} onClose={()=>setDeliveryOpen(false)} onRefresh={invalidate}/>}
         <header className="po-orch-header">
           <div className="po-orch-identity">
             <div className="po-orch-kicker"><NodeIndexOutlined /> 编排工作台</div>

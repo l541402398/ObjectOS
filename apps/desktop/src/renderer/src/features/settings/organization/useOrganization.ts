@@ -14,6 +14,7 @@ export function useOrganization() {
     queryFn: () => window.projectos.organization.status({ refresh: true }),
     staleTime: 30_000,
     retry: false,
+    refetchInterval:query=>query.state.data?.status==='local'?2000:false,
   })
   const change = useMutation({
     mutationFn: async (action: () => Promise<OrganizationConnectionView>) => {

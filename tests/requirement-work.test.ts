@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { CreateTaskInputSchema, RequirementWorkViewSchema } from '@projectos/contracts'
@@ -22,6 +22,33 @@ async function fixture(fake?: FakeProvider) {
 }
 
 describe('requirement delivery scope and isolated development work', () => {
+  it('prepares real task worktrees under a deep data root using compact destinations', async () => {
+    const f = await fixture(), task = f.task()
+    const dataRoot = join(f.dataDir, 'desktop-profile-with-a-long-name-'.repeat(2))
+    mkdirSync(dataRoot, { recursive: true })
+    const work = new RequirementWorkService(f.store, dataRoot)
+    const op = work.request({ taskId: task.id, expectedVersion: task.version })
+    const before = git(f.project.rootPath, 'rev-parse', 'HEAD')
+    await work.decide(op.approvalId, 'approved', '验证真实长路径场景')
+    const record = f.store.read.getTaskWorkspace(task.id)!
+    expect(record.rootPath.length).toBeLessThan(dataRoot.length + 60)
+    expect(git(record.rootPath, 'rev-parse', 'HEAD')).toBe(before)
+    expect(managedTaskRoot(f.store, task)).toBe(record.rootPath)
+    expect(git(f.project.rootPath, 'rev-parse', 'HEAD')).toBe(before)
+  }, 30_000)
+
+  it('never stages or commits an unborn project while preparing an approval preview', async () => {
+    const f = await fixture()
+    const project = await f.services.projects.create({ name: 'unborn preview', description: '', rootPath: join(f.dataDir, 'unborn'), createDirectory: true, initGit: true })
+    const requirement = f.services.projects.createRequirement({ projectId: project.id, title: '无初始提交', body: '', source: 'local', acceptanceCriteria: [] })
+    const task = f.services.tasks.create(CreateTaskInputSchema.parse({ projectId: project.id, requirementId: requirement.id, title: '不得自动提交', acceptanceCriteria: ['原内容不变'] }))
+    writeFileSync(join(project.rootPath, '.env'), 'LOCAL_TEST_SECRET=not-for-git\n')
+    const before = git(project.rootPath, 'status', '--porcelain=v1', '-uall')
+    expect(() => f.work.request({ taskId: task.id, expectedVersion: task.version })).toThrow(/代码基线/)
+    expect(git(project.rootPath, 'status', '--porcelain=v1', '-uall')).toBe(before)
+    expect(git(project.rootPath, 'diff', '--cached', '--name-only')).toBe('')
+  })
+
   it('retains legacy tasks, rejects foreign requirement links and uses optimistic document edits', async () => {
     const f = await fixture()
     const old = f.services.tasks.create(CreateTaskInputSchema.parse({ projectId: f.project.id, title: '历史任务' }))

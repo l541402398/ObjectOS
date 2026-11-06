@@ -19,7 +19,20 @@ self.MonacoEnvironment = {
 
 loader.config({ monaco })
 
-const editorColors = (palette: ThemePalette) => ({
+const tint=(color:string,alpha:string)=>color.startsWith('#')?`${color.slice(0,7)}${alpha}`:color
+// Monaco accepts hex colors; passing the design system's rgba tokens produces red fallbacks.
+function editorColor(value:string){
+  const rgba=/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)$/.exec(value)
+  if(!rgba)return value
+  return '#'+rgba.slice(1,4).map(n=>Math.round(Number(n)).toString(16).padStart(2,'0')).join('')+(rgba[4]===undefined?'':Math.round(Number(rgba[4])*255).toString(16).padStart(2,'0'))
+}
+const editorColors = (palette: ThemePalette) => Object.fromEntries(Object.entries({
+  'diffEditor.insertedLineBackground':tint(palette.success,'18'),
+  'diffEditor.removedLineBackground':tint(palette.danger,'18'),
+  'diffEditor.insertedTextBackground':tint(palette.success,'35'),
+  'diffEditor.removedTextBackground':tint(palette.danger,'35'),
+  'diffEditorGutter.insertedLineBackground':tint(palette.success,'55'),
+  'diffEditorGutter.removedLineBackground':tint(palette.danger,'55'),
   'editor.background': palette.surface,
   'editor.foreground': palette.textPrimary,
   'editorLineNumber.foreground': palette.textSecondary,
@@ -35,14 +48,15 @@ const editorColors = (palette: ThemePalette) => ({
   'editorSuggestWidget.border': palette.border,
   'scrollbarSlider.background': palette.scrollbar,
   'scrollbarSlider.hoverBackground': palette.scrollbarHover,
-})
+}).map(([key,value])=>[key,editorColor(value)]))
 
 for (const [mode, palette] of [['light', lightPalette], ['dark', darkPalette]] as const) {
   monaco.editor.defineTheme(`projectos-${mode}`, {
     base: mode === 'light' ? 'vs' : 'vs-dark',
     inherit: true,
     rules: [
-      { token: 'comment', foreground: palette.textSecondary.slice(1) },
+      // Diff backgrounds reduce secondary text contrast; keep source comments fully legible.
+      { token: 'comment', foreground: palette.textPrimary.slice(1) },
       { token: 'keyword', foreground: palette.accentStrong.slice(1) },
       { token: 'string', foreground: palette.success.slice(1) },
       { token: 'number', foreground: palette.warning.slice(1) },

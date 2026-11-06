@@ -1,17 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { GitDeliveryDialog } from './GitDeliveryDialog'
+import { CodeReviewDialog } from './CodeReviewDialog'
 import { useParams } from 'react-router-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { App as AntApp, Button, Input, Tree, type TreeDataNode } from 'antd'
+import { useQueryClient } from '@tanstack/react-query'
+import { Button, Input, Tree, type TreeDataNode } from 'antd'
 import {
   CodeOutlined,
   FileOutlined,
   FolderOpenOutlined,
   FolderOutlined,
   ReloadOutlined,
-  RightOutlined,
   SearchOutlined,
-  CodeOutlined as TerminalOutlined,
-  WarningOutlined,
 } from '@ant-design/icons'
 import Editor from '@monaco-editor/react'
 import type { WorkspaceEntry } from '@projectos/contracts'
@@ -27,14 +26,6 @@ import { formatBytes } from '../lib/format'
 import { errorMessage } from '../lib/errors'
 import { useResolvedTheme } from '../stores/ui'
 import '../lib/monaco'
-
-interface TerminalEntry {
-  command: string
-  stdout: string
-  stderr: string
-  exitCode: number
-  durationMs: number
-}
 
 function buildTree(entries: WorkspaceEntry[]): TreeDataNode[] {
   const map = new Map<string, TreeDataNode & { children: TreeDataNode[] }>()
@@ -121,23 +112,16 @@ function DiffView({ patch, truncated }: { patch: string; truncated: boolean }) {
 }
 
 export default function WorkspacePage() {
+  const [deliveryOpen,setDeliveryOpen]=useState(false),[codeOpen,setCodeOpen]=useState(false)
   const { projectId = '' } = useParams<{ projectId: string }>()
   const queryClient = useQueryClient()
-  const { message } = AntApp.useApp()
   const workspace = useWorkspace(projectId)
   const theme = useResolvedTheme()
   const [selectedPath, setSelectedPath] = useState<string | null>(null)
   const [openTabs, setOpenTabs] = useState<string[]>([])
   const [diffPath, setDiffPath] = useState<string | null>(null)
-  const [bottomTab, setBottomTab] = useState<'diff' | 'terminal'>('diff')
-  const [command, setCommand] = useState('')
-  const [history, setHistory] = useState<string[]>([])
-  const [historyIndex, setHistoryIndex] = useState(-1)
-  const [terminalEntries, setTerminalEntries] = useState<TerminalEntry[]>([])
-  const terminalOutputRef = useRef<HTMLDivElement | null>(null)
-
   const file = useFileContent(projectId, selectedPath)
-  const diff = useGitDiff(projectId, diffPath, bottomTab === 'diff')
+  const diff = useGitDiff(projectId, diffPath, true)
 
   const treeData = useMemo(() => buildTree(workspace.data?.entries ?? []), [workspace.data?.entries])
 
@@ -152,12 +136,6 @@ export default function WorkspacePage() {
       setOpenTabs([target.path])
     }
   }, [workspace.data, openTabs.length, selectedPath])
-
-  useEffect(() => {
-    if (terminalOutputRef.current) {
-      terminalOutputRef.current.scrollTop = terminalOutputRef.current.scrollHeight
-    }
-  }, [terminalEntries])
 
   const openFile = (path: string): void => {
     setSelectedPath(path)
@@ -182,41 +160,13 @@ export default function WorkspacePage() {
     ])
   }
 
-  const runCommand = useMutation({
-    mutationFn: (value: string) => window.projectos.workspace.runReadonly(projectId, value),
-    onSuccess: (result) => {
-      setTerminalEntries((entries) => [...entries, result])
-      setHistory((items) => [...items.filter((item) => item !== result.command), result.command].slice(-30))
-      setHistoryIndex(-1)
-      setCommand('')
-    },
-    onError: (error) => {
-      message.error(errorMessage(error))
-      setTerminalEntries((entries) => [
-        ...entries,
-        {
-          command,
-          stdout: '',
-          stderr: errorMessage(error),
-          exitCode: 1,
-          durationMs: 0,
-        },
-      ])
-    },
-  })
-
-  const execute = (): void => {
-    const trimmed = command.trim()
-    if (!trimmed || runCommand.isPending) return
-    runCommand.mutate(trimmed)
-  }
-
-  const suggestions = ['git status', 'git diff', 'git log --oneline -5', 'ls', 'pwd']
   const git = workspace.data?.git
   const entries = workspace.data?.entries ?? []
 
   return (
     <div className="po-page po-workspace-page">
+      {codeOpen&&<CodeReviewDialog subject={{projectId,planId:null,taskId:null}} onClose={()=>setCodeOpen(false)}/>}
+      {deliveryOpen&&<GitDeliveryDialog subject={{projectId,planId:null,taskId:null}} onClose={()=>setDeliveryOpen(false)} onRefresh={refresh}/>}
       <PageHeader
         compact
         eyebrow={
@@ -227,6 +177,7 @@ export default function WorkspacePage() {
         title={workspace.data?.rootPath.split(/[\\/]/).pop() ?? '项目工作区'}
         actions={
           <>
+            <Button onClick={()=>setCodeOpen(true)}>查看代码变更</Button><Button onClick={()=>setDeliveryOpen(true)}>代码同步与合入</Button>
             <Button icon={<FolderOpenOutlined />} onClick={() => void window.projectos.projects.reveal(projectId)}>
               打开目录
             </Button>
@@ -358,124 +309,12 @@ export default function WorkspacePage() {
             </div>
           </section>
 
-          <section className="po-bottom-pane">
+          <section className="po-bottom-pane" aria-label="文件改动">
             <div className="po-bottom-tabs">
-              <button
-                type="button"
-                className={bottomTab === 'diff' ? 'is-active' : ''}
-                onClick={() => setBottomTab('diff')}
-              >
-                <CodeOutlined /> Git 差异
-                {git && !git.clean ? <span className="po-tab-badge">{git.changes.length}</span> : null}
-              </button>
-              <button
-                type="button"
-                className={bottomTab === 'terminal' ? 'is-active' : ''}
-                onClick={() => setBottomTab('terminal')}
-              >
-                <TerminalOutlined /> 只读终端
-              </button>
-              <span className="po-grow" />
-              {bottomTab === 'diff' && git && !git.clean ? (
-                <select
-                  aria-label="查看文件差异"
-                  className="po-diff-select"
-                  value={diffPath ?? ''}
-                  onChange={(event) => setDiffPath(event.target.value || null)}
-                >
-                  <option value="">全部变更</option>
-                  {git.changes.map((change) => (
-                    <option key={change.path} value={change.path}>
-                      {change.status} · {change.path}
-                    </option>
-                  ))}
-                </select>
-              ) : null}
-              {bottomTab === 'terminal' ? (
-                <span className="po-terminal-warning">
-                  <WarningOutlined /> 仅允许只读白名单命令
-                </span>
-              ) : null}
+              <span><CodeOutlined /> 文件改动 {git&&!git.clean?`· ${git.changes.length} 个文件`:''}</span><span className="po-grow" />
+              {git&&!git.clean&&<select aria-label="查看文件差异" className="po-diff-select" value={diffPath??''} onChange={event=>setDiffPath(event.target.value||null)}><option value="">全部变更</option>{git.changes.map(change=><option key={change.path} value={change.path}>{change.status} · {change.path}</option>)}</select>}
             </div>
-            <div className="po-bottom-content">
-              {bottomTab === 'diff' ? (
-                diff.isLoading ? (
-                  <LoadingBlock rows={5} />
-                ) : diff.isError ? (
-                  <ErrorState compact message={errorMessage(diff.error)} onRetry={() => void diff.refetch()} />
-                ) : diff.data ? (
-                  <DiffView patch={diff.data.patch} truncated={diff.data.truncated} />
-                ) : (
-                  <EmptyState compact title="没有差异" />
-                )
-              ) : (
-                <div className="po-terminal">
-                  <div className="po-terminal-output" ref={terminalOutputRef}>
-                    {terminalEntries.length === 0 ? (
-                      <div className="po-terminal-placeholder">
-                        <div>只读终端 · 命令在同一项目目录中执行</div>
-                        <div className="po-terminal-suggestions">
-                          {suggestions.map((suggestion) => (
-                            <button
-                              type="button"
-                              key={suggestion}
-                              onClick={() => {
-                                setCommand(suggestion)
-                                runCommand.mutate(suggestion)
-                              }}
-                            >
-                              {suggestion}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      terminalEntries.map((entry, index) => (
-                        <div className="po-terminal-entry" key={index}>
-                          <div className="po-terminal-command">
-                            <RightOutlined /> {entry.command}
-                            <span className={`po-terminal-exit ${entry.exitCode === 0 ? 'is-ok' : 'is-error'}`}>
-                              exit {entry.exitCode} · {entry.durationMs}ms
-                            </span>
-                          </div>
-                          {entry.stdout ? <pre>{entry.stdout}</pre> : null}
-                          {entry.stderr ? <pre className="is-error">{entry.stderr}</pre> : null}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                  <div className="po-terminal-input">
-                    <span className="po-terminal-prompt">$</span>
-                    <Input
-                      variant="borderless"
-                      value={command}
-                      placeholder="输入只读命令，例如 git status"
-                      disabled={runCommand.isPending}
-                      onChange={(event) => setCommand(event.target.value)}
-                      onPressEnter={execute}
-                      onKeyDown={(event) => {
-                        if (event.key === 'ArrowUp') {
-                          event.preventDefault()
-                          const next = Math.min(history.length - 1, historyIndex + 1)
-                          if (next >= 0) {
-                            setHistoryIndex(next)
-                            setCommand(history[history.length - 1 - next] ?? '')
-                          }
-                        } else if (event.key === 'ArrowDown') {
-                          event.preventDefault()
-                          const next = Math.max(-1, historyIndex - 1)
-                          setHistoryIndex(next)
-                          setCommand(next === -1 ? '' : (history[history.length - 1 - next] ?? ''))
-                        }
-                      }}
-                    />
-                    <Button size="small" type="primary" onClick={execute} loading={runCommand.isPending}>
-                      运行
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
+            <div className="po-bottom-content">{diff.isLoading?<LoadingBlock rows={5}/>:diff.isError?<ErrorState compact message={errorMessage(diff.error)} onRetry={()=>void diff.refetch()}/>:diff.data?<DiffView patch={diff.data.patch} truncated={diff.data.truncated}/>:<EmptyState compact title="没有改动"/>}</div>
           </section>
         </div>
       )}

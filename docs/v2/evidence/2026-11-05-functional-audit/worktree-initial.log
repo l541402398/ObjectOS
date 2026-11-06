@@ -1,0 +1,138 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4
+
+ ❯ tests/worktree.test.ts (9 tests | 8 failed) 12952ms
+   ❯ worktree isolation (9)
+     × creates a branch worktree, captures diff, and merges only clean changes 2034ms
+     × commits untracked Agent files before merging so they are actually delivered 1854ms
+     × merges with ProjectOS identity when the repository has no git user configured 1259ms
+     × aborts a conflicting merge and leaves the main workspace clean 1452ms
+     × refuses to auto-commit sensitive files 1164ms
+     × refuses files outside the authorized PlanGrant paths 1164ms
+     × retries cleanly after a crash-like failed merge and delivers authorized files 1142ms
+     × refuses to merge into a dirty main workspace 1461ms
+warning: in the working copy of 'a.txt', LF will be replaced by CRLF the next time Git touches it
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/worktree.test.ts > worktree isolation > creates a branch worktree, captures diff, and merges only clean changes
+Error: 工作区根目录或仓库身份不匹配，请人工核对
+ ❯ gitIdentity packages/worktree/src/index.ts:98:11
+     96|   const [top, common, gitDir, head, branch] = result.stdout.trim().spl…
+     97|   if (result.code !== 0 || !top || !common || !gitDir || !head || !bra…
+     98|     throw new Error('工作区根目录或仓库身份不匹配，请人工核对')
+       |           ^
+     99|   }
+    100|   return { top, common, gitDir, head, branch }
+ ❯ WorktreeManager.merge packages/worktree/src/index.ts:267:28
+ ❯ tests/worktree.test.ts:43:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  tests/worktree.test.ts > worktree isolation > commits untracked Agent files before merging so they are actually delivered
+Error: 工作区根目录或仓库身份不匹配，请人工核对
+ ❯ gitIdentity packages/worktree/src/index.ts:98:11
+     96|   const [top, common, gitDir, head, branch] = result.stdout.trim().spl…
+     97|   if (result.code !== 0 || !top || !common || !gitDir || !head || !bra…
+     98|     throw new Error('工作区根目录或仓库身份不匹配，请人工核对')
+       |           ^
+     99|   }
+    100|   return { top, common, gitDir, head, branch }
+ ❯ WorktreeManager.merge packages/worktree/src/index.ts:267:28
+ ❯ tests/worktree.test.ts:57:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  tests/worktree.test.ts > worktree isolation > merges with ProjectOS identity when the repository has no git user configured
+Error: 工作区根目录或仓库身份不匹配，请人工核对
+ ❯ gitIdentity packages/worktree/src/index.ts:98:11
+     96|   const [top, common, gitDir, head, branch] = result.stdout.trim().spl…
+     97|   if (result.code !== 0 || !top || !common || !gitDir || !head || !bra…
+     98|     throw new Error('工作区根目录或仓库身份不匹配，请人工核对')
+       |           ^
+     99|   }
+    100|   return { top, common, gitDir, head, branch }
+ ❯ WorktreeManager.merge packages/worktree/src/index.ts:267:28
+ ❯ tests/worktree.test.ts:71:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  tests/worktree.test.ts > worktree isolation > aborts a conflicting merge and leaves the main workspace clean
+Error: 工作区根目录或仓库身份不匹配，请人工核对
+ ❯ gitIdentity packages/worktree/src/index.ts:98:11
+     96|   const [top, common, gitDir, head, branch] = result.stdout.trim().spl…
+     97|   if (result.code !== 0 || !top || !common || !gitDir || !head || !bra…
+     98|     throw new Error('工作区根目录或仓库身份不匹配，请人工核对')
+       |           ^
+     99|   }
+    100|   return { top, common, gitDir, head, branch }
+ ❯ WorktreeManager.merge packages/worktree/src/index.ts:267:28
+ ❯ tests/worktree.test.ts:87:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  tests/worktree.test.ts > worktree isolation > refuses to auto-commit sensitive files
+Error: 工作区根目录或仓库身份不匹配，请人工核对
+ ❯ gitIdentity packages/worktree/src/index.ts:98:11
+     96|   const [top, common, gitDir, head, branch] = result.stdout.trim().spl…
+     97|   if (result.code !== 0 || !top || !common || !gitDir || !head || !bra…
+     98|     throw new Error('工作区根目录或仓库身份不匹配，请人工核对')
+       |           ^
+     99|   }
+    100|   return { top, common, gitDir, head, branch }
+ ❯ WorktreeManager.merge packages/worktree/src/index.ts:267:28
+ ❯ tests/worktree.test.ts:118:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  tests/worktree.test.ts > worktree isolation > refuses files outside the authorized PlanGrant paths
+Error: 工作区根目录或仓库身份不匹配，请人工核对
+ ❯ gitIdentity packages/worktree/src/index.ts:98:11
+     96|   const [top, common, gitDir, head, branch] = result.stdout.trim().spl…
+     97|   if (result.code !== 0 || !top || !common || !gitDir || !head || !bra…
+     98|     throw new Error('工作区根目录或仓库身份不匹配，请人工核对')
+       |           ^
+     99|   }
+    100|   return { top, common, gitDir, head, branch }
+ ❯ WorktreeManager.merge packages/worktree/src/index.ts:267:28
+ ❯ tests/worktree.test.ts:135:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  tests/worktree.test.ts > worktree isolation > retries cleanly after a crash-like failed merge and delivers authorized files
+Error: 工作区根目录或仓库身份不匹配，请人工核对
+ ❯ gitIdentity packages/worktree/src/index.ts:98:11
+     96|   const [top, common, gitDir, head, branch] = result.stdout.trim().spl…
+     97|   if (result.code !== 0 || !top || !common || !gitDir || !head || !bra…
+     98|     throw new Error('工作区根目录或仓库身份不匹配，请人工核对')
+       |           ^
+     99|   }
+    100|   return { top, common, gitDir, head, branch }
+ ❯ WorktreeManager.merge packages/worktree/src/index.ts:267:28
+ ❯ tests/worktree.test.ts:150:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  tests/worktree.test.ts > worktree isolation > refuses to merge into a dirty main workspace
+Error: 工作区根目录或仓库身份不匹配，请人工核对
+ ❯ gitIdentity packages/worktree/src/index.ts:98:11
+     96|   const [top, common, gitDir, head, branch] = result.stdout.trim().spl…
+     97|   if (result.code !== 0 || !top || !common || !gitDir || !head || !bra…
+     98|     throw new Error('工作区根目录或仓库身份不匹配，请人工核对')
+       |           ^
+     99|   }
+    100|   return { top, common, gitDir, head, branch }
+ ❯ WorktreeManager.merge packages/worktree/src/index.ts:267:28
+ ❯ tests/worktree.test.ts:170:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  8 failed | 5 passed (13)
+   Start at  18:20:12
+   Duration  18.24s (tests 98%, import 1%, transform 1%)
+

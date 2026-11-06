@@ -1,0 +1,6 @@
+
+> projectos@1.7.0 typecheck C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4
+> tsc -p tsconfig.json --noEmit
+
+apps/runtime/src/git-delivery.ts(209,24): error TS2345: Argument of type '"gop"' is not assignable to parameter of type 'IdPrefix'.
+ ELIFECYCLE  Command failed with exit code 2.

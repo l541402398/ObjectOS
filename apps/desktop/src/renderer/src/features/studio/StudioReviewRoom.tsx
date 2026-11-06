@@ -157,8 +157,7 @@ export function StudioReviewRoom(): ReactElement {
 
                 {command ? (
                   <section className="studio-evidence">
-                    <header><Terminal size={15} /><span>命令</span><em>process</em></header>
-                    <pre>{command}</pre>
+                    <details><summary>执行详情</summary><pre>{command}</pre></details>
                   </section>
                 ) : null}
 

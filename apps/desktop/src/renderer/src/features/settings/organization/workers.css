@@ -2,6 +2,12 @@
 .ow-workspace {
   min-width: 0;
 }
+.ow-job-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--ui-divider); }
+.ow-job-section .org-form { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin-block: 16px 24px; }
+.ow-job-section .org-form > .org-field:nth-child(3) { grid-column: 1 / -1; }
+.ow-job-section .org-form > button { justify-self: start; }
+.ow-job-section code { overflow-wrap: anywhere; }
+@media (max-width: 760px) { .ow-job-section .org-form { grid-template-columns: minmax(0,1fr); } }
 .ow-refresh {
   padding: 8px 10px;
 }

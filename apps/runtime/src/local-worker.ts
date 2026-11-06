@@ -33,6 +33,7 @@ function scopedDirectories(root: string, directories: string[]) {
 
 /** Local consent facts only. This service cannot launch a Run or execute a tool. */
 export class LocalWorkerService {
+  onRevoked: (grantId: string) => void = () => {}
   constructor(private readonly store: SqliteStore) {}
 
   private grants(scope?: WorkerInternalScope) {
@@ -81,7 +82,14 @@ export class LocalWorkerService {
           }),
         )
     })
+    if (value.status === 'revoked') this.onRevoked(value.id)
     return value
+  }
+  executionGrant(id: string, scope: WorkerInternalScope) {
+    const grant = this.get(id)
+    if (grant.status !== 'active' || !grant.remoteSynced || grant.serverUrl !== scope.serverUrl || grant.organizationId !== scope.organizationId || grant.accountId !== scope.accountId) throw new AppError('POLICY_DENIED', '本机授权已失效或不属于当前账号。')
+    this.assertRoot(grant)
+    return grant
   }
   private assertRoot(grant: LocalWorkerGrant) {
     const project = this.store.read.getProject(grant.localProjectId)

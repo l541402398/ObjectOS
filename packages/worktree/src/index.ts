@@ -1,6 +1,6 @@
 import crossSpawn from 'cross-spawn'
-import { existsSync, mkdirSync, readFileSync, statSync } from 'node:fs'
-import { basename, dirname } from 'node:path'
+import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
+import { basename, dirname, resolve } from 'node:path'
 
 export interface WorktreeRef {
   path: string
@@ -28,7 +28,7 @@ const SENSITIVE_NAMES = new Set([
 ])
 
 const SENSITIVE_PATTERNS = [
-  /^\.env\./i,
+  /(^|\/)\.env\./i,
   /\.pem$/i,
   /\.key$/i,
   /\.p12$/i,
@@ -62,12 +62,10 @@ function isAllowedPath(path: string, allowedPaths: string[]): boolean {
 
 function parsePorcelain(output: string): Array<{ path: string; status: string }> {
   const files: Array<{ path: string; status: string }> = []
-  for (const raw of output.split(/\r?\n/)) {
-    if (!raw.trim()) continue
+  for (const raw of output.split('\0')) {
+    if (!raw) continue
     const status = raw.slice(0, 2)
-    let path = raw.slice(3).trim()
-    if (path.includes(' -> ')) path = path.split(' -> ').pop()!.trim()
-    if (path.startsWith('"') && path.endsWith('"')) path = path.slice(1, -1)
+    const path = raw.slice(3)
     if (path) files.push({ path: normalizePath(path), status })
   }
   return files
@@ -75,7 +73,7 @@ function parsePorcelain(output: string): Array<{ path: string; status: string }>
 
 function runGit(args: string[], cwd: string): Promise<{ code: number; stdout: string; stderr: string }> {
   return new Promise((resolve) => {
-    const child = crossSpawn('git', args, { cwd, windowsHide: true })
+    const child = crossSpawn('git', ['--literal-pathspecs', '-c', 'core.quotepath=false', '-c', 'core.fsmonitor=false', ...args], { cwd, windowsHide: true })
     let stdout = ''
     let stderr = ''
     child.stdout?.on('data', (chunk: Buffer) => {
@@ -87,6 +85,38 @@ function runGit(args: string[], cwd: string): Promise<{ code: number; stdout: st
     child.on('error', (error) => resolve({ code: -1, stdout, stderr: error.message }))
     child.on('close', (code) => resolve({ code: code ?? -1, stdout, stderr }))
   })
+}
+
+const WRITE_CONFIG = ['-c', 'core.hooksPath=.git', '-c', 'commit.gpgSign=false', '-c', 'merge.gpgSign=false', '-c', 'user.name=ProjectOS', '-c', 'user.email=projectos@local']
+function samePath(a: string, b: string) {
+  const canonical = (path: string) => existsSync(path) ? realpathSync.native(path) : resolve(path)
+  return process.platform === 'win32' ? canonical(a).toLowerCase() === canonical(b).toLowerCase() : canonical(a) === canonical(b)
+}
+
+async function gitIdentity(root: string) {
+  const result = await runGit(['rev-parse', '--show-toplevel', '--path-format=absolute', '--git-common-dir', '--absolute-git-dir', 'HEAD', '--abbrev-ref', 'HEAD'], root)
+  const [top, common, gitDir, head, branch] = result.stdout.trim().split(/\r?\n/)
+  if (result.code !== 0 || !top || !common || !gitDir || !head || !branch || !samePath(top, root) || lstatSync(root).isSymbolicLink()) {
+    throw new Error('工作区根目录或仓库身份不匹配，请人工核对')
+  }
+  return { top, common, gitDir, head, branch }
+}
+
+function assertIdleGit(gitDir: string) {
+  for (const marker of ['MERGE_HEAD', 'CHERRY_PICK_HEAD', 'REVERT_HEAD', 'rebase-merge', 'rebase-apply', 'BISECT_LOG', 'index.lock']) {
+    if (existsSync(`${gitDir}/${marker}`)) throw new Error('工作区有未结束的 Git 操作，请先人工处理')
+  }
+}
+
+async function assertPlainGitAttributes(root: string, paths: string[]) {
+  if (!paths.length) return
+  const result = await runGit(['check-attr', '-z', 'filter', 'merge', '--', ...paths], root)
+  if (result.code !== 0) throw new Error('无法核对 Git 过滤器和合并驱动，请人工处理')
+  const values = result.stdout.split('\0')
+  for (let i = 0; i + 2 < values.length; i += 3) {
+    const allowed = values[i + 1] === 'filter' ? ['unspecified', 'unset'] : ['unspecified', 'unset', 'set', 'text', 'binary']
+    if (!allowed.includes(values[i + 2]!)) throw new Error(`文件启用了自定义过滤器或自动合并驱动，请人工处理：${values[i]}`)
+  }
 }
 
 /**
@@ -122,6 +152,10 @@ export async function ensureBaselineCommit(
   repoRoot: string,
   options: { message?: string; authorName?: string; authorEmail?: string } = {},
 ): Promise<{ commit: string; files: number } | null> {
+  if (!existsSync(`${repoRoot}/.git`)) {
+    const init = await runGit(['init', '-q'], repoRoot)
+    if (init.code !== 0) throw new Error(init.stderr.trim() || '无法初始化 Git 仓库')
+  }
   const existing = await resolveBaseCommit(repoRoot)
   if (existing) return null
   const status = await runGit(['status', '--porcelain=v1', '-uall'], repoRoot)
@@ -167,9 +201,13 @@ export class WorktreeManager {
     const reuse = async (): Promise<WorktreeRef | null> => {
       if (!existsSync(worktreePath)) return null
       const head = await this.head(worktreePath)
-      // A directory that is not a usable worktree must not be silently reused: it is
-      // usually the debris of an interrupted `git worktree add`.
-      return head ? { path: worktreePath, branch, baseHead: head } : null
+      const parent = await gitIdentity(repoRoot)
+      const identity = await gitIdentity(worktreePath)
+      const registered = (await this.list(repoRoot)).some(entry => samePath(entry.path, worktreePath) && entry.branch === branch)
+      if (!head || !registered || !samePath(parent.common, identity.common) || identity.branch !== branch || samePath(identity.gitDir, identity.common)) {
+        throw new Error('已有目录不属于此项目的指定 Worktree 分支，请人工核对')
+      }
+      return { path: worktreePath, branch, baseHead: head }
     }
     const existing = await reuse()
     if (existing) return existing
@@ -200,7 +238,7 @@ export class WorktreeManager {
   }
 
   async changedFiles(worktreePath: string, allowedPaths: string[] = ['.']): Promise<WorktreeChangedFile[]> {
-    const status = await runGit(['status', '--porcelain=v1', '-uall'], worktreePath)
+    const status = await runGit(['status', '--porcelain=v1', '--no-renames', '-z', '-uall'], worktreePath)
     if (status.code !== 0) throw new Error(status.stderr.trim() || '无法读取 Worktree 状态')
     return parsePorcelain(status.stdout).map((entry) => ({
       ...entry,
@@ -213,7 +251,7 @@ export class WorktreeManager {
     // Never stage or mutate the index from a read path. Tracked changes come
     // from `git diff HEAD`; untracked files are appended as bounded text so a
     // reviewer can see legitimate new files without `git add -N .`.
-    const status = await runGit(['status', '--porcelain=v1', '-uall'], worktreePath)
+    const status = await runGit(['status', '--porcelain=v1', '--no-renames', '-z', '-uall'], worktreePath)
     const diff = await runGit(['diff', 'HEAD', '--no-ext-diff', '--unified=3'], worktreePath)
     const untracked = parsePorcelain(status.stdout).filter((entry) => entry.status === '??')
     const untrackedParts: string[] = []
@@ -228,7 +266,7 @@ export class WorktreeManager {
         // A file can disappear between status and read; omit it deterministically.
       }
     }
-    const parts = [`# git status\n${status.stdout.trim()}`, '# git diff', diff.stdout.trim()]
+    const parts = [`# git status\n${status.stdout.replace(/\0/g, '\n').trim()}`, '# git diff', diff.stdout.trim()]
     if (untrackedParts.length) parts.push('# untracked files', ...untrackedParts)
     return parts.join('\n\n').slice(0, 120_000)
   }
@@ -239,11 +277,26 @@ export class WorktreeManager {
     message: string,
     authorizedPaths: string[] = ['.'],
   ): Promise<{ ok: boolean; message: string; files?: WorktreeChangedFile[] }> {
+    const targetIdentity = await gitIdentity(repoRoot)
+    assertIdleGit(targetIdentity.gitDir)
+    if (targetIdentity.branch === 'HEAD') return { ok: false, message: '目标处于游离提交，请先人工选择目标分支' }
     const clean = await runGit(['status', '--porcelain=v1'], repoRoot)
     if (clean.code !== 0) return { ok: false, message: clean.stderr.trim() || '无法读取主工作区状态' }
     if (clean.stdout.trim()) return { ok: false, message: '主工作区存在未提交改动，拒绝合并' }
 
     const worktree = (await this.list(repoRoot)).find((entry) => entry.branch === branch)
+    if (!worktree) return { ok: false, message: '任务分支的 Worktree 不可用，请人工核对' }
+    const sourceIdentity = await gitIdentity(worktree.path)
+    assertIdleGit(sourceIdentity.gitDir)
+    if (sourceIdentity.branch !== branch || !samePath(sourceIdentity.common, targetIdentity.common) || samePath(sourceIdentity.top, targetIdentity.top)) {
+      return { ok: false, message: '任务工作区归属或分支已改变，请人工核对' }
+    }
+    // Pending status alone misses changes that an agent has already committed.
+    const committed = await runGit(['diff', '--no-ext-diff', '--no-textconv', '--no-renames', '--name-only', '-z', `${targetIdentity.head}...${sourceIdentity.head}`, '--'], repoRoot)
+    if (committed.code !== 0) return { ok: false, message: '无法核对任务分支的完整提交范围，请人工处理' }
+    const committedFiles = committed.stdout.split('\0').filter(Boolean).map(path => ({ path, status: 'committed', sensitive: isSensitiveWorktreePath(path), allowed: isAllowedPath(path, authorizedPaths) }))
+    const blockedCommits = committedFiles.filter(file => file.sensitive || !file.allowed)
+    if (blockedCommits.length) return { ok: false, message: `任务分支已提交敏感或未授权文件，拒绝合并：\n${blockedCommits.map(file => file.path).join('\n')}`, files: committedFiles }
     if (worktree) {
       const files = await this.changedFiles(worktree.path, authorizedPaths)
       const blocked = files.filter((file) => file.sensitive || !file.allowed)
@@ -256,11 +309,14 @@ export class WorktreeManager {
           files,
         }
       }
+      const paths = [...new Set([...committedFiles, ...files].map(file => file.path))]
+      await assertPlainGitAttributes(worktree.path, paths)
+      await assertPlainGitAttributes(repoRoot, paths)
       if (files.length) {
         const add = await runGit(['add', '--', ...files.map((file) => file.path)], worktree.path)
         if (add.code !== 0) return { ok: false, message: add.stderr.trim() || 'Worktree 暂存失败', files }
         const commit = await runGit(
-          ['-c', 'user.name=ProjectOS', '-c', 'user.email=projectos@local', 'commit', '-m', message],
+          [...WRITE_CONFIG, 'commit', '--no-verify', '-m', message],
           worktree.path,
         )
         if (commit.code !== 0) {
@@ -269,8 +325,25 @@ export class WorktreeManager {
       }
     }
 
+    const sourceHead = await this.head(worktree.path)
+    if (!sourceHead) return { ok: false, message: '无法读取任务提交，请人工核对' }
+    const finalDiff = await runGit(['diff', '--no-ext-diff', '--no-textconv', '--no-renames', '--name-only', '-z', `${targetIdentity.head}...${sourceHead}`, '--'], repoRoot)
+    if (finalDiff.code !== 0 || finalDiff.stdout.split('\0').filter(Boolean).some(path => isSensitiveWorktreePath(path) || !isAllowedPath(path, authorizedPaths))) {
+      return { ok: false, message: '任务最终提交包含敏感或未授权文件，停止合并并请人工核对' }
+    }
+    const preview = await runGit(['merge-tree', '--write-tree', targetIdentity.head, sourceHead], repoRoot)
+    if (preview.code !== 0) return { ok: false, message: `合并预检未通过，请人工解决冲突后重新审查和验证：\n${(preview.stdout + preview.stderr).slice(0, 3500)}` }
+    const currentTarget = await gitIdentity(repoRoot)
+    const currentSource = await gitIdentity(worktree.path)
+    const targetStatus = await runGit(['status', '--porcelain=v1', '-uall'], repoRoot)
+    const sourceStatus = await runGit(['status', '--porcelain=v1', '-uall'], worktree.path)
+    assertIdleGit(currentTarget.gitDir)
+    assertIdleGit(currentSource.gitDir)
+    if (currentTarget.head !== targetIdentity.head || currentTarget.branch !== targetIdentity.branch || currentSource.head !== sourceHead || currentSource.branch !== branch || targetStatus.code !== 0 || sourceStatus.code !== 0 || targetStatus.stdout || sourceStatus.stdout) {
+      return { ok: false, message: '合并前工作区或分支发生变化，请重新审查和验证' }
+    }
     const result = await runGit(
-      ['-c', 'user.name=ProjectOS', '-c', 'user.email=projectos@local', 'merge', '--no-ff', branch, '-m', message],
+      [...WRITE_CONFIG, 'merge', '--no-ff', '--no-edit', sourceHead, '-m', message],
       repoRoot,
     )
     if (result.code === 0) {
@@ -278,7 +351,14 @@ export class WorktreeManager {
     }
     // Never leave the main workspace in a half-merged state; restore it and report the conflict.
     const conflicts = await runGit(['diff', '--name-only', '--diff-filter=U'], repoRoot)
-    await runGit(['merge', '--abort'], repoRoot)
+    if (!existsSync(`${targetIdentity.gitDir}/MERGE_HEAD`) || await this.head(repoRoot) !== targetIdentity.head) {
+      return { ok: false, message: '合并结果未知，请人工核对；系统未尝试清理或重试' }
+    }
+    const aborted = await runGit([...WRITE_CONFIG, 'merge', '--abort'], repoRoot)
+    const restored = await runGit(['status', '--porcelain=v1', '-uall'], repoRoot)
+    if (aborted.code !== 0 || restored.code !== 0 || restored.stdout || await this.head(repoRoot) !== targetIdentity.head) {
+      return { ok: false, message: '无法证明合并前状态已恢复，请人工核对；系统不会自动重试' }
+    }
     const files = conflicts.stdout.trim()
     return {
       ok: false,

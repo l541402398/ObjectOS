@@ -51,7 +51,19 @@ const onStatus = (handler: (status: RuntimeStatus) => void): Unsubscribe => {
 }
 
 const api: ProjectOSDesktopApi = {
+  gitDelivery: {
+    changes: (input) => call('gitDelivery.changes',input),
+    state: input => call('gitDelivery.state', input),
+    request: input => call('gitDelivery.request', input),
+    review: input => call('gitDelivery.review', input),
+    reconcile: input => call('gitDelivery.reconcile', input),
+  },
   organization: {
+    workerJobs: () => call('organization.workerJobs'),
+    submitWorkerJob: (input) => call('organization.submitWorkerJob', input),
+    acceptWorkerJob: (input) => call('organization.acceptWorkerJob', input),
+    cancelWorkerJob: (input) => call('organization.cancelWorkerJob', input),
+    reconcileWorkerJob: (input) => call('organization.reconcileWorkerJob',input),
     workers: () => call('organization.workers'),
     enrollWorker: (input) => call('organization.enrollWorker', input),
     changeWorker: (input) => call('organization.changeWorker', input),

@@ -25,6 +25,82 @@ async function repo(): Promise<string> {
 }
 
 describe('worktree isolation', () => {
+  it('rejects an existing foreign repository without modifying it', async () => {
+    const root = await repo(), foreign = await repo()
+    const manager = new WorktreeManager()
+    const before = await manager.head(foreign)
+    await expect(manager.create(root, foreign, 'projectos/foreign')).rejects.toThrow(/不属于/)
+    expect(await manager.head(foreign)).toBe(before)
+    expect((await manager.list(root)).length).toBe(1)
+  })
+
+  it('rejects an existing worktree that switched branches', async () => {
+    const root = await repo(), manager = new WorktreeManager()
+    const path = `${root}-switched`; dirs.push(path)
+    await manager.create(root, path, 'projectos/expected')
+    await exec('git', ['checkout', '-qb', 'projectos/other'], { cwd: path })
+    await expect(manager.create(root, path, 'projectos/expected')).rejects.toThrow(/不属于/)
+    expect((await exec('git', ['branch', '--show-current'], { cwd: path })).stdout.trim()).toBe('projectos/other')
+  })
+
+  it('reuses the exact registered worktree', async () => {
+    const root = await repo(), manager = new WorktreeManager()
+    const path = `${root}-reuse`; dirs.push(path)
+    const first = await manager.create(root, path, 'projectos/reuse')
+    expect(await manager.create(root, path, 'projectos/reuse')).toEqual(first)
+  })
+
+  it.each(['outside.txt', '.env', 'src/.env.staging'])('rejects already committed forbidden changes: %s', async name => {
+    const root = await repo(), manager = new WorktreeManager()
+    const path = `${root}-committed`; dirs.push(path)
+    await manager.create(root, path, 'projectos/committed')
+    mkdirSync(join(path, 'src'))
+    writeFileSync(join(path, name), 'must stay isolated\n')
+    await exec('git', ['add', '--', name], { cwd: path })
+    await exec('git', ['commit', '-qm', 'already committed'], { cwd: path })
+    const before = await manager.head(root)
+    const result = await manager.merge(root, 'projectos/committed', 'reject committed', ['src'])
+    expect(result.ok).toBe(false)
+    expect(result.message).toContain(name)
+    expect(await manager.head(root)).toBe(before)
+  })
+
+  it('preserves Unicode and literal wildcard names when checking scope and staging', async () => {
+    const root = await repo(), manager = new WorktreeManager()
+    const path = `${root}-unicode`; dirs.push(path)
+    await manager.create(root, path, 'projectos/unicode')
+    mkdirSync(join(path, 'src'))
+    writeFileSync(join(path, 'src', '任务[1].txt'), '中文验收\n')
+    const result = await manager.merge(root, 'projectos/unicode', 'unicode', ['src'])
+    expect(result.ok).toBe(true)
+    expect(readFileSync(join(root, 'src', '任务[1].txt'), 'utf8').trim()).toBe('中文验收')
+  })
+
+  it('does not execute repository commit or merge hooks', async () => {
+    const root = await repo(), manager = new WorktreeManager()
+    const path = `${root}-hooks`; dirs.push(path)
+    await manager.create(root, path, 'projectos/hooks')
+    for (const name of ['pre-commit', 'prepare-commit-msg', 'post-merge']) {
+      writeFileSync(join(root, '.git', 'hooks', name), '#!/bin/sh\necho hook-ran > hook-marker.txt\nexit 1\n', { mode: 0o755 })
+    }
+    writeFileSync(join(path, 'safe.txt'), 'safe\n')
+    expect((await manager.merge(root, 'projectos/hooks', 'no hooks')).ok).toBe(true)
+    expect(() => readFileSync(join(root, 'hook-marker.txt'))).toThrow()
+    expect(() => readFileSync(join(path, 'hook-marker.txt'))).toThrow()
+  })
+
+  it('refuses automatic union/custom merge drivers before staging', async () => {
+    const root = await repo(), manager = new WorktreeManager()
+    const path = `${root}-driver`; dirs.push(path)
+    await manager.create(root, path, 'projectos/driver')
+    writeFileSync(join(path, '.gitattributes'), 'app.txt merge=union\n')
+    writeFileSync(join(path, 'app.txt'), 'unreviewed union\n')
+    const before = await manager.head(root)
+    await expect(manager.merge(root, 'projectos/driver', 'must stop')).rejects.toThrow(/合并驱动/)
+    expect(await manager.head(root)).toBe(before)
+    expect((await exec('git', ['diff', '--cached', '--name-only'], { cwd: path })).stdout).toBe('')
+  })
+
   it('creates a branch worktree, captures diff, and merges only clean changes', async () => {
     const root = await repo()
     const manager = new WorktreeManager()

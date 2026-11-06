@@ -1,0 +1,58 @@
+{
+  "checks": [
+    {
+      "name": "Manually authenticated session survives desktop restart",
+      "status": "PASS"
+    },
+    {
+      "name": "Create organization through desktop UI",
+      "status": "PASS"
+    },
+    {
+      "name": "Create shared project through desktop UI",
+      "status": "PASS"
+    },
+    {
+      "name": "Owner membership is visible",
+      "status": "PASS"
+    },
+    {
+      "name": "Enroll real local worker through desktop UI",
+      "status": "PASS"
+    },
+    {
+      "name": "Worker explicitly does not advertise unfinished task execution",
+      "status": "PASS"
+    },
+    {
+      "name": "Pause local worker through UI",
+      "status": "PASS"
+    },
+    {
+      "name": "Resume local worker through UI",
+      "status": "PASS"
+    },
+    {
+      "name": "Organization and shared project survive desktop restart",
+      "status": "PASS"
+    },
+    {
+      "name": "Sign out returns to local mode",
+      "status": "PASS"
+    },
+    {
+      "name": "Signed out state survives desktop restart",
+      "status": "PASS"
+    },
+    {
+      "name": "Sign out preserves personal local project",
+      "status": "PASS"
+    },
+    {
+      "name": "No renderer exceptions",
+      "status": "PASS"
+    }
+  ],
+  "errors": [],
+  "interaction": "real Electron UI; existing manually authenticated session; no business API calls"
+}

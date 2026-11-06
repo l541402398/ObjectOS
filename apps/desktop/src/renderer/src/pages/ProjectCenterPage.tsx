@@ -156,7 +156,7 @@ export default function ProjectCenterPage() {
             <Button icon={<FolderOpenOutlined />} onClick={() => { setImportMode(true); setCreateOpen(true) }}>
               导入项目
             </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => { setImportMode(false); setCreateOpen(true) }}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => { setImportMode(false); form.setFieldsValue({ createDirectory: true, initGit: true }); setCreateOpen(true) }}>
               新建项目
             </Button>
           </>
@@ -443,7 +443,7 @@ export default function ProjectCenterPage() {
           form={form}
           layout="vertical"
           requiredMark={false}
-          initialValues={{ createDirectory: !importMode, initGit: false, description: '' }}
+          initialValues={{ createDirectory: !importMode, initGit: true, description: '' }}
           className="po-form"
         >
           <Form.Item

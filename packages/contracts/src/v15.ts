@@ -145,6 +145,7 @@ export type RunSkillSnapshot = z.infer<typeof RunSkillSnapshotSchema>
  * the AgentDefinition, Skills or RuntimeProfile are edited or archived later.
  */
 export const RunSnapshotSchema = z.object({
+  authority: z.object({ kind: z.enum(['git-resolution', 'organization-job']), reference: z.string(), allowedTools: z.array(z.string()), maxToolCalls: z.number().int().positive(), provenance: z.record(z.string(), z.unknown()) }).optional(),
   runId: IdSchema,
   agentId: IdSchema,
   agentConfigVersion: z.number().int().nonnegative(),
