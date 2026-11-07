@@ -611,6 +611,29 @@ export class OrganizationConnection {
     const assetRequest = (suffix = '', method = 'GET', body?: unknown) =>
       this.request(snapshot, `${this.orgPath(snapshot)}/assets${suffix}`, method, body, 8 * 1024 * 1024)
     switch (method) {
+      case 'organization.knowledgeList': {
+        const query = new URLSearchParams()
+        if (typeof input.projectId === 'string') query.set('projectId', input.projectId)
+        result = await this.request(snapshot, `${this.orgPath(snapshot)}/knowledge${query.size ? `?${query}` : ''}`)
+        break
+      }
+      case 'organization.knowledgeDetail':
+        result = await this.request(snapshot, `${this.orgPath(snapshot)}/knowledge/${encodeURIComponent(String(input.documentId))}`, 'GET', undefined, 8 * 1024 * 1024)
+        break
+      case 'organization.createKnowledge':
+      case 'organization.searchKnowledge':
+        result = await this.request(snapshot, `${this.orgPath(snapshot)}/knowledge${method === 'organization.searchKnowledge' ? '/search' : ''}`, 'POST', input, 8 * 1024 * 1024)
+        break
+      case 'organization.createKnowledgeVersion':
+      case 'organization.updateKnowledgeDraft':
+      case 'organization.transitionKnowledge': {
+        const { documentId, versionId, ...body } = input
+        const path = `${this.orgPath(snapshot)}/knowledge/${encodeURIComponent(String(documentId))}/versions`
+        result = await this.request(snapshot, method === 'organization.createKnowledgeVersion' ? path
+          : `${path}/${encodeURIComponent(String(versionId))}${method === 'organization.transitionKnowledge' ? '/transition' : ''}`,
+        method === 'organization.updateKnowledgeDraft' ? 'PATCH' : 'POST', body, 8 * 1024 * 1024)
+        break
+      }
       case 'organization.assets':
         result = await assetRequest()
         break

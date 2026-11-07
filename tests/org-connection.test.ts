@@ -587,6 +587,83 @@ describe('Main organization connection — real HTTP login and safe session stat
     })
     expect(network).not.toHaveBeenCalled()
   })
+
+  it('routes named knowledge APIs through Main with schema validation and keeps credentials out of output', async () => {
+    const calls: Array<{ url: string; method: string; body: Record<string, unknown> }> = []
+    const detail = { document: { id: 'knowledge-doc', organizationId: firstOrg, category: 'technical',
+      visibility: 'organization', projectId: null, createdAt: 1, canManage: true },
+    versions: [{ id: 'knowledge-version', documentId: 'knowledge-doc', version: '1.0.0',
+      content: { title: '技术规范', body: '项目技术资料', tags: [] }, checksum: 'sha256:' + 'a'.repeat(64),
+      status: 'draft', revision: 1, createdAt: 1, publishedAt: null }] }
+    const fixture = setup({ fetchImpl: async (input, init) => {
+      if (String(input).includes('/knowledge')) {
+        calls.push({ url: String(input), method: init?.method ?? 'GET', body: init?.body ? JSON.parse(String(init.body)) : {} })
+        expect(new Headers(init?.headers).get('authorization')).toBe(`Bearer ${fixture.token()}`)
+        if (String(input).endsWith('/search')) return Response.json({ results: [] })
+        if (new URL(String(input)).pathname.endsWith('/knowledge') && init?.method === 'GET') return Response.json({ documents: [] })
+        return Response.json(detail)
+      }
+      return fetch(input, init)
+    } })
+    await connect(fixture.connection)
+    const content = detail.versions[0]!.content
+    const created = await fixture.connection.execute('organization.createKnowledge', { category: 'technical', visibility: 'organization', projectId: null, version: '1.0.0', content })
+    expect(JSON.stringify(created)).not.toContain(fixture.token())
+    await fixture.connection.execute('organization.knowledgeList', { projectId: 'project / A' })
+    await fixture.connection.execute('organization.knowledgeDetail', { documentId: 'knowledge-doc' })
+    await fixture.connection.execute('organization.createKnowledgeVersion', { documentId: 'knowledge-doc', version: '2.0.0', content })
+    await fixture.connection.execute('organization.updateKnowledgeDraft', { documentId: 'knowledge-doc', versionId: 'knowledge-version', expectedRevision: 1, content })
+    await fixture.connection.execute('organization.transitionKnowledge', { documentId: 'knowledge-doc', versionId: 'knowledge-version', expectedRevision: 1, action: 'publish' })
+    await fixture.connection.execute('organization.searchKnowledge', { projectId: 'project', query: '规范' })
+    expect(calls.map(c => c.method)).toEqual(['POST', 'GET', 'GET', 'POST', 'PATCH', 'POST', 'POST'])
+    expect(new URL(calls[1]!.url).searchParams.get('projectId')).toBe('project / A')
+    expect(calls[3]!.body).not.toHaveProperty('documentId')
+    expect(calls[4]!.url).toContain('/knowledge/knowledge-doc/versions/knowledge-version')
+    expect(calls[5]!.url).toContain('/transition')
+    await expect(fixture.connection.execute('organization.createKnowledge', { category: 'technical', visibility: 'organization', projectId: null, version: '1.0.0', content, command: 'not-permitted' })).rejects.toThrow()
+    expect(calls).toHaveLength(7)
+    await fixture.connection.execute('organization.disconnect', {})
+    await expect(fixture.connection.execute('organization.searchKnowledge', { projectId: 'project', query: '' })).rejects.toMatchObject({ code: 'FORBIDDEN' })
+  })
+
+  it('discards knowledge returned for an old organization after a switch', async () => {
+    const started = deferred<void>(), release = deferred<void>()
+    const fixture = setup({ fetchImpl: async (input, init) => {
+      if (String(input).endsWith('/knowledge/search')) {
+        started.resolve()
+        await release.promise
+        return Response.json({ results: [] })
+      }
+      return fetch(input, init)
+    } })
+    await connect(fixture.connection)
+    const pending = fixture.connection.execute('organization.searchKnowledge', { projectId: 'project', query: '' })
+    const rejected = expect(pending).rejects.toMatchObject({ code: 'CANCELLED' })
+    await started.promise
+    await fixture.connection.execute('organization.select', { organizationId: secondOrg })
+    release.resolve()
+    await rejected
+  })
+
+  it('rejects oversized knowledge history and untrusted extra fields before crossing IPC', async () => {
+    let oversized = true
+    const cancel = vi.fn()
+    const fixture = setup({ fetchImpl: async (input, init) => {
+      if (String(input).includes('/knowledge')) {
+        if (!oversized) return Response.json({ results: [], token: 'untrusted-extra-field' })
+        return new Response(new ReadableStream({
+          start(controller) { for (let i = 0; i < 36; i++) controller.enqueue(new Uint8Array(256 * 1024).fill(120)) },
+          cancel,
+        }))
+      }
+      return fetch(input, init)
+    } })
+    await connect(fixture.connection)
+    await expect(fixture.connection.execute('organization.knowledgeDetail', { documentId: 'document' })).rejects.toMatchObject({ code: 'BAD_REQUEST' })
+    expect(cancel).toHaveBeenCalledOnce()
+    oversized = false
+    await expect(fixture.connection.execute('organization.searchKnowledge', { projectId: 'project', query: '' })).rejects.toMatchObject({ code: 'BAD_REQUEST' })
+  })
 })
 
 describe('organization connection origins', () => {

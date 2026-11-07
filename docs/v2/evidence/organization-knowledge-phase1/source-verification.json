@@ -1,0 +1,13 @@
+{
+  "head": "0a7f7f28e4fba62a6b909a88f59ccd03e186f5aa",
+  "testedSourceHash": "a25c7167a6ed192acf205ea04f48d3a8a2d8cc4ab9f07a624901401ece4edb0f",
+  "finalSourceHash": "ad9d1374cc0afc89d9fe7c76a454f5406c6baffb67ee363334e5fad71748f6f4",
+  "sourceFiles": 729,
+  "checks": 10,
+  "status": "PASS",
+  "changesAfterChecks": [
+    "apps/server/README.md (documentation only)"
+  ],
+  "proof": "Substituting only the original server README bytes (LF lines with CRLF final newline) exactly reproduces the digest of every check. All other source files are byte-identical.",
+  "verifiedAt": "2026-11-07T08:21:39.027Z"
+}

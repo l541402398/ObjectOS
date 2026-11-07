@@ -59,6 +59,13 @@ const api: ProjectOSDesktopApi = {
     reconcile: input => call('gitDelivery.reconcile', input),
   },
   organization: {
+    knowledgeList: (input) => call('organization.knowledgeList', input),
+    knowledgeDetail: (input) => call('organization.knowledgeDetail', input),
+    createKnowledge: (input) => call('organization.createKnowledge', input),
+    createKnowledgeVersion: (input) => call('organization.createKnowledgeVersion', input),
+    updateKnowledgeDraft: (input) => call('organization.updateKnowledgeDraft', input),
+    transitionKnowledge: (input) => call('organization.transitionKnowledge', input),
+    searchKnowledge: (input) => call('organization.searchKnowledge', input),
     workerJobs: () => call('organization.workerJobs'),
     submitWorkerJob: (input) => call('organization.submitWorkerJob', input),
     acceptWorkerJob: (input) => call('organization.acceptWorkerJob', input),

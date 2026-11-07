@@ -1,0 +1,18 @@
+# ADR-0084 — Versioned technical and business organization knowledge
+
+Date: 2026-11-06 (America/Los_Angeles). Status: authorized for implementation by the user's request for phased development and implementation.
+
+## Decision
+
+Implement K1 of `docs/org-upgrade/KNOWLEDGE_AND_ASSIGNMENT_PLAN.md` first. Organization knowledge is a distinct server-owned resource, not executable Agent/Skill/MCP/Tool configuration and not a second copy of local `knowledge_entries`.
+
+1. Append PostgreSQL migration 5; preserve migrations 1–4 byte-for-byte. Store document identity/scope and immutable versions separately. Technical/business classification belongs to document identity. A draft has optimistic revision checks; publishing fixes title, body, tags and canonical SHA256. Editing published text requires a new semver. Database triggers also enforce immutability, identity and legal status transitions. No destructive rollback; use the previous database backup with its compatible server.
+2. Current organization membership gates every operation, under the existing organization→membership→project→resource lock order. `org.publish_asset` permits management; project-private knowledge additionally requires `project.manage_assets`. Organization owners/admins never gain private-project access implicitly. Members may read published/deprecated version history, but cannot read drafts or revoked text. Search returns only currently published versions visible in the requested active project plus organization-wide knowledge.
+3. Knowledge writes create `organization_audit_events` in the same transaction, including immutable version/checksum references but no full prose. All payloads are strict Zod contracts with bounded text, tags, history and result count. Reject recognizable credential formats. Arbitrary prose is not certified secret-free. K1 accepts no path, attachment, fetchable URL, embedded credentials, code execution or automatic publication.
+4. Search uses parameterized literal substring matching over title/body/tags, supports Chinese and English, and excludes draft/deprecated/revoked versions. Empty search explicitly lists published versions. A document contributes its latest *published* version by publication time and id; a draft does not hide the previous publication. Exact version/checksum references travel with excerpts. This bounded first implementation makes no semantic/vector retrieval claim.
+5. Add named, typed `organization.knowledge*` preload methods. Main retains bearer material, caps response size, parses outputs and rejects stale account/organization responses. No knowledge cache, implicit local-project association, Runtime context injection or renderer UI is added in K1. Legacy asset APIs and personal-mode execution are unchanged.
+6. K2 adds the UI and reviewed context adoption; K3 adds evidence-backed candidate submission/publication; K4 adds person-owned assignments. Existing remote jobs stay limited to their authorized file tools. None of those later abilities may be inferred from this foundation.
+
+## Acceptance
+
+Use actual PostgreSQL, migration-4→5 checksum/data retention, real HTTP/auth, a Main/preload bridge test, tenant/project privacy, hidden drafts/revoked bodies, expected-revision races, SQL wildcard literals, Chinese retrieval, immutable publication at both HTTP and DB boundaries, current-membership checks after lock contention and restart recovery. Run all repository checks and packaged desktop smoke. Record actual PASS/FAIL/SKIP and limitations with the implementation. No renderer code changes or new visual acceptance claim in this stage.

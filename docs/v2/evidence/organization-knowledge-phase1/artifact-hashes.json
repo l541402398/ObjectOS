@@ -1,0 +1,37 @@
+[
+  {
+    "path": "apps/runtime/dist/index.mjs",
+    "bytes": 2899741,
+    "sha256": "74C315512FF4586F559940BC1465B8F2BE3421B6ED376E4D90E3DBCD54146F88"
+  },
+  {
+    "path": "apps/desktop/out/main/index.js",
+    "bytes": 1079453,
+    "sha256": "7320B4D487A4DF546D548FA7BD51B8B99A907858870D5331F290ED4BCB77F464"
+  },
+  {
+    "path": "apps/desktop/out/preload/index.js",
+    "bytes": 22554,
+    "sha256": "81F06AF2486DED6AFE8902FAC8766890F739C9D98FFA17BEEACE624C0F87D8A9"
+  },
+  {
+    "path": "apps/server/dist/index.js",
+    "bytes": 157712,
+    "sha256": "B19DDE2C205C5A2D71B9EF8BA85F0244F219A506EE1C8E3190B7103A5085EAFB"
+  },
+  {
+    "path": "release/win-unpacked/ProjectOS.exe",
+    "bytes": 239400448,
+    "sha256": "9EA1BA397FC1063F47F20155F3A6DFEC4B29C432D149AEC0673166D8A5DB7C57"
+  },
+  {
+    "path": "release/win-unpacked/resources/app.asar",
+    "bytes": 46692538,
+    "sha256": "B3E796487D2783E8726B0E8614251DD0D0E36FEB1C16585C1B1994AFF64E79D7"
+  },
+  {
+    "path": "release/win-unpacked/resources/runtime/index.mjs",
+    "bytes": 2899741,
+    "sha256": "74C315512FF4586F559940BC1465B8F2BE3421B6ED376E4D90E3DBCD54146F88"
+  }
+]

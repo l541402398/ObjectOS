@@ -1,5 +1,28 @@
 # ProjectOS organization control plane — A1 foundation
 
+## K1 knowledge increment
+
+The current schema also includes the subsequent asset/Worker migrations and additive migration 5
+for organization technical/business knowledge. Run the explicit migration before starting this
+build; an older server deliberately rejects the newer schema. Migrations 1–4 are unchanged.
+
+Authenticated `/v1/organizations/:orgId/knowledge` endpoints support list/create, `/:documentId`
+detail, `/:documentId/versions` creation, version PATCH, version `/transition` (publish/deprecate/revoke),
+and POST `/search`. Search requires `{ projectId, query, category?, limit? }` and returns only
+currently published, visible versions with document/version/checksum references. Chinese/English
+literal substring retrieval is supported; this is not semantic/vector search. Text is bounded to
+20,000 characters; requests remain limited to 64KiB. There are at most 100 versions per document,
+100 document summaries per list and 30 search results; no unlimited pagination is claimed.
+
+Management uses current organization asset-publishing permission and, for private-project knowledge,
+independent project asset-management permission. Readers do not receive drafts or revoked bodies.
+Published/deprecated version content is immutable; all mutations append audit facts transactionally.
+There is no attachment upload, URL fetch, model analysis, knowledge cache or automatic publication.
+Desktop Main/preload interfaces are available; the management UI and Agent context adoption follow
+in K2. Knowledge writeback and person-owned requirement assignments follow in K3/K4. See ADR-0084
+and `docs/org-upgrade/KNOWLEDGE_AND_ASSIGNMENT_PLAN.md`. The remaining A1 sections below describe
+that historical slice and do not replace the later asset/Worker delivery report.
+
 The normal entry point now uses PostgreSQL. It refuses to start without `DATABASE_URL`, a signing
 secret of at least 32 characters, and the exact versioned schema. The existing A0 in-memory
 `buildServer()` remains in `src/app.ts` exclusively for isolated PoC/regression tests; the deployment

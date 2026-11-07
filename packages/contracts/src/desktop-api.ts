@@ -29,6 +29,13 @@ export interface ProjectOSDesktopApi {
     reconcile: (input: In<'gitDelivery.reconcile'>) => Promise<Out<'gitDelivery.reconcile'>>
   }
   organization: {
+    knowledgeList: (input?: In<'organization.knowledgeList'>) => Promise<Out<'organization.knowledgeList'>>
+    knowledgeDetail: (input: In<'organization.knowledgeDetail'>) => Promise<Out<'organization.knowledgeDetail'>>
+    createKnowledge: (input: In<'organization.createKnowledge'>) => Promise<Out<'organization.createKnowledge'>>
+    createKnowledgeVersion: (input: In<'organization.createKnowledgeVersion'>) => Promise<Out<'organization.createKnowledgeVersion'>>
+    updateKnowledgeDraft: (input: In<'organization.updateKnowledgeDraft'>) => Promise<Out<'organization.updateKnowledgeDraft'>>
+    transitionKnowledge: (input: In<'organization.transitionKnowledge'>) => Promise<Out<'organization.transitionKnowledge'>>
+    searchKnowledge: (input: In<'organization.searchKnowledge'>) => Promise<Out<'organization.searchKnowledge'>>
     workerJobs: () => Promise<Out<'organization.workerJobs'>>
     submitWorkerJob: (input: In<'organization.submitWorkerJob'>) => Promise<Out<'organization.submitWorkerJob'>>
     acceptWorkerJob: (input: In<'organization.acceptWorkerJob'>) => Promise<Out<'organization.acceptWorkerJob'>>

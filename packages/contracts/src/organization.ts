@@ -1,4 +1,12 @@
 import { z } from 'zod'
+import {
+  OrganizationKnowledgeCreateSchema, OrganizationKnowledgeDetailSchema,
+  OrganizationKnowledgeVersionInputSchema, OrganizationKnowledgeDraftSchema,
+  OrganizationKnowledgeTransitionSchema, OrganizationKnowledgeListInputSchema,
+  OrganizationKnowledgeListSchema, OrganizationKnowledgeSearchSchema,
+  OrganizationKnowledgeSearchResultSchema,
+} from '@projectos/organization-contracts'
+export type { OrganizationKnowledgeContent, OrganizationKnowledgeDetail } from '@projectos/organization-contracts'
 import { WorkerJobSubmitSchema, WorkerJobSchema, WorkerJobsSchema } from '@projectos/organization-contracts'
 export { WorkerJobInternalSchemas, WorkerJobLeaseSchema, WorkerJobSchema, WorkerJobsSchema } from '@projectos/organization-contracts'
 export type { WorkerJob } from '@projectos/organization-contracts'
@@ -106,6 +114,19 @@ const empty = z.object({}).strict()
 const ok = z.object({ ok: z.literal(true) })
 const id = z.string().min(1).max(128)
 export const OrganizationApiSchemas = {
+  'organization.knowledgeList': { input: OrganizationKnowledgeListInputSchema, output: OrganizationKnowledgeListSchema },
+  'organization.knowledgeDetail': { input: z.object({ documentId: id }).strict(), output: OrganizationKnowledgeDetailSchema },
+  'organization.createKnowledge': { input: OrganizationKnowledgeCreateSchema, output: OrganizationKnowledgeDetailSchema },
+  'organization.createKnowledgeVersion': {
+    input: OrganizationKnowledgeVersionInputSchema.extend({ documentId: id }).strict(), output: OrganizationKnowledgeDetailSchema,
+  },
+  'organization.updateKnowledgeDraft': {
+    input: OrganizationKnowledgeDraftSchema.extend({ documentId: id, versionId: id }).strict(), output: OrganizationKnowledgeDetailSchema,
+  },
+  'organization.transitionKnowledge': {
+    input: OrganizationKnowledgeTransitionSchema.extend({ documentId: id, versionId: id }).strict(), output: OrganizationKnowledgeDetailSchema,
+  },
+  'organization.searchKnowledge': { input: OrganizationKnowledgeSearchSchema, output: OrganizationKnowledgeSearchResultSchema },
   'organization.workerJobs': { input: empty, output: WorkerJobsSchema },
   'organization.submitWorkerJob': { input: WorkerJobSubmitSchema.omit({ id: true }), output: WorkerJobSchema },
   'organization.acceptWorkerJob': { input: z.object({ jobId: z.uuid() }).strict(), output: z.object({ runId: id }) },

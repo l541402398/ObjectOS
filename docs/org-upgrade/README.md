@@ -1,5 +1,10 @@
 # ProjectOS 组织升级 · 实施索引
 
+个人／组织知识协作新一轮计划见 [分阶段实施方案](KNOWLEDGE_AND_ASSIGNMENT_PLAN.md)。
+K1 先实现技术／业务知识的版本、权限、发布与检索，以及桌面具名接口；
+开工分析、审核回写、按成员派需求和双机验收分别按 K2–K5 推进。
+决策见 [ADR-0084](../adr/0084-organization-knowledge-foundation.md)。以下保留历史阶段说明。
+
 2026-10-30 A3.2a：继续接通本地任务成果的审查、真实验证、单独合入审批和前置成果传递。
 见 [成果集成报告](../v2/evidence/requirement-integration/REPORT.md) 与 [ADR-0074](../adr/0074-reviewed-task-integration.md)。
 需求整体验收、托管任务自主调度、已有工作区同步、Agent 能力组合、可配置流程和设置整理仍待后续批次。

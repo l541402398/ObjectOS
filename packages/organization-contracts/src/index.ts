@@ -15,6 +15,7 @@ import { z } from 'zod'
 export * from './assets.js'
 export * from './local-worker.js'
 export * from './worker-jobs.js'
+export * from './knowledge.js'
 
 /** Stable ids. Server ids are opaque strings; local ids stay local (see LocalProjectLink). */
 export const IdSchema = z.string().min(1).max(128)

@@ -1,0 +1,126 @@
+{
+  "baseHead": "0a7f7f28e4fba62a6b909a88f59ccd03e186f5aa",
+  "sourceHash": "a25c7167a6ed192acf205ea04f48d3a8a2d8cc4ab9f07a624901401ece4edb0f",
+  "attempts": [
+    {
+      "name": "lint",
+      "attempt": 1,
+      "head": "0a7f7f28e4fba62a6b909a88f59ccd03e186f5aa",
+      "sourceHash": "a25c7167a6ed192acf205ea04f48d3a8a2d8cc4ab9f07a624901401ece4edb0f",
+      "command": "pnpm lint",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T08:03:18.387Z",
+      "finishedAt": "2026-11-07T08:04:31.432Z",
+      "log": "lint-1.log"
+    },
+    {
+      "name": "typecheck",
+      "attempt": 1,
+      "head": "0a7f7f28e4fba62a6b909a88f59ccd03e186f5aa",
+      "sourceHash": "a25c7167a6ed192acf205ea04f48d3a8a2d8cc4ab9f07a624901401ece4edb0f",
+      "command": "pnpm typecheck",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T08:04:31.434Z",
+      "finishedAt": "2026-11-07T08:05:25.071Z",
+      "log": "typecheck-1.log"
+    },
+    {
+      "name": "test",
+      "attempt": 1,
+      "head": "0a7f7f28e4fba62a6b909a88f59ccd03e186f5aa",
+      "sourceHash": "a25c7167a6ed192acf205ea04f48d3a8a2d8cc4ab9f07a624901401ece4edb0f",
+      "command": "pnpm run test --maxWorkers=2",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T08:05:25.073Z",
+      "finishedAt": "2026-11-07T08:15:14.778Z",
+      "log": "test-1.log"
+    },
+    {
+      "name": "build",
+      "attempt": 1,
+      "head": "0a7f7f28e4fba62a6b909a88f59ccd03e186f5aa",
+      "sourceHash": "a25c7167a6ed192acf205ea04f48d3a8a2d8cc4ab9f07a624901401ece4edb0f",
+      "command": "pnpm build",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T08:15:14.780Z",
+      "finishedAt": "2026-11-07T08:15:45.155Z",
+      "log": "build-1.log"
+    },
+    {
+      "name": "desktop-e2e",
+      "attempt": 1,
+      "head": "0a7f7f28e4fba62a6b909a88f59ccd03e186f5aa",
+      "sourceHash": "a25c7167a6ed192acf205ea04f48d3a8a2d8cc4ab9f07a624901401ece4edb0f",
+      "command": "C:\\Program Files\\nodejs\\node.exe scripts/e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T08:15:45.156Z",
+      "finishedAt": "2026-11-07T08:16:07.082Z",
+      "log": "desktop-e2e-1.log"
+    },
+    {
+      "name": "agent-e2e",
+      "attempt": 1,
+      "head": "0a7f7f28e4fba62a6b909a88f59ccd03e186f5aa",
+      "sourceHash": "a25c7167a6ed192acf205ea04f48d3a8a2d8cc4ab9f07a624901401ece4edb0f",
+      "command": "C:\\Program Files\\nodejs\\node.exe scripts/agent-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T08:16:07.084Z",
+      "finishedAt": "2026-11-07T08:16:20.051Z",
+      "log": "agent-e2e-1.log"
+    },
+    {
+      "name": "v12-e2e",
+      "attempt": 1,
+      "head": "0a7f7f28e4fba62a6b909a88f59ccd03e186f5aa",
+      "sourceHash": "a25c7167a6ed192acf205ea04f48d3a8a2d8cc4ab9f07a624901401ece4edb0f",
+      "command": "C:\\Program Files\\nodejs\\node.exe scripts/v12-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T08:16:20.053Z",
+      "finishedAt": "2026-11-07T08:16:39.239Z",
+      "log": "v12-e2e-1.log"
+    },
+    {
+      "name": "v13-e2e",
+      "attempt": 1,
+      "head": "0a7f7f28e4fba62a6b909a88f59ccd03e186f5aa",
+      "sourceHash": "a25c7167a6ed192acf205ea04f48d3a8a2d8cc4ab9f07a624901401ece4edb0f",
+      "command": "C:\\Program Files\\nodejs\\node.exe scripts/v13-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T08:16:39.241Z",
+      "finishedAt": "2026-11-07T08:16:54.723Z",
+      "log": "v13-e2e-1.log"
+    },
+    {
+      "name": "package-dir",
+      "attempt": 1,
+      "head": "0a7f7f28e4fba62a6b909a88f59ccd03e186f5aa",
+      "sourceHash": "a25c7167a6ed192acf205ea04f48d3a8a2d8cc4ab9f07a624901401ece4edb0f",
+      "command": "pnpm package:dir",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T08:16:54.725Z",
+      "finishedAt": "2026-11-07T08:17:54.885Z",
+      "log": "package-dir-1.log"
+    },
+    {
+      "name": "package-smoke",
+      "attempt": 1,
+      "head": "0a7f7f28e4fba62a6b909a88f59ccd03e186f5aa",
+      "sourceHash": "a25c7167a6ed192acf205ea04f48d3a8a2d8cc4ab9f07a624901401ece4edb0f",
+      "command": "pnpm test:package",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T08:17:54.887Z",
+      "finishedAt": "2026-11-07T08:18:05.395Z",
+      "log": "package-smoke-1.log"
+    }
+  ]
+}
