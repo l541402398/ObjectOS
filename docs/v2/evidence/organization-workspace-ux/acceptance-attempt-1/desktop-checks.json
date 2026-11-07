@@ -1,0 +1,28 @@
+{
+  "quick": false,
+  "checks": [
+    {
+      "name": "Protected DAG byte-identical",
+      "status": "PASS"
+    },
+    {
+      "name": "Primary organization entry works signed out without a project",
+      "status": "FAIL"
+    },
+    {
+      "name": "journey",
+      "status": "FAIL",
+      "detail": "Error: Primary organization entry works signed out without a project"
+    }
+  ],
+  "audits": [],
+  "captures": [
+    "before-protected-dag.png",
+    "after-protected-dag.png",
+    "failure.png"
+  ],
+  "errors": [],
+  "modelEvidence": [],
+  "submissions": 0,
+  "fixture": "Two isolated Electron profiles, actual PG, real native workflow/tests/Git. Return navigation in auxiliary fixture cases restores a known local route; primary local/organization return uses visible UI. Account and K2 knowledge fixtures partly typed API; K4 dispatch, acceptance, progress, delivery/review and reassignment use visible UI. Code fixture is harness-authored, model deterministic."
+}

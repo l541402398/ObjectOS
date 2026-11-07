@@ -1,0 +1,109 @@
+{
+  "sourceCommit": "df48fa25f5f48eb4d3ae537cc28369e8a33fb5ca",
+  "note": "Committed native K4 screenshots, unmodified. Different screen structure/fixture times; qualitative before/after, not pixel equality. Protected DAG has its own same-launch pixel comparison.",
+  "files": [
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-dispatch-1024-dark-100.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-dispatch-1024-dark-100.png",
+      "sha256": "a951f4d83cd0ba57c332944e366095ccea1725e0ea56951c190952e924045186",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-dispatch-1024-dark-125.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-dispatch-1024-dark-125.png",
+      "sha256": "e5046ab8be12cbff0d547f829996b27e95f2b0a46082292e8aaa666adede5039",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-dispatch-1024-light-100.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-dispatch-1024-light-100.png",
+      "sha256": "1532fd3130b9ef762efd6c915c0e17e067de93036f31bcae6b92a97643510eb9",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-dispatch-1024-light-125.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-dispatch-1024-light-125.png",
+      "sha256": "a56e584aac3b2ca396cd41ee85c32297d21c7a3073f5f26124475c49450ea051",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-dispatch-1440-dark-100.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-dispatch-1440-dark-100.png",
+      "sha256": "9472178b7b6f98f007c3540520f2e60531e70cc23fcc577a2924085391d61254",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-dispatch-1440-dark-125.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-dispatch-1440-dark-125.png",
+      "sha256": "0892cd1dc627568f3c3ca6aefe877afee2af6f58a19d880a7d32b1c606558df5",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-dispatch-1440-light-100.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-dispatch-1440-light-100.png",
+      "sha256": "a903fc92190d931e5bbc906cb95042b6d001414e0fb19e3ec30da661d73c2dde",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-dispatch-1440-light-125.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-dispatch-1440-light-125.png",
+      "sha256": "ea2999313a61d1f7be42a42102d6e42ae1614ab6d1ec5911092a903677320af1",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-dispatch-confirmation.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-dispatch-confirmation.png",
+      "sha256": "e10b27c1e48749aa232286b8e4df170c2c18ca38623c3ad492438467c98b51a2",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-review-1024-dark-100.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-review-1024-dark-100.png",
+      "sha256": "d473fa953d024f653318c1aec5f7ee7eda5f1b8642e921ace7907b9cc9bb2446",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-review-1024-dark-125.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-review-1024-dark-125.png",
+      "sha256": "62507d431ee868bf63e83bd70b5cb8a0381f81d082bf8b1a01cb9e0beed75066",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-review-1024-light-100.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-review-1024-light-100.png",
+      "sha256": "6d71755720f2aa962e735e5dd651517e347a07a9ae0179ab9fbcd77592e56b6e",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-review-1024-light-125.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-review-1024-light-125.png",
+      "sha256": "aeb408dc4faf2f1896daf575d3086cdb7389365afefff5db7a7e6ee589730a2c",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-review-1440-dark-100.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-review-1440-dark-100.png",
+      "sha256": "129aa029e7eb343c1c779ab6dbfdefe48d1a285260604d2bf94e367cc7e38fd7",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-review-1440-dark-125.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-review-1440-dark-125.png",
+      "sha256": "53fc6d0cec0ca440dcff4ee37e285dfd713f94eea1ff4723613a035806130c06",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-review-1440-light-100.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-review-1440-light-100.png",
+      "sha256": "e79ecbc3ae60ac7a1cad52bf9f09f7493d78218626b42c50951b25c842f911bc",
+      "matchesCommittedBytes": true
+    },
+    {
+      "source": "docs/v2/evidence/member-assignment-k4/screenshots/leader-review-1440-light-125.png",
+      "copy": "docs/v2/evidence/organization-workspace-ux/comparison-before/leader-review-1440-light-125.png",
+      "sha256": "bd463ad133d90ffba014dba7b768ea11c88ee800f5f677e1819fb578f88d80d8",
+      "matchesCommittedBytes": true
+    }
+  ],
+  "pass": true
+}

@@ -96,7 +96,7 @@
   padding-top: 22px;
   border-top: 1px solid var(--ui-divider);
 }
-.ow-local-section h4,
+.ow-local-section h3,
 .ow-grant-form h4 {
   display: flex;
   gap: 8px;
@@ -104,7 +104,7 @@
   font-size: 15px;
   font-weight: 650;
 }
-.ow-local-section h4 > svg {
+.ow-local-section h3 > svg {
   color: var(--ui-accent);
 }
 .ow-unlinked {
@@ -165,7 +165,7 @@
   flex: 1;
   min-width: 0;
 }
-.ow-device-heading h4 {
+.ow-device-heading h3 {
   font-size: 18px;
   font-weight: 650;
   overflow-wrap: anywhere;

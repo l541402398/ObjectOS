@@ -1,0 +1,104 @@
+PASS Protected DAG byte-identical
+PASS Primary organization entry works signed out without a project
+PASS Command palette has one primary organization destination
+PASS signed-out-workspace-quick fits
+PASS signed-out-workspace-quick page fits
+PASS signed-out-workspace-quick axe
+PASS signed-out-workspace-quick native contrast
+PASS Personal project creation makes no organization request
+PASS section-knowledge-quick fits
+PASS section-knowledge-quick page fits
+PASS section-knowledge-quick axe
+PASS section-knowledge-quick native contrast
+PASS Direct organization section: 组织知识
+PASS section-review-quick fits
+PASS section-review-quick page fits
+PASS section-review-quick axe
+PASS section-review-quick native contrast
+PASS Direct organization section: 知识审核
+PASS section-projects-quick fits
+PASS section-projects-quick page fits
+PASS section-projects-quick axe
+PASS section-projects-quick native contrast
+PASS Direct organization section: 共享项目
+PASS section-members-quick fits
+PASS section-members-quick page fits
+PASS section-members-quick axe
+PASS section-members-quick native contrast
+PASS Direct organization section: 成员与权限
+PASS section-invitations-quick fits
+PASS section-invitations-quick page fits
+PASS section-invitations-quick axe
+PASS section-invitations-quick native contrast
+PASS Direct organization section: 待接受邀请
+PASS section-assets-quick fits
+PASS section-assets-quick page fits
+PASS section-assets-quick axe
+PASS section-assets-quick native contrast
+PASS Direct organization section: 配置资产
+PASS section-workers-quick fits
+PASS section-workers-quick page fits
+PASS section-workers-quick axe
+PASS section-workers-quick native contrast
+PASS Direct organization section: 执行端
+PASS 落实退款需求 explicit dispatch confirmation
+PASS Dispatch draft protected on primary navigation
+PASS Refocus preserves dispatch draft and selected scope
+PASS History navigation protects dispatch draft
+PASS leader-dispatch-quick fits
+PASS leader-dispatch-quick page fits
+PASS leader-dispatch-quick axe
+PASS leader-dispatch-quick native contrast
+PASS Rendered design detector completed; diagnostics retained
+PASS Leader dispatch creates no fake local project
+PASS Wide assignment list and detail remain visible together
+PASS Bounded search preserves selected detail
+PASS Member personal inbox filter retains the assignment
+PASS member-inbox-quick fits
+PASS member-inbox-quick page fits
+PASS member-inbox-quick axe
+PASS member-inbox-quick native contrast
+PASS Narrow back restores the existing search and personal filter
+PASS Narrow selection restores focus to the detail pane
+PASS Unknown acceptance has no local requirement yet
+PASS acceptance-unknown-quick fits
+PASS acceptance-unknown-quick page fits
+PASS acceptance-unknown-quick axe
+PASS acceptance-unknown-quick native contrast
+PASS Unknown acceptance never auto-replays
+PASS Restart never resends assignment intent
+PASS Unknown outcome is visible above collapsed history after restart
+PASS Unknown retry requires renewed confirmation
+PASS Acceptance GET reconciliation does not POST
+PASS Exactly one ordinary requirement imported
+PASS Reception creates no workflow tasks or model requests
+PASS Local requirement exposes collaboration actions without opening materials
+PASS local-assignment-header-quick fits
+PASS local-assignment-header-quick page fits
+PASS local-assignment-header-quick axe
+PASS local-assignment-header-quick native contrast
+PASS Local return link deep-links the same organization assignment
+PASS Assigned knowledge project is fixed
+PASS Assigned brief and exact organization knowledge version reach model
+PASS member-progress-quick fits
+PASS member-progress-quick page fits
+PASS member-progress-quick axe
+PASS member-progress-quick native contrast
+PASS Task/Run completion does not auto-accept organization delivery
+PASS member-delivery-quick fits
+PASS member-delivery-quick page fits
+PASS member-delivery-quick axe
+PASS member-delivery-quick native contrast
+PASS Member withdrawal returns delivery to accepted work
+PASS leader-review-quick fits
+PASS leader-review-quick page fits
+PASS leader-review-quick axe
+PASS leader-review-quick native contrast
+locator.waitFor: Timeout 45000ms exceeded.
+Call log:
+  - waiting for getByTestId('assignment-status') to be visible
+
+    at C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\scripts\organization-workspace-ux-e2e.mjs:287:170 {
+  log: [ "  - waiting for getByTestId('assignment-status') to be visible" ],
+  name: 'TimeoutError'
+}

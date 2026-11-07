@@ -1,0 +1,28 @@
+{
+  "unitSourceHash": "648be0561078f7ad3c919a0e556815d82df913adbbbe7c5dd42ec704fe97096d",
+  "finalBuildAndUiSourceHash": "075a8a12dff7b428e6f1141b1b8bed8649c649dae564b538e63e3251d8884e59",
+  "typecheckSourceHash": "8f15cdd382c91cb28a6b32ae8904cbe48d71ba8735a49e35da8b02bc60177f01",
+  "changedAfterUnitManifest": [
+    "apps/desktop/src/renderer/src/components/AppLayout.tsx",
+    "apps/desktop/src/renderer/src/features/settings/organization/KnowledgeCandidates.tsx",
+    "apps/desktop/src/renderer/src/features/settings/organization/OrganizationAssets.tsx",
+    "apps/desktop/src/renderer/src/features/settings/organization/OrganizationAssignmentForms.tsx",
+    "apps/desktop/src/renderer/src/features/settings/organization/OrganizationAssignments.tsx",
+    "apps/desktop/src/renderer/src/features/settings/organization/OrganizationForms.tsx",
+    "apps/desktop/src/renderer/src/features/settings/organization/OrganizationInvitations.tsx",
+    "apps/desktop/src/renderer/src/features/settings/organization/OrganizationKnowledge.tsx",
+    "apps/desktop/src/renderer/src/features/settings/organization/OrganizationMembers.tsx",
+    "apps/desktop/src/renderer/src/features/settings/organization/OrganizationProjects.tsx",
+    "apps/desktop/src/renderer/src/features/settings/organization/OrganizationWorkers.tsx",
+    "apps/desktop/src/renderer/src/features/settings/organization/workers.css",
+    "apps/desktop/src/renderer/src/pages/OrganizationWorkspace.tsx",
+    "apps/desktop/src/renderer/src/pages/organization-workspace.css",
+    "scripts/org-knowledge-checks.mjs",
+    "scripts/organization-nav-contrast-e2e.mjs",
+    "scripts/organization-workspace-ux-e2e.mjs"
+  ],
+  "businessAndUnitSourceChanges": [],
+  "businessAndUnitSourcesUnchanged": true,
+  "typedInputsChangedSinceTypecheck": [],
+  "note": "Unit snapshot is retained. Final typed inputs match final typecheck; complete business UI is at a0b4ecdf32f9. The final product delta from that acceptance is exactly one caption CSS declaration and has separate native checks. Final package is checked against the final tested build."
+}

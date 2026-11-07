@@ -1,5 +1,14 @@
 # ProjectOS Next UI — Migration Progress
 
+2026-11-07 ADR-0088: organization collaboration is now a primary global workspace, with direct
+requirement/knowledge/review/project/team/asset/device sections, wide list/detail and compact back
+navigation. Assigned local requirements expose progress/delivery/knowledge/return beside their heading.
+Settings retains identity and a visible workspace link. Full native acceptance: 561 PASS, 128 axe states,
+3,053 text samples (minimum 4.659:1), 137 captures. A subsequent single caption-ink declaration has its
+own 107 PASS / 25-state / 349-sample follow-up (minimum 5.023:1). Approved DAG 32/32 and strict before/
+after PNGs unchanged; no backend or policy changes. Source scopes and package results are in
+[`organization-workspace-ux/REPORT.md`](../v2/evidence/organization-workspace-ux/REPORT.md).
+
 2026-11-07 K4: organization Settings now includes member dispatch/inbox/detail and durable operation
 reconciliation; requirement knowledge includes assignment origin and explicit progress/delivery. Existing
 glass/tokens/overlays and the approved DAG remain. Engineering evidence: 715 tests PASS / 4 SKIP,

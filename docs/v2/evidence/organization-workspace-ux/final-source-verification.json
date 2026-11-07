@@ -1,0 +1,11 @@
+{
+  "head": "df48fa25f5f48eb4d3ae537cc28369e8a33fb5ca",
+  "sourceHash": "075a8a12dff7b428e6f1141b1b8bed8649c649dae564b538e63e3251d8884e59",
+  "sourceManifest": "source-manifest.075a8a12dff7.json",
+  "files": 765,
+  "mismatches": [],
+  "pass": true,
+  "normalization": "Exact coordinator regex, CRLF to LF for text including JSX.",
+  "priorVerifierDiagnostic": "A first ad-hoc verifier omitted JSX normalization and reported Aurora.jsx. Correcting the verifier regex restores its exact expected canonical hash; the product file is unchanged.",
+  "note": "Exact test HEAD plus canonical working-tree manifest. The delivery commit contains these source files and their evidence. Final artifact bytes match the tested build."
+}

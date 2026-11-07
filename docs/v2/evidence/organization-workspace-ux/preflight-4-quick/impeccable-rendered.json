@@ -1,0 +1,25 @@
+[
+  {
+    "antipattern": "ai-color-palette",
+    "name": "AI color palette",
+    "description": "Purple/violet gradients and cyan-on-dark are the most recognizable tells of AI-generated UIs. A gradient in one of those hues is the tell on its own; flat neon ink on a dark ground is charged once a second tell hue joins it. Choose a distinctive, intentional palette.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/organization?view=assignments",
+    "line": 0,
+    "snippet": "Cyan gradient background",
+    "selector": "div.po-shell.is-collapsed"
+  },
+  {
+    "antipattern": "bounce-easing",
+    "name": "Bounce or elastic easing",
+    "description": "Bounce and elastic easing feel dated and tacky. Real objects decelerate smoothly — use exponential easing (ease-out-quart/quint/expo) instead.",
+    "severity": "advisory",
+    "category": "slop",
+    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/organization?view=assignments",
+    "line": 0,
+    "snippet": "cubic-bezier(0.12, 0.4, 0.29, 1.46)",
+    "advisory": true,
+    "selector": "body"
+  }
+]

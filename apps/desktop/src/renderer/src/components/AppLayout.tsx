@@ -33,7 +33,7 @@ import {
 } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { ChevronRight, FolderKanban, Sparkles } from 'lucide-react'
-import { productNavigation, projectHubNavigationItems } from './product-navigation'
+import { workspaceNavigation, projectHubNavigationItems } from './product-navigation'
 import { useCompactNavigation } from '../hooks/useCompactNavigation'
 import { PopoverShell } from '../next-ui/overlay/overlay-shell'
 import type { RuntimeStatus } from '@projectos/contracts'
@@ -273,7 +273,7 @@ export default function AppLayout() {
         return
       }
       if (key === 'organization') {
-        openSettings('organization')
+        navigate('/organization')
         return
       }
       if (key === 'design-lab') {
@@ -297,7 +297,7 @@ export default function AppLayout() {
     if (projectId) {
       // ADR-0049: the palette is generated from the page registry, so a page cannot be shipped
       // without an entry (and a deleted page cannot leave a dead command behind).
-      for (const page of palettePages()) {
+      for (const page of palettePages().filter(page => page.key !== 'organization')) {
         list.push({
           id: page.key,
           label: page.label,
@@ -328,7 +328,7 @@ export default function AppLayout() {
     list.push(
       { id: 'center', label: '项目中心', group: '全局', icon: <AppstoreOutlined />, shortcut: 'G', run: () => navigate('/') },
       { id: 'settings', label: '设置', group: '全局', icon: <SettingOutlined />, shortcut: isMac ? '⌘,' : 'Ctrl+,', run: () => openSettings('ai-connections') },
-      { id: 'organization', label: '账号与组织', group: '全局', icon: <ApartmentOutlined aria-hidden />, run: () => openSettings('organization') },
+      { id: 'organization', label: '组织工作台', group: '全局', icon: <ApartmentOutlined aria-hidden />, run: () => navigate('/organization') },
       { id: 'theme-light', label: '切换到浅色主题', group: '外观', icon: <SunOutlined />, run: () => setThemeMode('light') },
       { id: 'theme-dark', label: '切换到深色主题', group: '外观', icon: <MoonOutlined />, run: () => setThemeMode('dark') },
       { id: 'theme-system', label: '跟随系统主题', group: '外观', icon: <SwapOutlined />, run: () => setThemeMode('system') },
@@ -348,7 +348,7 @@ export default function AppLayout() {
   const taskBadge = currentProject ? currentProject.stats.tasksReview || currentProject.stats.tasksRunning : 0
   const approvalBadge = pendingApprovals.filter((approval) => !projectId || approval.projectId === projectId).length
 
-  const navGroups = productNavigation(Boolean(projectId && currentProject), taskBadge, approvalBadge)
+  const navGroups = workspaceNavigation(Boolean(projectId && currentProject), taskBadge, approvalBadge)
   const projectHubItems = projectHubNavigationItems()
   const mobileNavGroups =
     projectId && currentProject
@@ -642,7 +642,7 @@ export default function AppLayout() {
         sidebar={sidebar}
         footer={statusbar}
         collapsed={compact}
-        subheader={activeKey === 'requirements' ? undefined : <TopJourneyBar projectId={projectId} />}
+        subheader={['requirements', 'organization'].includes(activeKey) ? undefined : <TopJourneyBar projectId={projectId} />}
       >
         {navigation.state === 'loading' ? <div className="po-route-progress" role="status" aria-live="polite">正在打开{pageLabel(currentPageKey(navigation.location?.pathname ?? ''))}…</div> : null}
         {settingsPending ? <div className="po-route-progress" role="status">正在读取设置…</div> : null}

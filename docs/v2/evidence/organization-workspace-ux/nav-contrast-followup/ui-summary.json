@@ -1,0 +1,13 @@
+{
+  "checks": {
+    "PASS": 107
+  },
+  "audits": 25,
+  "axeViolations": 0,
+  "nativeSamples": 349,
+  "minimum": 5.023318875735795,
+  "nativeFailures": 0,
+  "captures": 27,
+  "errors": [],
+  "contrastOnly": true
+}

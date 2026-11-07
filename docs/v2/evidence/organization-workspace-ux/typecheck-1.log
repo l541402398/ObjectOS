@@ -1,0 +1,4 @@
+
+> projectos@1.7.0 typecheck C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4
+> tsc -p tsconfig.json --noEmit
+

@@ -1,0 +1,54 @@
+{
+  "files": [
+    {
+      "file": "screenshots/workspace-overview-1440-light.png",
+      "sha256": "32af9ef5c9cdb25fb50a7715933a3fe630907bb1f0fdb771fdd245c7946885a6",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "screenshots/section-knowledge-1440-light-100.png",
+      "sha256": "404e7dd174a40f0a9e86ebe69d66395316e8ec8d606c9f07f2180091fad86ddd",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "screenshots/section-members-1024-dark-125.png",
+      "sha256": "2748e649987ef73dcc1cdb2e6e64ad0dcefcee4847d12929612707375040ed48",
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "file": "screenshots/member-inbox-1024-dark-125.png",
+      "sha256": "c53f74e487252111bb1b70bfe96b172b7fae74a133897110a7fc6e2b990cd9cc",
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "file": "screenshots/leader-dispatch-1440-light-100.png",
+      "sha256": "af8bb35b07759f3e6c865e64a0c9c0bcb28223ddc4567a2dde47eb76f8bde6d0",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "screenshots/member-delivery-1024-dark-125.png",
+      "sha256": "0982704f5ebb7e55c20cf47ba8c260654f67f0b60d9d46b19820e8483bc26df3",
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "file": "screenshots/leader-review-1024-light-100.png",
+      "sha256": "068d8b2e714ca8d653f8fa546cbcf6029ce8490b6437586359693e9ee51752ca",
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "file": "screenshots/leader-completed-1440-dark-125.png",
+      "sha256": "4fa2de26ad0a3ee1349ccfe3a9480f97696761b06e5123db95ab456e68e639f8",
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "review": "Actual native images inspected: organization context and direct section navigation, preserved list/detail, compact back path, legible report evidence and fixed report footer; no observed overlaps or horizontal clipping in these inspected captures. The fresh narrow/light review shows the scoped ink-token back-link fix.",
+  "scope": "Representative manual inspection, not a claim that every matrix image was manually reviewed or that the user has approved the design. Full automated matrix is in desktop-checks.json."
+}

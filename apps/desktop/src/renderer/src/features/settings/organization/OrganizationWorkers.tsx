@@ -379,7 +379,7 @@ export function OrganizationWorkers({ connection }: { connection: OrganizationCo
     >
       <div className="org-section-heading">
         <div>
-          <h3>执行端</h3>
+          <h2>执行端</h2>
           <p>设备由所属成员管理，本机目录需要单独授权。</p>
         </div>
         <div className="org-inline-actions">
@@ -495,12 +495,12 @@ export function OrganizationWorkers({ connection }: { connection: OrganizationCo
                   <Laptop size={24} strokeWidth={1.5} aria-hidden />
                 </span>
                 <div>
-                  <h4 ref={detailHeading} tabIndex={-1}>
+                  <h3 ref={detailHeading} tabIndex={-1}>
                     {selected.name}
                     {selected.id === data.currentWorkerId ? (
                       <span className="ow-local-tag">此设备</span>
                     ) : null}
-                  </h4>
+                  </h3>
                   <p>
                     {PLATFORM[selected.platform]}
                     <span aria-hidden> / </span>
@@ -669,10 +669,10 @@ export function OrganizationWorkers({ connection }: { connection: OrganizationCo
             <div className="ow-local-section">
               <div className="org-section-heading">
                 <div>
-                  <h4>
+                  <h3>
                     <FolderLock size={16} aria-hidden />
                     本机项目授权
-                  </h4>
+                  </h3>
                   <p>仅此设备可见的目录关联，可随时撤销。</p>
                 </div>
                 {current?.state === 'active' && current.status !== 'session_expired' && !enrolling ? (

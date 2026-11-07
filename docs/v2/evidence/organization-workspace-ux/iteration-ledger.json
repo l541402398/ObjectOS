@@ -1,0 +1,54 @@
+{
+  "attempts": [
+    {
+      "log": "preflight-desktop.log",
+      "evidence": "preflight",
+      "quick": false,
+      "status": "FAIL",
+      "resolution": "Relocated login heading h3 skipped h2; corrected semantic heading."
+    },
+    {
+      "log": "preflight-desktop-2.log",
+      "evidence": "preflight-2",
+      "quick": false,
+      "status": "FAIL",
+      "resolution": "Execution-device local-section h4 skipped h3; corrected headings with existing styles."
+    },
+    {
+      "log": "preflight-desktop-3-quick.log",
+      "evidence": "preflight-3-quick",
+      "quick": true,
+      "status": "FAIL",
+      "resolution": "Strict DAG equality: 30 pixels, maximum channel delta 2. Retained both captures. Consistent light/reduced-motion media and font readiness subsequently pass exact equality; no tolerance introduced."
+    },
+    {
+      "log": "preflight-desktop-4-quick.log",
+      "evidence": "preflight-4-quick",
+      "quick": true,
+      "status": "FAIL",
+      "resolution": "Local header assertion ran before asynchronous data rendered. Wait for the visible region; controls are present in failure DOM. Also wait for draft dialog to finish closing before captures."
+    },
+    {
+      "log": "preflight-desktop-5-quick.log",
+      "evidence": "preflight-5-quick",
+      "quick": true,
+      "status": "FAIL",
+      "resolution": "Old receipt-back helper cleared the selected detail after success. Adapt test to the new persistent-detail flow."
+    },
+    {
+      "log": "organization-workspace-desktop-1.log",
+      "evidence": "acceptance-attempt-1",
+      "quick": false,
+      "status": "FAIL",
+      "resolution": "Signed-out assertion ran before connection status rendered. Wait for the real connection field."
+    },
+    {
+      "log": "organization-workspace-desktop-2.log",
+      "evidence": "acceptance-attempt-2",
+      "quick": false,
+      "status": "FAIL",
+      "resolution": "Real narrow/light back-link contrast 4.382:1 on composited purple background. Change only .ow-back-list to existing --ui-ink; retain threshold 4.5:1 and all native assertions."
+    }
+  ],
+  "note": "Quick mode uses one 1440/light state per matrix and is diagnostic only. Final acceptance uses the complete matrix with the same 4.5:1 threshold."
+}

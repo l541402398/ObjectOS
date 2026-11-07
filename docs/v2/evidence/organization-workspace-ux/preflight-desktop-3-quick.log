@@ -1,0 +1,4 @@
+FAIL Protected DAG byte-identical
+Error: Protected DAG byte-identical
+    at check (file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/organization-workspace-ux-e2e.mjs:30:191)
+    at file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/organization-workspace-ux-e2e.mjs:178:3

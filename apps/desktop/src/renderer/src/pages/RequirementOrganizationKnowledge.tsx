@@ -7,7 +7,6 @@ import { organizationConnectionKey, organizationScopeKey } from '../features/set
 import '../features/settings/organization/organization.css'
 import '../features/settings/organization/knowledge.css'
 import { KnowledgeWriteback } from './KnowledgeWriteback'
-import { RequirementAssignment } from './RequirementAssignment'
 
 type Source = ApiOutput<'organization.searchKnowledge'>['results'][number]
 type Selected = Pick<Source, 'documentId' | 'versionId' | 'checksum' | 'title' | 'version' | 'category'> & { reason: string }
@@ -62,11 +61,10 @@ export function RequirementOrganizationKnowledge({ requirementId }: { requiremen
   const matching = !origin || (origin.serverUrl === connection.data?.serverUrl && origin.organizationId === connection.data.activeOrganizationId && origin.accountId === connection.data.session?.account.id)
   const available = assignment.isSuccess && connection.data?.status === 'connected' && Boolean(connection.data.activeOrganizationId) && matching
   return <section className="rq-organization-knowledge" aria-label="需求组织资料">
-    {assignment.data?.binding ? <RequirementAssignment requirementId={requirementId} binding={assignment.data.binding} connection={connection.data}/> : null}
     <div className="org-section-heading"><h3>组织资料</h3><button className="org-button is-primary" type="button" disabled={!available || !data || data.locked} onClick={() => setEditing(true)}>选择组织资料</button></div>
     <OrganizationError error={knowledge.error || connection.error || assignment.error}/>
     {knowledge.isPending ? <OrganizationLoading/> : linked ? <><p className="rq-knowledge-source-meta">{data.locked ? '本次引用已固定，后续版本不会替换。' : '生成计划或开始流程时固定引用。'}</p><ul className="rq-knowledge-sources">{linked.pins.map(pin => <li key={pin.versionId}><strong>{pin.title} · {pin.version}</strong><p>{pin.reason}</p><p className="rq-knowledge-source-meta">{pin.checksum}</p></li>)}</ul>{!available ? <p role="status">请连接引用所属组织后再开始分析。</p> : null}</> : <p role="status">{data?.locked ? '本次需求已使用本地上下文开始分析，资料范围已固定。' : available ? '尚未选择组织资料；当前使用本地项目上下文。' : '个人模式使用本地项目上下文。连接组织后可选择组织资料。'}</p>}
-    <KnowledgeWriteback requirementId={requirementId} connection={connection.data} available={available} initialProjectId={assignment.data?.binding?.projectId ?? linked?.projectId}/>
+    {!assignment.data?.binding ? <KnowledgeWriteback requirementId={requirementId} connection={connection.data} available={available} initialProjectId={linked?.projectId}/> : null}
     {editing && available && data && connection.data ? <ReferenceEditor requirementId={requirementId} current={data} connection={connection.data} assignedProjectId={assignment.data?.binding?.projectId} onSaved={() => knowledge.refetch()} onClose={() => setEditing(false)}/> : null}
   </section>
 }

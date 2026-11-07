@@ -45,3 +45,18 @@ export function productNavigation(projectAvailable: boolean, taskBadge = 0, appr
   ] })
   return groups
 }
+
+/** Production workspace navigation. Keep the approved Lab's original projection above frozen. */
+export function workspaceNavigation(projectAvailable: boolean, taskBadge = 0, approvalBadge = 0): SidebarNavGroup[] {
+  const groups = productNavigation(projectAvailable, taskBadge, approvalBadge)
+  return [
+    { key: '工作空间', title: '工作空间', collapsible: false, items: [
+      { key: 'center', label: pageLabel('center'), icon: <FolderKanban size={19} strokeWidth={1.65} aria-hidden /> },
+      { key: 'organization', label: pageLabel('organization'), icon: <Building2 size={19} strokeWidth={1.65} aria-hidden /> },
+    ] },
+    ...groups.filter(group => group.key !== '全局'),
+    { key: '全局', title: '全局', placement: 'footer', collapsible: false, items: [
+      { key: 'settings', label: pageLabel('settings'), icon: <Settings2 size={19} strokeWidth={1.65} aria-hidden /> },
+    ] },
+  ]
+}

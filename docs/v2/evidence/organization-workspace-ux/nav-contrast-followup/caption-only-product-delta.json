@@ -1,0 +1,14 @@
+{
+  "fullyTestedSnapshot": "a0b4ecdf32f9b7bae36346968b300bd64d9622a61b590d2541357bcce2b33b80",
+  "finalSnapshot": "075a8a12dff7b428e6f1141b1b8bed8649c649dae564b538e63e3251d8884e59",
+  "changedProductFiles": [
+    "apps/desktop/src/renderer/src/pages/organization-workspace.css"
+  ],
+  "exactChange": {
+    "before": ".ow-nav-group { display: block; padding: 14px 12px 7px; color: var(--ui-ink-2);",
+    "after": ".ow-nav-group { display: block; padding: 14px 12px 7px; color: var(--ui-ink);"
+  },
+  "revertingThatOneDeclarationRestoresExactPriorCssHash": true,
+  "allOtherProductSourcesIdentical": true,
+  "note": "Reuses the complete business/unit/legacy regressions for identical TS/TSX/Main/preload/Runtime/server sources; only the changed CSS caption is qualified again in top and scrolled native workspace contexts. Final package is rebuilt and rechecked against final tested bytes."
+}

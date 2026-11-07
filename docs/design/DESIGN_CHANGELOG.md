@@ -602,3 +602,35 @@ skill catalog; this session verified both after installation.
   form, tracked in OPEN_ISSUES. 235 tested build files unchanged during packaging; 122 ASAR desktop
   entries and Runtime match exact tested bytes. Fixture failures and corrected verifier paths remain
   in the phase report. No subjective visual acceptance, OS DPI or physical dual-machine claim.
+
+
+## 2026-11-07 — Organization as a primary workspace (ADR-0088)
+
+- Move daily organization work out of Settings into a real global route and primary navigation. Keep
+  identity in Settings, direct collaboration/admin sections, wide list/detail context and narrow focus/
+  back behavior. Local requirements expose organization progress, delivery, return and knowledge writeback.
+- Reuse frozen optical shell, semantic tokens, packaged Noto Sans SC and shared registered overlays.
+  Preserve the Lab navigation projection; production gains an explicit adapter. No graph/material/motion
+  or backend/policy change. Remove the unrelated local-project journey banner from this global route.
+- Actual local typography/color/layout/keyboard/motion queries are in `organization-workspace-ux/`.
+  Reject suggested remote/TC fonts and new navy/green palettes against the frozen direction; use clear
+  labels, focus, persistent context and reduced motion. Mandatory local files/rules were read; no skill
+  loader is exposed. Reuse the actual Sim/LiquidGlass/Aurora inspections recorded in K2–K4 in this same
+  conversation; no new effect or GPU performance claim. Impeccable craft-floor was read before edits.
+- Native preflight found a heading-order violation in the relocated login surface; corrected to h2.
+  Preserve that failed capture and output. Final matrices, native contrast, detector, all required
+  regressions and package-byte results are recorded in the phase report after execution.
+
+- Final complete native run: 561 PASS, 128 axe states / 3,053 composited text samples, minimum 4.659:1,
+  137 captures. Full-page detection exposed a scrolled group-caption gap outside the assignment scope;
+  fixed exactly one caption declaration to primary ink. Product TS/TSX/Main/Runtime/server remain
+  byte-identical in source. Final targeted qualification: 107 PASS, 25 axe states / 349 samples, minimum
+  5.023:1, 27 captures. Top and scrolled audits include the navigation. Original failed attempts remain.
+- Approved DAG 32/32 and strict K4/workspace/final-caption PNG comparison chain unchanged. Final detector
+  retains one user-approved palette warning and one global easing advisory; no ignores or threshold
+  reduction. Final package is rebuilt and compared with final tested bytes. Actual root commands and
+  scope/limits are in `organization-workspace-ux/REPORT.md`; no subjective acceptance or OS DPI claim.
+
+- Required lint/typecheck/build, four desktop regressions, Windows package/smoke and artifact
+  verification PASS. Vitest 715 PASS / 4 opt-in SKIP; lint 0 errors / 48 prior warnings. Final 235
+  build files unchanged by packaging; 122 desktop ASAR entries and Runtime match tested bytes.

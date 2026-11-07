@@ -117,7 +117,7 @@ export function OrganizationAssets({ connection }: { connection: OrganizationCon
       ) : (
         <>
           <div className="org-section-heading">
-            <h3>组织资产</h3>
+            <h2>配置资产</h2>
             <div className="org-inline-actions">
               <button
                 type="button"

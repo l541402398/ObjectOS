@@ -1,0 +1,242 @@
+PASS Protected DAG byte-identical
+PASS Primary organization entry works signed out without a project
+PASS Command palette has one primary organization destination
+PASS signed-out-workspace-1440-light-100 fits
+PASS signed-out-workspace-1440-light-100 page fits
+PASS signed-out-workspace-1440-light-100 axe
+PASS signed-out-workspace-1440-light-100 native contrast
+PASS signed-out-workspace-1440-light-125 fits
+PASS signed-out-workspace-1440-light-125 page fits
+PASS signed-out-workspace-1440-light-125 axe
+PASS signed-out-workspace-1440-light-125 native contrast
+PASS signed-out-workspace-1440-dark-100 fits
+PASS signed-out-workspace-1440-dark-100 page fits
+PASS signed-out-workspace-1440-dark-100 axe
+PASS signed-out-workspace-1440-dark-100 native contrast
+PASS signed-out-workspace-1440-dark-125 fits
+PASS signed-out-workspace-1440-dark-125 page fits
+PASS signed-out-workspace-1440-dark-125 axe
+PASS signed-out-workspace-1440-dark-125 native contrast
+PASS signed-out-workspace-1024-light-100 fits
+PASS signed-out-workspace-1024-light-100 page fits
+PASS signed-out-workspace-1024-light-100 axe
+PASS signed-out-workspace-1024-light-100 native contrast
+PASS signed-out-workspace-1024-light-125 fits
+PASS signed-out-workspace-1024-light-125 page fits
+PASS signed-out-workspace-1024-light-125 axe
+PASS signed-out-workspace-1024-light-125 native contrast
+PASS signed-out-workspace-1024-dark-100 fits
+PASS signed-out-workspace-1024-dark-100 page fits
+PASS signed-out-workspace-1024-dark-100 axe
+PASS signed-out-workspace-1024-dark-100 native contrast
+PASS signed-out-workspace-1024-dark-125 fits
+PASS signed-out-workspace-1024-dark-125 page fits
+PASS signed-out-workspace-1024-dark-125 axe
+PASS signed-out-workspace-1024-dark-125 native contrast
+PASS Personal project creation makes no organization request
+PASS section-knowledge-1440-light-100 fits
+PASS section-knowledge-1440-light-100 page fits
+PASS section-knowledge-1440-light-100 axe
+PASS section-knowledge-1440-light-100 native contrast
+PASS section-knowledge-1440-light-125 fits
+PASS section-knowledge-1440-light-125 page fits
+PASS section-knowledge-1440-light-125 axe
+PASS section-knowledge-1440-light-125 native contrast
+PASS section-knowledge-1440-dark-100 fits
+PASS section-knowledge-1440-dark-100 page fits
+PASS section-knowledge-1440-dark-100 axe
+PASS section-knowledge-1440-dark-100 native contrast
+PASS section-knowledge-1440-dark-125 fits
+PASS section-knowledge-1440-dark-125 page fits
+PASS section-knowledge-1440-dark-125 axe
+PASS section-knowledge-1440-dark-125 native contrast
+PASS section-knowledge-1024-light-100 fits
+PASS section-knowledge-1024-light-100 page fits
+PASS section-knowledge-1024-light-100 axe
+PASS section-knowledge-1024-light-100 native contrast
+PASS section-knowledge-1024-light-125 fits
+PASS section-knowledge-1024-light-125 page fits
+PASS section-knowledge-1024-light-125 axe
+PASS section-knowledge-1024-light-125 native contrast
+PASS section-knowledge-1024-dark-100 fits
+PASS section-knowledge-1024-dark-100 page fits
+PASS section-knowledge-1024-dark-100 axe
+PASS section-knowledge-1024-dark-100 native contrast
+PASS section-knowledge-1024-dark-125 fits
+PASS section-knowledge-1024-dark-125 page fits
+PASS section-knowledge-1024-dark-125 axe
+PASS section-knowledge-1024-dark-125 native contrast
+PASS Direct organization section: 组织知识
+PASS section-review-1440-light-100 fits
+PASS section-review-1440-light-100 page fits
+PASS section-review-1440-light-100 axe
+PASS section-review-1440-light-100 native contrast
+PASS section-review-1440-light-125 fits
+PASS section-review-1440-light-125 page fits
+PASS section-review-1440-light-125 axe
+PASS section-review-1440-light-125 native contrast
+PASS section-review-1440-dark-100 fits
+PASS section-review-1440-dark-100 page fits
+PASS section-review-1440-dark-100 axe
+PASS section-review-1440-dark-100 native contrast
+PASS section-review-1440-dark-125 fits
+PASS section-review-1440-dark-125 page fits
+PASS section-review-1440-dark-125 axe
+PASS section-review-1440-dark-125 native contrast
+PASS section-review-1024-light-100 fits
+PASS section-review-1024-light-100 page fits
+PASS section-review-1024-light-100 axe
+PASS section-review-1024-light-100 native contrast
+PASS section-review-1024-light-125 fits
+PASS section-review-1024-light-125 page fits
+PASS section-review-1024-light-125 axe
+PASS section-review-1024-light-125 native contrast
+PASS section-review-1024-dark-100 fits
+PASS section-review-1024-dark-100 page fits
+PASS section-review-1024-dark-100 axe
+PASS section-review-1024-dark-100 native contrast
+PASS section-review-1024-dark-125 fits
+PASS section-review-1024-dark-125 page fits
+PASS section-review-1024-dark-125 axe
+PASS section-review-1024-dark-125 native contrast
+PASS Direct organization section: 知识审核
+PASS section-projects-1440-light-100 fits
+PASS section-projects-1440-light-100 page fits
+PASS section-projects-1440-light-100 axe
+PASS section-projects-1440-light-100 native contrast
+PASS section-projects-1440-light-125 fits
+PASS section-projects-1440-light-125 page fits
+PASS section-projects-1440-light-125 axe
+PASS section-projects-1440-light-125 native contrast
+PASS section-projects-1440-dark-100 fits
+PASS section-projects-1440-dark-100 page fits
+PASS section-projects-1440-dark-100 axe
+PASS section-projects-1440-dark-100 native contrast
+PASS section-projects-1440-dark-125 fits
+PASS section-projects-1440-dark-125 page fits
+PASS section-projects-1440-dark-125 axe
+PASS section-projects-1440-dark-125 native contrast
+PASS section-projects-1024-light-100 fits
+PASS section-projects-1024-light-100 page fits
+PASS section-projects-1024-light-100 axe
+PASS section-projects-1024-light-100 native contrast
+PASS section-projects-1024-light-125 fits
+PASS section-projects-1024-light-125 page fits
+PASS section-projects-1024-light-125 axe
+PASS section-projects-1024-light-125 native contrast
+PASS section-projects-1024-dark-100 fits
+PASS section-projects-1024-dark-100 page fits
+PASS section-projects-1024-dark-100 axe
+PASS section-projects-1024-dark-100 native contrast
+PASS section-projects-1024-dark-125 fits
+PASS section-projects-1024-dark-125 page fits
+PASS section-projects-1024-dark-125 axe
+PASS section-projects-1024-dark-125 native contrast
+PASS Direct organization section: 共享项目
+PASS section-members-1440-light-100 fits
+PASS section-members-1440-light-100 page fits
+PASS section-members-1440-light-100 axe
+PASS section-members-1440-light-100 native contrast
+PASS section-members-1440-light-125 fits
+PASS section-members-1440-light-125 page fits
+PASS section-members-1440-light-125 axe
+PASS section-members-1440-light-125 native contrast
+PASS section-members-1440-dark-100 fits
+PASS section-members-1440-dark-100 page fits
+PASS section-members-1440-dark-100 axe
+PASS section-members-1440-dark-100 native contrast
+PASS section-members-1440-dark-125 fits
+PASS section-members-1440-dark-125 page fits
+PASS section-members-1440-dark-125 axe
+PASS section-members-1440-dark-125 native contrast
+PASS section-members-1024-light-100 fits
+PASS section-members-1024-light-100 page fits
+PASS section-members-1024-light-100 axe
+PASS section-members-1024-light-100 native contrast
+PASS section-members-1024-light-125 fits
+PASS section-members-1024-light-125 page fits
+PASS section-members-1024-light-125 axe
+PASS section-members-1024-light-125 native contrast
+PASS section-members-1024-dark-100 fits
+PASS section-members-1024-dark-100 page fits
+PASS section-members-1024-dark-100 axe
+PASS section-members-1024-dark-100 native contrast
+PASS section-members-1024-dark-125 fits
+PASS section-members-1024-dark-125 page fits
+PASS section-members-1024-dark-125 axe
+PASS section-members-1024-dark-125 native contrast
+PASS Direct organization section: 成员与权限
+PASS section-invitations-1440-light-100 fits
+PASS section-invitations-1440-light-100 page fits
+PASS section-invitations-1440-light-100 axe
+PASS section-invitations-1440-light-100 native contrast
+PASS section-invitations-1440-light-125 fits
+PASS section-invitations-1440-light-125 page fits
+PASS section-invitations-1440-light-125 axe
+PASS section-invitations-1440-light-125 native contrast
+PASS section-invitations-1440-dark-100 fits
+PASS section-invitations-1440-dark-100 page fits
+PASS section-invitations-1440-dark-100 axe
+PASS section-invitations-1440-dark-100 native contrast
+PASS section-invitations-1440-dark-125 fits
+PASS section-invitations-1440-dark-125 page fits
+PASS section-invitations-1440-dark-125 axe
+PASS section-invitations-1440-dark-125 native contrast
+PASS section-invitations-1024-light-100 fits
+PASS section-invitations-1024-light-100 page fits
+PASS section-invitations-1024-light-100 axe
+PASS section-invitations-1024-light-100 native contrast
+PASS section-invitations-1024-light-125 fits
+PASS section-invitations-1024-light-125 page fits
+PASS section-invitations-1024-light-125 axe
+PASS section-invitations-1024-light-125 native contrast
+PASS section-invitations-1024-dark-100 fits
+PASS section-invitations-1024-dark-100 page fits
+PASS section-invitations-1024-dark-100 axe
+PASS section-invitations-1024-dark-100 native contrast
+PASS section-invitations-1024-dark-125 fits
+PASS section-invitations-1024-dark-125 page fits
+PASS section-invitations-1024-dark-125 axe
+PASS section-invitations-1024-dark-125 native contrast
+PASS Direct organization section: 待接受邀请
+PASS section-assets-1440-light-100 fits
+PASS section-assets-1440-light-100 page fits
+PASS section-assets-1440-light-100 axe
+PASS section-assets-1440-light-100 native contrast
+PASS section-assets-1440-light-125 fits
+PASS section-assets-1440-light-125 page fits
+PASS section-assets-1440-light-125 axe
+PASS section-assets-1440-light-125 native contrast
+PASS section-assets-1440-dark-100 fits
+PASS section-assets-1440-dark-100 page fits
+PASS section-assets-1440-dark-100 axe
+PASS section-assets-1440-dark-100 native contrast
+PASS section-assets-1440-dark-125 fits
+PASS section-assets-1440-dark-125 page fits
+PASS section-assets-1440-dark-125 axe
+PASS section-assets-1440-dark-125 native contrast
+PASS section-assets-1024-light-100 fits
+PASS section-assets-1024-light-100 page fits
+PASS section-assets-1024-light-100 axe
+PASS section-assets-1024-light-100 native contrast
+PASS section-assets-1024-light-125 fits
+PASS section-assets-1024-light-125 page fits
+PASS section-assets-1024-light-125 axe
+PASS section-assets-1024-light-125 native contrast
+PASS section-assets-1024-dark-100 fits
+PASS section-assets-1024-dark-100 page fits
+PASS section-assets-1024-dark-100 axe
+PASS section-assets-1024-dark-100 native contrast
+PASS section-assets-1024-dark-125 fits
+PASS section-assets-1024-dark-125 page fits
+PASS section-assets-1024-dark-125 axe
+PASS section-assets-1024-dark-125 native contrast
+PASS Direct organization section: 配置资产
+PASS section-workers-1440-light-100 fits
+PASS section-workers-1440-light-100 page fits
+FAIL section-workers-1440-light-100 axe
+Error: section-workers-1440-light-100 axe
+    at check (file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/organization-workspace-ux-e2e.mjs:30:191)
+    at audit (file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/organization-workspace-ux-e2e.mjs:40:3)
+    at async matrix (file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/organization-workspace-ux-e2e.mjs:49:23)
+    at async file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/organization-workspace-ux-e2e.mjs:203:5

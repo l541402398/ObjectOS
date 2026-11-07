@@ -1,0 +1,25 @@
+{
+  "sourceSnapshot": "a0b4ecdf32f9b7bae36346968b300bd64d9622a61b590d2541357bcce2b33b80",
+  "files": [
+    {
+      "path": "release/win-unpacked/ProjectOS.exe",
+      "sha256": "762dd54effbfa556ea7510a840eb6e9da5bcb94c9bab113ac5fe77624e8ed58c",
+      "expected": "762dd54effbfa556ea7510a840eb6e9da5bcb94c9bab113ac5fe77624e8ed58c",
+      "pass": true
+    },
+    {
+      "path": "release/win-unpacked/resources/app.asar",
+      "sha256": "ab747cf11bb13994403490e77cbf0d93204d7028d54f635d0589670b948886a6",
+      "expected": "ab747cf11bb13994403490e77cbf0d93204d7028d54f635d0589670b948886a6",
+      "pass": true
+    },
+    {
+      "path": "release/win-unpacked/resources/runtime/index.mjs",
+      "sha256": "90ee396429243d18d19a7628f2f945753f9859c621ebbf00bc0d3319dadda3d9",
+      "expected": "90ee396429243d18d19a7628f2f945753f9859c621ebbf00bc0d3319dadda3d9",
+      "pass": true
+    }
+  ],
+  "pass": true,
+  "note": "Caption follow-up compares the previously fully tested and packaged organization UI with the final scoped caption color change. Original K4-to-workspace strict DAG comparison is retained at the phase root."
+}

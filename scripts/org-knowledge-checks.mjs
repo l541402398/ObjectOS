@@ -7,8 +7,8 @@ import { join, resolve } from 'node:path'
 
 const root = resolve('.')
 const phase = process.argv.find(arg => arg.startsWith('--phase='))?.slice(8) ?? 'k1'
-if (!['k1', 'k2', 'k3', 'k4'].includes(phase)) throw new Error('Unknown phase')
-const phaseRoot = `docs/v2/evidence/${phase === 'k1' ? 'organization-knowledge-phase1' : phase === 'k4' ? 'member-assignment-k4' : `organization-knowledge-${phase}`}`
+if (!['k1', 'k2', 'k3', 'k4', 'organization-ux'].includes(phase)) throw new Error('Unknown phase')
+const phaseRoot = `docs/v2/evidence/${phase === 'organization-ux' ? 'organization-workspace-ux' : phase === 'k1' ? 'organization-knowledge-phase1' : phase === 'k4' ? 'member-assignment-k4' : `organization-knowledge-${phase}`}`
 const evidence = join(root, phaseRoot)
 const spawn = createRequire(join(root, 'packages/workspace/package.json'))('cross-spawn')
 mkdirSync(evidence, { recursive: true })
@@ -32,12 +32,17 @@ if (phase !== 'k1') {
 const file = join(evidence, 'checks.json')
 const attempts = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')).attempts : []
 const commands = [
-  ...(['k3', 'k4'].includes(phase) ? [['baseline-package', process.execPath, [`${phaseRoot}/artifact-provenance.mjs`, 'baseline']]] : []),
+  ...(['k3', 'k4', 'organization-ux'].includes(phase) ? [['baseline-package', process.execPath, [`${phaseRoot}/artifact-provenance.mjs`, 'baseline']]] : []),
   ['lint', 'pnpm', ['lint']],
   ['typecheck', 'pnpm', ['typecheck']],
   ['test', 'pnpm', ['run', 'test', '--maxWorkers=2']],
   ['build', 'pnpm', ['build']],
-  ...(['k3', 'k4'].includes(phase) ? [['tested-build', process.execPath, [`${phaseRoot}/artifact-provenance.mjs`, 'tested']]] : []),
+  ...(['k3', 'k4', 'organization-ux'].includes(phase) ? [['tested-build', process.execPath, [`${phaseRoot}/artifact-provenance.mjs`, 'tested']]] : []),
+  ...(phase === 'organization-ux' ? [
+    ['organization-workspace-desktop', process.execPath, ['--import', 'tsx', 'scripts/organization-workspace-ux-e2e.mjs']],
+    ['approved-dag', process.execPath, [`${phaseRoot}/run-approved-dag.mjs`]],
+  ] : []),
+  ...(phase === 'organization-ux' ? [['navigation-contrast',process.execPath,['--import','tsx','scripts/organization-nav-contrast-e2e.mjs']]] : []),
   ...(phase === 'k4' ? [
     ['assignment-desktop', process.execPath, ['--import', 'tsx', 'scripts/member-assignment-k4-e2e.mjs']],
     ['approved-dag', process.execPath, [`${phaseRoot}/run-approved-dag.mjs`]],
@@ -57,7 +62,7 @@ const commands = [
   ['v13-e2e', process.execPath, ['scripts/v13-e2e.mjs']],
   ['package-dir', 'pnpm', ['package:dir']],
   ['package-smoke', 'pnpm', ['test:package']],
-  ...(['k3', 'k4'].includes(phase) ? [['artifact-verification', process.execPath, [`${phaseRoot}/artifact-provenance.mjs`, 'final']]] : []),
+  ...(['k3', 'k4', 'organization-ux'].includes(phase) ? [['artifact-verification', process.execPath, [`${phaseRoot}/artifact-provenance.mjs`, 'final']]] : []),
 ]
 const from = process.argv.find(arg => arg.startsWith('--from='))?.slice(7)
 const start = from ? commands.findIndex(([name]) => name === from) : 0

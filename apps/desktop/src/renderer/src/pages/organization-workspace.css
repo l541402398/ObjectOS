@@ -1,0 +1,73 @@
+.ow-page { display: grid; gap: 18px; min-width: 0; padding: 22px 24px 34px; align-content: start; }
+.ow-header, .ow-identity, .ow-context { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.ow-header, .ow-context { justify-content: space-between; }
+.ow-identity > svg { color: var(--ui-accent-strong); flex: none; }
+.ow-identity h1 { margin: 0; font-size: 26px; line-height: 1.35; font-weight: 600; }
+.ow-context { padding-bottom: 16px; border-bottom: 1px solid var(--ui-border); }
+.ow-account-name { color: var(--ui-ink-2); font-size: 13px; }
+.ow-account-content { display: grid; gap: 8px; min-width: 240px; max-width: 320px; overflow-wrap: anywhere; }
+.ow-account-content code { font: 12px/1.5 var(--ui-mono); color: var(--ui-ink-2); }
+.ow-layout { display: grid; grid-template-columns: 156px minmax(0,1fr); gap: 24px; min-width: 0; align-items: start; }
+.ow-nav { display: grid; gap: 5px; }
+.ow-nav-group { display: block; padding: 14px 12px 7px; color: var(--ui-ink); font-size: 12px; }
+.ow-nav > div:first-child .ow-nav-group { padding-top: 0; }
+.ow-nav button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 42px; padding: 10px 12px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: var(--ui-ink-2); font: 500 14px/1.5 var(--ui-font); text-align: left; cursor: pointer; }
+.ow-nav button:hover { color: var(--ui-ink); background: var(--ui-surface-hover); }
+.ow-nav button[aria-current='page'] { background: var(--ui-accent-soft); border-color: var(--ui-accent-line); color: var(--ui-accent-strong); }
+.ow-nav button:disabled { opacity: .55; cursor: not-allowed; }
+.ow-nav button:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 3px; }
+.ow-content { min-width: 0; }
+@media (max-width: 1100px) {
+  .ow-layout { grid-template-columns: minmax(0,1fr); gap: 18px; }
+  .ow-nav { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--ui-divider); padding-bottom: 12px; }
+  .ow-nav-group { display: none; }
+  .ow-nav button { width: auto; min-height: 38px; padding: 8px 10px; font-size: 13px; }
+  .ow-header { flex-wrap: wrap; }
+  .ow-identity h1 { font-size: 24px; }
+}
+
+.ow-account-link { margin-top: 16px; }
+.ow-assignment-layout { display: grid; grid-template-columns: minmax(260px, .85fr) minmax(0, 1.6fr); align-items: start; gap: 24px; }
+.ow-list-pane, .ow-list-filters, .ow-detail-pane { display: grid; gap: 16px; min-width: 0; }
+.ow-list-pane { border-right: 1px solid var(--ui-divider); padding-right: 22px; }
+.ow-list-filters .org-form-grid { grid-template-columns: minmax(0,1fr); gap: 10px; margin: 0; }
+.ow-search { position: relative; }
+.ow-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ui-ink-2); pointer-events: none; }
+.ow-search input { padding-left: 36px !important; }
+.ow-status-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.ow-status-filters .org-button { padding: 6px 9px; min-height: 34px; font-size: 12px; gap: 5px; }
+.ow-status-filters [aria-pressed='true'] { color: var(--ui-accent-strong); background: var(--ui-accent-soft); border-color: var(--ui-accent-line); }
+.ow-assignment-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.ow-assignment-list button { width: 100%; display: grid; gap: 8px; padding: 14px; text-align: left; border: 1px solid var(--ui-border); border-radius: 12px; background: var(--ui-surface); color: var(--ui-ink); font: 14px/1.6 var(--ui-font); cursor: pointer; overflow-wrap: anywhere; }
+.ow-assignment-list button:hover { background: var(--ui-surface-hover); }
+.ow-assignment-list button[aria-pressed='true'] { border-color: var(--ui-accent-line); background: var(--ui-accent-soft); }
+.ow-assignment-list button:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 3px; }
+.ow-assignment-list button:disabled { cursor: not-allowed; }
+.ow-list-row-head { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: 8px; }
+.ow-assignment-state, .ow-row-meta { color: var(--ui-ink-2); font-size: 12px; }
+.ow-assignment-state { white-space: nowrap; }
+.ow-operation-history, .ow-audit { border-top: 1px solid var(--ui-divider); padding-top: 14px; font-size: 13px; }
+.ow-operation-history summary, .ow-audit summary { cursor: pointer; color: var(--ui-ink-2); padding: 4px 0; }
+.ow-operation-history > section { margin-top: 14px; }
+.ow-receipt-notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border: 1px solid var(--ui-accent-line); border-radius: 10px; background: var(--ui-accent-soft); font-size: 13px; }
+.ow-handoff { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); list-style: none; padding: 0 !important; margin: 0; gap: 10px; }
+.ow-handoff li { border-top: 2px solid var(--ui-divider); padding-top: 9px; font-size: 12px; color: var(--ui-ink-2); }
+.ow-handoff li[aria-current='step'], .ow-handoff li[data-complete='true'] { border-color: var(--ui-accent-strong); color: var(--ui-accent-strong); }
+.ow-back-list { display: none !important; color: var(--ui-ink); }
+.rq-assignment-bar { padding: 16px 0; margin-bottom: 18px; border-top: 1px solid var(--ui-divider); border-bottom: 1px solid var(--ui-divider); display: grid; gap: 12px; }
+.rq-assignment-bar .assignment-detail { gap: 12px; }
+.rq-assignment-bar h3 { margin: 0; font-size: 16px; }
+.rq-assignment-links { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+@media (max-width: 1100px) {
+ .ow-assignment-layout { grid-template-columns: minmax(0,1fr); }
+ .ow-list-pane { border: 0; padding-right: 0; }
+ .ow-list-filters .org-form-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+ .ow-assignment-layout[data-detail='true'] .ow-list-pane, .ow-assignment-layout[data-detail='false'] .ow-detail-pane { display: none; }
+ .ow-back-list { display: inline-flex !important; }
+}
+
+.ow-content .org-section-heading h2 { font-size: 20px; line-height: 1.4; font-weight: 600; }
+
+.ow-operation-history fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+
+.ow-page .org-connect-copy h2 { font-size: 20px; line-height: 1.4; font-weight: 650; letter-spacing: -.02em; }

@@ -13,6 +13,7 @@ export function useOrganization() {
     queryKey: organizationConnectionKey,
     queryFn: () => window.projectos.organization.status({ refresh: true }),
     staleTime: 30_000,
+    refetchOnWindowFocus: false,
     retry: false,
     refetchInterval:query=>query.state.data?.status==='local'?2000:false,
   })

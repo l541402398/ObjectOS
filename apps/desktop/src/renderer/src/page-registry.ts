@@ -55,6 +55,7 @@ export const PROJECT_PAGES: PageDefinition[] = [
 
 export const GLOBAL_PAGES: PageDefinition[] = [
   { key: 'center', path: '/', label: '项目中心', group: '全局', status: 'KEEP', entries: ['nav', 'link'], note: '所有项目的入口与最近动态。' },
+  { key: 'organization', path: '/organization', label: '组织工作台', group: '全局', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '需求协作、组织知识、项目与团队管理。' },
   { key: 'design-lab', path: '/design-lab', label: 'Design Lab', group: '全局', status: 'DEV_ONLY', entries: ['deep-link'], note: '已批准的视觉基线；仅供设计与回归，不进入产品菜单。' },
   { key: 'precision-lab', path: '/precision-lab', label: 'Precision Workspace', group: '全局', status: 'DEV_ONLY', entries: ['deep-link'], note: 'A0 组织升级设计母版：演示数据，仅供设计评审与视觉回归，不进入产品菜单。' },
   { key: 'settings', path: '/settings', label: '设置', group: '全局', status: 'KEEP', entries: ['link'], note: '全局设置模态，不是路由页面（旧 /settings 路由重定向到首页）。' },
@@ -82,6 +83,7 @@ export function pageGroup(key: string): string {
 /** Location matching includes global routes and the retained legacy deep links. */
 export function currentPageKey(pathname: string): string {
   if (pathname === '/') return 'center'
+  if (pathname === '/organization') return 'organization'
   if (pathname === '/notifications') return 'notifications'
   if (/^\/settings(?:\/|$)/.test(pathname)) return 'settings'
   const project = /^\/projects\/[^/]+(\/.*)?$/.exec(pathname)

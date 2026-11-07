@@ -10,7 +10,7 @@ export function ConnectOrganizationForm({ onConnect, pending, error,serverUrl }:
   return <section className="org-connect-surface" aria-labelledby="org-connect-title">
     <div className="org-connect-copy">
       <span className="org-surface-icon"><Building2 size={25} strokeWidth={1.5} aria-hidden /></span>
-      <h3 id="org-connect-title">连接团队工作区</h3>
+      <h2 id="org-connect-title">连接团队工作区</h2>
       <p>通过组织服务共享项目与成员权限。</p>
       <span className="org-security-note"><ShieldCheck size={16} aria-hidden />账号登录在系统浏览器中完成</span>
     </div>

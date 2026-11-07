@@ -1,0 +1,107 @@
+PASS Protected DAG byte-identical
+PASS Primary organization entry works signed out without a project
+PASS Command palette has one primary organization destination
+PASS signed-out-workspace-1440-light-100 fits
+PASS signed-out-workspace-1440-light-100 page fits
+PASS signed-out-workspace-1440-light-100 axe
+PASS signed-out-workspace-1440-light-100 native contrast
+PASS signed-out-workspace-1440-light-125 fits
+PASS signed-out-workspace-1440-light-125 page fits
+PASS signed-out-workspace-1440-light-125 axe
+PASS signed-out-workspace-1440-light-125 native contrast
+PASS signed-out-workspace-1440-dark-100 fits
+PASS signed-out-workspace-1440-dark-100 page fits
+PASS signed-out-workspace-1440-dark-100 axe
+PASS signed-out-workspace-1440-dark-100 native contrast
+PASS signed-out-workspace-1440-dark-125 fits
+PASS signed-out-workspace-1440-dark-125 page fits
+PASS signed-out-workspace-1440-dark-125 axe
+PASS signed-out-workspace-1440-dark-125 native contrast
+PASS signed-out-workspace-1024-light-100 fits
+PASS signed-out-workspace-1024-light-100 page fits
+PASS signed-out-workspace-1024-light-100 axe
+PASS signed-out-workspace-1024-light-100 native contrast
+PASS signed-out-workspace-1024-light-125 fits
+PASS signed-out-workspace-1024-light-125 page fits
+PASS signed-out-workspace-1024-light-125 axe
+PASS signed-out-workspace-1024-light-125 native contrast
+PASS signed-out-workspace-1024-dark-100 fits
+PASS signed-out-workspace-1024-dark-100 page fits
+PASS signed-out-workspace-1024-dark-100 axe
+PASS signed-out-workspace-1024-dark-100 native contrast
+PASS signed-out-workspace-1024-dark-125 fits
+PASS signed-out-workspace-1024-dark-125 page fits
+PASS signed-out-workspace-1024-dark-125 axe
+PASS signed-out-workspace-1024-dark-125 native contrast
+PASS Personal project creation makes no organization request
+PASS 导航对比度检查 explicit dispatch confirmation
+PASS navigation-top-1440-light-100 fits
+PASS navigation-top-1440-light-100 page fits
+PASS navigation-top-1440-light-100 axe
+PASS navigation-top-1440-light-100 native contrast
+PASS navigation-top-1440-light-125 fits
+PASS navigation-top-1440-light-125 page fits
+PASS navigation-top-1440-light-125 axe
+PASS navigation-top-1440-light-125 native contrast
+PASS navigation-top-1440-dark-100 fits
+PASS navigation-top-1440-dark-100 page fits
+PASS navigation-top-1440-dark-100 axe
+PASS navigation-top-1440-dark-100 native contrast
+PASS navigation-top-1440-dark-125 fits
+PASS navigation-top-1440-dark-125 page fits
+PASS navigation-top-1440-dark-125 axe
+PASS navigation-top-1440-dark-125 native contrast
+PASS navigation-top-1024-light-100 fits
+PASS navigation-top-1024-light-100 page fits
+PASS navigation-top-1024-light-100 axe
+PASS navigation-top-1024-light-100 native contrast
+PASS navigation-top-1024-light-125 fits
+PASS navigation-top-1024-light-125 page fits
+PASS navigation-top-1024-light-125 axe
+PASS navigation-top-1024-light-125 native contrast
+PASS navigation-top-1024-dark-100 fits
+PASS navigation-top-1024-dark-100 page fits
+PASS navigation-top-1024-dark-100 axe
+PASS navigation-top-1024-dark-100 native contrast
+PASS navigation-top-1024-dark-125 fits
+PASS navigation-top-1024-dark-125 page fits
+PASS navigation-top-1024-dark-125 axe
+PASS navigation-top-1024-dark-125 native contrast
+PASS navigation-scrolled-1440-light-100 fits
+PASS navigation-scrolled-1440-light-100 page fits
+PASS navigation-scrolled-1440-light-100 axe
+PASS navigation-scrolled-1440-light-100 native contrast
+PASS navigation-scrolled-1440-light-125 fits
+PASS navigation-scrolled-1440-light-125 page fits
+PASS navigation-scrolled-1440-light-125 axe
+PASS navigation-scrolled-1440-light-125 native contrast
+PASS navigation-scrolled-1440-dark-100 fits
+PASS navigation-scrolled-1440-dark-100 page fits
+PASS navigation-scrolled-1440-dark-100 axe
+PASS navigation-scrolled-1440-dark-100 native contrast
+PASS navigation-scrolled-1440-dark-125 fits
+PASS navigation-scrolled-1440-dark-125 page fits
+PASS navigation-scrolled-1440-dark-125 axe
+PASS navigation-scrolled-1440-dark-125 native contrast
+PASS navigation-scrolled-1024-light-100 fits
+PASS navigation-scrolled-1024-light-100 page fits
+PASS navigation-scrolled-1024-light-100 axe
+PASS navigation-scrolled-1024-light-100 native contrast
+PASS navigation-scrolled-1024-light-125 fits
+PASS navigation-scrolled-1024-light-125 page fits
+PASS navigation-scrolled-1024-light-125 axe
+PASS navigation-scrolled-1024-light-125 native contrast
+PASS navigation-scrolled-1024-dark-100 fits
+PASS navigation-scrolled-1024-dark-100 page fits
+PASS navigation-scrolled-1024-dark-100 axe
+PASS navigation-scrolled-1024-dark-100 native contrast
+PASS navigation-scrolled-1024-dark-125 fits
+PASS navigation-scrolled-1024-dark-125 page fits
+PASS navigation-scrolled-1024-dark-125 axe
+PASS navigation-scrolled-1024-dark-125 native contrast
+PASS Scrolled navigation captions measured natively
+PASS final-workspace-overview fits
+PASS final-workspace-overview page fits
+PASS final-workspace-overview axe
+PASS final-workspace-overview native contrast
+PASS No Renderer exceptions

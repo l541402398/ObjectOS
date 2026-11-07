@@ -1,0 +1,26 @@
+## UI Pro Max Search Results
+**Domain:** ux | **Query:** keyboard accessible forms
+**Source:** ux-guidelines.csv | **Found:** 2 results
+
+### Result 1
+- **Category:** Forms
+- **Issue:** Mobile Keyboards
+- **Platform:** Mobile
+- **Description:** Show appropriate keyboard for input type
+- **Do:** Use inputmode attribute
+- **Don't:** Default keyboard for all inputs
+- **Code Example Good:** inputmode='numeric'
+- **Code Example Bad:** Text keyboard for numbers
+- **Severity:** Medium
+
+### Result 2
+- **Category:** Accessibility
+- **Issue:** Compact Control Semantics
+- **Platform:** Web
+- **Description:** Interactive chips need a native role accessible name state keyboard operation and visible focus
+- **Do:** Prefer a button and expose pressed or selected state that matches the visible label
+- **Don't:** Use a clickable div or reveal the only action on hover
+- **Code Example Good:** <button aria-pressed='true'>Open now</button>
+- **Code Example Bad:** <div class='selected' onclick='toggle()'>Open now</div>
+- **Severity:** Critical
+

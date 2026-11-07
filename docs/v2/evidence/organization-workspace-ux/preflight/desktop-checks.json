@@ -1,0 +1,504 @@
+{
+  "checks": [
+    {
+      "name": "Protected DAG byte-identical",
+      "status": "PASS"
+    },
+    {
+      "name": "Primary organization entry works signed out without a project",
+      "status": "PASS"
+    },
+    {
+      "name": "Command palette has one primary organization destination",
+      "status": "PASS"
+    },
+    {
+      "name": "signed-out-workspace-1440-light-100 fits",
+      "status": "PASS"
+    },
+    {
+      "name": "signed-out-workspace-1440-light-100 page fits",
+      "status": "PASS"
+    },
+    {
+      "name": "signed-out-workspace-1440-light-100 axe",
+      "status": "FAIL",
+      "detail": [
+        {
+          "id": "heading-order",
+          "impact": "moderate",
+          "targets": [
+            [
+              "#org-connect-title"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "journey",
+      "status": "FAIL",
+      "detail": "Error: signed-out-workspace-1440-light-100 axe"
+    }
+  ],
+  "audits": [
+    {
+      "name": "signed-out-workspace-1440-light-100",
+      "violations": [
+        {
+          "id": "heading-order",
+          "impact": "moderate",
+          "targets": [
+            [
+              "#org-connect-title"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "contrast": {
+        "method": "Native capturePage background sampling with text temporarily unpainted; all sampled text uses conservative 4.5:1 threshold. Disabled, SVG, editor tokens and obscured/offscreen text excluded.",
+        "count": 9,
+        "minimum": 5.051389077885801,
+        "failures": [],
+        "measurements": [
+          {
+            "text": "组织工作台",
+            "className": "",
+            "foreground": [
+              44,
+              59,
+              86
+            ],
+            "opacity": 1,
+            "font": "600 26px / 35.1px \"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+            "minimum": 7.138202037928668,
+            "samples": [
+              {
+                "x": 165,
+                "y": 146.5,
+                "background": [
+                  202,
+                  202,
+                  249,
+                  255
+                ],
+                "ratio": 7.138202037928668
+              },
+              {
+                "x": 204,
+                "y": 146.5,
+                "background": [
+                  201,
+                  203,
+                  248,
+                  255
+                ],
+                "ratio": 7.167073218153156
+              },
+              {
+                "x": 243,
+                "y": 146.5,
+                "background": [
+                  205,
+                  207,
+                  250,
+                  255
+                ],
+                "ratio": 7.445609962936182
+              }
+            ]
+          },
+          {
+            "text": "个人模式",
+            "className": "org-connection-status is-local",
+            "foreground": [
+              75,
+              90,
+              115
+            ],
+            "opacity": 1,
+            "font": "12px / 18.6px \"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+            "minimum": 6.802479777156813,
+            "samples": [
+              {
+                "x": 303.6,
+                "y": 145.75,
+                "background": [
+                  251,
+                  252,
+                  255,
+                  255
+                ],
+                "ratio": 6.802479777156813
+              },
+              {
+                "x": 318,
+                "y": 145.75,
+                "background": [
+                  251,
+                  252,
+                  255,
+                  255
+                ],
+                "ratio": 6.802479777156813
+              },
+              {
+                "x": 332.4,
+                "y": 145.75,
+                "background": [
+                  251,
+                  252,
+                  255,
+                  255
+                ],
+                "ratio": 6.802479777156813
+              }
+            ]
+          },
+          {
+            "text": "连接团队工作区",
+            "className": "",
+            "foreground": [
+              44,
+              59,
+              86
+            ],
+            "opacity": 1,
+            "font": "650 20px / 28px \"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+            "minimum": 9.80697458495363,
+            "samples": [
+              {
+                "x": 157.440625,
+                "y": 294.59375,
+                "background": [
+                  235,
+                  239,
+                  254,
+                  255
+                ],
+                "ratio": 9.80697458495363
+              },
+              {
+                "x": 198.6015625,
+                "y": 294.59375,
+                "background": [
+                  236,
+                  240,
+                  255,
+                  255
+                ],
+                "ratio": 9.895039865723856
+              },
+              {
+                "x": 239.7625,
+                "y": 294.59375,
+                "background": [
+                  237,
+                  240,
+                  254,
+                  255
+                ],
+                "ratio": 9.906546212137258
+              }
+            ]
+          },
+          {
+            "text": "通过组织服务共享项目与成员权限。",
+            "className": "",
+            "foreground": [
+              75,
+              90,
+              115
+            ],
+            "opacity": 1,
+            "font": "14px / 21.7px \"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+            "minimum": 6.13511014027914,
+            "samples": [
+              {
+                "x": 174.8,
+                "y": 329.09375,
+                "background": [
+                  236,
+                  240,
+                  254,
+                  255
+                ],
+                "ratio": 6.13511014027914
+              },
+              {
+                "x": 242,
+                "y": 329.09375,
+                "background": [
+                  237,
+                  241,
+                  254,
+                  255
+                ],
+                "ratio": 6.185759875960336
+              },
+              {
+                "x": 309.20000000000005,
+                "y": 329.09375,
+                "background": [
+                  238,
+                  242,
+                  254,
+                  255
+                ],
+                "ratio": 6.236689429716232
+              }
+            ]
+          },
+          {
+            "text": "账号登录在系统浏览器中完成",
+            "className": "org-security-note",
+            "foreground": [
+              75,
+              90,
+              115
+            ],
+            "opacity": 1,
+            "font": "12px / 19.2px \"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+            "minimum": 6.185759875960336,
+            "samples": [
+              {
+                "x": 185.2,
+                "y": 382.28125,
+                "background": [
+                  237,
+                  241,
+                  254,
+                  255
+                ],
+                "ratio": 6.185759875960336
+              },
+              {
+                "x": 232,
+                "y": 382.28125,
+                "background": [
+                  238,
+                  242,
+                  254,
+                  255
+                ],
+                "ratio": 6.236689429716232
+              },
+              {
+                "x": 278.8,
+                "y": 382.28125,
+                "background": [
+                  239,
+                  242,
+                  254,
+                  255
+                ],
+                "ratio": 6.248226026465516
+              }
+            ]
+          },
+          {
+            "text": "组织服务地址",
+            "className": "",
+            "foreground": [
+              44,
+              59,
+              86
+            ],
+            "opacity": 1,
+            "font": "600 13px / 20.15px \"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+            "minimum": 10.963779665683864,
+            "samples": [
+              {
+                "x": 703.19375,
+                "y": 220.59375,
+                "background": [
+                  251,
+                  252,
+                  255,
+                  255
+                ],
+                "ratio": 10.963779665683864
+              },
+              {
+                "x": 726.59375,
+                "y": 220.59375,
+                "background": [
+                  251,
+                  252,
+                  255,
+                  255
+                ],
+                "ratio": 10.963779665683864
+              },
+              {
+                "x": 749.99375,
+                "y": 220.59375,
+                "background": [
+                  251,
+                  252,
+                  255,
+                  255
+                ],
+                "ratio": 10.963779665683864
+              }
+            ]
+          },
+          {
+            "text": "使用团队提供的 HTTPS 地址；本机测试支持回环地址。",
+            "className": "org-field-hint",
+            "foreground": [
+              75,
+              90,
+              115
+            ],
+            "opacity": 1,
+            "font": "12px / 19.2px \"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+            "minimum": 6.802479777156813,
+            "samples": [
+              {
+                "x": 746.609375,
+                "y": 293.734375,
+                "background": [
+                  251,
+                  252,
+                  255,
+                  255
+                ],
+                "ratio": 6.802479777156813
+              },
+              {
+                "x": 835.1328125,
+                "y": 293.734375,
+                "background": [
+                  251,
+                  252,
+                  255,
+                  255
+                ],
+                "ratio": 6.802479777156813
+              },
+              {
+                "x": 923.65625,
+                "y": 293.734375,
+                "background": [
+                  251,
+                  252,
+                  255,
+                  255
+                ],
+                "ratio": 6.802479777156813
+              }
+            ]
+          },
+          {
+            "text": "在浏览器中登录",
+            "className": "org-button is-primary",
+            "foreground": [
+              255,
+              255,
+              255
+            ],
+            "opacity": 1,
+            "font": "600 13px / 18.2px \"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+            "minimum": 5.051389077885801,
+            "samples": [
+              {
+                "x": 740.79375,
+                "y": 337.828125,
+                "background": [
+                  79,
+                  100,
+                  217,
+                  255
+                ],
+                "ratio": 5.051389077885801
+              },
+              {
+                "x": 768.09375,
+                "y": 337.828125,
+                "background": [
+                  79,
+                  100,
+                  217,
+                  255
+                ],
+                "ratio": 5.051389077885801
+              },
+              {
+                "x": 795.39375,
+                "y": 337.828125,
+                "background": [
+                  79,
+                  100,
+                  217,
+                  255
+                ],
+                "ratio": 5.051389077885801
+              }
+            ]
+          },
+          {
+            "text": "本机项目和文件不会因登录而上传。",
+            "className": "org-field-hint",
+            "foreground": [
+              75,
+              90,
+              115
+            ],
+            "opacity": 1,
+            "font": "12px / 19.2px \"ProjectOS Sans\", \"PingFang SC\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+            "minimum": 6.802479777156813,
+            "samples": [
+              {
+                "x": 725.99375,
+                "y": 382.921875,
+                "background": [
+                  251,
+                  252,
+                  255,
+                  255
+                ],
+                "ratio": 6.802479777156813
+              },
+              {
+                "x": 783.59375,
+                "y": 382.921875,
+                "background": [
+                  251,
+                  252,
+                  255,
+                  255
+                ],
+                "ratio": 6.802479777156813
+              },
+              {
+                "x": 841.19375,
+                "y": 382.921875,
+                "background": [
+                  251,
+                  252,
+                  255,
+                  255
+                ],
+                "ratio": 6.802479777156813
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "captures": [
+    "before-protected-dag.png",
+    "after-protected-dag.png",
+    "signed-out-workspace-1440-light-100.png",
+    "failure.png"
+  ],
+  "errors": [],
+  "modelEvidence": [],
+  "submissions": 0,
+  "fixture": "Two isolated Electron profiles, actual PG, real native workflow/tests/Git. Return navigation in auxiliary fixture cases restores a known local route; primary local/organization return uses visible UI. Account and K2 knowledge fixtures partly typed API; K4 dispatch, acceptance, progress, delivery/review and reassignment use visible UI. Code fixture is harness-authored, model deterministic."
+}

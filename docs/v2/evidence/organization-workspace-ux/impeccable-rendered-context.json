@@ -1,0 +1,23 @@
+{
+  "detectorExitCode": 2,
+  "context": [
+    {
+      "rule": "ai-color-palette",
+      "selector": "div.po-shell.is-collapsed",
+      "insideAssignments": false,
+      "excludedFromAccessibilityTree": false
+    },
+    {
+      "rule": "bounce-easing",
+      "selector": "body",
+      "insideAssignments": false,
+      "excludedFromAccessibilityTree": false
+    },
+    {
+      "rule": "low-contrast",
+      "selector": "div:nth-of-type(1) > span.ow-nav-group",
+      "insideAssignments": false,
+      "excludedFromAccessibilityTree": false
+    }
+  ]
+}

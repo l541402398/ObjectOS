@@ -1,0 +1,17 @@
+{
+  "detectorExitCode": 2,
+  "context": [
+    {
+      "rule": "ai-color-palette",
+      "selector": "div.po-shell.is-collapsed",
+      "insideAssignments": false,
+      "excludedFromAccessibilityTree": false
+    },
+    {
+      "rule": "bounce-easing",
+      "selector": "body",
+      "insideAssignments": false,
+      "excludedFromAccessibilityTree": false
+    }
+  ]
+}

@@ -7,7 +7,6 @@ import { organizationScopeKey } from './useOrganization'
 import { useSettingsDraft } from '../settings-draft'
 import './assets.css'
 import './knowledge.css'
-import { KnowledgeCandidates } from './KnowledgeCandidates'
 
 const categoryLabel = { technical: '技术资料', business: '业务资料' }
 const statusLabel = { draft: '草稿', published: '已发布', deprecated: '已废弃', revoked: '已撤销' }
@@ -35,7 +34,7 @@ function KnowledgeEditor({ editor, projects, onSaved, onCancel }: {
     return window.projectos.organization.createKnowledge({ category, visibility: projectId ? 'project' : 'organization', projectId: projectId || null, version, content })
   }, onSuccess: detail => { setDirty(false); onSaved(detail) }, gcTime: 0 })
   return <form className="org-knowledge-editor" aria-label="知识资料编辑" onChange={() => { setDirty(true); save.reset() }} onSubmit={event => { event.preventDefault(); if (!save.isPending) save.mutate() }}>
-    <div className="org-section-heading"><h3>{editor.kind === 'create' ? '新增知识' : editor.kind === 'edit' ? '编辑草稿' : '新建知识版本'}</h3></div>
+    <div className="org-section-heading"><h2>{editor.kind === 'create' ? '新增知识' : editor.kind === 'edit' ? '编辑草稿' : '新建知识版本'}</h2></div>
     <OrganizationError error={save.error}/>
     <fieldset disabled={save.isPending}>
       <div className="org-form-grid">
@@ -61,7 +60,7 @@ function KnowledgeDetail({ detail, onBack, onEdit, onSaved }: {
   const action = useMutation({ mutationFn: async (operation: 'publish' | 'deprecate' | 'revoke') => window.projectos.organization.transitionKnowledge({ documentId: detail.document.id, versionId: version.id, expectedRevision: version.revision, action: operation }), onSuccess: result => { setConfirmation(null); onSaved(result) }, gcTime: 0 })
   return <article className="org-knowledge-detail" aria-label="知识资料详情">
     <button className="org-link" type="button" onClick={onBack}>返回知识列表</button>
-    <div className="org-section-heading"><div><h3>{version.content.title}</h3><p>{categoryLabel[detail.document.category]} · {detail.document.visibility === 'project' ? '项目私有' : '组织成员'}</p></div><span className={`org-asset-status is-${version.status}`} data-testid="knowledge-status">{statusLabel[version.status]}</span></div>
+    <div className="org-section-heading"><div><h2>{version.content.title}</h2><p>{categoryLabel[detail.document.category]} · {detail.document.visibility === 'project' ? '项目私有' : '组织成员'}</p></div><span className={`org-asset-status is-${version.status}`} data-testid="knowledge-status">{statusLabel[version.status]}</span></div>
     <OrganizationField label="查看版本">{id => <select id={id} value={version.id} disabled={action.isPending} onChange={event => { setSelected(event.target.value); setConfirmation(null) }}>{detail.versions.map(version => <option key={version.id} value={version.id}>{version.version} · {statusLabel[version.status]}</option>)}</select>}</OrganizationField>
     <div className="org-knowledge-meta"><span>{version.content.tags.join(' · ')}</span><code>{version.checksum}</code></div>
     <pre className="org-knowledge-body">{version.content.body}</pre>
@@ -77,7 +76,6 @@ function KnowledgeDetail({ detail, onBack, onEdit, onSaved }: {
 
 export function OrganizationKnowledge({ connection }: { connection: OrganizationConnectionView }) {
   const client = useQueryClient(), scope = organizationScopeKey(connection, 'knowledge')
-  const [reviewing, setReviewing] = useState(false)
   const [selected, setSelected] = useState(''), [editor, setEditor] = useState<Editor | null>(null), [query, setQuery] = useState(''), [category, setCategory] = useState('')
   const list = useQuery({ queryKey: scope, queryFn: () => window.projectos.organization.knowledgeList(), retry: false })
   const projects = useQuery({ queryKey: organizationScopeKey(connection, 'projects'), queryFn: () => window.projectos.organization.projects(), retry: false })
@@ -85,10 +83,9 @@ export function OrganizationKnowledge({ connection }: { connection: Organization
   const role = connection.session?.organizations.find(org => org.id === connection.activeOrganizationId)?.role
   const saved = (value: OrganizationKnowledgeDetail) => { client.setQueryData([...scope, value.document.id], value); setSelected(value.document.id); setEditor(null); void client.invalidateQueries({ queryKey: scope, exact: true }) }
   const rows = list.data?.documents.filter(document => (!category || document.category === category) && document.title.toLocaleLowerCase().includes(query.toLocaleLowerCase())) ?? []
-  if (reviewing) return <KnowledgeCandidates connection={connection} onBack={() => setReviewing(false)}/>
   return <section className="org-knowledge" aria-label="组织知识" data-testid="organization-knowledge">
     {editor ? projects.isPending ? <OrganizationLoading/> : projects.error ? <><OrganizationError error={projects.error}/><button className="org-button" onClick={() => void projects.refetch()}>重新读取项目</button></> : <KnowledgeEditor editor={editor} projects={projects.data?.projects ?? []} onSaved={saved} onCancel={() => setEditor(null)}/> : selected ? <><OrganizationError error={detail.error}/>{detail.isPending ? <OrganizationLoading/> : detail.data ? <KnowledgeDetail key={selected} detail={detail.data} onSaved={saved} onBack={() => setSelected('')} onEdit={setEditor}/> : <button className="org-button" onClick={() => setSelected('')}>返回知识列表</button>}</> : <>
-      <div className="org-section-heading"><h3>组织知识</h3><div className="org-inline-actions"><button type="button" className="org-button" onClick={() => setReviewing(true)}>知识审核</button><button type="button" className="org-button" aria-label="刷新知识列表" disabled={list.isFetching} onClick={() => void list.refetch()}><RefreshCw size={16} aria-hidden/></button>{role === 'owner' || role === 'admin' ? <button type="button" className="org-button is-primary" onClick={() => setEditor({ kind: 'create' })}><Plus size={16} aria-hidden/>新增知识</button> : null}</div></div>
+      <div className="org-section-heading"><h2>组织知识</h2><div className="org-inline-actions"><button type="button" className="org-button" aria-label="刷新知识列表" disabled={list.isFetching} onClick={() => void list.refetch()}><RefreshCw size={16} aria-hidden/></button>{role === 'owner' || role === 'admin' ? <button type="button" className="org-button is-primary" onClick={() => setEditor({ kind: 'create' })}><Plus size={16} aria-hidden/>新增知识</button> : null}</div></div>
       <div className="org-form-grid"><OrganizationField label="搜索知识标题">{id => <input id={id} type="search" value={query} onChange={event => setQuery(event.target.value)}/>}</OrganizationField><OrganizationField label="筛选资料类型">{id => <select id={id} value={category} onChange={event => setCategory(event.target.value)}><option value="">全部资料</option><option value="technical">技术资料</option><option value="business">业务资料</option></select>}</OrganizationField></div>
       <OrganizationError error={list.error}/>{list.isPending ? <OrganizationLoading/> : rows.length ? <div className="org-table-wrap"><table className="org-table"><caption className="org-sr-only">可访问的组织技术与业务知识</caption><thead><tr><th scope="col">资料</th><th scope="col">版本</th><th scope="col">状态</th></tr></thead><tbody>{rows.map(document => <tr key={document.id}><td><div className="org-item-identity"><BookOpen size={19} aria-hidden/><div><button type="button" className="org-asset-name" onClick={() => setSelected(document.id)}>{document.title}</button><span className="org-item-sub">{categoryLabel[document.category]} · {document.projectId ? '项目私有' : '组织成员'}</span></div></div></td><td>{document.version}</td><td><span className={`org-asset-status is-${document.status}`}>{statusLabel[document.status]}</span></td></tr>)}</tbody></table></div> : <OrganizationEmpty title={query || category ? '没有匹配的资料' : '暂无可访问的组织知识'}/>} 
     </>}

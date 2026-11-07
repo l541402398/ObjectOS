@@ -18,6 +18,7 @@ import { RequirementIntegrationDialog } from './RequirementIntegrationDialog'
 import { RequirementApproval } from './RequirementApproval'
 import { RequirementFlowEditor } from './RequirementFlowEditor'
 import { RequirementMaterials } from './RequirementMaterials'
+import { RequirementOrganizationBar } from './RequirementAssignment'
 import { RequirementOrganizationKnowledge } from './RequirementOrganizationKnowledge'
 import { RequirementArrangement } from './RequirementArrangement'
 import { RequirementNextAction } from './RequirementNextAction'
@@ -448,6 +449,7 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
         <Button icon={<EditOutlined aria-hidden />} onClick={() => onEdit({ kind: 'documents' })}>编辑需求</Button>
       </div>
     </div>
+    <RequirementOrganizationBar key={req.id} requirementId={req.id} onShowKnowledge={() => setTab('organization-knowledge')}/>
     {(action.isError || assignAIMutation.isError) && <Alert type="error" showIcon message={errorMessage(action.error ?? assignAIMutation.error)} />}
     {flow.isLoading ? <LoadingBlock label="正在读取需求流程" rows={3} /> : flow.isError ? <ErrorState title="流程读取失败" message={errorMessage(flow.error)} onRetry={() => void flow.refetch()} /> : !binding ? <div className="rq-bind-flow"><h3>先为这个需求选择流程</h3><div className="rq-inline-actions"><Select aria-label="选择需求流程" value={bindingVersion} onChange={setBindingVersion} options={templates.data?.templates.map(template => ({ value: template.versionId, label: template.name }))} /><Button type="primary" onClick={() => bind(bindingVersion)}>使用这个流程</Button><Button onClick={() => setTemplateEditor('new')}>新建流程</Button></div></div> : <>
       {data && <RequirementJourneyTrack

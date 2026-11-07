@@ -1,5 +1,15 @@
 # ProjectOS Next UI — Open Issues
 
+2026-11-07 ADR-0088: actual full-page detection found a scrolled navigation caption at approximately
+4.2:1, outside the original assignment-only audit scope. Fixed only that caption to the existing primary
+ink token; final full-workspace/scrolled-workspace follow-up passes 25 axe states and 349 native text
+samples (minimum 5.023:1). Earlier narrow/light back-link failure 4.382:1 was also fixed with the existing
+ink token. The final detector retains one frozen cyan/glass palette warning (rejected against the user
+approved screenshot) and one global easing advisory. No whole-app clean claim: historic diagnostics
+below and the protected light badge observation remain separate; subjective review, forced offline/
+expired matrices, OS DPI and physical dual-machine testing remain unqualified by this UI task.
+See [`organization-workspace-ux/REPORT.md`](../v2/evidence/organization-workspace-ux/REPORT.md).
+
 2026-11-07 K4: rendered detection with the new assignment form open retains 18 diagnostics
 (16 warning / 2 advisory), all selectors outside `.organization-assignments`: existing project-center
 cards/journey/palette, Settings eyebrow type size, background description/action contrast and global

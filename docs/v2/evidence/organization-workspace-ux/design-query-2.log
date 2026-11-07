@@ -1,0 +1,44 @@
+## UI Pro Max Search Results
+**Domain:** color | **Query:** semantic workflow status
+**Source:** colors.csv | **Found:** 2 results
+
+### Result 1
+- **Product Type:** E-signature / Document Workflow
+- **Primary:** #1E3A5F
+- **On Primary:** #FFFFFF
+- **Secondary:** #2563EB
+- **On Secondary:** #FFFFFF
+- **Accent:** #16A34A
+- **On Accent:** #000000
+- **Background:** #F8FAFC
+- **Foreground:** #0F172A
+- **Card:** #FFFFFF
+- **Card Foreground:** #0F172A
+- **Muted:** #E9EEF5
+- **Muted Foreground:** #475569
+- **Border:** #CBD5E1
+- **Destructive:** #DC2626
+- **On Destructive:** #FFFFFF
+- **Ring:** #1E3A5F
+- **Notes:** Trust navy + signature green + audit trail
+
+### Result 2
+- **Product Type:** Smart Home/IoT Dashboard
+- **Primary:** #1E293B
+- **On Primary:** #FFFFFF
+- **Secondary:** #334155
+- **On Secondary:** #FFFFFF
+- **Accent:** #22C55E
+- **On Accent:** #0F172A
+- **Background:** #0F172A
+- **Foreground:** #F8FAFC
+- **Card:** #1B2336
+- **Card Foreground:** #F8FAFC
+- **Muted:** #272F42
+- **Muted Foreground:** #94A3B8
+- **Border:** #475569
+- **Destructive:** #EF4444
+- **On Destructive:** #000000
+- **Ring:** #FFFFFF
+- **Notes:** Dark tech + status green
+

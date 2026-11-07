@@ -1,0 +1,18 @@
+{
+  "sourceSnapshot": "075a8a12dff7b428e6f1141b1b8bed8649c649dae564b538e63e3251d8884e59",
+  "files": [
+    {
+      "file": "screenshots/navigation-scrolled-1440-light-100.png",
+      "sha256": "e56608cefd4386a944a76b992c759ae9e145e5ef5038bbbed1c00fb020ca15c0",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "screenshots/workspace-overview-1440-light.png",
+      "sha256": "a4935f16ffabc45cc1bad2d12d66c0161fbeda53a7a5f26a4c8cbbb78bea8637",
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "review": "Actual final native scrolled-form and member overview images inspected: group captions use stronger semantic ink; all direct entries, list metadata, detail and next valid actions remain visible and aligned. Automated proof covers 25 final states; this is representative inspection, not subjective user approval."
+}

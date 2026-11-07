@@ -33,7 +33,7 @@ export function OrganizationProjects({ connection }: { connection: OrganizationC
   const canCreate = organization?.role === 'owner' || organization?.role === 'admin'
   const editing = query.data?.projects.find((project) => project.id === editingId)
   return <section aria-label="共享项目">
-    <div className="org-section-heading"><div><h3>共享项目</h3><p>仅显示你拥有项目访问权限的记录。</p></div>{canCreate ? <button type="button" className="org-button" data-testid="org-new-project" onClick={() => { setCreating(!creating); setEditingId(null) }}><Plus size={15} aria-hidden />创建项目</button> : null}</div>
+    <div className="org-section-heading"><div><h2>共享项目</h2><p>仅显示你拥有项目访问权限的记录。</p></div>{canCreate ? <button type="button" className="org-button" data-testid="org-new-project" onClick={() => { setCreating(!creating); setEditingId(null) }}><Plus size={15} aria-hidden />创建项目</button> : null}</div>
     {creating ? <CreateSharedProjectForm onSaved={async () => { await query.refetch() }} onCancel={() => setCreating(false)} /> : null}
     <OrganizationError error={query.error} />
     {query.isPending ? <OrganizationLoading /> : query.data?.projects.length ? <div className="org-table-wrap"><table className="org-table"><caption className="org-sr-only">当前组织共享项目</caption><thead><tr><th scope="col">项目</th><th scope="col">我的权限</th><th scope="col"><span className="org-sr-only">操作</span></th></tr></thead><tbody>{query.data.projects.map((project) => <tr key={project.id}>

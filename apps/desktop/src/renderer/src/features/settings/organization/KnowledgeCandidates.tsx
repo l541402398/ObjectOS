@@ -63,7 +63,7 @@ export function KnowledgeCandidates({ connection, onBack }: { connection: Organi
     <button className="org-link" type="button" disabled={dirty} onClick={() => selected ? setSelected(null) : onBack()}>{selected ? '返回候选列表' : '返回知识列表'}</button>
     <OrganizationError error={list.error || detail.error}/>
     {selected ? detail.isPending ? <OrganizationLoading/> : candidate && detail.data ? <>
-      <div className="org-section-heading"><h3>{candidate.content.title}</h3><span className="org-asset-status" data-testid="candidate-status">{statusLabel[candidate.status]}</span></div>
+      <div className="org-section-heading"><h2>{candidate.content.title}</h2><span className="org-asset-status" data-testid="candidate-status">{statusLabel[candidate.status]}</span></div>
       <p className="rq-knowledge-source-meta">{candidate.category === 'technical' ? '技术资料' : '业务资料'} · {candidate.authorName} · 项目私有</p>
       <pre className="org-knowledge-body">{candidate.content.body}</pre>
       <details className="kw-evidence-details"><summary>来源需求与验收证据</summary><p>{candidate.source.requirementTitle} · 本机所有者验收</p><p>{candidate.source.acceptanceNote}</p><pre className="kw-evidence">{JSON.stringify(candidate.source, null, 2)}</pre></details>
@@ -71,7 +71,7 @@ export function KnowledgeCandidates({ connection, onBack }: { connection: Organi
       {candidate.publication ? <p role="status">已发布为 {candidate.publication.version} · {candidate.publication.checksum}</p> : null}
       {candidate.status === 'pending' && candidate.canReview ? <CandidateReview key={`${candidate.id}:${candidate.revision}`} detail={detail.data} connection={connection} onSaved={saved}/> : null}
     </> : null : <>
-      <div className="org-section-heading"><h3>知识审核</h3><button className="org-button" type="button" disabled={list.isFetching} onClick={() => void list.refetch()}>刷新候选</button></div>
+      <div className="org-section-heading"><h2>知识审核</h2><button className="org-button" type="button" disabled={list.isFetching} onClick={() => void list.refetch()}>刷新候选</button></div>
       {list.isPending ? <OrganizationLoading/> : list.data?.candidates.length ? <div className="org-table-wrap"><table className="org-table"><caption className="org-sr-only">知识候选及审核结果</caption><thead><tr><th scope="col">候选与来源</th><th scope="col">提交者</th><th scope="col">状态</th></tr></thead><tbody>{list.data.candidates.map(item => <tr key={item.id}><td><button className="org-asset-name" type="button" onClick={() => setSelected(item.id)}>{item.title}</button><span className="org-item-sub">{item.requirementTitle}</span></td><td>{item.authorName}</td><td>{statusLabel[item.status]}</td></tr>)}</tbody></table></div> : <OrganizationEmpty title="暂无可访问的知识候选"/>}
     </>}
   </section>
