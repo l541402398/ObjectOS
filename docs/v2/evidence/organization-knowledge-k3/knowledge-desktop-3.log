@@ -1,0 +1,187 @@
+PASS Protected DAG screenshot remains byte-identical
+PASS Unsaved acceptance survives immediate Escape
+PASS personal-acceptance-1440-light-100 fits
+PASS personal-acceptance-1440-light-100 axe
+PASS personal-acceptance-1440-light-100 native contrast
+PASS personal-acceptance-1440-light-125 fits
+PASS personal-acceptance-1440-light-125 axe
+PASS personal-acceptance-1440-light-125 native contrast
+PASS personal-acceptance-1440-dark-100 fits
+PASS personal-acceptance-1440-dark-100 axe
+PASS personal-acceptance-1440-dark-100 native contrast
+PASS personal-acceptance-1440-dark-125 fits
+PASS personal-acceptance-1440-dark-125 axe
+PASS personal-acceptance-1440-dark-125 native contrast
+PASS personal-acceptance-1024-light-100 fits
+PASS personal-acceptance-1024-light-100 axe
+PASS personal-acceptance-1024-light-100 native contrast
+PASS personal-acceptance-1024-light-125 fits
+PASS personal-acceptance-1024-light-125 axe
+PASS personal-acceptance-1024-light-125 native contrast
+PASS personal-acceptance-1024-dark-100 fits
+PASS personal-acceptance-1024-dark-100 axe
+PASS personal-acceptance-1024-dark-100 native contrast
+PASS personal-acceptance-1024-dark-125 fits
+PASS personal-acceptance-1024-dark-125 axe
+PASS personal-acceptance-1024-dark-125 native contrast
+PASS Personal acceptance sends no organization request
+PASS Sharing is disabled while signed out
+PASS Sharing requires an explicit confirmation
+PASS candidate-editor-1440-light-100 fits
+PASS candidate-editor-1440-light-100 axe
+PASS candidate-editor-1440-light-100 native contrast
+PASS candidate-editor-1440-light-125 fits
+PASS candidate-editor-1440-light-125 axe
+PASS candidate-editor-1440-light-125 native contrast
+PASS candidate-editor-1440-dark-100 fits
+PASS candidate-editor-1440-dark-100 axe
+PASS candidate-editor-1440-dark-100 native contrast
+PASS candidate-editor-1440-dark-125 fits
+PASS candidate-editor-1440-dark-125 axe
+PASS candidate-editor-1440-dark-125 native contrast
+PASS candidate-editor-1024-light-100 fits
+PASS candidate-editor-1024-light-100 axe
+PASS candidate-editor-1024-light-100 native contrast
+PASS candidate-editor-1024-light-125 fits
+PASS candidate-editor-1024-light-125 axe
+PASS candidate-editor-1024-light-125 native contrast
+PASS candidate-editor-1024-dark-100 fits
+PASS candidate-editor-1024-dark-100 axe
+PASS candidate-editor-1024-dark-100 native contrast
+PASS candidate-editor-1024-dark-125 fits
+PASS candidate-editor-1024-dark-125 axe
+PASS candidate-editor-1024-dark-125 native contrast
+PASS Rendered design detector captured diagnostics
+PASS Candidate draft survives dirty close
+PASS Pending candidate is absent from knowledge retrieval
+PASS candidate-review-1440-light-100 fits
+PASS candidate-review-1440-light-100 axe
+PASS candidate-review-1440-light-100 native contrast
+PASS candidate-review-1440-light-125 fits
+PASS candidate-review-1440-light-125 axe
+PASS candidate-review-1440-light-125 native contrast
+PASS candidate-review-1440-dark-100 fits
+PASS candidate-review-1440-dark-100 axe
+PASS candidate-review-1440-dark-100 native contrast
+PASS candidate-review-1440-dark-125 fits
+PASS candidate-review-1440-dark-125 axe
+PASS candidate-review-1440-dark-125 native contrast
+PASS candidate-review-1024-light-100 fits
+PASS candidate-review-1024-light-100 axe
+PASS candidate-review-1024-light-100 native contrast
+PASS candidate-review-1024-light-125 fits
+PASS candidate-review-1024-light-125 axe
+PASS candidate-review-1024-light-125 native contrast
+PASS candidate-review-1024-dark-100 fits
+PASS candidate-review-1024-dark-100 axe
+PASS candidate-review-1024-dark-100 native contrast
+PASS candidate-review-1024-dark-125 fits
+PASS candidate-review-1024-dark-125 axe
+PASS candidate-review-1024-dark-125 native contrast
+PASS Settings protects unsaved review notes
+PASS candidate-returned-1440-light-100 fits
+PASS candidate-returned-1440-light-100 axe
+PASS candidate-returned-1440-light-100 native contrast
+PASS candidate-returned-1440-light-125 fits
+PASS candidate-returned-1440-light-125 axe
+PASS candidate-returned-1440-light-125 native contrast
+PASS candidate-returned-1440-dark-100 fits
+PASS candidate-returned-1440-dark-100 axe
+PASS candidate-returned-1440-dark-100 native contrast
+PASS candidate-returned-1440-dark-125 fits
+PASS candidate-returned-1440-dark-125 axe
+PASS candidate-returned-1440-dark-125 native contrast
+PASS candidate-returned-1024-light-100 fits
+PASS candidate-returned-1024-light-100 axe
+PASS candidate-returned-1024-light-100 native contrast
+PASS candidate-returned-1024-light-125 fits
+PASS candidate-returned-1024-light-125 axe
+PASS candidate-returned-1024-light-125 native contrast
+PASS candidate-returned-1024-dark-100 fits
+PASS candidate-returned-1024-dark-100 axe
+PASS candidate-returned-1024-dark-100 native contrast
+PASS candidate-returned-1024-dark-125 fits
+PASS candidate-returned-1024-dark-125 axe
+PASS candidate-returned-1024-dark-125 native contrast
+PASS Return preserves local acceptance
+PASS submission-unknown-1440-light-100 fits
+PASS submission-unknown-1440-light-100 axe
+PASS submission-unknown-1440-light-100 native contrast
+PASS submission-unknown-1440-light-125 fits
+PASS submission-unknown-1440-light-125 axe
+PASS submission-unknown-1440-light-125 native contrast
+PASS submission-unknown-1440-dark-100 fits
+PASS submission-unknown-1440-dark-100 axe
+PASS submission-unknown-1440-dark-100 native contrast
+PASS submission-unknown-1440-dark-125 fits
+PASS submission-unknown-1440-dark-125 axe
+PASS submission-unknown-1440-dark-125 native contrast
+PASS submission-unknown-1024-light-100 fits
+PASS submission-unknown-1024-light-100 axe
+PASS submission-unknown-1024-light-100 native contrast
+PASS submission-unknown-1024-light-125 fits
+PASS submission-unknown-1024-light-125 axe
+PASS submission-unknown-1024-light-125 native contrast
+PASS submission-unknown-1024-dark-100 fits
+PASS submission-unknown-1024-dark-100 axe
+PASS submission-unknown-1024-dark-100 native contrast
+PASS submission-unknown-1024-dark-125 fits
+PASS submission-unknown-1024-dark-125 axe
+PASS submission-unknown-1024-dark-125 native contrast
+PASS Unknown submission is not automatically replayed
+PASS Retry of unknown content needs renewed confirmation
+PASS Reconciliation uses a read without resending
+PASS candidate-queue-1440-light-100 fits
+PASS candidate-queue-1440-light-100 axe
+PASS candidate-queue-1440-light-100 native contrast
+PASS candidate-queue-1440-light-125 fits
+PASS candidate-queue-1440-light-125 axe
+PASS candidate-queue-1440-light-125 native contrast
+PASS candidate-queue-1440-dark-100 fits
+PASS candidate-queue-1440-dark-100 axe
+PASS candidate-queue-1440-dark-100 native contrast
+PASS candidate-queue-1440-dark-125 fits
+PASS candidate-queue-1440-dark-125 axe
+PASS candidate-queue-1440-dark-125 native contrast
+PASS candidate-queue-1024-light-100 fits
+PASS candidate-queue-1024-light-100 axe
+PASS candidate-queue-1024-light-100 native contrast
+PASS candidate-queue-1024-light-125 fits
+PASS candidate-queue-1024-light-125 axe
+PASS candidate-queue-1024-light-125 native contrast
+PASS candidate-queue-1024-dark-100 fits
+PASS candidate-queue-1024-dark-100 axe
+PASS candidate-queue-1024-dark-100 native contrast
+PASS candidate-queue-1024-dark-125 fits
+PASS candidate-queue-1024-dark-125 axe
+PASS candidate-queue-1024-dark-125 native contrast
+PASS Unknown publication is reconciled without repeating the decision
+PASS candidate-published-1440-light-100 fits
+PASS candidate-published-1440-light-100 axe
+PASS candidate-published-1440-light-100 native contrast
+PASS candidate-published-1440-light-125 fits
+PASS candidate-published-1440-light-125 axe
+PASS candidate-published-1440-light-125 native contrast
+PASS candidate-published-1440-dark-100 fits
+PASS candidate-published-1440-dark-100 axe
+PASS candidate-published-1440-dark-100 native contrast
+PASS candidate-published-1440-dark-125 fits
+PASS candidate-published-1440-dark-125 axe
+PASS candidate-published-1440-dark-125 native contrast
+PASS candidate-published-1024-light-100 fits
+PASS candidate-published-1024-light-100 axe
+PASS candidate-published-1024-light-100 native contrast
+PASS candidate-published-1024-light-125 fits
+PASS candidate-published-1024-light-125 axe
+PASS candidate-published-1024-light-125 native contrast
+PASS candidate-published-1024-dark-100 fits
+PASS candidate-published-1024-dark-100 axe
+PASS candidate-published-1024-dark-100 native contrast
+PASS candidate-published-1024-dark-125 fits
+PASS candidate-published-1024-dark-125 axe
+PASS candidate-published-1024-dark-125 native contrast
+PASS Publication created exactly one immutable version
+PASS Knowledge flywheel reaches the next requirement model with the exact reviewed version
+PASS Restart retains accepted receipts and frozen next-requirement references
+PASS Restart never resends knowledge submissions
+PASS No Renderer exceptions

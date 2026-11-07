@@ -1,0 +1,320 @@
+PASS Protected DAG screenshot remains byte-identical
+PASS Unsaved acceptance survives immediate Escape
+PASS personal-acceptance-1440-light-100 fits
+PASS personal-acceptance-1440-light-100 axe
+PASS personal-acceptance-1440-light-100 native contrast
+PASS personal-acceptance-1440-light-125 fits
+PASS personal-acceptance-1440-light-125 axe
+PASS personal-acceptance-1440-light-125 native contrast
+PASS personal-acceptance-1440-dark-100 fits
+PASS personal-acceptance-1440-dark-100 axe
+PASS personal-acceptance-1440-dark-100 native contrast
+PASS personal-acceptance-1440-dark-125 fits
+PASS personal-acceptance-1440-dark-125 axe
+PASS personal-acceptance-1440-dark-125 native contrast
+PASS personal-acceptance-1024-light-100 fits
+PASS personal-acceptance-1024-light-100 axe
+PASS personal-acceptance-1024-light-100 native contrast
+PASS personal-acceptance-1024-light-125 fits
+PASS personal-acceptance-1024-light-125 axe
+PASS personal-acceptance-1024-light-125 native contrast
+PASS personal-acceptance-1024-dark-100 fits
+PASS personal-acceptance-1024-dark-100 axe
+PASS personal-acceptance-1024-dark-100 native contrast
+PASS personal-acceptance-1024-dark-125 fits
+PASS personal-acceptance-1024-dark-125 axe
+PASS personal-acceptance-1024-dark-125 native contrast
+PASS Personal acceptance sends no organization request
+PASS Sharing is disabled while signed out
+PASS Sharing requires an explicit confirmation
+PASS candidate-editor-1440-light-100 fits
+PASS candidate-editor-1440-light-100 axe
+PASS candidate-editor-1440-light-100 native contrast
+PASS candidate-editor-1440-light-125 fits
+PASS candidate-editor-1440-light-125 axe
+PASS candidate-editor-1440-light-125 native contrast
+PASS candidate-editor-1440-dark-100 fits
+PASS candidate-editor-1440-dark-100 axe
+PASS candidate-editor-1440-dark-100 native contrast
+PASS candidate-editor-1440-dark-125 fits
+PASS candidate-editor-1440-dark-125 axe
+PASS candidate-editor-1440-dark-125 native contrast
+PASS candidate-editor-1024-light-100 fits
+PASS candidate-editor-1024-light-100 axe
+PASS candidate-editor-1024-light-100 native contrast
+PASS candidate-editor-1024-light-125 fits
+PASS candidate-editor-1024-light-125 axe
+PASS candidate-editor-1024-light-125 native contrast
+PASS candidate-editor-1024-dark-100 fits
+PASS candidate-editor-1024-dark-100 axe
+PASS candidate-editor-1024-dark-100 native contrast
+PASS candidate-editor-1024-dark-125 fits
+PASS candidate-editor-1024-dark-125 axe
+PASS candidate-editor-1024-dark-125 native contrast
+Error: Command failed: C:/Users/Administrator/.impeccable/bin/0.1.16/impeccable.exe detect --cdp 50860 --target index.html --json
+    at genericNodeError (node:internal/errors:986:15)
+    at wrappedFn (node:internal/errors:540:14)
+    at checkExecSyncError (node:child_process:943:11)
+    at execFileSync (node:child_process:979:15)
+    at file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/org-knowledge-k3-e2e.mjs:163:20 {
+  status: 2,
+  signal: null,
+  output: [
+    null,
+    '[\n' +
+      '  {\n' +
+      '    "antipattern": "ai-color-palette",\n' +
+      '    "name": "AI color palette",\n' +
+      '    "description": "Purple/violet gradients and cyan-on-dark are the most recognizable tells of AI-generated UIs. A gradient in one of those hues is the tell on its own; flat neon ink on a dark ground is charged once a second tell hue joins it. Choose a distinctive, intentional palette.",\n' +
+      '    "severity": "warning",\n' +
+      '    "category": "slop",\n' +
+      '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+      '    "line": 0,\n' +
+      '    "snippet": "Cyan gradient background",\n' +
+      '    "selector": "div.po-shell.is-collapsed"\n' +
+      '  },\n' +
+      '  {\n' +
+      '    "antipattern": "low-contrast",\n' +
+      '    "name": "Low contrast text",\n' +
+      '    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",\n' +
+      '    "severity": "warning",\n' +
+      '    "category": "quality",\n' +
+      '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+      '    "line": 0,\n' +
+      '    "snippet": "4.0:1 (need 4.5:1) — text #4b5a73 on #bdc0f6 (gradient on div.po-shell)",\n' +
+      '    "selector": "button.po-crumb-link"\n' +
+      '  },\n' +
+      '  {\n' +
+      '    "antipattern": "low-contrast",\n' +
+      '    "name": "Low contrast text",\n' +
+      '    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",\n' +
+      '    "severity": "advisory",\n' +
+      '    "category": "quality",\n' +
+      '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+      '    "line": 0,\n' +
+      '    "snippet": "4.46:1 (need 4.5:1) — text #3e50bd on #cfcdfa (gradient on aside.po-sidebar)",\n' +
+      '    "advisory": true,\n' +
+      '    "selector": "span.po-project-button-icon"\n' +
+      '  },\n' +
+      '  {\n' +
+      '    "antipattern": "ai-color-palette",\n' +
+      '    "name": "AI color palette",\n' +
+      '    "description": "Purple/violet gradients and cyan-on-dark are the most recognizable tells of AI-generated UIs. A gradient in one of those hues is the tell on its own; flat neon ink on a dark ground is charged once a second tell hue joins it. Choose a distinctive, intentional palette.",\n' +
+      '    "severity": "warning",\n' +
+      '    "category": "slop",\n' +
+      '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+      '    "line": 0,\n' +
+      '    "snippet": "Cyan gradient background",\n' +
+      '    "selector": "button.po-project-hub-trigger"\n' +
+      '  },\n' +
+      '  {\n' +
+      '    "antipattern": "ai-color-palette",\n' +
+      '    "name": "AI color palette",\n' +
+      '    "description": "Purple/violet gradients and cyan-on-dark are the most recognizable tells of AI-generated UIs. A gradient in one of those hues is the tell on its own; flat neon ink on a dark ground is charged once a second tell hue joins it. Choose a distinctive, intentional palette.",\n' +
+      '    "severity": "warning",\n' +
+      '    "category": "slop",\n' +
+      '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+      '    "line": 0,\n' +
+      '    "snippet": "Cyan gradient background",\n' +
+      '    "selector": "button.rq-requirement.is-selected"\n' +
+      '  },\n' +
+      '  {\n' +
+      '    "antipattern": "ai-color-palette",\n' +
+      '    "name": "AI color palette",\n' +
+      '    "description": "Purple/violet gradients and cyan-on-dark are the most recognizable tells of AI-generated UIs. A gradient in one of those hues is the tell on its own; flat neon ink on a dark ground is charged once a second tell hue joins it. Choose a distinctive, intentional palette.",\n' +
+      '    "severity": "warning",\n' +
+      '    "category": "slop",\n' +
+      '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+      '    "line": 0,\n' +
+      '    "snippet": "Cyan gradient background",\n' +
+      '    "selector": "nav.rq-flow-journey"\n' +
+      '  },\n' +
+      '  {\n' +
+      '    "antipattern": "ai-color-palette",\n' +
+      '    "name": "AI color palette",\n' +
+      '    "description": "Purple/violet gradients and cyan-on-dark are the most recognizable tells of AI-generated UIs. A gradient in one of those hues is the tell on its own; flat neon ink on a dark ground is charged once a second tell hue joins it. Choose a distinctive, intentional palette.",\n' +
+      '    "severity": "warning",\n' +
+      '    "category": "slop",\n' +
+      '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+      '    "line": 0,\n' +
+      '    "snippet": "Cyan gradient background",\n' +
+      '    "selector": "div.rq-next-action-bar"\n' +
+      '  },\n' +
+      '  {\n' +
+      '    "antipattern": "nested-cards",\n' +
+      '    "name": "Nested cards",\n' +
+      '    "description": "Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.",\n' +
+      '    "severity": "warning",\n' +
+      '    "category": "slop",\n' +
+      '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+      '    "line": 0,\n' +
+      '    "snippet": "Card inside card",\n' +
+      '    "selector": "div.rq-next-action-bar"\n' +
+      '  },\n' +
+      '  {\n' +
+      '    "antipattern": "low-contrast",\n' +
+      '    "name": "Low contrast text",\n' +
+      '    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",\n' +
+      '    "severity": "advisory",\n' +
+      '    "category": "quality",\n' +
+      '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+      '    "line": 0,\n' +
+      '    "snippet": "4.47:1 (need 4.5:1) — text #ffffff on #4b73d4 (gradient on button.ant-btn)",\n' +
+      '    "advisory": true,\n' +
+      '    "selector": "div.rq-next-action-bar > div.rq-inline-actions > button.ant-btn.projectos:nth-of-type(2) > span"\n' +
+      '  },\n' +
+      '  {\n' +
+      '    "antipattern": "low-contrast",\n' +
+      '    "name": "Low contrast text",\n' +
+      '    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",\n' +
+      '    "severity": "warning",\n' +
+      '    "category": "quality",\n' +
+      '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+      '    "line": 0,\n' +
+      '    "snippet": "3.8:1 (need 4.5:1) — text #1d6b56 on #b6c9f3 (gradient on div.po-shell)",\n' +
+      '    "selector": "span.po-status-ok"\n' +
+      '  },\n' +
+      '  {\n' +
+      '    "antipattern": "bounce-easing",\n' +
+      '    "name": "Bounce or elastic easing",\n' +
+      '    "description": "Bounce and elastic easing feel dated and tacky. Real objects decelerate smoothly — use exponential easing (ease-out-quart/quint/expo) instead.",\n' +
+      '    "severity": "advisory",\n' +
+      '    "category": "slop",\n' +
+      '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+      '    "line": 0,\n' +
+      '    "snippet": "cubic-bezier(0.12, 0.4, 0.29, 1.46)",\n' +
+      '    "advisory": true,\n' +
+      '    "selector": "body"\n' +
+      '  }\n' +
+      ']\n',
+    ''
+  ],
+  pid: 25964,
+  stdout: '[\n' +
+    '  {\n' +
+    '    "antipattern": "ai-color-palette",\n' +
+    '    "name": "AI color palette",\n' +
+    '    "description": "Purple/violet gradients and cyan-on-dark are the most recognizable tells of AI-generated UIs. A gradient in one of those hues is the tell on its own; flat neon ink on a dark ground is charged once a second tell hue joins it. Choose a distinctive, intentional palette.",\n' +
+    '    "severity": "warning",\n' +
+    '    "category": "slop",\n' +
+    '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+    '    "line": 0,\n' +
+    '    "snippet": "Cyan gradient background",\n' +
+    '    "selector": "div.po-shell.is-collapsed"\n' +
+    '  },\n' +
+    '  {\n' +
+    '    "antipattern": "low-contrast",\n' +
+    '    "name": "Low contrast text",\n' +
+    '    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",\n' +
+    '    "severity": "warning",\n' +
+    '    "category": "quality",\n' +
+    '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+    '    "line": 0,\n' +
+    '    "snippet": "4.0:1 (need 4.5:1) — text #4b5a73 on #bdc0f6 (gradient on div.po-shell)",\n' +
+    '    "selector": "button.po-crumb-link"\n' +
+    '  },\n' +
+    '  {\n' +
+    '    "antipattern": "low-contrast",\n' +
+    '    "name": "Low contrast text",\n' +
+    '    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",\n' +
+    '    "severity": "advisory",\n' +
+    '    "category": "quality",\n' +
+    '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+    '    "line": 0,\n' +
+    '    "snippet": "4.46:1 (need 4.5:1) — text #3e50bd on #cfcdfa (gradient on aside.po-sidebar)",\n' +
+    '    "advisory": true,\n' +
+    '    "selector": "span.po-project-button-icon"\n' +
+    '  },\n' +
+    '  {\n' +
+    '    "antipattern": "ai-color-palette",\n' +
+    '    "name": "AI color palette",\n' +
+    '    "description": "Purple/violet gradients and cyan-on-dark are the most recognizable tells of AI-generated UIs. A gradient in one of those hues is the tell on its own; flat neon ink on a dark ground is charged once a second tell hue joins it. Choose a distinctive, intentional palette.",\n' +
+    '    "severity": "warning",\n' +
+    '    "category": "slop",\n' +
+    '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+    '    "line": 0,\n' +
+    '    "snippet": "Cyan gradient background",\n' +
+    '    "selector": "button.po-project-hub-trigger"\n' +
+    '  },\n' +
+    '  {\n' +
+    '    "antipattern": "ai-color-palette",\n' +
+    '    "name": "AI color palette",\n' +
+    '    "description": "Purple/violet gradients and cyan-on-dark are the most recognizable tells of AI-generated UIs. A gradient in one of those hues is the tell on its own; flat neon ink on a dark ground is charged once a second tell hue joins it. Choose a distinctive, intentional palette.",\n' +
+    '    "severity": "warning",\n' +
+    '    "category": "slop",\n' +
+    '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+    '    "line": 0,\n' +
+    '    "snippet": "Cyan gradient background",\n' +
+    '    "selector": "button.rq-requirement.is-selected"\n' +
+    '  },\n' +
+    '  {\n' +
+    '    "antipattern": "ai-color-palette",\n' +
+    '    "name": "AI color palette",\n' +
+    '    "description": "Purple/violet gradients and cyan-on-dark are the most recognizable tells of AI-generated UIs. A gradient in one of those hues is the tell on its own; flat neon ink on a dark ground is charged once a second tell hue joins it. Choose a distinctive, intentional palette.",\n' +
+    '    "severity": "warning",\n' +
+    '    "category": "slop",\n' +
+    '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+    '    "line": 0,\n' +
+    '    "snippet": "Cyan gradient background",\n' +
+    '    "selector": "nav.rq-flow-journey"\n' +
+    '  },\n' +
+    '  {\n' +
+    '    "antipattern": "ai-color-palette",\n' +
+    '    "name": "AI color palette",\n' +
+    '    "description": "Purple/violet gradients and cyan-on-dark are the most recognizable tells of AI-generated UIs. A gradient in one of those hues is the tell on its own; flat neon ink on a dark ground is charged once a second tell hue joins it. Choose a distinctive, intentional palette.",\n' +
+    '    "severity": "warning",\n' +
+    '    "category": "slop",\n' +
+    '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+    '    "line": 0,\n' +
+    '    "snippet": "Cyan gradient background",\n' +
+    '    "selector": "div.rq-next-action-bar"\n' +
+    '  },\n' +
+    '  {\n' +
+    '    "antipattern": "nested-cards",\n' +
+    '    "name": "Nested cards",\n' +
+    '    "description": "Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.",\n' +
+    '    "severity": "warning",\n' +
+    '    "category": "slop",\n' +
+    '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+    '    "line": 0,\n' +
+    '    "snippet": "Card inside card",\n' +
+    '    "selector": "div.rq-next-action-bar"\n' +
+    '  },\n' +
+    '  {\n' +
+    '    "antipattern": "low-contrast",\n' +
+    '    "name": "Low contrast text",\n' +
+    '    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",\n' +
+    '    "severity": "advisory",\n' +
+    '    "category": "quality",\n' +
+    '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+    '    "line": 0,\n' +
+    '    "snippet": "4.47:1 (need 4.5:1) — text #ffffff on #4b73d4 (gradient on button.ant-btn)",\n' +
+    '    "advisory": true,\n' +
+    '    "selector": "div.rq-next-action-bar > div.rq-inline-actions > button.ant-btn.projectos:nth-of-type(2) > span"\n' +
+    '  },\n' +
+    '  {\n' +
+    '    "antipattern": "low-contrast",\n' +
+    '    "name": "Low contrast text",\n' +
+    '    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",\n' +
+    '    "severity": "warning",\n' +
+    '    "category": "quality",\n' +
+    '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+    '    "line": 0,\n' +
+    '    "snippet": "3.8:1 (need 4.5:1) — text #1d6b56 on #b6c9f3 (gradient on div.po-shell)",\n' +
+    '    "selector": "span.po-status-ok"\n' +
+    '  },\n' +
+    '  {\n' +
+    '    "antipattern": "bounce-easing",\n' +
+    '    "name": "Bounce or elastic easing",\n' +
+    '    "description": "Bounce and elastic easing feel dated and tacky. Real objects decelerate smoothly — use exponential easing (ease-out-quart/quint/expo) instead.",\n' +
+    '    "severity": "advisory",\n' +
+    '    "category": "slop",\n' +
+    '    "file": "file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/desktop/out/renderer/index.html#/projects/prj_01m6tv2n49cbkzct2qyaxns5yj/requirements",\n' +
+    '    "line": 0,\n' +
+    '    "snippet": "cubic-bezier(0.12, 0.4, 0.29, 1.46)",\n' +
+    '    "advisory": true,\n' +
+    '    "selector": "body"\n' +
+    '  }\n' +
+    ']\n',
+  stderr: ''
+}

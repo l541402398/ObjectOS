@@ -14,8 +14,11 @@ import {
   RequirementKnowledgeInternalSchemas,
   type KnowledgeHostInput,
   type KnowledgeHostOutput,
+  KnowledgeWritebackInternalSchemas,
+  type KnowledgeWritebackReceipt,
 } from '@projectos/contracts'
 import { OrganizationKnowledgeResolvedSchema } from '@projectos/organization-contracts'
+import { KnowledgeCandidateDetailSchema } from '@projectos/organization-contracts'
 import { DesktopLoginError, runDesktopLogin } from './desktop-login-core.js'
 import {
   OrganizationWorkerBridge,
@@ -351,6 +354,33 @@ export class OrganizationConnection {
     return `/v1/organizations/${encodeURIComponent(id)}`
   }
 
+  private writebackScope(snapshot: Snapshot) {
+    const organizationId = snapshot.connection.activeOrganizationId
+    if (!organizationId) throw new AppError('BAD_REQUEST', '请先选择组织')
+    return { serverUrl: snapshot.connection.serverUrl, accountId: snapshot.connection.session.account.id, organizationId }
+  }
+
+  private async writebackRuntime<M extends keyof typeof KnowledgeWritebackInternalSchemas>(method: M, input: unknown) {
+    if (!this.workerPorts) throw new AppError('RUNTIME_UNAVAILABLE', '本机执行服务尚未就绪')
+    return KnowledgeWritebackInternalSchemas[method].output.parse(await this.workerPorts.runtime(method, KnowledgeWritebackInternalSchemas[method].input.parse(input)))
+  }
+
+  private async sendKnowledgeWriteback(snapshot: Snapshot, operation: Awaited<ReturnType<OrganizationConnection['writebackRuntime']>>): Promise<KnowledgeWritebackReceipt> {
+    const parsed = KnowledgeWritebackInternalSchemas['runtime.knowledge.prepareWriteback'].output.parse(operation)
+    const scope = this.writebackScope(snapshot), id = parsed.receipt.id
+    if (parsed.receipt.status === 'submitted') return parsed.receipt
+    try {
+      this.assertCurrent(snapshot)
+      const result = KnowledgeCandidateDetailSchema.parse(await this.request(snapshot, `${this.orgPath(snapshot)}/knowledge-candidates`, 'POST', parsed.payload, 1024 * 1024))
+      const receipt = await this.writebackRuntime('runtime.knowledge.finishWriteback', { scope, id, outcome: { kind: 'submitted', result } })
+      this.assertCurrent(snapshot)
+      return KnowledgeWritebackInternalSchemas['runtime.knowledge.finishWriteback'].output.parse(receipt)
+    } catch {
+      await this.writebackRuntime('runtime.knowledge.finishWriteback', { scope, id, outcome: { kind: 'unknown' } }).catch(() => undefined)
+      throw new AppError('CONFLICT', '提交结果尚未确认，请先核对记录；系统不会自动重试', { details: { id } })
+    }
+  }
+
   private workerHost(snapshot: Snapshot): WorkerHost {
     const { connection } = snapshot,
       organizationId = connection.activeOrganizationId
@@ -628,6 +658,32 @@ export class OrganizationConnection {
     const assetRequest = (suffix = '', method = 'GET', body?: unknown) =>
       this.request(snapshot, `${this.orgPath(snapshot)}/assets${suffix}`, method, body, 8 * 1024 * 1024)
     switch (method) {
+      case 'organization.submitKnowledgeCandidate': {
+        const scope = this.writebackScope(snapshot)
+        const operation = await this.writebackRuntime('runtime.knowledge.prepareWriteback', { scope, selection: input })
+        result = await this.sendKnowledgeWriteback(snapshot, operation)
+        break
+      }
+      case 'organization.retryKnowledgeWriteback': {
+        const operation = await this.writebackRuntime('runtime.knowledge.retryWriteback', { scope: this.writebackScope(snapshot), ...input })
+        result = await this.sendKnowledgeWriteback(snapshot, operation)
+        break
+      }
+      case 'organization.reconcileKnowledgeWriteback': {
+        const scope = this.writebackScope(snapshot), id = String(input.id)
+        await this.writebackRuntime('runtime.knowledge.getWriteback', { scope, id })
+        const receipt = KnowledgeCandidateDetailSchema.parse(await this.request(snapshot, `${this.orgPath(snapshot)}/knowledge-candidates/${encodeURIComponent(id)}`))
+        result = await this.writebackRuntime('runtime.knowledge.finishWriteback', { scope, id, outcome: { kind: 'submitted', result: receipt } })
+        break
+      }
+      case 'organization.knowledgeWriteback': result = await this.writebackRuntime('runtime.knowledge.getWriteback', { scope: this.writebackScope(snapshot), id: input.id }); break
+      case 'organization.knowledgeCandidates': result = await this.request(snapshot, `${this.orgPath(snapshot)}/knowledge-candidates`); break
+      case 'organization.knowledgeCandidate': result = await this.request(snapshot, `${this.orgPath(snapshot)}/knowledge-candidates/${encodeURIComponent(String(input.id))}`); break
+      case 'organization.reviewKnowledgeCandidate': {
+        try { result = await this.request(snapshot, `${this.orgPath(snapshot)}/knowledge-candidates/${encodeURIComponent(String(input.id))}/decision`, 'POST', input.decision) }
+        catch { throw new AppError('CONFLICT', '审核结果尚未确认，请刷新候选核对；系统不会自动重试') }
+        break
+      }
       case 'organization.setRequirementKnowledge': {
         if (!this.workerPorts) throw new AppError('RUNTIME_UNAVAILABLE', '本机执行服务尚未就绪')
         const selection = OrganizationApiSchemas[method].input.parse(input)

@@ -1,0 +1,191 @@
+PASS Protected DAG screenshot remains byte-identical
+PASS Unsaved acceptance survives immediate Escape
+PASS personal-acceptance-1440-light-100 fits
+PASS personal-acceptance-1440-light-100 axe
+PASS personal-acceptance-1440-light-100 native contrast
+PASS personal-acceptance-1440-light-125 fits
+PASS personal-acceptance-1440-light-125 axe
+PASS personal-acceptance-1440-light-125 native contrast
+PASS personal-acceptance-1440-dark-100 fits
+PASS personal-acceptance-1440-dark-100 axe
+PASS personal-acceptance-1440-dark-100 native contrast
+PASS personal-acceptance-1440-dark-125 fits
+PASS personal-acceptance-1440-dark-125 axe
+PASS personal-acceptance-1440-dark-125 native contrast
+PASS personal-acceptance-1024-light-100 fits
+PASS personal-acceptance-1024-light-100 axe
+PASS personal-acceptance-1024-light-100 native contrast
+PASS personal-acceptance-1024-light-125 fits
+PASS personal-acceptance-1024-light-125 axe
+PASS personal-acceptance-1024-light-125 native contrast
+PASS personal-acceptance-1024-dark-100 fits
+PASS personal-acceptance-1024-dark-100 axe
+PASS personal-acceptance-1024-dark-100 native contrast
+PASS personal-acceptance-1024-dark-125 fits
+PASS personal-acceptance-1024-dark-125 axe
+PASS personal-acceptance-1024-dark-125 native contrast
+PASS Personal acceptance sends no organization request
+PASS Sharing is disabled while signed out
+PASS Sharing requires an explicit confirmation
+PASS candidate-editor-1440-light-100 fits
+PASS candidate-editor-1440-light-100 axe
+PASS candidate-editor-1440-light-100 native contrast
+PASS candidate-editor-1440-light-125 fits
+PASS candidate-editor-1440-light-125 axe
+PASS candidate-editor-1440-light-125 native contrast
+PASS candidate-editor-1440-dark-100 fits
+PASS candidate-editor-1440-dark-100 axe
+PASS candidate-editor-1440-dark-100 native contrast
+PASS candidate-editor-1440-dark-125 fits
+PASS candidate-editor-1440-dark-125 axe
+PASS candidate-editor-1440-dark-125 native contrast
+PASS candidate-editor-1024-light-100 fits
+PASS candidate-editor-1024-light-100 axe
+PASS candidate-editor-1024-light-100 native contrast
+PASS candidate-editor-1024-light-125 fits
+PASS candidate-editor-1024-light-125 axe
+PASS candidate-editor-1024-light-125 native contrast
+PASS candidate-editor-1024-dark-100 fits
+PASS candidate-editor-1024-dark-100 axe
+PASS candidate-editor-1024-dark-100 native contrast
+PASS candidate-editor-1024-dark-125 fits
+PASS candidate-editor-1024-dark-125 axe
+PASS candidate-editor-1024-dark-125 native contrast
+PASS Candidate draft survives dirty close
+PASS Pending candidate is absent from knowledge retrieval
+PASS candidate-review-1440-light-100 fits
+PASS candidate-review-1440-light-100 axe
+PASS candidate-review-1440-light-100 native contrast
+PASS candidate-review-1440-light-125 fits
+PASS candidate-review-1440-light-125 axe
+PASS candidate-review-1440-light-125 native contrast
+PASS candidate-review-1440-dark-100 fits
+PASS candidate-review-1440-dark-100 axe
+PASS candidate-review-1440-dark-100 native contrast
+PASS candidate-review-1440-dark-125 fits
+PASS candidate-review-1440-dark-125 axe
+PASS candidate-review-1440-dark-125 native contrast
+PASS candidate-review-1024-light-100 fits
+PASS candidate-review-1024-light-100 axe
+PASS candidate-review-1024-light-100 native contrast
+PASS candidate-review-1024-light-125 fits
+PASS candidate-review-1024-light-125 axe
+PASS candidate-review-1024-light-125 native contrast
+PASS candidate-review-1024-dark-100 fits
+PASS candidate-review-1024-dark-100 axe
+PASS candidate-review-1024-dark-100 native contrast
+PASS candidate-review-1024-dark-125 fits
+PASS candidate-review-1024-dark-125 axe
+PASS candidate-review-1024-dark-125 native contrast
+PASS Settings protects unsaved review notes
+PASS candidate-returned-1440-light-100 fits
+PASS candidate-returned-1440-light-100 axe
+PASS candidate-returned-1440-light-100 native contrast
+PASS candidate-returned-1440-light-125 fits
+PASS candidate-returned-1440-light-125 axe
+PASS candidate-returned-1440-light-125 native contrast
+PASS candidate-returned-1440-dark-100 fits
+PASS candidate-returned-1440-dark-100 axe
+PASS candidate-returned-1440-dark-100 native contrast
+PASS candidate-returned-1440-dark-125 fits
+PASS candidate-returned-1440-dark-125 axe
+PASS candidate-returned-1440-dark-125 native contrast
+PASS candidate-returned-1024-light-100 fits
+PASS candidate-returned-1024-light-100 axe
+PASS candidate-returned-1024-light-100 native contrast
+PASS candidate-returned-1024-light-125 fits
+PASS candidate-returned-1024-light-125 axe
+PASS candidate-returned-1024-light-125 native contrast
+PASS candidate-returned-1024-dark-100 fits
+PASS candidate-returned-1024-dark-100 axe
+PASS candidate-returned-1024-dark-100 native contrast
+PASS candidate-returned-1024-dark-125 fits
+PASS candidate-returned-1024-dark-125 axe
+PASS candidate-returned-1024-dark-125 native contrast
+PASS Return preserves local acceptance
+PASS submission-unknown-1440-light-100 fits
+PASS submission-unknown-1440-light-100 axe
+PASS submission-unknown-1440-light-100 native contrast
+PASS submission-unknown-1440-light-125 fits
+PASS submission-unknown-1440-light-125 axe
+PASS submission-unknown-1440-light-125 native contrast
+PASS submission-unknown-1440-dark-100 fits
+PASS submission-unknown-1440-dark-100 axe
+PASS submission-unknown-1440-dark-100 native contrast
+PASS submission-unknown-1440-dark-125 fits
+PASS submission-unknown-1440-dark-125 axe
+PASS submission-unknown-1440-dark-125 native contrast
+PASS submission-unknown-1024-light-100 fits
+PASS submission-unknown-1024-light-100 axe
+PASS submission-unknown-1024-light-100 native contrast
+PASS submission-unknown-1024-light-125 fits
+PASS submission-unknown-1024-light-125 axe
+PASS submission-unknown-1024-light-125 native contrast
+PASS submission-unknown-1024-dark-100 fits
+PASS submission-unknown-1024-dark-100 axe
+PASS submission-unknown-1024-dark-100 native contrast
+PASS submission-unknown-1024-dark-125 fits
+PASS submission-unknown-1024-dark-125 axe
+PASS submission-unknown-1024-dark-125 native contrast
+PASS Unknown submission is not automatically replayed
+PASS Retry of unknown content needs renewed confirmation
+PASS Reconciliation uses a read without resending
+locator.click: Timeout 45000ms exceeded.
+Call log:
+  - waiting for locator('.po-nav-item').filter({ hasText: '账号与组织' }).last()
+    - locator resolved to <button type="button" title="账号与组织" aria-label="账号与组织" class="po-nav-item">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div data-state="open" aria-hidden="true" data-aria-hidden="true" class="pui-overlay-backdrop"></div> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div data-state="open" aria-hidden="true" data-aria-hidden="true" class="pui-overlay-backdrop"></div> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    82 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div data-state="open" aria-hidden="true" data-aria-hidden="true" class="pui-overlay-backdrop"></div> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+    at settings (C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\scripts\org-knowledge-k3-e2e.mjs:55:163)
+    at async knowledge (C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\scripts\org-knowledge-k3-e2e.mjs:56:30)
+    at async reviewQueue (C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\scripts\org-knowledge-k3-e2e.mjs:57:32)
+    at async file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/org-knowledge-k3-e2e.mjs:184:3 {
+  log: [
+    "  - waiting for locator('.po-nav-item').filter({ hasText: '账号与组织' }).last()",
+    '    - locator resolved to <button type="button" title="账号与组织" aria-label="账号与组织" class="po-nav-item">…</button>',
+    '  - attempting click action',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is visible, enabled and stable',
+    '      - scrolling into view if needed',
+    '      - done scrolling',
+    '      - <div data-state="open" aria-hidden="true" data-aria-hidden="true" class="pui-overlay-backdrop"></div> intercepts pointer events',
+    '    - retrying click action',
+    '    - waiting 20ms',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is visible, enabled and stable',
+    '      - scrolling into view if needed',
+    '      - done scrolling',
+    '      - <div data-state="open" aria-hidden="true" data-aria-hidden="true" class="pui-overlay-backdrop"></div> intercepts pointer events',
+    '    - retrying click action',
+    '      - waiting 100ms',
+    '    82 × waiting for element to be visible, enabled and stable',
+    '       - element is visible, enabled and stable',
+    '       - scrolling into view if needed',
+    '       - done scrolling',
+    '       - <div data-state="open" aria-hidden="true" data-aria-hidden="true" class="pui-overlay-backdrop"></div> intercepts pointer events',
+    '     - retrying click action',
+    '       - waiting 500ms'
+  ],
+  name: 'TimeoutError'
+}

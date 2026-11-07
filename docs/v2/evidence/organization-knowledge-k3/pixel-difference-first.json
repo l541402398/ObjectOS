@@ -1,0 +1,9 @@
+{
+  "minY": 290,
+  "maxX": 1389,
+  "maxY": 792,
+  "differentPixels": 42,
+  "comparison": "Unmodified PNGs decoded using System.Drawing; no pixel threshold applied to acceptance.",
+  "minX": 126,
+  "maximumChannelDelta": 3
+}

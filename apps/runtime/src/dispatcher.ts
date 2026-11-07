@@ -70,6 +70,8 @@ import { ensureBaselineCommit } from '@projectos/worktree'
 import { agentForPlannedTask } from '@projectos/planning'
 import { planGroupTitle } from '@projectos/session-manager'
 import { RequirementKnowledgeService } from './organization-knowledge.js'
+import { KnowledgeWritebackService } from './knowledge-writeback.js'
+import { KnowledgeWritebackInternalSchemas } from '@projectos/contracts'
 import { type KnowledgeHostInput, type KnowledgeHostOutput } from '@projectos/contracts'
 
 const EVENT_CHECK_DEBOUNCE_MS = 60_000
@@ -94,6 +96,7 @@ export interface DispatcherDeps {
 
 export class RuntimeDispatcher {
   private readonly organizationKnowledge: RequirementKnowledgeService
+  private readonly knowledgeWriteback: KnowledgeWritebackService
   private readonly gitDelivery: GitDeliveryService
   private readonly requirementFlow: RequirementFlowService
   private readonly requirementWork: RequirementWorkService
@@ -133,6 +136,7 @@ export class RuntimeDispatcher {
     this.organizationJobs = new OrganizationJobService(deps.store,deps.runner,this.localWorker)
     this.aiConnections = new AIConnectionService(deps.store)
     this.requirementFlow = new RequirementFlowService(deps.store, deps.services, deps.runner, this.requirementWork, new AiPlannerModelSource(deps.provider, this.aiConnections), projectId => this.actions.autonomySettings(projectId).mode === 'autonomous')
+    this.knowledgeWriteback = new KnowledgeWritebackService(deps.store, this.requirementIntegration, this.organizationKnowledge, this.requirementFlow)
     this.planGrants = new PlanGrantService(deps.store, deps.logger)
     this.runtimeSettings = new RuntimeSettingsService(deps.store, (limits) => deps.runner.setLimits(limits))
     this.runtimeSettings.apply()
@@ -702,6 +706,15 @@ export class RuntimeDispatcher {
   }
 
   async dispatch(method: string, rawInput: unknown): Promise<unknown> {
+    if (Object.hasOwn(KnowledgeWritebackInternalSchemas, method)) {
+      const key = method as keyof typeof KnowledgeWritebackInternalSchemas
+      const input = KnowledgeWritebackInternalSchemas[key].input.parse(rawInput)
+      const result = key === 'runtime.knowledge.prepareWriteback' ? this.knowledgeWriteback.prepare(input)
+        : key === 'runtime.knowledge.retryWriteback' ? this.knowledgeWriteback.retry(input)
+          : key === 'runtime.knowledge.finishWriteback' ? this.knowledgeWriteback.finish(input)
+            : this.knowledgeWriteback.get((input as { scope: { serverUrl: string; organizationId: string; accountId: string } }).scope, (input as { id: string }).id)
+      return KnowledgeWritebackInternalSchemas[key].output.parse(result)
+    }
     if (method === 'runtime.knowledge.set') return this.organizationKnowledge.set(rawInput)
     if (method === 'runtime.worker.acceptJob') return WorkerJobInternalSchemas[method].output.parse(await this.organizationJobs.accept(rawInput))
     if (Object.hasOwn(WorkerInternalSchemas, method)) {
@@ -1267,6 +1280,9 @@ export class RuntimeDispatcher {
       case 'requirement.knowledge': {
         return this.organizationKnowledge.view(this.parse('requirement.knowledge', rawInput).requirementId)
       }
+      case 'requirement.knowledgeDelivery': return this.knowledgeWriteback.preview(this.parse('requirement.knowledgeDelivery', rawInput).requirementId)
+      case 'requirement.acceptKnowledgeDelivery': return this.knowledgeWriteback.accept(rawInput)
+      case 'requirement.knowledgeDraft': return this.knowledgeWriteback.draft(rawInput)
       case 'knowledge.list': {
         const input = this.parse('knowledge.list', rawInput)
         return { entries: services.projects.knowledge(input.projectId) }

@@ -1,0 +1,72 @@
+{
+  "detectorExitCode": 2,
+  "context": [
+    {
+      "rule": "ai-color-palette",
+      "selector": "div.po-shell.is-collapsed",
+      "insideWriteback": false,
+      "excludedFromAccessibilityTree": false
+    },
+    {
+      "rule": "low-contrast",
+      "selector": "button.po-crumb-link",
+      "insideWriteback": false,
+      "excludedFromAccessibilityTree": true
+    },
+    {
+      "rule": "low-contrast",
+      "selector": "span.po-project-button-icon",
+      "insideWriteback": false,
+      "excludedFromAccessibilityTree": true
+    },
+    {
+      "rule": "ai-color-palette",
+      "selector": "button.po-project-hub-trigger",
+      "insideWriteback": false,
+      "excludedFromAccessibilityTree": true
+    },
+    {
+      "rule": "ai-color-palette",
+      "selector": "button.rq-requirement.is-selected",
+      "insideWriteback": false,
+      "excludedFromAccessibilityTree": true
+    },
+    {
+      "rule": "ai-color-palette",
+      "selector": "nav.rq-flow-journey",
+      "insideWriteback": false,
+      "excludedFromAccessibilityTree": true
+    },
+    {
+      "rule": "ai-color-palette",
+      "selector": "div.rq-next-action-bar",
+      "insideWriteback": false,
+      "excludedFromAccessibilityTree": false
+    },
+    {
+      "rule": "nested-cards",
+      "selector": "div.rq-next-action-bar",
+      "insideWriteback": false,
+      "excludedFromAccessibilityTree": false
+    },
+    {
+      "rule": "low-contrast",
+      "selector": "div.rq-next-action-bar > div.rq-inline-actions > button.ant-btn.projectos:nth-of-type(2) > span",
+      "insideWriteback": false,
+      "excludedFromAccessibilityTree": true
+    },
+    {
+      "rule": "low-contrast",
+      "selector": "span.po-status-ok",
+      "insideWriteback": false,
+      "excludedFromAccessibilityTree": true
+    },
+    {
+      "rule": "bounce-easing",
+      "selector": "body",
+      "insideWriteback": false,
+      "excludedFromAccessibilityTree": false
+    }
+  ],
+  "note": "Diagnostic findings are retained for manual review; completion is not a quality pass."
+}

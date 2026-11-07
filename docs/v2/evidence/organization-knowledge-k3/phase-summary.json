@@ -1,0 +1,114 @@
+{
+  "baseHead": "c011d95c17926b37c978c59f8133d6666241f3ec",
+  "sourceHash": "5f0f8ad7a5e6b34e02444cb001046c13c6881f7330e2a8bad1fdef23a765965f",
+  "files": 747,
+  "commands": [
+    {
+      "name": "baseline-package",
+      "status": "PASS",
+      "log": "baseline-package-2.log",
+      "exitCode": 0
+    },
+    {
+      "name": "lint",
+      "status": "PASS",
+      "log": "lint-final-harness.log",
+      "exitCode": 0
+    },
+    {
+      "name": "typecheck",
+      "status": "PASS",
+      "log": "typecheck-2.log",
+      "exitCode": 0
+    },
+    {
+      "name": "test",
+      "status": "PASS",
+      "log": "test-2.log",
+      "exitCode": 0
+    },
+    {
+      "name": "build",
+      "status": "PASS",
+      "log": "build-1.log",
+      "exitCode": 0
+    },
+    {
+      "name": "tested-build",
+      "status": "PASS",
+      "log": "tested-build-1.log",
+      "exitCode": 0
+    },
+    {
+      "name": "knowledge-desktop",
+      "status": "PASS",
+      "log": "knowledge-desktop-3.log",
+      "exitCode": 0
+    },
+    {
+      "name": "approved-dag",
+      "status": "PASS",
+      "log": "approved-dag-1.log",
+      "exitCode": 0
+    },
+    {
+      "name": "desktop-e2e",
+      "status": "PASS",
+      "log": "desktop-e2e-1.log",
+      "exitCode": 0
+    },
+    {
+      "name": "agent-e2e",
+      "status": "PASS",
+      "log": "agent-e2e-1.log",
+      "exitCode": 0
+    },
+    {
+      "name": "v12-e2e",
+      "status": "PASS",
+      "log": "v12-e2e-1.log",
+      "exitCode": 0
+    },
+    {
+      "name": "v13-e2e",
+      "status": "PASS",
+      "log": "v13-e2e-1.log",
+      "exitCode": 0
+    },
+    {
+      "name": "package-dir",
+      "status": "PASS",
+      "log": "package-dir-1.log",
+      "exitCode": 0
+    },
+    {
+      "name": "package-smoke",
+      "status": "PASS",
+      "log": "package-smoke-1.log",
+      "exitCode": 0
+    },
+    {
+      "name": "artifact-verification",
+      "status": "PASS",
+      "log": "artifact-verification-1.log",
+      "exitCode": 0
+    }
+  ],
+  "desktop": {
+    "checks": 187,
+    "failures": [],
+    "captures": 64,
+    "axeStates": 56,
+    "violations": [],
+    "axeContrastIncomplete": 56,
+    "contrastCount": 610,
+    "minimumContrast": 4.615082828368212,
+    "contrastFailures": [],
+    "rendererErrors": [],
+    "submissions": 2,
+    "decisions": 2
+  },
+  "sourceUnchanged": true,
+  "protectedDagByteIdentical": true,
+  "testedBuildMatchesPackage": true
+}

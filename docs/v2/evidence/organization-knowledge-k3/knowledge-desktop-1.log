@@ -1,0 +1,4 @@
+FAIL Protected DAG screenshot remains byte-identical
+Error: Protected DAG screenshot remains byte-identical
+    at check (file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/org-knowledge-k3-e2e.mjs:26:191)
+    at file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/org-knowledge-k3-e2e.mjs:109:3

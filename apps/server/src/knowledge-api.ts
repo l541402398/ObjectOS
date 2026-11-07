@@ -22,6 +22,9 @@ import {
   OrganizationKnowledgeResolvedSchema,
   type OrgRole,
   type OrganizationKnowledgeContent,
+  KnowledgePublicationSchema,
+  type KnowledgeCandidateSubmit,
+  KnowledgeCandidateDecisionSchema,
 } from '@projectos/organization-contracts'
 import { AssetScopeError } from './assets-api.js'
 import { audit, inTransaction } from './postgres-store.js'
@@ -239,12 +242,13 @@ export class OrganizationKnowledge {
       [row.id],
     )
     if (count.rows[0].count >= 100) throw new AssetScopeError(409, 'CONFLICT', '知识已达到版本数量上限。')
+    const versionId = randomUUID()
     await client.query(
       `INSERT INTO organization_knowledge_versions
       (id,organization_id,document_id,version,title,body,tags,checksum,created_by,created_at)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
       [
-        randomUUID(),
+        versionId,
         row.organization_id,
         row.id,
         input.version,
@@ -256,6 +260,30 @@ export class OrganizationKnowledge {
         Date.now(),
       ],
     )
+    return versionId
+  }
+
+  /** Only called inside the candidate decision's organization-locked transaction. */
+  async publishReviewed(client: PoolClient, orgId: string, accountId: string, role: OrgRole,
+    candidate: KnowledgeCandidateSubmit, target: Extract<z.infer<typeof KnowledgeCandidateDecisionSchema>, { action: 'publish' }>['target']) {
+    let row: DocumentRow
+    if (target.kind === 'version') {
+      row = await this.document(client, orgId, accountId, target.documentId)
+      if (row.project_id !== candidate.projectId || row.category !== candidate.category || row.visibility !== 'project') throw conflict()
+      await this.manage(client, role, accountId, row)
+      const head = (await client.query('SELECT id FROM organization_knowledge_versions WHERE document_id=$1 ORDER BY created_at DESC,id DESC LIMIT 1 FOR UPDATE', [row.id])).rows[0]
+      if (head?.id !== target.expectedVersionId) throw conflict()
+    } else {
+      row = { id: randomUUID(), organization_id: orgId, project_id: candidate.projectId, category: candidate.category, visibility: 'project', created_at: String(Date.now()) }
+      await this.manage(client, role, accountId, row)
+      await client.query('INSERT INTO organization_knowledge_documents(id,organization_id,category,visibility,project_id,created_by,created_at) VALUES($1,$2,$3,$4,$5,$6,$7)',
+        [row.id, orgId, row.category, row.visibility, row.project_id, accountId, row.created_at])
+    }
+    const versionId = await this.insertVersion(client, accountId, row, { version: target.version, content: candidate.content })
+    await client.query("UPDATE organization_knowledge_versions SET status='published',revision=revision+1,published_at=$2 WHERE id=$1", [versionId, Date.now()])
+    const publication = KnowledgePublicationSchema.parse({ documentId: row.id, versionId, version: target.version, checksum: checksum(candidate.content) })
+    await audit(client, accountId, orgId, 'knowledge.reviewed_publication', candidate.id, publication)
+    return publication
   }
 
   async create(orgId: string, accountId: string, raw: unknown) {

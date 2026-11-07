@@ -1,0 +1,69 @@
+PROJECTOS
+DESIGN LAB
+LOCAL PROTOTYPE
+P
+PLAN REVIEW
+R2
+4 个阶段 · 7 项工作
+把计划审核重构为可执行的光学玻璃工作台
+待批准
+审查人 Sage
+·
+2 项提醒
+07
+工作项
+04
+阶段
+02
+待复核
+阶段路线
+任务依赖
+真实依赖结构 · ELK 自动布局
+重置视图
+DEPENDENCY MAP
+任务依赖
+1 个起点 · 7 条依赖
+返回阶段路线
+TASK 01
+确认计划审核的信息边界与视觉约束
+S
+Sage
+起点
+TASK 02
+建立 PlanDraft 到视觉组件的适配层
+S
+Sage
+1 前置
+TASK 03
+实现 SVG 阶段光路与共享布局过渡
+K
+Kai
+1 前置
+TASK 04
+重构任务检查器的结构化编辑体验
+K
+Kai
+1 前置
+TASK 05
+接入 ELK 自动布局与 DAG 路径聚焦
+M
+Mira
+2 前置
+TASK 06
+复核玻璃层次、中文排版与可访问性
+N
+Nova
+1 前置
+TASK 07
+完成 Design Lab 回归与交互录屏
+I
+Iris
+1 前置
+起点
+需复核
+当前路径
+选择节点查看上下游路径
+ELK layered · React Flow
+原型交互 · 不写入数据库 · 不启动 Agent
+拒绝计划
+批准计划

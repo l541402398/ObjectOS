@@ -24,3 +24,4 @@ export * from './organization.js'
 
 export * from './git-delivery.js'
 export * from './organization-knowledge.js'
+export * from './knowledge-writeback.js'

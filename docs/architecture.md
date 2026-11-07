@@ -257,3 +257,14 @@ Runtime OrchestrationService
 
 - 未使用 Drizzle ORM，使用 `node:sqlite` + 手写 SQL/类型仓储，见 ADR-0002。
 - 未实现外部 Agent Driver、OCS LAN、Worktree 自动合并与安装包签名，见 `docs/status.md`。
+
+## 11. 组织知识的需求引用与审核回写（K1–K3）
+
+- PostgreSQL 保存组织文档、不可变版本和不可变知识候选；发布权限同时要求组织发布能力与项目资产权限。
+  K3 仅提交项目私有候选，审核退回保留，发布与候选结案在同一组织锁事务内完成。
+- Runtime 是本机 SQLite 唯一写入者。独立的整体验收记录绑定需求版本、当前 Git、可信审查、实际测试和有效运行产物；
+  普通 `implemented` 状态不能替代验收。运行中已有工作流还要求当前节点完成且材料有效。
+- Main 从 Runtime 收集来源，Renderer 只提交选取与确认。组织服务记录本机所有者声明的证据，并不独立认证本机代码。
+  固定提交在 HTTP 前持久化为 Run/ToolCall/Approval；未知结果只核对，不自动重放。
+- K2 固定到精确资料版本的权限检查与 Native AgentRunner 保持不变。K3 发布可被后续需求重新检索和选择；
+  本机验收不改变项目主分支合入或发布授权。详见 ADR-0084、0085、0086 及各阶段证据报告。

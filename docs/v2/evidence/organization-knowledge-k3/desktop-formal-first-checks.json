@@ -1,0 +1,24 @@
+{
+  "checks": [
+    {
+      "name": "Protected DAG screenshot remains byte-identical",
+      "status": "FAIL"
+    },
+    {
+      "name": "journey",
+      "status": "FAIL",
+      "detail": "Error: Protected DAG screenshot remains byte-identical"
+    }
+  ],
+  "audits": [],
+  "captures": [
+    "before-protected-dag.png",
+    "after-protected-dag.png",
+    "failure.png"
+  ],
+  "errors": [],
+  "modelEvidence": [],
+  "submissions": 0,
+  "decisions": 0,
+  "fixture": "typed workspace/Git preparation, two actual native workflow Agents and a deterministic local model; K3 business actions use UI"
+}

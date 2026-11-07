@@ -536,3 +536,42 @@ skill catalog; this session verified both after installation.
   verification boundaries are recorded in `docs/v2/evidence/organization-knowledge-k2/` as they run.
 - Final K2 evidence: 676 tests PASS / 4 SKIP; root-required lint/typecheck/build, four desktop E2Es and actual Windows EXE smoke PASS. New UI: 97 desktop checks, 40 axe states with no violations, plus 137 supplemental checks / 568 native-composited text samples (minimum 4.944:1).
 - Current approved-DAG regression: 32/32 PASS, before/after PNGs byte-identical. Two obsolete stage-first visual entry points FAIL and remain recorded; the new K2 coordinator now invokes the approved DAG and native-contrast wrappers. Existing light-theme “待批准” badge diagnostic is 4.46:1, tracked in OPEN_ISSUES for separate visual review. No protected baseline restyling. See docs/v2/evidence/organization-knowledge-k2/REPORT.md for exact scopes, source manifests, failures and remaining limits.
+
+## 2026-11-07 — K3 accepted outputs and reviewed knowledge publication
+
+- Add protected-focus acceptance/writeback to the existing requirement organization-knowledge tab,
+  and an inline candidate queue/review within the existing organization Settings. Reuse DialogShell,
+  SettingsDraftContext, organization form primitives, packaged Noto Sans SC and semantic tokens.
+  No nested Settings modal, graph/canvas change, new animation or alternate agent runtime.
+- Reconsulted the root UI/overlay/recovery contracts and current Design Lab/OpticalGlass/Aurora
+  implementation. Reused the mandatory local skills and actual package/license/source inspections
+  documented in K2 in this same session; no fresh Sim Studio, Motion or GPU qualification is claimed.
+  The runtime still exposes no skill-loader tool. The Impeccable context already loaded in K2 is not
+  rerun; PRODUCT.md remains absent. Craft-floor was reread immediately before the K3 edits.
+- Actual UI UX Pro Max queries and outputs are retained in
+  `docs/v2/evidence/organization-knowledge-k3/design-source-queries.log`: Chinese typography,
+  semantic status color, form focus/validation, responsive keyboard and reduced motion. Retained
+  local Noto Sans SC, explicit labels and token focus; rejected remote fonts/serif-TC and unrelated
+  IoT green palettes because the frozen Premium Liquid Glass brief wins. Vercel composition and
+  async parallelism guidance informed explicit review components and independent query refreshes.
+- Source detector completed with no findings (`impeccable-detect.json`). Native Electron screenshots,
+  axe and composited contrast are measured by the K3 harness. The final build also supports a local
+  read-only CDP detector when `PROJECTOS_IMPECCABLE_ENGINE` is supplied; actual result is recorded in
+  the phase report, not inferred from that option. No new TCP listener is added to the product.
+- Manual preflight inspection found large browser-default heading/list spacing; scoped `.kw-dialog`
+  resets keep the existing 16px heading scale and make the form denser. Two before screenshots are
+  retained. GET reconciliation exposed a dirty-form race, corrected on the success event without
+  weakening close protection. See the phase INVESTIGATION.md for all failed attempts.
+- Final command results, 1440/1024 light/dark 100/125% comparisons, exact source/build provenance,
+  protected-DAG checks and unverified boundaries are recorded in
+  `docs/v2/evidence/organization-knowledge-k3/REPORT.md` after the actual checks complete.
+- Final K3: 693 tests PASS / 4 external-environment SKIP; root lint/typecheck/build, four required
+  desktop E2Es, actual packaged Windows EXE and build-file consistency PASS. New UI: 187 checks,
+  56 axe states with no violations (all glass contrast incomplete), 610 native text samples,
+  minimum 4.615:1; 64 new-surface captures. Approved DAG 32/32, consistent-launch before/after PNGs
+  byte-identical. Preserve the earlier 42-pixel diagnostic and failed attempts; do not threshold them.
+- The actual rendered detector exited 2 with 11 retained diagnostics (8 warning / 3 advisory), all
+  selectors outside the writeback form. Five palette recommendations conflict with the approved
+  cyan/glass brief; background contrast estimates, nested-card and global easing findings remain
+  recorded for separate active-page review. Detector completion is not a quality PASS. Current DAG
+  pixel diagnostic also retains the existing light badge at 4.459:1; no protected restyling.

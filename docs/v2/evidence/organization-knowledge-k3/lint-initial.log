@@ -1,0 +1,43 @@
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\desktop\src\renderer\src\features\settings\organization\KnowledgeCandidates.tsx
+  36:62  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\desktop\src\renderer\src\features\settings\organization\KnowledgeCandidates.tsx:36:62
+  34 |       <button className="org-button" type="button" disabled={busy} onClick={() => refresh.mutate()}>核对审核结果</button>
+  35 |       <label className="kw-check"><input type="checkbox" checked={retryConfirmed} disabled={busy} onChange={event => setRetryConfirmed(event.target.checked)}/>我已核对，确认仅按原审核决定重试</label>
+> 36 |       <button className="org-button" type="button" disabled={!retryConfirmed || busy || !intent.current} onClick={() => submit.mutate(intent.current!)}>确认按原决定重试</button>
+     |                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  37 |     </div> : null}
+  38 |     <fieldset disabled={busy || uncertain} onChange={() => { setDirty(true); setConfirmed(false) }}>
+  39 |       <legend><h3>发布位置</h3></legend>                                                                                                                               react-hooks/refs
+  36:89  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\desktop\src\renderer\src\features\settings\organization\KnowledgeCandidates.tsx:36:89
+  34 |       <button className="org-button" type="button" disabled={busy} onClick={() => refresh.mutate()}>核对审核结果</button>
+  35 |       <label className="kw-check"><input type="checkbox" checked={retryConfirmed} disabled={busy} onChange={event => setRetryConfirmed(event.target.checked)}/>我已核对，确认仅按原审核决定重试</label>
+> 36 |       <button className="org-button" type="button" disabled={!retryConfirmed || busy || !intent.current} onClick={() => submit.mutate(intent.current!)}>确认按原决定重试</button>
+     |                                                                                         ^^^^^^^^^^^^^^^ Cannot access ref value during render
+  37 |     </div> : null}
+  38 |     <fieldset disabled={busy || uncertain} onChange={() => { setDirty(true); setConfirmed(false) }}>
+  39 |       <legend><h3>发布位置</h3></legend>                                                                                                                               react-hooks/refs
+  36:90  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\apps\desktop\src\renderer\src\features\settings\organization\KnowledgeCandidates.tsx:36:90
+  34 |       <button className="org-button" type="button" disabled={busy} onClick={() => refresh.mutate()}>核对审核结果</button>
+  35 |       <label className="kw-check"><input type="checkbox" checked={retryConfirmed} disabled={busy} onChange={event => setRetryConfirmed(event.target.checked)}/>我已核对，确认仅按原审核决定重试</label>
+> 36 |       <button className="org-button" type="button" disabled={!retryConfirmed || busy || !intent.current} onClick={() => submit.mutate(intent.current!)}>确认按原决定重试</button>
+     |                                                                                          ^^^^^^^^^^^^^^ Cannot access ref value during render
+  37 |     </div> : null}
+  38 |     <fieldset disabled={busy || uncertain} onChange={() => { setDirty(true); setConfirmed(false) }}>
+  39 |       <legend><h3>发布位置</h3></legend>
+
+To initialize a ref only once, check that the ref is null with the pattern `if (ref.current == null) { ref.current = ... }`  react-hooks/refs
+
+✖ 3 problems (3 errors, 0 warnings)
+

@@ -6,6 +6,7 @@ import { ASSETS_SCHEMA_SQL } from './assets-schema.js'
 import { WORKERS_SCHEMA_SQL } from './workers-schema.js'
 import { WORKER_JOBS_SCHEMA_SQL } from './worker-jobs-schema.js'
 import { KNOWLEDGE_SCHEMA_SQL } from './knowledge-schema.js'
+import { KNOWLEDGE_CANDIDATES_SCHEMA_SQL } from './knowledge-candidates-schema.js'
 import { OrgRoleSchema } from '@projectos/organization-contracts'
 
 export function createOrganizationPool(databaseUrl: string): Pool {
@@ -69,7 +70,7 @@ export async function inTransaction<T>(pool: Pool, action: (client: PoolClient) 
 }
 
 /** Explicit, checksum-checked migrations. Never run from a Renderer or implicitly on a request. */
-const organizationMigrations = [AUTH_SCHEMA_SQL + APPLICATION_SCHEMA_SQL, ASSETS_SCHEMA_SQL, WORKERS_SCHEMA_SQL, WORKER_JOBS_SCHEMA_SQL, KNOWLEDGE_SCHEMA_SQL]
+const organizationMigrations = [AUTH_SCHEMA_SQL + APPLICATION_SCHEMA_SQL, ASSETS_SCHEMA_SQL, WORKERS_SCHEMA_SQL, WORKER_JOBS_SCHEMA_SQL, KNOWLEDGE_SCHEMA_SQL, KNOWLEDGE_CANDIDATES_SCHEMA_SQL]
 export const ORGANIZATION_SCHEMA_VERSION = organizationMigrations.length
 const migrationChecksum = (sql: string) => createHash('sha256').update(sql).digest('hex')
 

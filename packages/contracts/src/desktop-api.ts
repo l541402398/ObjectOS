@@ -29,6 +29,13 @@ export interface ProjectOSDesktopApi {
     reconcile: (input: In<'gitDelivery.reconcile'>) => Promise<Out<'gitDelivery.reconcile'>>
   }
   organization: {
+    knowledgeCandidates: () => Promise<Out<'organization.knowledgeCandidates'>>
+    knowledgeWriteback: (input: In<'organization.knowledgeWriteback'>) => Promise<Out<'organization.knowledgeWriteback'>>
+    knowledgeCandidate: (input: In<'organization.knowledgeCandidate'>) => Promise<Out<'organization.knowledgeCandidate'>>
+    reviewKnowledgeCandidate: (input: In<'organization.reviewKnowledgeCandidate'>) => Promise<Out<'organization.reviewKnowledgeCandidate'>>
+    submitKnowledgeCandidate: (input: In<'organization.submitKnowledgeCandidate'>) => Promise<Out<'organization.submitKnowledgeCandidate'>>
+    reconcileKnowledgeWriteback: (input: In<'organization.reconcileKnowledgeWriteback'>) => Promise<Out<'organization.reconcileKnowledgeWriteback'>>
+    retryKnowledgeWriteback: (input: In<'organization.retryKnowledgeWriteback'>) => Promise<Out<'organization.retryKnowledgeWriteback'>>
     setRequirementKnowledge: (input: In<'organization.setRequirementKnowledge'>) => Promise<Out<'organization.setRequirementKnowledge'>>
     knowledgeList: (input?: In<'organization.knowledgeList'>) => Promise<Out<'organization.knowledgeList'>>
     knowledgeDetail: (input: In<'organization.knowledgeDetail'>) => Promise<Out<'organization.knowledgeDetail'>>
@@ -182,6 +189,9 @@ export interface ProjectOSDesktopApi {
     stopAll: (input: In<'requirement.flow.stopAll'>) => Promise<Out<'requirement.flow.stopAll'>>
   }
   requirements: {
+    knowledgeDelivery: (requirementId: string) => Promise<Out<'requirement.knowledgeDelivery'>>
+    acceptKnowledgeDelivery: (input: In<'requirement.acceptKnowledgeDelivery'>) => Promise<Out<'requirement.acceptKnowledgeDelivery'>>
+    knowledgeDraft: (input: In<'requirement.knowledgeDraft'>) => Promise<Out<'requirement.knowledgeDraft'>>
     knowledge: (requirementId: string) => Promise<Out<'requirement.knowledge'>>
     integrationPreview: (taskId: string) => Promise<Out<'task.integration.preview'>>
     reviewIntegration: (input: In<'task.integration.review'>) => Promise<Out<'task.integration.review'>>

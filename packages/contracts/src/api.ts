@@ -4,6 +4,7 @@ import { RequirementWorkApiSchemas } from './requirement-work.js'
 import { RequirementFlowApiSchemas } from './requirement-flow.js'
 import { ORGANIZATION_MAIN_METHODS, OrganizationApiSchemas } from './organization.js'
 import { RequirementKnowledgeApiSchemas } from './organization-knowledge.js'
+import { KnowledgeWritebackApiSchemas } from './knowledge-writeback.js'
 import { ProjectJourneySchema } from './journey.js'
 import {
   ApprovalStatusSchema,
@@ -367,6 +368,7 @@ export const ApiSchemas = {
   ...RequirementFlowApiSchemas,
   ...OrganizationApiSchemas,
   ...RequirementKnowledgeApiSchemas,
+  ...KnowledgeWritebackApiSchemas,
   'app.bootstrap': {
     input: empty,
     output: z.object({

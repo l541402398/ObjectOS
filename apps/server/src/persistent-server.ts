@@ -18,6 +18,7 @@ import { AssetScopeError, registerOrganizationAssets } from './assets-api.js'
 import { registerOrganizationWorkers } from './workers-api.js'
 import { registerOrganizationWorkerJobs } from './worker-jobs-api.js'
 import { registerOrganizationKnowledge } from './knowledge-api.js'
+import { registerKnowledgeCandidates } from './knowledge-candidates-api.js'
 import {
   assertOrganizationSchema,
   audit,
@@ -563,5 +564,6 @@ export async function buildOrganizationServer(options: OrganizationServerOptions
   registerOrganizationWorkers(app, pool, accountFor)
   registerOrganizationWorkerJobs(app, pool, accountFor)
   registerOrganizationKnowledge(app, pool, accountFor)
+  registerKnowledgeCandidates(app, pool, accountFor)
   return app
 }

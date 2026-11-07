@@ -1,0 +1,24 @@
+{
+  "capturedAt": "2026-11-07T10:47:30.721Z",
+  "files": [
+    {
+      "path": "release/win-unpacked/ProjectOS.exe",
+      "bytes": 239400448,
+      "sha256": "e4b5d2ac1d8b0b306b79d7b775dc2edb49f89b751c998c930f33f7ceb051a888",
+      "expected": "e4b5d2ac1d8b0b306b79d7b775dc2edb49f89b751c998c930f33f7ceb051a888"
+    },
+    {
+      "path": "release/win-unpacked/resources/app.asar",
+      "bytes": 46738884,
+      "sha256": "0a762ae40bb0a7a553708119f35a2836a79535113f016f4d7dfb40803128afbb",
+      "expected": "0a762ae40bb0a7a553708119f35a2836a79535113f016f4d7dfb40803128afbb"
+    },
+    {
+      "path": "release/win-unpacked/resources/runtime/index.mjs",
+      "bytes": 2915335,
+      "sha256": "9148c84ce62d430051f132760c4985bce32702ca7d9f30d28fcb40baabb0ccac",
+      "expected": "9148c84ce62d430051f132760c4985bce32702ca7d9f30d28fcb40baabb0ccac"
+    }
+  ],
+  "pass": true
+}

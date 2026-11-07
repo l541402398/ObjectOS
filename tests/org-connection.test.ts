@@ -1,10 +1,11 @@
-import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto'
+import { createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID } from 'node:crypto'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { createServer } from 'node:net'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { OrganizationConnectionView } from '@projectos/contracts'
+import type { OrganizationWorkerPorts } from '../apps/desktop/src/main/auth/organization-worker.js'
 import { buildServer } from '../apps/server/src/app.js'
 import {
   OrganizationConnection,
@@ -111,7 +112,7 @@ describe('Main organization connection — real HTTP login and safe session stat
     await fetch(callback)
   }
 
-  function setup(options: { fetchImpl?: typeof fetch; openExternal?: (url: string) => Promise<void> } = {}) {
+  function setup(options: { fetchImpl?: typeof fetch; openExternal?: (url: string) => Promise<void>; workerPorts?: OrganizationWorkerPorts } = {}) {
     const dataDir = mkdtempSync(join(tmpdir(), 'projectos-org-connection-'))
     directories.push(dataDir)
     const crypto = codec()
@@ -127,6 +128,7 @@ describe('Main organization connection — real HTTP login and safe session stat
       crypto,
       options.openExternal ?? browser,
       captureFetch,
+      options.workerPorts,
     )
     cleanups.push(() => connection.execute('organization.cancel', {}))
     return {
@@ -626,6 +628,78 @@ describe('Main organization connection — real HTTP login and safe session stat
     await fixture.connection.execute('organization.select', { organizationId: secondOrg })
     response.resolve(Response.json({ sources: [{ ...pin, title: '旧组织资料', version: '1.0.0', category: 'technical', body: '不得进入新组织上下文' }] }))
     await rejected
+  })
+
+  async function writebackFixture(dropResponse = false, delay = false) {
+    let receipt: Record<string, unknown>, payload: Record<string, unknown>, published: Record<string, unknown>
+    let posts = 0
+    const entered = deferred<void>(), resume = deferred<void>(), runtimeCalls: Array<{ method: string; input: Record<string, unknown> }> = []
+    const ports: OrganizationWorkerPorts = { confirm: async () => true, runtime: async (method, raw) => {
+      const input = raw as Record<string, unknown>; runtimeCalls.push({ method, input })
+      if (method === 'runtime.knowledge.prepareWriteback' || method === 'runtime.knowledge.getWriteback' || method === 'runtime.knowledge.retryWriteback') return { receipt, payload }
+      if (method === 'runtime.knowledge.finishWriteback') {
+        const outcome = input.outcome as { kind: string }
+        receipt = { ...receipt, status: outcome.kind === 'submitted' ? 'submitted' : 'needs_reconciliation', candidateId: outcome.kind === 'submitted' ? payload.id : null }
+        return receipt
+      }
+      if (method === 'runtime.worker.clear') return { ok: true }
+      throw new Error('unexpected runtime call: ' + method)
+    } }
+    const fixture = setup({ workerPorts: ports, fetchImpl: async (url, init) => {
+      if (String(url).includes('/knowledge-candidates')) {
+        expect(new Headers(init?.headers).get('authorization')).toBe(`Bearer ${fixture.token()}`)
+        if (init?.method === 'POST') {
+          posts++; expect(JSON.parse(String(init.body))).toEqual(payload)
+          entered.resolve(); if (delay) await resume.promise
+          if (dropResponse) throw new Error('response lost after the server accepted the candidate')
+        }
+        return Response.json(published)
+      }
+      return fetch(url, init)
+    } })
+    const current = await connect(fixture.connection), id = randomUUID()
+    const source = { kind: 'desktop-owner-attested', requirementId: 'req_trusted', requirementTitle: '真实验收需求', requirementVersion: 0,
+      acceptanceId: 'accepted_local', fingerprint: 'a'.repeat(64), acceptedAt: 1, acceptanceNote: '已核对本机当前成果和实际验证证据',
+      tasks: [{ taskId: 'task_real', version: 1, sourceCommit: 'a'.repeat(40), integrationCommit: 'b'.repeat(40), reviewArtifactIds: ['review_real'], verificationRunId: 'run_test', verificationToolCallIds: ['call_test'], workflowRunIds: ['run_output'] }],
+      artifacts: [{ id: 'artifact_real', taskId: 'task_real', runId: 'run_output', title: '真实产物', checksum: 'c'.repeat(64) }], citations: [] }
+    const content = { title: '知识候选', body: '这是经过人工整理的固定候选正文。', tags: ['验证'] }
+    payload = { id, projectId: 'shared-project', category: 'technical', content, source }
+    receipt = { id, requirementId: source.requirementId, serverUrl: origin, organizationId: firstOrg, accountId: current.session!.account.id, projectId: 'shared-project', status: 'sending', runId: 'run_submission', candidateId: null, error: null, createdAt: 1 }
+    published = { candidate: { ...payload, organizationId: firstOrg, authorId: current.session!.account.id, authorName: 'Test', checksum: 'sha256:' + 'd'.repeat(64),
+      payloadHash: createHash('sha256').update(JSON.stringify(payload)).digest('hex'), status: 'pending', revision: 1, createdAt: 1, reviewedAt: null, reviewerId: null, reviewNote: null, decisionId: null, publication: null, canReview: true }, related: [] }
+    const input = { id, requirementId: source.requirementId, projectId: 'shared-project', acceptanceId: source.acceptanceId, fingerprint: source.fingerprint, artifactIds: ['artifact_real'], category: 'technical', content, confirmed: true }
+    return { ...fixture, input, ports, runtimeCalls, entered, resume, posts: () => posts }
+  }
+
+  it('uses only Runtime-collected knowledge provenance and rejects renderer-supplied evidence before HTTP', async () => {
+    const fixture = await writebackFixture()
+    await expect(fixture.connection.execute('organization.submitKnowledgeCandidate', { ...fixture.input, source: { forged: true } })).rejects.toThrow()
+    expect(fixture.posts()).toBe(0); expect(fixture.runtimeCalls).toHaveLength(0)
+    const result = await fixture.connection.execute('organization.submitKnowledgeCandidate', fixture.input)
+    expect(result).toMatchObject({ status: 'submitted' }); expect(fixture.posts()).toBe(1)
+    expect(JSON.stringify(result)).not.toContain(fixture.token())
+    expect(JSON.stringify(result)).not.toContain('真实验收需求')
+  })
+
+  it('persists unknown submission outcomes and reconciles with a read after Main restarts without automatically resending', async () => {
+    const fixture = await writebackFixture(true)
+    await expect(fixture.connection.execute('organization.submitKnowledgeCandidate', fixture.input)).rejects.toMatchObject({ code: 'CONFLICT', retryable: false })
+    expect(fixture.posts()).toBe(1)
+    expect(fixture.runtimeCalls.at(-1)).toMatchObject({ method: 'runtime.knowledge.finishWriteback', input: { outcome: { kind: 'unknown' } } })
+    const restarted = new OrganizationConnection(fixture.dataDir, fixture.crypto, browser, fixture.captureFetch, fixture.ports)
+    expect(fixture.posts()).toBe(1)
+    expect(await restarted.execute('organization.reconcileKnowledgeWriteback', { id: fixture.input.id })).toMatchObject({ status: 'submitted' })
+    expect(fixture.posts()).toBe(1)
+  })
+
+  it('records an in-flight write as unknown when the current organization changes before its response returns', async () => {
+    const fixture = await writebackFixture(false, true)
+    const pending = fixture.connection.execute('organization.submitKnowledgeCandidate', fixture.input)
+    const rejected = expect(pending).rejects.toMatchObject({ code: 'CONFLICT' })
+    await fixture.entered.promise
+    await fixture.connection.execute('organization.select', { organizationId: secondOrg })
+    fixture.resume.resolve(); await rejected
+    expect(fixture.runtimeCalls.at(-1)).toMatchObject({ method: 'runtime.knowledge.finishWriteback', input: { outcome: { kind: 'unknown' } } })
   })
 
   it('routes named knowledge APIs through Main with schema validation and keeps credentials out of output', async () => {

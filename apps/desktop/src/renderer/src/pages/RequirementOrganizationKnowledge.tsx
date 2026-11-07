@@ -6,6 +6,7 @@ import { OrganizationEmpty, OrganizationError, OrganizationField, OrganizationLo
 import { organizationConnectionKey, organizationScopeKey } from '../features/settings/organization/useOrganization'
 import '../features/settings/organization/organization.css'
 import '../features/settings/organization/knowledge.css'
+import { KnowledgeWriteback } from './KnowledgeWriteback'
 
 type Source = ApiOutput<'organization.searchKnowledge'>['results'][number]
 type Selected = Pick<Source, 'documentId' | 'versionId' | 'checksum' | 'title' | 'version' | 'category'> & { reason: string }
@@ -61,6 +62,7 @@ export function RequirementOrganizationKnowledge({ requirementId }: { requiremen
     <div className="org-section-heading"><h3>组织资料</h3><button className="org-button is-primary" type="button" disabled={!available || !data || data.locked} onClick={() => setEditing(true)}>选择组织资料</button></div>
     <OrganizationError error={knowledge.error || connection.error}/>
     {knowledge.isPending ? <OrganizationLoading/> : linked ? <><p className="rq-knowledge-source-meta">{data.locked ? '本次引用已固定，后续版本不会替换。' : '生成计划或开始流程时固定引用。'}</p><ul className="rq-knowledge-sources">{linked.pins.map(pin => <li key={pin.versionId}><strong>{pin.title} · {pin.version}</strong><p>{pin.reason}</p><p className="rq-knowledge-source-meta">{pin.checksum}</p></li>)}</ul>{!available ? <p role="status">请连接引用所属组织后再开始分析。</p> : null}</> : <p role="status">{data?.locked ? '本次需求已使用本地上下文开始分析，资料范围已固定。' : available ? '尚未选择组织资料；当前使用本地项目上下文。' : '个人模式使用本地项目上下文。连接组织后可选择组织资料。'}</p>}
+    <KnowledgeWriteback requirementId={requirementId} connection={connection.data} available={available} initialProjectId={linked?.projectId}/>
     {editing && available && data && connection.data ? <ReferenceEditor requirementId={requirementId} current={data} connection={connection.data} onSaved={() => knowledge.refetch()} onClose={() => setEditing(false)}/> : null}
   </section>
 }

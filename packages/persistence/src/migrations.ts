@@ -1671,6 +1671,21 @@ CREATE TABLE requirement_organization_knowledge (
 );
 `
 
+const V46 = `
+CREATE TABLE requirement_knowledge_acceptances (
+  id TEXT PRIMARY KEY, requirement_id TEXT NOT NULL REFERENCES requirements(id),
+  fingerprint TEXT NOT NULL, snapshot_json TEXT NOT NULL, note TEXT NOT NULL, accepted_at INTEGER NOT NULL,
+  UNIQUE(requirement_id,fingerprint)
+);
+CREATE TABLE knowledge_writebacks (
+  id TEXT PRIMARY KEY, requirement_id TEXT NOT NULL REFERENCES requirements(id), acceptance_id TEXT NOT NULL REFERENCES requirement_knowledge_acceptances(id),
+  server_url TEXT NOT NULL, organization_id TEXT NOT NULL, account_id TEXT NOT NULL, project_id TEXT NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('sending','needs_reconciliation','submitted','failed')),
+  payload_json TEXT NOT NULL, payload_hash TEXT NOT NULL, run_id TEXT NOT NULL REFERENCES agent_runs(id),
+  tool_call_id TEXT NOT NULL REFERENCES tool_calls(id), candidate_id TEXT, error TEXT, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -1717,6 +1732,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 43, name: 'requirement default owners and start intents', sql: V43 },
   { version: 44, name: 'audited Git delivery resolution and organization job receipts', sql: V44 },
   { version: 45, name: 'requirement organization knowledge references', sql: V45 },
+  { version: 46, name: 'accepted requirement knowledge candidate submissions', sql: V46 },
 ]
 
 function checksum(sql: string): string {

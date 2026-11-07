@@ -1,0 +1,11 @@
+{
+  "before": {
+    "path": "screenshots/before-protected-dag.png",
+    "sha256": "4aa5419bf69ffc120a9665ff0cabd9411572b6f7d6a243ab56adfec48199fce7"
+  },
+  "after": {
+    "path": "screenshots/after-protected-dag.png",
+    "sha256": "4aa5419bf69ffc120a9665ff0cabd9411572b6f7d6a243ab56adfec48199fce7"
+  },
+  "byteIdentical": true
+}

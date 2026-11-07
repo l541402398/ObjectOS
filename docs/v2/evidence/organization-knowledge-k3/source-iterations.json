@@ -1,0 +1,63 @@
+{
+  "snapshots": [
+    {
+      "name": "source-manifest.initial.json",
+      "head": "c011d95c17926b37c978c59f8133d6666241f3ec",
+      "sourceHash": "313de44216d8d111daccd0973498ff716559bf01c8928a1621c9951223cc551b",
+      "fileCount": 747
+    },
+    {
+      "name": "source-manifest.pre-desktop-fix.json",
+      "head": "c011d95c17926b37c978c59f8133d6666241f3ec",
+      "sourceHash": "70cc768b331a7060b7acce4f08c333fa1e24b99ac2ce044e5ae965d4f4531ce5",
+      "fileCount": 747
+    },
+    {
+      "name": "source-manifest.before-detector-handling.json",
+      "head": "c011d95c17926b37c978c59f8133d6666241f3ec",
+      "sourceHash": "eef854fa86a730ee09a3e9a90b18f25f1497e267c3ea8199fd9f6d9134d66fd2",
+      "fileCount": 747
+    },
+    {
+      "name": "source-manifest.json",
+      "head": "c011d95c17926b37c978c59f8133d6666241f3ec",
+      "sourceHash": "5f0f8ad7a5e6b34e02444cb001046c13c6881f7330e2a8bad1fdef23a765965f",
+      "fileCount": 747
+    }
+  ],
+  "transitions": [
+    {
+      "before": "313de44216d8d111daccd0973498ff716559bf01c8928a1621c9951223cc551b",
+      "after": "70cc768b331a7060b7acce4f08c333fa1e24b99ac2ce044e5ae965d4f4531ce5",
+      "changed": [
+        {
+          "path": "tests/org-local-worker.test.ts",
+          "before": "714155c72d19d9eeadf291a232690d34c249f098df0cb09d6c9ab4079545e725",
+          "after": "ca89a94a055d11026e2a01587326da321f6d6e19a8492324b4b1012ab4183ae9"
+        }
+      ]
+    },
+    {
+      "before": "70cc768b331a7060b7acce4f08c333fa1e24b99ac2ce044e5ae965d4f4531ce5",
+      "after": "eef854fa86a730ee09a3e9a90b18f25f1497e267c3ea8199fd9f6d9134d66fd2",
+      "changed": [
+        {
+          "path": "scripts/org-knowledge-k3-e2e.mjs",
+          "before": "cabebd046130e8a01a2a986a1731d4ff4bdfb235885e457ecc10aa416497a720",
+          "after": "d339f5f084c8c0372c984f1f5f43c7ed63efebc30ebb31382a2d614722518164"
+        }
+      ]
+    },
+    {
+      "before": "eef854fa86a730ee09a3e9a90b18f25f1497e267c3ea8199fd9f6d9134d66fd2",
+      "after": "5f0f8ad7a5e6b34e02444cb001046c13c6881f7330e2a8bad1fdef23a765965f",
+      "changed": [
+        {
+          "path": "scripts/org-knowledge-k3-e2e.mjs",
+          "before": "d339f5f084c8c0372c984f1f5f43c7ed63efebc30ebb31382a2d614722518164",
+          "after": "007339338087bda8c6e60de93135a00fe5936f5536af94976233c24c51a18177"
+        }
+      ]
+    }
+  ]
+}

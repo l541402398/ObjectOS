@@ -1,0 +1,10 @@
+{
+  "sourceHash": "5f0f8ad7a5e6b34e02444cb001046c13c6881f7330e2a8bad1fdef23a765965f",
+  "fileCount": 747,
+  "commands": 15,
+  "checks": 187,
+  "captures": 64,
+  "contrastCount": 610,
+  "minimumContrast": 4.615082828368212,
+  "pass": true
+}

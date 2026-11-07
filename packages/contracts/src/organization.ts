@@ -1,5 +1,8 @@
 import { z } from 'zod'
 import { RequirementKnowledgeSelectionSchema, RequirementKnowledgeViewSchema } from './organization-knowledge.js'
+import { KnowledgeWritebackSelectionSchema, KnowledgeWritebackReceiptSchema, KnowledgeWritebackOperationSchema } from './knowledge-writeback.js'
+import { KnowledgeCandidateListSchema, KnowledgeCandidateDetailSchema, KnowledgeCandidateDecisionSchema } from '@projectos/organization-contracts'
+export type { KnowledgeCandidate, KnowledgeCandidateDetail } from '@projectos/organization-contracts'
 import {
   OrganizationKnowledgeCreateSchema, OrganizationKnowledgeDetailSchema,
   OrganizationKnowledgeVersionInputSchema, OrganizationKnowledgeDraftSchema,
@@ -116,6 +119,13 @@ const empty = z.object({}).strict()
 const ok = z.object({ ok: z.literal(true) })
 const id = z.string().min(1).max(128)
 export const OrganizationApiSchemas = {
+  'organization.knowledgeCandidates': { input: empty, output: KnowledgeCandidateListSchema },
+  'organization.knowledgeWriteback': { input: z.object({ id: z.uuid() }).strict(), output: KnowledgeWritebackOperationSchema },
+  'organization.knowledgeCandidate': { input: z.object({ id: z.uuid() }).strict(), output: KnowledgeCandidateDetailSchema },
+  'organization.reviewKnowledgeCandidate': { input: z.object({ id: z.uuid(), decision: KnowledgeCandidateDecisionSchema }).strict(), output: KnowledgeCandidateDetailSchema },
+  'organization.submitKnowledgeCandidate': { input: KnowledgeWritebackSelectionSchema, output: KnowledgeWritebackReceiptSchema },
+  'organization.reconcileKnowledgeWriteback': { input: z.object({ id: z.uuid() }).strict(), output: KnowledgeWritebackReceiptSchema },
+  'organization.retryKnowledgeWriteback': { input: z.object({ id: z.uuid(), confirmed: z.literal(true) }).strict(), output: KnowledgeWritebackReceiptSchema },
   'organization.setRequirementKnowledge': { input: RequirementKnowledgeSelectionSchema, output: RequirementKnowledgeViewSchema },
   'organization.knowledgeList': { input: OrganizationKnowledgeListInputSchema, output: OrganizationKnowledgeListSchema },
   'organization.knowledgeDetail': { input: z.object({ documentId: id }).strict(), output: OrganizationKnowledgeDetailSchema },

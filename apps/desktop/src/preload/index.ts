@@ -59,6 +59,13 @@ const api: ProjectOSDesktopApi = {
     reconcile: input => call('gitDelivery.reconcile', input),
   },
   organization: {
+    knowledgeCandidates: () => call('organization.knowledgeCandidates', {}),
+    knowledgeWriteback: (input) => call('organization.knowledgeWriteback', input),
+    knowledgeCandidate: (input) => call('organization.knowledgeCandidate', input),
+    reviewKnowledgeCandidate: (input) => call('organization.reviewKnowledgeCandidate', input),
+    submitKnowledgeCandidate: (input) => call('organization.submitKnowledgeCandidate', input),
+    reconcileKnowledgeWriteback: (input) => call('organization.reconcileKnowledgeWriteback', input),
+    retryKnowledgeWriteback: (input) => call('organization.retryKnowledgeWriteback', input),
     setRequirementKnowledge: (input) => call('organization.setRequirementKnowledge', input),
     knowledgeList: (input) => call('organization.knowledgeList', input),
     knowledgeDetail: (input) => call('organization.knowledgeDetail', input),
@@ -206,6 +213,9 @@ const api: ProjectOSDesktopApi = {
     stopAll: (input) => call('requirement.flow.stopAll', input),
   },
   requirements: {
+    knowledgeDelivery: (requirementId) => call('requirement.knowledgeDelivery', { requirementId }),
+    acceptKnowledgeDelivery: (input) => call('requirement.acceptKnowledgeDelivery', input),
+    knowledgeDraft: (input) => call('requirement.knowledgeDraft', input),
     knowledge: (requirementId) => call('requirement.knowledge', { requirementId }),
     integrationPreview: (taskId) => call('task.integration.preview', { taskId }),
     reviewIntegration: (input) => call('task.integration.review', input),

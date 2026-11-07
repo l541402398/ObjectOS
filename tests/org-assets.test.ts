@@ -147,7 +147,7 @@ describe('A2.1 immutable organization assets — real PostgreSQL and HTTP', () =
       (
         await database.pool.query('SELECT version FROM organization_schema_migrations ORDER BY version')
       ).rows.map((row) => row.version),
-    ).toEqual([1, 2, 3, 4, 5])
+    ).toEqual([1, 2, 3, 4, 5, 6])
     expect(
       (await database.pool.query('SELECT checksum FROM organization_schema_migrations WHERE version=1'))
         .rows[0].checksum,

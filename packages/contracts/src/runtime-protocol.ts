@@ -5,6 +5,7 @@ import { ApprovalStatusSchema, RunStatusSchema, TaskStatusSchema } from './enums
 import { RuntimeStatusSchema } from './entities.js'
 import { WorkerInternalSchemas, WorkerJobInternalSchemas } from '@projectos/organization-contracts'
 import { KnowledgeRequestFrameSchema, KnowledgeResponseFrameSchema, RequirementKnowledgeInternalSchemas } from './organization-knowledge.js'
+import { KnowledgeWritebackInternalSchemas } from './knowledge-writeback.js'
 
 export const RUNTIME_PROTOCOL_VERSION = 1
 
@@ -167,6 +168,7 @@ export type ProviderRuntimeConfig = z.infer<typeof ProviderRuntimeConfigSchema>
 /** Internal methods accepted by the runtime beyond the renderer catalogue. */
 export const RUNTIME_INTERNAL_METHODS = [
   ...Object.keys(RequirementKnowledgeInternalSchemas),
+  ...Object.keys(KnowledgeWritebackInternalSchemas),
   ...Object.keys(WorkerJobInternalSchemas),
   ...Object.keys(WorkerInternalSchemas),
   'runtime.health',

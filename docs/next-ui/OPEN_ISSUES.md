@@ -1,5 +1,16 @@
 # ProjectOS Next UI — Open Issues
 
+2026-11-07 K3: whole-page rendered detection completed with 11 diagnostics (8 warnings / 3 advisory)
+while the knowledge writeback dialog was open. They target the existing shell, sidebar, journey/action
+bar and global easing, outside `.kw-dialog`. The five cyan-palette recommendations conflict with the
+pinned approved glass direction and are rejected as restyling guidance. Other background contrast
+estimates (crumb 4.0, status 3.8, sidebar/action samples 4.46/4.47) need separate native-composited
+verification in their active page states; they are not a new-surface AA result. Keep original output
+and selector/accessibility context in `organization-knowledge-k3/impeccable-rendered*.json`; K3 uses
+its own unchanged axe/native-contrast assertions. No global theme, motion or protected DAG change.
+K3 acceptance is an independent knowledge-writeback gate, not general requirement delivery or main
+branch publication. See [`K3 report`](../v2/evidence/organization-knowledge-k3/REPORT.md).
+
 2026-11-07 K2: the existing `design-lab-e2e.mjs` and `design-lab-contrast.mjs` still target the old
 stage-first surface; the former also requires a rejected approval modal. Keep their actual failures
 in the K2 report and use `premium-lab-e2e.mjs` for the approved DAG (32/32 PASS in this run).

@@ -1,0 +1,4 @@
+PASS baseline-package: baseline-package-1.log
+PASS lint: lint-1.log
+PASS typecheck: typecheck-1.log
+FAIL test: test-1.log

@@ -72,7 +72,7 @@ describe('A2.2 device identity and grants — actual PostgreSQL / HTTP', () => {
         )
       ).rows,
     ).toEqual(old)
-    expect(ORGANIZATION_SCHEMA_VERSION).toBe(5)
+    expect(ORGANIZATION_SCHEMA_VERSION).toBe(6)
     for (const id of [owner, admin, member])
       await database.pool.query('INSERT INTO "user"(id,name,email,"emailVerified") VALUES($1,$1,$2,false)', [
         id,

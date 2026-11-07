@@ -1,0 +1,8 @@
+PASS Protected DAG screenshot remains byte-identical
+page.evaluate: TypeError: window.projectos.tasks.get is not a function
+    at eval (eval at evaluate (:370:30), <anonymous>:1:30)
+    at UtilityScript.evaluate (<anonymous>:372:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+    at C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\scripts\org-knowledge-k3-e2e.mjs:122:28 {
+  log: []
+}

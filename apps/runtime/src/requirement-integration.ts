@@ -53,7 +53,7 @@ export class RequirementIntegrationService {
     this.event(snapshot,'task.integration.updated','冲突解决结果经独立审批合入需求分支')
   }
 
-  private capture(taskId: string, ownRunId?: string) {
+  private capture(taskId: string, ownRunId?: string, readOnly = false) {
     const task = this.store.read.getTask(taskId)
     if (!task?.requirementId) throw new AppError('BAD_REQUEST', '请选择需求中的开发任务')
     const managed = managedTaskWorkspace(this.store, task)!
@@ -70,7 +70,7 @@ export class RequirementIntegrationService {
     if ((active && active.id !== ownRunId) || (lease && lease.expiresAt > now())) blockers.push('任务仍有运行、写入租约或待核对操作，请先处理')
     assertSafeGitAttributes(target.root, content.files.map(file => file.path))
     if (task.status !== 'done') blockers.push('请先在任务详情完成任务验收')
-    if (requirement.status === 'implemented') blockers.push('需求已经交付，不能继续合入')
+    if (!readOnly && requirement.status === 'implemented') blockers.push('需求已经交付，不能继续合入')
     if (gitText(target.root, 'status', '--porcelain=v1', '-uall')) blockers.push('需求集成工作区存在未提交修改，请先处理')
     if (content.files.length === 0) blockers.push('当前任务没有可合入的改动')
     const snapshot: Snapshot = {
@@ -172,6 +172,25 @@ export class RequirementIntegrationService {
   preview(taskId: string): TaskIntegrationPreview {
     this.refreshPending()
     return this.makePreview(this.capture(taskId))
+  }
+
+  /** Recollect the same trusted review/test/Git evidence without requesting another integration. */
+  knowledgeEvidence(taskId: string) {
+    const captured = this.capture(taskId, undefined, true), { snapshot } = captured
+    const verification = this.verification(snapshot)
+    if (captured.blockers.length || !captured.integrated || !this.review(snapshot, captured.content.snapshot).approved || !verification.passed || !verification.runId)
+      throw new AppError('CONFLICT', '任务须完成验收、当前内容审查、实际验证及需求分支合入')
+    const operation = this.store.db.prepare("SELECT result_commit FROM task_integration_operations WHERE task_id=? AND kind='integrate' AND status='completed' AND source_commit=? ORDER BY created_at DESC,id DESC LIMIT 1").get(taskId, snapshot.sourceHead)
+    const reviewArtifactIds = this.store.db.prepare('SELECT artifact_id FROM task_integration_reviews WHERE task_id=? AND content_fingerprint=? AND requirement_version=? AND task_version=? ORDER BY artifact_id')
+      .all(taskId, snapshot.contentFingerprint, snapshot.requirementVersion, snapshot.taskVersion).map(row => String(row.artifact_id))
+    const verificationToolCallIds = this.store.read.getToolCalls(verification.runId).filter(call => {
+      const result = call.result as { exitCode?: number; contentFingerprint?: string; workflowTestFingerprint?: string; unchanged?: boolean } | null
+      return call.toolName === 'run_tests' && call.status === 'completed' && result?.exitCode === 0 &&
+        ((result.contentFingerprint === snapshot.contentFingerprint && result.unchanged === true) || result.workflowTestFingerprint === snapshot.contentFingerprint)
+    }).map(call => call.id)
+    if (!operation?.result_commit || !reviewArtifactIds.length || !verificationToolCallIds.length) throw new AppError('CONFLICT', '缺少完整的持久化验收证据')
+    return { taskId, version: snapshot.taskVersion, sourceCommit: snapshot.sourceHead, integrationCommit: String(operation.result_commit),
+      targetHead: snapshot.targetHead, fingerprint: hash(snapshot), reviewArtifactIds, verificationRunId: verification.runId, verificationToolCallIds }
   }
 
   private makePreview({ task, snapshot, content, blockers, integrated }: ReturnType<RequirementIntegrationService['capture']>): TaskIntegrationPreview {
