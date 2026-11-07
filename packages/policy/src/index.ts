@@ -58,6 +58,7 @@ export interface ToolCallContext {
 export function evaluateToolPolicy(context: ToolCallContext): ToolPolicyResult {
   const { toolName, args, rootPath } = context
   if (toolName === 'submit_organization_knowledge') return { decision: 'require_approval', risk: 'external', reason: '分享固定内容到组织需要本次人工确认', redactedArgs: args }
+  if (toolName === 'organization_assignment_command') return { decision: 'require_approval', risk: 'external', reason: '组织分配操作需要本次人工确认', redactedArgs: args }
   if (READ_TOOLS.has(toolName)) {
     const filePath = typeof args.path === 'string' ? args.path : null
     if (filePath) {

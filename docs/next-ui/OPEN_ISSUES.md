@@ -1,5 +1,14 @@
 # ProjectOS Next UI — Open Issues
 
+2026-11-07 K4: rendered detection with the new assignment form open retains 18 diagnostics
+(16 warning / 2 advisory), all selectors outside `.organization-assignments`: existing project-center
+cards/journey/palette, Settings eyebrow type size, background description/action contrast and global
+easing. Seven palette recommendations conflict with the frozen cyan/glass brief and are rejected as
+restyling guidance. The remaining context findings need their own active-surface review; this is not
+a whole-page quality PASS. Source detector `[]`, new-surface axe and native compositor evidence are
+separate. See `member-assignment-k4/impeccable-rendered*.json` and the K4 report. No protected DAG,
+global typography, palette or motion changes were made for these diagnostics.
+
 2026-11-07 K3: whole-page rendered detection completed with 11 diagnostics (8 warnings / 3 advisory)
 while the knowledge writeback dialog was open. They target the existing shell, sidebar, journey/action
 bar and global easing, outside `.kw-dialog`. The five cyan-palette recommendations conflict with the

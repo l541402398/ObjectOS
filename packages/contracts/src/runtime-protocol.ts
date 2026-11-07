@@ -6,6 +6,7 @@ import { RuntimeStatusSchema } from './entities.js'
 import { WorkerInternalSchemas, WorkerJobInternalSchemas } from '@projectos/organization-contracts'
 import { KnowledgeRequestFrameSchema, KnowledgeResponseFrameSchema, RequirementKnowledgeInternalSchemas } from './organization-knowledge.js'
 import { KnowledgeWritebackInternalSchemas } from './knowledge-writeback.js'
+import { AssignmentInternalSchemas, AssignmentRequestFrameSchema, AssignmentResponseFrameSchema } from './member-assignments.js'
 
 export const RUNTIME_PROTOCOL_VERSION = 1
 
@@ -141,6 +142,8 @@ export const RuntimeFrameSchema = z.discriminatedUnion('kind', [
   RuntimePongFrameSchema,
   KnowledgeRequestFrameSchema,
   KnowledgeResponseFrameSchema,
+  AssignmentRequestFrameSchema,
+  AssignmentResponseFrameSchema,
 ])
 export type RuntimeFrame = z.infer<typeof RuntimeFrameSchema>
 
@@ -169,6 +172,7 @@ export type ProviderRuntimeConfig = z.infer<typeof ProviderRuntimeConfigSchema>
 export const RUNTIME_INTERNAL_METHODS = [
   ...Object.keys(RequirementKnowledgeInternalSchemas),
   ...Object.keys(KnowledgeWritebackInternalSchemas),
+  ...Object.keys(AssignmentInternalSchemas),
   ...Object.keys(WorkerJobInternalSchemas),
   ...Object.keys(WorkerInternalSchemas),
   'runtime.health',

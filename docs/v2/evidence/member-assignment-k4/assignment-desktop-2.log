@@ -1,0 +1,99 @@
+PASS Protected DAG byte-identical
+PASS Personal project creation makes no organization request
+PASS 落实退款需求 explicit dispatch confirmation
+PASS Dispatch draft protected on immediate Escape
+PASS leader-dispatch-1440-light-100 fits
+PASS leader-dispatch-1440-light-100 axe
+PASS leader-dispatch-1440-light-100 native contrast
+PASS leader-dispatch-1440-light-125 fits
+PASS leader-dispatch-1440-light-125 axe
+PASS leader-dispatch-1440-light-125 native contrast
+PASS leader-dispatch-1440-dark-100 fits
+PASS leader-dispatch-1440-dark-100 axe
+PASS leader-dispatch-1440-dark-100 native contrast
+PASS leader-dispatch-1440-dark-125 fits
+PASS leader-dispatch-1440-dark-125 axe
+PASS leader-dispatch-1440-dark-125 native contrast
+PASS leader-dispatch-1024-light-100 fits
+PASS leader-dispatch-1024-light-100 axe
+PASS leader-dispatch-1024-light-100 native contrast
+PASS leader-dispatch-1024-light-125 fits
+PASS leader-dispatch-1024-light-125 axe
+PASS leader-dispatch-1024-light-125 native contrast
+PASS leader-dispatch-1024-dark-100 fits
+PASS leader-dispatch-1024-dark-100 axe
+PASS leader-dispatch-1024-dark-100 native contrast
+PASS leader-dispatch-1024-dark-125 fits
+PASS leader-dispatch-1024-dark-125 axe
+PASS leader-dispatch-1024-dark-125 native contrast
+PASS Rendered design detector completed; diagnostics retained
+PASS Leader dispatch creates no fake local project
+PASS member-inbox-1440-light-100 fits
+PASS member-inbox-1440-light-100 axe
+PASS member-inbox-1440-light-100 native contrast
+PASS member-inbox-1440-light-125 fits
+PASS member-inbox-1440-light-125 axe
+PASS member-inbox-1440-light-125 native contrast
+PASS member-inbox-1440-dark-100 fits
+PASS member-inbox-1440-dark-100 axe
+PASS member-inbox-1440-dark-100 native contrast
+PASS member-inbox-1440-dark-125 fits
+PASS member-inbox-1440-dark-125 axe
+PASS member-inbox-1440-dark-125 native contrast
+PASS member-inbox-1024-light-100 fits
+PASS member-inbox-1024-light-100 axe
+PASS member-inbox-1024-light-100 native contrast
+PASS member-inbox-1024-light-125 fits
+PASS member-inbox-1024-light-125 axe
+PASS member-inbox-1024-light-125 native contrast
+PASS member-inbox-1024-dark-100 fits
+PASS member-inbox-1024-dark-100 axe
+PASS member-inbox-1024-dark-100 native contrast
+PASS member-inbox-1024-dark-125 fits
+PASS member-inbox-1024-dark-125 axe
+PASS member-inbox-1024-dark-125 native contrast
+PASS Unknown acceptance has no local requirement yet
+PASS acceptance-unknown-1440-light-100 fits
+PASS acceptance-unknown-1440-light-100 axe
+PASS acceptance-unknown-1440-light-100 native contrast
+PASS acceptance-unknown-1440-light-125 fits
+PASS acceptance-unknown-1440-light-125 axe
+PASS acceptance-unknown-1440-light-125 native contrast
+PASS acceptance-unknown-1440-dark-100 fits
+PASS acceptance-unknown-1440-dark-100 axe
+PASS acceptance-unknown-1440-dark-100 native contrast
+PASS acceptance-unknown-1440-dark-125 fits
+PASS acceptance-unknown-1440-dark-125 axe
+PASS acceptance-unknown-1440-dark-125 native contrast
+PASS acceptance-unknown-1024-light-100 fits
+PASS acceptance-unknown-1024-light-100 axe
+PASS acceptance-unknown-1024-light-100 native contrast
+PASS acceptance-unknown-1024-light-125 fits
+PASS acceptance-unknown-1024-light-125 axe
+PASS acceptance-unknown-1024-light-125 native contrast
+PASS acceptance-unknown-1024-dark-100 fits
+PASS acceptance-unknown-1024-dark-100 axe
+PASS acceptance-unknown-1024-dark-100 native contrast
+PASS acceptance-unknown-1024-dark-125 fits
+PASS acceptance-unknown-1024-dark-125 axe
+PASS acceptance-unknown-1024-dark-125 native contrast
+PASS Unknown acceptance never auto-replays
+PASS Restart never resends assignment intent
+PASS Unknown retry requires renewed confirmation
+PASS Acceptance GET reconciliation does not POST
+PASS Exactly one ordinary requirement imported
+PASS Reception creates no workflow tasks or model requests
+PASS Assigned knowledge project is fixed
+PASS Assigned brief and exact organization knowledge version reach model
+locator.waitFor: Timeout 45000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('dialog', { name: 'AI 拆分任务', exact: true }) to be hidden[22m
+[2m    92 × locator resolved to visible <div role="dialog" tabindex="-1" data-side="right" id="radix-_r_27_" data-state="open" data-theme="light" aria-label="AI 拆分任务" class="pui-overlay-surface pui-overlay-dialog">…</div>[22m
+
+    at C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\scripts\member-assignment-k4-e2e.mjs:211:85 {
+  log: [
+    "  - waiting for getByRole('dialog', { name: 'AI 拆分任务', exact: true }) to be hidden",
+    '    92 × locator resolved to visible <div role="dialog" tabindex="-1" data-side="right" id="radix-_r_27_" data-state="open" data-theme="light" aria-label="AI 拆分任务" class="pui-overlay-surface pui-overlay-dialog">…</div>'
+  ],
+  name: 'TimeoutError'
+}

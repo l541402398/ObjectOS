@@ -1,0 +1,50 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ ❯ tests/member-assignment-local.test.ts (8 tests | 1 failed) 8901ms
+   ❯ K4 local member acceptance, provenance and authority (8)
+     × rejects the legacy unscoped plan chat for assigned work before any model or message, preserving personal routing 652ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/member-assignment-local.test.ts > K4 local member acceptance, provenance and authority > rejects the legacy unscoped plan chat for assigned work before any model or message, preserving personal routing
+AssertionError: promise resolved "{ …(3) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "groupSessionId": "ses_01m6v118v05rzsgsnqeapg05r4",
++   "participants": 4,
++   "status": "started",
+  }
+
+ ❯ tests/member-assignment-local.test.ts:166:106
+    164|     expect(f.store.read.listSessionSummaries(f.project.id)).toHaveLeng…
+    165|     const personal = f.orchestration.generatePlan(f.project.id, '个人计划讨…
+    166|     await expect(dispatcher.dispatch('plan.discuss', { planId: persona…
+       |                                                                                                          ^
+    167|   })
+    168| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 9 passed (10)
+   Start at  04:51:34
+   Duration  11.45s (tests 73%, import 16%, transform 11%)
+

@@ -7,8 +7,9 @@ import { join, resolve } from 'node:path'
 
 const root = resolve('.')
 const phase = process.argv.find(arg => arg.startsWith('--phase='))?.slice(8) ?? 'k1'
-if (!['k1', 'k2', 'k3'].includes(phase)) throw new Error('Unknown phase')
-const evidence = join(root, `docs/v2/evidence/${phase === 'k1' ? 'organization-knowledge-phase1' : `organization-knowledge-${phase}`}`)
+if (!['k1', 'k2', 'k3', 'k4'].includes(phase)) throw new Error('Unknown phase')
+const phaseRoot = `docs/v2/evidence/${phase === 'k1' ? 'organization-knowledge-phase1' : phase === 'k4' ? 'member-assignment-k4' : `organization-knowledge-${phase}`}`
+const evidence = join(root, phaseRoot)
 const spawn = createRequire(join(root, 'packages/workspace/package.json'))('cross-spawn')
 mkdirSync(evidence, { recursive: true })
 const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
@@ -31,12 +32,16 @@ if (phase !== 'k1') {
 const file = join(evidence, 'checks.json')
 const attempts = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')).attempts : []
 const commands = [
-  ...(phase === 'k3' ? [['baseline-package', process.execPath, ['docs/v2/evidence/organization-knowledge-k3/artifact-provenance.mjs', 'baseline']]] : []),
+  ...(['k3', 'k4'].includes(phase) ? [['baseline-package', process.execPath, [`${phaseRoot}/artifact-provenance.mjs`, 'baseline']]] : []),
   ['lint', 'pnpm', ['lint']],
   ['typecheck', 'pnpm', ['typecheck']],
   ['test', 'pnpm', ['run', 'test', '--maxWorkers=2']],
   ['build', 'pnpm', ['build']],
-  ...(phase === 'k3' ? [['tested-build', process.execPath, ['docs/v2/evidence/organization-knowledge-k3/artifact-provenance.mjs', 'tested']]] : []),
+  ...(['k3', 'k4'].includes(phase) ? [['tested-build', process.execPath, [`${phaseRoot}/artifact-provenance.mjs`, 'tested']]] : []),
+  ...(phase === 'k4' ? [
+    ['assignment-desktop', process.execPath, ['--import', 'tsx', 'scripts/member-assignment-k4-e2e.mjs']],
+    ['approved-dag', process.execPath, [`${phaseRoot}/run-approved-dag.mjs`]],
+  ] : []),
   ...(phase === 'k2' ? [
     ['knowledge-desktop', process.execPath, ['--import', 'tsx', 'scripts/org-knowledge-k2-e2e.mjs']],
     ['approved-dag', process.execPath, ['docs/v2/evidence/organization-knowledge-k2/run-approved-dag.mjs']],
@@ -52,12 +57,15 @@ const commands = [
   ['v13-e2e', process.execPath, ['scripts/v13-e2e.mjs']],
   ['package-dir', 'pnpm', ['package:dir']],
   ['package-smoke', 'pnpm', ['test:package']],
-  ...(phase === 'k3' ? [['artifact-verification', process.execPath, ['docs/v2/evidence/organization-knowledge-k3/artifact-provenance.mjs', 'final']]] : []),
+  ...(['k3', 'k4'].includes(phase) ? [['artifact-verification', process.execPath, [`${phaseRoot}/artifact-provenance.mjs`, 'final']]] : []),
 ]
 const from = process.argv.find(arg => arg.startsWith('--from='))?.slice(7)
 const start = from ? commands.findIndex(([name]) => name === from) : 0
 if (start < 0) throw new Error('Unknown check name')
-for (const [name, command, args] of commands.slice(start)) {
+const through = process.argv.find(arg => arg.startsWith('--through='))?.slice(10)
+const end = through ? commands.findIndex(([name]) => name === through) : commands.length - 1
+if (end < start) throw new Error('Unknown or invalid final check name')
+for (const [name, command, args] of commands.slice(start, end + 1)) {
   const attempt = attempts.filter(item => item.name === name).length + 1
   const logName = `${name}-${attempt}.log`
   const log = createWriteStream(join(evidence, logName))

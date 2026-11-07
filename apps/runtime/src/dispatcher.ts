@@ -73,6 +73,9 @@ import { RequirementKnowledgeService } from './organization-knowledge.js'
 import { KnowledgeWritebackService } from './knowledge-writeback.js'
 import { KnowledgeWritebackInternalSchemas } from '@projectos/contracts'
 import { type KnowledgeHostInput, type KnowledgeHostOutput } from '@projectos/contracts'
+import { AssignmentInternalSchemas, AssignmentRequirementApiSchemas, RequirementKnowledgeInternalSchemas, type AssignmentHostInput, type AssignmentHostOutput } from '@projectos/contracts'
+import { AssignmentAuthorityService } from './assignment-authority.js'
+import { MemberAssignmentService } from './member-assignments.js'
 
 const EVENT_CHECK_DEBOUNCE_MS = 60_000
 const REPAIR_MAX_RUN_MS = 60 * 60_000
@@ -80,6 +83,9 @@ const MAX_CONCURRENT_REPAIRS = 1
 // Phase 0: approved-autofix writes are disabled until allowedPaths is derived
 // from a real automation grant and enforced by the execution gateway.
 const AUTOFIX_WRITE_ENABLED = false
+const ASSIGNMENT_EDITS = new Set(['requirement.update', 'requirement.setStatus', 'requirement.flow.bind', 'requirement.flow.assign', 'requirement.flow.assignAI',
+  'requirement.flow.retry', 'requirement.flow.defaults', 'requirement.flow.start', 'requirement.flow.startAll', 'requirement.flow.assignment.apply', 'task.create', 'task.update', 'task.move',
+  'task.addDependency', 'task.removeDependency', 'task.requestAcceptance', 'task.decideAcceptance', 'task.confirmAcceptance', 'requirement.acceptKnowledgeDelivery'])
 
 export interface DispatcherDeps {
   config: RuntimeConfig
@@ -92,9 +98,12 @@ export interface DispatcherDeps {
   startedAt: number
   shutdown: () => void
   resolveKnowledge?: (input: KnowledgeHostInput) => Promise<KnowledgeHostOutput>
+  resolveAssignment?: (input: AssignmentHostInput) => Promise<AssignmentHostOutput>
 }
 
 export class RuntimeDispatcher {
+  private readonly assignmentAuthority: AssignmentAuthorityService
+  private readonly memberAssignments: MemberAssignmentService
   private readonly organizationKnowledge: RequirementKnowledgeService
   private readonly knowledgeWriteback: KnowledgeWritebackService
   private readonly gitDelivery: GitDeliveryService
@@ -128,15 +137,18 @@ export class RuntimeDispatcher {
   private readonly groupDiscussions = new Map<string, Promise<void>>()
 
   constructor(private readonly deps: DispatcherDeps) {
-    this.organizationKnowledge = new RequirementKnowledgeService(deps.store, deps.resolveKnowledge)
+    this.assignmentAuthority = new AssignmentAuthorityService(deps.store, deps.resolveAssignment)
+    this.organizationKnowledge = new RequirementKnowledgeService(deps.store, deps.resolveKnowledge, this.assignmentAuthority)
     deps.runner.setOrganizationKnowledge(this.organizationKnowledge)
-    this.requirementWork = new RequirementWorkService(deps.store, deps.config.dataDir)
-    this.requirementIntegration = new RequirementIntegrationService(deps.store)
+    const checkAssignment = async (requirementId: string) => { await this.assignmentAuthority.check(requirementId) }
+    this.requirementWork = new RequirementWorkService(deps.store, deps.config.dataDir, undefined, checkAssignment)
+    this.requirementIntegration = new RequirementIntegrationService(deps.store, checkAssignment)
     this.localWorker = new LocalWorkerService(deps.store)
     this.organizationJobs = new OrganizationJobService(deps.store,deps.runner,this.localWorker)
     this.aiConnections = new AIConnectionService(deps.store)
-    this.requirementFlow = new RequirementFlowService(deps.store, deps.services, deps.runner, this.requirementWork, new AiPlannerModelSource(deps.provider, this.aiConnections), projectId => this.actions.autonomySettings(projectId).mode === 'autonomous')
+    this.requirementFlow = new RequirementFlowService(deps.store, deps.services, deps.runner, this.requirementWork, new AiPlannerModelSource(deps.provider, this.aiConnections), projectId => this.actions.autonomySettings(projectId).mode === 'autonomous', checkAssignment)
     this.knowledgeWriteback = new KnowledgeWritebackService(deps.store, this.requirementIntegration, this.organizationKnowledge, this.requirementFlow)
+    this.memberAssignments = new MemberAssignmentService(deps.store, deps.services, this.knowledgeWriteback, this.assignmentAuthority)
     this.planGrants = new PlanGrantService(deps.store, deps.logger)
     this.runtimeSettings = new RuntimeSettingsService(deps.store, (limits) => deps.runner.setLimits(limits))
     this.runtimeSettings.apply()
@@ -193,7 +205,10 @@ export class RuntimeDispatcher {
       (projectId, versionId) => {
         const gate = this.lifecycle.evaluateDeliveryGate(projectId, versionId)
         if (gate && gate.status !== 'passed') throw new AppError('CONFLICT', '版本交付门禁尚未通过')
-      }, this.requirementIntegration)
+      }, this.requirementIntegration, async subject => {
+        const requirementId = subject.taskId ? deps.store.read.getTask(subject.taskId)?.requirementId : subject.planId ? deps.store.read.getPlanRevision(subject.planId)?.requirementId : null
+        if (requirementId) await this.assignmentAuthority.check(requirementId)
+      })
     this.scheduler.setMergeAuthorizer(async planId => {
       const plan = deps.store.read.getPlanRevision(planId)
       if (!plan) throw new AppError('NOT_FOUND', '计划不存在')
@@ -480,6 +495,8 @@ export class RuntimeDispatcher {
 
   private async discussPlan(planId: string, content: string): Promise<{ groupSessionId: string; participants: number; status: 'started' }> {
     const plan = this.orchestration.getPlan(planId)
+    if (plan.requirementId && this.assignmentAuthority.binding(plan.requirementId))
+      throw new AppError('POLICY_DENIED', '组织分配需求请在需求流程内进行多 Agent 协作；旧计划讨论入口不支持分配授权')
     if (plan.status === 'rejected') throw new AppError('CONFLICT', '已拒绝的计划不能群聊')
     const sessions = this.deps.store.read.listSessionSummaries(plan.projectId)
     const group =
@@ -706,6 +723,23 @@ export class RuntimeDispatcher {
   }
 
   async dispatch(method: string, rawInput: unknown): Promise<unknown> {
+    if (method === 'runtime.assignment.prepare') return AssignmentInternalSchemas[method].output.parse(await this.memberAssignments.prepare(rawInput))
+    if (method === 'runtime.assignment.finish') return AssignmentInternalSchemas[method].output.parse(this.memberAssignments.finish(rawInput))
+    if (method === 'runtime.assignment.retry') return AssignmentInternalSchemas[method].output.parse(await this.memberAssignments.retry(rawInput))
+    if (method === 'runtime.assignment.close') return AssignmentInternalSchemas[method].output.parse(this.memberAssignments.close(rawInput))
+    if (method === 'runtime.assignment.get') { const input = AssignmentInternalSchemas[method].input.parse(rawInput); return AssignmentInternalSchemas[method].output.parse(this.memberAssignments.get(input.scope, input.id)) }
+    if (method === 'runtime.assignment.list') { const input = AssignmentInternalSchemas[method].input.parse(rawInput); return AssignmentInternalSchemas[method].output.parse(this.memberAssignments.list(input.scope)) }
+    if (method === 'runtime.assignment.local') { const input = AssignmentInternalSchemas[method].input.parse(rawInput); return AssignmentInternalSchemas[method].output.parse(this.memberAssignments.local(input.scope, input.assignmentId)) }
+    if (method === 'runtime.knowledge.prepareWriteback') {
+      const input = KnowledgeWritebackInternalSchemas[method].input.parse(rawInput)
+      this.assignmentAuthority.assertScope(input.selection.requirementId, input.scope, input.selection.projectId)
+      await this.assignmentAuthority.check(input.selection.requirementId, 'knowledge')
+    }
+    if (method === 'runtime.knowledge.retryWriteback') {
+      const input = KnowledgeWritebackInternalSchemas[method].input.parse(rawInput), operation = this.knowledgeWriteback.get(input.scope, input.id)
+      this.assignmentAuthority.assertScope(operation.receipt.requirementId, input.scope, operation.receipt.projectId)
+      await this.assignmentAuthority.check(operation.receipt.requirementId, 'knowledge')
+    }
     if (Object.hasOwn(KnowledgeWritebackInternalSchemas, method)) {
       const key = method as keyof typeof KnowledgeWritebackInternalSchemas
       const input = KnowledgeWritebackInternalSchemas[key].input.parse(rawInput)
@@ -715,7 +749,12 @@ export class RuntimeDispatcher {
             : this.knowledgeWriteback.get((input as { scope: { serverUrl: string; organizationId: string; accountId: string } }).scope, (input as { id: string }).id)
       return KnowledgeWritebackInternalSchemas[key].output.parse(result)
     }
-    if (method === 'runtime.knowledge.set') return this.organizationKnowledge.set(rawInput)
+    if (method === 'runtime.knowledge.set') {
+      const input = RequirementKnowledgeInternalSchemas[method].input.parse(rawInput)
+      this.assignmentAuthority.assertScope(input.requirementId, input.scope, input.binding?.projectId)
+      await this.assignmentAuthority.check(input.requirementId)
+      return this.organizationKnowledge.set(input)
+    }
     if (method === 'runtime.worker.acceptJob') return WorkerJobInternalSchemas[method].output.parse(await this.organizationJobs.accept(rawInput))
     if (Object.hasOwn(WorkerInternalSchemas, method)) {
       const key = method as keyof typeof WorkerInternalSchemas
@@ -729,7 +768,17 @@ export class RuntimeDispatcher {
       throw new AppError('NOT_FOUND', `未知方法：${method}`)
     }
     const { store, services, runner, provider, hub, config } = this.deps
+    if (ASSIGNMENT_EDITS.has(method) && Object.hasOwn(ApiSchemas, method)) {
+      const input = this.parse(method as ApiMethod, rawInput) as { requirementId?: string; taskId?: string; stepId?: string; approvalId?: string; to?: string; decision?: string }
+      const stepTaskId = input.stepId ? store.db.prepare('SELECT task_id FROM task_flow_steps WHERE id=?').get(input.stepId)?.task_id : null
+      const approvalRunId = input.approvalId ? store.read.getApproval(input.approvalId)?.runId : null
+      const taskId = input.taskId ?? (stepTaskId ? String(stepTaskId) : approvalRunId ? store.read.getRun(approvalRunId)?.taskId : null)
+      const requirementId = input.requirementId ?? (taskId ? store.read.getTask(taskId)?.requirementId : null)
+      if (requirementId && !(method === 'task.move' && input.to === 'cancelled') && input.decision !== 'rejected') await this.assignmentAuthority.check(requirementId)
+    }
     switch (method) {
+      case 'requirement.assignment': return AssignmentRequirementApiSchemas[method].output.parse(this.memberAssignments.view(this.parse(method, rawInput).requirementId))
+      case 'requirement.assignmentProgress': return this.memberAssignments.parsePreview(rawInput)
       case 'gitDelivery.state': return this.gitDelivery.state(this.parse('gitDelivery.state', rawInput))
       case 'gitDelivery.changes': return this.gitDelivery.changes(this.parse('gitDelivery.changes',rawInput))
       case 'gitDelivery.request': return this.gitDelivery.request(this.parse('gitDelivery.request', rawInput))

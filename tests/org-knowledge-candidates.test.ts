@@ -50,7 +50,7 @@ describe('reviewed organization knowledge candidates — real PostgreSQL and HTT
 
   it('appends migration 6 without modifying prior checksums', async () => {
     expect((await database.pool.query('SELECT version,checksum FROM organization_schema_migrations WHERE version<=5 ORDER BY version')).rows).toEqual(before)
-    expect((await database.pool.query('SELECT max(version) AS version FROM organization_schema_migrations')).rows[0]?.version).toBe(6)
+    expect((await database.pool.query('SELECT max(version) AS version FROM organization_schema_migrations')).rows[0]?.version).toBe(7)
   })
   it('rejects paths, forged execution fields, secret content and missing human acceptance metadata', () => {
     const value = payload()

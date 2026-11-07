@@ -630,6 +630,92 @@ describe('Main organization connection — real HTTP login and safe session stat
     await rejected
   })
 
+  async function assignmentFixture(dropResponse = false, delay = false) {
+    const assignmentId = randomUUID(), id = randomUUID(), claim = { clientId: randomUUID(), claimRef: id }
+    const entered = deferred<void>(), resume = deferred<void>(), runtimeCalls: Array<{ method: string; input: Record<string, unknown> }> = []
+    let posts = 0, receipt: Record<string, unknown>, detail: Record<string, unknown>, serverReceipt: Record<string, unknown>
+    const payload = { type: 'command', assignmentId, data: { commandId: id, expectedRevision: 1, action: 'accept', claim } }
+    const ports: OrganizationWorkerPorts = { confirm: async () => true, runtime: async (method, raw) => {
+      const input = raw as Record<string, unknown>; runtimeCalls.push({ method, input })
+      if (method === 'runtime.assignment.prepare') { expect(input).toHaveProperty('detail'); return { receipt, payload } }
+      if (method === 'runtime.assignment.get' || method === 'runtime.assignment.retry') return { receipt, payload }
+      if (method === 'runtime.assignment.finish') {
+        const confirmed = (input.outcome as { kind: string }).kind === 'confirmed'
+        receipt = { ...receipt, status: confirmed ? 'confirmed' : 'needs_reconciliation', localRequirementId: confirmed ? 'req_imported_once' : null }
+        return receipt
+      }
+      if (method === 'runtime.worker.clear') return { ok: true }
+      throw new Error('unexpected runtime call: ' + method)
+    } }
+    const fixture = setup({ workerPorts: ports, fetchImpl: async (url, init) => {
+      const path = new URL(String(url)).pathname
+      if (path.includes('/assignments')) {
+        expect(new Headers(init?.headers).get('authorization')).toBe(`Bearer ${fixture.token()}`)
+        if (path.endsWith('/commands') && init?.method === 'POST') {
+          expect(JSON.parse(String(init.body))).toEqual(payload.data); posts++
+          detail = { ...detail, assignment: { ...(detail.assignment as Record<string, unknown>), status: 'accepted', revision: 2, claim: { ...claim, acceptedAt: 1 } } }
+          entered.resolve(); if (delay) await resume.promise
+          if (dropResponse) throw new Error('success committed before response was lost')
+          return Response.json(serverReceipt)
+        }
+        if (path.endsWith('/authority')) {
+          const input = JSON.parse(String(init?.body))
+          return Response.json({ ...input, assigneeId: receipt.accountId, briefChecksum: 'b'.repeat(64), revision: 2, status: 'accepted' })
+        }
+        if (path.includes('/commands/')) return Response.json(serverReceipt)
+        return Response.json(detail)
+      }
+      return fetch(url, init)
+    } })
+    const current = await connect(fixture.connection)
+    receipt = { id, serverUrl: origin, organizationId: firstOrg, accountId: current.session!.account.id, assignmentId, kind: 'accept', status: 'sending', localRequirementId: null, error: null, createdAt: 1 }
+    const brief = { title: '被派发的退款需求', body: '分析并实现退款业务', acceptanceCriteria: ['实际测试通过'], priority: 'normal', dueAt: null }
+    detail = { assignment: { id: assignmentId, organizationId: firstOrg, projectId: 'shared-project', projectName: '共享项目', title: brief.title, priority: brief.priority, dueAt: null, brief,
+      briefChecksum: 'b'.repeat(64), creationHash: 'a'.repeat(64), assignee: { id: current.session!.account.id, name: 'Member' }, dispatcher: { id: 'leader', name: 'Leader' },
+      status: 'pending', revision: 1, createdAt: 1, updatedAt: 1, canManage: false, canRespond: true, report: null, replacesId: null, claim: null }, history: [] }
+    serverReceipt = { commandId: id, assignmentId, organizationId: firstOrg, actorId: current.session!.account.id, payloadHash: createHash('sha256').update(JSON.stringify(payload.data)).digest('hex'), revision: 2, status: 'accepted', newAssignmentId: null, createdAt: 1 }
+    const input = { kind: 'accept', id, assignmentId, expectedRevision: 1, localProjectId: 'local-project', confirmed: true }
+    return { ...fixture, input, payload, ports, runtimeCalls, claim, entered, resume, current, posts: () => posts }
+  }
+
+  it('accepts member work using only Runtime-generated claims and rejects Renderer provenance before HTTP', async () => {
+    const f = await assignmentFixture()
+    await expect(f.connection.execute('organization.assignmentSubmit', { ...f.input, claim: f.claim })).rejects.toThrow()
+    expect(f.posts()).toBe(0); expect(f.runtimeCalls).toHaveLength(0)
+    const result = await f.connection.execute('organization.assignmentSubmit', f.input)
+    expect(result).toMatchObject({ status: 'confirmed', localRequirementId: 'req_imported_once' })
+    expect(f.posts()).toBe(1)
+    expect(JSON.stringify(result)).not.toContain(f.token())
+    expect(f.runtimeCalls[0]).toMatchObject({ method: 'runtime.assignment.prepare', input: { scope: { accountId: f.current.session!.account.id, organizationId: firstOrg }, detail: { assignment: { revision: 1 } } } })
+  })
+
+  it('reconciles an accepted member claim after response loss and Main restart without another POST', async () => {
+    const f = await assignmentFixture(true)
+    await expect(f.connection.execute('organization.assignmentSubmit', f.input)).rejects.toMatchObject({ code: 'CONFLICT', retryable: false })
+    expect(f.posts()).toBe(1)
+    expect(f.runtimeCalls.at(-1)).toMatchObject({ method: 'runtime.assignment.finish', input: { outcome: { kind: 'unknown' } } })
+    const restarted = new OrganizationConnection(f.dataDir, f.crypto, browser, f.captureFetch, f.ports)
+    expect(await restarted.execute('organization.assignmentReconcile', { id: f.input.id })).toMatchObject({ status: 'confirmed', localRequirementId: 'req_imported_once' })
+    expect(f.posts()).toBe(1)
+  })
+
+  it('discards in-flight assignment results after organization switching and preserves unknown outcome', async () => {
+    const f = await assignmentFixture(false, true), pending = f.connection.execute('organization.assignmentSubmit', f.input)
+    const rejected = expect(pending).rejects.toMatchObject({ code: 'CONFLICT' })
+    await f.entered.promise; await f.connection.execute('organization.select', { organizationId: secondOrg }); f.resume.resolve(); await rejected
+    expect(f.runtimeCalls.at(-1)).toMatchObject({ method: 'runtime.assignment.finish', input: { outcome: { kind: 'unknown' } } })
+    expect(f.posts()).toBe(1)
+  })
+
+  it('resolves assignment authority only for the active account and organization without exposing a bearer', async () => {
+    const f = await assignmentFixture(), input = { serverUrl: origin, organizationId: firstOrg, accountId: f.current.session!.account.id,
+      request: { assignmentId: f.input.assignmentId, projectId: 'shared-project', claim: f.claim, purpose: 'execution' as const } }
+    expect(await f.connection.resolveRuntimeAssignment(input)).toMatchObject({ assigneeId: input.accountId, purpose: 'execution' })
+    await expect(f.connection.resolveRuntimeAssignment({ ...input, accountId: 'wrong-account' })).rejects.toMatchObject({ code: 'FORBIDDEN' })
+    await f.connection.execute('organization.select', { organizationId: secondOrg })
+    await expect(f.connection.resolveRuntimeAssignment(input)).rejects.toMatchObject({ code: 'FORBIDDEN' })
+  })
+
   async function writebackFixture(dropResponse = false, delay = false) {
     let receipt: Record<string, unknown>, payload: Record<string, unknown>, published: Record<string, unknown>
     let posts = 0

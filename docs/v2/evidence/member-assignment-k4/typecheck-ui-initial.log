@@ -1,0 +1,6 @@
+
+> projectos@1.7.0 typecheck C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4
+> tsc -p tsconfig.json --noEmit
+
+apps/desktop/src/renderer/src/features/settings/organization/OrganizationAssignments.tsx(69,146): error TS2339: Property 'type' does not exist on type '{ id: string; taskId: string; runId: string; title: string; checksum: string; }'.
+ ELIFECYCLE  Command failed with exit code 2.

@@ -1,0 +1,5 @@
+PASS lint: lint-2.log
+PASS typecheck: typecheck-2.log
+PASS test: test-2.log
+PASS build: build-2.log
+PASS tested-build: tested-build-2.log

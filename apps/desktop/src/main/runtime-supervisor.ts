@@ -7,6 +7,10 @@ import {
   RuntimeFrameSchema,
   KnowledgeHostInputSchema,
   KnowledgeResponseFrameSchema,
+  AssignmentHostInputSchema,
+  AssignmentResponseFrameSchema,
+  type AssignmentHostInput,
+  type AssignmentHostOutput,
   type KnowledgeHostInput,
   type KnowledgeHostOutput,
   type ProviderRuntimeConfig,
@@ -47,6 +51,9 @@ export function shouldRestartOnMissedPong(input: { missed: number; pendingReques
 }
 
 export class RuntimeSupervisor {
+  private assignmentResolver: ((input: AssignmentHostInput) => Promise<AssignmentHostOutput>) | null = null
+  private readonly assignmentPending = new Set<string>()
+  setAssignmentResolver(resolver: ((input: AssignmentHostInput) => Promise<AssignmentHostOutput>) | null): void { this.assignmentResolver = resolver }
   private knowledgeResolver: ((input: KnowledgeHostInput) => Promise<KnowledgeHostOutput>) | null = null
   private readonly knowledgePending = new Set<string>()
   setKnowledgeResolver(resolver: ((input: KnowledgeHostInput) => Promise<KnowledgeHostOutput>) | null): void { this.knowledgeResolver = resolver }
@@ -155,6 +162,23 @@ export class RuntimeSupervisor {
   }
 
   private handleFrame(frame: RuntimeFrame): void {
+    if (frame.kind === 'assignment_request') {
+      const child = this.child
+      if (!child || this.assignmentPending.size >= 16 || this.assignmentPending.has(frame.id)) {
+        if (child && !child.stdin.destroyed && child.stdin.writable) { try { child.stdin.write(`${JSON.stringify({ kind: 'assignment_response', id: frame.id, ok: false })}\n`) } catch { /* Child closed. */ } }
+        return
+      }
+      this.assignmentPending.add(frame.id)
+      void (async () => {
+        let result: AssignmentHostOutput | undefined
+        try { result = await this.assignmentResolver?.(AssignmentHostInputSchema.parse(frame.input)) }
+        catch { /* Never return credentials or an untrusted server exception. */ }
+        finally { this.assignmentPending.delete(frame.id) }
+        if (this.child !== child || child.stdin.destroyed || !child.stdin.writable) return
+        try { child.stdin.write(`${JSON.stringify(AssignmentResponseFrameSchema.parse({ kind: 'assignment_response', id: frame.id, ok: Boolean(result), ...(result ? { result } : {}) }))}\n`) } catch { /* Invalid output or stale child. */ }
+      })()
+      return
+    }
     if (frame.kind === 'knowledge_request') {
       const child = this.child
       if (!child || this.knowledgePending.size >= 16 || this.knowledgePending.has(frame.id)) {

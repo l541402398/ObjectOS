@@ -47,7 +47,8 @@ export class GitDeliveryService {
   private readonly worktrees = new WorktreeManager()
   constructor(private readonly store: SqliteStore, private readonly dataDir: string, private readonly runner: AgentRunner,
     private readonly assertPlanGrant: (planId: string) => void,
-    private readonly assertVersionGate: (projectId: string, versionId: string) => void = () => {}, private readonly taskIntegration?: RequirementIntegrationService) {
+    private readonly assertVersionGate: (projectId: string, versionId: string) => void = () => {}, private readonly taskIntegration?: RequirementIntegrationService,
+    private readonly checkAuthority?: (subject: GitSubject) => Promise<void>) {
     for (const row of store.db.prepare("SELECT id FROM git_delivery_operations WHERE status='executing'").all())
       this.finish(String(row.id), 'needs_reconciliation', '操作被中断，结果未知；请只读核对，不会自动重试')
   }
@@ -276,6 +277,7 @@ export class GitDeliveryService {
     if (decision === 'rejected') { this.store.decideApproval(id, decision, note); this.finish(row.id, 'rejected', '已拒绝本次操作'); return }
     const frozen = parse<Snapshot>(row.snapshot_json), current = this.capture(frozen.subject)
     try {
+      await this.checkAuthority?.(frozen.subject)
       if (current.fingerprint !== frozen.fingerprint) throw new AppError('CONFLICT', '审批期间代码或目标已变化，请重新申请')
       if (frozen.remoteRef) {
         const remote = this.remote(frozen.projectRoot, frozen.request.remote, frozen.request.branch ?? frozen.targetBranch)
@@ -311,6 +313,7 @@ export class GitDeliveryService {
 
   private async execute(row: Row, snapshot: Snapshot) {
     const input = snapshot.request, root = snapshot.targetRoot
+    await this.checkAuthority?.(snapshot.subject)
     this.assertSameTarget(snapshot)
     if (row.kind === 'fetch') {
       const result = await gitAsync(root, ['fetch', '--no-tags', input.remote, `+refs/heads/${input.branch ?? snapshot.targetBranch}:${snapshot.remoteRef}`], row.id)
@@ -318,6 +321,7 @@ export class GitDeliveryService {
       this.saveResult(row.id, { remoteHead: gitText(root, 'rev-parse', snapshot.remoteRef), output: result.out })
     } else if (row.kind === 'pull') {
       if (await this.remoteHead(snapshot, row.id) !== snapshot.remoteHead) throw new AppError('CONFLICT', '远端已更新，请重新获取后再同步')
+      await this.checkAuthority?.(snapshot.subject)
       this.assertSameTarget(snapshot)
       try { gitText(root, 'merge-base', '--is-ancestor', snapshot.targetHead, snapshot.remoteHead!) }
       catch { this.finish(row.id, 'failed', '本地与远端分支已分叉，请选择 Agent 自动处理或全人工解决'); return }
@@ -325,6 +329,7 @@ export class GitDeliveryService {
       this.saveResult(row.id, { resultCommit: gitText(root, 'rev-parse', 'HEAD') })
     } else if (row.kind === 'push') {
       if (await this.remoteHead(snapshot, row.id) !== snapshot.remoteHead) throw new AppError('CONFLICT', '远端已变化，请先获取、同步并重新验证')
+      await this.checkAuthority?.(snapshot.subject)
       gitText(root, 'merge-base', '--is-ancestor', snapshot.remoteHead!, snapshot.targetHead)
       this.assertSameTarget(snapshot)
       const result = await gitAsync(root, ['push', '--porcelain', input.remote, `${snapshot.targetHead}:refs/heads/${input.branch ?? snapshot.targetBranch}`], row.id)
@@ -338,6 +343,7 @@ export class GitDeliveryService {
       const resultCommit = gitText(root, 'rev-parse', 'HEAD')
       this.saveResult(row.id, { resultCommit, sourceCommit: gitText(snapshot.sourceRoot!, 'rev-parse', 'HEAD') })
       this.store.updatePlanRevision({ ...plan, execution: { ...plan.execution!, mergedAt: now(), mergeCommit: resultCommit, deliveryStatus: 'merged' }, updatedAt: now() })
+      await this.checkAuthority?.(snapshot.subject)
       const verification = await verifyAfterMerge({ rootPath: root, commands: recordedVerificationCommands(this.store, plan), timeoutMs: 300_000 })
       const evidence = this.store.createArtifact(createArtifactRecord({ projectId: row.project_id, kind: 'test-report', title: '合入后验证与审计', body: JSON.stringify({ operationId: row.id, snapshot, resultCommit, verification }), verified: verification.passed }))
       const latest = this.store.read.getPlanRevision(plan.id)!
@@ -348,6 +354,7 @@ export class GitDeliveryService {
       if (!snapshot.sourceHead) throw new AppError('CONFLICT', '没有明确的来源提交')
       if (snapshot.sourceRoot && gitText(snapshot.sourceRoot, 'status', '--porcelain=v1', '-uall')) throw new AppError('CONFLICT', '请先通过成果审查提交任务改动，再解决分支冲突')
       if (!snapshot.sourceRoot && await this.remoteHead(snapshot, row.id) !== snapshot.remoteHead) throw new AppError('CONFLICT', '远端已更新，请重新获取')
+      await this.checkAuthority?.(snapshot.subject)
       const incoming = gitPaths(root, 'diff', '--name-only', '-z', snapshot.targetHead, snapshot.sourceHead, '--')
       assertSafeGitAttributes(root, incoming)
       for (const path of incoming) {
@@ -369,6 +376,7 @@ export class GitDeliveryService {
       const resolutionRoot = join(realpathSync.native(this.dataDir), 'g', hash(row.id).slice(0, 24)), branch = `projectos/resolve-${row.id}`
       await this.worktrees.create(snapshot.projectRoot, resolutionRoot, branch, snapshot.targetHead)
       this.saveResult(row.id, { root: resolutionRoot, branch, paths: [] })
+      await this.checkAuthority?.(snapshot.subject)
       const merge = await gitAsync(resolutionRoot, [...WRITE, 'merge', '--no-ff', '--no-commit', '--no-edit', snapshot.sourceHead], row.id)
       const paths = gitPaths(resolutionRoot, 'diff', '--name-only', '--diff-filter=U', '-z')
       if (merge.code !== 0 && !paths.length) throw new Error(merge.out)
@@ -384,7 +392,9 @@ export class GitDeliveryService {
         const result = await this.runner.startRun({ projectId: row.project_id, sessionId, workspaceRoot: resolutionRoot,
           prompt: `解决此隔离工作区中的 Git 冲突。仅可修改这些文件：${JSON.stringify(paths)}。可读取工作区内普通代码与测试作为上下文。以下是完整的三方原文，base 是共同基线，ours 是目标分支，theirs 是来源分支：${threeWay}。先分别比较 ours/base 与 theirs/base，保留双方独立改动；不能简单整份采用某一侧。如果两侧意图矛盾，停止写入并请求人工判断。不要执行 Git、Shell、推送或部署。写入仍需审批。完成后说明逐文件解决理由，不能宣称已合入或发布。`,
           authority: { kind: 'git-resolution', reference: row.id, allowedTools: ['list_directory', 'read_file', 'write_file'], maxToolCalls: 30, provenance: { targetHead: snapshot.targetHead, sourceHead: snapshot.sourceHead, paths }, isolatedContext: true,
+            checkModel: () => this.checkAuthority?.(snapshot.subject) ?? Promise.resolve(),
             check: async invocation => {
+              await this.checkAuthority?.(snapshot.subject)
               this.assertSameTarget(snapshot)
               if (!['list_directory', 'read_file', 'write_file'].includes(invocation.name)) throw new AppError('POLICY_DENIED', '冲突 Agent 不能执行此工具')
               const path = String(invocation.args.path ?? '.')
@@ -400,6 +410,7 @@ export class GitDeliveryService {
       const resolution = this.resolution(this.row(input.resolutionId!))
       if (resolution.fingerprint !== snapshot.resolutionFingerprint) throw new AppError('CONFLICT', '解决内容已变化')
       if (/^(<{7}|>{7})/m.test(input.content!)) throw new AppError('CONFLICT', '解决内容仍有冲突标记')
+      await this.checkAuthority?.(snapshot.subject)
       writeTextFile(resolution.root, input.path!, input.content!)
       gitText(resolution.root, ...WRITE, 'add', '--', input.path!)
       this.saveResult(row.id, { path: input.path, author: 'local-user', contentHash: hash(input.content) })
@@ -414,7 +425,9 @@ export class GitDeliveryService {
         if (staged.files.some(file => file.conflict)) throw new AppError('CONFLICT', '仍有未解决的冲突')
         verifyRoot = resolution.root; before = staged.fingerprint
       }
+      await this.checkAuthority?.(snapshot.subject)
       const result = await runApprovedCommand(verifyRoot, input.command!, 120_000)
+      await this.checkAuthority?.(snapshot.subject)
       const after = input.resolutionId ? this.resolution(this.row(input.resolutionId)).fingerprint : this.capture(input.subject).fingerprint
       this.saveResult(row.id, { ...result, fingerprint: before === after ? after : null, command: input.command, unchanged: before === after })
       if (/命令超时/.test(result.stderr)) { this.finish(row.id,'needs_reconciliation','验证命令超时，已请求停止；请人工核对副作用，不自动重跑'); return }
@@ -427,6 +440,7 @@ export class GitDeliveryService {
         const remote = this.remote(original.projectRoot, original.request.remote, original.request.branch ?? original.targetBranch)
         if (remote.urlHash !== original.remoteUrlHash || await this.remoteHead(original, row.id) !== original.sourceHead) throw new AppError('CONFLICT', '远端来源已经变化，请重新获取和解决')
       }
+      await this.checkAuthority?.(snapshot.subject)
       this.assertSameTarget(original)
       gitText(resolution.root, 'diff', '--exit-code', '--no-ext-diff', '--no-textconv', '--')
       gitText(resolution.root, ...WRITE, 'commit', '--no-verify', '-m', `ProjectOS conflict resolution ${row.id}`)
@@ -441,6 +455,7 @@ export class GitDeliveryService {
       if(input.subject.planId){
         const plan=this.store.read.getPlanRevision(input.subject.planId)!
         this.store.updatePlanRevision({...plan,execution:{...plan.execution!,mergedAt:now(),mergeCommit:resultCommit,deliveryStatus:'merged'},updatedAt:now()})
+        await this.checkAuthority?.(snapshot.subject)
         const verification=await verifyAfterMerge({rootPath:root,commands:recordedVerificationCommands(this.store,plan),timeoutMs:120_000})
         const evidence=this.store.createArtifact(createArtifactRecord({projectId:row.project_id,kind:'test-report',title:'冲突解决合入后验证',body:JSON.stringify({operationId:row.id,resultCommit,verification}),verified:verification.passed}))
         const latest=this.store.read.getPlanRevision(plan.id)!

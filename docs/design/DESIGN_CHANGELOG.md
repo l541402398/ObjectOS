@@ -575,3 +575,30 @@ skill catalog; this session verified both after installation.
   cyan/glass brief; background contrast estimates, nested-card and global easing findings remain
   recorded for separate active-page review. Detector completion is not a quality PASS. Current DAG
   pixel diagnostic also retains the existing light badge at 4.459:1; no protected restyling.
+
+## 2026-11-07 — K4 member requirement assignment
+
+- Add inline dispatch/inbox/detail/receipt reconciliation in organization Settings and protected-focus
+  progress/delivery reporting on the requirement knowledge tab. Reuse SettingsDraftContext, DialogShell,
+  organization controls, Noto Sans SC and semantic tokens. No graph, optical material or motion change.
+- Reconsulted UI/overlay/design/recovery contracts, the current Design Lab/OpticalGlass/Aurora source
+  and the user-approved DAG image. Mandatory source inspections from K2/K3 in this same session remain
+  applicable; no new Sim Studio import, shader effect, remote font or GPU qualification is claimed.
+- Actual local UI UX Pro Max queries (typography, color, forms, layout, motion) are saved separately as
+  `member-assignment-k4/design-query-1.log` through `design-query-5.log`. Preserve packaged Noto Sans SC;
+  reject suggested IoT/status-page green palettes, TC fonts and remote imports against the pinned brief.
+  Adopt labels, submission feedback, scaling and reduced-motion guidance. Consulted actual Vercel
+  explicit-variants and async-parallel rules; compose separate dispatch/detail/report components.
+- The runtime exposes no skill-loader tool. Local mandatory skill files were actually read; K2 context
+  is retained without rerunning initialization or inventing PRODUCT.md. Impeccable craft-floor was read
+  immediately before edits. Source detector output, actual native comparison matrices, axe and native
+  compositor samples are recorded in `docs/v2/evidence/member-assignment-k4/`; a source scan alone is
+  not rendered acceptance. Final results/limitations will be recorded after commands finish.
+- Final K4: 715 tests PASS / 4 external-environment SKIP, final lint/typecheck, four required desktop
+  regressions and actual packaged Windows EXE PASS. 197 two-account desktop checks, 56 axe states
+  (0 violations; glass contrast incomplete), 902 native text samples, minimum 5.051:1. 64 captures
+  include 62 new-surface captures and 2 approved-DAG comparisons; approved DAG 32/32, byte-identical.
+  Whole-page detection retains 18 diagnostics (16 warning / 2 advisory) outside the new assignment
+  form, tracked in OPEN_ISSUES. 235 tested build files unchanged during packaging; 122 ASAR desktop
+  entries and Runtime match exact tested bytes. Fixture failures and corrected verifier paths remain
+  in the phase report. No subjective visual acceptance, OS DPI or physical dual-machine claim.

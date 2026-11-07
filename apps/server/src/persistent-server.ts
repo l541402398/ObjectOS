@@ -19,6 +19,7 @@ import { registerOrganizationWorkers } from './workers-api.js'
 import { registerOrganizationWorkerJobs } from './worker-jobs-api.js'
 import { registerOrganizationKnowledge } from './knowledge-api.js'
 import { registerKnowledgeCandidates } from './knowledge-candidates-api.js'
+import { registerOrganizationAssignments } from './assignments-api.js'
 import {
   assertOrganizationSchema,
   audit,
@@ -565,5 +566,6 @@ export async function buildOrganizationServer(options: OrganizationServerOptions
   registerOrganizationWorkerJobs(app, pool, accountFor)
   registerOrganizationKnowledge(app, pool, accountFor)
   registerKnowledgeCandidates(app, pool, accountFor)
+  registerOrganizationAssignments(app, pool, accountFor)
   return app
 }

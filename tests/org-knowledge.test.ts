@@ -192,7 +192,7 @@ describe('versioned organization knowledge — real PostgreSQL and HTTP', () => 
       (
         await database.pool.query('SELECT version FROM organization_schema_migrations ORDER BY version')
       ).rows.map((row) => row.version),
-    ).toEqual([1, 2, 3, 4, 5, 6])
+    ).toEqual([1, 2, 3, 4, 5, 6, 7])
     expect(
       (await database.pool.query('SELECT id FROM organization_projects WHERE id=$1', [project])).rowCount,
     ).toBe(1)

@@ -1,0 +1,26 @@
+## UI Pro Max Search Results
+**Domain:** web | **Query:** responsive form layout
+**Source:** app-interface.csv | **Found:** 2 results
+
+### Result 1
+- **Category:** Typography
+- **Issue:** Dynamic Type Support
+- **Platform:** iOS/Android/React Native
+- **Description:** Support system text scaling without breaking layout
+- **Do:** Set allowFontScaling and test large text
+- **Don't:** Disable scaling on all text globally
+- **Code Example Good:** <Text allowFontScaling>{label}</Text>
+- **Code Example Bad:** <Text allowFontScaling={false}>{label}</Text>
+- **Severity:** High
+
+### Result 2
+- **Category:** Accessibility
+- **Issue:** Form Control Labels
+- **Platform:** iOS/Android/React Native
+- **Description:** All inputs must have a visible label and an accessibility label
+- **Do:** Pair Text label with input and set accessibilityLabel
+- **Don't:** Inputs with placeholder only
+- **Code Example Good:** <View><Text>Email</Text><TextInput accessibilityLabel="Email address" /></View>
+- **Code Example Bad:** <TextInput placeholder="Email" /></View>
+- **Severity:** Critical
+

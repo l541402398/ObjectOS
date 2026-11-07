@@ -29,6 +29,16 @@ export interface ProjectOSDesktopApi {
     reconcile: (input: In<'gitDelivery.reconcile'>) => Promise<Out<'gitDelivery.reconcile'>>
   }
   organization: {
+    assignments: () => Promise<Out<'organization.assignments'>>
+    assignment: (input: In<'organization.assignment'>) => Promise<Out<'organization.assignment'>>
+    assignmentRoster: (input: In<'organization.assignmentRoster'>) => Promise<Out<'organization.assignmentRoster'>>
+    assignmentLocal: (input: In<'organization.assignmentLocal'>) => Promise<Out<'organization.assignmentLocal'>>
+    assignmentSubmit: (input: In<'organization.assignmentSubmit'>) => Promise<Out<'organization.assignmentSubmit'>>
+    assignmentOperations: () => Promise<Out<'organization.assignmentOperations'>>
+    assignmentOperation: (input: In<'organization.assignmentOperation'>) => Promise<Out<'organization.assignmentOperation'>>
+    assignmentReconcile: (input: In<'organization.assignmentReconcile'>) => Promise<Out<'organization.assignmentReconcile'>>
+    assignmentRetry: (input: In<'organization.assignmentRetry'>) => Promise<Out<'organization.assignmentRetry'>>
+    assignmentClose: (input: In<'organization.assignmentClose'>) => Promise<Out<'organization.assignmentClose'>>
     knowledgeCandidates: () => Promise<Out<'organization.knowledgeCandidates'>>
     knowledgeWriteback: (input: In<'organization.knowledgeWriteback'>) => Promise<Out<'organization.knowledgeWriteback'>>
     knowledgeCandidate: (input: In<'organization.knowledgeCandidate'>) => Promise<Out<'organization.knowledgeCandidate'>>
@@ -189,6 +199,8 @@ export interface ProjectOSDesktopApi {
     stopAll: (input: In<'requirement.flow.stopAll'>) => Promise<Out<'requirement.flow.stopAll'>>
   }
   requirements: {
+    assignment: (requirementId: string) => Promise<Out<'requirement.assignment'>>
+    assignmentProgress: (input: In<'requirement.assignmentProgress'>) => Promise<Out<'requirement.assignmentProgress'>>
     knowledgeDelivery: (requirementId: string) => Promise<Out<'requirement.knowledgeDelivery'>>
     acceptKnowledgeDelivery: (input: In<'requirement.acceptKnowledgeDelivery'>) => Promise<Out<'requirement.acceptKnowledgeDelivery'>>
     knowledgeDraft: (input: In<'requirement.knowledgeDraft'>) => Promise<Out<'requirement.knowledgeDraft'>>

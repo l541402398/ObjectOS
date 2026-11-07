@@ -1,0 +1,55 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4
+
+ ❯ tests/org-assignments.test.ts (10 tests | 1 failed) 15765ms
+   ❯ K4 member assignments — actual PostgreSQL / HTTP (10)
+     × rechecks permission after waiting for the organization lock and retains history after restart 374ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/org-assignments.test.ts > K4 member assignments — actual PostgreSQL / HTTP > rechecks permission after waiting for the organization lock and retains history after restart
+ZodError: [
+  {
+    "expected": "array",
+    "code": "invalid_type",
+    "path": [
+      "assignments"
+    ],
+    "message": "Invalid input: expected array, received undefined"
+  },
+  {
+    "expected": "boolean",
+    "code": "invalid_type",
+    "path": [
+      "truncated"
+    ],
+    "message": "Invalid input: expected boolean, received undefined"
+  },
+  {
+    "code": "unrecognized_keys",
+    "keys": [
+      "error"
+    ],
+    "path": [],
+    "message": "Unrecognized key: \"error\""
+  }
+]
+ ❯ tests/org-assignments.test.ts:158:33
+    156|     await database.pool.query("UPDATE organization_project_members SET…
+    157|     await server.close(); await start()
+    158|     expect(AssignmentListSchema.parse((await request('', undefined, 'l…
+       |                                 ^
+    159|   })
+    160| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  03:39:41
+   Duration  20.23s (tests 80%, import 19%, transform 2%)
+

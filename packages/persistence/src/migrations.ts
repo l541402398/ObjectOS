@@ -1686,6 +1686,32 @@ CREATE TABLE knowledge_writebacks (
 );
 `
 
+const V47 = `
+CREATE TABLE organization_assignment_clients (
+  server_url TEXT NOT NULL, organization_id TEXT NOT NULL, account_id TEXT NOT NULL, client_id TEXT NOT NULL UNIQUE,
+  PRIMARY KEY(server_url,organization_id,account_id)
+);
+CREATE TABLE requirement_member_assignments (
+  requirement_id TEXT PRIMARY KEY REFERENCES requirements(id), server_url TEXT NOT NULL, organization_id TEXT NOT NULL, account_id TEXT NOT NULL,
+  assignment_id TEXT NOT NULL, project_id TEXT NOT NULL, binding_json TEXT NOT NULL,
+  UNIQUE(server_url,organization_id,account_id,assignment_id)
+);
+CREATE TABLE organization_assignment_intents (
+  id TEXT PRIMARY KEY, server_url TEXT NOT NULL, organization_id TEXT NOT NULL, account_id TEXT NOT NULL,
+  assignment_id TEXT NOT NULL, kind TEXT NOT NULL CHECK(kind IN ('dispatch','decision','accept','progress','delivery')),
+  status TEXT NOT NULL CHECK(status IN ('sending','needs_reconciliation','confirmed','closed')),
+  payload_json TEXT NOT NULL, payload_hash TEXT NOT NULL, local_project_id TEXT REFERENCES projects(id),
+  local_requirement_id TEXT REFERENCES requirements(id), fingerprint TEXT,
+  run_id TEXT REFERENCES agent_runs(id), tool_call_id TEXT REFERENCES tool_calls(id),
+  confirmed_at INTEGER NOT NULL, result_json TEXT, error TEXT, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+);
+CREATE TRIGGER member_assignment_binding_immutable BEFORE UPDATE ON requirement_member_assignments BEGIN SELECT RAISE(ABORT,'Assignment binding is immutable'); END;
+CREATE TRIGGER assignment_intent_payload_immutable BEFORE UPDATE ON organization_assignment_intents
+WHEN NEW.id<>OLD.id OR NEW.server_url<>OLD.server_url OR NEW.organization_id<>OLD.organization_id OR NEW.account_id<>OLD.account_id
+  OR NEW.assignment_id<>OLD.assignment_id OR NEW.kind<>OLD.kind OR NEW.payload_json<>OLD.payload_json OR NEW.payload_hash<>OLD.payload_hash
+BEGIN SELECT RAISE(ABORT,'Assignment intent payload is immutable'); END;
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -1733,6 +1759,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 44, name: 'audited Git delivery resolution and organization job receipts', sql: V44 },
   { version: 45, name: 'requirement organization knowledge references', sql: V45 },
   { version: 46, name: 'accepted requirement knowledge candidate submissions', sql: V46 },
+  { version: 47, name: 'member assignment acceptance and fixed command intents', sql: V47 },
 ]
 
 function checksum(sql: string): string {

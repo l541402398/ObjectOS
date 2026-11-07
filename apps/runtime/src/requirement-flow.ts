@@ -30,7 +30,8 @@ export class RequirementFlowService {
 
   constructor(private readonly store: SqliteStore, private readonly services: CoreServices,
     private readonly runner: AgentRunner, private readonly work: RequirementWorkService,
-    private readonly models: PlannerModelSource, private readonly isAutonomous: (projectId: string) => boolean = () => false) {
+    private readonly models: PlannerModelSource, private readonly isAutonomous: (projectId: string) => boolean = () => false,
+    private readonly checkAuthority: (requirementId: string) => Promise<void> = async () => {}) {
     services.tasks.setWorkflowCompletionValidator(task => this.validateCompletion(task))
     // A reserved step without a Run cannot be assumed to have executed after a crash.
     store.db.prepare("UPDATE task_flow_steps SET status='needs_reconciliation',error='启动被中断，请核对运行记录',version=version+1 WHERE status='starting'").run()
@@ -510,6 +511,7 @@ export class RequirementFlowService {
   }
 
   private async assignAIOnce(requirementId: string, onlyUnassigned: boolean) {
+    await this.checkAuthority(requirementId)
     const requirement = this.requirement(requirementId), view = this.view(requirementId)
     if (!view.binding) throw new AppError('CONFLICT', '请先选择流程')
     const available = this.store.read.listAgents().filter(agent => {
@@ -571,6 +573,7 @@ export class RequirementFlowService {
         assignments = steps.map(step => ({ stepId: step.id, agentId: assignedByStep.get(step.id)! }))
       }
       const result = { assignments }
+      await this.checkAuthority(requirementId)
       this.store.transaction(() => {
         if (this.requirement(requirementId).version !== requirement.version || this.view(requirementId).binding?.version !== snapshot.bindingVersion)
           throw new AppError('CONFLICT', 'AI 分配期间需求或流程已改变，请重新分配')

@@ -100,6 +100,7 @@ export interface NativeRunAuthority {
   maxToolCalls: number
   provenance: Record<string, unknown>
   isolatedContext?: boolean
+  checkModel?: () => Promise<void>
   agentConfig?: Pick<RunSnapshot, 'agentName' | 'agentRole' | 'agentDescription' | 'agentCapabilities' | 'persona' | 'skills'>
   check: (invocation: ToolInvocation, executing: boolean) => Promise<void>
 }
@@ -419,7 +420,9 @@ export class AgentRunner {
       assertIntegratedDependencies(this.store, task, input.workspaceRoot)
     }
     const organizationKnowledge = task?.requirementId && !input.authority?.isolatedContext ? await this.organizationKnowledge?.capture(task.requirementId) : null
-    if (organizationKnowledge && useRuntime) throw new AppError('POLICY_DENIED', '引用组织资料的需求请使用原生 Agent 执行流程')
+    const organizationAssignment = task?.requirementId ? this.organizationKnowledge?.assignmentBinding(task.requirementId) : null
+    if (organizationAssignment && input.authority?.isolatedContext) throw new AppError('POLICY_DENIED', '分配需求不能绕过成员授权以隔离任务方式执行')
+    if ((organizationKnowledge || organizationAssignment) && useRuntime) throw new AppError('POLICY_DENIED', '组织分配或引用组织资料的需求请使用原生 Agent 执行流程')
     if (!input.messageId) {
       const message = this.store.appendMessage({
         sessionId: session.id,
@@ -532,6 +535,7 @@ export class AgentRunner {
             workspaceRoot: input.workspaceRoot ?? project.rootPath,
             requirementContext: task?.requirementId ? this.captureRequirementContext(task) : null,
             ...(organizationKnowledge ? { organizationKnowledge } : {}),
+            ...(organizationAssignment ? { organizationAssignment } : {}),
           },
         })
         if (task) {
@@ -1553,7 +1557,7 @@ export class AgentRunner {
           state.outputTokens += usage.outputTokens ?? 0
         },
         executeTool: (invocation) => this.executeTool(state, invocation),
-        beforeModelRequest: () => this.organizationKnowledge?.checkRun(state.runId) ?? Promise.resolve(),
+        beforeModelRequest: async () => { await this.organizationKnowledge?.checkRun(state.runId); await state.authority?.checkModel?.() },
       })
       state.budget.stepsUsed += Math.max(0, result.steps)
       this.persistBudget(state)

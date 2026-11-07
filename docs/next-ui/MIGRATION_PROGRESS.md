@@ -1,5 +1,13 @@
 # ProjectOS Next UI — Migration Progress
 
+2026-11-07 K4: organization Settings now includes member dispatch/inbox/detail and durable operation
+reconciliation; requirement knowledge includes assignment origin and explicit progress/delivery. Existing
+glass/tokens/overlays and the approved DAG remain. Engineering evidence: 715 tests PASS / 4 SKIP,
+197 native desktop checks, 56 axe states / 902 composited text samples (minimum 5.051:1), four required
+desktop regressions and actual Windows EXE smoke PASS. Approved DAG 32/32 and byte-identical before/after.
+18 whole-page detector diagnostics outside the new form remain recorded; final visual approval,
+physical dual-machine and production deployment stay separate. See `member-assignment-k4/REPORT.md`.
+
 2026-10-31: batch 1 (ADR-0077) adds requirement default owners, previewed batch application, persisted/revocable start intents and a single state-driven primary action. Global glass shell round 1 (glass-system.css) is applied across routes; page-level structure is next. See [batch 1](../v2/evidence/requirement-defaults-start/REPORT.md) and [glass shell](../v2/evidence/glass-shell/REPORT.md). Full Vitest: 624 PASS / 1 timeout / 4 SKIP; requirement-integration desktop regression fails at the truncated-diff notice — both unresolved.
 
 2026-10-30 requirement-owned workflows: the latest user instruction removes UC from the live product.

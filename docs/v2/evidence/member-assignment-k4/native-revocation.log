@@ -1,0 +1,37 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4
+
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ ❯ tests/member-assignment-local.test.ts (6 tests | 1 failed) 7402ms
+   ❯ K4 local member acceptance, provenance and authority (6)
+     × rechecks assignment after a native file approval even without knowledge pins 3441ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/member-assignment-local.test.ts > K4 local member acceptance, provenance and authority > rechecks assignment after a native file approval even without knowledge pins
+AppError: 此任务需要从需求流程的当前节点启动，不能跳过流程直接运行
+ ❯ AgentRunner.startRun apps/runtime/src/agent-runner.ts:414:15
+    412|       const step = input.workflowStepId ? this.store.db.prepare('SELEC…
+    413|       if (!step || step.task_id !== task!.id || step.agent_id !== agen…
+    414|         throw new AppError('CONFLICT', '此任务需要从需求流程的当前节点启动，不能跳过流程直接运行')
+       |               ^
+    415|       if (useRuntime) throw new AppError('CONFLICT', '此流程需要支持文档产出的原生 A…
+    416|     }
+ ❯ tests/member-assignment-local.test.ts:128:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  04:13:19
+   Duration  10.02s (tests 78%, import 12%, transform 10%)
+

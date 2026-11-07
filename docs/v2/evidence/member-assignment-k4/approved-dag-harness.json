@@ -1,0 +1,24 @@
+{
+  "originalPath": "scripts/premium-lab-e2e.mjs",
+  "sha256": "abbe2f986373430d0e69705511b2c3464f40c08131bf85cece98b7bc30fbc4d4",
+  "assertionsChanged": false,
+  "adaptation": "Output directory redirect and absolute module resolution for data-URL execution only.",
+  "replacements": [
+    {
+      "from": "resolve('docs/design/system-premium/lab')",
+      "to": "resolve('docs/v2/evidence/member-assignment-k4/approved-dag-regression')"
+    },
+    {
+      "from": "'./lib/premium-contrast.mjs'",
+      "to": "\"file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/lib/premium-contrast.mjs\""
+    },
+    {
+      "from": "'playwright-core'",
+      "to": "\"file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/node_modules/.pnpm/playwright-core@1.64.1/node_modules/playwright-core/index.mjs\""
+    },
+    {
+      "from": "createRequire(import.meta.url)",
+      "to": "createRequire(\"file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/premium-lab-e2e.mjs\")"
+    }
+  ]
+}

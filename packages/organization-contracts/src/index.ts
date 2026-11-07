@@ -17,6 +17,7 @@ export * from './local-worker.js'
 export * from './worker-jobs.js'
 export * from './knowledge.js'
 export * from './knowledge-candidates.js'
+export * from './assignments.js'
 
 /** Stable ids. Server ids are opaque strings; local ids stay local (see LocalProjectLink). */
 export const IdSchema = z.string().min(1).max(128)
@@ -334,6 +335,7 @@ export const PROJECT_PERMISSIONS = [
   'project.manage_members',
   'project.manage_assets',
   'project.manage_settings',
+  'project.assign_work',
 ] as const
 
 export type OrgPermission = (typeof ORG_PERMISSIONS)[number]
@@ -354,6 +356,7 @@ const PROJECT_ROLE_PERMISSIONS: Record<ProjectRole, readonly ProjectPermission[]
     'project.approve_design',
     'project.review_code',
     'project.manage_assets',
+    'project.assign_work',
   ],
   contributor: ['project.view', 'project.write_requirement'],
   reviewer: ['project.view', 'project.review_code'],

@@ -4,6 +4,9 @@ import {
   RuntimeFrameSchema,
   AppError,
   KnowledgeHostInputSchema,
+  AssignmentHostInputSchema,
+  type AssignmentHostInput,
+  type AssignmentHostOutput,
   type KnowledgeHostInput,
   type KnowledgeHostOutput,
   type RuntimeFrame,
@@ -23,6 +26,16 @@ export class RuntimeTransport {
   private closed = false
   private started = false
   private readonly knowledgeRequests = new Map<string, { resolve: (value: KnowledgeHostOutput) => void; reject: (error: Error) => void; timer: NodeJS.Timeout }>()
+  private readonly assignmentRequests = new Map<string, { resolve: (value: AssignmentHostOutput) => void; reject: (error: Error) => void; timer: NodeJS.Timeout }>()
+
+  requestAssignment(raw: AssignmentHostInput): Promise<AssignmentHostOutput> {
+    const input = AssignmentHostInputSchema.parse(raw)
+    if (!this.started || this.closed || this.assignmentRequests.size >= 16) return Promise.reject(new AppError('RUNTIME_UNAVAILABLE', '组织分配通道暂时不可用'))
+    return new Promise((resolve, reject) => {
+      const id = randomUUID(), timer = setTimeout(() => { this.assignmentRequests.delete(id); reject(new AppError('TIMEOUT', '组织分配校验超时，请恢复连接后重试')) }, 12000)
+      this.assignmentRequests.set(id, { resolve, reject, timer }); this.send({ kind: 'assignment_request', id, input })
+    })
+  }
 
   requestKnowledge(input: KnowledgeHostInput): Promise<KnowledgeHostOutput> {
     input = KnowledgeHostInputSchema.parse(input)
@@ -66,7 +79,13 @@ export class RuntimeTransport {
       return
     }
     const frame = result.data
-    if (frame.kind === 'knowledge_response') {
+    if (frame.kind === 'assignment_response') {
+      const pending = this.assignmentRequests.get(frame.id)
+      if (!pending) return
+      clearTimeout(pending.timer); this.assignmentRequests.delete(frame.id)
+      if (frame.ok && frame.result) pending.resolve(frame.result)
+      else pending.reject(new AppError('POLICY_DENIED', '组织分配授权已失效或服务不可用，请核对账号、项目与分配状态'))
+    } else if (frame.kind === 'knowledge_response') {
       const pending = this.knowledgeRequests.get(frame.id)
       if (!pending) return
       clearTimeout(pending.timer); this.knowledgeRequests.delete(frame.id)
@@ -110,5 +129,7 @@ export class RuntimeTransport {
     this.closed = true
     for (const pending of this.knowledgeRequests.values()) { clearTimeout(pending.timer); pending.reject(new AppError('RUNTIME_UNAVAILABLE', '组织资料通道已关闭')) }
     this.knowledgeRequests.clear()
+    for (const pending of this.assignmentRequests.values()) { clearTimeout(pending.timer); pending.reject(new AppError('RUNTIME_UNAVAILABLE', '组织分配通道已关闭')) }
+    this.assignmentRequests.clear()
   }
 }

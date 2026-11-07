@@ -1,0 +1,52 @@
+{
+  "baseHead": "b395bddbf207611d606cbeeda491ff2b81417501",
+  "currentHead": "b395bddbf207611d606cbeeda491ff2b81417501",
+  "finalSourceManifest": "source-manifest.e15dbc9b121f.json",
+  "currentSourceHash": "e15dbc9b121fa75e6dae64145f4b87820cd5a95b966ebe16d2a55587b6a45c18",
+  "sameFinalSource": true,
+  "unitStart": "2026-11-07T12:54:20.019Z",
+  "changesSinceInitialCoordinatorManifest": [
+    {
+      "path": "apps/desktop/src/renderer/src/features/settings/organization/AssignmentOperations.tsx",
+      "lastWriteAt": "2026-11-07T12:19:30.674Z",
+      "beforeUnitStart": true
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/RequirementAssignment.tsx",
+      "lastWriteAt": "2026-11-07T12:20:06.585Z",
+      "beforeUnitStart": true
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/RequirementOrganizationKnowledge.tsx",
+      "lastWriteAt": "2026-11-07T12:17:06.992Z",
+      "beforeUnitStart": true
+    },
+    {
+      "path": "apps/runtime/src/dispatcher.ts",
+      "lastWriteAt": "2026-11-07T12:51:31.675Z",
+      "beforeUnitStart": true
+    },
+    {
+      "path": "apps/runtime/src/member-assignments.ts",
+      "lastWriteAt": "2026-11-07T12:17:06.989Z",
+      "beforeUnitStart": true
+    },
+    {
+      "path": "scripts/member-assignment-k4-e2e.mjs",
+      "lastWriteAt": "2026-11-07T12:38:07.920Z",
+      "beforeUnitStart": true
+    },
+    {
+      "path": "scripts/org-knowledge-checks.mjs",
+      "lastWriteAt": "2026-11-07T12:52:16.455Z",
+      "beforeUnitStart": true
+    },
+    {
+      "path": "tests/member-assignment-local.test.ts",
+      "lastWriteAt": "2026-11-07T12:54:14.804Z",
+      "beforeUnitStart": true
+    }
+  ],
+  "nonUiTypescriptChangesAfterUnitStart": [],
+  "note": "The first coordinator manifest predates edits between commands. Compare against the latest passing full unit command. The original 197 desktop checks cover unchanged renderer bytes; later changes guard legacy unscoped plan chat and update its tests/check coordinator. Final source, new full unit checks, original desktop regressions and package byte comparisons corroborate the scope. File mtimes are not an immutable historical start snapshot. source-manifest.json is the retained initial alias; use finalSourceManifest for final code."
+}

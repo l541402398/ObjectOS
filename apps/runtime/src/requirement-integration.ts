@@ -29,7 +29,7 @@ const TITLES = { verify: '验证任务成果', integrate: '合入需求分支' }
 const WRITE_CONFIG = ['-c', 'core.hooksPath=.git', '-c', 'commit.gpgSign=false', '-c', 'merge.gpgSign=false', '-c', 'user.name=ProjectOS', '-c', 'user.email=projectos@local']
 
 export class RequirementIntegrationService {
-  constructor(private readonly store: SqliteStore) {
+  constructor(private readonly store: SqliteStore, private readonly checkAuthority?: (requirementId: string) => Promise<void>) {
     for (const row of store.db.prepare("SELECT id FROM task_integration_operations WHERE status='executing'").all())
       this.finish(String(row.id), 'needs_reconciliation', '操作被中断，结果未知；请人工核对，系统不会自动重试')
   }
@@ -277,6 +277,7 @@ export class RequirementIntegrationService {
     const id = String(row.id), snapshot = SnapshotSchema.parse(JSON.parse(String(row.snapshot_json)))
     if (decision === 'rejected') { this.store.decideApproval(approvalId, decision, note); this.finish(id, 'rejected', '已拒绝本次操作'); return }
     try {
+      await this.checkAuthority?.(snapshot.requirementId)
       const current = this.capture(snapshot.taskId, String(row.run_id))
       current.snapshot.command = snapshot.command
       if ((this.store.read.getTaskLease(snapshot.taskId)?.expiresAt ?? 0) > now()) throw new AppError('CONFLICT', '任务仍有写入租约，请先处理')
@@ -299,6 +300,7 @@ export class RequirementIntegrationService {
       this.finish(id, 'failed', error instanceof Error ? error.message : String(error)); throw error
     }
     try {
+      await this.checkAuthority?.(snapshot.requirementId)
       if (row.kind === 'verify') void this.verifyOperation(id, snapshot, String(row.run_id), String(row.tool_call_id))
       else this.integrate(id, snapshot)
     } catch (error) {
@@ -311,12 +313,14 @@ export class RequirementIntegrationService {
   // A long verification must not time out the desktop's 30-second IPC request.
   private async verifyOperation(id: string, snapshot: Snapshot, runId: string, toolCallId: string) {
     try {
+      await this.checkAuthority?.(snapshot.requirementId)
       const result = await runApprovedCommand(snapshot.sourceRoot, snapshot.command!, 120_000)
       if (/^命令超时（\d+ms）/.test(result.stderr)) {
         this.store.updateToolCall(toolCallId, { result: { ...result, unchanged: false } })
         this.finish(id, 'needs_reconciliation', '验证命令超时，进程结果需要人工核对；不会自动重试')
         return
       }
+      await this.checkAuthority?.(snapshot.requirementId)
       const after = this.capture(snapshot.taskId, runId).snapshot
       after.command = snapshot.command
       const unchanged = hash(after) === hash(snapshot) && this.store.read.getRun(runId)?.status === 'running'

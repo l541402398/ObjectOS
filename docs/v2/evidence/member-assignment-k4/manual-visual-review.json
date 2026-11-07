@@ -1,0 +1,23 @@
+{
+  "reviewed": [
+    "leader-dispatch-1440-light-100.png",
+    "leader-dispatch-1024-light-125.png",
+    "acceptance-unknown-1024-light-125.png",
+    "member-progress-1440-dark-125.png",
+    "member-delivery-1024-light-125.png",
+    "leader-review-1440-dark-100.png",
+    "member-inbox-1440-light-100.png",
+    "leader-completed-1024-dark-125.png"
+  ],
+  "observations": [
+    "Actually viewed native capture images for all seven new matrix groups.",
+    "No visible horizontal clipping or overlap in these representative views.",
+    "Long forms scroll vertically in the existing Settings/Dialog body.",
+    "No palette, optical material, graph or motion restyling."
+  ],
+  "limits": [
+    "Not manual inspection of every pixel in all 64 captures.",
+    "Chromium zoom does not verify Windows system DPI.",
+    "Screen-reader listening and user final visual acceptance remain unverified."
+  ]
+}

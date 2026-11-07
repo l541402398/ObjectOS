@@ -1,0 +1,197 @@
+PASS Protected DAG byte-identical
+PASS Personal project creation makes no organization request
+PASS 落实退款需求 explicit dispatch confirmation
+PASS Dispatch draft protected on immediate Escape
+PASS leader-dispatch-1440-light-100 fits
+PASS leader-dispatch-1440-light-100 axe
+PASS leader-dispatch-1440-light-100 native contrast
+PASS leader-dispatch-1440-light-125 fits
+PASS leader-dispatch-1440-light-125 axe
+PASS leader-dispatch-1440-light-125 native contrast
+PASS leader-dispatch-1440-dark-100 fits
+PASS leader-dispatch-1440-dark-100 axe
+PASS leader-dispatch-1440-dark-100 native contrast
+PASS leader-dispatch-1440-dark-125 fits
+PASS leader-dispatch-1440-dark-125 axe
+PASS leader-dispatch-1440-dark-125 native contrast
+PASS leader-dispatch-1024-light-100 fits
+PASS leader-dispatch-1024-light-100 axe
+PASS leader-dispatch-1024-light-100 native contrast
+PASS leader-dispatch-1024-light-125 fits
+PASS leader-dispatch-1024-light-125 axe
+PASS leader-dispatch-1024-light-125 native contrast
+PASS leader-dispatch-1024-dark-100 fits
+PASS leader-dispatch-1024-dark-100 axe
+PASS leader-dispatch-1024-dark-100 native contrast
+PASS leader-dispatch-1024-dark-125 fits
+PASS leader-dispatch-1024-dark-125 axe
+PASS leader-dispatch-1024-dark-125 native contrast
+PASS Rendered design detector completed; diagnostics retained
+PASS Leader dispatch creates no fake local project
+PASS member-inbox-1440-light-100 fits
+PASS member-inbox-1440-light-100 axe
+PASS member-inbox-1440-light-100 native contrast
+PASS member-inbox-1440-light-125 fits
+PASS member-inbox-1440-light-125 axe
+PASS member-inbox-1440-light-125 native contrast
+PASS member-inbox-1440-dark-100 fits
+PASS member-inbox-1440-dark-100 axe
+PASS member-inbox-1440-dark-100 native contrast
+PASS member-inbox-1440-dark-125 fits
+PASS member-inbox-1440-dark-125 axe
+PASS member-inbox-1440-dark-125 native contrast
+PASS member-inbox-1024-light-100 fits
+PASS member-inbox-1024-light-100 axe
+PASS member-inbox-1024-light-100 native contrast
+PASS member-inbox-1024-light-125 fits
+PASS member-inbox-1024-light-125 axe
+PASS member-inbox-1024-light-125 native contrast
+PASS member-inbox-1024-dark-100 fits
+PASS member-inbox-1024-dark-100 axe
+PASS member-inbox-1024-dark-100 native contrast
+PASS member-inbox-1024-dark-125 fits
+PASS member-inbox-1024-dark-125 axe
+PASS member-inbox-1024-dark-125 native contrast
+PASS Unknown acceptance has no local requirement yet
+PASS acceptance-unknown-1440-light-100 fits
+PASS acceptance-unknown-1440-light-100 axe
+PASS acceptance-unknown-1440-light-100 native contrast
+PASS acceptance-unknown-1440-light-125 fits
+PASS acceptance-unknown-1440-light-125 axe
+PASS acceptance-unknown-1440-light-125 native contrast
+PASS acceptance-unknown-1440-dark-100 fits
+PASS acceptance-unknown-1440-dark-100 axe
+PASS acceptance-unknown-1440-dark-100 native contrast
+PASS acceptance-unknown-1440-dark-125 fits
+PASS acceptance-unknown-1440-dark-125 axe
+PASS acceptance-unknown-1440-dark-125 native contrast
+PASS acceptance-unknown-1024-light-100 fits
+PASS acceptance-unknown-1024-light-100 axe
+PASS acceptance-unknown-1024-light-100 native contrast
+PASS acceptance-unknown-1024-light-125 fits
+PASS acceptance-unknown-1024-light-125 axe
+PASS acceptance-unknown-1024-light-125 native contrast
+PASS acceptance-unknown-1024-dark-100 fits
+PASS acceptance-unknown-1024-dark-100 axe
+PASS acceptance-unknown-1024-dark-100 native contrast
+PASS acceptance-unknown-1024-dark-125 fits
+PASS acceptance-unknown-1024-dark-125 axe
+PASS acceptance-unknown-1024-dark-125 native contrast
+PASS Unknown acceptance never auto-replays
+PASS Restart never resends assignment intent
+PASS Unknown retry requires renewed confirmation
+PASS Acceptance GET reconciliation does not POST
+PASS Exactly one ordinary requirement imported
+PASS Reception creates no workflow tasks or model requests
+PASS Assigned knowledge project is fixed
+PASS Assigned brief and exact organization knowledge version reach model
+PASS member-progress-1440-light-100 fits
+PASS member-progress-1440-light-100 axe
+PASS member-progress-1440-light-100 native contrast
+PASS member-progress-1440-light-125 fits
+PASS member-progress-1440-light-125 axe
+PASS member-progress-1440-light-125 native contrast
+PASS member-progress-1440-dark-100 fits
+PASS member-progress-1440-dark-100 axe
+PASS member-progress-1440-dark-100 native contrast
+PASS member-progress-1440-dark-125 fits
+PASS member-progress-1440-dark-125 axe
+PASS member-progress-1440-dark-125 native contrast
+PASS member-progress-1024-light-100 fits
+PASS member-progress-1024-light-100 axe
+PASS member-progress-1024-light-100 native contrast
+PASS member-progress-1024-light-125 fits
+PASS member-progress-1024-light-125 axe
+PASS member-progress-1024-light-125 native contrast
+PASS member-progress-1024-dark-100 fits
+PASS member-progress-1024-dark-100 axe
+PASS member-progress-1024-dark-100 native contrast
+PASS member-progress-1024-dark-125 fits
+PASS member-progress-1024-dark-125 axe
+PASS member-progress-1024-dark-125 native contrast
+PASS Task/Run completion does not auto-accept organization delivery
+PASS member-delivery-1440-light-100 fits
+PASS member-delivery-1440-light-100 axe
+PASS member-delivery-1440-light-100 native contrast
+PASS member-delivery-1440-light-125 fits
+PASS member-delivery-1440-light-125 axe
+PASS member-delivery-1440-light-125 native contrast
+PASS member-delivery-1440-dark-100 fits
+PASS member-delivery-1440-dark-100 axe
+PASS member-delivery-1440-dark-100 native contrast
+PASS member-delivery-1440-dark-125 fits
+PASS member-delivery-1440-dark-125 axe
+PASS member-delivery-1440-dark-125 native contrast
+PASS member-delivery-1024-light-100 fits
+PASS member-delivery-1024-light-100 axe
+PASS member-delivery-1024-light-100 native contrast
+PASS member-delivery-1024-light-125 fits
+PASS member-delivery-1024-light-125 axe
+PASS member-delivery-1024-light-125 native contrast
+PASS member-delivery-1024-dark-100 fits
+PASS member-delivery-1024-dark-100 axe
+PASS member-delivery-1024-dark-100 native contrast
+PASS member-delivery-1024-dark-125 fits
+PASS member-delivery-1024-dark-125 axe
+PASS member-delivery-1024-dark-125 native contrast
+PASS Member withdrawal returns delivery to accepted work
+PASS leader-review-1440-light-100 fits
+PASS leader-review-1440-light-100 axe
+PASS leader-review-1440-light-100 native contrast
+PASS leader-review-1440-light-125 fits
+PASS leader-review-1440-light-125 axe
+PASS leader-review-1440-light-125 native contrast
+PASS leader-review-1440-dark-100 fits
+PASS leader-review-1440-dark-100 axe
+PASS leader-review-1440-dark-100 native contrast
+PASS leader-review-1440-dark-125 fits
+PASS leader-review-1440-dark-125 axe
+PASS leader-review-1440-dark-125 native contrast
+PASS leader-review-1024-light-100 fits
+PASS leader-review-1024-light-100 axe
+PASS leader-review-1024-light-100 native contrast
+PASS leader-review-1024-light-125 fits
+PASS leader-review-1024-light-125 axe
+PASS leader-review-1024-light-125 native contrast
+PASS leader-review-1024-dark-100 fits
+PASS leader-review-1024-dark-100 axe
+PASS leader-review-1024-dark-100 native contrast
+PASS leader-review-1024-dark-125 fits
+PASS leader-review-1024-dark-125 axe
+PASS leader-review-1024-dark-125 native contrast
+PASS leader-completed-1440-light-100 fits
+PASS leader-completed-1440-light-100 axe
+PASS leader-completed-1440-light-100 native contrast
+PASS leader-completed-1440-light-125 fits
+PASS leader-completed-1440-light-125 axe
+PASS leader-completed-1440-light-125 native contrast
+PASS leader-completed-1440-dark-100 fits
+PASS leader-completed-1440-dark-100 axe
+PASS leader-completed-1440-dark-100 native contrast
+PASS leader-completed-1440-dark-125 fits
+PASS leader-completed-1440-dark-125 axe
+PASS leader-completed-1440-dark-125 native contrast
+PASS leader-completed-1024-light-100 fits
+PASS leader-completed-1024-light-100 axe
+PASS leader-completed-1024-light-100 native contrast
+PASS leader-completed-1024-light-125 fits
+PASS leader-completed-1024-light-125 axe
+PASS leader-completed-1024-light-125 native contrast
+PASS leader-completed-1024-dark-100 fits
+PASS leader-completed-1024-dark-100 axe
+PASS leader-completed-1024-dark-100 native contrast
+PASS leader-completed-1024-dark-125 fits
+PASS leader-completed-1024-dark-125 axe
+PASS leader-completed-1024-dark-125 native contrast
+PASS Leader independent review completes organization assignment
+PASS Completed assignment keeps knowledge in the assigned project
+PASS Completed assignment actually submits separately reviewed knowledge
+PASS 待改派退款需求 explicit dispatch confirmation
+PASS Reassignment blocks an already-pending workspace approval
+PASS Old assignment closes and replacement has a new pending ID
+PASS 暂缓退款需求 explicit dispatch confirmation
+PASS Visible decline creates no local requirement
+PASS 撤销退款需求 explicit dispatch confirmation
+PASS Visible leader cancellation closes pending work
+PASS Restart keeps immutable origin and never replays writes
+PASS No Renderer exceptions

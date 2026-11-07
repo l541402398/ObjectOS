@@ -59,7 +59,7 @@ export function managedTaskRoot(store: SqliteStore, task: Task, requestedRoot?: 
 }
 
 export class RequirementWorkService {
-  constructor(private readonly store: SqliteStore, private readonly dataDir: string, private readonly worktrees = new WorktreeManager()) {
+  constructor(private readonly store: SqliteStore, private readonly dataDir: string, private readonly worktrees = new WorktreeManager(), private readonly checkAuthority?: (requirementId: string) => Promise<void>) {
     // A preparation is not an LLM run and must never be replayed by restart recovery.
     for (const row of store.db.prepare("SELECT id FROM task_workspace_preparations WHERE status='executing'").all()) {
       this.finish(String(row.id), 'needs_reconciliation', '上次工作区准备被中断，请人工核对目录和分支；系统不会重复执行')
@@ -222,6 +222,7 @@ export class RequirementWorkService {
     if (this.store.db.prepare("SELECT id FROM task_integration_operations WHERE requirement_id=? AND status IN ('executing','needs_reconciliation')").get(snapshot.requirementId))
       throw new AppError('CONFLICT', '此需求正在合入或验证成果，或有待核对操作，请先处理')
     try {
+      await this.checkAuthority?.(snapshot.requirementId)
       this.store.transaction(() => {
         const current = this.snapshot(snapshot.taskId, snapshot.taskVersion, String(row.run_id))
         if (JSON.stringify(SnapshotSchema.parse(current)) !== JSON.stringify(snapshot)) throw new AppError('CONFLICT', '代码基线或需求已变化，请重新提交工作区准备')
@@ -238,10 +239,12 @@ export class RequirementWorkService {
       throw error
     }
     try {
+      await this.checkAuthority?.(snapshot.requirementId)
       if (!snapshot.integrationExists) {
         await this.worktrees.create(snapshot.projectRoot, snapshot.integrationRoot, snapshot.integrationBranch, snapshot.baseCommit)
         this.saveWorkspace(snapshot, null, snapshot.integrationRoot, snapshot.integrationBranch)
       }
+      await this.checkAuthority?.(snapshot.requirementId)
       await this.worktrees.create(snapshot.projectRoot, snapshot.taskRoot, snapshot.taskBranch, snapshot.baseCommit)
       this.saveWorkspace(snapshot, snapshot.taskId, snapshot.taskRoot, snapshot.taskBranch)
       this.finish(id, 'completed', null)

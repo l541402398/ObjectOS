@@ -71,6 +71,10 @@ async function main(): Promise<void> {
       if (!transport) return Promise.reject(new Error('Organization knowledge host not ready'))
       return transport.requestKnowledge(input)
     },
+    resolveAssignment: input => {
+      if (!transport) return Promise.reject(new Error('Organization assignment host not ready'))
+      return transport.requestAssignment(input)
+    },
   })
   transport = new RuntimeTransport(
     {

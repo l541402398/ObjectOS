@@ -4,9 +4,12 @@ import {
   type PlanGeneration,
 } from '@projectos/contracts'
 import type { SqliteStore } from '@projectos/persistence'
+import type { AssignmentAuthorityService } from './assignment-authority.js'
 
 export class RequirementKnowledgeService {
-  constructor(private readonly store: SqliteStore, private readonly resolveHost?: (input: KnowledgeHostInput) => Promise<KnowledgeHostOutput>) {}
+  constructor(private readonly store: SqliteStore, private readonly resolveHost?: (input: KnowledgeHostInput) => Promise<KnowledgeHostOutput>, private readonly assignmentAuthority?: AssignmentAuthorityService) {}
+
+  assignmentBinding(requirementId: string) { return this.assignmentAuthority?.binding(requirementId) ?? null }
 
   view(requirementId: string) {
     const requirement = this.store.read.getRequirement(requirementId)
@@ -39,6 +42,7 @@ export class RequirementKnowledgeService {
   }
 
   async capture(requirementId: string): Promise<RequirementKnowledgeBinding | null> {
+    await this.assignmentAuthority?.check(requirementId)
     const view = this.view(requirementId)
     if (!view.binding) {
       this.store.db.prepare(`INSERT INTO requirement_organization_knowledge(requirement_id,revision,binding_json,locked_at,updated_at) VALUES(?,0,NULL,?,?)
@@ -58,11 +62,13 @@ export class RequirementKnowledgeService {
   }
 
   async checkRun(runId: string) {
+    await this.assignmentAuthority?.checkRun(runId)
     const binding = this.runBinding(runId)
     if (binding) await this.resolve(binding, false)
   }
 
   async contextForRun(runId: string): Promise<string> {
+    await this.assignmentAuthority?.checkRun(runId)
     const binding = this.runBinding(runId)
     return binding ? this.context(binding) : ''
   }
@@ -89,7 +95,8 @@ export class RequirementKnowledgeService {
 
   async planning(requirementId: string) {
     const binding = await this.capture(requirementId)
-    if (!binding) return undefined
-    return { ...await this.contextData(binding), check: () => this.resolve(binding, false).then(() => undefined) }
+    const assignment = this.assignmentBinding(requirementId)
+    if (!binding) return assignment ? { text: '', sources: [] as PlanGeneration['contextSources'], check: async () => { await this.assignmentAuthority!.checkBinding(assignment) } } : undefined
+    return { ...await this.contextData(binding), check: async () => { if (assignment) await this.assignmentAuthority!.checkBinding(assignment); await this.resolve(binding, false) } }
   }
 }

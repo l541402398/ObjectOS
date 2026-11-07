@@ -1,0 +1,14 @@
+.organization-assignments, .assignment-detail, .assignment-operation, .assignment-form { display: grid; gap: 16px; min-width: 0; }
+.organization-assignments h3, .assignment-dialog h3 { margin: 0; font-size: 16px; line-height: 1.4; }
+.organization-assignments .org-section-heading { margin: 0; }
+.assignment-form fieldset { display: grid; gap: 14px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.assignment-form .org-form-grid { margin: 0; }
+.organization-assignments .org-asset-name { overflow-wrap: anywhere; white-space: normal; text-align: left; }
+.assignment-detail ul { padding-left: 22px; margin: 0; }
+.assignment-detail p, .assignment-operation p { overflow-wrap: anywhere; margin: 0; }
+.assignment-operation details, .assignment-detail section { display: grid; gap: 12px; }
+.assignment-dialog { padding: 16px 0; display: grid; gap: 16px; }
+.assignment-dialog p, .assignment-dialog .rq-knowledge-sources { margin: 0; }
+.assignment-dialog fieldset { min-width: 0; border: 0; padding: 0; margin: 0; }
+.organization-assignments > section[aria-label='分配操作记录'] { margin-top: 16px; }
+@media (max-width: 1100px) { .assignment-form .org-form-grid { grid-template-columns: minmax(0,1fr); } }

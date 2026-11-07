@@ -16,9 +16,17 @@ import {
   type KnowledgeHostOutput,
   KnowledgeWritebackInternalSchemas,
   type KnowledgeWritebackReceipt,
+  AssignmentInternalSchemas,
+  AssignmentOperationSchema,
+  AssignmentReceiptSchema,
+  AssignmentHostInputSchema,
+  type AssignmentHostInput,
+  type AssignmentHostOutput,
+  type AssignmentReceipt,
 } from '@projectos/contracts'
 import { OrganizationKnowledgeResolvedSchema } from '@projectos/organization-contracts'
 import { KnowledgeCandidateDetailSchema } from '@projectos/organization-contracts'
+import { AssignmentAuthoritySchema, AssignmentDetailSchema, AssignmentCommandReceiptSchema } from '@projectos/organization-contracts'
 import { DesktopLoginError, runDesktopLogin } from './desktop-login-core.js'
 import {
   OrganizationWorkerBridge,
@@ -86,6 +94,16 @@ export function organizationOrigin(value: string): string {
 
 /** Main-only connection. Commit an encrypted snapshot before changing the live state. */
 export class OrganizationConnection {
+  async resolveRuntimeAssignment(raw: AssignmentHostInput): Promise<AssignmentHostOutput> {
+    const input = AssignmentHostInputSchema.parse(raw), snapshot = this.snapshot()
+    if (input.serverUrl !== snapshot.connection.serverUrl || input.organizationId !== snapshot.connection.activeOrganizationId || input.accountId !== snapshot.connection.session.account.id)
+      throw new AppError('FORBIDDEN', '组织分配不属于当前账号和组织')
+    const result = AssignmentAuthoritySchema.parse(await this.request(snapshot, `${this.orgPath(snapshot)}/assignments/authority`, 'POST', input.request))
+    if (result.assignmentId !== input.request.assignmentId || result.projectId !== input.request.projectId || result.assigneeId !== input.accountId || result.claim.clientId !== input.request.claim.clientId || result.claim.claimRef !== input.request.claim.claimRef || result.purpose !== input.request.purpose)
+      throw new AppError('CONFLICT', '组织分配授权回执与原接收范围不一致')
+    this.assertCurrent(snapshot)
+    return result
+  }
   async resolveRuntimeKnowledge(raw: KnowledgeHostInput): Promise<KnowledgeHostOutput> {
     const input = KnowledgeHostInputSchema.parse(raw), snapshot = this.snapshot()
     if (input.serverUrl !== snapshot.connection.serverUrl || input.organizationId !== snapshot.connection.activeOrganizationId || input.accountId !== snapshot.connection.session.account.id)
@@ -358,6 +376,32 @@ export class OrganizationConnection {
     const organizationId = snapshot.connection.activeOrganizationId
     if (!organizationId) throw new AppError('BAD_REQUEST', '请先选择组织')
     return { serverUrl: snapshot.connection.serverUrl, accountId: snapshot.connection.session.account.id, organizationId }
+  }
+
+  private async assignmentRuntime<M extends keyof typeof AssignmentInternalSchemas>(method: M, input: unknown) {
+    if (!this.workerPorts) throw new AppError('RUNTIME_UNAVAILABLE', '本机执行服务尚未就绪')
+    return AssignmentInternalSchemas[method].output.parse(await this.workerPorts.runtime(method, AssignmentInternalSchemas[method].input.parse(input)))
+  }
+
+  private async sendAssignment(snapshot: Snapshot, raw: unknown): Promise<AssignmentReceipt> {
+    const operation = AssignmentOperationSchema.parse(raw), scope = this.writebackScope(snapshot), id = operation.receipt.id
+    if (operation.receipt.status === 'confirmed') return operation.receipt
+    try {
+      this.assertCurrent(snapshot)
+      const payload = operation.payload, prefix = `${this.orgPath(snapshot)}/assignments`
+      let detail, command
+      if (payload.type === 'create') detail = AssignmentDetailSchema.parse(await this.request(snapshot, prefix, 'POST', payload.data))
+      else {
+        command = AssignmentCommandReceiptSchema.parse(await this.request(snapshot, `${prefix}/${encodeURIComponent(payload.assignmentId)}/commands`, 'POST', payload.data))
+        if (payload.data.action === 'accept') detail = AssignmentDetailSchema.parse(await this.request(snapshot, `${prefix}/${encodeURIComponent(payload.assignmentId)}`))
+      }
+      const result = AssignmentReceiptSchema.parse(await this.assignmentRuntime('runtime.assignment.finish', { scope, id, outcome: { kind: 'confirmed', ...(detail ? { detail } : {}), ...(command ? { command } : {}) } }))
+      this.assertCurrent(snapshot)
+      return result
+    } catch {
+      await this.assignmentRuntime('runtime.assignment.finish', { scope, id, outcome: { kind: 'unknown' } }).catch(() => undefined)
+      throw new AppError('CONFLICT', '操作结果尚未确认，请先核对本机记录；系统不会自动重试', { details: { id } })
+    }
   }
 
   private async writebackRuntime<M extends keyof typeof KnowledgeWritebackInternalSchemas>(method: M, input: unknown) {
@@ -658,6 +702,45 @@ export class OrganizationConnection {
     const assetRequest = (suffix = '', method = 'GET', body?: unknown) =>
       this.request(snapshot, `${this.orgPath(snapshot)}/assets${suffix}`, method, body, 8 * 1024 * 1024)
     switch (method) {
+      case 'organization.assignments': result = await this.request(snapshot, `${this.orgPath(snapshot)}/assignments`); break
+      case 'organization.assignment': result = await this.request(snapshot, `${this.orgPath(snapshot)}/assignments/${encodeURIComponent(String(input.id))}`); break
+      case 'organization.assignmentRoster': result = await this.request(snapshot, `${this.orgPath(snapshot)}/assignments/roster/${encodeURIComponent(String(input.projectId))}`); break
+      case 'organization.assignmentLocal': result = await this.assignmentRuntime('runtime.assignment.local', { scope: this.writebackScope(snapshot), assignmentId: input.id }); break
+      case 'organization.assignmentOperations': result = await this.assignmentRuntime('runtime.assignment.list', { scope: this.writebackScope(snapshot) }); break
+      case 'organization.assignmentOperation': result = await this.assignmentRuntime('runtime.assignment.get', { scope: this.writebackScope(snapshot), id: input.id }); break
+      case 'organization.assignmentClose': result = await this.assignmentRuntime('runtime.assignment.close', { scope: this.writebackScope(snapshot), ...input }); break
+      case 'organization.assignmentSubmit': {
+        const selection = OrganizationApiSchemas[method].input.parse(input), scope = this.writebackScope(snapshot)
+        const id = selection.kind === 'dispatch' ? selection.draft.id : selection.kind === 'decision' ? selection.decision.commandId : selection.id
+        const detail = selection.kind === 'accept' ? AssignmentDetailSchema.parse(await this.request(snapshot, `${this.orgPath(snapshot)}/assignments/${encodeURIComponent(selection.assignmentId)}`)) : undefined
+        let operation
+        try { operation = await this.assignmentRuntime('runtime.assignment.prepare', { scope, selection, ...(detail ? { detail } : {}) }) }
+        catch (error) {
+          const unknown = await this.assignmentRuntime('runtime.assignment.finish', { scope, id, outcome: { kind: 'unknown' } }).catch(() => null)
+          if (unknown && AssignmentReceiptSchema.parse(unknown).status === 'needs_reconciliation') throw new AppError('CONFLICT', '准备结果尚未确认，请先核对本机操作记录', { details: { id } })
+          throw error
+        }
+        result = await this.sendAssignment(snapshot, operation)
+        break
+      }
+      case 'organization.assignmentRetry': {
+        const operation = await this.assignmentRuntime('runtime.assignment.retry', { scope: this.writebackScope(snapshot), ...input })
+        result = await this.sendAssignment(snapshot, operation)
+        break
+      }
+      case 'organization.assignmentReconcile': {
+        const scope = this.writebackScope(snapshot), id = String(input.id), operation = AssignmentOperationSchema.parse(await this.assignmentRuntime('runtime.assignment.get', { scope, id }))
+        const prefix = `${this.orgPath(snapshot)}/assignments`
+        let detail, command
+        if (operation.payload.type === 'create') detail = AssignmentDetailSchema.parse(await this.request(snapshot, `${prefix}/${encodeURIComponent(operation.payload.data.id)}`))
+        else {
+          const payload = operation.payload
+          command = AssignmentCommandReceiptSchema.parse(await this.request(snapshot, `${prefix}/${encodeURIComponent(payload.assignmentId)}/commands/${encodeURIComponent(payload.data.commandId)}`))
+          if (payload.data.action === 'accept') detail = AssignmentDetailSchema.parse(await this.request(snapshot, `${prefix}/${encodeURIComponent(payload.assignmentId)}`))
+        }
+        result = await this.assignmentRuntime('runtime.assignment.finish', { scope, id, outcome: { kind: 'confirmed', ...(detail ? { detail } : {}), ...(command ? { command } : {}) } })
+        break
+      }
       case 'organization.submitKnowledgeCandidate': {
         const scope = this.writebackScope(snapshot)
         const operation = await this.writebackRuntime('runtime.knowledge.prepareWriteback', { scope, selection: input })

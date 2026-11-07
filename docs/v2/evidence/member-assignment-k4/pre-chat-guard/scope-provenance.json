@@ -1,0 +1,42 @@
+{
+  "baseHead": "b395bddbf207611d606cbeeda491ff2b81417501",
+  "currentHead": "b395bddbf207611d606cbeeda491ff2b81417501",
+  "finalSourceManifest": "source-manifest.51ff34161ce8.json",
+  "currentSourceHash": "51ff34161ce81382a4b96c206a06718a2818d22c6867ad26d32e3c4f584a2d4e",
+  "sameFinalSource": true,
+  "unitStart": "2026-11-07T12:18:48.598Z",
+  "changesSinceInitialCoordinatorManifest": [
+    {
+      "path": "apps/desktop/src/renderer/src/features/settings/organization/AssignmentOperations.tsx",
+      "lastWriteAt": "2026-11-07T12:19:30.674Z",
+      "beforeUnitStart": false
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/RequirementAssignment.tsx",
+      "lastWriteAt": "2026-11-07T12:20:06.585Z",
+      "beforeUnitStart": false
+    },
+    {
+      "path": "apps/desktop/src/renderer/src/pages/RequirementOrganizationKnowledge.tsx",
+      "lastWriteAt": "2026-11-07T12:17:06.992Z",
+      "beforeUnitStart": true
+    },
+    {
+      "path": "apps/runtime/src/member-assignments.ts",
+      "lastWriteAt": "2026-11-07T12:17:06.989Z",
+      "beforeUnitStart": true
+    },
+    {
+      "path": "scripts/member-assignment-k4-e2e.mjs",
+      "lastWriteAt": "2026-11-07T12:38:07.920Z",
+      "beforeUnitStart": false
+    },
+    {
+      "path": "tests/member-assignment-local.test.ts",
+      "lastWriteAt": "2026-11-07T12:17:06.994Z",
+      "beforeUnitStart": true
+    }
+  ],
+  "nonUiTypescriptChangesAfterUnitStart": [],
+  "note": "The first coordinator manifest predates edits between commands. All changed Runtime/test TypeScript was saved before the 714-test command began. Later renderer edits are covered by final lint/typecheck, the real final build, 197 desktop checks and package byte comparison. Later mjs edits correct test fixtures. File mtimes corroborate this scope; they do not reconstruct an immutable historical start snapshot. source-manifest.json is the retained initial alias; use finalSourceManifest for final code."
+}

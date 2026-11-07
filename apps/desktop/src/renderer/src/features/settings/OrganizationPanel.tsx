@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react'
 import { SettingsDraftContext } from './settings-draft'
 import { OrganizationKnowledge } from './organization/OrganizationKnowledge'
+import { OrganizationAssignments } from './organization/OrganizationAssignments'
 import { useMutation } from '@tanstack/react-query'
 import { motion, useReducedMotion } from 'motion/react'
 import { Building2, Cloud, LogOut, Plus, RefreshCw, ShieldCheck } from 'lucide-react'
@@ -15,7 +16,7 @@ import { useOrganization } from './organization/useOrganization'
 import './organization/organization.css'
 
 const STATUS = { local: '本地模式', connected: '组织已连接', offline: '服务离线', expired: '登录已失效' } as const
-const VIEWS = [{ key: 'projects', label: '共享项目' }, { key: 'knowledge', label: '组织知识' }, { key: 'assets', label: '组织资产' }, { key: 'workers', label: '执行端' }, { key: 'members', label: '组织成员' }, { key: 'invitations', label: '待接受邀请' }] as const
+const VIEWS = [{ key: 'projects', label: '共享项目' }, { key: 'assignments', label: '需求分配' }, { key: 'knowledge', label: '组织知识' }, { key: 'assets', label: '组织资产' }, { key: 'workers', label: '执行端' }, { key: 'members', label: '组织成员' }, { key: 'invitations', label: '待接受邀请' }] as const
 type View = (typeof VIEWS)[number]['key']
 
 export function OrganizationPanel() {
@@ -40,13 +41,14 @@ export function OrganizationPanel() {
         {confirmDisconnect ? <div className="org-inline-confirm" role="group" aria-label="确认退出组织账号"><p>退出此设备的组织账号。本机项目与执行记录保留。</p><div className="org-inline-actions"><button type="button" className="org-button" onClick={() => setConfirmDisconnect(false)}>取消</button><button type="button" className="org-button is-danger" onClick={disconnect} disabled={pending || dirty} data-testid="org-disconnect-confirm">确认退出</button></div></div> : null}
         <OrganizationError error={change.error || reload.error} />
         {data.status === 'offline' ? <div className="org-message is-warning" role="status"><Cloud size={17} aria-hidden /><span>组织服务暂时无法连接。请恢复网络后刷新连接。</span></div> : null}
+        {data.status === 'offline' && data.activeOrganizationId ? <OrganizationAssignments connection={data}/> : null}
         {data.status === 'expired' ? <div className="org-message is-warning" role="status"><ShieldCheck size={17} aria-hidden /><span>登录已失效。退出当前账号后重新连接。</span></div> : null}
         {data.status === 'connected' ? <>
           <div className="org-context-bar"><div className="org-context-select"><Building2 size={18} aria-hidden /><label htmlFor="org-select" className="org-sr-only">当前组织</label><select id="org-select" data-testid="org-select" value={data.activeOrganizationId ?? ''} disabled={pending || dirty} onChange={(event) => { const organizationId = event.target.value; setCreating(false); setView('projects'); change.mutate(() => window.projectos.organization.select({ organizationId })) }}><option value="" disabled>选择组织</option>{data.session?.organizations.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>{organization ? <span className="org-role">{organizationRoleLabel(organization.role)}</span> : null}</div><button type="button" className="org-button" data-testid="org-new-organization" disabled={pending || dirty} onClick={() => setCreating(!creating)}><Plus size={15} aria-hidden />创建组织</button></div>
           {creating ? <CreateOrganizationForm onCreate={createOrganization} onCancel={() => setCreating(false)} pending={pending} error={change.error} /> : null}
           <nav className="org-view-nav" aria-label="组织工作区视图">{VIEWS.filter((item) => data.activeOrganizationId || item.key === 'invitations').map((item) => <button type="button" key={item.key} aria-current={(view === item.key || (!data.activeOrganizationId && item.key === 'invitations')) ? 'page' : undefined} onClick={() => setView(item.key)} disabled={pending || dirty}>{item.label}</button>)}</nav>
           {pending ? <OrganizationLoading /> : <motion.div key={`${data.activeOrganizationId}:${view}`} initial={reduce ? false : { y: 5 }} animate={{ y: 0 }} transition={{ duration: .18, ease: [.22, 1, .36, 1] }}>
-            {!data.activeOrganizationId || view === 'invitations' ? <OrganizationInvitations connection={data} onChanged={refresh} /> : view === 'knowledge' ? <OrganizationKnowledge key={data.activeOrganizationId} connection={data} /> : view === 'workers' ? <OrganizationWorkers key={data.activeOrganizationId} connection={data} /> : view === 'assets' ? <OrganizationAssets key={data.activeOrganizationId} connection={data} /> : view === 'members' ? <OrganizationMembers key={data.activeOrganizationId} connection={data} /> : <OrganizationProjects key={data.activeOrganizationId} connection={data} />}
+            {!data.activeOrganizationId || view === 'invitations' ? <OrganizationInvitations connection={data} onChanged={refresh} /> : view === 'assignments' ? <OrganizationAssignments key={data.activeOrganizationId} connection={data}/> : view === 'knowledge' ? <OrganizationKnowledge key={data.activeOrganizationId} connection={data} /> : view === 'workers' ? <OrganizationWorkers key={data.activeOrganizationId} connection={data} /> : view === 'assets' ? <OrganizationAssets key={data.activeOrganizationId} connection={data} /> : view === 'members' ? <OrganizationMembers key={data.activeOrganizationId} connection={data} /> : <OrganizationProjects key={data.activeOrganizationId} connection={data} />}
           </motion.div>}
         </> : null}
       </>}

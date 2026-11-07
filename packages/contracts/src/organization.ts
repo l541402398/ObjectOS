@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { AssignmentOrganizationApiSchemas } from './member-assignments.js'
 import { RequirementKnowledgeSelectionSchema, RequirementKnowledgeViewSchema } from './organization-knowledge.js'
 import { KnowledgeWritebackSelectionSchema, KnowledgeWritebackReceiptSchema, KnowledgeWritebackOperationSchema } from './knowledge-writeback.js'
 import { KnowledgeCandidateListSchema, KnowledgeCandidateDetailSchema, KnowledgeCandidateDecisionSchema } from '@projectos/organization-contracts'
@@ -119,6 +120,7 @@ const empty = z.object({}).strict()
 const ok = z.object({ ok: z.literal(true) })
 const id = z.string().min(1).max(128)
 export const OrganizationApiSchemas = {
+  ...AssignmentOrganizationApiSchemas,
   'organization.knowledgeCandidates': { input: empty, output: KnowledgeCandidateListSchema },
   'organization.knowledgeWriteback': { input: z.object({ id: z.uuid() }).strict(), output: KnowledgeWritebackOperationSchema },
   'organization.knowledgeCandidate': { input: z.object({ id: z.uuid() }).strict(), output: KnowledgeCandidateDetailSchema },
