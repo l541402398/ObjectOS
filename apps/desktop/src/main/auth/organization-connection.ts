@@ -10,7 +10,12 @@ import {
   OrganizationSessionViewSchema,
   type OrganizationConnectionView,
   WorkerInternalSchemas,
+  KnowledgeHostInputSchema,
+  RequirementKnowledgeInternalSchemas,
+  type KnowledgeHostInput,
+  type KnowledgeHostOutput,
 } from '@projectos/contracts'
+import { OrganizationKnowledgeResolvedSchema } from '@projectos/organization-contracts'
 import { DesktopLoginError, runDesktopLogin } from './desktop-login-core.js'
 import {
   OrganizationWorkerBridge,
@@ -78,6 +83,18 @@ export function organizationOrigin(value: string): string {
 
 /** Main-only connection. Commit an encrypted snapshot before changing the live state. */
 export class OrganizationConnection {
+  async resolveRuntimeKnowledge(raw: KnowledgeHostInput): Promise<KnowledgeHostOutput> {
+    const input = KnowledgeHostInputSchema.parse(raw), snapshot = this.snapshot()
+    if (input.serverUrl !== snapshot.connection.serverUrl || input.organizationId !== snapshot.connection.activeOrganizationId || input.accountId !== snapshot.connection.session.account.id)
+      throw new AppError('FORBIDDEN', '组织资料引用不属于当前账号和组织')
+    const parsed = OrganizationKnowledgeResolvedSchema.safeParse(await this.request(snapshot, `${this.orgPath(snapshot)}/knowledge/resolve`, 'POST', input.request, 1024 * 1024))
+    if (!parsed.success) throw new AppError('BAD_REQUEST', '组织服务返回了无效的资料')
+    const result = parsed.data
+    if (result.sources.length !== input.request.pins.length || input.request.pins.some(pin => !result.sources.some(source => source.documentId === pin.documentId && source.versionId === pin.versionId && source.checksum === pin.checksum)))
+      throw new AppError('CONFLICT', '组织资料版本与本次引用不一致')
+    this.assertCurrent(snapshot)
+    return result
+  }
   private readonly path: string
   private vault = emptyVault()
   private login: AbortController | null = null
@@ -611,6 +628,19 @@ export class OrganizationConnection {
     const assetRequest = (suffix = '', method = 'GET', body?: unknown) =>
       this.request(snapshot, `${this.orgPath(snapshot)}/assets${suffix}`, method, body, 8 * 1024 * 1024)
     switch (method) {
+      case 'organization.setRequirementKnowledge': {
+        if (!this.workerPorts) throw new AppError('RUNTIME_UNAVAILABLE', '本机执行服务尚未就绪')
+        const selection = OrganizationApiSchemas[method].input.parse(input)
+        const scope = { serverUrl: snapshot.connection.serverUrl, organizationId: snapshot.connection.activeOrganizationId!, accountId: snapshot.connection.session.account.id }
+        const resolved = selection.pins.length ? await this.resolveRuntimeKnowledge({ ...scope,
+          request: { projectId: selection.projectId, pins: selection.pins.map(({ documentId, versionId, checksum }) => ({ documentId, versionId, checksum })), includeContent: true } }) : null
+        this.assertCurrent(snapshot)
+        result = await this.workerPorts.runtime('runtime.knowledge.set', RequirementKnowledgeInternalSchemas['runtime.knowledge.set'].input.parse({
+          requirementId: selection.requirementId, expectedRevision: selection.expectedRevision, scope,
+          binding: resolved ? { ...scope, projectId: selection.projectId, pins: resolved.sources.map(({ body: _body, ...source }) => ({ ...source, reason: selection.pins.find(pin => pin.versionId === source.versionId)!.reason })) } : null,
+        }))
+        break
+      }
       case 'organization.knowledgeList': {
         const query = new URLSearchParams()
         if (typeof input.projectId === 'string') query.set('projectId', input.projectId)

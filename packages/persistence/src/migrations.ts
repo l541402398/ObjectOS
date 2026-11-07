@@ -1664,6 +1664,13 @@ CREATE TABLE worker_job_receipts (
 );
 `
 
+const V45 = `
+CREATE TABLE requirement_organization_knowledge (
+  requirement_id TEXT PRIMARY KEY REFERENCES requirements(id) ON DELETE CASCADE,
+  revision INTEGER NOT NULL, binding_json TEXT, locked_at INTEGER, updated_at INTEGER NOT NULL
+);
+`
+
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'initial lifecycle schema', sql: V1 },
   { version: 2, name: 'ai connections and model catalog', sql: V2 },
@@ -1709,6 +1716,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 42, name: 'archive group materials and retire use cases', sql: V42 },
   { version: 43, name: 'requirement default owners and start intents', sql: V43 },
   { version: 44, name: 'audited Git delivery resolution and organization job receipts', sql: V44 },
+  { version: 45, name: 'requirement organization knowledge references', sql: V45 },
 ]
 
 function checksum(sql: string): string {

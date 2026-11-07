@@ -1,4 +1,4 @@
-/** Sequential K1 acceptance. Preserve all attempts and command output beside the report. */
+/** Sequential knowledge acceptance. Preserve every attempt and its source manifest. */
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { createRequire } from 'node:module'
@@ -6,15 +6,28 @@ import { createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync }
 import { join, resolve } from 'node:path'
 
 const root = resolve('.')
-const evidence = join(root, 'docs/v2/evidence/organization-knowledge-phase1')
+const phase = process.argv.find(arg => arg.startsWith('--phase='))?.slice(8) ?? 'k1'
+if (!['k1', 'k2'].includes(phase)) throw new Error('Unknown phase')
+const evidence = join(root, `docs/v2/evidence/${phase === 'k1' ? 'organization-knowledge-phase1' : 'organization-knowledge-k2'}`)
 const spawn = createRequire(join(root, 'packages/workspace/package.json'))('cross-spawn')
 mkdirSync(evidence, { recursive: true })
 const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
 const paths = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], { encoding: 'utf8' })
   .split('\0').filter(path => /^(apps|packages|tests|scripts|tooling)\//.test(path)).sort()
-const hash = createHash('sha256')
-for (const path of paths) { hash.update(path + '\0'); hash.update(readFileSync(join(root, path))) }
+const hash = createHash('sha256'), files = []
+for (const path of paths) {
+  const bytes = readFileSync(join(root, path))
+  const canonical = /\.(?:[cm]?[jt]sx?|json|css|html|ya?ml|md|toml)$/.test(path) ? Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n')) : bytes
+  const sha256 = createHash('sha256').update(canonical).digest('hex')
+  files.push({ path, sha256 }); hash.update(path + '\0' + sha256 + '\n')
+}
 const sourceHash = hash.digest('hex')
+const manifestName = `source-manifest.${sourceHash.slice(0, 12)}.json`
+if (phase === 'k2') {
+  const manifest = JSON.stringify({ head, normalization: 'CRLF to LF for text source; raw bytes for binary', sourceHash, files }, null, 2) + '\n'
+  writeFileSync(join(evidence, manifestName), manifest)
+  if (!existsSync(join(evidence, 'source-manifest.json'))) writeFileSync(join(evidence, 'source-manifest.json'), manifest)
+}
 const file = join(evidence, 'checks.json')
 const attempts = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')).attempts : []
 const commands = [
@@ -22,6 +35,11 @@ const commands = [
   ['typecheck', 'pnpm', ['typecheck']],
   ['test', 'pnpm', ['run', 'test', '--maxWorkers=2']],
   ['build', 'pnpm', ['build']],
+  ...(phase === 'k2' ? [
+    ['knowledge-desktop', process.execPath, ['--import', 'tsx', 'scripts/org-knowledge-k2-e2e.mjs']],
+    ['approved-dag', process.execPath, ['docs/v2/evidence/organization-knowledge-k2/run-approved-dag.mjs']],
+    ['knowledge-contrast', process.execPath, ['--import', 'tsx', 'docs/v2/evidence/organization-knowledge-k2/run-knowledge-contrast.mjs']],
+  ] : []),
   ['desktop-e2e', process.execPath, ['scripts/e2e.mjs']],
   ['agent-e2e', process.execPath, ['scripts/agent-e2e.mjs']],
   ['v12-e2e', process.execPath, ['scripts/v12-e2e.mjs']],
@@ -44,7 +62,7 @@ for (const [name, command, args] of commands.slice(start)) {
     child.once('close', code => done(code ?? -1))
   })
   await new Promise(done => log.end(done))
-  const check = { name, attempt, head, sourceHash, command: [command, ...args].join(' '), status: exitCode === 0 ? 'PASS' : 'FAIL', exitCode,
+  const check = { name, attempt, head, sourceHash, ...(phase === 'k2' ? { sourceManifest: manifestName } : {}), command: [command, ...args].join(' '), status: exitCode === 0 ? 'PASS' : 'FAIL', exitCode,
     startedAt, finishedAt: new Date().toISOString(), log: logName }
   attempts.push(check)
   writeFileSync(file, JSON.stringify({ baseHead: head, sourceHash, attempts }, null, 2) + '\n')

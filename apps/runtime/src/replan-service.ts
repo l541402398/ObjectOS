@@ -23,6 +23,7 @@ import type { OrchestrationService } from './orchestration.js'
 import { planFingerprint, type PlanGrantService } from './plan-grant.js'
 import { classifyExecutionFailure } from './failure-classifier.js'
 import type { PlannerService } from './planner.js'
+import type { RequirementKnowledgeService } from './organization-knowledge.js'
 import { buildReplanContext } from './replan-context.js'
 import { PROJECT_EVENT_TYPES } from '@projectos/domain'
 
@@ -189,6 +190,7 @@ export class ReplanService {
     private readonly planner: PlannerService,
     private readonly grants: PlanGrantService,
     private readonly logger?: Logger,
+    private readonly organizationKnowledge?: RequirementKnowledgeService,
   ) {}
 
   list(projectId: string, planId: string | null = null): ReplanProposalView[] {
@@ -255,7 +257,9 @@ export class ReplanService {
             '并在其后保留一次真实复跑。不得只调整测试报告/取证任务或拆分取证步骤；不得降低验收标准。',
           ].join('\n')
         : ''
+      const organizationContext = plan.requirementId ? await this.organizationKnowledge?.planning(plan.requirementId) : undefined
       const revised = await this.planner.generateRevision({
+        organizationContext,
         projectId: plan.projectId,
         planId: proposalId,
         revision: plan.revision,

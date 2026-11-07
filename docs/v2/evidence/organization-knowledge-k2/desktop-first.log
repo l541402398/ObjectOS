@@ -1,0 +1,39 @@
+locator.click: Timeout 25000ms exceeded.
+Call log:
+  - waiting for getByText('账号与组织', { exact: true }).first()
+    - locator resolved to <span class="po-nav-label">账号与组织</span>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+      - waiting 100ms
+    46 × waiting for element to be visible, enabled and stable
+       - element is not visible
+     - retrying click action
+       - waiting 500ms
+
+    at organization (C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\scripts\org-knowledge-k2-e2e.mjs:51:121)
+    at async file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/org-knowledge-k2-e2e.mjs:101:3 {
+  log: [
+    "  - waiting for getByText('账号与组织', { exact: true }).first()",
+    '    - locator resolved to <span class="po-nav-label">账号与组织</span>',
+    '  - attempting click action',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not visible',
+    '    - retrying click action',
+    '    - waiting 20ms',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not visible',
+    '    - retrying click action',
+    '      - waiting 100ms',
+    '    46 × waiting for element to be visible, enabled and stable',
+    '       - element is not visible',
+    '     - retrying click action',
+    '       - waiting 500ms'
+  ],
+  name: 'TimeoutError'
+}

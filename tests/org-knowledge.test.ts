@@ -481,4 +481,33 @@ describe('versioned organization knowledge — real PostgreSQL and HTTP', () => 
     )
     expect((await search('重启后保留正文')).results).toHaveLength(1)
   })
+
+  it('resolves the exact chosen publication, never substitutes a version, and rechecks its current authority', async () => {
+    const detail = await transition(await create({ content: { ...technical, body: '精确引用的旧版资料' } })), version = detail.versions[0]!
+    const pin = { documentId: detail.document.id, versionId: version.id, checksum: version.checksum }
+    const input = { projectId: project, pins: [pin], includeContent: true }
+    const newer = await request(`/${detail.document.id}/versions`, { version: '2.0.0', content: { ...technical, body: '后续新版资料' } })
+    const next = OrganizationKnowledgeDetailSchema.parse(newer.body)
+    await transition(next, 'publish', next.versions.find(v => v.version === '2.0.0')!.id)
+    const resolved = await request('/resolve', input, 'member')
+    expect(resolved.status).toBe(200)
+    expect(JSON.stringify(resolved.body)).toContain('精确引用的旧版资料')
+    expect(JSON.stringify(resolved.body)).not.toContain('后续新版资料')
+    expect(JSON.stringify((await request('/resolve', { ...input, includeContent: false }, 'member')).body)).not.toContain('精确引用的旧版资料')
+    expect((await request('/resolve', { ...input, pins: [{ ...pin, checksum: 'sha256:' + '0'.repeat(64) }] }, 'member')).status).toBe(409)
+    expect((await request('/resolve', { ...input, projectId: privateProject }, 'member')).status).toBe(404)
+    await transition(OrganizationKnowledgeDetailSchema.parse((await request(`/${detail.document.id}`)).body), 'revoke', version.id)
+    expect((await request('/resolve', input, 'member')).status).toBe(409)
+  })
+
+  it('rejects oversize selected context without truncating or granting draft/private knowledge', async () => {
+    const first = await transition(await create({ content: { ...technical, body: '甲'.repeat(13000) } }))
+    const second = await transition(await create({ content: { ...technical, body: '乙'.repeat(13000) } }))
+    const pin = (detail: OrganizationKnowledgeDetail) => ({ documentId: detail.document.id, versionId: detail.versions[0]!.id, checksum: detail.versions[0]!.checksum })
+    expect((await request('/resolve', { projectId: project, pins: [pin(first), pin(second)], includeContent: true }, 'member')).status).toBe(400)
+    const draft = await create()
+    expect((await request('/resolve', { projectId: project, pins: [pin(draft)], includeContent: true }, 'member')).status).toBe(409)
+    const privateDoc = await transition(await create({ visibility: 'project', projectId: privateProject }))
+    expect((await request('/resolve', { projectId: project, pins: [pin(privateDoc)], includeContent: true }, 'owner')).status).toBe(404)
+  })
 })

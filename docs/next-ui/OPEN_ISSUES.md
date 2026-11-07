@@ -1,5 +1,15 @@
 # ProjectOS Next UI — Open Issues
 
+2026-11-07 K2: the existing `design-lab-e2e.mjs` and `design-lab-contrast.mjs` still target the old
+stage-first surface; the former also requires a rejected approval modal. Keep their actual failures
+in the K2 report and use `premium-lab-e2e.mjs` for the approved DAG (32/32 PASS in this run).
+Its native-composited diagnostic finds one existing light-theme `待批准` / `.pdl-state` sample at
+4.46:1; dark DAG and both inspector samples are above 4.5:1. The approved before/after DAG PNGs
+are byte-identical. Track this badge for separate visual review; do not restyle the protected baseline
+as part of organization knowledge. Axe contrast is incomplete on glass, so K2 adds explicit native
+compositor sampling for its new surfaces. Actual commands, scopes and results:
+[`organization-knowledge-k2/REPORT.md`](../v2/evidence/organization-knowledge-k2/REPORT.md).
+
 2026-10-31: open — (1) full Vitest has the same requirement-integration timeout (module alone 15/15); (2) requirement-integration-e2e times out waiting for the truncated-diff notice, cause not located; (3) plan execution grants are not linked to requirement start intents; (4) page-level card structure still reads as generic cards (overview stat row, lifecycle block); (5) glass frame frame-rate is a rough rAF sample (48–61 fps), no GPU profile; OS DPI/screen reader/user visual acceptance unverified.
 
 2026-10-30 requirement-owned workflows supersede the configurable-workflow / UC gaps below. Live UC

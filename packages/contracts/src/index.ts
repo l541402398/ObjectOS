@@ -23,3 +23,4 @@ export * from './organization.js'
 
 
 export * from './git-delivery.js'
+export * from './organization-knowledge.js'

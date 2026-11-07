@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { RequirementKnowledgeSelectionSchema, RequirementKnowledgeViewSchema } from './organization-knowledge.js'
 import {
   OrganizationKnowledgeCreateSchema, OrganizationKnowledgeDetailSchema,
   OrganizationKnowledgeVersionInputSchema, OrganizationKnowledgeDraftSchema,
@@ -7,6 +8,7 @@ import {
   OrganizationKnowledgeSearchResultSchema,
 } from '@projectos/organization-contracts'
 export type { OrganizationKnowledgeContent, OrganizationKnowledgeDetail } from '@projectos/organization-contracts'
+export { OrganizationKnowledgeContentSchema } from '@projectos/organization-contracts'
 import { WorkerJobSubmitSchema, WorkerJobSchema, WorkerJobsSchema } from '@projectos/organization-contracts'
 export { WorkerJobInternalSchemas, WorkerJobLeaseSchema, WorkerJobSchema, WorkerJobsSchema } from '@projectos/organization-contracts'
 export type { WorkerJob } from '@projectos/organization-contracts'
@@ -114,6 +116,7 @@ const empty = z.object({}).strict()
 const ok = z.object({ ok: z.literal(true) })
 const id = z.string().min(1).max(128)
 export const OrganizationApiSchemas = {
+  'organization.setRequirementKnowledge': { input: RequirementKnowledgeSelectionSchema, output: RequirementKnowledgeViewSchema },
   'organization.knowledgeList': { input: OrganizationKnowledgeListInputSchema, output: OrganizationKnowledgeListSchema },
   'organization.knowledgeDetail': { input: z.object({ documentId: id }).strict(), output: OrganizationKnowledgeDetailSchema },
   'organization.createKnowledge': { input: OrganizationKnowledgeCreateSchema, output: OrganizationKnowledgeDetailSchema },

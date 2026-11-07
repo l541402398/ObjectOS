@@ -1,0 +1,17 @@
+warning: in the working copy of 'apps/desktop/src/main/auth/organization-connection.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/desktop/src/main/runtime-supervisor.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/desktop/src/preload/index.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/desktop/src/renderer/src/pages/RequirementWorkPage.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/runtime/src/agent-runner.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/runtime/src/orchestration.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/runtime/src/replan-service.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'apps/server/src/knowledge-api.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/design/DESIGN_CHANGELOG.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/org-upgrade/KNOWLEDGE_AND_ASSIGNMENT_PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'packages/contracts/src/desktop-api.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'packages/contracts/src/organization.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'packages/organization-contracts/src/knowledge.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'packages/persistence/src/migrations.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/org-knowledge-checks.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/org-connection.test.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/org-knowledge.test.ts', LF will be replaced by CRLF the next time Git touches it

@@ -1,0 +1,418 @@
+{
+  "recordedAt": "2026-11-07T09:25:18.839Z",
+  "baseHead": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+  "required": [
+    {
+      "name": "lint",
+      "attempt": 1,
+      "head": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+      "sourceHash": "6773423e5e9260f790bc13a4829e49510f067151326c3a2ed6d47aecaa2299da",
+      "command": "pnpm lint",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T09:01:03.104Z",
+      "finishedAt": "2026-11-07T09:02:03.327Z",
+      "log": "lint-1.log"
+    },
+    {
+      "name": "typecheck",
+      "attempt": 1,
+      "head": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+      "sourceHash": "6773423e5e9260f790bc13a4829e49510f067151326c3a2ed6d47aecaa2299da",
+      "command": "pnpm typecheck",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T09:02:03.329Z",
+      "finishedAt": "2026-11-07T09:02:57.483Z",
+      "log": "typecheck-1.log"
+    },
+    {
+      "name": "test",
+      "attempt": 1,
+      "head": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+      "sourceHash": "6773423e5e9260f790bc13a4829e49510f067151326c3a2ed6d47aecaa2299da",
+      "command": "pnpm run test --maxWorkers=2",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T09:02:57.485Z",
+      "finishedAt": "2026-11-07T09:12:38.911Z",
+      "log": "test-1.log"
+    },
+    {
+      "name": "build",
+      "attempt": 1,
+      "head": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+      "sourceHash": "6773423e5e9260f790bc13a4829e49510f067151326c3a2ed6d47aecaa2299da",
+      "command": "pnpm build",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T09:12:38.914Z",
+      "finishedAt": "2026-11-07T09:13:03.990Z",
+      "log": "build-1.log"
+    },
+    {
+      "name": "desktop-e2e",
+      "attempt": 1,
+      "head": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+      "sourceHash": "b9bec407b76ac7ba90385796a9c2108c2e07a2d58f34ad6de5d7b5627f5b1035",
+      "sourceManifest": "source-manifest.b9bec407b76a.json",
+      "command": "C:\\Program Files\\nodejs\\node.exe scripts/e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T09:21:14.678Z",
+      "finishedAt": "2026-11-07T09:21:24.370Z",
+      "log": "desktop-e2e-1.log"
+    },
+    {
+      "name": "agent-e2e",
+      "attempt": 1,
+      "head": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+      "sourceHash": "b9bec407b76ac7ba90385796a9c2108c2e07a2d58f34ad6de5d7b5627f5b1035",
+      "sourceManifest": "source-manifest.b9bec407b76a.json",
+      "command": "C:\\Program Files\\nodejs\\node.exe scripts/agent-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T09:21:24.371Z",
+      "finishedAt": "2026-11-07T09:21:37.239Z",
+      "log": "agent-e2e-1.log"
+    },
+    {
+      "name": "v12-e2e",
+      "attempt": 1,
+      "head": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+      "sourceHash": "b9bec407b76ac7ba90385796a9c2108c2e07a2d58f34ad6de5d7b5627f5b1035",
+      "sourceManifest": "source-manifest.b9bec407b76a.json",
+      "command": "C:\\Program Files\\nodejs\\node.exe scripts/v12-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T09:21:37.241Z",
+      "finishedAt": "2026-11-07T09:21:56.614Z",
+      "log": "v12-e2e-1.log"
+    },
+    {
+      "name": "v13-e2e",
+      "attempt": 1,
+      "head": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+      "sourceHash": "b9bec407b76ac7ba90385796a9c2108c2e07a2d58f34ad6de5d7b5627f5b1035",
+      "sourceManifest": "source-manifest.b9bec407b76a.json",
+      "command": "C:\\Program Files\\nodejs\\node.exe scripts/v13-e2e.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T09:21:56.617Z",
+      "finishedAt": "2026-11-07T09:22:11.570Z",
+      "log": "v13-e2e-1.log"
+    },
+    {
+      "name": "package-dir",
+      "attempt": 1,
+      "head": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+      "sourceHash": "b9bec407b76ac7ba90385796a9c2108c2e07a2d58f34ad6de5d7b5627f5b1035",
+      "sourceManifest": "source-manifest.b9bec407b76a.json",
+      "command": "pnpm package:dir",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T09:22:11.572Z",
+      "finishedAt": "2026-11-07T09:23:13.842Z",
+      "log": "package-dir-1.log"
+    },
+    {
+      "name": "package-smoke",
+      "attempt": 1,
+      "head": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+      "sourceHash": "b9bec407b76ac7ba90385796a9c2108c2e07a2d58f34ad6de5d7b5627f5b1035",
+      "sourceManifest": "source-manifest.b9bec407b76a.json",
+      "command": "pnpm test:package",
+      "status": "PASS",
+      "exitCode": 0,
+      "startedAt": "2026-11-07T09:23:13.843Z",
+      "finishedAt": "2026-11-07T09:23:27.024Z",
+      "log": "package-smoke-1.log"
+    }
+  ],
+  "requiredPass": true,
+  "approvedDag": {
+    "pass": 32,
+    "fail": 0
+  },
+  "newUiCompositedContrast": {
+    "checks": 137,
+    "failedChecks": 0,
+    "states": 40,
+    "samples": 568,
+    "minimum": 4.9444320490959575,
+    "audits": [
+      {
+        "name": "knowledge-editor-1440-light-100",
+        "count": 9,
+        "minimum": 5.051389077885801,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-editor-1440-light-125",
+        "count": 7,
+        "minimum": 10.24308441677774,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-editor-1440-dark-100",
+        "count": 9,
+        "minimum": 8.724400078466095,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-editor-1440-dark-125",
+        "count": 7,
+        "minimum": 14.299904120526994,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-editor-1024-light-100",
+        "count": 7,
+        "minimum": 10.088683508422205,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-editor-1024-light-125",
+        "count": 5,
+        "minimum": 9.805122832202926,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-editor-1024-dark-100",
+        "count": 7,
+        "minimum": 14.299904120526994,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-editor-1024-dark-125",
+        "count": 5,
+        "minimum": 14.638732120771536,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-list-1440-light-100",
+        "count": 19,
+        "minimum": 5.051389077885801,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-list-1440-light-125",
+        "count": 19,
+        "minimum": 5.051389077885801,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-list-1440-dark-100",
+        "count": 19,
+        "minimum": 8.628618004247343,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-list-1440-dark-125",
+        "count": 19,
+        "minimum": 8.628618004247343,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-list-1024-light-100",
+        "count": 19,
+        "minimum": 5.051389077885801,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-list-1024-light-125",
+        "count": 13,
+        "minimum": 5.051389077885801,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-list-1024-dark-100",
+        "count": 19,
+        "minimum": 8.628618004247343,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-list-1024-dark-125",
+        "count": 13,
+        "minimum": 8.628618004247343,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-detail-1440-light-100",
+        "count": 13,
+        "minimum": 5.077301191282502,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-detail-1440-light-125",
+        "count": 13,
+        "minimum": 5.068037414918332,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-detail-1440-dark-100",
+        "count": 13,
+        "minimum": 7.0953720941464455,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-detail-1440-dark-125",
+        "count": 13,
+        "minimum": 7.106175357867047,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-detail-1024-light-100",
+        "count": 13,
+        "minimum": 4.9444320490959575,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-detail-1024-light-125",
+        "count": 13,
+        "minimum": 5.100432131442308,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-detail-1024-dark-100",
+        "count": 13,
+        "minimum": 6.9959176122414375,
+        "failures": 0
+      },
+      {
+        "name": "knowledge-detail-1024-dark-125",
+        "count": 13,
+        "minimum": 6.953195331928795,
+        "failures": 0
+      },
+      {
+        "name": "requirement-source-selection-1440-light-100",
+        "count": 22,
+        "minimum": 5.051389077885801,
+        "failures": 0
+      },
+      {
+        "name": "requirement-source-selection-1440-light-125",
+        "count": 21,
+        "minimum": 5.051389077885801,
+        "failures": 0
+      },
+      {
+        "name": "requirement-source-selection-1440-dark-100",
+        "count": 22,
+        "minimum": 8.724400078466095,
+        "failures": 0
+      },
+      {
+        "name": "requirement-source-selection-1440-dark-125",
+        "count": 21,
+        "minimum": 8.724400078466095,
+        "failures": 0
+      },
+      {
+        "name": "requirement-source-selection-1024-light-100",
+        "count": 22,
+        "minimum": 5.051389077885801,
+        "failures": 0
+      },
+      {
+        "name": "requirement-source-selection-1024-light-125",
+        "count": 17,
+        "minimum": 5.051389077885801,
+        "failures": 0
+      },
+      {
+        "name": "requirement-source-selection-1024-dark-100",
+        "count": 22,
+        "minimum": 8.724400078466095,
+        "failures": 0
+      },
+      {
+        "name": "requirement-source-selection-1024-dark-125",
+        "count": 17,
+        "minimum": 8.46140279718366,
+        "failures": 0
+      },
+      {
+        "name": "requirement-citations-1440-light-100",
+        "count": 13,
+        "minimum": 5.051389077885801,
+        "failures": 0
+      },
+      {
+        "name": "requirement-citations-1440-light-125",
+        "count": 13,
+        "minimum": 5.051389077885801,
+        "failures": 0
+      },
+      {
+        "name": "requirement-citations-1440-dark-100",
+        "count": 13,
+        "minimum": 8.368450924315106,
+        "failures": 0
+      },
+      {
+        "name": "requirement-citations-1440-dark-125",
+        "count": 13,
+        "minimum": 8.473821052796293,
+        "failures": 0
+      },
+      {
+        "name": "requirement-citations-1024-light-100",
+        "count": 13,
+        "minimum": 5.051389077885801,
+        "failures": 0
+      },
+      {
+        "name": "requirement-citations-1024-light-125",
+        "count": 13,
+        "minimum": 5.051389077885801,
+        "failures": 0
+      },
+      {
+        "name": "requirement-citations-1024-dark-100",
+        "count": 13,
+        "minimum": 8.460680533183863,
+        "failures": 0
+      },
+      {
+        "name": "requirement-citations-1024-dark-125",
+        "count": 13,
+        "minimum": 8.724400078466095,
+        "failures": 0
+      }
+    ]
+  },
+  "legacyProbeFailures": [
+    {
+      "name": "design-lab",
+      "attempt": 1,
+      "head": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+      "sourceHash": "6773423e5e9260f790bc13a4829e49510f067151326c3a2ed6d47aecaa2299da",
+      "command": "C:\\Program Files\\nodejs\\node.exe scripts/design-lab-e2e.mjs",
+      "status": "FAIL",
+      "exitCode": 1,
+      "startedAt": "2026-11-07T09:15:09.777Z",
+      "finishedAt": "2026-11-07T09:15:16.274Z",
+      "log": "design-lab-1.log"
+    },
+    {
+      "name": "design-contrast",
+      "attempt": 1,
+      "head": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+      "sourceHash": "6773423e5e9260f790bc13a4829e49510f067151326c3a2ed6d47aecaa2299da",
+      "command": "C:\\Program Files\\nodejs\\node.exe scripts/design-lab-contrast.mjs",
+      "status": "FAIL",
+      "exitCode": 1,
+      "startedAt": "2026-11-07T09:15:59.961Z",
+      "finishedAt": "2026-11-07T09:16:35.597Z",
+      "log": "design-contrast-1.log"
+    }
+  ],
+  "baselineContrastIssue": {
+    "text": "待批准",
+    "className": "pdl-state",
+    "minimum": 4.46,
+    "status": "existing protected baseline; tracked in OPEN_ISSUES"
+  }
+}

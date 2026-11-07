@@ -5,6 +5,10 @@ import { createInterface } from 'node:readline'
 import {
   AppError,
   RuntimeFrameSchema,
+  KnowledgeHostInputSchema,
+  KnowledgeResponseFrameSchema,
+  type KnowledgeHostInput,
+  type KnowledgeHostOutput,
   type ProviderRuntimeConfig,
   type RuntimeEvent,
   type RuntimeFrame,
@@ -43,6 +47,9 @@ export function shouldRestartOnMissedPong(input: { missed: number; pendingReques
 }
 
 export class RuntimeSupervisor {
+  private knowledgeResolver: ((input: KnowledgeHostInput) => Promise<KnowledgeHostOutput>) | null = null
+  private readonly knowledgePending = new Set<string>()
+  setKnowledgeResolver(resolver: ((input: KnowledgeHostInput) => Promise<KnowledgeHostOutput>) | null): void { this.knowledgeResolver = resolver }
   private child: ChildProcessWithoutNullStreams | null = null
   private status: RuntimeStatus = {
     status: 'starting',
@@ -148,6 +155,28 @@ export class RuntimeSupervisor {
   }
 
   private handleFrame(frame: RuntimeFrame): void {
+    if (frame.kind === 'knowledge_request') {
+      const child = this.child
+      if (!child || this.knowledgePending.size >= 16 || this.knowledgePending.has(frame.id)) {
+        if (child && !child.stdin.destroyed && child.stdin.writable) {
+          try { child.stdin.write(`${JSON.stringify({ kind: 'knowledge_response', id: frame.id, ok: false })}\n`) } catch { /* Child closed. */ }
+        }
+        return
+      }
+      this.knowledgePending.add(frame.id)
+      void (async () => {
+        let result: KnowledgeHostOutput | undefined
+        try { result = await this.knowledgeResolver?.(KnowledgeHostInputSchema.parse(frame.input)) }
+        catch { /* Return no credential, server body or raw exception over this boundary. */ }
+        finally { this.knowledgePending.delete(frame.id) }
+        if (this.child !== child || child.stdin.destroyed || !child.stdin.writable) return
+        try {
+          const response = KnowledgeResponseFrameSchema.parse({ kind: 'knowledge_response', id: frame.id, ok: Boolean(result), ...(result ? { result } : {}) })
+          child.stdin.write(`${JSON.stringify(response)}\n`)
+        } catch { /* Invalid output or closed child; never replay a stale response. */ }
+      })()
+      return
+    }
     if (frame.kind === 'hello') {
       if (this.handshakeTimer) clearTimeout(this.handshakeTimer)
       this.handshakeTimer = null

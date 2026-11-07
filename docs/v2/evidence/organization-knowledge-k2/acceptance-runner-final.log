@@ -1,0 +1,6 @@
+PASS lint: lint-1.log
+PASS typecheck: typecheck-1.log
+PASS test: test-1.log
+PASS build: build-1.log
+PASS knowledge-desktop: knowledge-desktop-1.log
+FAIL design-lab: design-lab-1.log

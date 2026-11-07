@@ -67,6 +67,10 @@ async function main(): Promise<void> {
     logger,
     startedAt,
     shutdown,
+    resolveKnowledge: input => {
+      if (!transport) return Promise.reject(new Error('Organization knowledge host not ready'))
+      return transport.requestKnowledge(input)
+    },
   })
   transport = new RuntimeTransport(
     {

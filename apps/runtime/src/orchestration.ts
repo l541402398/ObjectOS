@@ -30,6 +30,7 @@ import { getGitStatus } from '@projectos/workspace'
 import { planGroupTitle, planSessionTitle } from '@projectos/session-manager'
 import { buildAssignmentCandidates as buildCandidateSnapshot } from './assignment-candidates.js'
 import type { PlannerService } from './planner.js'
+import type { RequirementKnowledgeService } from './organization-knowledge.js'
 
 /**
  * ADR-0040 — assignment reasons are audit evidence, so they are merged, not replaced.
@@ -70,6 +71,7 @@ export class OrchestrationService {
     private readonly store: SqliteStore,
     private readonly services: CoreServices,
     private readonly planner: PlannerService | null = null,
+    private readonly organizationKnowledge?: RequirementKnowledgeService,
   ) {}
 
   async scan(projectId: string): Promise<ProjectSnapshot> {
@@ -539,6 +541,7 @@ export class OrchestrationService {
     const requestId = newId('plr')
     const startedAt = Date.now()
     let generated: Awaited<ReturnType<PlannerService['generate']>>
+    const organizationContext = requirement ? await this.organizationKnowledge?.planning(requirement.id) : undefined
     try {
       generated = await this.planner.generate({
         projectId: input.projectId,
@@ -548,6 +551,7 @@ export class OrchestrationService {
         requestId,
         maxTasks: input.maxTasks,
         allowOverBudget: input.allowOverBudget,
+        organizationContext,
       })
     } catch (error) {
       if (!input.allowRuleFallback || requirement) throw error
@@ -580,6 +584,7 @@ export class OrchestrationService {
       return fallbackPlan
     }
 
+    await organizationContext?.check()
     let plannedTasks = requirement ? generated.tasks : ensureReviewTask(goal, generated.tasks)
     const coverageWarnings: string[] = []
     if (requirement && requirement.acceptanceCriteria.length > 0 && plannedTasks.length > 0) {

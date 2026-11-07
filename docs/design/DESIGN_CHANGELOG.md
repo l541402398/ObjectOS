@@ -504,3 +504,35 @@ skill catalog; this session verified both after installation.
 - A real Windows deep-path failure was preserved as needs_reconciliation; compact new destinations and no unaudited preview commits are documented in ADR-0080. Full logs, 35 screenshots, commit lineage, file hashes and remaining gaps are in `docs/v2/evidence/2026-11-05-functional-audit/`.
 - Computer-use skill/guidance were actually read. Windows capture/geometry failed, so real Electron UI locators were used; no business API seeding, fake browser login or mocked native confirmation was counted. Native project consent, physical mouse input, GUI conflict resolution and a new visual/a11y matrix remain unverified.
 - Required regression/package checks pass; the full suite contains one 30-second integration timeout, which passes when isolated without changing the limit. Do not report the full suite as green.
+## 2026-11-07 — K2 organization knowledge and requirement references
+
+- Extend the existing organization Settings with an inline knowledge list/detail/editor/version history;
+  add source selection to the current requirement workspace. Preserve the approved DAG, global palette,
+  packaged Noto Sans SC, semantic controls and the existing Motion transition. No graph composition,
+  new Aurora shader or Liquid Glass filter is introduced.
+- Consulted all root UI contracts, current migration/recovery/issues and approved baseline images,
+  actual DesignLabPage/StageJourney/TaskInspector/OpticalGlass/Aurora source, shared organization controls
+  and unified tokens. Existing five-fix history is retained; this additive feature does not migrate pages.
+- Read local `ui-ux-pro-max/.claude/skills/ui-ux-pro-max/SKILL.md`, Vercel composition and React skills
+  (including async parallelism, cached-query deduplication and explicit component variants), and
+  Impeccable context/craft-floor. No skill-loader tool is exposed, so no tool-based loading is claimed.
+  The Impeccable context command ran against OrganizationPanel; no PRODUCT.md exists. The existing
+  approved implementation is the authority for this scoped extension; no product facts were invented.
+- Actual UI UX Pro Max queries: typography `Chinese desktop readable labels`; color `semantic contrast
+  glass workspace`; UX `responsive settings form`, `keyboard focus validation`, `reduced motion
+  interruptible`. Accepted Noto Sans SC/readability, labels, focus and reduced motion. Rejected the
+  unrelated photography/gray spatial palettes, remote font imports and generic type-size replacement
+  because they conflict with the frozen local Premium Liquid Glass system. Reuse TanStack Query rather
+  than introducing SWR solely for the Vercel deduplication example.
+- Inspected installed `liquid-glass-react` 1.1.1 package/dist and MIT license, current Electron optical
+  fallback, and React Bits Aurora attribution (MIT + Commons Clause). Existing compatibility/low-FPS
+  limitations remain; this feature does not enable the library effect or claim new GPU qualification.
+- Read actual Sim Studio editor menu source at `a52fc509`,
+  `apps/sim/app/workspace/[workspaceId]/files/components/file-viewer/editor-context-menu.tsx`
+  (Apache-2.0; no assets copied), and official Motion accessibility guidance
+  <https://motion.dev/docs/react-accessibility>. Explicit actions, disabled states and local focus
+  ownership inform the existing form/navigation controls. No canvas changes are made.
+- Actual command output, native screenshot matrix, a11y, failed fixture investigations and remaining
+  verification boundaries are recorded in `docs/v2/evidence/organization-knowledge-k2/` as they run.
+- Final K2 evidence: 676 tests PASS / 4 SKIP; root-required lint/typecheck/build, four desktop E2Es and actual Windows EXE smoke PASS. New UI: 97 desktop checks, 40 axe states with no violations, plus 137 supplemental checks / 568 native-composited text samples (minimum 4.944:1).
+- Current approved-DAG regression: 32/32 PASS, before/after PNGs byte-identical. Two obsolete stage-first visual entry points FAIL and remain recorded; the new K2 coordinator now invokes the approved DAG and native-contrast wrappers. Existing light-theme “待批准” badge diagnostic is 4.46:1, tracked in OPEN_ISSUES for separate visual review. No protected baseline restyling. See docs/v2/evidence/organization-knowledge-k2/REPORT.md for exact scopes, source manifests, failures and remaining limits.

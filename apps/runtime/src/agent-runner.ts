@@ -72,6 +72,7 @@ import { resolveLimits, type RuntimeLimits } from './limits.js'
 import type { ProviderManager } from './provider-manager.js'
 import type { RuntimeEventHub } from './events.js'
 import type { Logger } from './logger.js'
+import type { RequirementKnowledgeService } from './organization-knowledge.js'
 
 export interface StartRunInput {
   /** Trusted internal authority; not part of run.start IPC. Never contains persisted secrets. */
@@ -255,6 +256,8 @@ export function assertCoordinatedTaskScope(input: {
 }
 
 export class AgentRunner {
+  private organizationKnowledge?: RequirementKnowledgeService
+  setOrganizationKnowledge(service: RequirementKnowledgeService): void { this.organizationKnowledge = service }
   private readonly active = new Map<string, ActiveRun>()
   private readonly runtimeExecutor: RuntimeExecutionService
   private readonly sessionIndex = new Map<string, string>()
@@ -415,6 +418,8 @@ export class AgentRunner {
       input.workspaceRoot = managedTaskRoot(this.store, task, input.workspaceRoot)!
       assertIntegratedDependencies(this.store, task, input.workspaceRoot)
     }
+    const organizationKnowledge = task?.requirementId && !input.authority?.isolatedContext ? await this.organizationKnowledge?.capture(task.requirementId) : null
+    if (organizationKnowledge && useRuntime) throw new AppError('POLICY_DENIED', '引用组织资料的需求请使用原生 Agent 执行流程')
     if (!input.messageId) {
       const message = this.store.appendMessage({
         sessionId: session.id,
@@ -526,6 +531,7 @@ export class AgentRunner {
             inboxId: input.inboxId ?? null,
             workspaceRoot: input.workspaceRoot ?? project.rootPath,
             requirementContext: task?.requirementId ? this.captureRequirementContext(task) : null,
+            ...(organizationKnowledge ? { organizationKnowledge } : {}),
           },
         })
         if (task) {
@@ -1380,7 +1386,8 @@ export class AgentRunner {
       return true
     })
     const toolPrompt = tools.map((tool) => `- ${tool.name}：${tool.description}`).join('\n')
-    const system = `${context.system}\n\n${this.requirementContextForRun(run.id)}\n\n## 可用工具\n${toolPrompt || '无'}\n`
+    const organizationContext = await this.organizationKnowledge?.contextForRun(run.id) ?? ''
+    const system = `${context.system}\n\n${this.requirementContextForRun(run.id)}\n\n${organizationContext}\n\n## 可用工具\n${toolPrompt || '无'}\n`
     if (!resume) {
       this.store.appendRunStep({
         runId: run.id,
@@ -1546,6 +1553,7 @@ export class AgentRunner {
           state.outputTokens += usage.outputTokens ?? 0
         },
         executeTool: (invocation) => this.executeTool(state, invocation),
+        beforeModelRequest: () => this.organizationKnowledge?.checkRun(state.runId) ?? Promise.resolve(),
       })
       state.budget.stepsUsed += Math.max(0, result.steps)
       this.persistBudget(state)
@@ -1903,7 +1911,7 @@ export class AgentRunner {
 
   private async executeTool(state: ActiveRun, invocation: ToolInvocation): Promise<ToolOutcome> {
     if (state.snapshot.authority && !state.authority) throw new AppError('APPROVAL_REQUIRED', '受限运行授权未恢复，请先核对；不会重放工具')
-    try { await state.authority?.check(invocation, false) }
+    try { await this.organizationKnowledge?.checkRun(state.runId); await state.authority?.check(invocation, false) }
     catch(error) {
       const message=redactSecrets(error instanceof Error?error.message:String(error))
       this.store.appendRunStep({runId:state.runId,kind:'tool_result',title:`受限授权拒绝：${invocation.name}`,payload:{name:invocation.name,ok:false,error:message}})
@@ -2130,6 +2138,7 @@ export class AgentRunner {
   }
 
   private async executeToolHandler(state: ActiveRun, invocation: ToolInvocation): Promise<unknown> {
+    await this.organizationKnowledge?.checkRun(state.runId)
     if (state.snapshot.authority) {
       if (!state.authority || !state.snapshot.authority.allowedTools.includes(invocation.name)) throw new AppError('POLICY_DENIED', '工具不在本次受限授权中')
       try { await state.authority.check(invocation, true) }

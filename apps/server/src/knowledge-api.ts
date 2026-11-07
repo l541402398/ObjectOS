@@ -18,6 +18,8 @@ import {
   OrganizationKnowledgeListSchema,
   OrganizationKnowledgeSearchSchema,
   OrganizationKnowledgeSearchResultSchema,
+  OrganizationKnowledgeResolveSchema,
+  OrganizationKnowledgeResolvedSchema,
   type OrgRole,
   type OrganizationKnowledgeContent,
 } from '@projectos/organization-contracts'
@@ -53,6 +55,29 @@ const conflict = () => new AssetScopeError(409, 'CONFLICT', '知识版本已改�
 /** Organization knowledge never grants execution rights or mutates local knowledge entries. */
 export class OrganizationKnowledge {
   constructor(private readonly pool: Pool) {}
+
+  async resolve(orgId: string, accountId: string, raw: unknown) {
+    const input = OrganizationKnowledgeResolveSchema.parse(raw)
+    return this.scope(orgId, accountId, async client => {
+      if (!await this.project(client, orgId, accountId, input.projectId)) throw absent()
+      const sources = []
+      let chars = 0
+      for (const pin of input.pins) {
+        const document = await this.document(client, orgId, accountId, pin.documentId)
+        if (document.project_id && document.project_id !== input.projectId) throw absent()
+        const row = (await client.query<VersionRow>(`SELECT * FROM organization_knowledge_versions
+          WHERE organization_id=$1 AND document_id=$2 AND id=$3 AND status='published' FOR SHARE`,
+        [orgId, pin.documentId, pin.versionId])).rows[0]
+        if (!row || row.checksum !== pin.checksum) throw conflict()
+        const version = this.version(row)
+        chars += version.content.body.length + version.content.title.length
+        if (input.includeContent && chars > 24_000) throw new AssetScopeError(400, 'BAD_REQUEST', '所选资料超过上下文上限，请减少引用。')
+        sources.push({ ...pin, title: row.title, category: document.category, version: row.version,
+          ...(input.includeContent ? { body: row.body } : {}) })
+      }
+      return OrganizationKnowledgeResolvedSchema.parse({ sources })
+    })
+  }
 
   private scope<T>(
     orgId: string,
@@ -401,6 +426,10 @@ export function registerOrganizationKnowledge(
   app.post(prefix + '/search', async (request, reply) => {
     const account = await accountFor(request.headers.authorization, reply)
     if (account) return service.search(params.parse(request.params).orgId, account.id, request.body)
+  })
+  app.post(prefix + '/resolve', async (request, reply) => {
+    const account = await accountFor(request.headers.authorization, reply)
+    if (account) return service.resolve(params.parse(request.params).orgId, account.id, request.body)
   })
   app.get(prefix + '/:documentId', async (request, reply) => {
     const account = await accountFor(request.headers.authorization, reply),

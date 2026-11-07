@@ -1,0 +1,8 @@
+CONTRAST PROBE FAIL locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-testid="design-lab-task-t3"]')[22m
+
+    at C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\scripts\design-lab-contrast.mjs:18:60 {
+  log: [ `  - waiting for locator('[data-testid="design-lab-task-t3"]')` ],
+  name: 'TimeoutError'
+}

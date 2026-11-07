@@ -29,6 +29,7 @@ export interface ProjectOSDesktopApi {
     reconcile: (input: In<'gitDelivery.reconcile'>) => Promise<Out<'gitDelivery.reconcile'>>
   }
   organization: {
+    setRequirementKnowledge: (input: In<'organization.setRequirementKnowledge'>) => Promise<Out<'organization.setRequirementKnowledge'>>
     knowledgeList: (input?: In<'organization.knowledgeList'>) => Promise<Out<'organization.knowledgeList'>>
     knowledgeDetail: (input: In<'organization.knowledgeDetail'>) => Promise<Out<'organization.knowledgeDetail'>>
     createKnowledge: (input: In<'organization.createKnowledge'>) => Promise<Out<'organization.createKnowledge'>>
@@ -181,6 +182,7 @@ export interface ProjectOSDesktopApi {
     stopAll: (input: In<'requirement.flow.stopAll'>) => Promise<Out<'requirement.flow.stopAll'>>
   }
   requirements: {
+    knowledge: (requirementId: string) => Promise<Out<'requirement.knowledge'>>
     integrationPreview: (taskId: string) => Promise<Out<'task.integration.preview'>>
     reviewIntegration: (input: In<'task.integration.review'>) => Promise<Out<'task.integration.review'>>
     requestIntegration: (input: In<'task.integration.request'>) => Promise<Out<'task.integration.request'>>

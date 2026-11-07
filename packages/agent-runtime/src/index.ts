@@ -45,6 +45,7 @@ export interface AgentLoopOptions {
   onToolResult?: (invocation: ToolInvocation, outcome: ToolOutcome) => void | Promise<void>
   onUsage?: (usage: { inputTokens?: number; outputTokens?: number }) => void
   executeTool: (invocation: ToolInvocation) => Promise<ToolOutcome>
+  beforeModelRequest?: () => Promise<void>
 }
 
 /**
@@ -140,6 +141,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<AgentLoop
     const toolCalls: ToolCallRequest[] = []
     messages = repairToolCallTranscript(messages)
     try {
+      await options.beforeModelRequest?.()
       for await (const event of options.provider.stream(
         {
           messages,

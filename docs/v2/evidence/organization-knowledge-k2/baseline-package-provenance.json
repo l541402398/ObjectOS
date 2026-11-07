@@ -1,0 +1,28 @@
+{
+  "verifiedBeforeK2PackagingAt": "2026-11-07T09:14:43.250Z",
+  "k1Head": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+  "files": [
+    {
+      "path": "release/win-unpacked/ProjectOS.exe",
+      "bytes": 239400448,
+      "expectedK1": "9ea1ba397fc1063f47f20155f3a6dfec4b29c432d149aec0673166d8a5db7c57",
+      "actual": "9ea1ba397fc1063f47f20155f3a6dfec4b29c432d149aec0673166d8a5db7c57",
+      "matches": true
+    },
+    {
+      "path": "release/win-unpacked/resources/app.asar",
+      "bytes": 46692538,
+      "expectedK1": "b3e796487d2783e8726b0e8614251dd0d0e36feb1c16585c1b1994aff64e79d7",
+      "actual": "b3e796487d2783e8726b0e8614251dd0d0e36feb1c16585c1b1994aff64e79d7",
+      "matches": true
+    },
+    {
+      "path": "release/win-unpacked/resources/runtime/index.mjs",
+      "bytes": 2899741,
+      "expectedK1": "74c315512ff4586f559940bc1465b8f2be3421b6ed376e4d90e3dbcd54146f88",
+      "actual": "74c315512ff4586f559940bc1465b8f2be3421b6ed376e4d90e3dbcd54146f88",
+      "matches": true
+    }
+  ],
+  "pass": true
+}

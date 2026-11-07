@@ -18,6 +18,7 @@ import { RequirementIntegrationDialog } from './RequirementIntegrationDialog'
 import { RequirementApproval } from './RequirementApproval'
 import { RequirementFlowEditor } from './RequirementFlowEditor'
 import { RequirementMaterials } from './RequirementMaterials'
+import { RequirementOrganizationKnowledge } from './RequirementOrganizationKnowledge'
 import { RequirementArrangement } from './RequirementArrangement'
 import { RequirementNextAction } from './RequirementNextAction'
 import { RequirementDependencyGraph } from './RequirementDependencyGraph'
@@ -789,6 +790,7 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
         ),
       },
       { key: 'documents', label: '需求说明', children: <div className="rq-documents"><h3>{req.title}</h3><div className="rq-prose">{req.body || '尚未补充需求描述'}</div>{req.acceptanceCriteria.length > 0 && <><h3>验收标准</h3><ol>{req.acceptanceCriteria.map((item, index) => <li key={index}>{item}</li>)}</ol></>}{req.technicalDesign && <><h3>技术设计</h3><div className="rq-prose">{req.technicalDesign}</div></>}</div> },
+      { key: 'organization-knowledge', label: '组织资料', children: <RequirementOrganizationKnowledge key={req.id} requirementId={req.id}/> },
       { key: 'materials', label: `产出资料 ${data?.materials.length ?? 0}`, children: <RequirementMaterials projectId={req.projectId} requirementId={req.id} requirementTitle={req.title} materials={data?.materials ?? []} tasks={view.tasks.map(t => ({ id: t.id, title: t.title }))} taskFlows={data?.tasks ?? []} onNavigate={go} /> },
     ]} />
     {planOpen && <RequirementPlanDialog requirement={req} onClose={() => setPlanOpen(false)} onApplied={refresh}

@@ -1,0 +1,93 @@
+PASS Empty knowledge state is visible
+PASS Dirty close keeps the editor contents
+PASS knowledge-editor-1440-light-100 fits
+PASS knowledge-editor-1440-light-100 axe
+PASS knowledge-editor-1440-light-125 fits
+PASS knowledge-editor-1440-light-125 axe
+PASS knowledge-editor-1440-dark-100 fits
+PASS knowledge-editor-1440-dark-100 axe
+PASS knowledge-editor-1440-dark-125 fits
+PASS knowledge-editor-1440-dark-125 axe
+PASS knowledge-editor-1024-light-100 fits
+PASS knowledge-editor-1024-light-100 axe
+PASS knowledge-editor-1024-light-125 fits
+PASS knowledge-editor-1024-light-125 axe
+PASS knowledge-editor-1024-dark-100 fits
+PASS knowledge-editor-1024-dark-100 axe
+PASS knowledge-editor-1024-dark-125 fits
+PASS knowledge-editor-1024-dark-125 axe
+PASS knowledge-list-1440-light-100 fits
+PASS knowledge-list-1440-light-100 axe
+PASS knowledge-list-1440-light-125 fits
+PASS knowledge-list-1440-light-125 axe
+PASS knowledge-list-1440-dark-100 fits
+PASS knowledge-list-1440-dark-100 axe
+PASS knowledge-list-1440-dark-125 fits
+PASS knowledge-list-1440-dark-125 axe
+PASS knowledge-list-1024-light-100 fits
+PASS knowledge-list-1024-light-100 axe
+PASS knowledge-list-1024-light-125 fits
+PASS knowledge-list-1024-light-125 axe
+PASS knowledge-list-1024-dark-100 fits
+PASS knowledge-list-1024-dark-100 axe
+PASS knowledge-list-1024-dark-125 fits
+PASS knowledge-list-1024-dark-125 axe
+PASS knowledge-detail-1440-light-100 fits
+PASS knowledge-detail-1440-light-100 axe
+PASS knowledge-detail-1440-light-125 fits
+PASS knowledge-detail-1440-light-125 axe
+PASS knowledge-detail-1440-dark-100 fits
+PASS knowledge-detail-1440-dark-100 axe
+PASS knowledge-detail-1440-dark-125 fits
+PASS knowledge-detail-1440-dark-125 axe
+PASS knowledge-detail-1024-light-100 fits
+PASS knowledge-detail-1024-light-100 axe
+PASS knowledge-detail-1024-light-125 fits
+PASS knowledge-detail-1024-light-125 axe
+PASS knowledge-detail-1024-dark-100 fits
+PASS knowledge-detail-1024-dark-100 axe
+PASS knowledge-detail-1024-dark-125 fits
+PASS knowledge-detail-1024-dark-125 axe
+PASS requirement-source-selection-1440-light-100 fits
+PASS requirement-source-selection-1440-light-100 axe
+PASS requirement-source-selection-1440-light-125 fits
+PASS requirement-source-selection-1440-light-125 axe
+PASS requirement-source-selection-1440-dark-100 fits
+PASS requirement-source-selection-1440-dark-100 axe
+PASS requirement-source-selection-1440-dark-125 fits
+PASS requirement-source-selection-1440-dark-125 axe
+PASS requirement-source-selection-1024-light-100 fits
+PASS requirement-source-selection-1024-light-100 axe
+PASS requirement-source-selection-1024-light-125 fits
+PASS requirement-source-selection-1024-light-125 axe
+PASS requirement-source-selection-1024-dark-100 fits
+PASS requirement-source-selection-1024-dark-100 axe
+PASS requirement-source-selection-1024-dark-125 fits
+PASS requirement-source-selection-1024-dark-125 axe
+PASS Both citations persist
+PASS requirement-citations-1440-light-100 fits
+PASS requirement-citations-1440-light-100 axe
+PASS requirement-citations-1440-light-125 fits
+PASS requirement-citations-1440-light-125 axe
+PASS requirement-citations-1440-dark-100 fits
+PASS requirement-citations-1440-dark-100 axe
+PASS requirement-citations-1440-dark-125 fits
+PASS requirement-citations-1440-dark-125 axe
+PASS requirement-citations-1024-light-100 fits
+PASS requirement-citations-1024-light-100 axe
+PASS requirement-citations-1024-light-125 fits
+PASS requirement-citations-1024-light-125 axe
+PASS requirement-citations-1024-dark-100 fits
+PASS requirement-citations-1024-dark-100 axe
+PASS requirement-citations-1024-dark-125 fits
+PASS requirement-citations-1024-dark-125 axe
+locator.click: Timeout 25000ms exceeded.
+Call log:
+  - waiting for getByRole('button', { name: 'AI 拆分任务', exact: true })
+
+    at C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\scripts\org-knowledge-k2-e2e.mjs:157:68 {
+  log: [
+    "  - waiting for getByRole('button', { name: 'AI 拆分任务', exact: true })"
+  ],
+  name: 'TimeoutError'
+}

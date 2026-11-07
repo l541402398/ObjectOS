@@ -1,0 +1,22 @@
+.org-knowledge fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.org-knowledge-editor fieldset { display: grid; gap: 16px; margin-bottom: 18px; }
+.org-knowledge-editor .org-form-grid { margin-bottom: 0; }
+.org-knowledge-detail > .org-link { margin-bottom: 14px; }
+.org-knowledge-detail > .org-field { max-width: 300px; }
+.org-knowledge-meta { display: grid; gap: 6px; margin: 14px 0; color: var(--ui-ink-2); font-size: 13px; }
+.org-knowledge-meta code { font: 12px/1.5 var(--ui-mono); overflow-wrap: anywhere; }
+.org-knowledge-body { white-space: pre-wrap; overflow-wrap: anywhere; font: 14px/1.7 var(--ui-font); color: var(--ui-ink); margin: 16px 0; }
+.rq-organization-knowledge { color: var(--ui-ink); font: 14px/1.6 var(--ui-font); }
+.rq-organization-knowledge .org-field { margin-bottom: 12px; }
+.rq-organization-knowledge input, .rq-organization-knowledge select, .rq-organization-knowledge textarea { width: 100%; min-height: 38px; padding: 8px 10px; color: var(--ui-ink); background: var(--ui-surface-raised); border: 1px solid var(--ui-border-strong); border-radius: 8px; font: inherit; }
+.rq-organization-knowledge input[type='checkbox'] { width: 18px; min-height: 18px; height: 18px; accent-color: var(--ui-accent); }
+.rq-organization-knowledge :is(input,select,textarea,button):focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 3px; }
+.rq-organization-knowledge label { display: block; }
+.rq-knowledge-sources { list-style: none; margin: 16px 0; padding: 0; }
+.rq-knowledge-sources > li { padding: 14px 0; border-bottom: 1px solid var(--ui-divider); }
+.rq-organization-knowledge .rq-knowledge-source-heading { display: flex; align-items: center; gap: 10px; }
+.rq-knowledge-source-meta { font-size: 13px; color: var(--ui-ink-2); margin: 5px 0; overflow-wrap: anywhere; }
+.rq-knowledge-search { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; gap: 12px; }
+.rq-knowledge-search .org-field { margin: 0; }
+.rq-organization-knowledge .org-inline-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+@media (max-width: 1100px) { .org-knowledge .org-form-grid { grid-template-columns: minmax(0,1fr); } .rq-knowledge-search { grid-template-columns: minmax(0,1fr); } }

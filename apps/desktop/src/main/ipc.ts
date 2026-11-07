@@ -78,6 +78,7 @@ export function registerIpc(ctx: IpcContext): () => void {
     },
   })
   let syncingWorkers = false
+  supervisor.setKnowledgeResolver(input => organizationConnection.resolveRuntimeKnowledge(input))
   const workerTimer = setInterval(() => {
     if (syncingWorkers || !supervisor.isReady()) return
     syncingWorkers = true
@@ -768,6 +769,7 @@ export function registerIpc(ctx: IpcContext): () => void {
   sweepTimer.unref?.()
 
   return () => {
+    supervisor.setKnowledgeResolver(null)
     clearInterval(workerTimer)
     clearInterval(sweepTimer)
     ipcMain.removeHandler('projectos:request')

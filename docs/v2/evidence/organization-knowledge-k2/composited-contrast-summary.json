@@ -1,0 +1,249 @@
+{
+  "checks": 137,
+  "failedChecks": 0,
+  "states": 40,
+  "samples": 568,
+  "minimum": 4.9444320490959575,
+  "audits": [
+    {
+      "name": "knowledge-editor-1440-light-100",
+      "count": 9,
+      "minimum": 5.051389077885801,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-editor-1440-light-125",
+      "count": 7,
+      "minimum": 10.24308441677774,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-editor-1440-dark-100",
+      "count": 9,
+      "minimum": 8.724400078466095,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-editor-1440-dark-125",
+      "count": 7,
+      "minimum": 14.299904120526994,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-editor-1024-light-100",
+      "count": 7,
+      "minimum": 10.088683508422205,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-editor-1024-light-125",
+      "count": 5,
+      "minimum": 9.805122832202926,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-editor-1024-dark-100",
+      "count": 7,
+      "minimum": 14.299904120526994,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-editor-1024-dark-125",
+      "count": 5,
+      "minimum": 14.638732120771536,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-list-1440-light-100",
+      "count": 19,
+      "minimum": 5.051389077885801,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-list-1440-light-125",
+      "count": 19,
+      "minimum": 5.051389077885801,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-list-1440-dark-100",
+      "count": 19,
+      "minimum": 8.628618004247343,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-list-1440-dark-125",
+      "count": 19,
+      "minimum": 8.628618004247343,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-list-1024-light-100",
+      "count": 19,
+      "minimum": 5.051389077885801,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-list-1024-light-125",
+      "count": 13,
+      "minimum": 5.051389077885801,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-list-1024-dark-100",
+      "count": 19,
+      "minimum": 8.628618004247343,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-list-1024-dark-125",
+      "count": 13,
+      "minimum": 8.628618004247343,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-detail-1440-light-100",
+      "count": 13,
+      "minimum": 5.077301191282502,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-detail-1440-light-125",
+      "count": 13,
+      "minimum": 5.068037414918332,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-detail-1440-dark-100",
+      "count": 13,
+      "minimum": 7.0953720941464455,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-detail-1440-dark-125",
+      "count": 13,
+      "minimum": 7.106175357867047,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-detail-1024-light-100",
+      "count": 13,
+      "minimum": 4.9444320490959575,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-detail-1024-light-125",
+      "count": 13,
+      "minimum": 5.100432131442308,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-detail-1024-dark-100",
+      "count": 13,
+      "minimum": 6.9959176122414375,
+      "failures": 0
+    },
+    {
+      "name": "knowledge-detail-1024-dark-125",
+      "count": 13,
+      "minimum": 6.953195331928795,
+      "failures": 0
+    },
+    {
+      "name": "requirement-source-selection-1440-light-100",
+      "count": 22,
+      "minimum": 5.051389077885801,
+      "failures": 0
+    },
+    {
+      "name": "requirement-source-selection-1440-light-125",
+      "count": 21,
+      "minimum": 5.051389077885801,
+      "failures": 0
+    },
+    {
+      "name": "requirement-source-selection-1440-dark-100",
+      "count": 22,
+      "minimum": 8.724400078466095,
+      "failures": 0
+    },
+    {
+      "name": "requirement-source-selection-1440-dark-125",
+      "count": 21,
+      "minimum": 8.724400078466095,
+      "failures": 0
+    },
+    {
+      "name": "requirement-source-selection-1024-light-100",
+      "count": 22,
+      "minimum": 5.051389077885801,
+      "failures": 0
+    },
+    {
+      "name": "requirement-source-selection-1024-light-125",
+      "count": 17,
+      "minimum": 5.051389077885801,
+      "failures": 0
+    },
+    {
+      "name": "requirement-source-selection-1024-dark-100",
+      "count": 22,
+      "minimum": 8.724400078466095,
+      "failures": 0
+    },
+    {
+      "name": "requirement-source-selection-1024-dark-125",
+      "count": 17,
+      "minimum": 8.46140279718366,
+      "failures": 0
+    },
+    {
+      "name": "requirement-citations-1440-light-100",
+      "count": 13,
+      "minimum": 5.051389077885801,
+      "failures": 0
+    },
+    {
+      "name": "requirement-citations-1440-light-125",
+      "count": 13,
+      "minimum": 5.051389077885801,
+      "failures": 0
+    },
+    {
+      "name": "requirement-citations-1440-dark-100",
+      "count": 13,
+      "minimum": 8.368450924315106,
+      "failures": 0
+    },
+    {
+      "name": "requirement-citations-1440-dark-125",
+      "count": 13,
+      "minimum": 8.473821052796293,
+      "failures": 0
+    },
+    {
+      "name": "requirement-citations-1024-light-100",
+      "count": 13,
+      "minimum": 5.051389077885801,
+      "failures": 0
+    },
+    {
+      "name": "requirement-citations-1024-light-125",
+      "count": 13,
+      "minimum": 5.051389077885801,
+      "failures": 0
+    },
+    {
+      "name": "requirement-citations-1024-dark-100",
+      "count": 13,
+      "minimum": 8.460680533183863,
+      "failures": 0
+    },
+    {
+      "name": "requirement-citations-1024-dark-125",
+      "count": 13,
+      "minimum": 8.724400078466095,
+      "failures": 0
+    }
+  ]
+}

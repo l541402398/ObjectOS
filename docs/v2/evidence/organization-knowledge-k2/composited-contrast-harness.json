@@ -1,0 +1,32 @@
+{
+  "originalPath": "scripts/org-knowledge-k2-e2e.mjs",
+  "sha256": "b267dc293c7b63ccd67dc6dedb1d63ee5b46cb0a97eb61f4ef77e734a4140ae9",
+  "originalAssertionsChanged": false,
+  "additionalAssertion": "Visible native-composited text samples must meet conservative 4.5:1.",
+  "replacements": [
+    {
+      "from": "resolve('docs/v2/evidence/organization-knowledge-k2')",
+      "to": "resolve('docs/v2/evidence/organization-knowledge-k2/composited-contrast')"
+    },
+    {
+      "from": "'playwright-core'",
+      "to": "\"file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/node_modules/.pnpm/playwright-core@1.64.1/node_modules/playwright-core/index.mjs\""
+    },
+    {
+      "from": "'../tests/helpers/org-postgres.ts'",
+      "to": "\"file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/tests/helpers/org-postgres.ts\""
+    },
+    {
+      "from": "'../apps/server/src/postgres-store.ts'",
+      "to": "\"file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/server/src/postgres-store.ts\""
+    },
+    {
+      "from": "'../apps/server/src/persistent-server.ts'",
+      "to": "\"file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/apps/server/src/persistent-server.ts\""
+    },
+    {
+      "from": "  audits.push({ name, ...audit });",
+      "to": "  const composite = await compositeContrast(page, win, selector)\n  audit.compositedContrast = composite\n  check(name + ' native composited contrast', composite.count > 0 && composite.failures.length === 0, { count: composite.count, minimum: composite.minimum, failures: composite.failures })\n  audits.push({ name, ...audit });"
+    }
+  ]
+}

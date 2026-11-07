@@ -588,6 +588,46 @@ describe('Main organization connection — real HTTP login and safe session stat
     expect(network).not.toHaveBeenCalled()
   })
 
+  it('resolves only exact knowledge pins for the current Main account and never forwards its bearer', async () => {
+    let requested = 0
+    const pin = { documentId: 'document', versionId: 'version', checksum: 'sha256:' + 'a'.repeat(64) }
+    const fixture = setup({ fetchImpl: async (input, init) => {
+      if (String(input).endsWith('/knowledge/resolve')) {
+        requested++
+        expect(new Headers(init?.headers).get('authorization')).toBe(`Bearer ${fixture.token()}`)
+        return Response.json({ sources: [{ ...pin, title: '授权的技术规范', version: '1.0.0', category: 'technical', body: '知识正文' }] })
+      }
+      return fetch(input, init)
+    } })
+    const current = await connect(fixture.connection)
+    const input = { serverUrl: origin, organizationId: firstOrg, accountId: current.session!.account.id, request: { projectId: 'shared-project', pins: [pin], includeContent: true } }
+    const resolved = await fixture.connection.resolveRuntimeKnowledge(input)
+    expect(resolved.sources[0]?.body).toBe('知识正文')
+    expect(JSON.stringify(resolved)).not.toContain(fixture.token())
+    await expect(fixture.connection.resolveRuntimeKnowledge({ ...input, accountId: 'another-account' })).rejects.toMatchObject({ code: 'FORBIDDEN' })
+    expect(requested).toBe(1)
+    await fixture.connection.execute('organization.select', { organizationId: secondOrg })
+    await expect(fixture.connection.resolveRuntimeKnowledge(input)).rejects.toMatchObject({ code: 'FORBIDDEN' })
+    expect(requested).toBe(1)
+  })
+
+  it('discards an in-flight knowledge response after the active organization changes', async () => {
+    const entered = deferred<void>(), response = deferred<Response>()
+    const fixture = setup({ fetchImpl: async (input, init) => {
+      if (String(input).endsWith('/knowledge/resolve')) { entered.resolve(); return response.promise }
+      return fetch(input, init)
+    } })
+    const current = await connect(fixture.connection)
+    const pin = { documentId: 'document', versionId: 'version', checksum: 'sha256:' + 'a'.repeat(64) }
+    const pending = fixture.connection.resolveRuntimeKnowledge({ serverUrl: origin, organizationId: firstOrg,
+      accountId: current.session!.account.id, request: { projectId: 'shared-project', pins: [pin], includeContent: true } })
+    const rejected = expect(pending).rejects.toMatchObject({ code: 'CANCELLED' })
+    await entered.promise
+    await fixture.connection.execute('organization.select', { organizationId: secondOrg })
+    response.resolve(Response.json({ sources: [{ ...pin, title: '旧组织资料', version: '1.0.0', category: 'technical', body: '不得进入新组织上下文' }] }))
+    await rejected
+  })
+
   it('routes named knowledge APIs through Main with schema validation and keeps credentials out of output', async () => {
     const calls: Array<{ url: string; method: string; body: Record<string, unknown> }> = []
     const detail = { document: { id: 'knowledge-doc', organizationId: firstOrg, category: 'technical',

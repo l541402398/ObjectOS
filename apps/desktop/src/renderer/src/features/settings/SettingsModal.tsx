@@ -9,7 +9,8 @@ import {
   ToolOutlined,
   SafetyCertificateOutlined,
 } from '@ant-design/icons'
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { SettingsDraftContext } from './settings-draft'
 import { useUiStore, type SettingsSection } from '../../stores/ui'
 import { AIConnectionsPanel } from './AIConnectionsPanel'
 import { SettingsOverviewPanel } from './SettingsOverviewPanel'
@@ -80,6 +81,7 @@ function renderSection(section: SettingsSection): ReactNode {
 }
 
 export function SettingsModal() {
+  const [dirty, setDirty] = useState(false)
   const open = useUiStore((state) => state.settingsOpen)
   const section = useUiStore((state) => state.settingsSection)
   const pendingSection = useUiStore((state) => state.settingsPendingSection)
@@ -92,7 +94,7 @@ export function SettingsModal() {
   }, [section])
 
   return (
-    <DialogShell open={open} onOpenChange={(next) => { if (!next) close() }} ariaLabel="设置" width={1180} modal={false} testId="settings-dialog">
+    <SettingsDraftContext.Provider value={{ dirty, setDirty }}><DialogShell open={open} dirty={dirty} onOpenChange={(next) => { if (!next) close() }} ariaLabel="设置" width={1180} modal={false} testId="settings-dialog">
       <OverlayHeader eyebrow="PROJECTOS 1.7.0" title="设置" />
       <div className="po-settings-dialog is-next">
         <div className="po-settings-body">
@@ -107,6 +109,7 @@ export function SettingsModal() {
                 className={`po-settings-nav-item ${section === item.key ? 'is-active' : ''}`.trim()}
                 data-testid={item.key === 'organization' ? 'organization-settings-entry' : undefined}
                 onClick={() => setSection(item.key)}
+                disabled={dirty}
               >
                 <span aria-hidden>{pendingSection === item.key ? <LoadingOutlined /> : item.icon}</span>
                 <span className="po-settings-nav-label">{item.label}</span>
@@ -116,6 +119,6 @@ export function SettingsModal() {
           <div className="po-settings-content" tabIndex={0} key={section} ref={contentRef} aria-busy={pendingSection !== null}>{renderSection(section)}</div>
         </div>
       </div>
-    </DialogShell>
+    </DialogShell></SettingsDraftContext.Provider>
   )
 }

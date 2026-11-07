@@ -1,0 +1,17 @@
+{
+  "verifiedAt": "2026-11-07T09:22:23.966Z",
+  "baseHead": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+  "initialManifest": "source-manifest.initial.json",
+  "currentManifest": "source-manifest.b9bec407b76a.json",
+  "initialHash": "6773423e5e9260f790bc13a4829e49510f067151326c3a2ed6d47aecaa2299da",
+  "currentHash": "b9bec407b76ac7ba90385796a9c2108c2e07a2d58f34ad6de5d7b5627f5b1035",
+  "files": 737,
+  "changedNow": [],
+  "changedSinceFirst": [
+    "scripts/org-knowledge-checks.mjs"
+  ],
+  "unchangedProductAndTestFiles": 736,
+  "coordinatorBeforeMatches": true,
+  "pass": true,
+  "verifiedAfterStagingAt": "2026-11-07T09:26:07.296Z"
+}

@@ -51,6 +51,7 @@ export interface PlannerServiceOptions {
 }
 
 export interface PlannerGenerateInput {
+  organizationContext?: { text: string; sources: PlanGeneration['contextSources']; check: () => Promise<void> }
   projectId: string
   goal: string
   revision: number
@@ -70,6 +71,7 @@ export interface PlannerGenerateResult {
 }
 
 export interface PlannerRevisionInput {
+  organizationContext?: PlannerGenerateInput['organizationContext']
   projectId: string
   planId: string
   revision: number
@@ -154,6 +156,11 @@ export class PlannerService {
       goal,
       budgetChars: this.contextChars,
     })
+    if (input.organizationContext) {
+      context.text += `\n\n${input.organizationContext.text}`
+      context.chars = context.text.length
+      context.sources.push(...input.organizationContext.sources)
+    }
     if (context.chars === 0) {
       // Defensive only; buildPlannerContext always returns project metadata.
       throw new AppError('PROVIDER_ERROR', '没有构建出可用的规划上下文')
@@ -196,6 +203,7 @@ export class PlannerService {
       attempts = attempt
       let answer: ModelAnswer
       try {
+        await input.organizationContext?.check()
         answer = await this.callModel(target, messages)
       } catch (error) {
         if (!(error instanceof PlannerValidationError)) throw error
@@ -301,6 +309,8 @@ export class PlannerService {
    * the Planner, but with an explicit revision prompt and execution facts.
    */
   async generateRevision(input: PlannerRevisionInput): Promise<PlannerGenerateResult> {
+    if (input.organizationContext) input = { ...input, user: input.user + '\n\n' + input.organizationContext.text,
+      contextChars: input.contextChars + input.organizationContext.text.length, contextSources: [...input.contextSources, ...input.organizationContext.sources] }
     const startedAt = Date.now()
     const project = this.options.store.read.getProject(input.projectId)
     if (!project) throw new AppError('NOT_FOUND', '项目不存在')
@@ -338,6 +348,7 @@ export class PlannerService {
       attempts = attempt
       let answer: ModelAnswer
       try {
+        await input.organizationContext?.check()
         answer = await this.callModel(target, messages)
       } catch (error) {
         if (!(error instanceof PlannerValidationError)) throw error
@@ -377,6 +388,7 @@ export class PlannerService {
           warnings: [...new Set(warnings)].slice(0, 30),
           contextSources: input.contextSources,
         }
+        await input.organizationContext?.check()
         recordAttempt(attempt, answer, 'valid')
         return {
           tasks: parsed.tasks,

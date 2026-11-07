@@ -1,0 +1,987 @@
+{
+  "checks": [
+    {
+      "name": "Empty knowledge state is visible",
+      "status": "PASS"
+    },
+    {
+      "name": "Dirty close keeps the editor contents",
+      "status": "PASS"
+    },
+    {
+      "name": "knowledge-editor-1440-light-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 933,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-editor-1440-light-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-editor-1440-light-100 save reachable",
+      "status": "PASS"
+    },
+    {
+      "name": "knowledge-editor-1440-light-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 874,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-editor-1440-light-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-editor-1440-light-125 save reachable",
+      "status": "PASS"
+    },
+    {
+      "name": "knowledge-editor-1440-dark-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 933,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-editor-1440-dark-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-editor-1440-dark-100 save reachable",
+      "status": "PASS"
+    },
+    {
+      "name": "knowledge-editor-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 874,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-editor-1440-dark-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-editor-1440-dark-125 save reachable",
+      "status": "PASS"
+    },
+    {
+      "name": "knowledge-editor-1024-light-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 745,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-editor-1024-light-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-editor-1024-light-100 save reachable",
+      "status": "PASS"
+    },
+    {
+      "name": "knowledge-editor-1024-light-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 729,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-editor-1024-light-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-editor-1024-light-125 save reachable",
+      "status": "PASS"
+    },
+    {
+      "name": "knowledge-editor-1024-dark-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 745,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-editor-1024-dark-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-editor-1024-dark-100 save reachable",
+      "status": "PASS"
+    },
+    {
+      "name": "knowledge-editor-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 729,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-editor-1024-dark-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-editor-1024-dark-125 save reachable",
+      "status": "PASS"
+    },
+    {
+      "name": "knowledge-list-1440-light-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 942,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-list-1440-light-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-list-1440-light-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 874,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-list-1440-light-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-list-1440-dark-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 942,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-list-1440-dark-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-list-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 874,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-list-1440-dark-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-list-1024-light-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 745,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-list-1024-light-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-list-1024-light-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 729,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-list-1024-light-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-list-1024-dark-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 745,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-list-1024-dark-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-list-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 729,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-list-1024-dark-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-detail-1440-light-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 942,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-detail-1440-light-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-detail-1440-light-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 874,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-detail-1440-light-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-detail-1440-dark-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 942,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-detail-1440-dark-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-detail-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 874,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-detail-1440-dark-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-detail-1024-light-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 745,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-detail-1024-light-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-detail-1024-light-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 729,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-detail-1024-light-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-detail-1024-dark-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 745,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-detail-1024-dark-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "knowledge-detail-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 729,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "knowledge-detail-1024-dark-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-source-selection-1440-light-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 848,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-source-selection-1440-light-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-source-selection-1440-light-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 848,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-source-selection-1440-light-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-source-selection-1440-dark-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 848,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-source-selection-1440-dark-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-source-selection-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 848,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-source-selection-1440-dark-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-source-selection-1024-light-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 848,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-source-selection-1024-light-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-source-selection-1024-light-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 786,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-source-selection-1024-light-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-source-selection-1024-dark-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 848,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-source-selection-1024-dark-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-source-selection-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 786,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-source-selection-1024-dark-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "Both citations persist",
+      "status": "PASS"
+    },
+    {
+      "name": "requirement-citations-1440-light-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 1257,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-citations-1440-light-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-citations-1440-light-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 998,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-citations-1440-light-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-citations-1440-dark-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 1257,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-citations-1440-dark-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-citations-1440-dark-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 998,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-citations-1440-dark-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-citations-1024-light-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 869,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-citations-1024-light-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-citations-1024-light-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 665,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-citations-1024-light-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-citations-1024-dark-100 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 869,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-citations-1024-dark-100 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "requirement-citations-1024-dark-125 fits",
+      "status": "PASS",
+      "detail": {
+        "overflow": false,
+        "width": 665,
+        "font": "14px"
+      }
+    },
+    {
+      "name": "requirement-citations-1024-dark-125 axe",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "name": "Native Planner receives exact old business and technical evidence through Main host requests",
+      "status": "PASS",
+      "detail": [
+        {
+          "businessV1": true,
+          "businessV2": false,
+          "technical": true,
+          "untrusted": true
+        }
+      ]
+    },
+    {
+      "name": "Persisted plan goal contains no raw source body",
+      "status": "PASS"
+    },
+    {
+      "name": "Planning freezes the selected citation version",
+      "status": "PASS"
+    },
+    {
+      "name": "Revoked knowledge blocks approval without half-created tasks",
+      "status": "PASS"
+    },
+    {
+      "name": "Restart recovers frozen original references",
+      "status": "PASS"
+    },
+    {
+      "name": "No renderer runtime exceptions",
+      "status": "PASS",
+      "detail": []
+    }
+  ],
+  "captures": [
+    "before-protected-design-lab.png",
+    "after-protected-design-lab.png",
+    "before-settings-existing-assets.png",
+    "knowledge-editor-1440-light-100.png",
+    "knowledge-editor-1440-light-100-end.png",
+    "knowledge-editor-1440-light-125.png",
+    "knowledge-editor-1440-light-125-end.png",
+    "knowledge-editor-1440-dark-100.png",
+    "knowledge-editor-1440-dark-100-end.png",
+    "knowledge-editor-1440-dark-125.png",
+    "knowledge-editor-1440-dark-125-end.png",
+    "knowledge-editor-1024-light-100.png",
+    "knowledge-editor-1024-light-100-end.png",
+    "knowledge-editor-1024-light-125.png",
+    "knowledge-editor-1024-light-125-end.png",
+    "knowledge-editor-1024-dark-100.png",
+    "knowledge-editor-1024-dark-100-end.png",
+    "knowledge-editor-1024-dark-125.png",
+    "knowledge-editor-1024-dark-125-end.png",
+    "knowledge-list-1440-light-100.png",
+    "knowledge-list-1440-light-125.png",
+    "knowledge-list-1440-dark-100.png",
+    "knowledge-list-1440-dark-125.png",
+    "knowledge-list-1024-light-100.png",
+    "knowledge-list-1024-light-125.png",
+    "knowledge-list-1024-dark-100.png",
+    "knowledge-list-1024-dark-125.png",
+    "knowledge-detail-1440-light-100.png",
+    "knowledge-detail-1440-light-125.png",
+    "knowledge-detail-1440-dark-100.png",
+    "knowledge-detail-1440-dark-125.png",
+    "knowledge-detail-1024-light-100.png",
+    "knowledge-detail-1024-light-125.png",
+    "knowledge-detail-1024-dark-100.png",
+    "knowledge-detail-1024-dark-125.png",
+    "requirement-source-selection-1440-light-100.png",
+    "requirement-source-selection-1440-light-125.png",
+    "requirement-source-selection-1440-dark-100.png",
+    "requirement-source-selection-1440-dark-125.png",
+    "requirement-source-selection-1024-light-100.png",
+    "requirement-source-selection-1024-light-125.png",
+    "requirement-source-selection-1024-dark-100.png",
+    "requirement-source-selection-1024-dark-125.png",
+    "requirement-citations-1440-light-100.png",
+    "requirement-citations-1440-light-125.png",
+    "requirement-citations-1440-dark-100.png",
+    "requirement-citations-1440-dark-125.png",
+    "requirement-citations-1024-light-100.png",
+    "requirement-citations-1024-light-125.png",
+    "requirement-citations-1024-dark-100.png",
+    "requirement-citations-1024-dark-125.png",
+    "planning-uses-selected-versions.png",
+    "revocation-blocks-plan-approval.png"
+  ],
+  "audits": [
+    {
+      "name": "knowledge-editor-1440-light-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-editor-1440-light-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-editor-1440-dark-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-editor-1440-dark-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-editor-1024-light-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-editor-1024-light-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-editor-1024-dark-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-editor-1024-dark-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-list-1440-light-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-list-1440-light-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-list-1440-dark-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-list-1440-dark-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-list-1024-light-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-list-1024-light-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-list-1024-dark-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-list-1024-dark-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-detail-1440-light-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-detail-1440-light-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-detail-1440-dark-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-detail-1440-dark-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-detail-1024-light-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-detail-1024-light-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-detail-1024-dark-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "knowledge-detail-1024-dark-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-source-selection-1440-light-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-source-selection-1440-light-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-source-selection-1440-dark-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-source-selection-1440-dark-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-source-selection-1024-light-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-source-selection-1024-light-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-source-selection-1024-dark-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-source-selection-1024-dark-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-citations-1440-light-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-citations-1440-light-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-citations-1440-dark-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-citations-1440-dark-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-citations-1024-light-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-citations-1024-light-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-citations-1024-dark-100",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "name": "requirement-citations-1024-dark-125",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    }
+  ],
+  "modelEvidence": [
+    {
+      "businessV1": true,
+      "businessV2": false,
+      "technical": true,
+      "untrusted": true
+    }
+  ],
+  "errors": []
+}

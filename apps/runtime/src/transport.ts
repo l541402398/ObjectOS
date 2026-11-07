@@ -1,13 +1,16 @@
 import { createInterface } from 'node:readline'
+import { randomUUID } from 'node:crypto'
 import {
   RuntimeFrameSchema,
+  AppError,
+  KnowledgeHostInputSchema,
+  type KnowledgeHostInput,
+  type KnowledgeHostOutput,
+  type RuntimeFrame,
   serializeError,
   type RuntimeEvent,
-  type RuntimeEventFrame,
   type RuntimeHelloFrame,
-  type RuntimePingFrame,
   type RuntimeRequestFrame,
-  type RuntimeResponseFrame,
 } from '@projectos/contracts'
 
 export interface TransportHandlers {
@@ -19,6 +22,18 @@ export class RuntimeTransport {
   private readonly rl = createInterface({ input: process.stdin, crlfDelay: Infinity })
   private closed = false
   private started = false
+  private readonly knowledgeRequests = new Map<string, { resolve: (value: KnowledgeHostOutput) => void; reject: (error: Error) => void; timer: NodeJS.Timeout }>()
+
+  requestKnowledge(input: KnowledgeHostInput): Promise<KnowledgeHostOutput> {
+    input = KnowledgeHostInputSchema.parse(input)
+    if (!this.started || this.closed || this.knowledgeRequests.size >= 16) return Promise.reject(new AppError('RUNTIME_UNAVAILABLE', '组织资料通道暂时不可用'))
+    return new Promise((resolve, reject) => {
+      const id = randomUUID()
+      const timer = setTimeout(() => { this.knowledgeRequests.delete(id); reject(new AppError('TIMEOUT', '组织资料校验超时，请恢复连接后重试')) }, 12_000)
+      this.knowledgeRequests.set(id, { resolve, reject, timer })
+      this.send({ kind: 'knowledge_request', id, input })
+    })
+  }
 
   constructor(
     private readonly handlers: TransportHandlers,
@@ -51,7 +66,13 @@ export class RuntimeTransport {
       return
     }
     const frame = result.data
-    if (frame.kind === 'request') {
+    if (frame.kind === 'knowledge_response') {
+      const pending = this.knowledgeRequests.get(frame.id)
+      if (!pending) return
+      clearTimeout(pending.timer); this.knowledgeRequests.delete(frame.id)
+      if (frame.ok && frame.result) pending.resolve(frame.result)
+      else pending.reject(new AppError('POLICY_DENIED', '组织资料授权已失效或服务不可用，请检查账号、项目与资料状态'))
+    } else if (frame.kind === 'request') {
       this.handlers.onRequest(frame)
     } else if (frame.kind === 'ping') {
       this.send({
@@ -63,7 +84,7 @@ export class RuntimeTransport {
     }
   }
 
-  send(frame: RuntimeHelloFrame | RuntimeResponseFrame | RuntimeEventFrame | RuntimePingFrame | { kind: 'pong'; id: string; sentAt: number; receivedAt: number }): void {
+  send(frame: RuntimeFrame): void {
     if (this.closed || !this.started) return
     try {
       process.stdout.write(`${JSON.stringify(frame)}\n`)
@@ -87,5 +108,7 @@ export class RuntimeTransport {
 
   close(): void {
     this.closed = true
+    for (const pending of this.knowledgeRequests.values()) { clearTimeout(pending.timer); pending.reject(new AppError('RUNTIME_UNAVAILABLE', '组织资料通道已关闭')) }
+    this.knowledgeRequests.clear()
   }
 }

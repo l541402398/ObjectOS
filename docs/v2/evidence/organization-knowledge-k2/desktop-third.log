@@ -1,0 +1,11 @@
+PASS Empty knowledge state is visible
+locator.click: Timeout 25000ms exceeded.
+Call log:
+  - waiting for getByRole('button', { name: '继续编辑', exact: true })
+
+    at C:\Users\Administrator\Desktop\workplace\ProjectOS-v2-phase2.4\scripts\org-knowledge-k2-e2e.mjs:124:102 {
+  log: [
+    "  - waiting for getByRole('button', { name: '继续编辑', exact: true })"
+  ],
+  name: 'TimeoutError'
+}

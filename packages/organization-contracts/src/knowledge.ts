@@ -140,3 +140,16 @@ export const OrganizationKnowledgeSearchResultSchema = z
   })
   .strict()
 export type OrganizationKnowledgeDetail = z.infer<typeof OrganizationKnowledgeDetailSchema>
+
+export const OrganizationKnowledgePinSchema = z.object({
+  documentId: id, versionId: id, checksum: z.string().regex(/^sha256:[a-f0-9]{64}$/),
+}).strict()
+export const OrganizationKnowledgeResolveSchema = z.object({
+  projectId: id, pins: z.array(OrganizationKnowledgePinSchema).min(1).max(8), includeContent: z.boolean().default(true),
+}).strict().refine(value => new Set(value.pins.map(pin => pin.documentId)).size === value.pins.length, '每份资料只能选择一个版本')
+export const OrganizationKnowledgeResolvedSchema = z.object({
+  sources: z.array(OrganizationKnowledgePinSchema.extend({
+    version, title: z.string().min(1).max(160), category: OrganizationKnowledgeCategorySchema,
+    body: z.string().max(20_000).optional(),
+  }).strict()).min(1).max(8),
+}).strict().refine(value => value.sources.reduce((chars, source) => chars + (source.body?.length ?? 0) + source.title.length, 0) <= 24_000, '组织参考资料超过上下文上限')

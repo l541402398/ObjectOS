@@ -1,0 +1,17 @@
+{
+  "baseHead": "168c9ba963d5b17ab62a615f10bcdab44a2c8fba",
+  "baseline": "Actual K1 packaged EXE",
+  "candidate": "Actual K2 Electron build",
+  "files": [
+    {
+      "path": "screenshots/before-protected-design-lab.png",
+      "sha256": "4aa5419bf69ffc120a9665ff0cabd9411572b6f7d6a243ab56adfec48199fce7"
+    },
+    {
+      "path": "screenshots/after-protected-design-lab.png",
+      "sha256": "4aa5419bf69ffc120a9665ff0cabd9411572b6f7d6a243ab56adfec48199fce7"
+    }
+  ],
+  "identical": true,
+  "verifiedAt": "2026-11-07T09:24:11.463Z"
+}

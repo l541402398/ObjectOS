@@ -1,0 +1,89 @@
+PASS Empty knowledge state is visible
+PASS Dirty close keeps the editor contents
+PASS knowledge-editor-1440-light-100 fits
+PASS knowledge-editor-1440-light-100 axe
+PASS knowledge-editor-1440-light-125 fits
+PASS knowledge-editor-1440-light-125 axe
+PASS knowledge-editor-1440-dark-100 fits
+PASS knowledge-editor-1440-dark-100 axe
+PASS knowledge-editor-1440-dark-125 fits
+PASS knowledge-editor-1440-dark-125 axe
+PASS knowledge-editor-1024-light-100 fits
+PASS knowledge-editor-1024-light-100 axe
+PASS knowledge-editor-1024-light-125 fits
+PASS knowledge-editor-1024-light-125 axe
+PASS knowledge-editor-1024-dark-100 fits
+PASS knowledge-editor-1024-dark-100 axe
+PASS knowledge-editor-1024-dark-125 fits
+PASS knowledge-editor-1024-dark-125 axe
+PASS knowledge-list-1440-light-100 fits
+PASS knowledge-list-1440-light-100 axe
+PASS knowledge-list-1440-light-125 fits
+PASS knowledge-list-1440-light-125 axe
+PASS knowledge-list-1440-dark-100 fits
+PASS knowledge-list-1440-dark-100 axe
+PASS knowledge-list-1440-dark-125 fits
+PASS knowledge-list-1440-dark-125 axe
+PASS knowledge-list-1024-light-100 fits
+PASS knowledge-list-1024-light-100 axe
+PASS knowledge-list-1024-light-125 fits
+PASS knowledge-list-1024-light-125 axe
+PASS knowledge-list-1024-dark-100 fits
+PASS knowledge-list-1024-dark-100 axe
+PASS knowledge-list-1024-dark-125 fits
+PASS knowledge-list-1024-dark-125 axe
+PASS knowledge-detail-1440-light-100 fits
+PASS knowledge-detail-1440-light-100 axe
+PASS knowledge-detail-1440-light-125 fits
+PASS knowledge-detail-1440-light-125 axe
+PASS knowledge-detail-1440-dark-100 fits
+PASS knowledge-detail-1440-dark-100 axe
+PASS knowledge-detail-1440-dark-125 fits
+PASS knowledge-detail-1440-dark-125 axe
+PASS knowledge-detail-1024-light-100 fits
+PASS knowledge-detail-1024-light-100 axe
+PASS knowledge-detail-1024-light-125 fits
+PASS knowledge-detail-1024-light-125 axe
+PASS knowledge-detail-1024-dark-100 fits
+PASS knowledge-detail-1024-dark-100 axe
+PASS knowledge-detail-1024-dark-125 fits
+PASS knowledge-detail-1024-dark-125 axe
+PASS requirement-source-selection-1440-light-100 fits
+PASS requirement-source-selection-1440-light-100 axe
+PASS requirement-source-selection-1440-light-125 fits
+PASS requirement-source-selection-1440-light-125 axe
+PASS requirement-source-selection-1440-dark-100 fits
+PASS requirement-source-selection-1440-dark-100 axe
+PASS requirement-source-selection-1440-dark-125 fits
+PASS requirement-source-selection-1440-dark-125 axe
+PASS requirement-source-selection-1024-light-100 fits
+PASS requirement-source-selection-1024-light-100 axe
+PASS requirement-source-selection-1024-light-125 fits
+PASS requirement-source-selection-1024-light-125 axe
+PASS requirement-source-selection-1024-dark-100 fits
+PASS requirement-source-selection-1024-dark-100 axe
+PASS requirement-source-selection-1024-dark-125 fits
+PASS requirement-source-selection-1024-dark-125 axe
+PASS Both citations persist
+PASS requirement-citations-1440-light-100 fits
+PASS requirement-citations-1440-light-100 axe
+PASS requirement-citations-1440-light-125 fits
+PASS requirement-citations-1440-light-125 axe
+PASS requirement-citations-1440-dark-100 fits
+PASS requirement-citations-1440-dark-100 axe
+PASS requirement-citations-1440-dark-125 fits
+PASS requirement-citations-1440-dark-125 axe
+PASS requirement-citations-1024-light-100 fits
+PASS requirement-citations-1024-light-100 axe
+PASS requirement-citations-1024-light-125 fits
+PASS requirement-citations-1024-light-125 axe
+PASS requirement-citations-1024-dark-100 fits
+PASS requirement-citations-1024-dark-100 axe
+PASS requirement-citations-1024-dark-125 fits
+PASS requirement-citations-1024-dark-125 axe
+PASS Native Planner receives exact old business and technical evidence through Main host requests
+PASS Persisted plan goal contains no raw source body
+PASS Planning freezes the selected citation version
+PASS Revoked knowledge blocks approval without half-created tasks
+PASS Restart recovers frozen original references
+PASS No renderer runtime exceptions

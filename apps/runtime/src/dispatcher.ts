@@ -69,6 +69,8 @@ import { RequirementIntegrationService } from './requirement-integration.js'
 import { ensureBaselineCommit } from '@projectos/worktree'
 import { agentForPlannedTask } from '@projectos/planning'
 import { planGroupTitle } from '@projectos/session-manager'
+import { RequirementKnowledgeService } from './organization-knowledge.js'
+import { type KnowledgeHostInput, type KnowledgeHostOutput } from '@projectos/contracts'
 
 const EVENT_CHECK_DEBOUNCE_MS = 60_000
 const REPAIR_MAX_RUN_MS = 60 * 60_000
@@ -87,9 +89,11 @@ export interface DispatcherDeps {
   logger: Logger
   startedAt: number
   shutdown: () => void
+  resolveKnowledge?: (input: KnowledgeHostInput) => Promise<KnowledgeHostOutput>
 }
 
 export class RuntimeDispatcher {
+  private readonly organizationKnowledge: RequirementKnowledgeService
   private readonly gitDelivery: GitDeliveryService
   private readonly requirementFlow: RequirementFlowService
   private readonly requirementWork: RequirementWorkService
@@ -121,6 +125,8 @@ export class RuntimeDispatcher {
   private readonly groupDiscussions = new Map<string, Promise<void>>()
 
   constructor(private readonly deps: DispatcherDeps) {
+    this.organizationKnowledge = new RequirementKnowledgeService(deps.store, deps.resolveKnowledge)
+    deps.runner.setOrganizationKnowledge(this.organizationKnowledge)
     this.requirementWork = new RequirementWorkService(deps.store, deps.config.dataDir)
     this.requirementIntegration = new RequirementIntegrationService(deps.store)
     this.localWorker = new LocalWorkerService(deps.store)
@@ -140,8 +146,8 @@ export class RuntimeDispatcher {
       onAttemptUsage: (usage) => this.plannerUsage.record(usage),
       runtimeSettings: () => this.runtimeSettings.get(),
     })
-    this.orchestration = new OrchestrationService(deps.store, deps.services, planner)
-    this.replans = new ReplanService(deps.store, this.orchestration, planner, this.planGrants, deps.logger)
+    this.orchestration = new OrchestrationService(deps.store, deps.services, planner, this.organizationKnowledge)
+    this.replans = new ReplanService(deps.store, this.orchestration, planner, this.planGrants, deps.logger, this.organizationKnowledge)
     this.externalRunner = new ExternalAgentRunner(deps.store, deps.services, deps.logger)
     this.operations = new OperationsService(deps.store, deps.services)
     this.lifecycle = new LifecycleService(deps.store, (provenance) => this.verifyReviewRecord(provenance))
@@ -696,6 +702,7 @@ export class RuntimeDispatcher {
   }
 
   async dispatch(method: string, rawInput: unknown): Promise<unknown> {
+    if (method === 'runtime.knowledge.set') return this.organizationKnowledge.set(rawInput)
     if (method === 'runtime.worker.acceptJob') return WorkerJobInternalSchemas[method].output.parse(await this.organizationJobs.accept(rawInput))
     if (Object.hasOwn(WorkerInternalSchemas, method)) {
       const key = method as keyof typeof WorkerInternalSchemas
@@ -1257,6 +1264,9 @@ export class RuntimeDispatcher {
         const input = this.parse('artifact.create', rawInput)
         return { artifact: services.projects.createArtifact(input) }
       }
+      case 'requirement.knowledge': {
+        return this.organizationKnowledge.view(this.parse('requirement.knowledge', rawInput).requirementId)
+      }
       case 'knowledge.list': {
         const input = this.parse('knowledge.list', rawInput)
         return { entries: services.projects.knowledge(input.projectId) }
@@ -1722,6 +1732,8 @@ export class RuntimeDispatcher {
       }
       case 'plan.approve': {
         const input = this.parse('plan.approve', rawInput)
+        const knowledgeRequirement = store.read.getPlanRevision(input.planId)?.requirementId
+        if (knowledgeRequirement) await this.organizationKnowledge.planning(knowledgeRequirement)
         return this.orchestration.approvePlan(input.planId)
       }
       case 'plan.reject': {

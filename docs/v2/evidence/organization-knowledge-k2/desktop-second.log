@@ -1,0 +1,4 @@
+FAIL Empty knowledge state is visible
+Error: Empty knowledge state is visible
+    at check (file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/org-knowledge-k2-e2e.mjs:21:191)
+    at file:///C:/Users/Administrator/Desktop/workplace/ProjectOS-v2-phase2.4/scripts/org-knowledge-k2-e2e.mjs:121:3

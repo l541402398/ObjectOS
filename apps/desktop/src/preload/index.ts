@@ -59,6 +59,7 @@ const api: ProjectOSDesktopApi = {
     reconcile: input => call('gitDelivery.reconcile', input),
   },
   organization: {
+    setRequirementKnowledge: (input) => call('organization.setRequirementKnowledge', input),
     knowledgeList: (input) => call('organization.knowledgeList', input),
     knowledgeDetail: (input) => call('organization.knowledgeDetail', input),
     createKnowledge: (input) => call('organization.createKnowledge', input),
@@ -205,6 +206,7 @@ const api: ProjectOSDesktopApi = {
     stopAll: (input) => call('requirement.flow.stopAll', input),
   },
   requirements: {
+    knowledge: (requirementId) => call('requirement.knowledge', { requirementId }),
     integrationPreview: (taskId) => call('task.integration.preview', { taskId }),
     reviewIntegration: (input) => call('task.integration.review', input),
     requestIntegration: (input) => call('task.integration.request', input),

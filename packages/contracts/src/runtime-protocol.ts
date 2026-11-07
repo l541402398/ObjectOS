@@ -4,6 +4,7 @@ import { TimestampSchema } from './common.js'
 import { ApprovalStatusSchema, RunStatusSchema, TaskStatusSchema } from './enums.js'
 import { RuntimeStatusSchema } from './entities.js'
 import { WorkerInternalSchemas, WorkerJobInternalSchemas } from '@projectos/organization-contracts'
+import { KnowledgeRequestFrameSchema, KnowledgeResponseFrameSchema, RequirementKnowledgeInternalSchemas } from './organization-knowledge.js'
 
 export const RUNTIME_PROTOCOL_VERSION = 1
 
@@ -137,6 +138,8 @@ export const RuntimeFrameSchema = z.discriminatedUnion('kind', [
   RuntimeEventFrameSchema,
   RuntimePingFrameSchema,
   RuntimePongFrameSchema,
+  KnowledgeRequestFrameSchema,
+  KnowledgeResponseFrameSchema,
 ])
 export type RuntimeFrame = z.infer<typeof RuntimeFrameSchema>
 
@@ -163,6 +166,7 @@ export type ProviderRuntimeConfig = z.infer<typeof ProviderRuntimeConfigSchema>
 
 /** Internal methods accepted by the runtime beyond the renderer catalogue. */
 export const RUNTIME_INTERNAL_METHODS = [
+  ...Object.keys(RequirementKnowledgeInternalSchemas),
   ...Object.keys(WorkerJobInternalSchemas),
   ...Object.keys(WorkerInternalSchemas),
   'runtime.health',
