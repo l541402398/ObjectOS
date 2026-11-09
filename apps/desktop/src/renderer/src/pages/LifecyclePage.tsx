@@ -3,13 +3,12 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { App as AntApp, Button, Input, Select, Tag } from 'antd'
-import { PlusOutlined, RocketOutlined, SwapOutlined } from '@ant-design/icons'
+import { PlusOutlined, SwapOutlined } from '@ant-design/icons'
 import type { ProductVersion, VersionPhase } from '@projectos/contracts'
 import { EmptyState, ErrorState, LoadingBlock, PageHeader, SectionCard, StatusPill } from '@projectos/ui'
 import { qk, useArtifacts, useLifecycle, usePlans, useTaskBoard } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
 import { formatRelative } from '../lib/format'
-import { stageLabel } from '../lib/labels'
 import { VersionDeliverySummary } from '../components/VersionDeliverySummary'
 import './lifecycle.css'
 
@@ -233,9 +232,8 @@ export default function LifecyclePage() {
   return (
     <div className="po-page po-lifecycle-page">
       <PageHeader
-        eyebrow="LIFECYCLE"
         title="版本与迭代"
-        description="选择交付版本，安排本轮工作，再查看发布准备情况。"
+        description="选择交付版本并安排迭代；发布与部署在交付区推进。"
         actions={
           <>
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setVersionOpen(true)} disabled={!productId}>
@@ -248,20 +246,14 @@ export default function LifecyclePage() {
         }
         meta={
           <span>
-            当前关注：{selectedVersion ? `v${selectedVersion.version}` : '未选择'} · 项目阶段：{stageLabel(data.posture.legacyStage)}
+            部署环境 {data.environments.length ? data.environments.map((item) => item.name).join(' · ') : '未配置'} · 由项目共用
           </span>
         }
       />
 
-      <section className="lc-relationship" aria-label="版本、迭代与环境的关系">
-        <div className="lc-scope-version"><span className="po-eyebrow">准备交付什么</span><strong>{selectedVersion ? `v${selectedVersion.version}` : '选择一个版本'}</strong><p>版本归集这次交付的需求、任务与成果。</p><div className="lc-scope-iteration"><span>版本内的工作安排</span><strong>{iterations.length} 个迭代</strong><small>简单项目可直接安排任务，无需拆分迭代。</small></div></div>
-        <span className="lc-relationship-arrow" aria-hidden>发布后部署 →</span>
-        <div className="lc-scope-environment"><span className="po-eyebrow">交付到哪里</span><strong>部署环境</strong><p>{data.environments.length ? data.environments.map((item) => item.name).join(' · ') : '按需配置测试或生产环境'}</p><button type="button" onClick={() => navigate(`/projects/${projectId}/deployments${selectedVersion ? `?version=${selectedVersion.id}` : ''}`)}>查看环境与部署 →</button><small>环境由项目共用，不属于某个迭代。</small></div>
-      </section>
-
       <div className="lc-grid">
         <div className="lc-main">
-          <SectionCard title="版本" subtitle="选择当前要推进的交付范围">
+          <SectionCard title="版本">
             {versions.length === 0 ? (
               <EmptyState compact title="还没有版本" description="新建一个版本后即可规划迭代与任务。" />
             ) : (
@@ -334,7 +326,6 @@ export default function LifecyclePage() {
 
           <SectionCard
             title={selectedVersion ? `迭代 · v${selectedVersion.version}` : '迭代'}
-            subtitle="把这个版本的工作分成几轮，也可以直接按任务推进"
             extra={
               <Button size="small" icon={<PlusOutlined />} disabled={!selectedVersion} onClick={() => setIterationOpen(true)}>
                 新建迭代
@@ -342,7 +333,7 @@ export default function LifecyclePage() {
             }
           >
             {iterations.length === 0 ? (
-              <div className="lc-empty">还没有拆分迭代。可以按当前任务继续推进；需要分轮交付时再创建迭代。</div>
+              <div className="lc-empty">还没有拆分迭代，可直接按任务推进。</div>
             ) : (
               <div className="lc-iterations">
                 {iterations.map((iteration) => (
@@ -379,7 +370,7 @@ export default function LifecyclePage() {
         </div>
 
         <aside className="lc-side">
-          <SectionCard title="版本门禁" subtitle={selectedVersion ? `v${selectedVersion.version} · 证据驱动` : '选择版本'} extra={<Button size="small" icon={<PlusOutlined />} disabled={!selectedVersion} onClick={() => setEvidenceOpen(true)}>记录证据</Button>}>
+          <SectionCard title={selectedVersion ? `门禁 · v${selectedVersion.version}` : '门禁'} extra={<Button size="small" icon={<PlusOutlined />} disabled={!selectedVersion} onClick={() => setEvidenceOpen(true)}>记录证据</Button>}>
             {!selectedVersion ? (
               <div className="lc-empty">创建或选择版本后查看门禁。</div>
             ) : (
@@ -413,18 +404,6 @@ export default function LifecyclePage() {
                 <div className="lc-evidence-count">{gates.data?.evidence.length ?? 0} 条证据关联此版本</div>
               </div>
             )}
-          </SectionCard>
-
-          <SectionCard title="项目状态" subtitle="项目当前的阶段、运行与待处理">
-            <div className="lc-posture">
-              <div><span>项目阶段</span><strong>{stageLabel(data.posture.legacyStage)}</strong></div>
-              <div><span>运行中</span><strong>{data.posture.runningRuns}</strong></div>
-              <div><span>待验收</span><strong>{data.posture.reviewTasks}</strong></div>
-              <div><span>待审批</span><strong>{data.posture.pendingApprovals}</strong></div>
-            </div>
-            <Button block icon={<RocketOutlined />} onClick={() => navigate(`/projects/${projectId}/work`)}>
-              回到工作台
-            </Button>
           </SectionCard>
         </aside>
       </div>
