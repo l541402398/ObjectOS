@@ -12,6 +12,8 @@ export interface RuntimeConfig {
   seedDemo: boolean
   /** Dev/screenshot only: add a multi-item review queue to the demo project. */
   seedDemoReviewQueue?: boolean
+  seedDemoReviewHistory?: boolean
+  seedDemoResources?: boolean
   /**
    * Hard execution budgets. Omitted means "use environment defaults"; tests
    * pass explicit small values instead of waiting for real long runs.
@@ -50,6 +52,8 @@ export function loadRuntimeConfig(): RuntimeConfig {
     provider,
     seedDemo: process.env.PROJECTOS_SEED_DEMO === '1',
     seedDemoReviewQueue: process.env.PROJECTOS_SEED_DEMO_REVIEW_QUEUE === '1',
+    seedDemoReviewHistory: process.env.PROJECTOS_SEED_DEMO_REVIEW_HISTORY === '1',
+    seedDemoResources: process.env.PROJECTOS_SEED_DEMO_RESOURCES === '1',
   }
 }
 
