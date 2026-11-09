@@ -442,7 +442,7 @@ export function RequirementDependencyGraph({
     <div className="rq-dl-dag-wrap" data-testid="requirement-dependency-map">
       <div className="rq-dl-dag-head">
         <div>
-          <span className="rq-dl-eyebrow">DEPENDENCY MAP · 需求全链路依赖与阶段流转图</span>
+          
           <h4>
             共 {tasks.length} 项交付任务 · {items.filter((i) => i.kind === 'stage').length} 个阶段节点 · {totalEdges} 条依赖连线
           </h4>
