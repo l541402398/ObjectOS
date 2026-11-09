@@ -26,10 +26,12 @@ import { qk, useApprovals } from '../../lib/queries'
 import { diffStats, lineDiff } from '../../lib/line-diff'
 import { ReviewDiff } from '../review/ReviewDiff'
 import { WorktreeAutoAllowControl } from '../review/WorktreeAutoAllowControl'
+import { DeliveryLens, HistoryLens } from '../review/ReviewLenses'
 import './studio.css'
 import '../review/review.css'
 
 type Decision = 'approved' | 'rejected'
+type Lens = 'pending' | 'delivery' | 'history'
 type Confirm = { mode: 'single'; decision: Decision } | { mode: 'kind' } | { mode: 'batch'; decision: Decision } | null
 type Group = { key: string; label: string; batchable: boolean; reason: string; items: ApprovalView[] }
 
@@ -72,7 +74,7 @@ function remaining(expiresAt: number | null | undefined): string | null {
 export function StudioReviewRoom(): ReactElement {
   const { projectId = '' } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const reduceMotion = useReducedMotion()
   const returnRequirement = searchParams.get('requirement')
   const returnPath = returnRequirement ? `/projects/${projectId}/requirements?requirement=${encodeURIComponent(returnRequirement)}` : `/projects/${projectId}/agents`
@@ -81,6 +83,32 @@ export function StudioReviewRoom(): ReactElement {
   const theme = useResolvedTheme()
   const approvals = useApprovals(projectId)
   const list = useMemo(() => (approvals.data?.approvals ?? []).filter((approval) => approval.status === 'pending'), [approvals.data])
+  const delivery = useQuery({
+    queryKey: ['release-approvals', projectId],
+    queryFn: () => window.projectos.release.approvals(projectId),
+    enabled: Boolean(projectId),
+  })
+  const deliveryPending = (delivery.data?.approvals ?? []).filter((approval) => approval.status === 'pending').length
+  const deepLinkId = searchParams.get('approval')
+  const lens: Lens = useMemo(() => {
+    const requested = searchParams.get('lens')
+    if (requested === 'delivery' || requested === 'history' || requested === 'pending') return requested
+    if (deepLinkId) {
+      const deliveryMatch = delivery.data?.approvals.find((approval) => approval.id === deepLinkId)
+      if (deliveryMatch) return deliveryMatch.status === 'pending' ? 'delivery' : 'history'
+      const toolMatch = approvals.data?.approvals.find((approval) => approval.id === deepLinkId)
+      if (toolMatch && toolMatch.status !== 'pending') return 'history'
+    }
+    return 'pending'
+  }, [searchParams, deepLinkId, delivery.data, approvals.data])
+  const setLens = (next: Lens): void => {
+    setSearchParams((current) => {
+      const params = new URLSearchParams(current)
+      params.set('lens', next)
+      params.delete('approval')
+      return params
+    }, { replace: true })
+  }
   const groups = useMemo<Group[]>(() => {
     const map = new Map<string, Group>()
     for (const approval of list) {
@@ -226,6 +254,7 @@ export function StudioReviewRoom(): ReactElement {
   }
 
   useEffect(() => {
+    if (lens !== 'pending') return
     const onKey = (event: KeyboardEvent): void => {
       const target = event.target as HTMLElement | null
       if (target && (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT' || target.isContentEditable)) return
@@ -246,7 +275,7 @@ export function StudioReviewRoom(): ReactElement {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [ordered, focused, toggle, checked.size])
+  }, [ordered, focused, toggle, checked.size, lens])
 
   const checkedItems = list.filter((approval) => checked.has(approval.id))
   const checkedByKind = Object.entries(
@@ -271,19 +300,43 @@ export function StudioReviewRoom(): ReactElement {
         <button type="button" className="studio-back" onClick={() => navigate(returnPath)}><ArrowLeft size={14} /> {returnLabel}</button>
         <div className="rv-title">
           <h1>审阅与决策</h1>
-          {list.length ? (
+          {lens === 'pending' && list.length ? (
             <div className="rv-spectrum" aria-label={`${list.length} 项待处理`}>
               {groups.map((group) => (
                 <span key={group.key} className={`rv-spectrum-seg ${group.batchable ? 'is-batch' : 'is-solo'}`} style={{ flexGrow: group.items.length }} title={`${group.label} ${group.items.length}`} />
               ))}
             </div>
           ) : null}
-          <span className="rv-count">{list.length ? `${list.length} 项待处理 · ${groups.length} 类` : '队列已清空'}</span>
+          {lens === 'pending' ? <span className="rv-count">{list.length ? `${list.length} 项待处理 · ${groups.length} 类` : '队列已清空'}</span> : null}
         </div>
-        <button type="button" className="studio-ghost" onClick={() => navigate(`/projects/${projectId}/approvals/center`)}>专业审批中心</button>
+        <div className="rv-lenses" role="tablist" aria-label="审阅视图">
+          {([
+            ['pending', '工具请求', list.length],
+            ['delivery', '交付审批', deliveryPending],
+            ['history', '记录', null],
+          ] as Array<[Lens, string, number | null]>).map(([key, label, count]) => (
+            <button key={key} type="button" role="tab" aria-selected={lens === key} onClick={() => setLens(key)}>
+              {label}{count ? <b>{count}</b> : null}
+            </button>
+          ))}
+        </div>
       </header>
 
-      {approvals.isError ? (
+      {lens === 'delivery' ? (
+        delivery.isError ? (
+          <div className="studio-empty"><CircleAlert size={20} /><h2>交付审批读取失败</h2><p>{errorMessage(delivery.error)}</p></div>
+        ) : delivery.isLoading ? (
+          <div className="studio-loading">正在读取交付审批…</div>
+        ) : (
+          <DeliveryLens projectId={projectId} approvals={delivery.data?.approvals ?? []} initialId={deepLinkId} />
+        )
+      ) : lens === 'history' ? (
+        approvals.isLoading || delivery.isLoading ? (
+          <div className="studio-loading">正在读取审批记录…</div>
+        ) : (
+          <HistoryLens tool={approvals.data?.approvals ?? []} delivery={delivery.data?.approvals ?? []} initialId={deepLinkId} />
+        )
+      ) : approvals.isError ? (
         <div className="studio-empty"><CircleAlert size={20} /><h2>审批读取失败</h2><p>{errorMessage(approvals.error)}</p></div>
       ) : approvals.isLoading ? (
         <div className="studio-loading">正在读取审批…</div>
@@ -292,7 +345,11 @@ export function StudioReviewRoom(): ReactElement {
           <div className="rv-clear-orbit" aria-hidden><span /><span /><CheckCheck size={26} /></div>
           <h2>没有等待处理的审批</h2>
           {outcome ? <p className={`rv-clear-outcome is-${outcome.tone}`}>{outcome.text}</p> : null}
-          <button type="button" className="studio-cta" onClick={() => navigate(returnPath)}>{returnRequirement ? '继续需求开发' : '回到协作图'} <ArrowRight size={13} /></button>
+          <div className="rv-clear-links">
+            {deliveryPending ? <button type="button" className="studio-cta" onClick={() => setLens('delivery')}>处理 {deliveryPending} 项交付审批 <ArrowRight size={13} /></button> : null}
+            <button type="button" className={deliveryPending ? 'studio-ghost' : 'studio-cta'} onClick={() => navigate(returnPath)}>{returnRequirement ? '继续需求开发' : '回到协作图'} <ArrowRight size={13} /></button>
+            <button type="button" className="studio-ghost" onClick={() => setLens('history')}>查看记录</button>
+          </div>
           <div className="rv-clear-policy"><WorktreeAutoAllowControl projectId={projectId} compact /></div>
         </div>
       ) : (
@@ -485,7 +542,7 @@ export function StudioReviewRoom(): ReactElement {
       )}
 
       <AnimatePresence>
-        {checked.size > 0 && list.length > 0 ? (
+        {lens === 'pending' && checked.size > 0 && list.length > 0 ? (
           <motion.div key="dock" className="rv-dock" role="region" aria-label="批量审批" {...motionProps}>
             <span className="rv-dock-count"><b>{checked.size}</b>已选</span>
             <span className="rv-dock-kinds">{checkedByKind.map(([label, count]) => <span key={label}>{label} {count}</span>)}</span>
@@ -506,7 +563,7 @@ export function StudioReviewRoom(): ReactElement {
             )}
             {error && confirm?.mode === 'batch' ? <span className="rv-dock-error" role="alert">{error}</span> : null}
           </motion.div>
-        ) : outcome && list.length > 0 ? (
+        ) : lens === 'pending' && outcome && list.length > 0 ? (
           <motion.div key="outcome" className={`rv-dock is-outcome is-${outcome.tone}`} role="status" {...motionProps}>
             {outcome.tone === 'ok' ? <CheckCircle2 size={15} /> : <CircleAlert size={15} />}<span>{outcome.text}</span>
             <button type="button" className="rv-dock-clear" onClick={() => setOutcome(null)} aria-label="关闭"><X size={13} /></button>
