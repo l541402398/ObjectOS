@@ -1,5 +1,14 @@
 # ProjectOS UI Design Changelog
 
+## 2026-11-10 — UX polish 5: stage bars, 执行 views, review pending (ADR-0093)
+
+- Top 目标/需求 bar: one row, bead track, only the focus stage labelled, one primary action + overflow menu.
+- 需求工作台: governance pills → one caption line; acceptance coverage toggles the matrix; no-flow state hides disabled actions; dark-mode surfaces fixed.
+- 任务看板 requirement line + folded stage details; Agent 协作 single-row relay; 计划编排 inline metrics, no duplicate buttons or English kickers.
+- 审批 pending: quiet batch row, text reject, plain policy toggles. 发布中心 empty state: copy + 4-step path. 项目态势 里程碑 / Agent 活动 rows tidied.
+- `--ui-type-badge: 11px` for digits in markers/badges only. Opt-in seed `PROJECTOS_SEED_DEMO_FLOW=1`.
+- Screenshots `docs/ux/v6/`, evidence `docs/v2/evidence/ux-polish-5/`.
+
 ## 2026-11-10 — UX polish 4: type scale and hierarchy (ADR-0092)
 
 - Type scale tokens: title 22 / section 16 / body 14 / caption 12, display 32 for one key number per page; `type-scale.css` utilities; spacing rhythm 4–32.
