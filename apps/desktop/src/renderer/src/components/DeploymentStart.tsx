@@ -30,16 +30,16 @@ export function DeploymentStart({ releaseCount, releaseVersion, environmentName,
         <div className="dc-map-destination"><MapPin size={20} /><span><small>交付到哪里</small><strong>{environmentName ?? '待选择环境'}</strong></span><div><Server size={15} />{targetCount ? `${targetCount} 个部署目标` : '待连接服务器或目录'}</div></div>
       </div>
     </div>
-    <div className="dc-readiness">
+    <ol className="dc-readiness" aria-label="部署前提">
       {[
         { key: 'release', title: '发布包', icon: PackageCheck, ready: releaseCount > 0, value: releaseCount ? `${releaseCount} 个可用发布包` : '尚未生成', detail: '经过审核的版本成果', action: '查看发布', run: onRelease },
         { key: 'environment', title: '部署环境', icon: Layers3, ready: environmentCount > 0, value: environmentCount ? `${environmentCount} 个环境 · ${environmentName ?? '待选择'}` : '尚未登记', detail: '区分本地、测试或生产用途', action: '登记环境', run: onEnvironment },
         { key: 'target', title: '实际目标', icon: Server, ready: targetCount > 0, value: targetCount ? `${targetCount} 个目标已登记` : '尚未连接', detail: '服务器、集群或本地目录', action: '连接部署目标', run: onTarget },
-      ].map(({ key, title, icon: Icon, ready, value, detail, action, run }, index) => <article className={`dc-readiness-item${next === key ? ' is-next' : ''}`} key={key}>
-        <div className="dc-readiness-top"><Icon size={19} /><span>{String(index + 1).padStart(2, '0')}</span>{ready ? <Check size={15} className="dc-ready-check" /> : null}</div>
-        <h3>{title}</h3><strong>{value}</strong><p>{detail}</p>
+      ].map(({ key, title, icon: Icon, ready, value, detail, action, run }, index) => <li className={`dc-readiness-item${ready ? ' is-ready' : ''}${next === key ? ' is-next' : ''}`} key={key} aria-current={next === key ? 'step' : undefined}>
+        <div className="dc-readiness-top"><span className="dc-step-node">{ready ? <Check size={16} /> : <Icon size={17} />}</span></div>
+        <h3>{title}<small>{String(index + 1).padStart(2, '0')}</small></h3><strong>{value}</strong><p>{detail}</p>
         <button type="button" className="studio-link" onClick={run}>{action}<ArrowRight size={13} /></button>
-      </article>)}
-    </div>
+      </li>)}
+    </ol>
   </section>
 }
