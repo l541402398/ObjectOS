@@ -88,7 +88,7 @@
 .rq-plan-progress-step.is-active { border-color: var(--ui-accent); background: var(--ui-accent-soft, rgba(59, 130, 246, 0.06)); }
 .rq-plan-progress-step.is-done { opacity: 0.88; }
 .rq-plan-progress-step.is-pending { opacity: 0.56; }
-.rq-plan-progress-step-icon { width: 22px; height: 22px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: var(--ui-type-caption); font-weight: 600; color: var(--ui-ink-2); background: var(--ui-surface-2); flex-shrink: 0; margin-top: 1px; }
+.rq-plan-progress-step-icon { width: 22px; height: 22px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: var(--ui-type-badge); font-weight: 600; color: var(--ui-ink-2); background: var(--ui-surface-2); flex-shrink: 0; margin-top: 1px; }
 .rq-plan-progress-step.is-done .rq-plan-progress-step-icon { color: var(--ui-success, #16a34a); background: transparent; font-size: var(--ui-type-section); }
 .rq-plan-progress-step.is-active .rq-plan-progress-step-icon { color: var(--ui-accent-strong); background: transparent; font-size: var(--ui-type-section); }
 .rq-plan-progress-step-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }

@@ -251,7 +251,7 @@
 
 .studio-review-document { padding: 28px 34px 22px; min-width: 0; overflow-y: auto; }
 .studio-document-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.studio-pill { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 4px; font-size: var(--ui-type-caption); font-weight: 650; }
+.studio-pill { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 4px; font-size: var(--ui-type-badge); font-weight: 650; }
 .studio-pill.is-warn { background: color-mix(in srgb, var(--studio-warn) 14%, transparent); color: var(--studio-warn); }
 .studio-pill.is-ok { background: color-mix(in srgb, var(--studio-ok) 14%, transparent); color: var(--studio-ok); }
 .studio-review-document h2 { margin: 10px 0 7px; font-size: var(--ui-type-title); font-weight: 600; letter-spacing: -.015em; line-height: 1.4; }

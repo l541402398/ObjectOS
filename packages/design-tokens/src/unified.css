@@ -61,6 +61,8 @@
   --ui-type-section: 16px;
   --ui-type-body: 14px;
   --ui-type-caption: 12px;
+  /* Not a text size: digits/glyphs inside fixed-size markers and count badges only (ADR-0092 amendment). */
+  --ui-type-badge: 11px;
   --ui-leading-tight: 1.25;
   --ui-leading-body: 1.55;
   --ui-weight-strong: 650;

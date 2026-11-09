@@ -37,7 +37,7 @@
 }
 .po-journey-step-marker {
   display: grid; place-items: center; flex: none; width: 18px; height: 18px; border-radius: 50%;
-  border: 1px solid var(--ui-border-strong); color: var(--ui-ink-2); font-size: var(--ui-type-caption); font-variant-numeric: tabular-nums;
+  border: 1px solid var(--ui-border-strong); color: var(--ui-ink-2); font-size: var(--ui-type-badge); font-variant-numeric: tabular-nums;
 }
 .po-journey-step.is-done .po-journey-step-marker { color: var(--ui-ok); border-color: transparent; }
 .po-journey-step.is-current .po-journey-step-marker { background: var(--ui-accent); border-color: transparent; color: var(--ui-inverse); }
@@ -106,7 +106,7 @@
 .po-journey-track.is-compact .po-journey-step { margin-right: 6px; }
 .po-journey-track.is-compact .po-journey-step-button { min-height: 28px; width: auto; padding: 3px; gap: 6px; border-radius: 999px; }
 .po-journey-track.is-compact .po-journey-step-label, .po-journey-track.is-compact .po-journey-step-state { display: none; }
-.po-journey-track.is-compact .po-journey-step-marker { width: 20px; height: 20px; font-size: var(--ui-type-caption); }
+.po-journey-track.is-compact .po-journey-step-marker { width: 20px; height: 20px; font-size: var(--ui-type-badge); }
 .po-journey-track.is-compact .po-journey-step.is-done .po-journey-step-marker { background: color-mix(in srgb, var(--ui-ok) 14%, transparent); }
 .po-journey-track.is-compact .po-journey-step.is-current .po-journey-step-button { padding: 3px 12px 3px 3px; }
 .po-journey-track.is-compact .po-journey-step.is-current .po-journey-step-label { display: inline; font-size: var(--ui-type-body); }
