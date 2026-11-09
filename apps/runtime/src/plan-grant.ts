@@ -12,7 +12,9 @@ import {
   type PlanGrantActor,
 } from '@projectos/contracts'
 import { PROJECT_EVENT_TYPES } from '@projectos/domain'
-import { isProtectedPath, redactSecrets } from '@projectos/policy'
+import { isProtectedPath, redactSecrets, verifyCommandFamily, VERIFY_FAMILY_LABEL } from '@projectos/policy'
+import { verifyIsolatedWorktree, type IsolatedWorktreeResult } from '@projectos/worktree'
+import { readProjectAutonomySettings } from './action-center.js'
 import { resolveWorkspacePath } from '@projectos/workspace'
 import type { SqliteStore } from '@projectos/persistence'
 import type { Logger } from './logger.js'
@@ -972,6 +974,57 @@ export class PlanGrantService {
     }
   }
 
+  /** Isolation verdict for a Run workspace, used by the review UI to explain why it asks. */
+  describeWorkspace(projectId: string, taskId: string | null, workspaceRoot: string): IsolatedWorktreeResult & { planId: string | null } {
+    const plan = this.planForTask(projectId, taskId)
+    if (!plan) return { ok: false, reason: '不属于已批准计划，按工具策略逐次审批', checks: [], planId: null }
+    return { ...this.verifyPlanWorkspace(plan, workspaceRoot), planId: plan.id }
+  }
+
+  /**
+   * ADR-0089 — every grant-based auto-allow requires the Run to be inside the isolated Worktree
+   * ObjectOS registered for this plan. The main workspace, a fake or foreign worktree, a symlinked
+   * directory or a plan without a registered Worktree all fall back to per-call approval.
+   */
+  verifyPlanWorkspace(plan: PlanDraft, workspaceRoot: string): IsolatedWorktreeResult {
+    const project = this.store.read.getProject(plan.projectId)
+    if (!project) return { ok: false, reason: '项目不存在', checks: [] }
+    return verifyIsolatedWorktree({
+      projectRoot: project.rootPath,
+      workspaceRoot,
+      registeredPath: plan.execution?.workspaceRef ?? null,
+      expectedBranch: plan.execution?.branch ?? null,
+    })
+  }
+
+  private isolationRejected(
+    plan: PlanDraft,
+    grantId: string,
+    input: { taskId: string | null; runId: string; toolCallId: string; toolName: string },
+    isolation: IsolatedWorktreeResult,
+  ): PlanToolGrantDecision {
+    try {
+      this.store.appendEvent(plan.projectId, plan.id, PROJECT_EVENT_TYPES.custom, {
+        kind: 'plan.grant.isolationRejected',
+        grantId,
+        planId: plan.id,
+        taskId: input.taskId,
+        runId: input.runId,
+        toolCallId: input.toolCallId,
+        toolName: input.toolName,
+        reason: isolation.reason,
+        failedCheck: isolation.checks.find((check) => !check.ok)?.name ?? null,
+      })
+    } catch {
+      /* audit must not turn a safe fallback into a crash */
+    }
+    return {
+      decision: 'approval',
+      reason: `未通过隔离 Worktree 校验（${isolation.reason}），本次需要人工审批`,
+      grantId,
+    }
+  }
+
   /**
    * Called by AgentRunner after PolicyEngine. It can only turn a
    * `require_approval` write into an allowed write; it never overrides deny or
@@ -1037,14 +1090,55 @@ export class PlanGrantService {
 
     // ADR-0056: an explicit `run-tests` grant covers only test runners and read-only inspections.
     // It is checked before the read-only-family path, because a family still needs a first approval.
+    const autoAllow = readProjectAutonomySettings(this.store, plan.projectId)
     if (command && view.actions.includes('run-tests')) {
       const verdict = classifyGrantedCommand(command)
       if (verdict.allowed) {
+        const isolation = this.verifyPlanWorkspace(plan, input.workspaceRoot)
+        if (!isolation.ok) return this.isolationRejected(plan, grant.id, input, isolation)
         return {
           decision: 'allow',
           reason: `计划授权包含 run-tests：${verdict.reason}，命令 ${command.slice(0, 120)}`,
           grantId: grant.id,
         }
+      }
+    }
+
+    // ADR-0089: a plan grant that already covers writes also covers the selected verification
+    // families (test / lint / typecheck / build) — but only inside the verified plan Worktree.
+    const family = command && (input.toolName === 'run_command' || input.toolName === 'run_tests') ? verifyCommandFamily(command) : null
+    if (
+      family &&
+      autoAllow.worktreeAutoAllow &&
+      autoAllow.worktreeAutoAllowFamilies.includes(family) &&
+      view.actions.includes('workspace-write') &&
+      input.taskId &&
+      view.allowedTaskIds.includes(input.taskId) &&
+      view.allowedAgentIds.includes(input.agentId)
+    ) {
+      const isolation = this.verifyPlanWorkspace(plan, input.workspaceRoot)
+      if (!isolation.ok) return this.isolationRejected(plan, grant.id, input, isolation)
+      const consumed = this.store.consumePlanExecutionGrantToolCall(grant.id)
+      if (!consumed) {
+        return { decision: 'deny', reason: '计划执行授权的工具调用次数已用尽、已过期或已撤销', grantId: grant.id }
+      }
+      this.store.appendEvent(plan.projectId, plan.id, PROJECT_EVENT_TYPES.planGrantConsumed, {
+        grantId: grant.id,
+        planId: plan.id,
+        taskId: input.taskId,
+        runId: input.runId,
+        toolCallId: input.toolCallId,
+        agentId: input.agentId,
+        toolName: input.toolName,
+        path: null,
+        command: command.slice(0, 300),
+        verifyFamily: family,
+        authorizationBasis: 'verified-worktree',
+      })
+      return {
+        decision: 'allow',
+        reason: `隔离 Worktree 内的${VERIFY_FAMILY_LABEL[family]}命令，按计划授权自动放行：${command.slice(0, 120)}`,
+        grantId: grant.id,
       }
     }
 
@@ -1143,6 +1237,11 @@ export class PlanGrantService {
         grantId: grant.id,
       }
     }
+    if (!autoAllow.worktreeAutoAllow) {
+      return { decision: 'approval', reason: '项目已关闭「隔离工作区自动放行」，写入需要逐次审批', grantId: grant.id }
+    }
+    const isolation = this.verifyPlanWorkspace(plan, input.workspaceRoot)
+    if (!isolation.ok) return this.isolationRejected(plan, grant.id, input, isolation)
     const consumed = this.store.consumePlanExecutionGrantToolCall(grant.id)
     if (!consumed) {
       return {
@@ -1152,6 +1251,7 @@ export class PlanGrantService {
       }
     }
     this.store.appendEvent(plan.projectId, plan.id, PROJECT_EVENT_TYPES.planGrantConsumed, {
+      authorizationBasis: 'verified-worktree',
       grantId: grant.id,
       planId: plan.id,
       taskId,
@@ -1163,7 +1263,7 @@ export class PlanGrantService {
     })
     return {
       decision: 'allow',
-      reason: `在计划授权路径 ${target} 内执行 workspace-write`,
+      reason: `在已验证的隔离 Worktree 与计划授权路径 ${target} 内执行 workspace-write`,
       grantId: grant.id,
     }
   }

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { now } from '@projectos/contracts'
 import { PlanGrantService } from '../apps/runtime/src/plan-grant.js'
 import { createGitProject, logger, planWithTasks, setup } from './helpers/r1-fixture.js'
+import { attachPlanWorktree } from './helpers/plan-worktree.js'
 
 const cleanups: Array<() => void> = []
 afterEach(() => {
@@ -55,14 +56,15 @@ describe('ADR-0033 review tasks are read-only', () => {
       note: '测试授权',
       confirm: true,
     })
-    return { harness, project, grants, plan, developerTaskId: taskIds[0]!, reviewTaskId: taskIds[1]! }
+    const worktree = attachPlanWorktree(harness.store, plan.id, project.rootPath, harness.dataDir)
+    return { harness, project, grants, plan, worktree, developerTaskId: taskIds[0]!, reviewTaskId: taskIds[1]! }
   }
 
   it('denies write_file on a review task and allows it on a developer task', async () => {
-    const { harness, project, grants, plan, developerTaskId, reviewTaskId } = await setupReviewPlan()
+    const { harness, project, grants, plan, worktree, developerTaskId, reviewTaskId } = await setupReviewPlan()
     const asRun = (taskId: string, toolName: string, args: Record<string, unknown>) => ({
       projectId: project.id,
-      workspaceRoot: project.rootPath,
+      workspaceRoot: worktree,
       taskId,
       runId: 'run_guard',
       agentId: harness.store.read.getTaskCard(taskId)!.assigneeAgentId!,

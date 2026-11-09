@@ -296,6 +296,9 @@ export const ActionKindSchema = z.enum([
   'version_gate',
   'deployment_reconciliation',
   'run_failure',
+  'replan_scope',
+  'plan_delivery',
+  'plan_review',
 ])
 export type ActionKind = z.infer<typeof ActionKindSchema>
 
@@ -322,6 +325,9 @@ export const ActionItemSchema = z.object({
 })
 export type ActionItem = z.infer<typeof ActionItemSchema>
 
+export const VerifyCommandFamilySchema = z.enum(['test', 'lint', 'typecheck', 'build'])
+export type VerifyCommandFamilyName = z.infer<typeof VerifyCommandFamilySchema>
+
 export const ProjectAutonomyModeSchema = z.enum(['assist', 'autonomous', 'managed'])
 export type ProjectAutonomyMode = z.infer<typeof ProjectAutonomyModeSchema>
 
@@ -333,6 +339,12 @@ export const ProjectAutonomySettingsSchema = z.object({
   autoApplyReplans: z.boolean().default(true),
   autoDeliver: z.boolean().default(false),
   maxAutoReplans: z.number().int().min(0).max(10).default(3),
+  /**
+   * ADR-0089: inside a *verified* isolated plan Worktree, writes covered by the plan grant and the
+   * selected verification command families run without a per-call click. Default on.
+   */
+  worktreeAutoAllow: z.boolean().default(true),
+  worktreeAutoAllowFamilies: z.array(VerifyCommandFamilySchema).default(['test', 'lint', 'typecheck', 'build']),
 })
 export type ProjectAutonomySettings = z.infer<typeof ProjectAutonomySettingsSchema>
 

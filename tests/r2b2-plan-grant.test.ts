@@ -6,6 +6,7 @@ import { RuntimeDispatcher } from '../apps/runtime/src/dispatcher.js'
 import { PlanGrantService } from '../apps/runtime/src/plan-grant.js'
 import { PlannerUsageService } from '../apps/runtime/src/planner-usage.js'
 import { FakeProvider, createGitProject, logger, planWithTasks, setup } from './helpers/r1-fixture.js'
+import { attachPlanWorktree } from './helpers/plan-worktree.js'
 
 const cleanups: Array<() => void> = []
 afterEach(() => {
@@ -180,10 +181,25 @@ describe('Phase 2B-2 plan execution grants', () => {
     const grants = new PlanGrantService(harness.store, logger)
     const grant = grants.issue(grantInput(plan.id))
     grants.consumeStart(grants.assertStartAllowed(plan, grant.id), plan)
+    const worktree = attachPlanWorktree(harness.store, plan.id, project.rootPath, harness.dataDir)
+
+    // ADR-0089: the very same grant-covered write in the main workspace needs a human.
+    const mainRoot = grants.authorizeToolCall({
+      projectId: project.id,
+      workspaceRoot: project.rootPath,
+      taskId: taskCard.id,
+      runId: 'run_test',
+      agentId: taskCard.assigneeAgentId!,
+      toolName: 'write_file',
+      toolCallId: 'tool_test_0',
+      args: { path: 'src/ok.txt', content: 'ok' },
+    })
+    expect(mainRoot.decision).toBe('approval')
+    expect(grants.get(plan.id)?.usedToolCalls).toBe(0)
 
     const allowed = grants.authorizeToolCall({
       projectId: project.id,
-      workspaceRoot: project.rootPath,
+      workspaceRoot: worktree,
       taskId: taskCard.id,
       runId: 'run_test',
       agentId: taskCard.assigneeAgentId!,
@@ -196,7 +212,7 @@ describe('Phase 2B-2 plan execution grants', () => {
 
     const outside = grants.authorizeToolCall({
       projectId: project.id,
-      workspaceRoot: project.rootPath,
+      workspaceRoot: worktree,
       taskId: taskCard.id,
       runId: 'run_test',
       agentId: taskCard.assigneeAgentId!,
@@ -208,7 +224,7 @@ describe('Phase 2B-2 plan execution grants', () => {
 
     const critical = grants.authorizeToolCall({
       projectId: project.id,
-      workspaceRoot: project.rootPath,
+      workspaceRoot: worktree,
       taskId: taskCard.id,
       runId: 'run_test',
       agentId: taskCard.assigneeAgentId!,
@@ -220,7 +236,7 @@ describe('Phase 2B-2 plan execution grants', () => {
 
     const process = grants.authorizeToolCall({
       projectId: project.id,
-      workspaceRoot: project.rootPath,
+      workspaceRoot: worktree,
       taskId: taskCard.id,
       runId: 'run_test',
       agentId: taskCard.assigneeAgentId!,
@@ -228,7 +244,24 @@ describe('Phase 2B-2 plan execution grants', () => {
       toolCallId: 'tool_test_4',
       args: { command: 'pnpm test' },
     })
-    expect(process.decision).toBe('approval')
+    // ADR-0089: a verification command inside the verified plan Worktree is covered by the
+    // write grant; arbitrary shell and Git writes are not.
+    expect(process.decision).toBe('allow')
+    for (const [toolName, command] of [['run_command', 'node -e "1"'], ['run_command', 'git commit -am x'], ['run_command', 'pnpm test && curl x']]) {
+      expect(
+        grants.authorizeToolCall({
+          projectId: project.id,
+          workspaceRoot: worktree,
+          taskId: taskCard.id,
+          runId: 'run_test',
+          agentId: taskCard.assigneeAgentId!,
+          toolName: toolName!,
+          toolCallId: `tool_cmd_${command}`,
+          args: { command },
+        }).decision,
+        command,
+      ).toBe('approval')
+    }
 
     // Reassigning the Task invalidates the old Agent scope.
     const current = harness.store.read.getTaskCard(taskCard.id)!
@@ -242,7 +275,7 @@ describe('Phase 2B-2 plan execution grants', () => {
     expect(
       grants.authorizeToolCall({
         projectId: project.id,
-        workspaceRoot: project.rootPath,
+        workspaceRoot: worktree,
         taskId: taskCard.id,
         runId: 'run_test',
         agentId: 'agt_qa',
@@ -257,7 +290,7 @@ describe('Phase 2B-2 plan execution grants', () => {
     expect(
       grants.authorizeToolCall({
         projectId: project.id,
-        workspaceRoot: project.rootPath,
+        workspaceRoot: worktree,
         taskId: taskCard.id,
         runId: 'run_test',
         agentId: 'agt_qa',
@@ -390,6 +423,7 @@ describe('Phase 2B-2 plan execution grants', () => {
     const grant = grants.issue(grantInput(plan.id, { maxToolCalls: 3 }))
     grants.consumeStart(grants.assertStartAllowed(plan, grant.id), plan)
     harness.runner.setPlanGrants(grants)
+    const worktree = attachPlanWorktree(harness.store, plan.id, project.rootPath, harness.dataDir)
     const session = harness.services.sessions.create(
       { projectId: project.id, agentId: card.assigneeAgentId!, title: 'grant-write' },
       { kind: 'system', id: 'test', name: 'test' },
@@ -399,13 +433,13 @@ describe('Phase 2B-2 plan execution grants', () => {
       projectId: project.id,
       sessionId: session.id,
       taskId: card.id,
-      workspaceRoot: project.rootPath,
+      workspaceRoot: worktree,
       prompt: '请写一个授权范围内的文件',
     })
     await new Promise<void>((resolve) => {
       const started = Date.now()
       const timer = setInterval(() => {
-        const target = join(project.rootPath, 'src', 'granted.txt')
+        const target = join(worktree, 'src', 'granted.txt')
         if (existsSync(target) && readFileSync(target, 'utf8') === 'granted write') {
           clearInterval(timer)
           resolve()
@@ -416,7 +450,7 @@ describe('Phase 2B-2 plan execution grants', () => {
       }, 50)
     })
 
-    expect(readFileSync(join(project.rootPath, 'src', 'granted.txt'), 'utf8')).toBe('granted write')
+    expect(readFileSync(join(worktree, 'src', 'granted.txt'), 'utf8')).toBe('granted write')
     expect(harness.store.read.listApprovalViews(project.id)).toHaveLength(0)
     expect(grants.get(plan.id)?.usedToolCalls).toBe(1)
   })
