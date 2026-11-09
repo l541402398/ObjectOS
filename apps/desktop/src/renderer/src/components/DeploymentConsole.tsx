@@ -187,7 +187,6 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
     <div className="dc-shell">
       <header className="dc-head">
         <div>
-          <div className="rw-eyebrow">DELIVERY CONTROL</div>
           <h1>部署中心</h1>
           <p>{selected ? `${environment?.name ?? '当前环境'} · ${target?.name ?? '部署记录'} · ${currentVersionLabel ? `已验证 v${currentVersionLabel}` : '尚未验证运行版本'}` : '将经过审核的发布包交付到目标环境'}</p>
         </div>

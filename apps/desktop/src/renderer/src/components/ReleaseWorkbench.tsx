@@ -107,23 +107,19 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
     .filter((row) => !rowQuery.trim() || JSON.stringify(row).toLowerCase().includes(rowQuery.toLowerCase()))
   const ready = Boolean(approvedRequest && latestCandidate?.status === 'ready' && versionArtifacts.length > 0)
   const releaseRecorded = Boolean(latestRelease)
+  const isEmpty = data.candidates.length === 0 && data.releases.length === 0 && data.changeRequests.length === 0
 
   return (
     <div className="rw-shell">
       <header className="rw-head">
         <div>
-          <div className="rw-eyebrow">RELEASE WORKBENCH</div>
           <h1>发布工作台</h1>
-          <p>{versionLabel} · {ready ? '候选可冻结' : releaseRecorded ? 'Release 已登记' : '准备发布证据'}</p>
+          <p>{versionLabel} · {ready ? '候选可冻结' : releaseRecorded ? 'Release 已登记' : '准备发布证据'}{[
+            [data.candidates.length, '候选'], [data.releases.length, 'Release'], [pendingApprovals.length, '待审批'], [versionArtifacts.length, '制品'],
+          ].filter(([count]) => Number(count) > 0).map(([count, label]) => ` · ${count} ${label}`).join('')}</p>
         </div>
         <div className="rw-head-right">
           {versionControl ? <div className="rw-version-control">{versionControl}</div> : null}
-          <div className="rw-metrics">
-            <span><strong>{data.candidates.length}</strong>候选</span>
-            <span><strong>{data.releases.length}</strong>Release</span>
-            <span><strong>{pendingApprovals.length}</strong>待审批</span>
-            <span><strong>{versionArtifacts.length}</strong>制品</span>
-          </div>
           <div className="rw-actions">
             <Button onClick={() => { setTitle(''); setDescription(''); setCreateOpen(true) }}>新建变更</Button>
             <Button type="primary" disabled={!approvedRequest || !versionArtifacts.length} loading={createCandidate.isPending} onClick={() => createCandidate.mutate()}>
@@ -140,7 +136,15 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
         <div className={latestRelease ? 'is-done' : ''}><i />Release 登记</div>
       </div>
 
-      <div className="rw-body">
+      {isEmpty ? (
+        <section className="rw-empty" aria-label="发布准备">
+          <div className="rw-empty-copy">
+            <h2>先发起一次发布变更</h2>
+            <p>变更获批并有真实制品后，就能生成候选并登记 Release。</p>
+            <Button type="primary" onClick={() => { setTitle(''); setDescription(''); setCreateOpen(true) }}>新建变更</Button>
+          </div>
+        </section>
+      ) : <div className="rw-body">
         <aside className="rw-list" aria-label="发布记录">
           <div className="rw-tabs">
             <button className={tab === 'candidates' ? 'is-active' : ''} onClick={() => { setTab('candidates'); setSelection(null) }}>候选 <span>{data.candidates.length}</span></button>
@@ -176,7 +180,7 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
           {selectedCandidate ? (
             <>
               <div className="rw-detail-head">
-                <div><span className="rw-kicker">RELEASE CANDIDATE</span><h2>{selectedCandidate.gitCommit?.slice(0, 12) ?? '无 Git revision'}</h2></div>
+                <div><h2>{selectedCandidate.gitCommit?.slice(0, 12) ?? '无 Git revision'}</h2></div>
                 <Tag>{CANDIDATE_STATUS[selectedCandidate.status] ?? selectedCandidate.status}</Tag>
               </div>
               <div className="rw-facts">
@@ -199,7 +203,7 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
           {selectedRelease ? (
             <>
               <div className="rw-detail-head">
-                <div><span className="rw-kicker">IMMUTABLE RELEASE</span><h2>v{selectedRelease.version}</h2></div>
+                <div><h2>v{selectedRelease.version}</h2></div>
                 <Tag>{selectedRelease.distributionStatus === 'externally_confirmed' ? '外部确认' : '未外部分发'}</Tag>
               </div>
               <div className="rw-facts">
@@ -219,7 +223,7 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
           {selectedChange ? (
             <>
               <div className="rw-detail-head">
-                <div><span className="rw-kicker">CHANGE REQUEST</span><h2>{selectedChange.title}</h2></div>
+                <div><h2>{selectedChange.title}</h2></div>
                 <Tag>{CR_STATUS[selectedChange.status] ?? selectedChange.status}</Tag>
               </div>
               <div className="rw-facts">
@@ -250,10 +254,9 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
             <div className="rw-approval" key={approval.id}><span>{approval.subjectType === 'change_request' ? '变更审批' : '部署审批'}</span><em>r{approval.subjectRevision}</em></div>
           ))}
           <div className="rw-rail-divider" />
-          <h2>发布口径</h2>
-          <p className="rw-rail-copy">候选冻结与 Release 登记是本地可追溯事实；只有外部回执才能称为已分发。</p>
+          <p className="rw-rail-copy">只有外部回执才能称为已分发。</p>
         </aside>
-      </div>
+      </div>}
 
       <FormDialog open={createOpen} title="新建变更" okText="创建" cancelText="取消" confirmLoading={createChange.isPending} okButtonProps={{ disabled: !title.trim() }} onOk={() => createChange.mutate()} onCancel={() => setCreateOpen(false)}>
         <div className="rw-form">

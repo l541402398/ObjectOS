@@ -1,0 +1,26 @@
+/* ADR-0092 — shared type scale and hierarchy helpers. Use these (or the --ui-type-* tokens)
+   instead of ad-hoc font sizes. Rules: one focal element per page/section (display or title),
+   secondary information in --ui-muted at caption size, one accent colour per section. */
+.t-display { font-size: var(--ui-type-display); font-weight: 700; line-height: 1.05; letter-spacing: -.035em; font-variant-numeric: tabular-nums; color: var(--ui-ink); }
+.t-title { margin: 0; font-size: var(--ui-type-title); font-weight: 700; line-height: var(--ui-leading-tight); letter-spacing: -.015em; color: var(--ui-ink); }
+.t-section { margin: 0; font-size: var(--ui-type-section); font-weight: var(--ui-weight-strong); line-height: var(--ui-leading-tight); color: var(--ui-ink); }
+.t-body { font-size: var(--ui-type-body); line-height: var(--ui-leading-body); color: var(--ui-ink-2); }
+.t-caption { font-size: var(--ui-type-caption); line-height: 1.45; color: var(--ui-muted); }
+.t-muted { color: var(--ui-muted); }
+.t-num { font-variant-numeric: tabular-nums; }
+/* A single-line subtitle that never grows into a paragraph. */
+.t-oneline { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---- App-wide hierarchy pass (shared page primitives) ---- */
+.po-shell :is(.po-page-title, .studio-masthead-id h1, .studio-review-masthead h1, .dc-head h1, .rw-head h1, .rc-head h1) {
+  font-size: var(--ui-type-title); font-weight: 700; line-height: var(--ui-leading-tight); letter-spacing: -.015em;
+}
+/* Page description: one muted line; it supports the title, never competes with it. */
+:root .po-page-description {
+  max-width: 72ch; margin-top: var(--ui-space-1); overflow: hidden;
+  color: var(--ui-muted); font-size: var(--ui-type-body); line-height: var(--ui-leading-body);
+  text-overflow: ellipsis; white-space: nowrap;
+}
+:root .po-page-meta { color: var(--ui-muted); font-size: var(--ui-type-caption); }
+:root :is(.po-section-title, .po-card-title, .v16-section-title) { font-size: var(--ui-type-section); font-weight: var(--ui-weight-strong); }
+:root :is(.po-card-subtitle, .po-section-subtitle) { overflow: hidden; color: var(--ui-muted); font-size: var(--ui-type-caption); text-overflow: ellipsis; white-space: nowrap; }

@@ -19,6 +19,8 @@ export interface KpiBlock {
   suffix?: string
   status: ReactNode
   tone?: 'accent' | 'ok' | 'warn' | 'neutral'
+  /** The page's single key number: rendered at display size; others use title size. */
+  emphasis?: boolean
   visual?: KpiVisual
   actionLabel?: string
   onOpen?: () => void
@@ -57,7 +59,7 @@ export function KpiRail({ blocks, label }: { blocks: KpiBlock[]; label: string }
         return (
           <div
             key={block.key}
-            className={`kpi-block is-${block.tone ?? 'neutral'} ${interactive ? 'is-link' : ''}`}
+            className={`kpi-block is-${block.tone ?? 'neutral'}${block.emphasis ? ' is-key' : ''}${interactive ? ' is-link' : ''}`}
             role={interactive ? 'link' : undefined}
             tabIndex={interactive ? 0 : undefined}
             aria-label={interactive ? `${block.label}，${block.actionLabel ?? '查看'}` : undefined}

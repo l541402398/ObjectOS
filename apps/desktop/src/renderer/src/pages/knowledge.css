@@ -1,0 +1,12 @@
+/* ADR-0092 知识库: the index reads as one spec sheet — the stack is the focal line, no nested boxes. */
+.kb-index { display: grid; gap: var(--ui-space-5); max-width: 880px; padding: var(--ui-space-5) 0; border-top: 1px solid var(--ui-divider); }
+.kb-index-head { display: grid; gap: var(--ui-space-1); }
+.kb-index-stack { margin: 0; color: var(--ui-ink); font-size: var(--ui-type-title); font-weight: 650; line-height: var(--ui-leading-tight); letter-spacing: -.015em; }
+.kb-index-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ui-space-3); margin: 0; color: var(--ui-muted); font-size: var(--ui-type-caption); }
+.kb-index-meta code { padding: 1px 6px; border-radius: 6px; background: var(--ui-accent-soft); color: var(--ui-ink-2); font-family: var(--ui-font-mono, ui-monospace, monospace); font-size: var(--ui-type-caption); }
+.kb-index-rows { display: grid; gap: var(--ui-space-3); margin: 0; }
+.kb-index-rows > div { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--ui-space-4); align-items: baseline; }
+.kb-index-rows dt { color: var(--ui-muted); font-size: var(--ui-type-caption); }
+.kb-index-rows dd { display: flex; flex-wrap: wrap; gap: var(--ui-space-1) var(--ui-space-3); margin: 0; color: var(--ui-ink-2); font-size: var(--ui-type-body); }
+.kb-index-rows dd em { color: var(--ui-muted); font-style: normal; }
+.po-knowledge-search { max-width: 520px; }

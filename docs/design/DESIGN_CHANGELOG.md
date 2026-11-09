@@ -1,5 +1,13 @@
 # ProjectOS UI Design Changelog
 
+## 2026-11-10 — UX polish 4: type scale and hierarchy (ADR-0092)
+
+- Type scale tokens: title 22 / section 16 / body 14 / caption 12, display 32 for one key number per page; `type-scale.css` utilities; spacing rhythm 4–32.
+- PageHeader description = one muted line; card subtitles = one muted caption line.
+- 项目态势: KPI rail first, lifecycle as a single-row track; 审批记录 summary compacted; 资源/发布/部署 English eyebrows removed.
+- 部署中心 setup, 发布中心 (no card-in-card, empty prompt), 需求工作台 (no zero counters), 版本与迭代 (no relationship banner), 知识库 (spec sheet), 任务看板 (roster dock).
+- Screenshots `docs/ux/v5/`, evidence `docs/v2/evidence/ux-polish-4/`.
+
 ## 2026-11-10 — UX polish 3 (ADR-0091)
 
 - 项目态势: four bordered metric pills → one KPI rail (big tabular numbers, arc / segments / pulse from real counts, one-line status, hover/focus link reveal).

@@ -1,0 +1,28 @@
+/* ADR-0092 项目态势: one focal number (KPI rail), lifecycle as a quiet single-row track. */
+.po-overview-page .kpi-rail { margin-top: var(--ui-space-2); }
+.ov-lifecycle { display: flex; align-items: center; gap: var(--ui-space-5); margin: 0 0 var(--ui-space-5); padding: var(--ui-space-2) 0 var(--ui-space-4); border-bottom: 1px solid var(--ui-divider); }
+.ov-lifecycle > h2 { flex: none; }
+.ov-track { display: flex; flex: 1; min-width: 0; align-items: center; margin: 0; padding: 0; list-style: none; }
+.ov-stage { position: relative; display: flex; flex: 1; align-items: center; gap: var(--ui-space-2); min-width: 0; }
+.ov-stage:not(:last-child)::after { content: ''; flex: 1; min-width: 10px; height: 1.5px; margin: 0 var(--ui-space-2); border-radius: 2px; background: var(--ui-border); }
+.ov-stage.is-done:not(:last-child)::after { background: color-mix(in srgb, var(--ui-accent) 45%, var(--ui-border)); }
+.ov-stage-dot { display: grid; flex: none; place-items: center; width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--ui-border-strong); color: var(--ui-muted); font-size: var(--ui-type-caption); font-weight: 650; font-variant-numeric: tabular-nums; }
+.ov-stage.is-done .ov-stage-dot { box-shadow: none; background: var(--ui-accent-soft); color: var(--ui-accent-strong, var(--ui-accent)); font-size: 11px; }
+.ov-stage.is-active .ov-stage-dot { box-shadow: 0 0 0 4px var(--ui-accent-soft); background: var(--ui-accent); color: var(--ui-inverse); }
+.ov-stage-label { flex: none; color: var(--ui-muted); font-size: var(--ui-type-caption); white-space: nowrap; }
+.ov-stage.is-active .ov-stage-label { color: var(--ui-ink); font-size: var(--ui-type-body); font-weight: var(--ui-weight-strong); }
+.ov-next { flex: none; display: flex; align-items: center; gap: var(--ui-space-2); margin: 0; }
+.ov-next strong { color: var(--ui-ink-2); font-weight: 600; }
+.ov-gate { display: inline-flex; align-items: center; gap: 5px; }
+.ov-gate::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--ui-muted); }
+.ov-gate.is-ok::before { background: var(--ui-ok); }
+.ov-gate.is-warn::before { background: var(--ui-warn); }
+@container (max-width: 1000px) {
+  .ov-stage:not(.is-active) .ov-stage-label { display: none; }
+}
+@media (max-width: 1200px) {
+  .ov-stage:not(.is-active) .ov-stage-label { display: none; }
+  .ov-lifecycle { gap: var(--ui-space-4); }
+}
+/* Long helper copy inside the overview cards is demoted to one muted line. */
+.po-overview-page :is(.po-milestone-description, .po-requirement-body) { overflow: hidden; color: var(--ui-muted); font-size: var(--ui-type-caption); text-overflow: ellipsis; white-space: nowrap; }

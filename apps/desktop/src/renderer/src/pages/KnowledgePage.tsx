@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { qk, useKnowledge, useKnowledgeSearch } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
 import { formatRelative } from '../lib/format'
+import './knowledge.css'
 
 
 function splitField(body: string, label: string, separator = ' / '): string[] {
@@ -23,34 +24,32 @@ function SnapshotCard({ entry }: { entry: { title: string; body: string; status:
   const manager = splitField(entry.body, '包管理器')[0]
   const git = splitField(entry.body, 'Git HEAD')[0]
   const warnings = splitField(entry.body, '警告')
+  const rows: Array<[string, string[], string]> = [
+    ['框架', frameworks.filter((item) => item !== '未知'), '未识别'],
+    ['模块', modules.slice(0, 12).map((item) => item.replace(' (directory)', '')), '未识别'],
+    ['关键依赖', dependencies.slice(0, 12), '无'],
+  ]
   return (
-    <article className="po-knowledge-card v17-kb-index">
-      <div className="po-knowledge-card-head">
-        <strong>{entry.title}</strong>
-        <Tag>{entry.status}</Tag>
-      </div>
-      <div className="v17-kb-summary">
-        <div><span>语言</span><strong>{languages.join(' · ') || '未识别'}</strong></div>
-        <div><span>包管理</span><strong>{manager || '未识别'}</strong></div>
-        <div><span>Git HEAD</span><strong className="is-mono">{git || '—'}</strong></div>
-      </div>
-      <div className="v17-kb-section">
-        <span>框架</span>
-        <div className="v17-kb-tags">{frameworks.length ? frameworks.map((item) => <Tag key={item}>{item}</Tag>) : <em>未识别</em>}</div>
-      </div>
-      <div className="v17-kb-section">
-        <span>模块</span>
-        <div className="v17-kb-tags">{modules.length ? modules.slice(0, 12).map((item) => <Tag key={item}>{item.replace(' (directory)', '')}</Tag>) : <em>未识别</em>}</div>
-      </div>
-      <div className="v17-kb-section">
-        <span>关键依赖</span>
-        <div className="v17-kb-tags">{dependencies.length ? dependencies.slice(0, 12).map((item) => <Tag key={item}>{item}</Tag>) : <em>无</em>}</div>
-      </div>
+    <article className="kb-index" aria-label={entry.title}>
+      <header className="kb-index-head">
+        <span className="t-caption t-muted">项目索引</span>
+        <h2 className="kb-index-stack">{languages.join(' · ') || '未识别语言'}</h2>
+        <p className="kb-index-meta">
+          {manager && manager !== '未知' ? <span>{manager}</span> : null}
+          {git ? <code title={git}>{git.slice(0, 12)}</code> : null}
+          <span>{formatRelative(entry.updatedAt)} 扫描</span>
+          {entry.status !== 'active' ? <Tag>{entry.status}</Tag> : null}
+        </p>
+      </header>
+      <dl className="kb-index-rows">
+        {rows.map(([label, items, empty]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{items.length ? items.map((item) => <span key={item}>{item}</span>) : <em>{empty}</em>}</dd>
+          </div>
+        ))}
+      </dl>
       {warnings.length ? <div className="v17-kb-warning">扫描提示：{warnings.join(' / ')}</div> : null}
-      <div className="po-knowledge-meta">
-        <span>{entry.sourceUri ?? 'projectos'}</span>
-        <span>{formatRelative(entry.updatedAt)}</span>
-      </div>
     </article>
   )
 }
@@ -95,13 +94,12 @@ export default function KnowledgePage() {
     <div className="po-page po-page-wide">
       <PageHeader
         title="知识库"
-        description="扫描索引、决策与项目记忆"
+        description="项目索引、决策与记忆"
         actions={<Button onClick={() => void scan()} loading={scanning}>重新扫描项目</Button>}
       />
       <div className="po-knowledge-search">
         <Input
           allowClear
-          size="large"
           prefix={<SearchOutlined />}
           value={query}
           onChange={(event) => setQuery(event.target.value)}

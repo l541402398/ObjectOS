@@ -429,11 +429,6 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
   return <section className="rq-workspace" aria-label={req.title}>
     <div className="rq-heading">
       <div className="rq-heading-main">
-        <div className="rq-eyebrow">
-          <b>REQUIREMENT FLOW</b>
-          <i aria-hidden />
-          <span>{stageCount ? `${stageCount} 个阶段` : '待绑定流程'} · {view.tasks.length} 项任务</span>
-        </div>
         <h2>{req.title}</h2>
         <div className="rq-heading-meta">
           <StatusPill tone={toneForStatus(req.status)}>{requirementLabels[req.status] ?? req.status}</StatusPill>
@@ -441,11 +436,11 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
         </div>
       </div>
       <div className="rq-heading-side">
-        <div className="rq-metrics" aria-label="需求指标汇总">
-          <div><strong>{pad2(view.tasks.length)}</strong><span>任务项</span></div>
-          <div><strong>{pad2(stageCount)}</strong><span>流程阶段</span></div>
-          <div><strong>{pad2(materialCount)}</strong><span>产出资料</span></div>
-        </div>
+        {view.tasks.length + stageCount + materialCount > 0 ? <div className="rq-metrics" aria-label="需求指标汇总">
+          <div><strong>{view.tasks.length}</strong><span>任务</span></div>
+          <div><strong>{stageCount}</strong><span>阶段</span></div>
+          <div><strong>{materialCount}</strong><span>资料</span></div>
+        </div> : null}
         <Button icon={<EditOutlined aria-hidden />} onClick={() => onEdit({ kind: 'documents' })}>编辑需求</Button>
       </div>
     </div>
