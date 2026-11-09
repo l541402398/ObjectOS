@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useActionCenter } from '../lib/queries'
 import { journeyActionLabel, JOURNEY_OWNER_LABEL } from '../lib/journey'
 import type { ActionItem } from '@projectos/contracts'
+import '../pages/work-center.css'
 
 const KIND_LABEL: Record<string, string> = {
   tool_approval: '工具授权',

@@ -423,7 +423,7 @@ export default function LifecyclePage() {
               <div><span>待审批</span><strong>{data.posture.pendingApprovals}</strong></div>
             </div>
             <Button block icon={<RocketOutlined />} onClick={() => navigate(`/projects/${projectId}/work`)}>
-              回到研发工作中心
+              回到工作台
             </Button>
           </SectionCard>
         </aside>
