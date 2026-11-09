@@ -9,6 +9,7 @@ export interface ToolPolicyResult {
   risk: ToolRisk
   reason: string
   redactedArgs?: Record<string, unknown>
+  autoAllowed?: boolean
 }
 
 const READ_TOOLS = new Set([
@@ -44,18 +45,85 @@ const PROTECTED_PATH_PATTERNS = [
   /(^|\/)secrets?(\/|\.|$)/i,
 ]
 
-export function isProtectedPath(relativePath: string): boolean {
-  return PROTECTED_PATH_PATTERNS.some((pattern) => pattern.test(relativePath.replace(/\\/g, '/')))
+/** Default: Worktree 内写文件与白名单命令可在计划批准后自动放行。 */
+export const DEFAULT_WORKTREE_AUTO_APPROVE = true
+
+/**
+ * Allowlisted process commands inside an isolated worktree.
+ * Matching is case-insensitive against the full command string.
+ * Override via PolicyOptions.commandAllowlist.
+ */
+export const DEFAULT_COMMAND_ALLOWLIST: readonly RegExp[] = [
+  /\b(pnpm|npm|yarn|bun)\s+(test|lint|typecheck|build|run\s+(test|lint|typecheck|build))\b/i,
+  /\b(vitest|jest|mocha|pytest|phpunit)\b/i,
+  /\btsc(\s|$)/i,
+  /\beslint\b/i,
+  /\bprettier\b/i,
+  /\bnode\s+--version\b/i,
+  /^(test|lint|typecheck|build)$/i,
+]
+
+export interface PolicyOptions {
+  /** Feature toggle; default true. When false, Worktree runs behave like main workspace. */
+  worktreeAutoApprove?: boolean
+  /** Extra or replacement command allowlist patterns. */
+  commandAllowlist?: readonly RegExp[]
 }
 
 export interface ToolCallContext {
   rootPath: string
+  /** Project main working tree. When set and different from rootPath, rootPath is treated as an isolated worktree. */
+  projectRootPath?: string
   toolName: string
   args: Record<string, unknown>
+  /** Explicit isolation hint; inferred from paths when omitted. */
+  isolation?: {
+    kind: 'worktree' | 'main'
+    /** Plan must be approved for Worktree auto-allow. Default true when kind=worktree. */
+    planApproved?: boolean
+  }
+  options?: PolicyOptions
+}
+
+export function isProtectedPath(relativePath: string): boolean {
+  return PROTECTED_PATH_PATTERNS.some((pattern) => pattern.test(relativePath.replace(/\\/g, '/')))
+}
+
+function normalizePath(value: string): string {
+  return value.replace(/\\/g, '/').replace(/\/+$/, '')
+}
+
+export function isIsolatedWorktree(rootPath: string, projectRootPath?: string): boolean {
+  if (!projectRootPath) return false
+  return normalizePath(rootPath) !== normalizePath(projectRootPath)
+}
+
+export function commandMatchesAllowlist(command: string, allowlist: readonly RegExp[] = DEFAULT_COMMAND_ALLOWLIST): boolean {
+  const text = command.trim()
+  if (!text) return false
+  return allowlist.some((pattern) => pattern.test(text))
+}
+
+function resolveIsolation(context: ToolCallContext): { kind: 'worktree' | 'main'; planApproved: boolean } {
+  if (context.isolation) {
+    return {
+      kind: context.isolation.kind,
+      planApproved: context.isolation.planApproved ?? context.isolation.kind === 'worktree',
+    }
+  }
+  const worktree = isIsolatedWorktree(context.rootPath, context.projectRootPath)
+  return { kind: worktree ? 'worktree' : 'main', planApproved: worktree }
 }
 
 export function evaluateToolPolicy(context: ToolCallContext): ToolPolicyResult {
   const { toolName, args, rootPath } = context
+  const options = context.options ?? {}
+  const worktreeAutoApprove = options.worktreeAutoApprove ?? DEFAULT_WORKTREE_AUTO_APPROVE
+  const allowlist = options.commandAllowlist ?? DEFAULT_COMMAND_ALLOWLIST
+  const isolation = resolveIsolation(context)
+  const canAutoAllow =
+    worktreeAutoApprove && isolation.kind === 'worktree' && isolation.planApproved
+
   if (READ_TOOLS.has(toolName)) {
     const filePath = typeof args.path === 'string' ? args.path : null
     if (filePath) {
@@ -74,9 +142,11 @@ export function evaluateToolPolicy(context: ToolCallContext): ToolPolicyResult {
     }
     return { decision: 'allow', risk: 'read', reason: '只读操作，直接允许' }
   }
+
   if (COORDINATION_TOOLS.has(toolName)) {
     return { decision: 'allow', risk: 'external', reason: '项目内协调操作，写入审计事件' }
   }
+
   if (WORKSPACE_WRITE_TOOLS.has(toolName)) {
     const filePath = typeof args.path === 'string' ? args.path : null
     if (filePath) {
@@ -93,21 +163,50 @@ export function evaluateToolPolicy(context: ToolCallContext): ToolPolicyResult {
         }
       }
     }
+    if (canAutoAllow) {
+      return {
+        decision: 'allow',
+        risk: 'workspace-write',
+        reason: '隔离 Worktree 内写文件已随计划批准自动放行（仍写入审计）',
+        autoAllowed: true,
+        redactedArgs: args,
+      }
+    }
     return {
       decision: 'require_approval',
       risk: 'workspace-write',
-      reason: '修改项目文件需要人工授权',
+      reason: isolation.kind === 'main' ? '主工作区修改项目文件需要人工授权' : '修改项目文件需要人工授权',
       redactedArgs: args,
     }
   }
+
   if (PROCESS_TOOLS.has(toolName)) {
+    const command =
+      typeof args.command === 'string'
+        ? args.command
+        : toolName === 'run_tests'
+          ? 'test'
+          : ''
+    if (canAutoAllow && commandMatchesAllowlist(command, allowlist)) {
+      return {
+        decision: 'allow',
+        risk: 'process',
+        reason: '隔离 Worktree 内白名单命令已随计划批准自动放行（仍写入审计）',
+        autoAllowed: true,
+        redactedArgs: args,
+      }
+    }
     return {
       decision: 'require_approval',
       risk: 'process',
-      reason: '执行进程需要人工授权',
+      reason:
+        canAutoAllow && command
+          ? '该命令不在 Worktree 白名单内，需要人工授权'
+          : '执行进程需要人工授权',
       redactedArgs: args,
     }
   }
+
   if (GIT_WRITE_TOOLS.has(toolName)) {
     return {
       decision: 'require_approval',
@@ -116,6 +215,7 @@ export function evaluateToolPolicy(context: ToolCallContext): ToolPolicyResult {
       redactedArgs: args,
     }
   }
+
   return { decision: 'deny', risk: 'external', reason: `未知工具 «${toolName}» 不在策略白名单内` }
 }
 
