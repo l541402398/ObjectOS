@@ -124,23 +124,23 @@ try {
 
   if (!(await page.locator('.po-shell.is-collapsed').count())) {
     const devGroup = page.locator('.po-sidenav-group-trigger').filter({ hasText: '研发' }).first()
-    if (!(await page.getByText('研发工作中心', { exact: true }).isVisible().catch(() => false))) {
+    if (!(await page.getByText('工作台', { exact: true }).first().isVisible().catch(() => false))) {
       await devGroup.click()
       await page.waitForTimeout(250)
     }
-    if (!(await page.getByText('研发工作中心', { exact: true }).isVisible().catch(() => false))) {
+    if (!(await page.getByText('工作台', { exact: true }).first().isVisible().catch(() => false))) {
       throw new Error('研发 group did not expand')
     }
     await devGroup.click()
     await page.waitForTimeout(250)
-    if (await page.getByText('研发工作中心', { exact: true }).isVisible().catch(() => false)) {
+    if (await page.getByText('工作台', { exact: true }).first().isVisible().catch(() => false)) {
       throw new Error('研发 group did not collapse')
     }
     await devGroup.click()
     await page.waitForTimeout(250)
     await page.reload()
     await page.waitForSelector('.po-lifecycle-page', { timeout: 30_000 })
-    if (!(await page.getByText('研发工作中心', { exact: true }).isVisible().catch(() => false))) {
+    if (!(await page.getByText('工作台', { exact: true }).first().isVisible().catch(() => false))) {
       throw new Error('研发 group expansion was not restored after reload')
     }
     console.log('[phase2-ui] accordion nav expand/collapse/persistence PASS')

@@ -40,7 +40,7 @@ try {
 
   // Slow the real renderer (not mock data). Each sampled frame must retain the old content or
   // contain the destination title AND task data, without an intermediate empty page.
-  await page.getByRole('button', { name: '研发工作中心', exact: true }).click()
+  await page.getByRole('button', { name: '工作台', exact: true }).click()
   await page.locator('.studio-home').waitFor()
   const cdp = await page.context().newCDPSession(page)
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
@@ -54,7 +54,7 @@ try {
   const frames = await page.evaluate(() => { window.__navStop = true; return window.__navFrames })
   check('Slower renderer keeps a coherent destination', frames.every((frame) => frame.home || frame.tasks > 0), JSON.stringify({ elapsedMs: Date.now() - start, frames: frames.length, intermediateEmpty: frames.filter((f) => !f.home && !f.tasks).length }))
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 })
-  await page.getByRole('button', { name: '研发工作中心', exact: true }).click(); await page.locator('.studio-home').waitFor()
+  await page.getByRole('button', { name: '工作台', exact: true }).click(); await page.locator('.studio-home').waitFor()
   const revisit = Date.now(); await page.getByRole('button', { name: '任务看板', exact: true }).click(); await page.locator('.po-task-tile').first().waitFor()
   check('Cached revisit renders populated tasks', true, `${Date.now() - revisit} ms including native input`)
   await page.getByRole('button', { name: '版本与迭代', exact: true }).click({ noWaitAfter: true })

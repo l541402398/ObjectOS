@@ -54,7 +54,8 @@ import { useBootstrap, useProjectOverview } from '../lib/queries'
 import { useResolvedTheme, useUiStore } from '../stores/ui'
 import { stageLabel } from '../lib/labels'
 import { truncate } from '../lib/format'
-import { pageLabel, currentPageKey, pageGroup, palettePages, PAGES } from '../page-registry'
+import { pageLabel, currentPageKey, pageGroup, palettePages, PAGES, navKeyFor, pageByKey } from '../page-registry'
+import { ViewTabs } from './ViewTabs'
 
 const PAGE_LABELS: Record<string, string> = Object.fromEntries(PAGES.map((page) => [page.key, page.label]))
 
@@ -135,6 +136,8 @@ export default function AppLayout() {
    * in-app history.
    */
   const activeGroup = pageGroup(activeKey)
+  const navKey = navKeyFor(activeKey)
+  const parentPage = navKey !== activeKey ? pageByKey(navKey) : null
   const historyIndex = (window.history.state as { idx?: number } | null)?.idx ?? 0
   const canGoBack = historyIndex > 0
 
@@ -298,9 +301,11 @@ export default function AppLayout() {
       // ADR-0049: the palette is generated from the page registry, so a page cannot be shipped
       // without an entry (and a deleted page cannot leave a dead command behind).
       for (const page of palettePages().filter(page => page.key !== 'organization')) {
+        const parent = page.navParent ? pageByKey(page.navParent) : null
         list.push({
           id: page.key,
           label: page.label,
+          hint: parent ? `${parent.navLabel ?? parent.label} 视图` : page.key === 'tasks' ? '执行 视图' : undefined,
           group: page.group === '全局' ? '全局' : (currentProject?.name ?? '项目'),
           icon: PAGE_ICONS[page.key] ?? <AppstoreOutlined />,
           run: () => handleNavigate(page.key),
@@ -315,6 +320,22 @@ export default function AppLayout() {
           icon: <ProjectOutlined />,
           shortcut: 'N',
           run: () => navigate(`/projects/${projectId}/tasks?new=1`),
+        },
+        {
+          id: 'approval-delivery',
+          label: '交付审批',
+          hint: '审批 视图',
+          group: currentProject?.name ?? '项目',
+          icon: <SafetyCertificateOutlined />,
+          run: () => navigate(`/projects/${projectId}/approvals?lens=delivery`),
+        },
+        {
+          id: 'approval-history',
+          label: '审批记录',
+          hint: '审批 视图 · 原审批中心',
+          group: currentProject?.name ?? '项目',
+          icon: <HistoryOutlined />,
+          run: () => navigate(`/projects/${projectId}/approvals?lens=history`),
         },
         {
           id: 'reveal',
@@ -391,7 +412,7 @@ export default function AppLayout() {
             {compact ? <ExpandOutlined aria-hidden /> : <CompressOutlined aria-hidden />}
           </button>
         }>
-          <SidebarNavigation groups={mobileNavGroups.map((group) => ({ ...group, placement: 'main', collapsible: false }))} activeKey={activeKey} onSelect={(key) => { setNavigationOpen(false); handleNavigate(key) }} />
+          <SidebarNavigation groups={mobileNavGroups.map((group) => ({ ...group, placement: 'main', collapsible: false }))} activeKey={navKey} onSelect={(key) => { setNavigationOpen(false); handleNavigate(key) }} />
         </PopoverShell>
         <button type="button" className="po-titlebar-brand" onClick={() => navigate('/')} aria-label="ProjectOS 项目中心">
           <Logo /><span>PROJECTOS</span>
@@ -418,6 +439,12 @@ export default function AppLayout() {
             <>
               <span className="po-crumb-sep" aria-hidden>›</span>
               <span className="po-crumb-group">{activeGroup}</span>
+            </>
+          ) : null}
+          {currentProject && parentPage ? (
+            <>
+              <span className="po-crumb-sep" aria-hidden>›</span>
+              <button type="button" className="po-crumb-link" onClick={() => handleNavigate(parentPage.key)}>{parentPage.navLabel ?? parentPage.label}</button>
             </>
           ) : null}
           {currentProject ? <span className="po-crumb-sep" aria-hidden>›</span> : null}
@@ -602,7 +629,7 @@ export default function AppLayout() {
       ) : null}
       <SidebarNavigation
         groups={navGroups}
-        activeKey={activeKey}
+        activeKey={navKey}
         activeGroupTitle={pageGroup(activeKey)}
         onSelect={handleNavigate}
         collapsed={compact}
@@ -656,7 +683,10 @@ export default function AppLayout() {
             />
           </div>
         ) : (
-          <Outlet />
+          <>
+            {projectId ? <ViewTabs activeKey={activeKey} onSelect={handleNavigate} badges={{ tasks: taskBadge }} /> : null}
+            <Outlet />
+          </>
         )}
       </AppShell>
       <CommandPalette open={commandOpen} commands={commands} onClose={() => setCommandOpen(false)} />

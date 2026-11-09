@@ -362,7 +362,7 @@ export default function ProjectOverviewPage() {
           icon={<SafetyCertificateOutlined />}
           tone={pendingApprovals.length > 0 ? 'warning' : 'neutral'}
           hint="写文件与命令执行需人工确认"
-          onClick={() => navigate(`/projects/${projectId}/agents`)}
+          onClick={() => navigate(`/projects/${projectId}/approvals`)}
         />
         <MetricCard
           label="交付物"

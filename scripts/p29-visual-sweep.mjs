@@ -45,7 +45,7 @@ const app = await electron.launch({
 })
 
 const PAGES = [
-  { key: 'work', label: '研发工作中心' },
+  { key: 'work', label: '工作台' },
   { key: 'tasks', label: '任务看板' },
   { key: 'orchestration', label: '编排工作台' },
   { key: 'approvals', label: '审批' },

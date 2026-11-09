@@ -29,16 +29,20 @@ export interface PageDefinition {
   entries: PageEntry[]
   /** Why it has this status; also the note shown in the audit report. */
   note: string
+  /** Shorter sidebar label when it differs from the page title. */
+  navLabel?: string
+  /** Sidebar entry that owns this page as a secondary view (ADR-0090). */
+  navParent?: string
 }
 
 export const PROJECT_PAGES: PageDefinition[] = [
-  { key: 'work', path: '', label: '研发工作中心', group: '研发', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '目标状态、下一步与交付进度的唯一入口。' },
+  { key: 'work', path: '', label: '工作台', group: '研发', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '正在发生什么、需要我做什么：项目的唯一主页（旧 /work 重定向至此）。' },
   { key: 'requirements', path: '/requirements', label: '需求工作台', group: '研发', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '需求流程、任务分工、产出资料与独立开发工作区。' },
-  { key: 'tasks', path: '/tasks', label: '任务看板', group: '研发', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '任务与验收；链接编排与工作区。' },
-  { key: 'agents', path: '/agents', label: 'Agent 协作', group: '研发', status: 'KEEP', entries: ['nav', 'palette'], note: 'Agent 工作台，含协作与交接。' },
-  { key: 'approvals', path: '/approvals', label: '审批', group: '研发', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '工具权限与交付审批。' },
-  { key: 'runs', path: '/runs', label: '运行审计', group: '研发', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: 'Run、工具调用与项目事件流。' },
-  { key: 'orchestration', path: '/orchestration', label: '编排工作台', group: '研发', status: 'KEEP', entries: ['palette', 'link'], note: '计划 DAG 与审批；由工作中心/任务看板进入。' },
+  { key: 'tasks', path: '/tasks', label: '任务看板', navLabel: '执行', group: '研发', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '执行视图之一：任务与验收；与 Agent 协作、计划编排、运行审计共享视图切换。' },
+  { key: 'agents', path: '/agents', label: 'Agent 协作', navParent: 'tasks', group: '研发', status: 'KEEP', entries: ['palette', 'link'], note: '执行视图之一：Agent 协作图、交接与产出。' },
+  { key: 'approvals', path: '/approvals', label: '审批', group: '研发', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '唯一审阅室：工具请求、交付审批与记录三个视图（旧 /approvals/center 重定向至记录）。' },
+  { key: 'runs', path: '/runs', label: '运行审计', navParent: 'tasks', group: '研发', status: 'KEEP', entries: ['palette', 'link'], note: '执行视图之一：Run 时间线、工具调用与项目事件流。' },
+  { key: 'orchestration', path: '/orchestration', label: '计划编排', navParent: 'tasks', group: '研发', status: 'KEEP', entries: ['palette', 'link'], note: '执行视图之一：计划 DAG、授权与交付。' },
   { key: 'connections', path: '/connections', label: '资源与连接', group: '交付', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '资源、连接 Profile 与凭据元信息。' },
   { key: 'releases', path: '/releases', label: '发布中心', group: '交付', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '版本发布与交付记录。' },
   { key: 'deployments', path: '/deployments', label: '部署中心', group: '交付', status: 'KEEP', entries: ['nav', 'palette', 'link'], note: '部署执行与对账。' },
@@ -93,6 +97,18 @@ export function currentPageKey(pathname: string): string {
   if (path === '/resources') return 'connections'
   if (path === '/approvals/center') return 'approvals'
   return PROJECT_PAGES.find((page) => page.group !== '全局' && page.path === path)?.key ?? 'not-found'
+}
+
+/** Sidebar entry that should be highlighted for a page (its parent for secondary views). */
+export function navKeyFor(key: string): string {
+  return pageByKey(key)?.navParent ?? key
+}
+
+/** Secondary views that share one sidebar entry, in display order. */
+export function siblingViews(key: string): PageDefinition[] {
+  const parent = navKeyFor(key)
+  const family = PROJECT_PAGES.filter((page) => page.key === parent || page.navParent === parent)
+  return family.length > 1 ? family : []
 }
 
 /** Route path segment for a project page key (empty string means the project index). */

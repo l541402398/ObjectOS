@@ -1,13 +1,12 @@
 import { projectPageLoader } from './lib/route-readiness'
 import { Suspense, lazy, type ReactNode } from 'react'
-import { createHashRouter, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { createHashRouter, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Button } from 'antd'
 import { EmptyState, LoadingBlock } from '@projectos/ui'
 import AppLayout from './components/AppLayout'
 import { BootScreen } from './components/BootScreen'
 import ProjectCenterPage from './pages/ProjectCenterPage'
 import ProjectOverviewPage from './pages/ProjectOverviewPage'
-import WorkCenterPage from './pages/WorkCenterPage'
 import StudioProjectHome from './features/studio/StudioProjectHome'
 import StudioReviewRoom from './features/studio/StudioReviewRoom'
 import LifecyclePage from './pages/LifecyclePage'
@@ -22,7 +21,6 @@ import RunsPage from './pages/RunsPage'
 import KnowledgePage from './pages/KnowledgePage'
 import OperationsPage from './pages/OperationsPage'
 import ResourcesPage from './pages/ResourcesPage'
-import ApprovalsPage from './pages/ApprovalsPage'
 import ProjectSettingsPage from './pages/ProjectSettingsPage'
 import ProjectHealthPage from './pages/ProjectHealthPage'
 import NotificationsPage from './pages/NotificationsPage'
@@ -45,6 +43,19 @@ function LazyPage({ children }: { children: ReactNode }) {
       {children}
     </Suspense>
   )
+}
+
+/**
+ * Retired project routes stay reachable: they forward to their consolidated home with the query
+ * string (deep-link ids, intents) preserved.
+ */
+function ProjectRedirect({ to, extra }: { to: string; extra?: Record<string, string> }) {
+  const { projectId = '' } = useParams<{ projectId: string }>()
+  const location = useLocation()
+  const params = new URLSearchParams(location.search)
+  for (const [key, value] of Object.entries(extra ?? {})) if (!params.has(key) && !params.has('approval')) params.set(key, value)
+  const query = params.toString()
+  return <Navigate to={`/projects/${projectId}${to}${query ? `?${query}` : ''}`} replace />
 }
 
 function NotFoundPage() {
@@ -77,7 +88,7 @@ export const router = createHashRouter([
         path: 'projects/:projectId',
         children: [
           { index: true, loader: projectPageLoader('home'), element: <StudioProjectHome /> },
-          { path: 'work', loader: projectPageLoader('work'), element: <WorkCenterPage /> },
+          { path: 'work', element: <ProjectRedirect to="" /> },
           { path: 'versions', loader: projectPageLoader('versions'), element: <LifecyclePage /> },
           { path: 'releases', loader: projectPageLoader('releases'), element: <ReleaseCenterPage /> },
           { path: 'deployments', loader: projectPageLoader('deployments'), element: <DeploymentCenterPage /> },
@@ -93,7 +104,7 @@ export const router = createHashRouter([
           { path: 'operations', loader: projectPageLoader('operations'), element: <OperationsPage /> },
           { path: 'resources', loader: projectPageLoader('resources'), element: <ResourcesPage /> },
           { path: 'approvals', loader: projectPageLoader('approvals'), element: <StudioReviewRoom /> },
-          { path: 'approvals/center', loader: projectPageLoader('approval-center'), element: <ApprovalsPage /> },
+          { path: 'approvals/center', element: <ProjectRedirect to="/approvals" extra={{ lens: 'history' }} /> },
           { path: 'project-settings', loader: projectPageLoader('project-settings'), element: <ProjectSettingsPage /> },
           { path: 'health', loader: projectPageLoader('health'), element: <ProjectHealthPage /> },
           { path: 'runs', loader: projectPageLoader('runs'), element: <RunsPage /> },

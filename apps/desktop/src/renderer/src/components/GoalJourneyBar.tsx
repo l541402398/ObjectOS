@@ -174,14 +174,30 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
           ) : null}
         </div>
 
-        <div className="po-journey-location" aria-live="polite" aria-atomic="true">
-          <span>当前阶段</span>
-          <strong className="po-journey-current">{current?.label ?? '准备中'}</strong>
-          {current ? (
-            <span className={`po-journey-state is-${current.state}`}>{STATE_LABEL[current.state]}</span>
-          ) : null}
-        </div>
-
+        <ol className="po-journey-track is-compact" aria-label="项目阶段" aria-live="polite">
+          {stages.map((stage, index) => (
+            <li
+              key={stage.key}
+              className={`po-journey-step is-${stage.state}${current?.key === stage.key ? ' is-current' : ''}`}
+            >
+              <button
+                type="button"
+                className="po-journey-step-button"
+                onClick={() => openStage(stage)}
+                disabled={!stage.entry?.route}
+                aria-current={current?.key === stage.key ? 'step' : undefined}
+                aria-label={`${stage.label}，${STATE_LABEL[stage.state]}`}
+                title={`${stage.label} · ${STATE_LABEL[stage.state]}${stage.detail ? `\n${stage.detail}` : ''}`}
+              >
+                <span className="po-journey-step-marker" aria-hidden="true">
+                  {stage.state === 'done' ? <Check size={10} strokeWidth={2.4} /> : index + 1}
+                </span>
+                <span className="po-journey-step-label">{stage.label}</span>
+                {current?.key === stage.key ? <span className={`po-journey-step-state is-${stage.state}`}>{STATE_LABEL[stage.state]}</span> : null}
+              </button>
+            </li>
+          ))}
+        </ol>
         <div className="po-journey-next">
           <span className={`po-journey-owner is-${owner}`}>{OWNER_LABEL[owner]}</span>
           <span className="po-journey-next-label" title={data?.nextAction.detail ?? ''}>
@@ -223,29 +239,6 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
           </button>
         </div>
       </div>
-      <ol className="po-journey-track" aria-label="项目阶段">
-        {stages.map((stage, index) => (
-          <li
-            key={stage.key}
-            className={`po-journey-step is-${stage.state}${current?.key === stage.key ? ' is-current' : ''}`}
-          >
-            <button
-              type="button"
-              className="po-journey-step-button"
-              onClick={() => openStage(stage)}
-              disabled={!stage.entry?.route}
-              aria-current={current?.key === stage.key ? 'step' : undefined}
-              aria-label={`${stage.label}，${STATE_LABEL[stage.state]}`}
-              title={`${stage.label} · ${STATE_LABEL[stage.state]}${stage.detail ? `\n${stage.detail}` : ''}`}
-            >
-              <span className="po-journey-step-marker" aria-hidden="true">
-                {stage.state === 'done' ? <Check size={12} strokeWidth={2} /> : index + 1}
-              </span>
-              <span className="po-journey-step-label">{stage.label}</span>
-            </button>
-          </li>
-        ))}
-      </ol>
 
       {expanded ? (
         <motion.div

@@ -98,8 +98,7 @@ export async function prepareProjectPage(key: string, projectId: string, search 
     agents()
   }
   else if (key === 'agents') { read(qk.collaborationOverview(projectId), () => api.collaboration.overview(projectId)); void preloadRequirementContext() }
-  else if (key === 'approvals') { approvals(); void preloadRequirementContext() }
-  else if (key === 'approval-center') { approvals(); read(['release-approvals', projectId], () => api.release.approvals(projectId)) }
+  else if (key === 'approvals') { approvals(); read(['release-approvals', projectId], () => api.release.approvals(projectId)); void preloadRequirementContext() }
   else if (key === 'runs') {
     runs(100); approvals(); read([...qk.events(projectId), 100], () => api.events.list({ projectId, limit: 100, offset: 0 })); void preloadRequirementContext()
     const runId = new URLSearchParams(search).get('run')

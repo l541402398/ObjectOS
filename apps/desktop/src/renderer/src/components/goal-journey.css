@@ -97,3 +97,21 @@
   .po-journey-track { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .po-journey-step:nth-child(5)::after { content: none; }
 }
+
+/* ADR-0090: compact, single-row journey. Stages collapse to numbered beads; only the current stage
+   shows its label and state. The full list stays in the expandable panel. */
+.po-journey-header .po-journey-left { flex: 1 1 0; }
+.po-journey-track.is-compact { display: flex; flex: none; align-items: center; gap: 0; }
+.po-journey-track.is-compact .po-journey-step:not(:last-child)::after { right: -6px; width: 6px; top: 50%; }
+.po-journey-track.is-compact .po-journey-step { margin-right: 6px; }
+.po-journey-track.is-compact .po-journey-step-button { min-height: 28px; width: auto; padding: 3px; gap: 6px; border-radius: 999px; }
+.po-journey-track.is-compact .po-journey-step-label, .po-journey-track.is-compact .po-journey-step-state { display: none; }
+.po-journey-track.is-compact .po-journey-step-marker { width: 20px; height: 20px; font-size: 11px; }
+.po-journey-track.is-compact .po-journey-step.is-done .po-journey-step-marker { background: color-mix(in srgb, var(--ui-ok) 14%, transparent); }
+.po-journey-track.is-compact .po-journey-step.is-current .po-journey-step-button { padding: 3px 12px 3px 3px; }
+.po-journey-track.is-compact .po-journey-step.is-current .po-journey-step-label { display: inline; font-size: 13px; }
+.po-journey-track.is-compact .po-journey-step.is-current .po-journey-step-state { display: inline; color: var(--ui-ink-2); font-size: 12px; font-weight: 500; }
+.po-journey-track.is-compact .po-journey-step.is-current .po-journey-step-state::before { content: '·'; margin-right: 6px; }
+.po-journey-track.is-compact .po-journey-step.is-current .po-journey-step-state.is-blocked { color: var(--ui-warn); }
+.po-journey:has(.po-journey-track.is-compact) .po-journey-header { gap: 18px; }
+@container (max-width: 1080px) { .po-journey-track.is-compact .po-journey-step:not(.is-current):not(.is-done) { display: none; } }
