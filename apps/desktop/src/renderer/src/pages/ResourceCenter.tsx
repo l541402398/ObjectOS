@@ -1,10 +1,19 @@
 import { FormDialog } from '../next-ui/overlay/FormDialog'
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { App as AntApp, Button, Empty, Input, Select } from 'antd'
+import { useNavigate } from 'react-router-dom'
+import { App as AntApp, Input, Select } from 'antd'
+import {
+  Activity, AlertTriangle, ArrowRight, Boxes, ChevronDown, Fingerprint, GitBranch, KeyRound, Lock, Plus,
+  RefreshCw, RotateCw, Search, Server, ShieldCheck, Workflow, type LucideIcon,
+} from 'lucide-react'
+import type { ConnectionTestRun, Resource } from '@projectos/contracts'
 import { errorMessage } from '../lib/errors'
 import { formatRelative } from '../lib/format'
+import { useResolvedTheme } from '../stores/ui'
+import '../features/studio/studio.css'
 import './resource-center.css'
+import './resource-hub.css'
 
 const TYPE_LABEL: Record<string, string> = { host: '主机 / VPS', kubernetes: 'Kubernetes', pipeline: 'CI/CD Pipeline', gitops: 'GitOps' }
 const TEST_LABEL: Record<string, string> = {
@@ -12,12 +21,94 @@ const TEST_LABEL: Record<string, string> = {
   host_key_untrusted: '待确认指纹', permission_denied: '权限不足', network_error: '网络不可达', unsupported: '未实现',
 }
 
+type Health = 'ok' | 'warn' | 'bad' | 'idle'
+const HEALTH_LABEL: Record<Health, string> = { ok: '正常', warn: '需关注', bad: '异常', idle: '未测试' }
+const CRED_LABEL: Record<string, string> = { ssh_private_key: 'SSH 私钥', ssh_password: 'SSH 密码', api_token: 'API Token', kubeconfig: 'kubeconfig', certificate: '证书' }
+const TYPE_ICON: Record<string, LucideIcon> = { host: Server, kubernetes: Boxes, pipeline: Workflow, gitops: GitBranch }
+const ONBOARD_STEPS = [
+  { key: 'register', title: '登记主机', detail: '名称、地址、端口与 SSH 用户' },
+  { key: 'credential', title: '绑定凭据', detail: '私钥或密码直接进入系统安全存储' },
+  { key: 'test', title: '测试并固定指纹', detail: '只读探测，首次连接需确认主机指纹' },
+  { key: 'deploy', title: '用作部署目标', detail: '在部署中心把主机关联到环境' },
+] as const
+
+function health(status: string | null, type: string): Health {
+  if (!status || type !== 'host') return 'idle'
+  if (status === 'connected') return 'ok'
+  if (status === 'unsupported') return 'idle'
+  if (status === 'host_key_untrusted' || status === 'timeout' || status === 'network_error') return 'warn'
+  return 'bad'
+}
+
+function groupClusters(list: Resource[]): Array<[string, Resource[]]> {
+  const map = new Map<string, Resource[]>()
+  for (const item of list) {
+    const key = item.labels[0] ?? (item.type === 'host' ? '主机' : '平台')
+    map.set(key, [...(map.get(key) ?? []), item])
+  }
+  return [...map.entries()]
+}
+
+/** Real latency of the last connection tests (oldest → newest); failures draw as short red ticks. */
+function Latency({ runs }: { runs: ConnectionTestRun[] }) {
+  const recent = runs.slice(0, 8).reverse()
+  if (recent.length === 0) return <span className="rh-latency is-empty" aria-hidden />
+  const max = Math.max(1, ...recent.map((run) => run.latencyMs ?? 0))
+  const last = recent[recent.length - 1]
+  return (
+    <span className="rh-latency" title={`最近 ${recent.length} 次连接测试`}>
+      <span className="rh-latency-bars" aria-hidden>
+        {recent.map((run) => <i key={run.id} className={run.status === 'connected' ? '' : 'is-fail'} style={{ height: run.status === 'connected' ? `${Math.max(25, ((run.latencyMs ?? 0) / max) * 100)}%` : '22%' }} />)}
+      </span>
+      <small>{last?.latencyMs ? `${last.latencyMs}ms` : '—'}</small>
+    </span>
+  )
+}
+
+/** Line illustration in token colours: workstation → pinned path → host stack with health lights. */
+function ConnectionArt() {
+  return (
+    <svg viewBox="0 0 360 220" className="rh-art">
+      <defs>
+        <linearGradient id="rh-art-glow" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="var(--ui-accent)" stopOpacity="0.22" />
+          <stop offset="1" stopColor="var(--ui-teal, var(--ui-accent))" stopOpacity="0.06" />
+        </linearGradient>
+      </defs>
+      <ellipse cx="180" cy="190" rx="160" ry="18" fill="url(#rh-art-glow)" />
+      <g className="rh-art-laptop">
+        <rect x="26" y="78" width="92" height="60" rx="8" />
+        <path d="M14 146h116l-8 10H22z" />
+        <path d="M44 100h34M44 112h52M44 124h24" className="rh-art-soft" />
+      </g>
+      <path d="M128 112 C170 112 180 70 226 70" className="rh-art-path" />
+      <path d="M128 112 C170 112 180 150 226 150" className="rh-art-path is-faint" />
+      <g className="rh-art-key" transform="translate(166 92)">
+        <circle cx="10" cy="10" r="13" />
+        <path d="M6 10h10M12 10v5M15 10v3" />
+      </g>
+      <g className="rh-art-host">
+        <rect x="226" y="44" width="112" height="44" rx="9" />
+        <rect x="226" y="98" width="112" height="44" rx="9" className="is-dim" />
+        <rect x="226" y="152" width="112" height="28" rx="8" className="is-ghost" />
+        <path d="M244 60h44M244 72h28M244 114h44M244 126h28" className="rh-art-soft" />
+        <circle cx="318" cy="66" r="5" className="rh-art-led is-ok" />
+        <circle cx="318" cy="120" r="5" className="rh-art-led is-idle" />
+      </g>
+    </svg>
+  )
+}
+
 export function ResourceCenter({ projectId }: { projectId: string }) {
   const { message } = AntApp.useApp()
   const queryClient = useQueryClient()
   const overview = useQuery({ queryKey: ['resource-overview', projectId], queryFn: () => window.projectos.resources.overview(projectId) })
   const [view, setView] = useState<'resources' | 'credentials'>('resources')
-  const [type, setType] = useState<string>('all')
+  const [type] = useState<string>('all')
+  const [healthFilter, setHealthFilter] = useState<Health | 'all'>('all')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const theme = useResolvedTheme()
   const [query, setQuery] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
@@ -50,8 +141,6 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
     (type === 'all' || item.type === type) && (!query || item.name.toLowerCase().includes(query.toLowerCase()) || item.endpoint.toLowerCase().includes(query.toLowerCase())),
   ), [data?.resources, query, type])
   const selected = resources.find((item) => item.id === selectedId) ?? resources[0] ?? null
-  const profiles = (data?.profiles ?? []).filter((item) => item.resourceId === selected?.id)
-  const testRuns = (data?.testRuns ?? []).filter((item) => item.resourceId === selected?.id)
   const credentials = data?.credentials ?? []
 
   const create = useMutation({
@@ -174,112 +263,203 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
     onError: (error) => message.error(errorMessage(error)),
   })
 
-  if (overview.isLoading) return <div className="rc-shell"><div className="rw-loading">正在载入资源目录…</div></div>
-  if (!data) return <div className="rc-shell"><Empty description="资源数据不可用" /></div>
+  const openCreate = (kind: 'host' | 'kubernetes' | 'pipeline' | 'gitops'): void => { setResourceType(kind); setCreateOpen(true) }
+  const allResources = data?.resources ?? []
+  const healthOf = (resourceId: string): Health => health(data?.profiles.find((item) => item.resourceId === resourceId)?.lastTestStatus ?? null, allResources.find((item) => item.id === resourceId)?.type ?? 'host')
+  const healthCounts = allResources.reduce<Record<Health, number>>((acc, item) => { acc[healthOf(item.id)] += 1; return acc }, { ok: 0, warn: 0, bad: 0, idle: 0 })
+  const visibleResources = resources.filter((item) => healthFilter === 'all' || healthOf(item.id) === healthFilter)
+  const clusters = groupClusters(visibleResources)
+
+  if (overview.isLoading) return <div className="studio-theme rh-page" data-theme={theme}><div className="rh-skeleton" aria-busy="true"><i /><i /><i /></div></div>
+  if (overview.isError || !data) {
+    return (
+      <div className="studio-theme rh-page" data-theme={theme}>
+        <div className="rh-state is-error"><AlertTriangle size={20} /><strong>资源目录读取失败</strong><span>{overview.isError ? errorMessage(overview.error) : '没有收到数据'}</span><button type="button" className="studio-ghost" onClick={() => void overview.refetch()}><RefreshCw size={13} />重试</button></div>
+      </div>
+    )
+  }
+
+  const principles = (
+    <ul className="rh-principles">
+      <li><ShieldCheck size={15} /><span><strong>凭据不落地</strong>私钥与密码只进入系统安全存储，界面、数据库和 AI 只持有引用。</span></li>
+      <li><Fingerprint size={15} /><span><strong>指纹先确认</strong>首次连接不会自动信任主机，核对指纹后才固定。</span></li>
+      <li><Lock size={15} /><span><strong>连接 ≠ 授权</strong>连接成功不代表能部署；每次部署仍走交付审批。</span></li>
+    </ul>
+  )
+
+  const header = (
+    <header className="rh-head">
+      <div className="rh-head-copy">
+        <span className="rh-eyebrow">DELIVERY ASSETS</span>
+        <h1>资源与连接</h1>
+        <p>登记部署要用到的主机、集群与流水线。连接测试只证明网络、身份与认证可用；部署仍需单独授权。</p>
+      </div>
+      <div className="rh-head-actions">
+        {allResources.length > 0 ? (
+          <div className="rh-switch" role="tablist" aria-label="资源视图">
+            <button type="button" role="tab" aria-selected={view === 'resources'} onClick={() => setView('resources')}><Server size={13} />资源 <b>{allResources.length}</b></button>
+            <button type="button" role="tab" aria-selected={view === 'credentials'} onClick={() => setView('credentials')}><KeyRound size={13} />凭据 <b>{credentials.length}</b></button>
+          </div>
+        ) : null}
+        <button type="button" className="studio-ghost" onClick={() => openCreate('kubernetes')}><Boxes size={14} />登记平台资源</button>
+        <button type="button" className="studio-cta" onClick={() => openCreate('host')}><Plus size={14} />新建主机</button>
+      </div>
+    </header>
+  )
 
   return (
-    <div className="rc-shell">
-      <header className="rc-head">
-        <div><div className="rw-eyebrow">DELIVERY ASSETS</div><h1>资源与连接</h1><p>集中登记主机、集群、流水线与凭据引用；连接测试与部署授权分离。</p></div>
-        <Button onClick={() => { setResourceType('kubernetes'); setCreateOpen(true) }}>登记平台资源</Button>
-        <Button type="primary" onClick={() => { setResourceType('host'); setCreateOpen(true) }}>新建主机</Button>
-      </header>
+    <div className="studio-theme rh-page" data-theme={theme}>
+      {header}
 
-      <div className="rc-body">
-        <aside className="rc-left" aria-label="资源列表">
-          <div className="rc-tabs">
-            <button className={view === 'resources' ? 'is-active' : ''} onClick={() => setView('resources')}>资源 <span>{resources.length}</span></button>
-            <button className={view === 'credentials' ? 'is-active' : ''} onClick={() => setView('credentials')}>凭据 <span>{credentials.length}</span></button>
-          </div>
-          <Input.Search placeholder="搜索名称或端点" value={query} onChange={(event) => setQuery(event.target.value)} allowClear />
-          <Select aria-label="资源类型" value={type} onChange={setType} options={[{ value: 'all', label: '全部类型' }, ...Object.entries(TYPE_LABEL).map(([value, label]) => ({ value, label }))]} style={{ width: '100%' }} />
-          <div className="rc-list">
-            {view === 'resources' ? resources.map((resource) => {
-              const profile = data.profiles.find((item) => item.resourceId === resource.id)
-              return (
-                <button key={resource.id} className={`rc-row ${selected?.id === resource.id ? 'is-selected' : ''}`} onClick={() => setSelectedId(resource.id)}>
-                  <span className="rc-row-main"><strong>{resource.name}</strong><em>{profile?.lastTestStatus ? TEST_LABEL[profile.lastTestStatus] ?? profile.lastTestStatus : '未测试'}</em></span>
-                  <span className="rc-row-meta">{TYPE_LABEL[resource.type]} · {resource.endpoint || '未填写端点'} · {formatRelative(resource.updatedAt)}</span>
-                </button>
-              )
-            }) : credentials.map((credential) => (
-              <div key={credential.id} className="rc-row rc-credential-row">
-                <span className="rc-row-main"><strong>{credential.label}</strong><em>{credential.status === 'active' ? '可用' : '已停用'}</em></span>
-                <span className="rc-row-meta">{credential.kind} · {formatRelative(credential.updatedAt)}</span>
-                {credential.status === 'active' ? (
-                  <>
-                    <Button size="small" onClick={() => { setRotateCredentialId(credential.id); setRotateSecret(''); setRotatePassphrase('') }}>轮换</Button>
-                    <Button size="small" onClick={() => disable.mutate(credential.id)}>停用</Button>
-                  </>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </aside>
-
-        <section className="rc-main">
-          {view === 'credentials' ? (
-            <div className="rc-empty">凭据只显示元信息。秘密由系统安全存储加密，不能在此读回。</div>
-          ) : !selected ? (
-            <div className="rc-empty">还没有资源。登记第一台主机后，可创建 Profile 并测试 SSH 连接。</div>
-          ) : (
-            <>
-              <div className="rc-detail-head">
-                <div><span className="rw-kicker">{TYPE_LABEL[selected.type]}</span><h2>{selected.name}</h2><p>{selected.endpoint || '未填写端点'} · {selected.purpose || '未填写用途'}</p></div>
-                <div className="rc-detail-actions"><span className="rc-status">{profiles[0]?.lastTestStatus ? TEST_LABEL[profiles[0].lastTestStatus] ?? profiles[0].lastTestStatus : '未测试'}</span><Button size="small" onClick={() => {
-                  setEditName(selected.name); setEditEndpoint(selected.endpoint); setEditPurpose(selected.purpose); setEditResourceOpen(true)
-                }}>编辑资源</Button><Button size="small" onClick={() => archiveResource.mutate(selected.id)}>停用资源</Button><Button size="small" danger onClick={() => archiveForever.mutate(selected.id)}>归档</Button></div>
-              </div>
-              <div className="rc-section-title">连接配置</div>
-              {profiles.length === 0 ? <div className="rc-empty-inline">没有连接 Profile</div> : null}
-              {profiles.map((profile) => (
-                <div className="rc-profile" key={profile.id}>
-                  <div><strong>{profile.name}</strong><span>{profile.protocol} · {profile.username}@{profile.host}:{profile.port} · {profile.authType}</span></div>
-                  <div className="rc-profile-actions">
-                    <Button size="small" onClick={() => {
-                      setEditProfileId(profile.id); setEditProfileName(profile.name); setEditProfileHost(profile.host)
-                      setEditProfilePort(String(profile.port)); setEditProfileUsername(profile.username)
-                      setEditProfileFingerprint(profile.hostKeyFingerprint ?? '')
-                    }}>编辑</Button>
-                    <Button size="small" loading={test.isPending} onClick={() => test.mutate(profile.id)}>测试连接</Button>
-                  </div>
-                  {profile.hostKeyFingerprint ? <code className="rc-fingerprint">HOST KEY {profile.hostKeyFingerprint}</code> : null}
-                </div>
+      {allResources.length === 0 ? (
+        <section className="rh-onboard" aria-label="登记第一台主机">
+          <div className="rh-onboard-art" aria-hidden><ConnectionArt /></div>
+          <div className="rh-onboard-copy">
+            <h2>把第一台主机接进来</h2>
+            <p>四步完成：登记、绑定凭据、测试并固定指纹，然后在部署中心把它用作部署目标。</p>
+            <ol className="rh-steps">
+              {ONBOARD_STEPS.map((step, index) => (
+                <li key={step.key} className={index === 0 ? 'is-current' : ''}>
+                  <button type="button" onClick={() => (step.key === 'deploy' ? navigate(`/projects/${projectId}/deployments`) : openCreate('host'))} aria-current={index === 0 ? 'step' : undefined}>
+                    <span className="rh-step-node">{index + 1}</span>
+                    <span className="rh-step-copy"><strong>{step.title}</strong><small>{step.detail}</small></span>
+                    <ArrowRight size={14} className="rh-step-go" />
+                  </button>
+                </li>
               ))}
-              {profiles[0]?.lastTestStatus === 'host_key_untrusted' ? (
-                <div className="rc-callout">
-                  <strong>需要确认主机指纹</strong>
-                  <span>首次连接不自动信任。请核对指纹后固定，再重新测试。</span>
-                  <Button size="small" onClick={() => {
-                    const discovered = testRuns.find((run) => typeof run.details.fingerprint === 'string')?.details.fingerprint
-                    if (typeof discovered === 'string' && profiles[0]) trust.mutate({ profileId: profiles[0].id, value: discovered })
-                  }}>信任并重试</Button>
-                </div>
-              ) : null}
-              <div className="rc-section-title">最近连接测试</div>
-              {testRuns.length === 0 ? <div className="rc-empty-inline">还没有连接测试</div> : null}
-              {testRuns.slice(0, 6).map((run) => (
-                <div className="rc-test" key={run.id}>
-                  <span className={run.status === 'connected' ? 'ok' : 'bad'}>{TEST_LABEL[run.status] ?? run.status}</span>
-                  <strong>{run.message}</strong>
-                  <em>{formatRelative(run.createdAt)}{run.latencyMs ? ` · ${run.latencyMs}ms` : ''}</em>
-                </div>
+            </ol>
+            <div className="rh-platforms">
+              <span>或登记平台资源</span>
+              {(['kubernetes', 'pipeline', 'gitops'] as const).map((kind) => (
+                <button key={kind} type="button" onClick={() => openCreate(kind)}>{TYPE_LABEL[kind]}</button>
               ))}
-            </>
-          )}
+            </div>
+          </div>
+          {principles}
         </section>
+      ) : view === 'credentials' ? (
+        <section className="rh-creds" aria-label="凭据">
+          <p className="rh-note"><Lock size={13} />凭据只显示元信息，秘密由系统安全存储加密，不能在这里读回。</p>
+          <ul>
+            {credentials.map((credential) => {
+              const used = data.profiles.filter((item) => item.credentialRef === credential.id).length
+              return (
+                <li key={credential.id} className={credential.status === 'active' ? '' : 'is-off'}>
+                  <span className={`rh-dot is-${credential.status === 'active' ? 'ok' : 'idle'}`} aria-hidden />
+                  <span className="rh-row-main"><strong>{credential.label}</strong><small>{CRED_LABEL[credential.kind] ?? credential.kind} · {used} 个连接引用 · 更新于 {formatRelative(credential.updatedAt)}</small></span>
+                  {credential.status === 'active' ? (
+                    <span className="rh-row-actions">
+                      <button type="button" className="studio-ghost" onClick={() => { setRotateCredentialId(credential.id); setRotateSecret(''); setRotatePassphrase('') }}><RotateCw size={12} />轮换</button>
+                      <button type="button" className="studio-ghost" onClick={() => disable.mutate(credential.id)}>停用</button>
+                    </span>
+                  ) : <em className="rh-tag">已停用</em>}
+                </li>
+              )
+            })}
+          </ul>
+          <p className="rh-note is-foot"><RotateCw size={13} />轮换会创建新凭据、把引用它的连接切换过去并停用旧凭据；以旧凭据批准的部署授权随之失效。</p>
+          {principles}
+        </section>
+      ) : (
+        <section className="rh-fleet" aria-label="资源">
+          <div className="rh-toolbar">
+            <div className="rh-health" role="group" aria-label="按健康状态筛选">
+              <button type="button" aria-pressed={healthFilter === 'all'} onClick={() => setHealthFilter('all')}>全部 <b>{allResources.length}</b></button>
+              {(['ok', 'warn', 'bad', 'idle'] as const).map((key) => healthCounts[key] ? (
+                <button key={key} type="button" aria-pressed={healthFilter === key} onClick={() => setHealthFilter(key)}><span className={`rh-dot is-${key}`} aria-hidden />{HEALTH_LABEL[key]} <b>{healthCounts[key]}</b></button>
+              ) : null)}
+            </div>
+            <label className="rh-search"><Search size={13} aria-hidden /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索名称或端点" aria-label="搜索资源" /></label>
+          </div>
 
-        <aside className="rc-inspector" aria-label="连接安全与状态">
-          <h2>安全边界</h2>
-          <p>凭据仅进入 OS 安全存储，Renderer/SQLite/AI 只持有 opaque 引用。</p>
-          <div className="rc-rail-divider" />
-          <h2>连接结果</h2>
-          <p>连接成功只代表网络、主机身份与认证可用；不代表部署权限或服务健康。</p>
-          <div className="rc-rail-divider" />
-          <h2>凭据引用</h2>
-          <p>Profile 可引用 active 凭据；停用后连接测试立即失败，部署授权仍需单独审批。</p>
-        </aside>
-      </div>
+          {clusters.length === 0 ? <p className="rh-none">没有符合条件的资源</p> : null}
+          {clusters.map(([cluster, list]) => (
+            <div key={cluster} className="rh-cluster">
+              <header>
+                <strong>{cluster}</strong>
+                <span className="rh-cluster-dots" aria-hidden>{list.map((item) => <i key={item.id} className={`is-${healthOf(item.id)}`} />)}</span>
+                <em>{list.length}</em>
+              </header>
+              <ul>
+                {list.map((resource) => {
+                  const profile = data.profiles.find((item) => item.resourceId === resource.id) ?? null
+                  const runs = data.testRuns.filter((item) => item.resourceId === resource.id)
+                  const state = healthOf(resource.id)
+                  const open = expandedId === resource.id
+                  const Icon = TYPE_ICON[resource.type] ?? Server
+                  return (
+                    <li key={resource.id} className={`rh-host ${open ? 'is-open' : ''}`}>
+                      <button type="button" className="rh-host-row" aria-expanded={open} onClick={() => { setExpandedId(open ? null : resource.id); setSelectedId(resource.id) }}>
+                        <span className={`rh-dot is-${state}`} aria-label={HEALTH_LABEL[state]} />
+                        <span className="rh-host-icon" aria-hidden><Icon size={15} /></span>
+                        <span className="rh-row-main">
+                          <strong>{resource.name}</strong>
+                          <small><code>{profile ? `${profile.username}@${profile.host}:${profile.port}` : resource.endpoint || '未填写端点'}</code>{resource.purpose ? ` · ${resource.purpose}` : ''}</small>
+                        </span>
+                        <Latency runs={runs} />
+                        <span className="rh-host-state">
+                          <strong className={`is-${state}`}>{profile?.lastTestStatus ? TEST_LABEL[profile.lastTestStatus] ?? profile.lastTestStatus : resource.type === 'host' ? '未测试' : '连接器未实现'}</strong>
+                          <small>{profile?.lastTestAt ? formatRelative(profile.lastTestAt) : TYPE_LABEL[resource.type]}</small>
+                        </span>
+                        <ChevronDown size={15} className="rh-chevron" aria-hidden />
+                      </button>
+                      {open ? (
+                        <div className="rh-host-detail">
+                          {profile ? (
+                            <div className="rh-profile">
+                              <dl>
+                                <div><dt>连接</dt><dd>{profile.protocol.toUpperCase()} · {profile.authType === 'private_key' ? '私钥' : profile.authType === 'password' ? '密码' : profile.authType}</dd></div>
+                                <div><dt>凭据</dt><dd>{credentials.find((item) => item.id === profile.credentialRef)?.label ?? '未绑定'}</dd></div>
+                                <div className="is-wide"><dt>主机指纹</dt><dd className="is-mono">{profile.hostKeyFingerprint ?? '尚未固定'}</dd></div>
+                              </dl>
+                              {profile.lastTestStatus === 'host_key_untrusted' || profile.lastTestStatus === 'host_key_mismatch' ? (
+                                <p className={`rh-callout is-${state}`}>
+                                  <Fingerprint size={14} />
+                                  <span>{profile.lastTestStatus === 'host_key_mismatch' ? '主机指纹与固定值不一致。请先确认服务器是否被重装或替换，再更新指纹。' : '首次连接不会自动信任。核对指纹后固定，再重新测试。'}</span>
+                                  {profile.lastTestStatus === 'host_key_untrusted' ? (
+                                    <button type="button" className="studio-ghost" onClick={() => {
+                                      const discovered = runs.find((run) => typeof run.details.fingerprint === 'string')?.details.fingerprint
+                                      if (typeof discovered === 'string') trust.mutate({ profileId: profile.id, value: discovered })
+                                    }}>信任并重试</button>
+                                  ) : null}
+                                </p>
+                              ) : null}
+                            </div>
+                          ) : <p className="rh-note">{resource.type === 'host' ? '还没有连接配置。' : '平台连接器尚未实现，只登记元数据，不伪造测试结果。'}</p>}
+                          {runs.length > 0 ? (
+                            <ol className="rh-tests" aria-label="最近连接测试">
+                              {runs.slice(0, 5).map((run) => (
+                                <li key={run.id} className={`is-${health(run.status, resource.type)}`}>
+                                  <span className="rh-test-node" aria-hidden />
+                                  <strong>{TEST_LABEL[run.status] ?? run.status}</strong>
+                                  <span>{run.message}</span>
+                                  <time>{formatRelative(run.createdAt)}{run.latencyMs ? ` · ${run.latencyMs}ms` : ''}</time>
+                                </li>
+                              ))}
+                            </ol>
+                          ) : null}
+                          <div className="rh-detail-actions">
+                            {profile ? <button type="button" className="studio-cta" disabled={test.isPending} onClick={() => test.mutate(profile.id)}><Activity size={13} />{test.isPending ? '测试中…' : '测试连接'}</button> : null}
+                            {profile ? <button type="button" className="studio-ghost" onClick={() => {
+                              setEditProfileId(profile.id); setEditProfileName(profile.name); setEditProfileHost(profile.host)
+                              setEditProfilePort(String(profile.port)); setEditProfileUsername(profile.username)
+                              setEditProfileFingerprint(profile.hostKeyFingerprint ?? '')
+                            }}>编辑连接</button> : null}
+                            <button type="button" className="studio-ghost" onClick={() => { setEditName(resource.name); setEditEndpoint(resource.endpoint); setEditPurpose(resource.purpose); setEditResourceOpen(true) }}>编辑资源</button>
+                            <span className="rh-grow" />
+                            <button type="button" className="studio-ghost" onClick={() => archiveResource.mutate(resource.id)}>停用</button>
+                            <button type="button" className="studio-danger" onClick={() => archiveForever.mutate(resource.id)}>归档</button>
+                          </div>
+                        </div>
+                      ) : null}
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          ))}
+        </section>
+      )}
 
       <FormDialog open={createOpen} title={resourceType === 'host' ? '登记主机' : '登记平台资源'} okText={resourceType === 'host' ? '保存并测试' : '保存'} cancelText="取消" width={560} confirmLoading={create.isPending} okButtonProps={{ disabled: !name.trim() || (resourceType === 'host' && (!host.trim() || !secret)) }} onOk={() => create.mutate()} onCancel={() => setCreateOpen(false)}>
         <div className="rc-form">
