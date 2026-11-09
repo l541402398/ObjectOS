@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { App as AntApp, Badge, Button, Empty, Popover, Tag } from 'antd'
-import { BellOutlined, RightOutlined, SyncOutlined } from '@ant-design/icons'
+import { BellOutlined, RightOutlined, SyncOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import type { ActionItem } from '@projectos/contracts'
 import { useActionCenter, useAutonomySettings } from '../lib/queries'
 import { errorMessage } from '../lib/errors'
 import './action-center.css'
 import { PROJECT_MODES, ProjectModeControl } from './ProjectModeControl'
+import { WorktreeAutoAllowControl } from '../features/review/WorktreeAutoAllowControl'
 
 const KIND_LABEL: Record<string, string> = {
   tool_approval: '工具授权',
@@ -16,6 +17,9 @@ const KIND_LABEL: Record<string, string> = {
   version_gate: '版本门禁',
   deployment_reconciliation: '部署对账',
   run_failure: 'Run 失败',
+  plan_review: '计划审核',
+  replan_scope: '范围变更',
+  plan_delivery: '计划交付',
 }
 
 /**
@@ -67,36 +71,45 @@ export function ActionCenterButton({ projectId }: { projectId: string | null }) 
       <span className={`ac-risk is-${item.risk}`} aria-hidden />
       <span className="ac-row-main">
         <span className="ac-row-head">
-          <Tag className="ac-kind">{KIND_LABEL[item.kind] ?? item.kind}</Tag>
+          <span className="ac-kind">{KIND_LABEL[item.kind] ?? item.kind}</span>
           <strong>{item.title}</strong>
           {item.stale ? <Tag color="default">已过期</Tag> : null}
         </span>
         <span className="ac-reason">{item.reason}</span>
-        <span className="ac-decision">需要你：{item.requiredDecision}</span>
-        <span className="ac-resume">处理后：{item.resume}</span>
       </span>
       <RightOutlined className="ac-go" />
     </button>
   )
+
+  const [next, ...rest] = openItems
 
   const content = (
     <div className="ac-panel">
       <header className="ac-head">
         <div>
           <strong>待办与决策</strong>
-          <span>{openItems.length} 项需要你处理</span>
+          <span>{openItems.length ? `${openItems.length} 项需要你处理` : '全部处理完毕'}</span>
         </div>
         <ProjectModeControl projectId={projectId} />
       </header>
       <p className="ac-mode-hint">{PROJECT_MODES.find((mode) => mode.value === autonomy.data?.mode)?.description ?? '正在读取项目工作模式。'}</p>
       <div className="ac-list">
-        {openItems.length === 0 ? (
+        {!next ? (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={projectId ? '当前没有需要你处理的事项' : '先选择一个项目'}
           />
         ) : (
-          openItems.map(renderRow)
+          <>
+            <button type="button" className={`ac-next is-${next.risk}`} onClick={() => openItem(next)} data-testid="action-center-next">
+              <span className="ac-next-eyebrow"><i aria-hidden />下一步 · {KIND_LABEL[next.kind] ?? next.kind}</span>
+              <strong>{next.title}</strong>
+              <span className="ac-next-decision">{next.requiredDecision}</span>
+              <span className="ac-next-go">前往处理 <ArrowRightOutlined /></span>
+            </button>
+            {rest.length ? <div className="ac-section">随后</div> : null}
+            {rest.map(renderRow)}
+          </>
         )}
         {staleItems.length > 0 ? (
           <>
@@ -105,6 +118,7 @@ export function ActionCenterButton({ projectId }: { projectId: string | null }) 
           </>
         ) : null}
       </div>
+      <div className="ac-policy"><WorktreeAutoAllowControl projectId={projectId} compact /></div>
       <footer className="ac-foot">
         <Button
           size="small"
