@@ -14,6 +14,14 @@ import { ReviewDiff } from './ReviewDiff'
 const TOOL_STATUS: Record<string, string> = { pending: '待处理', approved: '已批准', rejected: '已拒绝', expired: '已过期', cancelled: '已取消' }
 const DELIVERY_STATUS: Record<string, string> = { pending: '待处理', approved: '已批准', rejected: '已拒绝', changes_requested: '要求修改', expired: '已过期', superseded: '已被取代' }
 
+/** Summary-sized duration: one unit only, so the number never wraps. */
+function compactDuration(ms: number): string {
+  const seconds = Math.round(ms / 1000)
+  if (seconds < 60) return `${seconds} 秒`
+  const minutes = Math.round(seconds / 60)
+  return minutes < 60 ? `${minutes} 分` : `${Math.round(minutes / 6) / 10} 时`
+}
+
 function tone(status: string): 'ok' | 'bad' | 'mute' | 'warn' {
   if (status === 'approved') return 'ok'
   if (status === 'rejected' || status === 'changes_requested') return 'bad'
@@ -280,7 +288,7 @@ export function HistoryLens({ tool, delivery, initialId }: { tool: ApprovalView[
         <div className="rv-hist-summary" aria-label="审批概况">
           <div><b>{entries.length}</b><small>次决定</small></div>
           <div><b className="is-ok">{counts.all ? Math.round((counts.approved / counts.all) * 100) : 0}%</b><small>批准</small></div>
-          <div><b>{medianWait ? formatDuration(1, 1 + medianWait) : '—'}</b><small>决定用时中位</small></div>
+          <div><b>{medianWait ? compactDuration(medianWait) : '—'}</b><small>决定用时中位</small></div>
         </div>
         <div className="rv-search">
           <Search size={13} aria-hidden />
