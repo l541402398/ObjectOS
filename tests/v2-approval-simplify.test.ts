@@ -385,3 +385,38 @@ describe('dispatcher wiring and next actions', () => {
     await expect(dispatcher.dispatch('approval.decideBatch', { projectId: project.id, decision: 'approved' })).rejects.toBeTruthy()
   })
 })
+
+describe('ADR-0089 batch outcomes are reported per item', () => {
+  it('reports siblings settled by an earlier decision as skipped, and per-item failures with reasons', async () => {
+    const { seedDemo, seedDemoReviewQueue } = await import('../apps/runtime/src/demo.js')
+    const { withApprovalKind } = await import('../apps/runtime/src/approval-batch.js')
+    const harness = setup()
+    try {
+      const seeded = await seedDemo({ store: harness.store, dataDir: harness.dataDir })
+      expect(seedDemoReviewQueue(harness.store, seeded.projectId)).toBe(5)
+      expect(seedDemoReviewQueue(harness.store, seeded.projectId)).toBe(0)
+      const views = harness.store.read.listApprovalViews(seeded.projectId).map(withApprovalKind)
+      const kinds = Object.fromEntries(views.map((view) => [view.kind!.key, view.kind!.batchable]))
+      expect(kinds).toMatchObject({ write_file: true, 'command:test': true, 'command:exact': false })
+      expect(Object.keys(kinds).some((key) => key.startsWith('write_file:'))).toBe(true)
+      const writes = views.filter((view) => view.kind!.key === 'write_file').map((view) => view.id)
+      const batch = new ApprovalBatchService(harness.store, {
+        ownedElsewhere: () => false,
+        decide: async (approvalId, decision, note) => {
+          await harness.runner.decideApproval(approvalId, decision, note)
+        },
+      })
+      // Demo runs hold no live task lease: approving must fail per item with the real reason.
+      const approved = await batch.decideBatch({ projectId: seeded.projectId, decision: 'approved', note: '', approvalIds: writes, rememberForRun: false })
+      expect(approved.failed).toBe(writes.length)
+      expect(approved.outcomes.every((outcome) => outcome.reason.length > 0)).toBe(true)
+      // Rejecting the first one ends the Run; the siblings are reported as skipped, not failed.
+      const rejected = await batch.decideBatch({ projectId: seeded.projectId, decision: 'rejected', note: '', approvalIds: writes, rememberForRun: false })
+      expect(rejected.rejected).toBe(1)
+      expect(rejected.failed).toBe(0)
+      expect(rejected.skipped).toBe(writes.length - 1)
+    } finally {
+      harness.close()
+    }
+  })
+})

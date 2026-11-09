@@ -56,6 +56,8 @@ export interface ApprovalDecider {
   ownedElsewhere(approvalId: string): boolean
 }
 
+const APPROVAL_STATUS_LABEL: Record<string, string> = { approved: '已批准', rejected: '已拒绝', expired: '已过期', cancelled: '已取消' }
+
 export class ApprovalBatchService {
   constructor(
     private readonly store: SqliteStore,
@@ -99,6 +101,13 @@ export class ApprovalBatchService {
       const kind = approvalKind(view)
       if (input.decision === 'approved' && !kind.batchable) {
         outcomes.push({ approvalId, status: 'skipped', reason: `${kind.label}：${kind.reason}` })
+        continue
+      }
+      // Deciding one approval can settle its siblings (e.g. a rejection ends the Run and closes the
+      // other pending requests). Report that truthfully instead of as a failure.
+      const current = this.store.getApprovalById(approvalId)
+      if (current && current.status !== 'pending') {
+        outcomes.push({ approvalId, status: 'skipped', reason: `已随同一 Run 一并结束（${APPROVAL_STATUS_LABEL[current.status] ?? current.status}）` })
         continue
       }
       try {

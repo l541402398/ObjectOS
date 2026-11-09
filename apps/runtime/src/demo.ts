@@ -1260,3 +1260,84 @@ export async function seedDemo(options: SeedDemoOptions): Promise<SeedDemoResult
   return { projectId, projectName: DEMO_NAME, created: true }
 }
 
+
+const REVIEW_QUEUE_NOTES = (FILES['src/notes.ts'] ?? '')
+  .replace('  links: string[]\n}', '  links: string[]\n  backlinks: string[]\n}')
+  .replace('    links: extractWikiLinks(body),\n', '    links: extractWikiLinks(body),\n    backlinks: [],\n')
+
+/**
+ * Opt-in (`PROJECTOS_SEED_DEMO_REVIEW_QUEUE=1`) richer review queue for the demo project, so batch
+ * review can be inspected with real persisted approvals. The default demo keeps one approval.
+ */
+export function seedDemoReviewQueue(store: SqliteStore, projectId: string): number {
+  const pending = store.read.listApprovalViews(projectId).filter((approval) => approval.status === 'pending')
+  if (pending.length !== 1) return 0
+  const anchor = pending[0]!
+  const requests: Array<{ toolName: string; args: Record<string, unknown>; title: string; detail: string; risk: string; reason: string }> = [
+    {
+      toolName: 'write_file',
+      args: { path: 'src/notes.ts', content: REVIEW_QUEUE_NOTES },
+      title: '授权 write_file',
+      detail: 'Agent 请求写入文件：src/notes.ts\n\n为 Note 增加 backlinks 字段',
+      risk: 'workspace-write',
+      reason: '修改项目文件需要人工授权',
+    },
+    {
+      toolName: 'write_file',
+      args: {
+        path: 'src/backlinks.ts',
+        content: "import type { Note } from './notes.ts'\n\nexport function backlinksOf(notes: Note[], title: string): Note[] {\n  return notes.filter((note) => note.links.includes(title))\n}\n",
+      },
+      title: '授权 write_file',
+      detail: 'Agent 请求写入文件：src/backlinks.ts',
+      risk: 'workspace-write',
+      reason: '修改项目文件需要人工授权',
+    },
+    {
+      toolName: 'run_tests',
+      args: { command: 'pnpm test' },
+      title: '授权 run_tests',
+      detail: 'Agent 请求运行：pnpm test',
+      risk: 'process',
+      reason: '运行命令需要人工授权',
+    },
+    {
+      toolName: 'write_file',
+      args: { path: '.env.local', content: 'AURORA_SYNC_ENDPOINT=https://sync.example.test\n' },
+      title: '授权 write_file',
+      detail: 'Agent 请求写入文件：.env.local',
+      risk: 'workspace-write',
+      reason: '受保护路径需要人工授权',
+    },
+    {
+      toolName: 'run_command',
+      args: { command: 'git commit -am "feat: note graph"' },
+      title: '授权 run_command',
+      detail: 'Agent 请求运行：git commit -am "feat: note graph"',
+      risk: 'process',
+      reason: '运行命令需要人工授权',
+    },
+  ]
+  let created = 0
+  for (const [index, request] of requests.entries()) {
+    const toolCall = store.createToolCall({
+      runId: anchor.runId,
+      toolName: request.toolName,
+      idempotencyKey: `${anchor.runId}:demo_review_${index}`,
+      status: 'waiting_approval',
+      argsHash: `demo-review-${index}`,
+      args: request.args,
+    })
+    store.createApproval({
+      projectId,
+      runId: anchor.runId,
+      toolCallId: toolCall.id,
+      title: request.title,
+      detail: request.detail,
+      request: { toolName: request.toolName, args: request.args, risk: request.risk, reason: request.reason },
+      expiresAt: now() + 30 * 60 * 1000,
+    })
+    created += 1
+  }
+  return created
+}
