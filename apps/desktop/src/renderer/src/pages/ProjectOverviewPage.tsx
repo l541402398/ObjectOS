@@ -12,7 +12,6 @@ import {
   FolderOpenOutlined,
   LockOutlined,
   PlusOutlined,
-  RocketOutlined,
 } from '@ant-design/icons'
 import type { LifecycleGate, ProjectStage } from '@projectos/contracts'
 import {
@@ -28,6 +27,7 @@ import {
 } from '@projectos/ui'
 import { ApprovalCard } from '@projectos/ai-ui'
 import { KpiRail } from '../features/overview/KpiRail'
+import './overview.css'
 import { useApprovals, useProjectBudget, useProjectMetrics, useProjectOverview } from '../lib/queries'
 import { formatDate, formatRelative, parseLines, percent } from '../lib/format'
 import {
@@ -41,7 +41,7 @@ import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '..
 
 function StageRail({ stages, currentStage, gates }: { stages: ProjectStage[]; currentStage: string; gates: LifecycleGate[] }) {  const gateMap = new Map(gates.map((gate) => [gate.stage, gate]))
   return (
-    <div className="po-stage-rail">
+    <ol className="ov-track" aria-label="生命周期阶段">
       {stages.map((stage, index) => {
         const gate = gateMap.get(stage.stage)
         const state = stage.status === 'completed' ? 'done' : stage.stage === currentStage || stage.status === 'active' ? 'active' : 'pending'
@@ -56,17 +56,14 @@ function StageRail({ stages, currentStage, gates }: { stages: ProjectStage[]; cu
               </div>
             }
           >
-            <div className={`po-stage ${state}`.trim()}>
-              <div className="po-stage-dot">
-                {state === 'done' ? <CheckCircleOutlined /> : <span>{index + 1}</span>}
-              </div>
-              <div className="po-stage-label">{stageLabel(stage.stage)}</div>
-              <div className="po-stage-state">{state === 'done' ? '已完成' : state === 'active' ? '当前' : '待进入'}</div>
-            </div>
+            <li className={`ov-stage is-${state}`} aria-current={state === 'active' ? 'step' : undefined}>
+              <span className="ov-stage-dot">{state === 'done' ? <CheckCircleOutlined /> : index + 1}</span>
+              <span className="ov-stage-label">{stageLabel(stage.stage)}</span>
+            </li>
           </Tooltip>
         )
       })}
-    </div>
+    </ol>
   )
 }
 
@@ -245,7 +242,6 @@ export default function ProjectOverviewPage() {
 
   const data = overview.data
   const project = data.project
-  const nextStage = data.stages.find((stage) => stage.stage === project.currentStage)
   const currentIndex = data.stages.findIndex((stage) => stage.stage === project.currentStage)
   const next = data.stages[currentIndex + 1] ?? null
   const nextGate = next ? data.gates.find((gate) => gate.stage === next.stage) : null
@@ -256,11 +252,6 @@ export default function ProjectOverviewPage() {
   return (
     <div className="po-page po-overview-page">
       <PageHeader
-        eyebrow={
-          <>
-            <RocketOutlined /> {stageLabel(project.currentStage)} · 项目工作台
-          </>
-        }
         title={
           <span className="po-title-with-badge">
             {project.name}
@@ -308,37 +299,11 @@ export default function ProjectOverviewPage() {
         }
       />
 
-      <SectionCard title="生命周期" subtitle="阶段门禁由需求、ADR、里程碑、任务与交付物共同决定" className="po-lifecycle-card">
-        <StageRail stages={data.stages} currentStage={project.currentStage} gates={data.gates} />
-        <div className="po-lifecycle-footer">
-          <div>
-            <span className="po-caption po-muted">当前阶段</span>
-            <strong>{stageLabel(project.currentStage)}</strong>
-          </div>
-          {next ? (
-            <>
-              <span className="po-lifecycle-arrow" aria-hidden="true">→</span>
-              <div>
-                <span className="po-caption po-muted">下一阶段</span>
-                <strong>{stageLabel(next.stage)}</strong>
-              </div>
-              <StatusPill tone={nextGate?.ready ? 'success' : 'warning'}>
-                {nextGate?.ready ? '门禁已满足' : `${nextGate?.blockers.length ?? 0} 项待满足`}
-              </StatusPill>
-            </>
-          ) : (
-            <StatusPill tone="success">已到达最后阶段</StatusPill>
-          )}
-          <span className="po-grow" />
-          <span className="po-caption po-muted">{nextStage?.status === 'active' ? '阶段进行中' : ''}</span>
-        </div>
-      </SectionCard>
-
       <KpiRail
         label="项目关键指标"
         blocks={[
           {
-            key: 'progress', label: '任务进度', value: Math.round(data.stats.progress * 100), suffix: '%', tone: 'accent',
+            key: 'progress', emphasis: true, label: '任务进度', value: Math.round(data.stats.progress * 100), suffix: '%', tone: 'accent',
             visual: { kind: 'arc', value: data.stats.progress },
             status: `${data.stats.tasksDone + data.stats.tasksCancelled}/${data.stats.tasksTotal} 已结束 · ${data.stats.tasksRunning} 执行中`,
             actionLabel: '任务看板', onOpen: () => navigate(`/projects/${projectId}/tasks`),
@@ -362,6 +327,19 @@ export default function ProjectOverviewPage() {
           },
         ]}
       />
+
+      <section className="ov-lifecycle" aria-label="生命周期">
+        <h2 className="t-section">生命周期</h2>
+        <StageRail stages={data.stages} currentStage={project.currentStage} gates={data.gates} />
+        <p className="ov-next t-caption">
+          {next ? (
+            <>
+              下一阶段 <strong>{stageLabel(next.stage)}</strong>
+              <span className={`ov-gate ${nextGate?.ready ? 'is-ok' : 'is-warn'}`}>{nextGate?.ready ? '门禁已满足' : `${nextGate?.blockers.length ?? 0} 项待满足`}</span>
+            </>
+          ) : <span className="ov-gate is-ok">已到达最后阶段</span>}
+        </p>
+      </section>
 
       <div className="po-workbench-grid">
         <div className="po-workbench-main">
@@ -427,7 +405,7 @@ export default function ProjectOverviewPage() {
 
           <SectionCard
             title="需求与验收"
-            subtitle="已批准需求会进入 Agent 上下文"
+           
             extra={
               <div className="po-row">
                 <span className="po-caption po-muted">{data.requirements.length} 条</span>
@@ -559,7 +537,7 @@ export default function ProjectOverviewPage() {
 
           <SectionCard
             title="待授权"
-            subtitle="Agent 被阻塞在这里，等待你的判断"
+           
             className="po-compact-card"
             extra={pendingApprovals.length > 0 ? <StatusPill tone="warning">{pendingApprovals.length}</StatusPill> : null}
           >
@@ -594,7 +572,7 @@ export default function ProjectOverviewPage() {
             />
           </SectionCard>
 
-          <SectionCard title="项目指标" subtitle="真实任务与运行数据" className="po-compact-card">
+          <SectionCard title="项目指标" className="po-compact-card">
             {metrics.isLoading ? (
               <LoadingBlock rows={3} />
             ) : metrics.data ? (
