@@ -6,7 +6,7 @@
 .ov-stage { position: relative; display: flex; flex: 1; align-items: center; gap: var(--ui-space-2); min-width: 0; }
 .ov-stage:not(:last-child)::after { content: ''; flex: 1; min-width: 10px; height: 1.5px; margin: 0 var(--ui-space-2); border-radius: 2px; background: var(--ui-border); }
 .ov-stage.is-done:not(:last-child)::after { background: color-mix(in srgb, var(--ui-accent) 45%, var(--ui-border)); }
-.ov-stage-dot { display: grid; flex: none; place-items: center; width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--ui-border-strong); color: var(--ui-muted); font-size: var(--ui-type-caption); font-weight: 650; font-variant-numeric: tabular-nums; }
+.ov-stage-dot { display: grid; flex: none; place-items: center; width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--ui-border-strong); color: var(--ui-muted); font-size: var(--ui-type-badge); font-weight: 650; font-variant-numeric: tabular-nums; }
 .ov-stage.is-done .ov-stage-dot { box-shadow: none; background: var(--ui-accent-soft); color: var(--ui-accent-strong, var(--ui-accent)); font-size: 11px; }
 .ov-stage.is-active .ov-stage-dot { box-shadow: 0 0 0 4px var(--ui-accent-soft); background: var(--ui-accent); color: var(--ui-inverse); }
 .ov-stage-label { flex: none; color: var(--ui-muted); font-size: var(--ui-type-caption); white-space: nowrap; }
@@ -26,3 +26,18 @@
 }
 /* Long helper copy inside the overview cards is demoted to one muted line. */
 .po-overview-page :is(.po-milestone-description, .po-requirement-body) { overflow: hidden; color: var(--ui-muted); font-size: var(--ui-type-caption); text-overflow: ellipsis; white-space: nowrap; }
+
+/* Milestones: two lines per row (title + one muted line), status and due date on the right. */
+.po-overview-page .po-milestone { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: var(--ui-space-3); }
+.po-overview-page .po-milestone-body { display: grid; gap: 2px; min-width: 0; }
+.po-overview-page .po-milestone-title { overflow: hidden; color: var(--ui-ink); font-size: var(--ui-type-body); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.po-overview-page .po-milestone-side { display: grid; justify-items: end; gap: 4px; }
+.po-overview-page .po-milestone-due { display: inline-flex; align-items: center; gap: var(--ui-space-2); color: var(--ui-muted); font-size: var(--ui-type-caption); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.po-milestone-act { padding: 0; border: 0; background: none; color: var(--ui-accent-strong, var(--ui-accent)); font: inherit; font-size: var(--ui-type-caption); font-weight: 600; cursor: pointer; }
+.po-milestone-act:hover { text-decoration: underline; }
+/* Agent list: status is a dot + word; only a working agent gets accent colour. */
+.po-overview-page .po-agent-info > span { overflow: hidden; color: var(--ui-muted); font-size: var(--ui-type-caption); text-overflow: ellipsis; white-space: nowrap; }
+.po-agent-state { display: inline-flex; flex: none; align-items: center; gap: 5px; color: var(--ui-muted); font-size: var(--ui-type-caption); }
+.po-agent-state::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--ui-border-strong); }
+.po-agent-state.is-working { color: var(--ui-accent-strong, var(--ui-accent)); font-weight: 600; }
+.po-agent-state.is-working::before { background: var(--ui-accent); box-shadow: 0 0 0 3px var(--ui-accent-soft); }
