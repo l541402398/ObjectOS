@@ -1,0 +1,4 @@
+[
+ {"name":"02-connections-empty","hash":"#/projects/{pid}/connections","delay":1500},
+ {"name":"03a-approvals-history-default-demo","hash":"#/projects/{pid}/approvals?lens=history","delay":1500}
+]

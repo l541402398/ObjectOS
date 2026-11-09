@@ -1341,3 +1341,104 @@ export function seedDemoReviewQueue(store: SqliteStore, projectId: string): numb
   }
   return created
 }
+
+/**
+ * Opt-in (`PROJECTOS_SEED_DEMO_REVIEW_HISTORY=1`) decided approvals for the demo project, so the
+ * review room「记录」lens can be inspected with real persisted history across several days.
+ * Never runs by default; idempotent (skips when decided approvals already exist).
+ */
+export function seedDemoReviewHistory(store: SqliteStore, projectId: string): number {
+  const all = store.read.listApprovalViews(projectId)
+  if (all.some((approval) => approval.status !== 'pending')) return 0
+  const anchor = all[0]
+  if (!anchor) return 0
+  const hour = 3600_000
+  const base = now()
+  const entries: Array<{ toolName: string; args: Record<string, unknown>; detail: string; risk: string; reason: string; ago: number; wait: number; status: 'approved' | 'rejected' | 'expired'; note: string }> = [
+    { toolName: 'write_file', args: { path: 'src/search.ts', content: "import type { Note } from './notes.ts'\n\nexport function search(notes: Note[], query: string): Note[] {\n  const needle = query.trim().toLowerCase()\n  if (!needle) return []\n  return notes\n    .filter((note) => note.title.toLowerCase().includes(needle) || note.body.toLowerCase().includes(needle))\n    .sort((a, b) => Number(b.title.toLowerCase().includes(needle)) - Number(a.title.toLowerCase().includes(needle)))\n}\n" }, detail: 'Agent 请求写入文件：src/search.ts', risk: 'workspace-write', reason: '修改项目文件需要人工授权', ago: 1.5 * hour, wait: 4 * 60_000, status: 'approved', note: '排序逻辑与任务描述一致，标题命中优先。' },
+    { toolName: 'run_tests', args: { command: 'pnpm test -- search' }, detail: 'Agent 请求运行：pnpm test -- search', risk: 'process', reason: '运行命令需要人工授权', ago: 1.2 * hour, wait: 40_000, status: 'approved', note: '' },
+    { toolName: 'write_file', args: { path: '.env.production', content: 'AURORA_SYNC_ENDPOINT=https://sync.aurora.example\nAURORA_SYNC_TOKEN=__redacted__\n' }, detail: 'Agent 请求写入文件：.env.production', risk: 'workspace-write', reason: '受保护路径需要人工授权', ago: 5 * hour, wait: 11 * 60_000, status: 'rejected', note: '生产环境变量不由 Agent 写入，请改为在部署目标里配置。' },
+    { toolName: 'run_command', args: { command: 'git push origin main' }, detail: 'Agent 请求运行：git push origin main', risk: 'process', reason: '运行命令需要人工授权', ago: 26 * hour, wait: 2 * 60_000, status: 'rejected', note: '主干推送走发布中心，不在任务内直接推送。' },
+    { toolName: 'write_file', args: { path: 'src/editor/autosave.ts', content: "export function createAutosave(save: (text: string) => Promise<void>, delay = 800) {\n  let timer: ReturnType<typeof setTimeout> | null = null\n  return (text: string) => {\n    if (timer) clearTimeout(timer)\n    timer = setTimeout(() => void save(text), delay)\n  }\n}\n" }, detail: 'Agent 请求写入文件：src/editor/autosave.ts', risk: 'workspace-write', reason: '修改项目文件需要人工授权', ago: 28 * hour, wait: 6 * 60_000, status: 'approved', note: '防抖 800ms 可以接受。' },
+    { toolName: 'run_tests', args: { command: 'pnpm typecheck' }, detail: 'Agent 请求运行：pnpm typecheck', risk: 'process', reason: '运行命令需要人工授权', ago: 50 * hour, wait: 30 * 60_000, status: 'expired', note: '审批已过期' },
+    { toolName: 'write_file', args: { path: 'README.md', content: '# Aurora Notes\n\n本地优先的 Markdown 笔记应用。\n\n- 全文搜索\n- 反向链接\n- 自动保存\n' }, detail: 'Agent 请求写入文件：README.md', risk: 'workspace-write', reason: '修改项目文件需要人工授权', ago: 52 * hour, wait: 90_000, status: 'approved', note: '' },
+  ]
+  let created = 0
+  for (const [index, entry] of entries.entries()) {
+    const toolCall = store.createToolCall({
+      runId: anchor.runId, toolName: entry.toolName, idempotencyKey: `${anchor.runId}:demo_history_${index}`,
+      status: entry.status === 'approved' ? 'completed' : 'denied', argsHash: `demo-history-${index}`, args: entry.args,
+    })
+    const approval = store.createApproval({
+      projectId, runId: anchor.runId, toolCallId: toolCall.id, title: `授权 ${entry.toolName}`, detail: entry.detail,
+      request: { toolName: entry.toolName, args: entry.args, risk: entry.risk, reason: entry.reason },
+    })
+    if (entry.status === 'expired') store.expireApproval(approval.id, entry.note)
+    else store.decideApproval(approval.id, entry.status, entry.note)
+    const requestedAt = base - entry.ago
+    store.db.prepare('UPDATE approvals SET requested_at = ?, decided_at = ? WHERE id = ?').run(requestedAt, requestedAt + entry.wait, approval.id)
+    created += 1
+  }
+  const delivery: Array<{ subject: 'change_request' | 'deployment'; revision: number; status: string; note: string; ago: number; wait: number }> = [
+    { subject: 'change_request', revision: 2, status: 'approved', note: '变更范围与发布说明一致，测试证据齐全。', ago: 3 * hour, wait: 18 * 60_000 },
+    { subject: 'deployment', revision: 1, status: 'changes_requested', note: '目标主机指纹刚变化，请先重新确认连接再部署。', ago: 27 * hour, wait: 25 * 60_000 },
+  ]
+  for (const [index, entry] of delivery.entries()) {
+    const requestedAt = base - entry.ago
+    store.db.prepare(
+      `INSERT INTO approval_requests (id, project_id, subject_type, subject_id, subject_revision, content_fingerprint, subject_snapshot_json, status, requested_by, decided_by, decision_note, requested_at, decided_at, expires_at)
+       VALUES (?, ?, ?, ?, ?, ?, '{}', ?, ?, ?, ?, ?, ?, ?)`,
+    ).run(newId('apr'), projectId, entry.subject, newId(entry.subject === 'deployment' ? 'dop' : 'crq'), entry.revision,
+      `sha256:${(index + 7).toString(16).repeat(8)}c0ffee${index}`, entry.status, 'Avery', '你', entry.note, requestedAt, requestedAt + entry.wait, requestedAt + 7 * 24 * hour)
+    created += 1
+  }
+  return created
+}
+
+/**
+ * Opt-in (`PROJECTOS_SEED_DEMO_RESOURCES=1`) delivery resources for the demo project so the
+ * 资源与连接 page can be inspected populated. Metadata only: credentials point at a vault key that
+ * does not exist, so a real「测试连接」fails honestly instead of pretending to succeed.
+ */
+export function seedDemoResources(store: SqliteStore, projectId: string): number {
+  const existing = store.db.prepare('SELECT COUNT(*) AS n FROM resources WHERE project_id = ?').get(projectId) as { n: number }
+  if (Number(existing.n) > 0) return 0
+  const t = now()
+  const min = 60_000
+  const credential = newId('crd')
+  store.db.prepare(`INSERT INTO credential_metadata (id, project_id, kind, label, vault_key, status, created_at, updated_at) VALUES (?, ?, 'ssh_private_key', 'deploy@aurora SSH Key', ?, 'active', ?, ?)`)
+    .run(credential, projectId, `demo-missing-${credential}`, t - 3 * 24 * 60 * min, t - 3 * 24 * 60 * min)
+  const hosts: Array<{ type: string; name: string; endpoint: string; purpose: string; label: string; host?: string; port?: number; tests: Array<{ status: string; message: string; latency: number | null; ago: number }> }> = [
+    { type: 'host', name: 'aurora-prod-1', endpoint: '10.20.0.11', purpose: '生产 · 主节点', label: '生产', host: '10.20.0.11', port: 22, tests: [
+      { status: 'connected', message: 'SSH 握手、认证与只读探测通过', latency: 38, ago: 12 * min },
+      { status: 'connected', message: 'SSH 握手、认证与只读探测通过', latency: 41, ago: 26 * 60 * min },
+    ] },
+    { type: 'host', name: 'aurora-prod-2', endpoint: '10.20.0.12', purpose: '生产 · 备用节点', label: '生产', host: '10.20.0.12', port: 22, tests: [
+      { status: 'host_key_mismatch', message: '主机指纹与已固定值不一致，已停止连接', latency: null, ago: 40 * min },
+      { status: 'connected', message: 'SSH 握手、认证与只读探测通过', latency: 44, ago: 2 * 24 * 60 * min },
+    ] },
+    { type: 'host', name: 'aurora-staging', endpoint: 'staging.aurora.example', purpose: '预发验证', label: '预发', host: 'staging.aurora.example', port: 2222, tests: [
+      { status: 'connected', message: 'SSH 握手、认证与只读探测通过', latency: 96, ago: 3 * 60 * min },
+      { status: 'timeout', message: '15s 内未完成握手', latency: null, ago: 30 * 60 * min },
+    ] },
+    { type: 'kubernetes', name: 'aurora-k8s', endpoint: 'https://k8s.aurora.example:6443', purpose: '容器化部署（规划中）', label: '平台', tests: [] },
+    { type: 'pipeline', name: 'GitHub Actions · release', endpoint: 'https://github.com/aurora/notes/actions', purpose: '构建发布包', label: '平台', tests: [] },
+  ]
+  for (const [index, entry] of hosts.entries()) {
+    const resource = newId('res')
+    const created = t - (5 - index) * 24 * 60 * min
+    store.db.prepare(`INSERT INTO resources (id, project_id, type, name, endpoint, purpose, labels_json, metadata_json, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, '{}', 'active', ?, ?)`)
+      .run(resource, projectId, entry.type, entry.name, entry.endpoint, entry.purpose, JSON.stringify([entry.label]), created, entry.tests[0] ? t - entry.tests[0].ago : created)
+    if (!entry.host) continue
+    const profile = newId('prf')
+    const last = entry.tests[0]
+    store.db.prepare(`INSERT INTO connection_profiles (id, resource_id, name, protocol, host, port, username, auth_type, credential_ref, host_key_fingerprint, trust_policy, connect_timeout_ms, last_test_status, last_test_at, created_at, updated_at)
+      VALUES (?, ?, ?, 'ssh', ?, ?, 'deploy', 'private_key', ?, ?, 'pinned', 15000, ?, ?, ?, ?)`)
+      .run(profile, resource, `${entry.name} · SSH`, entry.host, entry.port ?? 22, credential, `SHA256:${['k3Qd9vX2', 'Zp7mR1aT', 'Hc4wE8nB'][index] ?? 'aaaa'}Jr6fL0yUq5sNe2KbW8oPiG`, last?.status ?? null, last ? t - last.ago : null, created, created)
+    for (const run of entry.tests) {
+      store.db.prepare(`INSERT INTO connection_test_runs (id, profile_id, resource_id, status, stage, message, latency_ms, details_json, created_at) VALUES (?, ?, ?, ?, 'probe', ?, ?, '{}', ?)`)
+        .run(newId('ctr'), profile, resource, run.status, run.message, run.latency, t - run.ago)
+    }
+  }
+  return hosts.length
+}

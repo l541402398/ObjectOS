@@ -1,0 +1,11 @@
+[
+ {"name":"01-overview","hash":"#/projects/{pid}/overview","delay":1500},
+ {"name":"02b-connections-populated","hash":"#/projects/{pid}/connections","delay":1500},
+ {"name":"02c-connections-host-open","hash":"#/projects/{pid}/connections","clicks":[{"sel":".rh-host-row","text":"aurora-prod-2","delay":700}],"noEscape":true,"delay":1500},
+ {"name":"02d-connections-credentials","hash":"#/projects/{pid}/connections","clicks":[{"sel":".rh-switch button","text":"凭据","delay":600}],"noEscape":true,"delay":1500},
+ {"name":"03-approvals-history","hash":"#/projects/{pid}/approvals?lens=history","delay":1800},
+ {"name":"03b-approvals-history-rejected","hash":"#/projects/{pid}/approvals?lens=history","clicks":[{"sel":".rv-hist-item","text":".env.production","delay":900}],"noEscape":true,"delay":1800},
+ {"name":"03c-approvals-history-command","hash":"#/projects/{pid}/approvals?lens=history","clicks":[{"sel":".rv-hist-item","text":"git push","delay":900}],"noEscape":true,"delay":1800},
+ {"name":"04-approvals","hash":"#/projects/{pid}/approvals","delay":1300},
+ {"name":"05-agents","hash":"#/projects/{pid}/agents","delay":2000}
+]

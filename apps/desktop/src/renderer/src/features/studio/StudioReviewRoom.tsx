@@ -77,8 +77,11 @@ export function StudioReviewRoom(): ReactElement {
   const [searchParams, setSearchParams] = useSearchParams()
   const reduceMotion = useReducedMotion()
   const returnRequirement = searchParams.get('requirement')
-  const returnPath = returnRequirement ? `/projects/${projectId}/requirements?requirement=${encodeURIComponent(returnRequirement)}` : `/projects/${projectId}/agents`
-  const returnLabel = returnRequirement ? '返回需求工作台' : '返回协作图'
+  const returnAgents = searchParams.get('return') === 'agents'
+  const returnPath = returnRequirement
+    ? `/projects/${projectId}/requirements?requirement=${encodeURIComponent(returnRequirement)}`
+    : returnAgents ? `/projects/${projectId}/agents` : `/projects/${projectId}`
+  const returnLabel = returnRequirement ? '返回需求工作台' : returnAgents ? '返回 Agent 协作' : '返回工作台'
   const queryClient = useQueryClient()
   const theme = useResolvedTheme()
   const approvals = useApprovals(projectId)
@@ -347,7 +350,7 @@ export function StudioReviewRoom(): ReactElement {
           {outcome ? <p className={`rv-clear-outcome is-${outcome.tone}`}>{outcome.text}</p> : null}
           <div className="rv-clear-links">
             {deliveryPending ? <button type="button" className="studio-cta" onClick={() => setLens('delivery')}>处理 {deliveryPending} 项交付审批 <ArrowRight size={13} /></button> : null}
-            <button type="button" className={deliveryPending ? 'studio-ghost' : 'studio-cta'} onClick={() => navigate(returnPath)}>{returnRequirement ? '继续需求开发' : '回到协作图'} <ArrowRight size={13} /></button>
+            <button type="button" className={deliveryPending ? 'studio-ghost' : 'studio-cta'} onClick={() => navigate(returnPath)}>{returnRequirement ? '继续需求开发' : returnAgents ? '回到 Agent 协作' : '回到工作台'} <ArrowRight size={13} /></button>
             <button type="button" className="studio-ghost" onClick={() => setLens('history')}>查看记录</button>
           </div>
           <div className="rv-clear-policy"><WorktreeAutoAllowControl projectId={projectId} compact /></div>

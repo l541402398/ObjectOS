@@ -1,0 +1,8 @@
+[
+ {"name":"01-overview","hash":"#/projects/{pid}/overview","delay":1500},
+ {"name":"02-connections","hash":"#/projects/{pid}/connections","delay":1500},
+ {"name":"03-approvals-history","hash":"#/projects/{pid}/approvals?lens=history","delay":1500},
+ {"name":"04-approvals","hash":"#/projects/{pid}/approvals","delay":1300},
+ {"name":"05-agents","hash":"#/projects/{pid}/agents","delay":1800},
+ {"name":"06-home","hash":"#/projects/{pid}","delay":1400}
+]

@@ -1,5 +1,13 @@
 # ProjectOS UI Design Changelog
 
+## 2026-11-10 — UX polish 3 (ADR-0091)
+
+- 项目态势: four bordered metric pills → one KPI rail (big tabular numbers, arc / segments / pulse from real counts, one-line status, hover/focus link reveal).
+- 资源与连接: guided onboarding (SVG illustration, clickable 4-step track, security principles); populated clusters with health dots, latency bars, inline-expanding host detail; credentials list.
+- 审批「记录」: summary, outcome + source filters, verdict/duration/reason per entry, quoted reason, diff/command evidence reused from the review room.
+- Review room back link → 返回工作台; quiet border beam on executing/waiting agents in the graph.
+- Opt-in seeds `PROJECTOS_SEED_DEMO_REVIEW_HISTORY=1`, `PROJECTOS_SEED_DEMO_RESOURCES=1`. Screenshots `docs/ux/v4/`.
+
 ## 2026-11-10 — UX consolidation (ADR-0090)
 
 - 工作台 is the single project home; `/work` redirects there. Sidebar 研发 shrinks to 工作台 / 需求工作台 / 执行 / 审批.

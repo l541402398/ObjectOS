@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState, type ReactElement } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Activity, ArrowRight, CheckCircle2, CircleAlert, CircleSlash, Fingerprint, PackageCheck, Rocket, Search, X } from 'lucide-react'
+import { Activity, ArrowRight, CheckCircle2, Clock3, Quote, Terminal, UserRound, CircleAlert, CircleSlash, Fingerprint, PackageCheck, Rocket, Search, X } from 'lucide-react'
 import type { ApprovalRequest, ApprovalView } from '@projectos/contracts'
 import { errorMessage } from '../../lib/errors'
-import { formatDateTime, formatDuration, formatRelative } from '../../lib/format'
+import { formatDateTime, formatDuration, formatRelative, formatTime } from '../../lib/format'
+import { diffStats, lineDiff } from '../../lib/line-diff'
+import { ReviewDiff } from './ReviewDiff'
 
 /* ------------------------------------------------------------------ shared */
 
@@ -178,9 +180,9 @@ type HistoryEntry =
 
 const FILTERS: Array<{ key: 'all' | 'approved' | 'rejected' | 'other'; label: string }> = [
   { key: 'all', label: '全部' },
-  { key: 'approved', label: '已批准' },
-  { key: 'rejected', label: '已拒绝' },
-  { key: 'other', label: '过期/取消' },
+  { key: 'approved', label: '批准' },
+  { key: 'rejected', label: '拒绝' },
+  { key: 'other', label: '过期' },
 ]
 
 function toolTarget(approval: ApprovalView): string {
@@ -195,6 +197,8 @@ export function HistoryLens({ tool, delivery, initialId }: { tool: ApprovalView[
   const { projectId = '' } = useParams<{ projectId: string }>()
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>('all')
+  const [source, setSource] = useState<'all' | 'tool' | 'delivery'>('all')
+  const [view, setView] = useState<'diff' | 'raw'>('diff')
   const entries = useMemo<HistoryEntry[]>(() => {
     const fromTool: HistoryEntry[] = tool.filter((approval) => approval.status !== 'pending').map((approval) => ({
       source: 'tool', id: approval.id, title: approval.kind?.label ?? approval.title, target: toolTarget(approval), status: approval.status,
@@ -209,12 +213,13 @@ export function HistoryLens({ tool, delivery, initialId }: { tool: ApprovalView[
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase()
     return entries.filter((entry) => {
+      if (source !== 'all' && entry.source !== source) return false
       if (filter === 'approved' && entry.status !== 'approved') return false
       if (filter === 'rejected' && entry.status !== 'rejected' && entry.status !== 'changes_requested') return false
       if (filter === 'other' && ['approved', 'rejected', 'changes_requested'].includes(entry.status)) return false
       return !needle || `${entry.target} ${entry.title} ${entry.who}`.toLowerCase().includes(needle)
     })
-  }, [entries, filter, query])
+  }, [entries, filter, query, source])
   const days = useMemo(() => {
     const map = new Map<string, HistoryEntry[]>()
     for (const entry of visible) {
@@ -226,6 +231,28 @@ export function HistoryLens({ tool, delivery, initialId }: { tool: ApprovalView[
   const [focusId, setFocusId] = useState<string | null>(initialId)
   const focused = visible.find((entry) => entry.id === focusId) ?? visible[0] ?? null
   useListKeys(visible.map((entry) => entry.id), focused?.id ?? null, setFocusId)
+  const focusedTool = focused?.source === 'tool' ? focused.tool : null
+  const preview = useQuery({
+    queryKey: ['approval-preview', focusedTool?.id ?? ''],
+    queryFn: () => window.projectos.approvals.preview(focusedTool!.id),
+    enabled: Boolean(focusedTool),
+    staleTime: 60_000,
+    retry: false,
+  })
+  const diff = useMemo(() => {
+    const data = preview.data
+    if (!data || data.after === null) return null
+    return lineDiff(data.before ?? '', data.after)
+  }, [preview.data])
+  const stats = diff ? diffStats(diff) : null
+  const counts = useMemo(() => ({
+    all: entries.length,
+    approved: entries.filter((entry) => entry.status === 'approved').length,
+    rejected: entries.filter((entry) => entry.status === 'rejected' || entry.status === 'changes_requested').length,
+    other: entries.filter((entry) => !['approved', 'rejected', 'changes_requested'].includes(entry.status)).length,
+  }), [entries])
+  const decidedWaits = entries.filter((entry) => entry.at > entry.requestedAt && (entry.status === 'approved' || entry.status === 'rejected' || entry.status === 'changes_requested')).map((entry) => entry.at - entry.requestedAt)
+  const medianWait = decidedWaits.length ? [...decidedWaits].sort((a, b) => a - b)[Math.floor(decidedWaits.length / 2)]! : null
 
   if (entries.length === 0) {
     return (
@@ -240,19 +267,33 @@ export function HistoryLens({ tool, delivery, initialId }: { tool: ApprovalView[
     )
   }
 
+  const noteOf = (entry: HistoryEntry): string | null => {
+    const raw = entry.source === 'tool' ? entry.tool.decision : entry.delivery.decisionNote
+    return raw && raw.trim() && raw !== '审批已过期' ? raw.trim() : null
+  }
   const statusText = (entry: HistoryEntry): string => (entry.source === 'tool' ? TOOL_STATUS : DELIVERY_STATUS)[entry.status] ?? entry.status
   const request = focused?.source === 'tool' ? focused.tool.request : null
 
   return (
     <div className="rv-layout is-history">
       <nav className="rv-queue" aria-label="审批记录">
+        <div className="rv-hist-summary" aria-label="审批概况">
+          <div><b>{entries.length}</b><small>次决定</small></div>
+          <div><b className="is-ok">{counts.all ? Math.round((counts.approved / counts.all) * 100) : 0}%</b><small>批准</small></div>
+          <div><b>{medianWait ? formatDuration(1, 1 + medianWait) : '—'}</b><small>决定用时中位</small></div>
+        </div>
         <div className="rv-search">
           <Search size={13} aria-hidden />
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索路径、命令或 Agent" aria-label="搜索审批记录" />
         </div>
         <div className="rv-filters" role="group" aria-label="按结论筛选">
           {FILTERS.map((entry) => (
-            <button key={entry.key} type="button" aria-pressed={filter === entry.key} onClick={() => setFilter(entry.key)}>{entry.label}</button>
+            <button key={entry.key} type="button" aria-pressed={filter === entry.key} onClick={() => setFilter(entry.key)}>{entry.label}{counts[entry.key] ? <span className="rv-filter-count">{counts[entry.key]}</span> : null}</button>
+          ))}
+        </div>
+        <div className="rv-source" role="group" aria-label="按来源筛选">
+          {([['all', '全部来源'], ['tool', '工具请求'], ['delivery', '交付审批']] as const).map(([key, label]) => (
+            <button key={key} type="button" aria-pressed={source === key} onClick={() => setSource(key)}>{label}</button>
           ))}
         </div>
         {days.length === 0 ? <p className="rv-queue-empty">没有匹配的记录</p> : null}
@@ -263,9 +304,13 @@ export function HistoryLens({ tool, delivery, initialId }: { tool: ApprovalView[
               {list.map((entry) => (
                 <li key={entry.id} className={entry.id === focused?.id ? 'is-focus' : ''}>
                   <span className={`rv-status-dot is-${tone(entry.status)}`} aria-label={statusText(entry)} />
-                  <button type="button" className="rv-item" aria-current={entry.id === focused?.id ? 'true' : undefined} onClick={() => setFocusId(entry.id)}>
-                    <span className={`rv-item-target ${entry.source === 'delivery' ? 'is-text' : ''}`}>{entry.target}</span>
-                    <small>{entry.title} · {entry.who}</small>
+                  <button type="button" className="rv-item rv-hist-item" aria-current={entry.id === focused?.id ? 'true' : undefined} onClick={() => { setFocusId(entry.id); setView('diff') }}>
+                    <span className="rv-hist-line">
+                      <span className={`rv-item-target ${entry.source === 'delivery' ? 'is-text' : ''}`}>{entry.target}</span>
+                      <time>{formatTime(entry.at)}</time>
+                    </span>
+                    <small><span className={`rv-hist-verdict is-${tone(entry.status)}`}>{statusText(entry)}</span> · {entry.title} · {entry.who}{entry.at > entry.requestedAt ? ` · ${formatDuration(entry.requestedAt, entry.at)}` : ''}</small>
+                    {noteOf(entry) ? <span className="rv-hist-note">{noteOf(entry)}</span> : null}
                   </button>
                 </li>
               ))}
@@ -285,24 +330,50 @@ export function HistoryLens({ tool, delivery, initialId }: { tool: ApprovalView[
             <span className="rv-expiry">{formatDateTime(focused.at)}</span>
           </header>
           <h2 className={`rv-target ${focused.source === 'delivery' ? 'is-text' : ''}`}>{focused.target}</h2>
+          <p className="rv-byline">
+            <span className="rv-by"><UserRound size={12} />{focused.source === 'tool' ? focused.who : focused.delivery.requestedBy} 发起</span>
+            <span className="rv-by"><CheckCircle2 size={12} />{focused.source === 'delivery' ? focused.delivery.decidedBy ?? '你' : focused.status === 'expired' ? '系统' : '你'} 决定</span>
+            {focused.at > focused.requestedAt ? <span className="rv-by"><Clock3 size={12} />用时 {formatDuration(focused.requestedAt, focused.at)}</span> : null}
+            {focused.source === 'tool' && focused.tool.taskTitle ? <span>{focused.tool.taskTitle}</span> : null}
+          </p>
+          {noteOf(focused) ? (
+            <blockquote className={`rv-reason is-${tone(focused.status)}`}><Quote size={13} aria-hidden /><p>{noteOf(focused)}</p></blockquote>
+          ) : null}
           <ol className="rv-trail" aria-label="决策经过">
             <li><span className="rv-trail-dot" /><div><strong>{focused.source === 'tool' ? `${focused.who} 发起请求` : `${focused.who} 提交审批`}</strong><small>{formatDateTime(focused.requestedAt)}</small></div></li>
             <li className={`is-${tone(focused.status)}`}><span className="rv-trail-dot" /><div>
               <strong>{statusText(focused)}</strong>
               <small>{focused.at !== focused.requestedAt ? `${formatDateTime(focused.at)} · 用时 ${formatDuration(focused.requestedAt, focused.at)}` : formatDateTime(focused.at)}</small>
-              {focused.source === 'tool' && focused.tool.decision ? <p>{focused.tool.decision}</p> : null}
-              {focused.source === 'delivery' && focused.delivery.decisionNote ? <p>{focused.delivery.decisionNote}{focused.delivery.decidedBy ? ` — ${focused.delivery.decidedBy}` : ''}</p> : null}
             </div></li>
           </ol>
           {focused.source === 'delivery' ? (
             <dl className="rv-ledger">
+              <div><dt>对象</dt><dd>{subjectLabel(focused.delivery)}</dd></div>
               <div><dt>Revision</dt><dd className="is-mono">r{focused.delivery.subjectRevision}</dd></div>
               <div className="is-wide"><dt>内容指纹</dt><dd className="is-mono">{focused.delivery.contentFingerprint}</dd></div>
             </dl>
           ) : (
             <div className="rv-evidence">
-              <div className="rv-evidence-bar"><span className="rv-evidence-title">原始请求</span><span className="rv-stats">{focused.tool.taskTitle ?? ''}</span></div>
-              <pre className="rv-raw">{JSON.stringify(request, null, 2).slice(0, 12000)}</pre>
+              <div className="rv-evidence-bar">
+                <div className="rv-tabs" role="tablist">
+                  <button type="button" role="tab" aria-selected={view === 'diff'} onClick={() => setView('diff')}>{preview.data?.command ? '命令' : '改动'}</button>
+                  <button type="button" role="tab" aria-selected={view === 'raw'} onClick={() => setView('raw')}>原始请求</button>
+                </div>
+                {stats && view === 'diff' ? <span className="rv-stats"><b className="is-add">+{stats.added}</b><b className="is-del">−{stats.removed}</b></span> : null}
+              </div>
+              {view === 'raw' ? (
+                <pre className="rv-raw">{JSON.stringify(request, null, 2).slice(0, 12000)}</pre>
+              ) : preview.isLoading ? (
+                <div className="rv-evidence-wait">正在读取请求内容…</div>
+              ) : preview.data?.command ? (
+                <div className="rv-terminal"><div className="rv-terminal-line"><span className="rv-prompt"><Terminal size={13} /></span><code>{preview.data.command}</code></div></div>
+              ) : diff && stats && (stats.added > 0 || stats.removed > 0) ? (
+                <ReviewDiff lines={diff} label={`${focused.target} 的改动`} />
+              ) : diff ? (
+                <div className="rv-evidence-wait">工作区内容已与请求一致（改动已写入）</div>
+              ) : (
+                <div className="rv-evidence-wait">{preview.isError ? '运行工作区已不可读，可查看原始请求' : '该请求没有可预览的内容'}</div>
+              )}
             </div>
           )}
         </article>

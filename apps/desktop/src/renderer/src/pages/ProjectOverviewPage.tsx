@@ -13,9 +13,6 @@ import {
   LockOutlined,
   PlusOutlined,
   RocketOutlined,
-  SafetyCertificateOutlined,
-  TeamOutlined,
-  ThunderboltOutlined,
 } from '@ant-design/icons'
 import type { LifecycleGate, ProjectStage } from '@projectos/contracts'
 import {
@@ -24,13 +21,13 @@ import {
   ErrorState,
   KeyValueList,
   LoadingBlock,
-  MetricCard,
   PageHeader,
   SectionCard,
   StatusPill,
   toneForStatus,
 } from '@projectos/ui'
 import { ApprovalCard } from '@projectos/ai-ui'
+import { KpiRail } from '../features/overview/KpiRail'
 import { useApprovals, useProjectBudget, useProjectMetrics, useProjectOverview } from '../lib/queries'
 import { formatDate, formatRelative, parseLines, percent } from '../lib/format'
 import {
@@ -337,41 +334,34 @@ export default function ProjectOverviewPage() {
         </div>
       </SectionCard>
 
-      <div className="po-metric-grid">
-        <MetricCard
-          label="任务进度"
-          value={percent(data.stats.progress)}
-          icon={<ThunderboltOutlined />}
-          tone="accent"
-          progress={data.stats.progress}
-          hint={`${data.stats.tasksDone + data.stats.tasksCancelled}/${data.stats.tasksTotal} 已结束 · ${data.stats.tasksRunning} 执行中`}
-          onClick={() => navigate(`/projects/${projectId}/tasks`)}
-        />
-        <MetricCard
-          label="活跃 Agent"
-          value={activeAgents.length}
-          suffix={`/ ${data.agents.length}`}
-          icon={<TeamOutlined />}
-          tone="success"
-          hint={`${data.stats.sessions} 个持久化会话`}
-          onClick={() => navigate(`/projects/${projectId}/agents`)}
-        />
-        <MetricCard
-          label="待授权"
-          value={pendingApprovals.length}
-          icon={<SafetyCertificateOutlined />}
-          tone={pendingApprovals.length > 0 ? 'warning' : 'neutral'}
-          hint="写文件与命令执行需人工确认"
-          onClick={() => navigate(`/projects/${projectId}/approvals`)}
-        />
-        <MetricCard
-          label="交付物"
-          value={verifiedArtifacts}
-          icon={<FlagOutlined />}
-          tone="info"
-          hint={`${data.stats.requirementsApproved} 条已批准需求 · ${data.stats.milestonesCompleted}/${data.stats.milestonesTotal} 里程碑`}
-        />
-      </div>
+      <KpiRail
+        label="项目关键指标"
+        blocks={[
+          {
+            key: 'progress', label: '任务进度', value: Math.round(data.stats.progress * 100), suffix: '%', tone: 'accent',
+            visual: { kind: 'arc', value: data.stats.progress },
+            status: `${data.stats.tasksDone + data.stats.tasksCancelled}/${data.stats.tasksTotal} 已结束 · ${data.stats.tasksRunning} 执行中`,
+            actionLabel: '任务看板', onOpen: () => navigate(`/projects/${projectId}/tasks`),
+          },
+          {
+            key: 'agents', label: '活跃 Agent', value: activeAgents.length, suffix: `/ ${data.agents.length}`, tone: activeAgents.length > 0 ? 'ok' : 'neutral',
+            visual: { kind: 'segments', filled: activeAgents.length, total: data.agents.length },
+            status: activeAgents.length > 0 ? `${activeAgents.map((entry) => entry.agent.name).slice(0, 2).join('、')} 正在工作 · ${data.stats.sessions} 个会话` : `全部空闲 · ${data.stats.sessions} 个会话`,
+            actionLabel: 'Agent 协作', onOpen: () => navigate(`/projects/${projectId}/agents`),
+          },
+          {
+            key: 'approvals', label: '待授权', value: pendingApprovals.length, tone: pendingApprovals.length > 0 ? 'warn' : 'neutral',
+            visual: { kind: 'pulse', active: pendingApprovals.length > 0 },
+            status: pendingApprovals.length > 0 ? `运行已暂停，等待你决定：${pendingApprovals[0]!.title}` : '没有等待你的决定',
+            actionLabel: '去审阅', onOpen: () => navigate(`/projects/${projectId}/approvals`),
+          },
+          {
+            key: 'outputs', label: '交付物', value: verifiedArtifacts, tone: 'ok',
+            visual: { kind: 'arc', value: data.stats.milestonesTotal ? data.stats.milestonesCompleted / data.stats.milestonesTotal : 0 },
+            status: `${data.stats.milestonesCompleted}/${data.stats.milestonesTotal} 里程碑 · ${data.stats.requirementsApproved} 条已批准需求`,
+          },
+        ]}
+      />
 
       <div className="po-workbench-grid">
         <div className="po-workbench-main">
