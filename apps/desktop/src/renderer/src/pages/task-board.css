@@ -10,3 +10,29 @@
 :root .po-agent-roster-bar.is-dock .po-roster-name-row strong { font-size: var(--ui-type-body); }
 :root .po-agent-roster-bar.is-dock .po-roster-role { display: block; max-width: 120px; overflow: hidden; color: var(--ui-muted); font-size: var(--ui-type-caption); text-overflow: ellipsis; white-space: nowrap; }
 :root .po-agent-roster-bar.is-dock .po-roster-status-pill { font-size: 11px; }
+
+/* Requirement summary: one line (title · focus stage · bead progress · link); stage cards fold behind a disclosure. */
+:root .po-req-whole-panel { gap: 0; margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
+:root .po-req-whole-panel .po-req-whole-card { padding: var(--ui-space-2) var(--ui-space-3); border: 0; border-top: 1px solid var(--ui-divider); border-bottom: 1px solid var(--ui-divider); border-radius: 0; background: transparent; box-shadow: none; }
+:root .po-req-whole-panel .po-req-whole-head { display: flex; align-items: center; gap: var(--ui-space-4); margin: 0; }
+:root .po-req-whole-panel .po-req-whole-title-group { display: flex; flex: 1; align-items: baseline; gap: var(--ui-space-3); min-width: 0; }
+:root .po-req-whole-panel .po-req-whole-title { overflow: hidden; color: var(--ui-ink); font-size: var(--ui-type-body); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+:root .po-req-whole-panel .po-req-whole-summary { flex: none; color: var(--ui-muted); font-size: var(--ui-type-caption); white-space: nowrap; }
+.po-req-whole-beads { display: flex; flex: none; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.po-req-whole-beads li { width: 18px; height: 4px; border-radius: 2px; background: var(--ui-border-strong); }
+.po-req-whole-beads li.is-completed { background: var(--ui-ok); }
+.po-req-whole-beads li:is(.is-running, .is-starting, .is-waiting_approval) { background: var(--ui-accent); }
+.po-req-whole-beads li:is(.is-failed, .is-needs_reconciliation) { background: var(--ui-danger); }
+:root .po-req-whole-panel .po-req-whole-actions { flex: none; }
+.po-req-whole-details > summary { width: max-content; margin-top: 2px; color: var(--ui-muted); font-size: var(--ui-type-caption); cursor: pointer; list-style: none; }
+.po-req-whole-details > summary::before { content: '▸ '; }
+.po-req-whole-details[open] > summary::before { content: '▾ '; }
+.po-req-whole-details[open] .po-req-stage-strip { margin-top: var(--ui-space-2); }
+:root .po-req-whole-panel .po-req-whole-card { gap: 2px; }
+
+/* ADR-0092: requirement-stage tiles on the board were white-filled in both themes. */
+:root .po-stage-flow-tile { background: var(--gl-control); border-color: var(--ui-accent-line, rgba(99, 102, 241, 0.32)); }
+:root .po-stage-flow-tile.is-completed, :root .po-stage-flow-tile.is-done { background: color-mix(in srgb, var(--ui-ok) 8%, transparent); }
+:root .po-stage-flow-tile:is(.is-running, .is-starting, .is-active) { background: var(--gl-active); }
+:root .po-stage-flow-badge, :root .po-stage-flow-status, :root .po-stage-flow-state { font-size: var(--ui-type-badge); }
+:root .po-stage-flow-badge { background: var(--ui-accent-soft); color: var(--ui-accent-strong, var(--ui-accent)); }

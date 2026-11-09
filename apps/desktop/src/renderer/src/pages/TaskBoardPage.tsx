@@ -1274,35 +1274,37 @@ export default function TaskBoardPage() {
               const activeStep = steps.find(
                 (s) => s.status === 'running' || s.status === 'starting' || s.status === 'waiting_approval',
               )
-              const uniqueAgents = [...new Set(steps.map((s) => s.agentName).filter((n): n is string => Boolean(n)))]
               const currentMaterials = view.materials.filter((m) => m.status === 'current')
               return (
                 <div key={requirement.id} className="po-req-whole-card">
                   <div className="po-req-whole-head">
                     <div className="po-req-whole-title-group">
-                      <span className="po-req-whole-kicker">需求整体视图</span>
                       <strong className="po-req-whole-title" title={requirement.title}>{requirement.title}</strong>
                       <span className="po-req-whole-summary">
-                        {view.tasks.length} 个交付任务 · 阶段已完成 {completedCount}/{steps.length} · {uniqueAgents.length} 位协作 Agent · 已产出 {currentMaterials.length} 份成果
+                        {activeStep
+                          ? `${activeStep.title}${activeStep.agentName ? ` · ${activeStep.agentName}` : ''}`
+                          : completedCount === steps.length && steps.length > 0
+                            ? `全部 ${steps.length} 阶段已完成`
+                            : `${completedCount}/${steps.length} 阶段`}
+                        {' · '}{view.tasks.length} 个任务{currentMaterials.length ? ` · ${currentMaterials.length} 份成果` : ''}
                       </span>
                     </div>
+                    {steps.length > 0 ? (
+                      <ol className="po-req-whole-beads" aria-hidden>
+                        {steps.map((step) => (
+                          <li key={step.id} className={`is-${step.status}`} title={step.title} />
+                        ))}
+                      </ol>
+                    ) : null}
                     <div className="po-req-whole-actions">
-                      {activeStep ? (
-                        <StatusPill tone="info">
-                          当前阶段：{activeStep.title}{activeStep.agentName ? ` · ${activeStep.agentName}` : ''}
-                        </StatusPill>
-                      ) : completedCount === steps.length && steps.length > 0 ? (
-                        <StatusPill tone="success">全部 {steps.length} 阶段已完成</StatusPill>
-                      ) : null}
-                      <Button size="small" onClick={() => navigate(`/projects/${projectId}/agents`)}>
-                        Agent 协作图
-                      </Button>
-                      <Button size="small" type="primary" ghost onClick={() => navigate(`/projects/${projectId}/requirements?requirement=${requirement.id}`)}>
-                        需求工作台
+                      <Button size="small" type="text" onClick={() => navigate(`/projects/${projectId}/requirements?requirement=${requirement.id}`)}>
+                        需求工作台 <ArrowRightOutlined />
                       </Button>
                     </div>
                   </div>
                   {steps.length > 0 ? (
+                    <details className="po-req-whole-details">
+                    <summary>阶段与负责人</summary>
                     <div className="po-req-stage-strip" role="list" aria-label="需求六阶段流转链">
                       {steps.map((step, idx) => {
                         const isDone = step.status === 'completed'
@@ -1353,6 +1355,7 @@ export default function TaskBoardPage() {
                         )
                       })}
                     </div>
+                    </details>
                   ) : null}
                 </div>
               )
