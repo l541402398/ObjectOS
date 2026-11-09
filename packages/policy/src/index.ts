@@ -156,3 +156,83 @@ export function redactObject(value: unknown, depth = 0): unknown {
   }
   return value
 }
+
+/**
+ * ADR-0089 — verification command families for isolated-worktree auto-allow.
+ *
+ * A family is a *narrow* set of build/verification commands. A command only belongs to a family
+ * when it is a single invocation (no chaining, redirection or substitution) and matches one of the
+ * exact shapes below. Anything else — arbitrary shell, git writes, package installs, network tools —
+ * returns null and stays on the per-call approval path.
+ */
+export type VerifyCommandFamily = 'test' | 'lint' | 'typecheck' | 'build'
+
+export const VERIFY_COMMAND_FAMILIES: readonly VerifyCommandFamily[] = ['test', 'lint', 'typecheck', 'build']
+
+export const VERIFY_FAMILY_LABEL: Record<VerifyCommandFamily, string> = {
+  test: '测试',
+  lint: 'Lint',
+  typecheck: '类型检查',
+  build: '构建',
+}
+
+const VERIFY_SHELL_METACHARACTERS = /[;&|`$<>()\n\r\\]|\$\(/
+const PM = '(?:npm|pnpm|yarn|bun)'
+const VERIFY_DENY_TOKENS = new Set(['--fix', '--watch', '-w', '--ui', 'install', 'i', 'add', 'remove', 'publish', 'dlx', '-g', '--global', '-u', '--update', '--updateSnapshot'])
+const VERIFY_PATTERNS: Array<{ family: VerifyCommandFamily; pattern: RegExp }> = [
+  { family: 'test', pattern: new RegExp(`^${PM}\\s+(?:run\\s+)?test(?::[\\w:.-]+)?(?:\\s+[\\w@/.:=,-]+)*$`) },
+  { family: 'test', pattern: /^(?:npx\s+|pnpm\s+exec\s+)?vitest\s+run(?:\s+[\w@/.:=,-]+)*$/ },
+  { family: 'test', pattern: /^(?:npx\s+|pnpm\s+exec\s+)?jest(?:\s+[\w@/.:=,-]+)*$/ },
+  { family: 'test', pattern: /^node\s+--test(?:\s+[\w@/.:=,-]+)*$/ },
+  { family: 'test', pattern: /^(?:pytest|go\s+test|cargo\s+test)(?:\s+[\w@/.:=,-]+)*$/ },
+  { family: 'lint', pattern: new RegExp(`^${PM}\\s+(?:run\\s+)?lint(?::[\\w:.-]+)?(?:\\s+[\\w@/.:=,-]+)*$`) },
+  { family: 'lint', pattern: /^(?:npx\s+|pnpm\s+exec\s+)?eslint(?:\s+[\w@/.:=,*-]+)*$/ },
+  { family: 'typecheck', pattern: new RegExp(`^${PM}\\s+(?:run\\s+)?(?:typecheck|type-check|check-types|tsc)(?::[\\w:.-]+)?(?:\\s+[\\w@/.:=,-]+)*$`) },
+  { family: 'typecheck', pattern: /^(?:npx\s+|pnpm\s+exec\s+)?tsc(?:\s+(?:--noEmit|-p|--project|--pretty|false|true|[\w@/.-]+\.json))*$/ },
+  { family: 'build', pattern: new RegExp(`^${PM}\\s+(?:run\\s+)?build(?::[\\w:.-]+)?(?:\\s+[\\w@/.:=,-]+)*$`) },
+]
+
+/** Family of a verification command, or null when it may do anything else. */
+export function verifyCommandFamily(rawCommand: string): VerifyCommandFamily | null {
+  const command = rawCommand.trim().replace(/\s+/g, ' ')
+  if (!command || command.length > 400) return null
+  if (VERIFY_SHELL_METACHARACTERS.test(command)) return null
+  // Tokens that turn a verification run into a mutation, install, publish or long-lived process.
+  const tokens = command.split(' ')
+  if (tokens.some((token) => VERIFY_DENY_TOKENS.has(token) || token.startsWith('--registry'))) return null
+  return VERIFY_PATTERNS.find((entry) => entry.pattern.test(command))?.family ?? null
+}
+
+/**
+ * Stable "kind" of a tool approval, used for batch decisions ("approve the rest of this kind in
+ * this Run"). Only kinds that are safe to decide together are `batchable`; git writes, external
+ * runtime actions, protected paths and arbitrary shell are always decided one by one.
+ */
+export interface ApprovalKind {
+  key: string
+  label: string
+  batchable: boolean
+  reason: string
+}
+
+export function approvalKindOf(toolName: string, args: Record<string, unknown>): ApprovalKind {
+  if (toolName === 'write_file') {
+    const path = typeof args.path === 'string' ? args.path : ''
+    if (path && isProtectedPath(path)) {
+      return { key: `write_file:protected`, label: '写入受保护文件', batchable: false, reason: '受保护路径必须逐次决定' }
+    }
+    return { key: 'write_file', label: '写入文件', batchable: true, reason: '同一 Run 内的普通文件写入' }
+  }
+  if (toolName === 'run_tests' || toolName === 'run_command') {
+    const command = typeof args.command === 'string' ? args.command : ''
+    const family = verifyCommandFamily(command)
+    if (family) {
+      return { key: `command:${family}`, label: `${VERIFY_FAMILY_LABEL[family]}命令`, batchable: true, reason: `同一 Run 内的${VERIFY_FAMILY_LABEL[family]}命令` }
+    }
+    return { key: `command:exact`, label: '任意命令', batchable: false, reason: '任意 Shell 命令必须逐次决定' }
+  }
+  if (GIT_WRITE_TOOLS.has(toolName)) {
+    return { key: `git:${toolName}`, label: 'Git 写操作', batchable: false, reason: 'Git 写入、提交与交付必须逐次决定' }
+  }
+  return { key: `other:${toolName}`, label: toolName, batchable: false, reason: '该类请求必须逐次决定' }
+}

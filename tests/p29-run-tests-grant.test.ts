@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { classifyGrantedCommand } from '@projectos/application'
 import { PlanGrantService } from '../apps/runtime/src/plan-grant.js'
 import { createGitProject, logger, planWithTasks, setup } from './helpers/r1-fixture.js'
+import { attachPlanWorktree } from './helpers/plan-worktree.js'
 
 const cleanups: Array<() => void> = []
 afterEach(() => {
@@ -77,11 +78,13 @@ describe('ADR-0056 run-tests grant action', () => {
       note: 'fixture run-tests',
       confirm: true,
     })
+    // ADR-0089: grant-covered commands only run unattended inside the plan's verified Worktree.
+    const worktree = attachPlanWorktree(harness.store, plan.id, project.rootPath, harness.dataDir)
 
-    const decide = (command: string) =>
+    const decide = (command: string, workspaceRoot = worktree) =>
       grants.authorizeToolCall({
         projectId: project.id,
-        workspaceRoot: project.rootPath,
+        workspaceRoot,
         taskId: approved.createdTaskIds[0] ?? null,
         runId: 'run_fixture',
         agentId,
@@ -94,6 +97,10 @@ describe('ADR-0056 run-tests grant action', () => {
     expect(decide('git status').decision).toBe('allow')
     expect(decide('node -e "process.exit(1)"').decision).toBe('approval')
     expect(decide('rm -rf .').decision).toBe('approval')
+    // The same allowlisted command in the main workspace falls back to a human decision.
+    const main = decide('node --test test/hello.test.js', project.rootPath)
+    expect(main.decision).toBe('approval')
+    expect(main.reason).toContain('隔离 Worktree')
   })
 
   it('does not broaden anything without the action', async () => {

@@ -182,6 +182,133 @@ export async function ensureBaselineCommit(
   return { commit: head.stdout.trim(), files }
 }
 
+export interface IsolatedWorktreeInput {
+  /** The main working tree of the project (never auto-allowed). */
+  projectRoot: string
+  /** The directory a Run is about to write into or execute in. */
+  workspaceRoot: string
+  /** The worktree ObjectOS registered for this plan (persisted `plan.execution.workspaceRef`). */
+  registeredPath: string | null | undefined
+  /** The branch ObjectOS created for it (persisted `plan.execution.branch`). */
+  expectedBranch?: string | null
+}
+
+export interface IsolatedWorktreeCheck {
+  name: 'exists' | 'not-symlink' | 'registered' | 'not-main-root' | 'git-toplevel' | 'linked-git-dir' | 'same-repository' | 'listed' | 'branch'
+  ok: boolean
+  detail: string
+}
+
+export interface IsolatedWorktreeResult {
+  ok: boolean
+  reason: string
+  checks: IsolatedWorktreeCheck[]
+}
+
+function realOrNull(path: string): string | null {
+  try {
+    return realpathSync.native(resolve(path))
+  } catch {
+    return null
+  }
+}
+
+function sameReal(a: string | null, b: string | null): boolean {
+  if (!a || !b) return false
+  return process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b
+}
+
+function gitSync(args: string[], cwd: string): { code: number; stdout: string } {
+  const result = crossSpawn.sync('git', ['-c', 'core.fsmonitor=false', ...args], { cwd, windowsHide: true, encoding: 'utf8', timeout: 5000 })
+  return { code: typeof result.status === 'number' ? result.status : -1, stdout: typeof result.stdout === 'string' ? result.stdout : '' }
+}
+
+/**
+ * ADR-0089 — prove that a workspace is an isolated, ObjectOS-registered linked worktree of this
+ * project before anything is auto-allowed in it. Every check must pass; the first failure is the
+ * reason, and the caller falls back to per-call human approval. Synchronous on purpose: the tool
+ * policy path is synchronous and must not race a concurrent `git worktree remove`.
+ */
+export function verifyIsolatedWorktree(input: IsolatedWorktreeInput): IsolatedWorktreeResult {
+  const checks: IsolatedWorktreeCheck[] = []
+  const fail = (name: IsolatedWorktreeCheck['name'], detail: string): IsolatedWorktreeResult => {
+    checks.push({ name, ok: false, detail })
+    return { ok: false, reason: detail, checks }
+  }
+  const pass = (name: IsolatedWorktreeCheck['name'], detail: string) => checks.push({ name, ok: true, detail })
+
+  const workspaceAbs = resolve(input.workspaceRoot)
+  const workspaceReal = realOrNull(workspaceAbs)
+  const projectReal = realOrNull(input.projectRoot)
+  if (!workspaceReal || !projectReal) return fail('exists', '工作区或项目根目录不存在')
+  pass('exists', workspaceReal)
+
+  try {
+    if (lstatSync(workspaceAbs).isSymbolicLink()) return fail('not-symlink', '工作区本身是符号链接，可能逃逸到主工作区')
+  } catch {
+    return fail('not-symlink', '无法读取工作区属性')
+  }
+  pass('not-symlink', '工作区不是符号链接')
+
+  if (sameReal(workspaceReal, projectReal)) return fail('not-main-root', '工作区就是项目主工作区，不能自动放行')
+  pass('not-main-root', '与主工作区不同')
+
+  const registeredReal = input.registeredPath ? realOrNull(input.registeredPath) : null
+  if (!registeredReal) return fail('registered', '该计划没有 ObjectOS 登记的隔离工作区')
+  if (!sameReal(registeredReal, workspaceReal)) return fail('registered', '工作区与该计划登记的 Worktree 不一致')
+  pass('registered', registeredReal)
+
+  const identity = gitSync(['rev-parse', '--path-format=absolute', '--show-toplevel', '--absolute-git-dir', '--git-common-dir'], workspaceReal)
+  const [top, gitDir, commonDir] = identity.stdout.trim().split(/\r?\n/)
+  if (identity.code !== 0 || !top || !gitDir || !commonDir) return fail('git-toplevel', '工作区不是可读取的 Git 工作树')
+  if (!sameReal(realOrNull(top), workspaceReal)) return fail('git-toplevel', '工作区不是 Git 工作树的根目录')
+  pass('git-toplevel', top)
+
+  const gitDirReal = realOrNull(gitDir)
+  const commonReal = realOrNull(commonDir)
+  if (!gitDirReal || !commonReal || sameReal(gitDirReal, commonReal)) {
+    return fail('linked-git-dir', 'git-dir 与 common-dir 相同：这是主工作树，不是隔离 Worktree')
+  }
+  pass('linked-git-dir', gitDirReal)
+
+  const parent = gitSync(['rev-parse', '--path-format=absolute', '--git-common-dir'], projectReal)
+  if (parent.code !== 0 || !sameReal(realOrNull(parent.stdout.trim()), commonReal)) {
+    return fail('same-repository', '工作区不属于该项目的 Git 仓库')
+  }
+  pass('same-repository', commonReal)
+
+  const listed = gitSync(['worktree', 'list', '--porcelain'], projectReal)
+  if (listed.code !== 0) return fail('listed', '无法读取 git worktree list')
+  let entryBranch: string | null = null
+  let found = false
+  let currentPath: string | null = null
+  let currentBranch: string | null = null
+  const flush = () => {
+    if (currentPath && sameReal(realOrNull(currentPath), workspaceReal)) {
+      found = true
+      entryBranch = currentBranch
+    }
+  }
+  for (const line of listed.stdout.split(/\r?\n/)) {
+    if (line.startsWith('worktree ')) {
+      flush()
+      currentPath = line.slice('worktree '.length)
+      currentBranch = null
+    } else if (line.startsWith('branch ')) {
+      currentBranch = line.slice('branch '.length).replace(/^refs\/heads\//, '')
+    }
+  }
+  flush()
+  if (!found) return fail('listed', '工作区不在 git worktree list 中')
+  pass('listed', '已登记在 git worktree list')
+
+  if (input.expectedBranch) {
+    if (entryBranch !== input.expectedBranch) return fail('branch', `Worktree 分支不是计划分支 ${input.expectedBranch}`)
+    pass('branch', input.expectedBranch)
+  }
+  return { ok: true, reason: '已验证为该计划登记的隔离 Git Worktree', checks }
+}
+
 export class WorktreeManager {
   async create(repoRoot: string, worktreePath: string, branch: string, baseCommit?: string): Promise<WorktreeRef> {
     if (!existsSync(`${repoRoot}/.git`)) {

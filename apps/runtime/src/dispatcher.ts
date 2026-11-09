@@ -50,6 +50,7 @@ import { OrchestrationService } from './orchestration.js'
 import { PlannerService } from './planner.js'
 import { AiPlannerModelSource } from './planner-provider.js'
 import { PlannerUsageService } from './planner-usage.js'
+import { ApprovalBatchService, withApprovalKind } from './approval-batch.js'
 import { PlanGrantService } from './plan-grant.js'
 import { ReplanService } from './replan-service.js'
 import { RuntimeSettingsService } from './runtime-settings.js'
@@ -1533,7 +1534,24 @@ export class RuntimeDispatcher {
       }
       case 'approval.list': {
         const input = this.parse('approval.list', rawInput)
-        return { approvals: store.read.listApprovalViews(input.projectId, input.runId) }
+        return { approvals: store.read.listApprovalViews(input.projectId, input.runId).map(withApprovalKind) }
+      }
+      case 'approval.decideBatch': {
+        const input = this.parse('approval.decideBatch', rawInput)
+        const batch = new ApprovalBatchService(store, {
+          ownedElsewhere: (approvalId) =>
+            this.gitDelivery.ownsApproval(approvalId) ||
+            this.requirementIntegration.ownsApproval(approvalId) ||
+            this.requirementWork.ownsApproval(approvalId),
+          decide: async (approvalId, decision, note) => {
+            await runner.decideApproval(approvalId, decision, note)
+          },
+        })
+        return batch.decideBatch(input)
+      }
+      case 'approval.preview': {
+        const input = this.parse('approval.preview', rawInput)
+        return runner.approvalPreview(input.approvalId)
       }
       case 'approval.decide': {
         const input = this.parse('approval.decide', rawInput)

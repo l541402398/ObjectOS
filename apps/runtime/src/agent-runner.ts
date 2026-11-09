@@ -1,6 +1,8 @@
+import { consumeRunKindAllowance } from './approval-batch.js'
+import type { ApprovalPreview } from '@projectos/contracts'
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync, realpathSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'node:path'
 import { canonicalWorkspaceRoot } from './plan-grant.js'
 import { managedTaskRoot } from './requirement-work.js'
@@ -2009,12 +2011,20 @@ export class AgentRunner {
             args: effective.args,
           })
         : null
+    // ADR-0089: a human "approve the rest of this kind in this Run" decision. Consulted only when
+    // Policy requires approval and the PlanGrant neither allowed nor denied; never overrides deny.
+    const runAllowance =
+      policy.decision === 'require_approval' && grantDecision?.decision !== 'allow' && grantDecision?.decision !== 'deny'
+        ? consumeRunKindAllowance(this.store, state.runId, invocation.name, effective.args)
+        : null
     const effectiveDecision =
       grantDecision?.decision === 'allow'
         ? 'plan-grant'
         : grantDecision?.decision === 'deny'
           ? 'deny'
-          : policy.decision
+          : runAllowance
+            ? 'run-kind-allowance'
+            : policy.decision
     this.store.appendRunStep({
       runId: state.runId,
       kind: 'tool_request',
@@ -2027,7 +2037,10 @@ export class AgentRunner {
         risk: policy.risk,
         policy: effectiveDecision,
         grantId: grantDecision?.grantId ?? null,
-        grantReason: grantDecision?.reason ?? null,
+        grantReason: runAllowance
+          ? `本 Run 内「${runAllowance.label}」已由审批 ${runAllowance.approvalId} 批量放行`
+          : grantDecision?.reason ?? null,
+        runAllowanceApprovalId: runAllowance?.approvalId ?? null,
       },
     })
     if (policy.decision === 'deny' || grantDecision?.decision === 'deny') {
@@ -2047,7 +2060,7 @@ export class AgentRunner {
       })
       return { status: 'denied', error: reason }
     }
-    if (policy.decision === 'require_approval' && grantDecision?.decision !== 'allow') {
+    if (policy.decision === 'require_approval' && grantDecision?.decision !== 'allow' && !runAllowance) {
       this.store.updateToolCall(toolCall.id, { status: 'waiting_approval' })
       // Capture the trusted file baseline BEFORE the approver sees anything, so the
       // approved snapshot cannot be re-pointed at different content later. Path scope
@@ -2926,6 +2939,54 @@ export class AgentRunner {
     return typeof context?.payload.requirementContext === 'string' ? context.payload.requirementContext : ''
   }
 
+  /**
+   * ADR-0089: read-only preview of what a pending approval would change, from the Run's own
+   * workspace (plan Worktree or project root). Never writes and never follows a path outside it.
+   */
+  approvalPreview(approvalId: string): ApprovalPreview {
+    const approval = this.store.getApprovalById(approvalId)
+    if (!approval) throw new AppError('NOT_FOUND', '授权请求不存在')
+    const run = this.store.read.getRun(approval.runId)
+    if (!run) throw new AppError('NOT_FOUND', '运行不存在')
+    const request = (approval.request ?? {}) as Record<string, unknown>
+    const args = (request.args ?? {}) as Record<string, unknown>
+    const toolName = String(request.toolName ?? '')
+    const root = this.executionRootForRun(run)
+    const project = this.store.read.getProject(run.projectId)
+    const path = typeof args.path === 'string' ? args.path : null
+    let before: string | null = null
+    let beforeTruncated = false
+    if (path && toolName === 'write_file') {
+      try {
+        const target = resolveWorkspacePath(root, path)
+        const content = readFileSync(target)
+        if (!content.includes(0)) {
+          const text = content.toString('utf8')
+          beforeTruncated = text.length > 200_000
+          before = text.slice(0, 200_000)
+        }
+      } catch {
+        before = null
+      }
+    }
+    const isolation = this.planGrants?.describeWorkspace(run.projectId, run.taskId, root) ?? { ok: false, reason: '未启用计划授权', checks: [], planId: null }
+    const isMain = project ? canonicalPath(project.rootPath) === canonicalPath(root) : false
+    return {
+      approvalId,
+      toolName,
+      path,
+      before,
+      after: typeof args.content === 'string' ? args.content : null,
+      beforeTruncated,
+      command: typeof args.command === 'string' ? args.command : null,
+      workspace: {
+        label: isMain ? '主工作区' : isolation.ok ? '隔离 Worktree' : '独立目录',
+        isolated: isolation.ok,
+        reason: isolation.reason,
+      },
+    }
+  }
+
   private executionRootForRun(run: Run): string {
     const task = run.taskId ? this.store.read.getTask(run.taskId) : null
     const recorded = this.active.get(run.id)?.workspaceRoot
@@ -3522,8 +3583,10 @@ function approvalDetail(invocation: ToolInvocation): string {
   return `Agent 请求执行 ${invocation.name}。`
 }
 
-
-
-
-
-
+function canonicalPath(path: string): string {
+  try {
+    return realpathSync.native(path)
+  } catch {
+    return path
+  }
+}

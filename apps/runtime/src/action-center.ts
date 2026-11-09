@@ -1,4 +1,5 @@
 import type { SqliteStore } from '@projectos/persistence'
+import { VERIFY_COMMAND_FAMILIES, type VerifyCommandFamily } from '@projectos/policy'
 import type { LifecycleService } from './lifecycle.js'
 
 /**
@@ -24,6 +25,7 @@ export type ActionKind =
   | 'version_gate'
   | 'deployment_reconciliation'
   | 'run_failure'
+  | 'plan_review'
 
 export type ActionRisk = 'low' | 'medium' | 'high'
 
@@ -72,6 +74,9 @@ export interface ProjectAutonomySettings {
   autoDeliver: boolean
   /** How many policy-authorized revisions a project may apply before a human must look. */
   maxAutoReplans: number
+  /** ADR-0089: auto-allow grant-covered writes + verification commands in a verified plan Worktree. */
+  worktreeAutoAllow: boolean
+  worktreeAutoAllowFamilies: VerifyCommandFamily[]
 }
 
 const AUTONOMY_KEY = (projectId: string): string => `autonomy.mode.${projectId}`
@@ -91,6 +96,9 @@ const DEFAULT_AUTONOMY: ProjectAutonomySettings = {
   // Merging into the user's branch is a separate, higher-risk step: opt-in only.
   autoDeliver: false,
   maxAutoReplans: 3,
+  // Isolation is verified per call; outside a verified Worktree nothing is auto-allowed.
+  worktreeAutoAllow: true,
+  worktreeAutoAllowFamilies: [...VERIFY_COMMAND_FAMILIES],
 }
 
 const PHASE_LABEL: Record<string, string> = {
@@ -115,6 +123,8 @@ export function autonomyPolicyUpdate(input: {
   autoApplyReplans?: boolean
   autoDeliver?: boolean
   maxAutoReplans?: number
+  worktreeAutoAllow?: boolean
+  worktreeAutoAllowFamilies?: VerifyCommandFamily[]
 }): {
   mode: ProjectAutonomyMode
   autoAdvancePhases?: string[]
@@ -122,6 +132,8 @@ export function autonomyPolicyUpdate(input: {
   autoApplyReplans?: boolean
   autoDeliver?: boolean
   maxAutoReplans?: number
+  worktreeAutoAllow?: boolean
+  worktreeAutoAllowFamilies?: VerifyCommandFamily[]
 } {
   return {
     mode: input.mode,
@@ -130,6 +142,34 @@ export function autonomyPolicyUpdate(input: {
     ...(input.autoApplyReplans !== undefined ? { autoApplyReplans: input.autoApplyReplans } : {}),
     ...(input.autoDeliver !== undefined ? { autoDeliver: input.autoDeliver } : {}),
     ...(input.maxAutoReplans !== undefined ? { maxAutoReplans: input.maxAutoReplans } : {}),
+    ...(input.worktreeAutoAllow !== undefined ? { worktreeAutoAllow: input.worktreeAutoAllow } : {}),
+    ...(input.worktreeAutoAllowFamilies !== undefined ? { worktreeAutoAllowFamilies: input.worktreeAutoAllowFamilies } : {}),
+  }
+}
+
+export function readProjectAutonomySettings(store: SqliteStore, projectId: string): ProjectAutonomySettings {
+  const row = store.db.prepare('SELECT value_json FROM app_settings WHERE key=?').get(AUTONOMY_KEY(projectId)) as { value_json: string } | undefined
+  if (!row) return { ...DEFAULT_AUTONOMY }
+  try {
+    const parsed = JSON.parse(row.value_json) as Partial<ProjectAutonomySettings>
+    const mode: ProjectAutonomyMode = parsed.mode === 'autonomous' || parsed.mode === 'managed' || parsed.mode === 'assist' ? parsed.mode : DEFAULT_AUTONOMY.mode
+    return {
+      mode,
+      autoAdvancePhases: Array.isArray(parsed.autoAdvancePhases) ? parsed.autoAdvancePhases.filter((item): item is string => typeof item === 'string') : [...DEFAULT_AUTONOMY.autoAdvancePhases],
+      autoStartPlans: parsed.autoStartPlans ?? DEFAULT_AUTONOMY.autoStartPlans,
+      autoApplyReplans: parsed.autoApplyReplans ?? DEFAULT_AUTONOMY.autoApplyReplans,
+      autoDeliver: parsed.autoDeliver ?? DEFAULT_AUTONOMY.autoDeliver,
+      maxAutoReplans:
+        typeof parsed.maxAutoReplans === 'number' && parsed.maxAutoReplans >= 0
+          ? Math.min(10, Math.floor(parsed.maxAutoReplans))
+          : DEFAULT_AUTONOMY.maxAutoReplans,
+      worktreeAutoAllow: typeof parsed.worktreeAutoAllow === 'boolean' ? parsed.worktreeAutoAllow : DEFAULT_AUTONOMY.worktreeAutoAllow,
+      worktreeAutoAllowFamilies: Array.isArray(parsed.worktreeAutoAllowFamilies)
+        ? VERIFY_COMMAND_FAMILIES.filter((family) => (parsed.worktreeAutoAllowFamilies as unknown[]).includes(family))
+        : [...DEFAULT_AUTONOMY.worktreeAutoAllowFamilies],
+    }
+  } catch {
+    return { ...DEFAULT_AUTONOMY }
   }
 }
 
@@ -140,25 +180,7 @@ export class ActionCenter {
   ) {}
 
   autonomySettings(projectId: string): ProjectAutonomySettings {
-    const row = this.store.db.prepare('SELECT value_json FROM app_settings WHERE key=?').get(AUTONOMY_KEY(projectId)) as { value_json: string } | undefined
-    if (!row) return { ...DEFAULT_AUTONOMY }
-    try {
-      const parsed = JSON.parse(row.value_json) as Partial<ProjectAutonomySettings>
-      const mode: ProjectAutonomyMode = parsed.mode === 'autonomous' || parsed.mode === 'managed' || parsed.mode === 'assist' ? parsed.mode : DEFAULT_AUTONOMY.mode
-      return {
-        mode,
-        autoAdvancePhases: Array.isArray(parsed.autoAdvancePhases) ? parsed.autoAdvancePhases.filter((item): item is string => typeof item === 'string') : [...DEFAULT_AUTONOMY.autoAdvancePhases],
-        autoStartPlans: parsed.autoStartPlans ?? DEFAULT_AUTONOMY.autoStartPlans,
-        autoApplyReplans: parsed.autoApplyReplans ?? DEFAULT_AUTONOMY.autoApplyReplans,
-        autoDeliver: parsed.autoDeliver ?? DEFAULT_AUTONOMY.autoDeliver,
-        maxAutoReplans:
-          typeof parsed.maxAutoReplans === 'number' && parsed.maxAutoReplans >= 0
-            ? Math.min(10, Math.floor(parsed.maxAutoReplans))
-            : DEFAULT_AUTONOMY.maxAutoReplans,
-      }
-    } catch {
-      return { ...DEFAULT_AUTONOMY }
-    }
+    return readProjectAutonomySettings(this.store, projectId)
   }
 
   setAutonomySettings(
@@ -170,6 +192,8 @@ export class ActionCenter {
       autoApplyReplans?: boolean
       autoDeliver?: boolean
       maxAutoReplans?: number
+      worktreeAutoAllow?: boolean
+      worktreeAutoAllowFamilies?: VerifyCommandFamily[]
     },
   ): ProjectAutonomySettings {
     const previous = this.autonomySettings(projectId)
@@ -180,6 +204,10 @@ export class ActionCenter {
       autoApplyReplans: input.autoApplyReplans ?? previous.autoApplyReplans,
       autoDeliver: input.autoDeliver ?? previous.autoDeliver,
       maxAutoReplans: input.maxAutoReplans ?? previous.maxAutoReplans,
+      worktreeAutoAllow: input.worktreeAutoAllow ?? previous.worktreeAutoAllow,
+      worktreeAutoAllowFamilies: input.worktreeAutoAllowFamilies
+        ? VERIFY_COMMAND_FAMILIES.filter((family) => input.worktreeAutoAllowFamilies!.includes(family))
+        : previous.worktreeAutoAllowFamilies,
     }
     this.store.db
       .prepare('INSERT INTO app_settings (key, value_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value_json=excluded.value_json, updated_at=excluded.updated_at')
@@ -379,7 +407,7 @@ export class ActionCenter {
         requiredDecision: '批准这次范围差异（将自动应用修订并继续执行），或拒绝并保持当前计划',
         resume: '批准后产品会立即应用修订、派生同范围授权并自动恢复执行，无需回到聊天页',
         risk: 'medium',
-        route: `/projects/${projectId}/plans?plan=${encodeURIComponent(String(row.plan_id))}&proposal=${encodeURIComponent(String(row.id))}`,
+        route: `/projects/${projectId}/orchestration?plan=${encodeURIComponent(String(row.plan_id))}&proposal=${encodeURIComponent(String(row.id))}`,
         approvalId: null, versionId: null, runId: null, taskId: null, deploymentId: null,
         proposalId: String(row.id), planId: String(row.plan_id),
         createdAt: Number(row.created_at), stale: false,
@@ -408,10 +436,35 @@ export class ActionCenter {
         requiredDecision: '确认将该 Worktree 合并到目标分支（会检查冲突、越权路径与主工作区状态）',
         resume: '合并后产品会再次验证并保存交付证据；不会推送远端或部署',
         risk: 'high',
-        route: `/projects/${projectId}/plans?plan=${encodeURIComponent(String(row.id))}`,
+        route: `/projects/${projectId}/orchestration?plan=${encodeURIComponent(String(row.id))}&focus=delivery`,
         approvalId: null, versionId: null, runId: null, taskId: null, deploymentId: null,
         proposalId: null, planId: String(row.id),
         createdAt: Number(row.updated_at), stale: false,
+      })
+    }
+
+    // 8) Draft plans waiting for the human review that creates their tasks (ADR-0089). Only the
+    //    newest draft per goal is actionable; superseded revisions never appear.
+    const drafts = this.store.db
+      .prepare("SELECT * FROM plan_revisions WHERE project_id=? AND status='draft' ORDER BY updated_at DESC LIMIT 5")
+      .all(projectId) as Row[]
+    for (const row of drafts) {
+      const plan = this.parseJson(row.plan_json)
+      const tasks = Array.isArray(plan.tasks) ? plan.tasks.length : 0
+      const goal = typeof plan.goal === 'string' ? plan.goal : ''
+      items.push({
+        id: `plan_review:${String(row.id)}`,
+        kind: 'plan_review',
+        projectId,
+        title: `计划 r${String(row.revision)} 等待审核`,
+        reason: `${goal.slice(0, 80) || '新计划'}${tasks ? ` · ${tasks} 个任务` : ''}`,
+        requiredDecision: '批准或拒绝该计划；批准后创建任务与依赖',
+        resume: '批准并授权后，计划在隔离 Worktree 中开始执行',
+        risk: 'medium',
+        route: `/projects/${projectId}/orchestration?plan=${encodeURIComponent(String(row.id))}`,
+        approvalId: null, versionId: null, runId: null, taskId: null, deploymentId: null,
+        proposalId: null, planId: String(row.id),
+        createdAt: Number(row.updated_at ?? row.created_at ?? Date.now()), stale: false,
       })
     }
 
@@ -421,12 +474,13 @@ export class ActionCenter {
     const KIND_RANK: Record<ActionKind, number> = {
       tool_approval: 0,
       task_acceptance: 1,
-      replan_scope: 2,
-      plan_delivery: 3,
-      delivery_approval: 4,
-      deployment_reconciliation: 5,
-      run_failure: 6,
-      version_gate: 7,
+      plan_review: 2,
+      replan_scope: 3,
+      plan_delivery: 4,
+      delivery_approval: 5,
+      deployment_reconciliation: 6,
+      run_failure: 7,
+      version_gate: 8,
     }
     return items.sort((a, b) => {
       const rank = KIND_RANK[a.kind] - KIND_RANK[b.kind]

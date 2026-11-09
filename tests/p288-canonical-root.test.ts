@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { canonicalWorkspaceRoot, PlanGrantService } from '../apps/runtime/src/plan-grant.js'
 import { createGitProject, logger, planWithTasks, setup } from './helpers/r1-fixture.js'
+import { attachPlanWorktree } from './helpers/plan-worktree.js'
 
 const cleanups: Array<() => void> = []
 afterEach(() => {
@@ -62,8 +63,11 @@ describe('ADR-0036 canonical workspace containment', () => {
       note: '测试授权',
       confirm: true,
     })
+    const worktree = attachPlanWorktree(harness.store, plan.id, project.rootPath, harness.dataDir)
+    mkdirSync(join(worktree, 'src'), { recursive: true })
+    writeFileSync(join(worktree, 'src', 'sums.mjs'), 'export const sum = (a) => a\n')
     // The root as the runtime sometimes receives it: trailing slash + upper-case drive form.
-    const rootVariant = process.platform === 'win32' ? `${project.rootPath}\\\\` : `${project.rootPath}/`
+    const rootVariant = process.platform === 'win32' ? `${worktree}\\\\` : `${worktree}/`
     const decision = grants.authorizeToolCall({
       projectId: project.id,
       workspaceRoot: rootVariant,

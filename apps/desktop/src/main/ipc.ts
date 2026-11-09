@@ -686,7 +686,7 @@ export function registerIpc(ctx: IpcContext): () => void {
             ? 240_000
             : method === 'agentDefinition.run' || method === 'runtime.install'
             ? 180_000
-            : method === 'approval.decide'
+            : method === 'approval.decide' || method === 'approval.decideBatch'
             ? 180_000
             : method === 'demo.seed'
               ? 120_000
