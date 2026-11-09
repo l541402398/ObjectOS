@@ -55,11 +55,29 @@
   --ui-radius-xl: 20px;
   --ui-font: "ProjectOS Sans", "PingFang SC", "Microsoft YaHei UI", system-ui, sans-serif;
   --font-sans: var(--ui-font);
-  --ui-text-body: 14px;
-  --ui-text-secondary: 13px;
-  --ui-text-label: 12px;
-  --ui-text-section: 16px;
-  --ui-text-title: 26px;
+  /* ADR-0092 type scale: four reading sizes + one display size for the page's single key number. */
+  --ui-type-display: 32px;
+  --ui-type-title: 22px;
+  --ui-type-section: 16px;
+  --ui-type-body: 14px;
+  --ui-type-caption: 12px;
+  --ui-leading-tight: 1.25;
+  --ui-leading-body: 1.55;
+  --ui-weight-strong: 650;
+  --ui-weight-medium: 550;
+  /* Spacing rhythm (4px base). */
+  --ui-space-1: 4px;
+  --ui-space-2: 8px;
+  --ui-space-3: 12px;
+  --ui-space-4: 16px;
+  --ui-space-5: 24px;
+  --ui-space-6: 32px;
+  /* Legacy aliases resolve onto the scale. */
+  --ui-text-body: var(--ui-type-body);
+  --ui-text-secondary: var(--ui-type-body);
+  --ui-text-label: var(--ui-type-caption);
+  --ui-text-section: var(--ui-type-section);
+  --ui-text-title: var(--ui-type-title);
   --ui-control-height: 36px;
   --ui-control-radius: 10px;
   --ui-page-space: 24px;
