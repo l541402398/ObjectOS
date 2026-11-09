@@ -37,4 +37,27 @@ describe('ADR-0091 opt-in demo showcase seeds', () => {
       harness.close()
     }
   })
+  it('binds one untouched requirement to the standard flow without starting it (opt-in flow seed)', async () => {
+    const { seedDemo, seedDemoFlow } = await import('../apps/runtime/src/demo.js')
+    const harness = setup()
+    try {
+      const seeded = await seedDemo({ store: harness.store, dataDir: harness.dataDir })
+      const calls: Array<{ method: string; input: Record<string, unknown> }> = []
+      const dispatch = async (method: string, input: unknown): Promise<unknown> => {
+        calls.push({ method, input: input as Record<string, unknown> })
+        if (method === 'workflow.templates') return { templates: [{ versionId: 'wfv_review1' }, { versionId: 'wfv_standard1' }] }
+        return {}
+      }
+      const requirementId = await seedDemoFlow(dispatch, harness.store, seeded.projectId)
+      expect(requirementId).toBeTruthy()
+      const busy = harness.store.read.listTasks(seeded.projectId)
+        .filter((task) => task.requirementId === requirementId && ['done', 'running', 'review', 'blocked'].includes(task.status))
+      expect(busy).toHaveLength(0)
+      const bind = calls.find((call) => call.method === 'requirement.flow.bind')
+      expect(bind?.input).toMatchObject({ requirementId, templateVersionId: 'wfv_standard1', assignmentMode: 'manual' })
+      expect(calls.some((call) => /start|run|approve/.test(call.method))).toBe(false)
+    } finally {
+      harness.close()
+    }
+  })
 })
