@@ -145,7 +145,7 @@ export function PlanReviewWorkspace({
       <section className="pdl-workspace" aria-label="计划审核">
           <header className="pdl-plan-head">
             <div className="pdl-plan-title">
-              <span className="pdl-eyebrow">PLAN REVIEW<i /> {labStages.length} 个阶段 · {tasks.length} 项工作</span>
+              <span className="pdl-eyebrow">{labStages.length} 个阶段 · {tasks.length} 项工作</span>
               <h1>{draft.goal}</h1>
               <div className="pdl-plan-meta">
                 <span className="pdl-state"><i />待批准</span>
@@ -177,7 +177,7 @@ export function PlanReviewWorkspace({
                 <LabStageJourney stages={labStages} active={activeStage} onSelect={(id) => { setActiveStage(id); setCollapsed((current) => { const next = new Set(current); next.delete(id); return next }) }} taskCounts={Object.fromEntries(labStages.map((stage) => [stage.id, tasks.filter((task) => task.stageId === stage.id).length]))} />
                 <div className="pdl-content-grid">
                   <section className="pdl-ledger-panel" aria-label="任务清单">
-                    <div className="pdl-panel-head"><div><span className="pdl-eyebrow">TASK SEQUENCE</span><h2>准备审核的工作</h2></div><div className="pdl-panel-actions"><span className="pdl-panel-note">{activeTasks.length} 项当前阶段</span><button type="button" className="pdl-quiet" onClick={onAddTask}><Plus size={13} />添加任务</button></div></div>
+                    <div className="pdl-panel-head"><div><h2>准备审核的工作</h2></div><div className="pdl-panel-actions"><span className="pdl-panel-note">{activeTasks.length} 项当前阶段</span><button type="button" className="pdl-quiet" onClick={onAddTask}><Plus size={13} />添加任务</button></div></div>
                     <div className="pdl-ledger">
                       {labStages.map((stage) => {
                         const stageTasks = tasks.filter((task) => task.stageId === stage.id)
@@ -205,7 +205,7 @@ export function PlanReviewWorkspace({
                     </div>
                   </section>
                   <aside className="pdl-review-panel" aria-label="审核摘要">
-                    <div className="pdl-review-top"><span className="pdl-eyebrow">REVIEW READINESS</span><span className={`pdl-ready ${risks.length ? 'is-warn' : ''}`}><CheckCircle2 size={13} />{risks.length ? '有提醒' : '可批准'}</span></div>
+                    <div className="pdl-review-top"><span className="pdl-eyebrow">审核就绪</span><span className={`pdl-ready ${risks.length ? 'is-warn' : ''}`}><CheckCircle2 size={13} />{risks.length ? '有提醒' : '可批准'}</span></div>
                     <div className="pdl-readiness"><strong>{String(readyCount).padStart(2, '0')}<span> / {String(tasks.length).padStart(2, '0')}</span></strong><p>{risks.length ? `还有 ${risks.length} 项需要复核；批准只会创建任务与依赖，不会启动 Agent。` : '依赖结构完整，可进入审批；批准只创建任务与依赖，不会启动 Agent。'}</p></div>
                     <div className="pdl-review-stats"><div><span>阶段</span><strong>{String(labStages.length).padStart(2, '0')}</strong></div><div><span>依赖</span><strong>{dependencyCount}</strong></div><div><span>待复核</span><strong className={risks.length ? 'is-warn' : ''}>{String(risks.length).padStart(2, '0')}</strong></div></div>
                     <div className="pdl-risk-box">
@@ -222,7 +222,7 @@ export function PlanReviewWorkspace({
               </motion.div>
             ) : (
               <motion.div key="dag" className="pdl-dag-view" initial={reduce ? false : { y: 8 }} animate={{ y: 0 }} exit={reduce ? {} : { y: -5 }} transition={{ duration: reduce ? 0 : 0.22 }}>
-                <div className="pdl-dag-head"><div><span className="pdl-eyebrow">DEPENDENCY MAP</span><h2>任务依赖</h2></div><div className="pdl-dag-actions"><span>{tasks.filter((task) => task.dependsOn.length === 0).length} 个起点 · {dependencyCount} 条依赖</span><button type="button" onClick={() => setView('route')}>返回阶段路线</button></div></div>
+                <div className="pdl-dag-head"><div><h2>任务依赖</h2></div><div className="pdl-dag-actions"><span>{tasks.filter((task) => task.dependsOn.length === 0).length} 个起点 · {dependencyCount} 条依赖</span><button type="button" onClick={() => setView('route')}>返回阶段路线</button></div></div>
                 <LabTaskGraph tasks={tasks} selectedId={selectedId} onSelect={(id) => { setSelectedId(id); setInspectorOpen(true) }} />
                 <div className="pdl-dag-caption"><span>选择节点查看上下游路径</span><span>滚轮缩放 · 拖动平移</span></div>
               </motion.div>

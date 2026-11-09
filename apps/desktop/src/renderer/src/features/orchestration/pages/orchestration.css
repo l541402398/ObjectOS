@@ -2741,3 +2741,41 @@
 .po-shell .po-flow-orchestrator, .po-shell .po-flow-agent, .po-shell .po-flow-task { background: var(--ui-surface); box-shadow: var(--ui-shadow-sm); }
 .po-shell .po-orch-legend { background: var(--ui-surface); color: var(--ui-muted); }
 .po-shell .po-orch-seq { background: var(--ui-surface-sunken); color: var(--ui-muted); }
+
+/* ADR-0092 计划编排: header is title + inline numbers (no stat boxes, no slab); plans and tasks are two
+ * ledger columns separated by a hairline instead of two glass cards with nested cards. */
+:root .po-orchestration-page .po-orch-header { grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--ui-space-6); padding: 0 0 var(--ui-space-2); border: 0; border-radius: 0; background: none; box-shadow: none; }
+:root .po-orchestration-page .po-orch-identity h1 { margin: 0; color: var(--ui-ink); font-size: var(--ui-type-title); font-weight: 700; line-height: var(--ui-leading-tight); letter-spacing: -.015em; }
+:root .po-orchestration-page .po-orch-sub { gap: var(--ui-space-3); margin-top: var(--ui-space-1); color: var(--ui-muted); font-size: var(--ui-type-caption); }
+:root .po-orchestration-page .po-orch-sub span:first-child { font-family: inherit; }
+:root .po-orchestration-page .po-orch-metrics { display: flex; justify-content: flex-start; gap: var(--ui-space-6); margin: 0; }
+:root .po-orchestration-page .po-orch-metrics > div { display: flex; flex-direction: column-reverse; gap: 2px; min-width: 0; padding: 0; border: 0; background: none; box-shadow: none; }
+:root .po-orchestration-page .po-orch-metrics dt { color: var(--ui-muted); font-size: var(--ui-type-caption); }
+:root .po-orchestration-page .po-orch-metrics dd { margin: 0; color: var(--ui-ink); font-size: var(--ui-type-section); font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1.2; }
+:root .po-orchestration-page .po-orch-metrics > div:first-child dd { font-size: var(--ui-type-title); }
+:root .po-orchestration-page .po-orch-metrics dd small { margin-left: 2px; color: var(--ui-muted); font-size: var(--ui-type-caption); }
+:root .po-orchestration-page .po-orch-metrics .is-danger dd { color: var(--ui-danger); }
+:root .po-orchestration-page .po-orch-progress-line { padding: 0; border: 0; background: none; box-shadow: none; }
+:root .po-orchestration-page .po-orch-progress-line > div { flex: 1; height: 3px; border-radius: 3px; background: var(--ui-border); overflow: hidden; }
+:root .po-orchestration-page .po-orch-progress-line i { display: block; height: 100%; border-radius: 3px; background: var(--ui-accent); }
+:root .po-orchestration-page .po-orch-plan-hub { gap: 0; margin-top: var(--ui-space-3); }
+:root .po-orchestration-page .po-orch-hub-col { gap: var(--ui-space-2); padding: 0 var(--ui-space-5) 0 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+:root .po-orchestration-page .po-orch-hub-col + .po-orch-hub-col { padding: 0 0 0 var(--ui-space-5); border-left: 1px solid var(--ui-divider); }
+:root .po-orchestration-page .po-orch-hub-head { padding-bottom: var(--ui-space-2); border-bottom: 0; }
+:root .po-orchestration-page .po-orch-hub-head h2 { display: flex; align-items: baseline; gap: var(--ui-space-2); margin: 0; font-size: var(--ui-type-section); }
+:root .po-orchestration-page .po-orch-count { color: var(--ui-muted); font-size: var(--ui-type-caption); font-weight: 600; }
+:root .po-orchestration-page :is(.po-orch-hub-list, .po-orch-task-ledger) { gap: 0; }
+:root .po-orchestration-page :is(.po-orch-plan-item, .po-orch-task-row, .po-orch-task-row.react-flow__node) { padding: 10px 10px; border: 0; border-bottom: 1px solid var(--ui-divider); border-radius: 10px; background: transparent; }
+:root .po-orchestration-page :is(.po-orch-plan-item, .po-orch-task-row):hover { border-color: var(--ui-divider); background: var(--ui-surface-hover, var(--gl-control-hover)); transform: none; }
+:root .po-orchestration-page :is(.po-orch-plan-item.is-active, .po-orch-task-row.is-selected) { border-color: transparent; background: var(--ui-accent-soft); transform: none; }
+:root .po-orchestration-page .po-orch-plan-item-top strong { font-size: var(--ui-type-body); font-weight: 600; line-height: var(--ui-leading-body); }
+:root .po-orchestration-page .po-orch-plan-item-meta { gap: var(--ui-space-3); color: var(--ui-muted); font-size: var(--ui-type-caption); }
+:root .po-orchestration-page .po-orch-task-row-main strong { font-size: var(--ui-type-body); font-weight: 550; }
+:root .po-orchestration-page .po-orch-task-row-main span { color: var(--ui-muted); font-size: var(--ui-type-caption); }
+@media (max-width: 1200px) {
+  :root .po-orchestration-page .po-orch-header { grid-template-columns: minmax(0, 1fr) auto; }
+  :root .po-orchestration-page .po-orch-metrics { grid-column: 1 / -1; grid-row: 2; }
+}
+@media (max-width: 1024px) {
+  :root .po-orchestration-page .po-orch-hub-col, :root .po-orchestration-page .po-orch-hub-col + .po-orch-hub-col { padding: 0; border-left: 0; }
+}

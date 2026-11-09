@@ -151,7 +151,7 @@ export function PlanReviewNext({
         >
         <header className="po-plan-review-overview relative flex shrink-0 items-start justify-between gap-6 border-b border-[var(--pui-border)] px-8 pb-4 pt-5 pr-14">
           <div className="min-w-0">
-            <div className="pui-kicker">PLAN REVIEW · {stages.length} 个阶段 · {draft.tasks.length} 项工作</div>
+            <div className="pui-kicker">{stages.length} 个阶段 · {draft.tasks.length} 项工作</div>
             {editingGoal ? (
               <div className="mt-1 flex max-w-[760px] flex-col gap-2">
                 <textarea
@@ -217,7 +217,7 @@ export function PlanReviewNext({
 
                 <Tabs.Content value="dag" className="flex min-h-0 flex-1 flex-col outline-none">
                   <div className="mb-2 flex shrink-0 items-end justify-between px-1">
-                    <div><div className="pui-kicker">DEPENDENCY MAP</div><h2 className="mt-0.5 text-[16px] font-semibold text-[var(--pui-ink)]">任务依赖</h2></div>
+                    <div><h2 className="mt-0.5 text-[16px] font-semibold text-[var(--pui-ink)]">任务依赖</h2></div>
                     <span className="text-[11.5px] text-[var(--pui-ink-muted)]">{draft.tasks.filter((task) => task.dependsOn.length === 0).length} 个起点 · {dependencyCount} 条依赖</span>
                   </div>
                   <TaskGraph tasks={draft.tasks} stages={stages} activeStage={selectedStage} selectedTaskKey={selectedTaskKey} agentLabels={Object.fromEntries(agentOptions.map((option) => [option.value, option.label]))} onSelect={openTask} />
@@ -225,7 +225,7 @@ export function PlanReviewNext({
 
                 <div className={cn('flex min-h-0 flex-1 flex-col', planView === 'dag' && 'hidden')}>
                   <div className="mb-1.5 flex items-end justify-between gap-3">
-                    <div><div className="pui-kicker">TASK SEQUENCE</div><h2 className="mt-0.5 text-[16px] font-semibold text-[var(--pui-ink)]">准备审核的工作</h2></div>
+                    <div><h2 className="mt-0.5 text-[16px] font-semibold text-[var(--pui-ink)]">准备审核的工作</h2></div>
                     {draft.status === 'draft' ? <Button size="sm" variant="ghost" onClick={onAddTask}><Plus size={13} />添加任务</Button> : null}
                   </div>
                   <ScrollArea className="min-h-0 flex-1">
@@ -269,7 +269,7 @@ export function PlanReviewNext({
             <Panel defaultSize={narrow ? '32%' : '24%'} minSize="18%" className="min-h-0">
               <aside className="pui-scroll flex h-full min-h-0 flex-col gap-2 overflow-auto pl-1">
                 <div className="pui-risk-panel po-plan-readiness rounded-[15px] p-3">
-                  <div className="flex items-center justify-between gap-2"><span className="pui-kicker">REVIEW READINESS</span><span className={cn('text-[11px] font-medium', blocking ? 'text-[var(--pui-danger)]' : risks.length ? 'text-[var(--pui-warning)]' : 'text-[var(--pui-success)]')}>{blocking ? '待修复' : risks.length ? '有提醒' : '可批准'}</span></div>
+                  <div className="flex items-center justify-between gap-2"><span className="pui-kicker">审核就绪</span><span className={cn('text-[11px] font-medium', blocking ? 'text-[var(--pui-danger)]' : risks.length ? 'text-[var(--pui-warning)]' : 'text-[var(--pui-success)]')}>{blocking ? '待修复' : risks.length ? '有提醒' : '可批准'}</span></div>
                   <div className="po-plan-readiness-score">{readyCount}<em>/ {draft.tasks.length}</em></div>
                   <p className="po-plan-readiness-copy">{risks.length ? `还有 ${risks.length} 项需要复核；批准只会创建任务与依赖，不会启动 Agent。` : '计划结构完整；批准只会创建任务与依赖，不会启动 Agent。'}</p>
                   <div className="po-plan-readiness-stats">

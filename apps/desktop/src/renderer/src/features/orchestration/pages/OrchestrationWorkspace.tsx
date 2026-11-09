@@ -22,7 +22,6 @@ import {
   InfoCircleOutlined,
   LockOutlined,
   MessageOutlined,
-  NodeIndexOutlined,
   PauseCircleOutlined,
   PlayCircleOutlined,
   PlusOutlined,
@@ -181,7 +180,7 @@ function WorkbenchNode({ data, selected }: NodeProps<FlowNode>) {
         <Handle type="target" position={Position.Top} className="po-flow-handle" />
         <div className="po-flow-orchestrator-icon"><ApartmentOutlined /></div>
         <div className="po-flow-orchestrator-main">
-          <span className="po-flow-kicker">ORCHESTRATOR</span>
+          
           <strong>{node.label}</strong>
           <span>{node.subtitle}</span>
         </div>
@@ -1276,7 +1275,7 @@ export default function OrchestrationWorkspace() {
           {reassignPayload?.status === 'needs_confirmation' && reassignPlan ? (
             <div className="po-reassign" data-testid="reassign-panel">
               <div className="po-reassign-head">
-                <span className="po-reassign-kicker">HANDOFF FALLBACK</span>
+                
                 <strong>交接替代待确认</strong>
                 <StatusPill tone="warning">需要确认</StatusPill>
               </div>
@@ -1367,7 +1366,7 @@ export default function OrchestrationWorkspace() {
           ) : reassignPayload?.status === 'confirmed' ? (
             <div className="po-reassign is-confirmed" data-testid="reassign-confirmed">
               <div className="po-reassign-head">
-                <span className="po-reassign-kicker">HANDOFF FALLBACK</span>
+                
                 <strong>已确认替代 Agent</strong>
                 <StatusPill tone="success">已确认</StatusPill>
               </div>
@@ -1380,7 +1379,7 @@ export default function OrchestrationWorkspace() {
           ) : reassignPayload?.status === 'declined' ? (
             <div className="po-reassign is-declined" data-testid="reassign-declined">
               <div className="po-reassign-head">
-                <span className="po-reassign-kicker">HANDOFF FALLBACK</span>
+                
                 <strong>已取消替代方案</strong>
                 <StatusPill tone="neutral">已取消</StatusPill>
               </div>
@@ -1393,7 +1392,7 @@ export default function OrchestrationWorkspace() {
     return (
       <div className="po-inspector-panel">
         <div className="po-inspector-overview">
-          <span className="po-flow-kicker">PROJECT</span>
+          
           <strong>{project?.name ?? '项目'}</strong>
           <span>{project?.description || '未填写描述'}</span>
         </div>
@@ -1441,37 +1440,31 @@ export default function OrchestrationWorkspace() {
         {deliveryOpen&&draft&&<GitDeliveryDialog subject={{projectId,planId:draft.id,taskId:null}} onClose={()=>setDeliveryOpen(false)} onRefresh={invalidate}/>}
         <header className="po-orch-header">
           <div className="po-orch-identity">
-            <div className="po-orch-kicker"><NodeIndexOutlined /> 编排工作台</div>
-            <div className="po-orch-name">
-              <h1>{project?.name ?? '项目'}</h1>
-              <Tag color="blue">进行中</Tag>
-            </div>
+            <h1>计划编排</h1>
             <div className="po-orch-sub">
               <span>{project ? stageLabel(project.currentStage) : '项目'}阶段</span>
-              <span>扫描 {snapshot ? formatRelative(snapshot.scannedAt) : '未完成'}</span>
+              <span>扫描于 {snapshot ? formatRelative(snapshot.scannedAt) : '未完成'}</span>
             </div>
           </div>
-          <div className="po-orch-metrics">
-            <div><span>Agents</span><strong>{counts.agents}</strong></div>
-            <div><span>任务</span><strong>{counts.tasks}</strong></div>
-            <div><span>执行中</span><strong>{counts.running}</strong></div>
-            <div><span>待处理</span><strong className={counts.blocked ? 'is-danger' : ''}>{counts.blocked}</strong></div>
-          </div>
+          <dl className="po-orch-metrics" aria-label="编排概况">
+            <div><dt>进度</dt><dd>{Math.round((project?.stats.progress ?? 0) * 100)}<small>%</small></dd></div>
+            <div><dt>任务</dt><dd>{counts.tasks}</dd></div>
+            <div><dt>执行中</dt><dd>{counts.running}</dd></div>
+            <div><dt>Agent</dt><dd>{counts.agents}</dd></div>
+            {counts.blocked ? <div className="is-danger"><dt>待处理</dt><dd>{counts.blocked}</dd></div> : null}
+          </dl>
           <div className="po-orch-actions">
             {searchParams.get('return') === 'agents' ? <Button onClick={() => navigate('/projects/' + projectId + '/agents')}>返回协作图</Button> : null}
-            <Button icon={<FileSearchOutlined />} onClick={() => void scan()} loading={snapshotQuery.isFetching}>扫描</Button>
-            <Button icon={<SettingOutlined />} onClick={() => navigate(`/projects/${projectId}/agents`)}>Agent</Button>
+            <Button type="text" icon={<FileSearchOutlined />} onClick={() => void scan()} loading={snapshotQuery.isFetching}>扫描</Button>
+            <Button type="text" icon={<SettingOutlined />} onClick={() => navigate(`/projects/${projectId}/agents`)}>Agent</Button>
             <Button type="primary" icon={<PlusOutlined />} onClick={openPlanModal}>
               生成计划
             </Button>
           </div>
         </header>
 
-        <div className="po-orch-progress-line">
-          <span>项目推进</span>
+        <div className="po-orch-progress-line" aria-hidden>
           <div><i style={{ width: `${Math.round((project?.stats.progress ?? 0) * 100)}%` }} /></div>
-          <strong>{Math.round((project?.stats.progress ?? 0) * 100)}%</strong>
-          <span className="po-grow" />
         </div>
 
         {latestPlan?.status === 'approved' && !latestPlan.execution ? (
@@ -1520,13 +1513,7 @@ export default function OrchestrationWorkspace() {
           <section className="po-orch-plan-hub" aria-label="计划与任务拆解总览">
             <div className="po-orch-hub-col po-orch-hub-plans">
               <div className="po-orch-hub-head">
-                <div>
-                  <span className="po-orch-kicker">PLAN VERSIONS</span>
-                  <h2>计划版本与执行授权</h2>
-                </div>
-                <Button size="small" type="primary" icon={<PlusOutlined />} onClick={openPlanModal}>
-                  生成新计划
-                </Button>
+                <h2>计划版本</h2>
               </div>
               <div className="po-orch-hub-list">
                 {plansQuery.data?.plans.length ? (
@@ -1548,7 +1535,7 @@ export default function OrchestrationWorkspace() {
                         }
                       }}
                     >
-                      <div className="po-orch-plan-item-top">
+                      <div className="po-orch-plan-item-top" title="查看计划或配置执行授权">
                         <strong>r{plan.revision} · {plan.goal}</strong>
                         <StatusPill
                           tone={
@@ -1571,13 +1558,12 @@ export default function OrchestrationWorkspace() {
                       <div className="po-orch-plan-item-meta">
                         <span>{plan.tasks.length} 项拆解任务</span>
                         <span>更新于 {formatRelative(plan.updatedAt)}</span>
-                        <span className="po-orch-link-hint">点击查看或配置授权 →</span>
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="po-inspector-empty">
-                    尚未生成计划草稿。可点击右上角「生成新计划」，或前往「需求工作台」按需求拆解任务。
+                    还没有计划。点右上角「生成计划」，或在需求工作台按需求拆解任务。
                   </div>
                 )}
               </div>
@@ -1585,10 +1571,7 @@ export default function OrchestrationWorkspace() {
 
             <div className="po-orch-hub-col po-orch-hub-tasks">
               <div className="po-orch-hub-head">
-                <div>
-                  <span className="po-orch-kicker">PLANNED TASKS</span>
-                  <h2>已拆解任务清单 ({counts.tasks})</h2>
-                </div>
+                <h2>拆解任务 <span className="po-orch-count">{counts.tasks}</span></h2>
                 <div className="po-orch-hub-actions">
                   <Input
                     size="small"
@@ -1598,12 +1581,6 @@ export default function OrchestrationWorkspace() {
                     placeholder="搜索任务或负责 Agent"
                     className="po-orch-filter"
                   />
-                  <Button size="small" onClick={() => navigate(`/projects/${projectId}/tasks`)}>
-                    前往任务看板
-                  </Button>
-                  <Button size="small" onClick={() => navigate(`/projects/${projectId}/agents`)}>
-                    前往 Agent 协作图
-                  </Button>
                 </div>
               </div>
               <div className="po-orch-task-ledger">
@@ -1638,7 +1615,7 @@ export default function OrchestrationWorkspace() {
                     >
                       <div className="po-orch-task-row-main">
                         <strong>{taskNode.label}</strong>
-                        <span>{taskNode.subtitle || '点击查看节点详情、运行日志与依赖链'}</span>
+                        {taskNode.subtitle ? <span>{taskNode.subtitle}</span> : null}
                       </div>
                       <StatusPill tone={STATUS_TONE[taskNode.status]}>
                         {STATUS_TEXT[taskNode.status] ?? taskNode.status}
@@ -1664,7 +1641,6 @@ export default function OrchestrationWorkspace() {
                     {selectedAgent ? <RobotOutlined /> : selectedTask ? <CheckCircleOutlined /> : <ApartmentOutlined />}
                   </span>
                   <div>
-                    <span className="po-orch-panel-kicker">NODE INSPECTOR</span>
                     <strong>{drawerTitle}</strong>
                     <small>{drawerSubtitle}</small>
                   </div>

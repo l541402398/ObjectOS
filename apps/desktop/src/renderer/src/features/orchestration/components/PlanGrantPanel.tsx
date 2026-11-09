@@ -139,7 +139,7 @@ export function PlanGrantPanel({
         <div className="po-grant-title">
           <span className="po-grant-icon"><LockOutlined /></span>
           <div>
-            <span className="po-grant-kicker">PLAN EXECUTION GRANT</span>
+            <span className="po-grant-kicker">执行授权</span>
             <strong>计划执行授权</strong>
             <span className="po-grant-sub">
               批准任务计划只创建任务；只有这里的有限授权才允许启动 Agent 与写文件。
