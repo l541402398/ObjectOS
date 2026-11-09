@@ -596,24 +596,42 @@ export default function AppLayout() {
     <>
       <AppShell header={titlebar} sidebar={sidebar} footer={statusbar} collapsed={collapsed}>
         {nextActions.length > 0 ? (
-          <div className="po-next-action-bar" role="region" aria-label="下一步">
-            <div className="po-next-action-label">下一步</div>
-            <div className="po-next-action-items">
-              {nextActions.map((action) => (
+          <div className="po-next-action-bar" role="region" aria-label="下一步行动流">
+            <div className="po-next-action-label">
+              <span className="po-flow-pulse" aria-hidden />
+              下一步
+            </div>
+            <div className="po-next-action-rail" role="list">
+              {nextActions.map((action, index) => (
                 <button
                   key={action.key}
                   type="button"
-                  className={`po-next-action-chip is-${action.kind}`}
+                  role="listitem"
+                  className={`po-next-action-step is-${action.kind}`}
                   onClick={() => navigate(action.href)}
+                  aria-label={`${action.label}：${action.detail}`}
                 >
-                  <strong>{action.label}</strong>
-                  <span>{action.detail}</span>
+                  <span className="po-next-action-node" aria-hidden>
+                    {action.kind === 'tool' ? '⚠' : action.kind === 'plan' ? '◎' : '⎇'}
+                  </span>
+                  <span className="po-next-action-copy">
+                    <strong>
+                      <span className="po-sr-only">步骤 {index + 1} · </span>
+                      {action.label}
+                    </strong>
+                    <span>{action.detail}</span>
+                  </span>
                 </button>
               ))}
             </div>
             {primaryNext ? (
-              <Button type="primary" size="small" onClick={() => navigate(primaryNext.href)}>
-                去处理
+              <Button
+                type="primary"
+                size="small"
+                className="po-next-action-cta"
+                onClick={() => navigate(primaryNext.href)}
+              >
+                处理优先项
               </Button>
             ) : null}
           </div>

@@ -1357,3 +1357,294 @@
 .po-orch-canvas.is-compact .po-flow-task-main span {
   display: none;
 }
+
+
+/* ── Task timeline + merge gate (UX redesign) ── */
+.po-task-flow {
+  margin: 0 0 16px;
+  padding: 18px 20px 16px;
+  border-radius: var(--radius-2xl);
+  background:
+    radial-gradient(1200px 240px at 10% -20%, color-mix(in srgb, var(--color-accent-soft) 80%, transparent), transparent 60%),
+    linear-gradient(180deg, var(--color-canvas-elevated), var(--color-surface));
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+.po-task-flow-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.po-task-flow-kicker,
+.po-merge-gate-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+.po-task-flow-head h2 {
+  margin: 4px 0 4px;
+  font-size: var(--text-heading);
+  letter-spacing: var(--tracking-tight);
+}
+.po-task-flow-head p {
+  margin: 0;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-small);
+}
+.po-task-flow-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.po-task-flow-rail {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  position: relative;
+}
+.po-task-flow-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 4px 28px 8px 0;
+  min-width: 0;
+}
+.po-task-flow-node {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+  flex: 0 0 auto;
+  z-index: 1;
+  transition: transform var(--motion-fast) var(--ease-standard), box-shadow var(--motion-base), border-color var(--motion-base), background var(--motion-base);
+}
+.po-task-flow-node:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 16%, transparent);
+}
+.po-task-flow-step.is-active .po-task-flow-node {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  box-shadow: 0 0 0 6px var(--color-accent-soft);
+}
+.po-task-flow-step.is-done .po-task-flow-node {
+  border-color: var(--color-success);
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+.po-task-flow-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 8px;
+}
+.po-task-flow-copy strong {
+  font-size: var(--text-body);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+.po-task-flow-copy span {
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+}
+.po-task-flow-connector {
+  display: none;
+}
+/* Connector sits on the node row only — never across labels */
+.po-task-flow-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 32px;
+  width: calc(100% - 32px);
+  height: 2px;
+  background: linear-gradient(90deg, var(--flow-line), color-mix(in srgb, var(--flow-line) 30%, transparent));
+  pointer-events: none;
+  z-index: 0;
+}
+.po-task-flow-step.is-done:not(:last-child)::after {
+  background: var(--flow-line-done);
+}
+.po-task-flow-step.is-active:not(:last-child)::after {
+  background: linear-gradient(90deg, var(--flow-line-active), var(--flow-line));
+}
+.po-task-flow-panel {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: var(--radius-xl);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  border: 1px solid var(--color-border);
+}
+.po-task-flow-panel-copy {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  min-width: 0;
+  flex: 1;
+}
+.po-task-flow-panel-copy .anticon {
+  font-size: 20px;
+  color: var(--color-accent);
+  margin-top: 2px;
+}
+.po-task-flow-panel-copy strong {
+  display: block;
+  margin-bottom: 2px;
+}
+.po-task-flow-panel-copy p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+}
+.po-task-flow-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.po-task-flow-panel-actions .ant-btn {
+  border-radius: var(--radius-pill);
+}
+.po-task-flow-panel.is-agents {
+  display: block;
+}
+.po-task-flow-approvals {
+  margin-top: 12px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--color-divider);
+}
+.po-task-flow-empty {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-small);
+}
+
+.po-merge-gate {
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in srgb, var(--color-success) 28%, var(--color-border));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-success-soft) 70%, transparent), transparent 42%),
+    var(--color-surface);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.po-merge-gate-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--color-divider);
+}
+.po-merge-gate-head h3 {
+  margin: 4px 0 2px;
+  font-size: var(--text-title);
+}
+.po-merge-gate-head p {
+  margin: 0;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-caption);
+  font-family: var(--font-mono);
+}
+.po-merge-gate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.po-merge-gate-actions .ant-btn {
+  border-radius: var(--radius-pill);
+}
+.po-merge-gate-body {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+  min-height: 220px;
+  max-height: 360px;
+}
+.po-merge-files {
+  border-right: 1px solid var(--color-divider);
+  background: var(--color-surface-sunken);
+  overflow: auto;
+}
+.po-merge-files-head {
+  padding: 10px 12px;
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  border-bottom: 1px solid var(--color-divider);
+  position: sticky;
+  top: 0;
+  background: var(--color-surface-sunken);
+}
+.po-merge-files ul {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+}
+.po-merge-files li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-caption);
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+}
+.po-merge-files li:hover {
+  background: var(--color-surface-hover);
+}
+.po-merge-files-empty {
+  padding: 16px 12px;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-caption);
+}
+.po-merge-diff {
+  margin: 0;
+  padding: 12px 14px;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  background: var(--color-code-bg);
+  white-space: pre-wrap;
+  tab-size: 2;
+}
+@media (max-width: 960px) {
+  .po-task-flow-rail { grid-template-columns: 1fr; }
+  .po-task-flow-step:not(:last-child)::after { display: none; }
+  .po-merge-gate-body { grid-template-columns: 1fr; max-height: none; }
+  .po-merge-files { border-right: 0; border-bottom: 1px solid var(--color-divider); max-height: 140px; }
+}

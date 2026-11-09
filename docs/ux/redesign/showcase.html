@@ -1,0 +1,1109 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ObjectOS UX redesign showcase</title>
+<style>
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  --color-canvas: #f4f5f7;
+  --color-canvas-elevated: #fafbfc;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #eff1f5;
+  --color-surface-hover: #f7f8fa;
+  --color-overlay: rgba(255, 255, 255, 0.82);
+
+  --color-text-primary: #17191e;
+  --color-text-secondary: #4f5663;
+  --color-text-tertiary: #5c6370;
+  --color-text-disabled: #b5bcc7;
+  --color-text-inverse: #ffffff;
+
+  --color-accent: #0b5ed7;
+  --color-accent-strong: #0848ab;
+  --color-accent-soft: #eaf2ff;
+  --color-accent-border: rgba(22, 119, 255, 0.28);
+  --color-accent-contrast: #ffffff;
+
+  --color-success: #11774b;
+  --color-success-soft: #e7f7ef;
+  --color-warning: #95560a;
+  --color-warning-soft: #fff4e2;
+  --color-danger: #c0281f;
+  --color-danger-soft: #feecea;
+  --color-info: #0a64a0;
+  --color-info-soft: #e7f5fc;
+
+  --color-border: rgba(18, 28, 45, 0.09);
+  --color-border-strong: rgba(18, 28, 45, 0.16);
+  --color-divider: rgba(18, 28, 45, 0.07);
+  --color-focus-ring: rgba(22, 119, 255, 0.32);
+  --color-selection: rgba(22, 119, 255, 0.16);
+
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.68);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+  --glass-blur: 18px;
+
+  --color-code-bg: #f7f8fa;
+  --color-code-border: rgba(18, 28, 45, 0.08);
+  --color-scrim: rgba(18, 24, 38, 0.34);
+
+  --shadow-xs: 0 1px 2px rgba(15, 26, 45, 0.05);
+  --shadow-sm: 0 1px 3px rgba(15, 26, 45, 0.06), 0 6px 18px -10px rgba(15, 26, 45, 0.12);
+  --shadow-md: 0 10px 30px -16px rgba(15, 26, 45, 0.2), 0 2px 6px rgba(15, 26, 45, 0.05);
+  --shadow-lg: 0 24px 60px -28px rgba(15, 26, 45, 0.3), 0 6px 18px -10px rgba(15, 26, 45, 0.14);
+  --shadow-glass: 0 8px 32px rgba(10, 20, 40, 0.08);
+
+  --scrollbar: rgba(18, 28, 45, 0.18);
+  --scrollbar-hover: rgba(18, 28, 45, 0.3);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-canvas: #0a0c11;
+  --color-canvas-elevated: #0e1117;
+  --color-surface: #14171f;
+  --color-surface-raised: #1a1e28;
+  --color-surface-sunken: #0e1117;
+  --color-surface-hover: #1d222d;
+  --color-overlay: rgba(20, 23, 31, 0.86);
+
+  --color-text-primary: #f5f7fa;
+  --color-text-secondary: #c5cbd5;
+  --color-text-tertiary: #aeb7c4;
+  --color-text-disabled: #525b6b;
+  --color-text-inverse: #0a0c11;
+
+  --color-accent: #6faeff;
+  --color-accent-strong: #9ac8ff;
+  --color-accent-soft: rgba(76, 141, 255, 0.16);
+  --color-accent-border: rgba(111, 174, 255, 0.34);
+  --color-accent-contrast: #07111f;
+
+  --color-success: #4ed39a;
+  --color-success-soft: rgba(46, 190, 130, 0.14);
+  --color-warning: #f0b45c;
+  --color-warning-soft: rgba(240, 180, 92, 0.14);
+  --color-danger: #ff7b70;
+  --color-danger-soft: rgba(255, 123, 112, 0.13);
+  --color-info: #6cc7f5;
+  --color-info-soft: rgba(108, 199, 245, 0.13);
+
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-strong: rgba(255, 255, 255, 0.19);
+  --color-divider: rgba(255, 255, 255, 0.07);
+  --color-focus-ring: rgba(111, 174, 255, 0.38);
+  --color-selection: rgba(111, 174, 255, 0.22);
+
+  --glass-bg: rgba(20, 24, 33, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-highlight: rgba(255, 255, 255, 0.05);
+  --glass-blur: 18px;
+
+  --color-code-bg: #0e1117;
+  --color-code-border: rgba(255, 255, 255, 0.08);
+  --color-scrim: rgba(2, 4, 8, 0.58);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.28);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 8px 20px -12px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 14px 38px -20px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 30px 70px -30px rgba(0, 0, 0, 0.72), 0 8px 24px -14px rgba(0, 0, 0, 0.4);
+  --shadow-glass: 0 10px 36px rgba(0, 0, 0, 0.36);
+
+  --scrollbar: rgba(255, 255, 255, 0.16);
+  --scrollbar-hover: rgba(255, 255, 255, 0.28);
+}
+
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC',
+    'Hiragino Sans GB', sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  --text-micro: 12px;
+  --text-caption: 13px;
+  --text-small: 13px;
+  --text-body: 14px;
+  --text-body-lg: 15px;
+  --text-title: 16px;
+  --text-heading: 20px;
+  --text-display: 28px;
+  --text-hero: 34px;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --tracking-tight: -0.02em;
+  --tracking-snug: -0.01em;
+
+  --space-0: 0px;
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 6px;
+  --space-4: 8px;
+  --space-5: 12px;
+  --space-6: 16px;
+  --space-7: 20px;
+  --space-8: 24px;
+  --space-9: 32px;
+  --space-10: 40px;
+  --space-11: 48px;
+  --space-12: 64px;
+
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-pill: 999px;
+
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 260ms;
+  --motion-panel: 320ms;
+  --ease-standard: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --titlebar-height: 46px;
+  --statusbar-height: 28px;
+  --sidebar-width: 248px;
+  --sidebar-collapsed-width: 76px;
+  --inspector-width: 336px;
+
+  --z-sticky: 10;
+  --z-dropdown: 1000;
+  --z-modal: 1100;
+  --z-toast: 1200;
+
+  --stage-ideation: #8a7cff;
+  --stage-requirements: #4c8dff;
+  --stage-architecture: #22a6c4;
+  --stage-planning: #22b8a0;
+  --stage-implementation: #e0a23c;
+  --stage-testing: #e36a8c;
+  --stage-release: #168f5b;
+  --stage-maintenance: #8792a5;
+  /* Flow / timeline primitives (UX redesign) */
+  --flow-rail-gap: 0;
+  --flow-node-size: 28px;
+  --flow-line: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  --flow-line-done: var(--color-success);
+  --flow-line-active: var(--color-accent);
+  --flow-pulse: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  --decision-approve: var(--color-success);
+  --decision-reject: var(--color-danger);
+  --decision-soft: var(--color-accent-soft);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--color-canvas);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-selection);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.22);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.22);
+  box-shadow: var(--shadow-glass);
+  border-radius: var(--radius-xl);
+}
+
+.glass-bar {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.18);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.18);
+}
+
+[data-reduce-transparency='true'] .glass-panel,
+[data-reduce-transparency='true'] .glass-bar,
+[data-high-contrast='true'] .glass-panel,
+[data-high-contrast='true'] .glass-bar {
+  background: var(--color-surface);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-panel,
+  .glass-bar {
+    background: var(--color-surface);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass-panel,
+  .glass-bar {
+    background: var(--color-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+[data-reduce-motion='true'] *,
+[data-reduce-motion='true'] *::before,
+[data-reduce-motion='true'] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .glass-panel,
+  .glass-bar {
+    background: Canvas;
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+}
+
+/* ── Next-action flow rail (not boxed chips) ── */
+.po-next-action-bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-5);
+  padding: 10px 18px 12px;
+  border-bottom: 1px solid transparent;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-warning-soft) 55%, var(--color-canvas-elevated)), var(--color-canvas-elevated));
+  box-shadow: inset 0 -1px 0 var(--color-divider);
+  position: relative;
+  overflow: hidden;
+}
+.po-next-action-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--color-warning), var(--color-accent));
+  border-radius: 0 2px 2px 0;
+}
+.po-next-action-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-warning);
+  white-space: nowrap;
+}
+.po-next-action-label .po-flow-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-warning);
+  box-shadow: 0 0 0 0 var(--flow-pulse);
+  animation: po-flow-pulse 1.6s var(--ease-out) infinite;
+}
+@keyframes po-flow-pulse {
+  0% { box-shadow: 0 0 0 0 var(--flow-pulse); }
+  70% { box-shadow: 0 0 0 10px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.po-next-action-rail {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding: 2px 0;
+}
+.po-next-action-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-width: 168px;
+  max-width: 260px;
+  padding: 6px 14px 6px 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: transform var(--motion-fast) var(--ease-standard), opacity var(--motion-base);
+}
+.po-next-action-step:hover {
+  transform: translateY(-1px);
+}
+.po-next-action-step:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+.po-next-action-step + .po-next-action-step::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 50%;
+  width: 12px;
+  height: 2px;
+  margin-left: -12px;
+  background: var(--flow-line);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.po-next-action-node {
+  width: var(--flow-node-size);
+  height: var(--flow-node-size);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex: 0 0 auto;
+  border: 2px solid transparent;
+  transition: box-shadow var(--motion-base) var(--ease-out), border-color var(--motion-base);
+}
+.po-next-action-step.is-tool .po-next-action-node {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
+}
+.po-next-action-step.is-plan .po-next-action-node {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  border-color: var(--color-accent-border);
+}
+.po-next-action-step.is-merge .po-next-action-node {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+  border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
+}
+.po-next-action-step:hover .po-next-action-node {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+.po-next-action-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.po-next-action-copy strong {
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.3;
+}
+.po-next-action-copy span {
+  font-size: var(--text-micro);
+  color: var(--color-text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.po-next-action-cta {
+  border-radius: var(--radius-pill) !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.po-approval-batch-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-accent-soft) 70%, transparent);
+  border: 1px solid var(--color-accent-border);
+}
+.po-approval-batch-bar .ant-btn {
+  border-radius: var(--radius-pill);
+}
+.po-approval.is-selected {
+  box-shadow: inset 3px 0 0 var(--color-accent), 0 0 0 1px var(--color-accent-border);
+}
+/* ── Task timeline + merge gate (UX redesign) ── */
+.po-task-flow {
+  margin: 0 0 16px;
+  padding: 18px 20px 16px;
+  border-radius: var(--radius-2xl);
+  background:
+    radial-gradient(1200px 240px at 10% -20%, color-mix(in srgb, var(--color-accent-soft) 80%, transparent), transparent 60%),
+    linear-gradient(180deg, var(--color-canvas-elevated), var(--color-surface));
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+.po-task-flow-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.po-task-flow-kicker,
+.po-merge-gate-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+.po-task-flow-head h2 {
+  margin: 4px 0 4px;
+  font-size: var(--text-heading);
+  letter-spacing: var(--tracking-tight);
+}
+.po-task-flow-head p {
+  margin: 0;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-small);
+}
+.po-task-flow-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.po-task-flow-rail {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  position: relative;
+}
+.po-task-flow-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 4px 28px 8px 0;
+  min-width: 0;
+}
+.po-task-flow-node {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+  flex: 0 0 auto;
+  z-index: 1;
+  transition: transform var(--motion-fast) var(--ease-standard), box-shadow var(--motion-base), border-color var(--motion-base), background var(--motion-base);
+}
+.po-task-flow-node:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 16%, transparent);
+}
+.po-task-flow-step.is-active .po-task-flow-node {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  box-shadow: 0 0 0 6px var(--color-accent-soft);
+}
+.po-task-flow-step.is-done .po-task-flow-node {
+  border-color: var(--color-success);
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+.po-task-flow-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 8px;
+}
+.po-task-flow-copy strong {
+  font-size: var(--text-body);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+.po-task-flow-copy span {
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+}
+.po-task-flow-connector {
+  display: none;
+}
+/* Connector sits on the node row only — never across labels */
+.po-task-flow-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 32px;
+  width: calc(100% - 32px);
+  height: 2px;
+  background: linear-gradient(90deg, var(--flow-line), color-mix(in srgb, var(--flow-line) 30%, transparent));
+  pointer-events: none;
+  z-index: 0;
+}
+.po-task-flow-step.is-done:not(:last-child)::after {
+  background: var(--flow-line-done);
+}
+.po-task-flow-step.is-active:not(:last-child)::after {
+  background: linear-gradient(90deg, var(--flow-line-active), var(--flow-line));
+}
+.po-task-flow-panel {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: var(--radius-xl);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  border: 1px solid var(--color-border);
+}
+.po-task-flow-panel-copy {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  min-width: 0;
+  flex: 1;
+}
+.po-task-flow-panel-copy .anticon {
+  font-size: 20px;
+  color: var(--color-accent);
+  margin-top: 2px;
+}
+.po-task-flow-panel-copy strong {
+  display: block;
+  margin-bottom: 2px;
+}
+.po-task-flow-panel-copy p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+}
+.po-task-flow-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.po-task-flow-panel-actions .ant-btn {
+  border-radius: var(--radius-pill);
+}
+.po-task-flow-panel.is-agents {
+  display: block;
+}
+.po-task-flow-approvals {
+  margin-top: 12px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--color-divider);
+}
+.po-task-flow-empty {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-small);
+}
+
+.po-merge-gate {
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in srgb, var(--color-success) 28%, var(--color-border));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-success-soft) 70%, transparent), transparent 42%),
+    var(--color-surface);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.po-merge-gate-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--color-divider);
+}
+.po-merge-gate-head h3 {
+  margin: 4px 0 2px;
+  font-size: var(--text-title);
+}
+.po-merge-gate-head p {
+  margin: 0;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-caption);
+  font-family: var(--font-mono);
+}
+.po-merge-gate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.po-merge-gate-actions .ant-btn {
+  border-radius: var(--radius-pill);
+}
+.po-merge-gate-body {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+  min-height: 220px;
+  max-height: 360px;
+}
+.po-merge-files {
+  border-right: 1px solid var(--color-divider);
+  background: var(--color-surface-sunken);
+  overflow: auto;
+}
+.po-merge-files-head {
+  padding: 10px 12px;
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  border-bottom: 1px solid var(--color-divider);
+  position: sticky;
+  top: 0;
+  background: var(--color-surface-sunken);
+}
+.po-merge-files ul {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+}
+.po-merge-files li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-caption);
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+}
+.po-merge-files li:hover {
+  background: var(--color-surface-hover);
+}
+.po-merge-files-empty {
+  padding: 16px 12px;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-caption);
+}
+.po-merge-diff {
+  margin: 0;
+  padding: 12px 14px;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  background: var(--color-code-bg);
+  white-space: pre-wrap;
+  tab-size: 2;
+}
+@media (max-width: 960px) {
+  .po-task-flow-rail { grid-template-columns: 1fr; }
+  .po-task-flow-step:not(:last-child)::after { display: none; }
+  .po-merge-gate-body { grid-template-columns: 1fr; max-height: none; }
+  .po-merge-files { border-right: 0; border-bottom: 1px solid var(--color-divider); max-height: 140px; }
+}
+
+/* ── Inline decision rail (replaces boxed approval cards) ── */
+.po-decision {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 4px 0 18px;
+  border: 0;
+  background: transparent;
+  position: relative;
+  animation: po-decision-in var(--motion-panel) var(--ease-out);
+}
+@keyframes po-decision-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.po-decision + .po-decision {
+  margin-top: 2px;
+}
+.po-decision-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 6px;
+}
+.po-decision-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-border-strong);
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 0 0 1px var(--color-border);
+  flex: 0 0 auto;
+  z-index: 1;
+}
+.po-decision-dot.is-live {
+  background: var(--color-warning);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-warning) 50%, transparent), 0 0 0 6px var(--color-warning-soft);
+  animation: po-flow-pulse 1.8s var(--ease-out) infinite;
+}
+.po-decision-stem {
+  flex: 1;
+  width: 2px;
+  margin-top: 4px;
+  border-radius: 1px;
+  background: linear-gradient(180deg, var(--flow-line), transparent);
+  min-height: 24px;
+}
+.po-decision:last-child .po-decision-stem {
+  opacity: 0.35;
+}
+.po-decision-body {
+  min-width: 0;
+  padding: 8px 12px 10px 4px;
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  transition: background var(--motion-base) var(--ease-standard);
+}
+.po-decision.is-pending .po-decision-body {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-warning-soft) 55%, transparent), transparent 70%);
+}
+.po-decision.is-selected .po-decision-body {
+  background: color-mix(in srgb, var(--color-accent-soft) 80%, transparent);
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+.po-decision-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.po-decision-heading {
+  flex: 1;
+  min-width: 0;
+}
+.po-decision-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.po-decision-title {
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: var(--tracking-snug);
+}
+.po-decision-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin: 4px 0 0;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-caption);
+}
+.po-decision-tool {
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--color-accent);
+}
+.po-decision-detail {
+  margin: 10px 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.po-decision-resolved {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-tertiary);
+}
+.po-decision-args {
+  margin-top: 8px;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-caption);
+}
+.po-decision-args summary {
+  cursor: pointer;
+  user-select: none;
+  color: var(--color-accent);
+  font-weight: var(--weight-medium);
+}
+.po-decision-args summary:hover {
+  text-decoration: underline;
+}
+.po-decision-args pre {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  max-height: 220px;
+  overflow: auto;
+  border-radius: var(--radius-md);
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-code-border);
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.po-decision-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+.po-decision-actions .ant-btn {
+  border-radius: var(--radius-pill);
+}
+.po-decision-approve.ant-btn-primary {
+  box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--color-success) 70%, transparent);
+  background: var(--color-success);
+  border-color: var(--color-success);
+}
+.po-decision-approve.ant-btn-primary:hover {
+  background: color-mix(in srgb, var(--color-success) 88%, #000) !important;
+  border-color: color-mix(in srgb, var(--color-success) 88%, #000) !important;
+}
+.po-decision-reject.ant-btn {
+  color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 35%, var(--color-border));
+}
+.po-decision.is-compact {
+  padding-bottom: 12px;
+}
+.po-decision.is-compact .po-decision-body {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+/* Back-compat aliases so pages targeting .po-approval still layout */
+.po-approval {
+  /* legacy class kept empty; ApprovalCard now uses .po-decision */
+}
+
+body { margin: 0; background: var(--color-canvas); color: var(--color-text-primary); font-family: var(--font-sans); }
+.showcase { max-width: 1440px; margin: 0 auto; padding: 24px; }
+.showcase h1 { margin: 0 0 8px; font-size: 22px; }
+.showcase .hint { color: var(--color-text-tertiary); margin-bottom: 20px; }
+.block { margin-bottom: 28px; }
+.toolbar { display:flex; gap:8px; margin-bottom: 16px; }
+.toolbar button { border-radius: 999px; border: 1px solid var(--color-border); background: var(--color-surface); padding: 6px 14px; cursor: pointer; }
+.ant-btn { appearance:none; border:1px solid var(--color-border); background: var(--color-surface); border-radius: 999px; padding: 6px 14px; cursor:pointer; font: inherit; }
+.ant-btn-primary { background: var(--color-accent); color: var(--color-accent-contrast); border-color: var(--color-accent); }
+button.danger, .ant-btn.danger { color: var(--color-danger); border-color: color-mix(in srgb, var(--color-danger) 35%, var(--color-border)); }
+</style>
+</head>
+<body>
+<div class="showcase">
+  <div class="toolbar">
+    <button type="button" id="toLight">浅色</button>
+    <button type="button" id="toDark">深色</button>
+  </div>
+  <h1>UX Flow Redesign · Showcase</h1>
+  <p class="hint">Next-action rail · Decision rail · Task timeline · Merge gate（mock 数据）</p>
+
+  <div class="block" id="next-action">
+    <div class="po-next-action-bar" role="region" aria-label="下一步行动流">
+      <div class="po-next-action-label"><span class="po-flow-pulse"></span>下一步</div>
+      <div class="po-next-action-rail" role="list">
+        <button type="button" class="po-next-action-step is-tool" role="listitem">
+          <span class="po-next-action-node">⚠</span>
+          <span class="po-next-action-copy"><strong>待授权 · write_file</strong><span>笔记图谱视图与反向链接索引</span></span>
+        </button>
+        <button type="button" class="po-next-action-step is-plan" role="listitem">
+          <span class="po-next-action-node">◎</span>
+          <span class="po-next-action-copy"><strong>待批准计划</strong><span>实现合并门与授权流</span></span>
+        </button>
+        <button type="button" class="po-next-action-step is-merge" role="listitem">
+          <span class="po-next-action-node">⎇</span>
+          <span class="po-next-action-copy"><strong>待审 Diff / 合并</strong><span>projectos/plan-demo</span></span>
+        </button>
+      </div>
+      <button type="button" class="ant-btn ant-btn-primary po-next-action-cta">处理优先项</button>
+    </div>
+  </div>
+
+  <div class="block" id="decisions">
+    <div class="po-approval-batch-bar">
+      <span>已选 2 项</span>
+      <button type="button" class="ant-btn danger">拒绝所选</button>
+      <button type="button" class="ant-btn ant-btn-primary">批准所选</button>
+    </div>
+    <article class="po-decision is-pending is-selected">
+      <div class="po-decision-rail"><span class="po-decision-dot is-live"></span><span class="po-decision-stem"></span></div>
+      <div class="po-decision-body">
+        <header class="po-decision-head">
+          <div class="po-decision-heading">
+            <div class="po-decision-title-row">
+              <h3 class="po-decision-title">写入 src/graph/Backlinks.ts</h3>
+              <span style="font-size:12px;color:var(--color-warning)">待授权</span>
+            </div>
+            <p class="po-decision-meta"><span>Kai</span><span>· 图谱视图实现</span><code class="po-decision-tool">write_file</code></p>
+          </div>
+        </header>
+        <p class="po-decision-detail">在隔离 Worktree 外（或未验证）写入项目文件，需要人工确认。</p>
+        <div class="po-decision-actions">
+          <button type="button" class="ant-btn po-decision-reject">拒绝</button>
+          <button type="button" class="ant-btn">批准本 Run 同类</button>
+          <button type="button" class="ant-btn ant-btn-primary po-decision-approve">批准并继续</button>
+        </div>
+      </div>
+    </article>
+    <article class="po-decision is-pending">
+      <div class="po-decision-rail"><span class="po-decision-dot is-live"></span><span class="po-decision-stem"></span></div>
+      <div class="po-decision-body">
+        <header class="po-decision-head">
+          <div class="po-decision-heading">
+            <div class="po-decision-title-row"><h3 class="po-decision-title">运行 pnpm test</h3></div>
+            <p class="po-decision-meta"><span>Iris</span><code class="po-decision-tool">run_tests</code></p>
+          </div>
+        </header>
+        <div class="po-decision-actions">
+          <button type="button" class="ant-btn po-decision-reject">拒绝</button>
+          <button type="button" class="ant-btn ant-btn-primary po-decision-approve">批准并继续</button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="block" id="merge-gate">
+    <section class="po-task-flow">
+      <div class="po-task-flow-head">
+        <div>
+          <span class="po-task-flow-kicker">⚡ 主流程</span>
+          <h2>计划 → Worktree 执行 → 合并门</h2>
+          <p>把授权与合并收进同一条时间线，避免在卡片堆里跳来跳去。</p>
+        </div>
+        <div class="po-task-flow-summary"><span style="padding:2px 10px;border-radius:999px;background:var(--color-warning-soft);color:var(--color-warning);font-size:12px">检查点 · 合并</span></div>
+      </div>
+      <ol class="po-task-flow-rail">
+        <li class="po-task-flow-step is-done"><button type="button" class="po-task-flow-node">✓</button><div class="po-task-flow-copy"><strong>计划批准</strong><span>计划已批准</span></div></li>
+        <li class="po-task-flow-step is-done"><button type="button" class="po-task-flow-node">✓</button><div class="po-task-flow-copy"><strong>Agents · Worktree</strong><span>执行完成，进入合并门</span></div></li>
+        <li class="po-task-flow-step is-active"><button type="button" class="po-task-flow-node">3</button><div class="po-task-flow-copy"><strong>合并门</strong><span>审 Diff → 合并 / 丢弃</span></div></li>
+      </ol>
+      <div class="po-merge-gate">
+        <div class="po-merge-gate-head">
+          <div>
+            <span class="po-merge-gate-kicker">⎇ 合并门 · 主检查点</span>
+            <h3>审阅 Diff 后合并或丢弃</h3>
+            <p>projectos/plan-demo · /data/worktrees/proj/plan-demo</p>
+          </div>
+          <div class="po-merge-gate-actions">
+            <button type="button" class="ant-btn">刷新 Diff</button>
+            <button type="button" class="ant-btn ant-btn-primary">合并到主分支</button>
+            <button type="button" class="ant-btn danger">丢弃</button>
+          </div>
+        </div>
+        <div class="po-merge-gate-body">
+          <aside class="po-merge-files">
+            <div class="po-merge-files-head">变更文件</div>
+            <ul>
+              <li>📄 src/graph/Backlinks.ts</li>
+              <li>📄 src/views/GraphView.tsx</li>
+              <li>📄 tests/backlinks.test.ts</li>
+              <li>📄 package.json</li>
+            </ul>
+          </aside>
+          <pre class="po-merge-diff"># git status
+M src/graph/Backlinks.ts
+A src/views/GraphView.tsx
+A tests/backlinks.test.ts
+
+# git diff
+@@ -1,6 +1,18 @@
+ export function buildBacklinks(notes) {
+-  return new Map()
++  const map = new Map()
++  for (const note of notes) {
++    for (const target of note.links) {
++      const list = map.get(target) ?? []
++      list.push(note.id)
++      map.set(target, list)
++    }
++  }
++  return map
+ }</pre>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+<script>
+document.getElementById('toLight').onclick=()=>document.documentElement.dataset.theme='light'
+document.getElementById('toDark').onclick=()=>document.documentElement.dataset.theme='dark'
+</script>
+</body>
+</html>

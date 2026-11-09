@@ -1,4 +1,4 @@
-import { AlertOutlined, CheckOutlined, CloseOutlined, SafetyCertificateOutlined } from '@ant-design/icons'
+import { CheckOutlined, CloseOutlined, SafetyCertificateOutlined } from '@ant-design/icons'
 import { Button, Checkbox } from 'antd'
 import type { ApprovalView } from '@projectos/contracts'
 import { StatusPill, toneForStatus } from '@projectos/ui'
@@ -41,61 +41,78 @@ export function ApprovalCard({
   const pending = approval.status === 'pending'
   const toolName = toolNameOf(approval)
   return (
-    <div className={`po-approval ${compact ? 'is-compact' : ''} ${pending ? 'is-pending' : ''} ${selected ? 'is-selected' : ''}`.trim()}>
-      <div className="po-approval-head">
-        {selectable && pending ? (
-          <Checkbox
-            checked={selected}
-            disabled={busy}
-            onChange={(event) => onSelectChange?.(event.target.checked)}
-            aria-label="选择授权"
-          />
-        ) : null}
-        <div className="po-approval-icon">
-          {pending ? <AlertOutlined /> : <SafetyCertificateOutlined />}
-        </div>
-        <div className="po-approval-heading">
-          <div className="po-approval-title">{approval.title}</div>
-          <div className="po-approval-sub">
-            {approval.agentName}
-            {approval.taskTitle ? ` · ${approval.taskTitle}` : ''}
-            {toolName ? ` · ${toolName}` : ''}
-          </div>
-        </div>
-        <StatusPill tone={toneForStatus(approval.status)}>
-          {pending ? '待授权' : approval.status === 'approved' ? '已批准' : approval.status === 'rejected' ? '已拒绝' : approval.status}
-        </StatusPill>
+    <article
+      className={`po-decision ${compact ? 'is-compact' : ''} ${pending ? 'is-pending' : 'is-resolved'} ${selected ? 'is-selected' : ''}`.trim()}
+      aria-label={pending ? `待授权：${approval.title}` : `已处理：${approval.title}`}
+    >
+      <div className="po-decision-rail" aria-hidden>
+        <span className={`po-decision-dot ${pending ? 'is-live' : ''}`} />
+        <span className="po-decision-stem" />
       </div>
-      {pending ? (
-        <>
-          <div className="po-approval-detail">{approval.detail}</div>
-          <details className="po-approval-args">
-            <summary>查看请求参数</summary>
-            <pre>{pretty(approval.request)}</pre>
-          </details>
-          <div className="po-approval-actions">
-            <Button size="small" icon={<CloseOutlined />} disabled={busy} onClick={() => onDecide('rejected')}>
-              拒绝
-            </Button>
-            {onApproveKind && toolName ? (
-              <Button size="small" disabled={busy} onClick={() => onApproveKind()}>
-                批准本 Run 同类
-              </Button>
-            ) : null}
-            <Button
-              size="small"
-              type="primary"
-              icon={<CheckOutlined />}
-              loading={busy}
-              onClick={() => onDecide('approved')}
-            >
-              批准并继续
-            </Button>
+      <div className="po-decision-body">
+        <header className="po-decision-head">
+          {selectable && pending ? (
+            <Checkbox
+              checked={selected}
+              disabled={busy}
+              onChange={(event) => onSelectChange?.(event.target.checked)}
+              aria-label="选择授权"
+            />
+          ) : null}
+          <div className="po-decision-heading">
+            <div className="po-decision-title-row">
+              <h3 className="po-decision-title">{approval.title}</h3>
+              <StatusPill tone={toneForStatus(approval.status)}>
+                {pending ? '待授权' : approval.status === 'approved' ? '已批准' : approval.status === 'rejected' ? '已拒绝' : approval.status}
+              </StatusPill>
+            </div>
+            <p className="po-decision-meta">
+              <span>{approval.agentName}</span>
+              {approval.taskTitle ? <span>· {approval.taskTitle}</span> : null}
+              {toolName ? <code className="po-decision-tool">{toolName}</code> : null}
+            </p>
           </div>
-        </>
-      ) : approval.decision ? (
-        <div className="po-approval-detail">决定：{approval.decision}</div>
-      ) : null}
-    </div>
+        </header>
+        {pending ? (
+          <>
+            <p className="po-decision-detail">{approval.detail}</p>
+            <details className="po-decision-args">
+              <summary>请求参数 / Diff 预览</summary>
+              <pre>{pretty(approval.request)}</pre>
+            </details>
+            <div className="po-decision-actions" role="group" aria-label="授权决定">
+              <Button
+                className="po-decision-reject"
+                size="middle"
+                icon={<CloseOutlined />}
+                disabled={busy}
+                onClick={() => onDecide('rejected')}
+              >
+                拒绝
+              </Button>
+              {onApproveKind && toolName ? (
+                <Button size="middle" disabled={busy} onClick={() => onApproveKind()}>
+                  批准本 Run 同类
+                </Button>
+              ) : null}
+              <Button
+                className="po-decision-approve"
+                size="middle"
+                type="primary"
+                icon={<CheckOutlined />}
+                loading={busy}
+                onClick={() => onDecide('approved')}
+              >
+                批准并继续
+              </Button>
+            </div>
+          </>
+        ) : (
+          <p className="po-decision-detail po-decision-resolved">
+            <SafetyCertificateOutlined /> 决定：{approval.decision ?? approval.status}
+          </p>
+        )}
+      </div>
+    </article>
   )
 }

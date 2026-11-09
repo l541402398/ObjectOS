@@ -184,6 +184,16 @@
   --stage-testing: #e36a8c;
   --stage-release: #168f5b;
   --stage-maintenance: #8792a5;
+  /* Flow / timeline primitives (UX redesign) */
+  --flow-rail-gap: 0;
+  --flow-node-size: 28px;
+  --flow-line: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  --flow-line-done: var(--color-success);
+  --flow-line-active: var(--color-accent);
+  --flow-pulse: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  --decision-approve: var(--color-success);
+  --decision-reject: var(--color-danger);
+  --decision-soft: var(--color-accent-soft);
 }
 
 * {

@@ -62,6 +62,7 @@ import { errorMessage } from '../../../lib/errors'
 import { formatRelative } from '../../../lib/format'
 import { useQueryClient } from '@tanstack/react-query'
 import { useResolvedTheme } from '../../../stores/ui'
+import { TaskFlowPanel } from './TaskFlowPanel'
 import './orchestration.css'
 
 interface WorkbenchData extends Record<string, unknown> {
@@ -555,21 +556,27 @@ export default function OrchestrationWorkspace() {
     }
   }, [saveLayout])
 
+  const activePlanId = (): string | null => draft?.id ?? latestPlan?.id ?? null
+
   const loadWorktree = async (): Promise<void> => {
-    if (!draft) return
+    const planId = activePlanId()
+    if (!planId) return
     try {
-      setWorktreeInfo(await window.projectos.worktrees.info(draft.id))
-      setDiffOpen(true)
+      const info = await window.projectos.worktrees.info(planId)
+      setWorktreeInfo(info)
+      // Keep modal for deep dive, but timeline merge gate already shows the diff.
+      setDiffOpen(false)
     } catch (error) {
       message.error(errorMessage(error))
     }
   }
   const mergeWorktree = async (): Promise<void> => {
-    if (!draft) return
+    const planId = activePlanId()
+    if (!planId) return
     try {
-      const info = await window.projectos.worktrees.merge(draft.id)
+      const info = await window.projectos.worktrees.merge(planId)
       setWorktreeInfo(info)
-      setDraft(await window.projectos.plans.get(draft.id))
+      setDraft(await window.projectos.plans.get(planId))
       await invalidate()
       message.success('已合并到主分支')
     } catch (error) {
@@ -578,14 +585,50 @@ export default function OrchestrationWorkspace() {
   }
 
   const discardWorktree = async (): Promise<void> => {
-    if (!draft) return
+    const planId = activePlanId()
+    if (!planId) return
     try {
-      await window.projectos.worktrees.discard(draft.id)
-      setDraft(await window.projectos.plans.get(draft.id))
+      await window.projectos.worktrees.discard(planId)
+      setDraft(await window.projectos.plans.get(planId))
       await invalidate()
       message.success('Worktree 已丢弃')
     } catch (error) {
       message.error(errorMessage(error))
+    }
+  }
+
+
+  const [busyApprovalId, setBusyApprovalId] = useState<string | null>(null)
+  const decideApproval = async (approvalId: string, decision: 'approved' | 'rejected'): Promise<void> => {
+    setBusyApprovalId(approvalId)
+    try {
+      await window.projectos.approvals.decide({ approvalId, decision })
+      await invalidate()
+      message.success(decision === 'approved' ? '已批准' : '已拒绝')
+    } catch (error) {
+      message.error(errorMessage(error))
+    } finally {
+      setBusyApprovalId(null)
+    }
+  }
+  const approveKind = async (approval: ApprovalView): Promise<void> => {
+    if (!approval.runId) return
+    const toolName = typeof approval.request.toolName === 'string' ? approval.request.toolName : '工具'
+    setBusyApprovalId(approval.id)
+    try {
+      const result = await window.projectos.approvals.decideBatch({
+        decision: 'approved',
+        runId: approval.runId,
+        sameKindAs: approval.id,
+        grantFutureOfKind: true,
+      })
+      await invalidate()
+      const grant = result.grantedKinds.length ? `；已放行后续 ${result.grantedKinds.join(', ')}` : ''
+      message.success(`已批准本 Run 的 «${toolName}»${grant}`)
+    } catch (error) {
+      message.error(errorMessage(error))
+    } finally {
+      setBusyApprovalId(null)
     }
   }
 
@@ -858,6 +901,27 @@ export default function OrchestrationWorkspace() {
           <span className="po-grow" />
           <span>任务 DAG 是唯一依赖真相</span>
         </div>
+
+        <TaskFlowPanel
+          plan={draft ?? latestPlan ?? null}
+          pendingApprovals={pendingApprovals}
+          runningCount={counts.running}
+          worktreeInfo={worktreeInfo}
+          busyApprovalId={busyApprovalId}
+          onOpenPlan={() => {
+            setDraft(latestPlan?.status === 'draft' ? latestPlan : draft ?? latestPlan ?? null)
+            setGoal((latestPlan?.status === 'draft' ? latestPlan.goal : draft?.goal) ?? '')
+            setPlanOpen(true)
+          }}
+          onApprovePlan={() => void approve()}
+          onStart={() => void controlExecution('start')}
+          onLoadDiff={() => void loadWorktree()}
+          onMerge={() => void mergeWorktree()}
+          onDiscard={() => void discardWorktree()}
+          onDecideApproval={(id, decision) => void decideApproval(id, decision)}
+          onApproveKind={(approval) => void approveKind(approval)}
+          onGotoAgents={() => navigate(`/projects/${projectId}/agents`)}
+        />
 
         <div className="po-orch-grid">
           <section className="po-orch-canvas-card">
