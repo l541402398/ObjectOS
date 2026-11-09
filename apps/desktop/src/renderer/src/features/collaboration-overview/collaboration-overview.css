@@ -1669,3 +1669,16 @@
   color: var(--pw-accent-ink);
   font-weight: 600;
 }
+
+/* ADR-0092: requirement relay is one quiet row above the canvas (title · counts · stage chain), not a boxed card. */
+.aco-req-flow-bar { gap: var(--ui-space-1); padding: 2px 2px var(--ui-space-2); border: 0; border-bottom: 1px solid var(--pw-line, var(--ui-divider)); border-radius: 0; background: transparent; box-shadow: none; }
+.aco-req-flow-item { flex-direction: row; align-items: center; gap: var(--ui-space-4); }
+.aco-req-flow-meta { flex: 0 1 auto; flex-wrap: nowrap; gap: var(--ui-space-2); }
+.aco-req-flow-title { max-width: 320px; font-size: var(--ui-type-body); }
+.aco-req-flow-counts { margin-left: 0; font-size: var(--ui-type-caption); }
+.aco-req-stage-chain { flex: 1; justify-content: flex-end; gap: 2px; }
+.aco-req-stage-pill { height: 26px; padding: 0 8px; border-color: transparent; background: transparent; font-size: var(--ui-type-caption); }
+.aco-req-stage-pill:not(.is-running):not(.is-starting):not(.is-waiting_approval):not(.is-selected) .aco-req-stage-agent { display: none; }
+.aco-req-stage-pill.is-completed { border-color: transparent; background: transparent; }
+.aco-req-stage-name { font-weight: 550; }
+.aco-req-stage-idx { width: 18px; height: 18px; font-size: 11px; font-variant-numeric: tabular-nums; }

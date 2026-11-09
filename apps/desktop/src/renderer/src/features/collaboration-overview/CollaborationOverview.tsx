@@ -11,7 +11,7 @@ import {
   Check,
   CircleAlert,
   Clock,
-  Layers,
+
   RefreshCw,
   ShieldAlert,
   Workflow,
@@ -684,7 +684,6 @@ export function CollaborationOverview({
             return (
               <div key={requirement.id} className="aco-req-flow-item">
                 <div className="aco-req-flow-meta">
-                  <span className="aco-req-flow-kicker"><Layers size={11} /> 需求整体流转</span>
                   <strong className="aco-req-flow-title" title={requirement.title}>{requirement.title}</strong>
                   <span className="aco-req-flow-counts">
                     {view.tasks.length} 任务 · {completedCount}/{steps.length} 阶段完成 · {uniqueAgents} 位 Agent · {view.materials.length} 份产出
