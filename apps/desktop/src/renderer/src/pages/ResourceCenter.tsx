@@ -290,9 +290,8 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
   const header = (
     <header className="rh-head">
       <div className="rh-head-copy">
-        <span className="rh-eyebrow">DELIVERY ASSETS</span>
         <h1>资源与连接</h1>
-        <p>登记部署要用到的主机、集群与流水线。连接测试只证明网络、身份与认证可用；部署仍需单独授权。</p>
+        <p title="连接测试只证明网络、身份与认证可用；部署仍需单独授权。">部署用到的主机、集群与流水线；连接可用不等于已授权部署。</p>
       </div>
       <div className="rh-head-actions">
         {allResources.length > 0 ? (
