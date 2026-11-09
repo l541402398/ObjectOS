@@ -104,7 +104,7 @@ export function DeliveryLens({ projectId, approvals, initialId }: { projectId: s
       <div className="rv-clear">
         <div className="rv-clear-orbit is-calm" aria-hidden><PackageCheck size={26} /></div>
         <h2>没有待处理的交付审批</h2>
-        <p className="rv-clear-hint">发布变更和部署在进入目标环境前需要你确认。当发布中心提交审核或部署需要放行时，会出现在这里。</p>
+        <p className="rv-clear-hint">发布与部署进入目标环境前，会在这里等你确认。</p>
         {outcome ? <p className="rv-clear-outcome">{outcome}</p> : null}
         <div className="rv-clear-links">
           <button type="button" className="studio-ghost" onClick={() => navigate(`/projects/${projectId}/releases`)}><Rocket size={13} />发布中心</button>
