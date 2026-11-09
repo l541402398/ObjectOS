@@ -1,0 +1,12 @@
+/* ADR-0092 任务看板: the roster is a quiet single-row dock, the columns are the focus. */
+:root .po-agent-roster-bar.is-dock { padding: 4px 8px; border-color: transparent; background: transparent; box-shadow: none; }
+:root .po-agent-roster-bar.is-dock .po-agent-dock-label { padding: 0 12px 0 2px; font-size: var(--ui-type-caption); color: var(--ui-muted); }
+:root .po-agent-roster-bar.is-dock .po-agent-roster-kicker { color: var(--ui-ink-2); font-size: var(--ui-type-caption); font-weight: 650; letter-spacing: 0; text-transform: none; }
+:root .po-agent-roster-bar.is-dock .po-agent-roster-track { display: flex; flex-wrap: nowrap; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+:root .po-agent-roster-bar.is-dock .po-roster-agent { flex: 0 0 auto; gap: 8px; padding: 3px 12px 3px 3px; border-color: transparent; border-radius: 999px; background: transparent; box-shadow: none; }
+:root .po-agent-roster-bar.is-dock .po-roster-agent:hover { transform: none; border-color: var(--gl-sheet-edge); background: var(--gl-sheet-hover); box-shadow: none; }
+:root .po-agent-roster-bar.is-dock .po-roster-agent.is-selected { border-color: var(--gl-active-edge); background: var(--gl-active); }
+:root .po-agent-roster-bar.is-dock .po-roster-info { min-width: 0; }
+:root .po-agent-roster-bar.is-dock .po-roster-name-row strong { font-size: var(--ui-type-body); }
+:root .po-agent-roster-bar.is-dock .po-roster-role { display: block; max-width: 120px; overflow: hidden; color: var(--ui-muted); font-size: var(--ui-type-caption); text-overflow: ellipsis; white-space: nowrap; }
+:root .po-agent-roster-bar.is-dock .po-roster-status-pill { font-size: 11px; }

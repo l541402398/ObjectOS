@@ -84,6 +84,7 @@ import {
 } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
 import { DialogShell, InspectorShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '../next-ui/overlay/overlay-shell'
+import './task-board.css'
 
 function descriptionBlocks(description: string): string[] {
   return description
@@ -1182,7 +1183,7 @@ export default function TaskBoardPage() {
       {rosterAgents.length > 0 ? (
         <section className="po-agent-roster-bar is-dock" aria-label="Agent 团队席位与拖拽指派" data-testid="agent-roster-bar">
           <div className="po-agent-dock-label" title="直接拖动 3D 头像到任务卡即可接单；已有负责人时自动触发交接确认">
-            <span className="po-agent-roster-kicker">3D TEAM</span>
+            <span className="po-agent-roster-kicker">团队</span>
             <span>
               <em>{rosterAgents.filter((a) => a.status === 'working').length} 工作中</em>
               <i>/</i>
@@ -1223,7 +1224,7 @@ export default function TaskBoardPage() {
                       name={agent.name}
                       role={agent.role}
                       personaId={agent.persona.id}
-                      size={64}
+                      size={34}
                       status={agent.status}
                       activity={agent.workActivity}
                       taskTitle={agent.activeTask?.title}
