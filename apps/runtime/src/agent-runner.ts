@@ -38,6 +38,7 @@ import {
   writeTextFile,
 } from '@projectos/workspace'
 import type { SqliteStore } from '@projectos/persistence'
+import { verifyIsolatedWorktree } from '@projectos/worktree'
 import type { RuntimeConfig } from './config.js'
 import type { ProviderManager } from './provider-manager.js'
 import type { RuntimeEventHub } from './events.js'
@@ -89,9 +90,12 @@ interface ActiveRun {
   startedAt: number
 }
 
-export class AgentRunner {  private readonly active = new Map<string, ActiveRun>()
+export class AgentRunner {
+  private readonly active = new Map<string, ActiveRun>()
   private readonly sessionIndex = new Map<string, string>()
   private readonly activeConnections = new Map<string, number>()
+  /** Per-run cache of verified worktree isolation (workspaceRoot → ok). */
+  private readonly isolationCache = new Map<string, boolean>()
   private aiConnections: import('./ai-connections.js').AIConnectionService | null = null
 
   constructor(
@@ -561,6 +565,9 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
       }
     }
     this.active.delete(state.runId)
+    for (const key of [...this.isolationCache.keys()]) {
+      if (key.startsWith(`${state.runId}:`)) this.isolationCache.delete(key)
+    }
     this.sessionIndex.delete(state.sessionId)
     if (state.connectionId) {
       const remaining = (this.activeConnections.get(state.connectionId) ?? 1) - 1
@@ -735,21 +742,55 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
     })
   }
 
+  /**
+   * Verify workspace is a registered isolated git worktree. Cache per run+path for the run lifetime.
+   * Any check failure → treat as main (require_approval).
+   */
+  private async resolveVerifiedIsolation(
+    state: ActiveRun,
+    projectRootPath: string,
+  ): Promise<{ kind: 'worktree' | 'main'; planApproved: boolean }> {
+    const cacheKey = `${state.runId}:${state.workspaceRoot}`
+    const cached = this.isolationCache.get(cacheKey)
+    if (cached === true) return { kind: 'worktree', planApproved: true }
+    if (cached === false) return { kind: 'main', planApproved: false }
+
+    if (state.workspaceRoot === projectRootPath) {
+      this.isolationCache.set(cacheKey, false)
+      return { kind: 'main', planApproved: false }
+    }
+
+    // Registration comes from WorktreeManager.create → registerWorktree.
+    // Do not pass candidatePath itself as registeredPaths (that would defeat the check).
+    const verified = await verifyIsolatedWorktree({
+      candidatePath: state.workspaceRoot,
+      projectRootPath,
+    })
+    this.isolationCache.set(cacheKey, verified.ok)
+    if (!verified.ok) {
+      this.logger.warn(
+        { runId: state.runId, workspaceRoot: state.workspaceRoot, reason: verified.reason },
+        'worktree isolation verification failed; requiring approval',
+      )
+    }
+    return verified.ok
+      ? { kind: 'worktree', planApproved: true }
+      : { kind: 'main', planApproved: false }
+  }
+
   private async executeTool(state: ActiveRun, invocation: ToolInvocation): Promise<ToolOutcome> {
     const definition = getToolDefinition(invocation.name)
     const project = this.store.read.getProject(state.projectId)
     if (!definition || !project) {
       return { status: 'denied', error: `未知工具：${invocation.name}` }
     }
+    const isolation = await this.resolveVerifiedIsolation(state, project.rootPath)
     let policy = evaluateToolPolicy({
       rootPath: state.workspaceRoot,
       projectRootPath: project.rootPath,
       toolName: invocation.name,
       args: invocation.args,
-      isolation: {
-        kind: state.workspaceRoot !== project.rootPath ? 'worktree' : 'main',
-        planApproved: state.workspaceRoot !== project.rootPath,
-      },
+      isolation,
     })
     if (policy.decision === 'require_approval' && state.autoApproveTools.has(invocation.name)) {
       policy = {

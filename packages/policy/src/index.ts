@@ -93,6 +93,10 @@ function normalizePath(value: string): string {
   return value.replace(/\\/g, '/').replace(/\/+$/, '')
 }
 
+/**
+ * Path inequality only — NOT sufficient for auto-allow.
+ * Callers must set isolation.kind after verifyIsolatedWorktree (@projectos/worktree).
+ */
 export function isIsolatedWorktree(rootPath: string, projectRootPath?: string): boolean {
   if (!projectRootPath) return false
   return normalizePath(rootPath) !== normalizePath(projectRootPath)
@@ -104,6 +108,10 @@ export function commandMatchesAllowlist(command: string, allowlist: readonly Reg
   return allowlist.some((pattern) => pattern.test(text))
 }
 
+/**
+ * Auto-allow requires an explicit isolation.kind === 'worktree' from a verified caller.
+ * Path inequality alone must not grant worktree privileges (fake dirs / symlinks / subdirs).
+ */
 function resolveIsolation(context: ToolCallContext): { kind: 'worktree' | 'main'; planApproved: boolean } {
   if (context.isolation) {
     return {
@@ -111,8 +119,7 @@ function resolveIsolation(context: ToolCallContext): { kind: 'worktree' | 'main'
       planApproved: context.isolation.planApproved ?? context.isolation.kind === 'worktree',
     }
   }
-  const worktree = isIsolatedWorktree(context.rootPath, context.projectRootPath)
-  return { kind: worktree ? 'worktree' : 'main', planApproved: worktree }
+  return { kind: 'main', planApproved: false }
 }
 
 export function evaluateToolPolicy(context: ToolCallContext): ToolPolicyResult {

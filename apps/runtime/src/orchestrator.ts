@@ -2,7 +2,7 @@ import { AppError, now, type PlanDraft, type PlanExecution, type TaskCard, type 
 import type { CoreServices } from '@projectos/application'
 import { createArtifactRecord } from '@projectos/persistence'
 import type { SqliteStore } from '@projectos/persistence'
-import { WorktreeManager } from '@projectos/worktree'
+import { WorktreeManager, registerWorktree } from '@projectos/worktree'
 import { join } from 'node:path'
 import { existsSync } from 'node:fs'
 import type { AgentRunner } from './agent-runner.js'
@@ -219,6 +219,7 @@ export class OrchestrationScheduler {
     const project = this.store.read.getProject(plan.projectId)
     if (!project) throw new AppError('NOT_FOUND', '项目不存在')
     if (plan.execution?.workspaceRef && existsSync(plan.execution.workspaceRef)) {
+      registerWorktree(project.rootPath, plan.execution.workspaceRef)
       return plan.execution.workspaceRef
     }
     const worktreePath = join(this.dataDir, 'worktrees', plan.projectId, plan.id)
