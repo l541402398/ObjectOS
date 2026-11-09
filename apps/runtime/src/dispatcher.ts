@@ -669,6 +669,14 @@ export class RuntimeDispatcher {
         if (!view) throw new AppError('NOT_FOUND', '授权请求不存在')
         return { approval: view satisfies ApprovalView }
       }
+      case 'approval.decideBatch': {
+        const input = this.parse('approval.decideBatch', rawInput)
+        const result = await runner.decideApprovalsBatch(input)
+        const approvals = result.approvals
+          .map((item) => store.read.getApprovalView(item.id))
+          .filter((item): item is ApprovalView => Boolean(item))
+        return { approvals, grantedKinds: result.grantedKinds }
+      }
       case 'collaboration.snapshot': {
         const input = this.parse('collaboration.snapshot', rawInput)
         return services.collaboration.snapshot(input.projectId)

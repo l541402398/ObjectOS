@@ -121,6 +121,7 @@ const api: ProjectOSDesktopApi = {
   approvals: {
     list: (input) => call('approval.list', input ?? {}),
     decide: (input) => call('approval.decide', input),
+    decideBatch: (input) => call('approval.decideBatch', input),
   },
   collaboration: {
     snapshot: (projectId) => call('collaboration.snapshot', { projectId }),

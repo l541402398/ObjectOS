@@ -108,6 +108,7 @@ export default function AgentWorkbenchPage() {
   const sessionDetail = useSessionDetail(selectedSessionId)
   const [createOpen, setCreateOpen] = useState(false)
   const [studioOpen, setStudioOpen] = useState(false)
+  const [selectedApprovalIds, setSelectedApprovalIds] = useState<string[]>([])
   const [createForm] = Form.useForm<{ agentId: string; title: string }>()
   const [streamingRunId, setStreamingRunId] = useState<string | null>(null)
   const [streamingText, setStreamingText] = useState('')
@@ -242,7 +243,22 @@ export default function AgentWorkbenchPage() {
     onSuccess: async () => {
       await invalidateSession()
       await runDetail.refetch()
+      setSelectedApprovalIds([])
       message.success('授权决定已记录，Agent 将根据决定继续')
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+
+  const decideApprovalBatch = useMutation({
+    mutationFn: (input: Parameters<typeof window.projectos.approvals.decideBatch>[0]) =>
+      window.projectos.approvals.decideBatch(input),
+    onSuccess: async (result) => {
+      await invalidateSession()
+      await runDetail.refetch()
+      setSelectedApprovalIds([])
+      const grant =
+        result.grantedKinds.length > 0 ? `；已放行后续 ${result.grantedKinds.join(', ')}` : ''
+      message.success(`已批量处理 ${result.approvals.length} 项授权${grant}`)
     },
     onError: (error) => message.error(errorMessage(error)),
   })
@@ -479,12 +495,60 @@ export default function AgentWorkbenchPage() {
 
               {sessionApprovals.length > 0 ? (
                 <div className="po-chat-approvals">
+                  {selectedApprovalIds.length > 0 ? (
+                    <div className="po-approval-batch-bar">
+                      <span>已选 {selectedApprovalIds.length} 项</span>
+                      <Button
+                        size="small"
+                        danger
+                        loading={decideApprovalBatch.isPending}
+                        onClick={() =>
+                          decideApprovalBatch.mutate({
+                            decision: 'rejected',
+                            approvalIds: selectedApprovalIds,
+                            grantFutureOfKind: false,
+                          })
+                        }
+                      >
+                        拒绝所选
+                      </Button>
+                      <Button
+                        size="small"
+                        type="primary"
+                        loading={decideApprovalBatch.isPending}
+                        onClick={() =>
+                          decideApprovalBatch.mutate({
+                            decision: 'approved',
+                            approvalIds: selectedApprovalIds,
+                            grantFutureOfKind: true,
+                          })
+                        }
+                      >
+                        批准所选
+                      </Button>
+                    </div>
+                  ) : null}
                   {sessionApprovals.map((approval) => (
                     <ApprovalCard
                       key={approval.id}
                       approval={approval}
-                      busy={decideApproval.isPending}
+                      selectable
+                      selected={selectedApprovalIds.includes(approval.id)}
+                      onSelectChange={(checked) =>
+                        setSelectedApprovalIds((ids) =>
+                          checked ? [...new Set([...ids, approval.id])] : ids.filter((id) => id !== approval.id),
+                        )
+                      }
+                      busy={decideApproval.isPending || decideApprovalBatch.isPending}
                       onDecide={(decision) => decideApproval.mutate({ approvalId: approval.id, decision })}
+                      onApproveKind={() =>
+                        decideApprovalBatch.mutate({
+                          decision: 'approved',
+                          runId: approval.runId,
+                          sameKindAs: approval.id,
+                          grantFutureOfKind: true,
+                        })
+                      }
                     />
                   ))}
                 </div>

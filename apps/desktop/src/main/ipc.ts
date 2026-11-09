@@ -501,7 +501,7 @@ export function registerIpc(ctx: IpcContext): () => void {
         const timeout =
           method === 'agentDefinition.run' || method === 'runtime.execute' || method === 'runtime.acpPrompt'
             ? 180_000
-            : method === 'approval.decide'
+            : method === 'approval.decide' || method === 'approval.decideBatch'
             ? 180_000
             : method === 'demo.seed'
               ? 120_000

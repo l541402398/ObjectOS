@@ -188,6 +188,28 @@ export const DecideApprovalInputSchema = z.object({
 })
 export type DecideApprovalInput = z.infer<typeof DecideApprovalInputSchema>
 
+/** Batch approve/reject: multi-select ids, or all pending of the same tool kind in a Run. */
+export const DecideApprovalsBatchInputSchema = z
+  .object({
+    decision: z.enum(['approved', 'rejected']),
+    note: z.string().max(2000).default(''),
+    approvalIds: z.array(IdSchema).min(1).max(100).optional(),
+    runId: IdSchema.optional(),
+    /** When set with runId, approve all pending approvals in that run whose toolName matches. */
+    sameKindAs: IdSchema.optional(),
+    /** After approving same-kind (or selected) tools, grant future auto-allow for those tool names in the Run. */
+    grantFutureOfKind: z.boolean().default(true),
+  })
+  .superRefine((value, ctx) => {
+    if (!value.approvalIds?.length && !(value.runId && value.sameKindAs)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: '需要 approvalIds，或同时提供 runId 与 sameKindAs',
+      })
+    }
+  })
+export type DecideApprovalsBatchInput = z.infer<typeof DecideApprovalsBatchInputSchema>
+
 export const SendCrossSessionInputSchema = z.object({
   projectId: IdSchema,
   fromSessionId: IdSchema,
@@ -526,6 +548,13 @@ export const ApiSchemas = {
   'approval.decide': {
     input: DecideApprovalInputSchema,
     output: z.object({ approval: ApprovalViewSchema }),
+  },
+  'approval.decideBatch': {
+    input: DecideApprovalsBatchInputSchema,
+    output: z.object({
+      approvals: z.array(ApprovalViewSchema),
+      grantedKinds: z.array(z.string()),
+    }),
   },
   'collaboration.snapshot': {
     input: projectIdInput,

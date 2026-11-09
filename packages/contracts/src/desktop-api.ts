@@ -91,6 +91,7 @@ export interface ProjectOSDesktopApi {
   approvals: {
     list: (input?: In<'approval.list'>) => Promise<Out<'approval.list'>>
     decide: (input: In<'approval.decide'>) => Promise<Out<'approval.decide'>>
+    decideBatch: (input: In<'approval.decideBatch'>) => Promise<Out<'approval.decideBatch'>>
   }
   collaboration: {
     snapshot: (projectId: string) => Promise<Out<'collaboration.snapshot'>>

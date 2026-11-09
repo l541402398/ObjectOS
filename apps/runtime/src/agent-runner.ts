@@ -83,6 +83,8 @@ interface ActiveRun {
   textBuffer: string
   lastTextFlushAt: number
   pendingApprovalId: string | null
+  /** Tool names the user batch-approved for the rest of this Run. */
+  autoApproveTools: Set<string>
   leaseTimer: NodeJS.Timeout | null
   startedAt: number
 }
@@ -260,6 +262,7 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
       textBuffer: '',
       lastTextFlushAt: 0,
       pendingApprovalId: null,
+      autoApproveTools: new Set<string>(),
       leaseTimer: null,
       startedAt: timestamp,
     }
@@ -738,11 +741,24 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
     if (!definition || !project) {
       return { status: 'denied', error: `未知工具：${invocation.name}` }
     }
-    const policy = evaluateToolPolicy({
+    let policy = evaluateToolPolicy({
       rootPath: state.workspaceRoot,
+      projectRootPath: project.rootPath,
       toolName: invocation.name,
       args: invocation.args,
+      isolation: {
+        kind: state.workspaceRoot !== project.rootPath ? 'worktree' : 'main',
+        planApproved: state.workspaceRoot !== project.rootPath,
+      },
     })
+    if (policy.decision === 'require_approval' && state.autoApproveTools.has(invocation.name)) {
+      policy = {
+        ...policy,
+        decision: 'allow',
+        autoAllowed: true,
+        reason: `本 Run 已批量批准工具 «${invocation.name}»，自动放行（仍写入审计）`,
+      }
+    }
     const idempotencyKey = `${state.runId}:${invocation.callId}`
     let toolCall: ToolCall
     try {
@@ -1165,6 +1181,100 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
     return updated
   }
 
+
+  async decideApprovalsBatch(input: {
+    decision: 'approved' | 'rejected'
+    note?: string
+    approvalIds?: string[]
+    runId?: string
+    sameKindAs?: string
+    grantFutureOfKind?: boolean
+  }): Promise<{ approvals: Approval[]; grantedKinds: string[] }> {
+    const note = input.note ?? ''
+    const grantFuture = input.grantFutureOfKind !== false
+    let targetIds: string[] = []
+    const kindNames = new Set<string>()
+
+    if (input.approvalIds?.length) {
+      targetIds = [...input.approvalIds]
+      for (const id of targetIds) {
+        const view = this.store.read.getApprovalView(id)
+        const toolName =
+          view && typeof view.request.toolName === 'string'
+            ? view.request.toolName
+            : null
+        if (toolName) kindNames.add(toolName)
+      }
+    } else if (input.runId && input.sameKindAs) {
+      const seed = this.store.read.getApprovalView(input.sameKindAs)
+      if (!seed) throw new AppError('NOT_FOUND', '授权请求不存在')
+      if (seed.runId !== input.runId) throw new AppError('BAD_REQUEST', 'sameKindAs 必须属于同一 Run')
+      const kind =
+        typeof seed.request.toolName === 'string' ? seed.request.toolName : null
+      if (!kind) throw new AppError('BAD_REQUEST', '无法从授权请求解析工具类型')
+      kindNames.add(kind)
+      const pending = this.store.read
+        .listApprovalViews(null, input.runId)
+        .filter((item) => item.status === 'pending')
+        .filter((item) => item.request.toolName === kind)
+      targetIds = pending.map((item) => item.id)
+      if (targetIds.length === 0) targetIds = [input.sameKindAs]
+    } else {
+      throw new AppError('BAD_REQUEST', '需要 approvalIds，或同时提供 runId 与 sameKindAs')
+    }
+
+    // Prefer deciding the currently waiting approval first so the run can resume once.
+    const firstViews = targetIds
+      .map((id) => this.store.read.getApprovalView(id))
+      .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    firstViews.sort((a, b) => {
+      const aWait = a.runStatus === 'waiting_approval' ? 0 : 1
+      const bWait = b.runStatus === 'waiting_approval' ? 0 : 1
+      return aWait - bWait || a.requestedAt - b.requestedAt
+    })
+    targetIds = firstViews.map((item) => item.id)
+
+    const decided: Approval[] = []
+    const seen = new Set<string>()
+    for (const approvalId of targetIds) {
+      if (seen.has(approvalId)) continue
+      seen.add(approvalId)
+      const current = this.store.getApprovalById(approvalId)
+      if (!current || current.status !== 'pending') continue
+      decided.push(await this.decideApproval(approvalId, input.decision, note))
+    }
+
+    const grantedKinds: string[] = []
+    if (input.decision === 'approved' && grantFuture && kindNames.size > 0) {
+      // Grant on every touched run.
+      const runIds = new Set(
+        decided.map((item) => item.runId).concat(input.runId ? [input.runId] : []),
+      )
+      for (const runId of runIds) {
+        const state = this.active.get(runId) ?? (await this.requireState(runId).catch(() => null))
+        if (!state) continue
+        let changed = false
+        for (const kind of kindNames) {
+          if (!state.autoApproveTools.has(kind)) {
+            state.autoApproveTools.add(kind)
+            changed = true
+            if (!grantedKinds.includes(kind)) grantedKinds.push(kind)
+          }
+        }
+        if (changed) {
+          this.store.appendRunStep({
+            runId,
+            kind: 'status',
+            title: `批量授权：后续自动放行 ${[...state.autoApproveTools].join(', ')}`,
+            payload: { autoApproveTools: [...state.autoApproveTools] },
+          })
+        }
+      }
+    }
+
+    return { approvals: decided, grantedKinds }
+  }
+
   private async requireState(runId: string): Promise<ActiveRun> {
     const existing = this.active.get(runId)
     if (existing) return existing
@@ -1210,8 +1320,17 @@ export class AgentRunner {  private readonly active = new Map<string, ActiveRun>
       textBuffer: '',
       lastTextFlushAt: 0,
       pendingApprovalId: null,
+      autoApproveTools: new Set<string>(),
       leaseTimer: null,
       startedAt: run.startedAt ?? run.createdAt,
+    }
+    const grantStep = this.store.read
+      .getRunSteps(run.id)
+      .find((step) => Array.isArray(step.payload.autoApproveTools))
+    if (grantStep && Array.isArray(grantStep.payload.autoApproveTools)) {
+      for (const name of grantStep.payload.autoApproveTools) {
+        if (typeof name === 'string' && name.trim()) state.autoApproveTools.add(name)
+      }
     }
     this.active.set(runId, state)
     this.sessionIndex.set(run.sessionId, runId)

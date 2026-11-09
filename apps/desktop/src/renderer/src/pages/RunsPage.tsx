@@ -45,6 +45,7 @@ export default function RunsPage() {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(searchParams.get('run'))
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [query, setQuery] = useState('')
+  const [selectedApprovalIds, setSelectedApprovalIds] = useState<string[]>([])
   const runs = useRuns(projectId, 100)
   const runDetail = useRunDetail(selectedRunId)
   const approvals = useApprovals(projectId)
@@ -90,7 +91,22 @@ export default function RunsPage() {
     onSuccess: async () => {
       await refresh()
       await runDetail.refetch()
+      setSelectedApprovalIds([])
       message.success('授权决定已记录')
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+
+  const decideBatch = useMutation({
+    mutationFn: (input: Parameters<typeof window.projectos.approvals.decideBatch>[0]) =>
+      window.projectos.approvals.decideBatch(input),
+    onSuccess: async (result) => {
+      await refresh()
+      await runDetail.refetch()
+      setSelectedApprovalIds([])
+      const grant =
+        result.grantedKinds.length > 0 ? `；已放行后续 ${result.grantedKinds.join(', ')}` : ''
+      message.success(`已批量处理 ${result.approvals.length} 项授权${grant}`)
     },
     onError: (error) => message.error(errorMessage(error)),
   })
@@ -179,14 +195,62 @@ export default function RunsPage() {
           subtitle="Agent 运行已暂停，等待批准或拒绝"
           extra={<StatusPill tone="warning">{pendingApprovals.length}</StatusPill>}
         >
+          {selectedApprovalIds.length > 0 ? (
+            <div className="po-approval-batch-bar" style={{ marginBottom: 12 }}>
+              <span>已选 {selectedApprovalIds.length} 项</span>
+              <Button
+                size="small"
+                danger
+                loading={decideBatch.isPending}
+                onClick={() =>
+                  decideBatch.mutate({
+                    decision: 'rejected',
+                    approvalIds: selectedApprovalIds,
+                    grantFutureOfKind: false,
+                  })
+                }
+              >
+                拒绝所选
+              </Button>
+              <Button
+                size="small"
+                type="primary"
+                loading={decideBatch.isPending}
+                onClick={() =>
+                  decideBatch.mutate({
+                    decision: 'approved',
+                    approvalIds: selectedApprovalIds,
+                    grantFutureOfKind: true,
+                  })
+                }
+              >
+                批准所选
+              </Button>
+            </div>
+          ) : null}
           <div className="po-approval-list is-grid">
             {pendingApprovals.map((approval) => (
               <ApprovalCard
                 key={approval.id}
                 approval={approval}
                 compact
-                busy={decide.isPending}
+                selectable
+                selected={selectedApprovalIds.includes(approval.id)}
+                onSelectChange={(checked) =>
+                  setSelectedApprovalIds((ids) =>
+                    checked ? [...new Set([...ids, approval.id])] : ids.filter((id) => id !== approval.id),
+                  )
+                }
+                busy={decide.isPending || decideBatch.isPending}
                 onDecide={(decision) => decide.mutate({ approvalId: approval.id, decision })}
+                onApproveKind={() =>
+                  decideBatch.mutate({
+                    decision: 'approved',
+                    runId: approval.runId,
+                    sameKindAs: approval.id,
+                    grantFutureOfKind: true,
+                  })
+                }
               />
             ))}
           </div>
