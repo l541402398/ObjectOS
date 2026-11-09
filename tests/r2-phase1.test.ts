@@ -131,7 +131,7 @@ describe('R2 Phase 1: missing R1 verification', () => {
       const maxVersion = store.db
         .prepare('SELECT MAX(version) AS version FROM schema_migrations')
         .get() as { version: number }
-      expect(Number(maxVersion.version)).toBe(47)
+      expect(Number(maxVersion.version)).toBe(48)
       const runColumns = (store.db.prepare('PRAGMA table_info(agent_runs)').all() as Array<{ name: string }>).map(
         (column) => column.name,
       )

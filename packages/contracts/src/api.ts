@@ -104,6 +104,7 @@ import {
   ActionCenterSchema,
   ProjectAutonomyModeSchema,
   ProjectAutonomySettingsSchema,
+  VerifyCommandFamilySchema,
 } from './release.js'
 import {
   ConnectionProfileSchema,
@@ -294,6 +295,61 @@ export const DecideApprovalInputSchema = z.object({
   note: z.string().max(2000).default(''),
 })
 export type DecideApprovalInput = z.infer<typeof DecideApprovalInputSchema>
+
+/**
+ * ADR-0089 batch decisions. Either an explicit multi-selection (`approvalIds`), or "the rest of
+ * this kind in this Run" (`sameKindAs`): every pending approval in the same Run whose kind equals
+ * the anchor's, plus — when `rememberForRun` — later requests of that kind in that Run. Only
+ * batchable kinds (plain writes, verification commands) are accepted; everything else is returned
+ * as skipped and must be decided one by one.
+ */
+export const DecideApprovalsBatchInputSchema = z
+  .object({
+    projectId: IdSchema,
+    decision: z.enum(['approved', 'rejected']),
+    note: z.string().max(2000).default(''),
+    approvalIds: z.array(IdSchema).min(1).max(100).optional(),
+    sameKindAs: IdSchema.optional(),
+    rememberForRun: z.boolean().default(false),
+  })
+  .refine((value) => Boolean(value.approvalIds?.length) !== Boolean(value.sameKindAs), {
+    message: '需要提供 approvalIds 或 sameKindAs 其中之一',
+  })
+export type DecideApprovalsBatchInput = z.infer<typeof DecideApprovalsBatchInputSchema>
+
+export const ApprovalBatchOutcomeSchema = z.object({
+  approvalId: IdSchema,
+  status: z.enum(['approved', 'rejected', 'skipped', 'failed']),
+  reason: z.string(),
+})
+export type ApprovalBatchOutcome = z.infer<typeof ApprovalBatchOutcomeSchema>
+
+export const ApprovalBatchResultSchema = z.object({
+  outcomes: z.array(ApprovalBatchOutcomeSchema),
+  approved: z.number().int().nonnegative(),
+  rejected: z.number().int().nonnegative(),
+  skipped: z.number().int().nonnegative(),
+  failed: z.number().int().nonnegative(),
+  rememberedKind: z.object({ runId: IdSchema, key: z.string(), label: z.string() }).nullable(),
+})
+export type ApprovalBatchResult = z.infer<typeof ApprovalBatchResultSchema>
+
+/** What a pending tool approval would actually do, read from the Run's own workspace. */
+export const ApprovalPreviewSchema = z.object({
+  approvalId: IdSchema,
+  toolName: z.string(),
+  path: z.string().nullable(),
+  before: z.string().nullable(),
+  after: z.string().nullable(),
+  beforeTruncated: z.boolean(),
+  command: z.string().nullable(),
+  workspace: z.object({
+    label: z.string(),
+    isolated: z.boolean(),
+    reason: z.string(),
+  }),
+})
+export type ApprovalPreview = z.infer<typeof ApprovalPreviewSchema>
 
 export const SendCrossSessionInputSchema = z.object({
   projectId: IdSchema,
@@ -502,6 +558,8 @@ export const ApiSchemas = {
       autoApplyReplans: z.boolean().optional(),
       autoDeliver: z.boolean().optional(),
       maxAutoReplans: z.number().int().min(0).max(10).optional(),
+      worktreeAutoAllow: z.boolean().optional(),
+      worktreeAutoAllowFamilies: z.array(VerifyCommandFamilySchema).max(4).optional(),
     }),
     output: ProjectAutonomySettingsSchema,
   },
@@ -1095,6 +1153,14 @@ export const ApiSchemas = {
   'approval.decide': {
     input: DecideApprovalInputSchema,
     output: z.object({ approval: ApprovalViewSchema }),
+  },
+  'approval.decideBatch': {
+    input: DecideApprovalsBatchInputSchema,
+    output: ApprovalBatchResultSchema,
+  },
+  'approval.preview': {
+    input: z.object({ approvalId: IdSchema }),
+    output: ApprovalPreviewSchema,
   },
   'collaboration.snapshot': {
     input: projectIdInput,

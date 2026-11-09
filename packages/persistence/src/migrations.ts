@@ -1686,6 +1686,26 @@ CREATE TABLE knowledge_writebacks (
 );
 `
 
+/**
+ * ADR-0089: "approve the rest of this kind in this Run". A human decision scoped to exactly one
+ * Run and one batchable kind (plain writes or a verification-command family). It expires with
+ * the Run and is consulted only after Policy and the PlanGrant; it never overrides a deny.
+ */
+const V48 = `
+CREATE TABLE run_kind_allowances (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  run_id TEXT NOT NULL,
+  kind_key TEXT NOT NULL,
+  kind_label TEXT NOT NULL,
+  approval_id TEXT NOT NULL,
+  uses INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX idx_run_kind_allowances_key ON run_kind_allowances(run_id, kind_key);
+`
+
 const V47 = `
 CREATE TABLE organization_assignment_clients (
   server_url TEXT NOT NULL, organization_id TEXT NOT NULL, account_id TEXT NOT NULL, client_id TEXT NOT NULL UNIQUE,
@@ -1760,6 +1780,7 @@ export const MIGRATIONS: Migration[] = [
   { version: 45, name: 'requirement organization knowledge references', sql: V45 },
   { version: 46, name: 'accepted requirement knowledge candidate submissions', sql: V46 },
   { version: 47, name: 'member assignment acceptance and fixed command intents', sql: V47 },
+  { version: 48, name: 'run-scoped batch approval allowances', sql: V48 },
 ]
 
 function checksum(sql: string): string {

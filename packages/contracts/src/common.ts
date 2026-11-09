@@ -73,6 +73,7 @@ export const ID_PREFIXES = {
   approvalFileTarget: 'aft',
   autonomyEvent: 'aev',
   planCommandApproval: 'pca',
+  runKindAllowance: 'rka',
   deploymentTarget: 'dtg',
   deploymentStrategy: 'dst',
   approvalRequest: 'apr',

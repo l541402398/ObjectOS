@@ -490,6 +490,10 @@ export const ApprovalViewSchema = ApprovalSchema.extend({
   taskId: IdSchema.nullable(),
   taskTitle: z.string().nullable(),
   agentName: z.string(),
+  /** ADR-0089: stable kind used for batch decisions; filled by the approval list read path. */
+  kind: z
+    .object({ key: z.string(), label: z.string(), batchable: z.boolean(), reason: z.string() })
+    .optional(),
 })
 export type ApprovalView = z.infer<typeof ApprovalViewSchema>
 
