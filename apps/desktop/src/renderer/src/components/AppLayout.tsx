@@ -40,7 +40,7 @@ import {
 import { BootError, BootScreen } from './BootScreen'
 import { CommandPalette, type PaletteCommand } from './CommandPalette'
 import { SettingsModal } from '../features/settings/SettingsModal'
-import { useBootstrap, useProjectOverview } from '../lib/queries'
+import { useBootstrap, usePlans, useProjectOverview } from '../lib/queries'
 import { useResolvedTheme, useUiStore } from '../stores/ui'
 import { stageLabel } from '../lib/labels'
 import { truncate } from '../lib/format'
@@ -101,6 +101,7 @@ export default function AppLayout() {
   const projectId = params.projectId ?? null
   const bootstrap = useBootstrap()
   const overview = useProjectOverview(projectId)
+  const plans = usePlans(projectId)
   const collapsed = useUiStore((state) => state.sidebarCollapsed)
   const toggleSidebar = useUiStore((state) => state.toggleSidebar)
   const themeMode = useUiStore((state) => state.themeMode)
@@ -257,6 +258,57 @@ export default function AppLayout() {
     return list
   }, [currentProject, handleNavigate, navigate, openSettings, projectId, setThemeMode])
 
+  type NextAction = { key: string; kind: 'tool' | 'plan' | 'merge'; label: string; detail: string; href: string }
+  const nextActions = useMemo<NextAction[]>(() => {
+    const pending = bootstrap.data?.pendingApprovals ?? []
+    const actions: NextAction[] = []
+    const scopedApprovals = pending.filter((approval) => !projectId || approval.projectId === projectId)
+    for (const approval of scopedApprovals.slice(0, 5)) {
+      const tool =
+        typeof approval.request.toolName === 'string' ? approval.request.toolName : '工具'
+      actions.push({
+        key: `tool-${approval.id}`,
+        kind: 'tool',
+        label: `待授权 · ${tool}`,
+        detail: approval.taskTitle ?? approval.agentName,
+        href: projectId
+          ? `/projects/${projectId}/agents?session=${approval.sessionId}`
+          : '/',
+      })
+    }
+    if (projectId) {
+      for (const plan of plans.data?.plans ?? []) {
+        if (plan.status === 'draft') {
+          actions.push({
+            key: `plan-${plan.id}`,
+            kind: 'plan',
+            label: '待批准计划',
+            detail: plan.goal.slice(0, 80),
+            href: `/projects/${projectId}/orchestration`,
+          })
+        }
+        const execution = plan.execution
+        if (
+          plan.status === 'approved' &&
+          execution &&
+          execution.workspaceRef &&
+          !execution.mergedAt &&
+          ['completed', 'failed', 'cancelled', 'paused'].includes(execution.status)
+        ) {
+          actions.push({
+            key: `merge-${plan.id}`,
+            kind: 'merge',
+            label: '待审 Diff / 合并',
+            detail: execution.branch ?? plan.goal.slice(0, 60),
+            href: `/projects/${projectId}/orchestration`,
+          })
+        }
+      }
+    }
+    const rank = { tool: 0, plan: 1, merge: 2 } as const
+    return actions.sort((a, b) => rank[a.kind] - rank[b.kind]).slice(0, 4)
+  }, [bootstrap.data?.pendingApprovals, projectId, plans.data?.plans])
+
   if (bootstrap.isLoading) return <BootScreen />
   if (bootstrap.isError) {
     return <BootError error={bootstrap.error} onRetry={() => void bootstrap.refetch()} />
@@ -268,6 +320,7 @@ export default function AppLayout() {
   const runtimeTone = runtime ? toneForStatus(runtime.status === 'ready' ? 'success' : runtime.status) : 'neutral'
   const taskBadge = currentProject ? currentProject.stats.tasksReview || currentProject.stats.tasksRunning : 0
   const approvalBadge = pendingApprovals.filter((approval) => !projectId || approval.projectId === projectId).length
+  const primaryNext = nextActions[0] ?? null
 
   const navGroups: SidebarNavGroup[] = []
   if (projectId && currentProject) {
@@ -377,14 +430,22 @@ export default function AppLayout() {
             </StatusPill>
           </span>
         </Tooltip>
-        <Tooltip title={`${pendingApprovals.length} 个待授权请求`}>
+        <Tooltip
+          title={
+            primaryNext
+              ? `下一步：${primaryNext.label}`
+              : pendingApprovals.length
+                ? `${pendingApprovals.length} 个待授权请求`
+                : '暂无待办授权'
+          }
+        >
           <button
             type="button"
             className="po-icon-button"
-            onClick={() => (projectId ? navigate(`/projects/${projectId}/agents`) : navigate('/'))}
-            aria-label="待授权请求"
+            onClick={() => navigate(primaryNext?.href ?? (projectId ? `/projects/${projectId}/agents` : '/'))}
+            aria-label="下一步行动"
           >
-            <Badge count={pendingApprovals.length} size="small" offset={[2, -1]}>
+            <Badge count={nextActions.length || pendingApprovals.length} size="small" offset={[2, -1]}>
               <BellOutlined />
             </Badge>
           </button>
@@ -534,6 +595,29 @@ export default function AppLayout() {
   return (
     <>
       <AppShell header={titlebar} sidebar={sidebar} footer={statusbar} collapsed={collapsed}>
+        {nextActions.length > 0 ? (
+          <div className="po-next-action-bar" role="region" aria-label="下一步">
+            <div className="po-next-action-label">下一步</div>
+            <div className="po-next-action-items">
+              {nextActions.map((action) => (
+                <button
+                  key={action.key}
+                  type="button"
+                  className={`po-next-action-chip is-${action.kind}`}
+                  onClick={() => navigate(action.href)}
+                >
+                  <strong>{action.label}</strong>
+                  <span>{action.detail}</span>
+                </button>
+              ))}
+            </div>
+            {primaryNext ? (
+              <Button type="primary" size="small" onClick={() => navigate(primaryNext.href)}>
+                去处理
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
         {projectId && !currentProject ? (
           <div className="po-page">
             <EmptyState

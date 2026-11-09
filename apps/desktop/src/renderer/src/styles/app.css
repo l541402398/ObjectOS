@@ -4029,3 +4029,69 @@
 .po-agent-permissions .ant-form-item { margin-bottom: 8px; }
 
 
+
+
+.po-next-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--po-border, rgba(120, 140, 170, 0.22));
+  background: color-mix(in srgb, var(--po-warning, #d48806) 10%, transparent);
+}
+.po-next-action-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.72;
+  white-space: nowrap;
+}
+.po-next-action-items {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  overflow-x: auto;
+}
+.po-next-action-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  max-width: 280px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--po-border, rgba(120, 140, 170, 0.28));
+  background: var(--po-surface, #fff);
+  cursor: pointer;
+  text-align: left;
+}
+.po-next-action-chip strong {
+  font-size: 12px;
+}
+.po-next-action-chip span {
+  font-size: 12px;
+  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 240px;
+}
+.po-next-action-chip.is-tool {
+  border-color: color-mix(in srgb, #d48806 45%, transparent);
+}
+.po-next-action-chip.is-plan {
+  border-color: color-mix(in srgb, #1677ff 45%, transparent);
+}
+.po-next-action-chip.is-merge {
+  border-color: color-mix(in srgb, #52c41a 45%, transparent);
+}
+.po-approval-batch-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.po-approval.is-selected {
+  outline: 2px solid color-mix(in srgb, #1677ff 55%, transparent);
+}
