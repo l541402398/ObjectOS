@@ -1,5 +1,15 @@
 # ProjectOS UI Design Changelog
 
+## 2026-11-10 — UX consolidation (ADR-0090)
+
+- 工作台 is the single project home; `/work` redirects there. Sidebar 研发 shrinks to 工作台 / 需求工作台 / 执行 / 审批.
+- 执行 groups 任务看板 · Agent 协作 · 运行审计 · 计划编排 behind a segmented view rail (`ViewTabs`) and breadcrumb.
+- Review room gains lenses 工具请求 / 交付审批 / 记录; `/approvals/center` redirects to 记录.
+- Stage bar is one compact row; only the current stage is labelled.
+- 运行审计: day-grouped run timeline + inline detail + step timeline, 事件流 lens; no approval card grid.
+- 部署中心 readiness: connected step track instead of three bordered cards.
+- Evidence: `docs/v2/evidence/ux-consolidation/`, screenshots `docs/ux/v3/`.
+
 ## 2026-11-10 — Review room: grouped batch review, real diff, worktree auto-allow (ADR-0089)
 
 - User priority: fewer approval clicks without weakening safety; no half-finished screens; avoid heavy rectangular cards. Scope is the existing Review Room (`/projects/:id/approvals`) and the Action Center popover; no global palette, shell, Design Lab or graph change.

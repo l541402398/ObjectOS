@@ -1,0 +1,23 @@
+[
+ {"name":"01-project-center","hash":"#/","delay":1200},
+ {"name":"02-home","hash":"#/projects/{pid}","delay":1400},
+ {"name":"03-work-redirect","hash":"#/projects/{pid}/work","delay":1400},
+ {"name":"04-requirements","hash":"#/projects/{pid}/requirements","delay":1500},
+ {"name":"05-tasks","hash":"#/projects/{pid}/tasks","delay":1300},
+ {"name":"06-agents","hash":"#/projects/{pid}/agents","delay":1800},
+ {"name":"07-approvals","hash":"#/projects/{pid}/approvals","delay":1300},
+ {"name":"08-approvals-delivery","hash":"#/projects/{pid}/approvals?lens=delivery","delay":1300},
+ {"name":"09-approvals-history","hash":"#/projects/{pid}/approvals/center","delay":1400},
+ {"name":"10-runs","hash":"#/projects/{pid}/runs","delay":1500},
+ {"name":"11-runs-events","hash":"#/projects/{pid}/runs?lens=events","delay":1500},
+ {"name":"12-orchestration","hash":"#/projects/{pid}/orchestration","delay":1800},
+ {"name":"13-connections","hash":"#/projects/{pid}/connections","delay":1200},
+ {"name":"14-releases","hash":"#/projects/{pid}/releases","delay":1200},
+ {"name":"15-deployments","hash":"#/projects/{pid}/deployments","delay":1200},
+ {"name":"16-overview","hash":"#/projects/{pid}/overview","delay":1200},
+ {"name":"17-versions","hash":"#/projects/{pid}/versions","delay":1200},
+ {"name":"18-knowledge","hash":"#/projects/{pid}/knowledge","delay":1200},
+ {"name":"19-project-settings","hash":"#/projects/{pid}/project-settings","delay":1200},
+ {"name":"20-organization","hash":"#/organization","delay":1200},
+ {"name":"21-palette","hash":"#/projects/{pid}","click":"button:has-text('搜索或跳转')","delay":900}
+]
