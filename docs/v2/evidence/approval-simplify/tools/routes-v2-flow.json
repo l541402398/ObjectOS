@@ -1,0 +1,91 @@
+[
+ {
+  "name": "review-room-batch-confirm",
+  "hash": "#/projects/{pid}/approvals",
+  "wait": ".rv-sheet",
+  "clicks": [
+   {
+    "sel": ".rv-group header .rv-check"
+   },
+   {
+    "sel": ".rv-dock .studio-cta"
+   }
+  ],
+  "delay": 700,
+  "noEscape": true
+ },
+ {
+  "name": "review-room-batch-partial",
+  "hash": "#/projects/{pid}/approvals",
+  "wait": ".rv-sheet",
+  "clicks": [
+   {
+    "sel": ".rv-dock .studio-cta",
+    "delay": 2500
+   }
+  ],
+  "delay": 300
+ },
+ {
+  "name": "review-room-reject-confirm",
+  "hash": "#/projects/{pid}/approvals",
+  "wait": ".rv-sheet",
+  "clicks": [
+   {
+    "sel": ".rv-group li .rv-item",
+    "text": "git commit"
+   },
+   {
+    "sel": ".rv-reject"
+   }
+  ],
+  "delay": 700
+ },
+ {
+  "name": "review-room-rejected",
+  "hash": "#/projects/{pid}/approvals",
+  "wait": ".rv-sheet",
+  "clicks": [
+   {
+    "sel": ".rv-confirm-actions .studio-danger",
+    "delay": 2500
+   }
+  ],
+  "delay": 600
+ },
+ {
+  "name": "review-room-cleared",
+  "hash": "#/projects/{pid}/approvals",
+  "wait": ".rv-sheet",
+  "clicks": [
+   {
+    "sel": ".rv-group:nth-of-type(1) header .rv-check"
+   },
+   {
+    "sel": ".rv-group:nth-of-type(2) header .rv-check"
+   },
+   {
+    "sel": ".rv-dock .studio-danger"
+   },
+   {
+    "sel": ".rv-dock .studio-danger.is-solid",
+    "delay": 2500
+   },
+   {
+    "sel": ".rv-reject"
+   },
+   {
+    "sel": ".rv-confirm-actions .studio-danger",
+    "delay": 2500
+   },
+   {
+    "sel": ".rv-reject"
+   },
+   {
+    "sel": ".rv-confirm-actions .studio-danger",
+    "delay": 2500
+   }
+  ],
+  "delay": 800
+ }
+]

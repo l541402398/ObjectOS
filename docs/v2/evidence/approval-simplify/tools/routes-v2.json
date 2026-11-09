@@ -1,0 +1,62 @@
+[
+ {
+  "name": "review-room",
+  "hash": "#/projects/{pid}/approvals",
+  "wait": ".rv-sheet",
+  "delay": 1200
+ },
+ {
+  "name": "review-room-batch-select",
+  "hash": "#/projects/{pid}/approvals",
+  "wait": ".rv-sheet",
+  "clicks": [
+   {
+    "sel": ".rv-group header .rv-check"
+   },
+   {
+    "sel": ".rv-group li:has-text('pnpm test') .rv-check"
+   },
+   {
+    "sel": ".rv-group li .rv-item",
+    "text": "src/notes.ts"
+   }
+  ],
+  "delay": 900
+ },
+ {
+  "name": "review-room-same-kind",
+  "hash": "#/projects/{pid}/approvals",
+  "wait": ".rv-sheet",
+  "clicks": [
+   {
+    "sel": ".rv-group li .rv-item",
+    "text": "src/notes.ts"
+   },
+   {
+    "sel": ".rv-kind-action"
+   },
+   {
+    "sel": ".rv-verify input"
+   }
+  ],
+  "delay": 900
+ },
+ {
+  "name": "review-room-command",
+  "hash": "#/projects/{pid}/approvals",
+  "wait": ".rv-sheet",
+  "clicks": [
+   {
+    "sel": ".rv-group li .rv-item",
+    "text": "git commit"
+   }
+  ],
+  "delay": 900
+ },
+ {
+  "name": "action-center",
+  "hash": "#/projects/{pid}",
+  "click": "[data-testid=action-center-button]",
+  "delay": 900
+ }
+]

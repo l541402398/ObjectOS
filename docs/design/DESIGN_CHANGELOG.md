@@ -1,5 +1,15 @@
 # ProjectOS UI Design Changelog
 
+## 2026-11-10 — Review room: grouped batch review, real diff, worktree auto-allow (ADR-0089)
+
+- User priority: fewer approval clicks without weakening safety; no half-finished screens; avoid heavy rectangular cards. Scope is the existing Review Room (`/projects/:id/approvals`) and the Action Center popover; no global palette, shell, Design Lab or graph change.
+- Review Room is recomposed from a three-box frame into an open composition on the canvas: a grouped queue (per approval kind, timeline hairline, custom checkboxes, lock glyph for kinds that must be decided one by one), one opaque reading sheet (`--ui-reading-surface`) and a decision rail. Raw JSON moved behind a "原始请求" tab.
+- The sheet shows the real change read from the Run workspace (`approval.preview`): line diff with folded unchanged runs and +/− counts, or a command readout (分类 / 工作区 / 放行方式). The workspace badge (隔离 Worktree / 主工作区) and the reason auto-allow did not apply are always visible.
+- Multi-select raises an opaque floating selection dock (Motion spring, reduced-motion respected) with per-kind counts and an inline confirm with audit note. "本 Run 同类全部放行" confirms in place and lists the affected targets. Outcomes report approved / rejected / skipped / failed with the first reason; warnings stay longer than successes.
+- `WorktreeAutoAllowControl` (switch + family chips 测试 / Lint / 类型检查 / 构建) appears in the rail, the cleared state and the Action Center.
+- Action Center: the first open item is a highlighted "下一步" with the decision and a direct jump; later items become a quiet borderless list. New labels for 计划审核 / 范围变更 / 计划交付; their routes now land on the orchestration page instead of a 404.
+- Keyboard: J/K move, X selects, Esc clears. Text never sits on blur; all colours are `--ui-*`/`--studio-*` tokens. Evidence: `docs/ux/v2/`, `docs/v2/evidence/approval-simplify/REPORT.md`.
+
 ## 2026-11-05 — Audited delivery and readable code comparison
 
 - User requested functional delivery, then explicitly rejected command fields and unreadable/plain code previews. Git/project/task verification now uses a direct action; Runtime selects the actual project test configuration. The workspace terminal is removed from the primary flow; execution parameters remain under audit details.
