@@ -25,7 +25,7 @@
 
 .rw-head h1 {
   margin: 4px 0 3px;
-  font-size: 24px;
+  font-size: var(--ui-type-title);
   letter-spacing: -0.02em;
 }
 
@@ -52,7 +52,7 @@
 .rw-metrics strong {
   margin-right: 4px;
   color: var(--color-text-primary);
-  font-size: 15px;
+  font-size: var(--ui-type-section);
   font-weight: 600;
 }
 
@@ -148,7 +148,7 @@
   background: transparent;
   border-radius: 6px;
   padding: 6px 4px;
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
   color: var(--color-text-tertiary);
   cursor: pointer;
 }
@@ -203,18 +203,18 @@
 
 .rw-row-main strong {
   color: var(--color-text-primary);
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
   font-weight: 600;
 }
 
 .rw-row-main em {
   font-style: normal;
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
   color: var(--color-text-tertiary);
 }
 
 .rw-row-meta {
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
   color: var(--color-text-tertiary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -254,7 +254,7 @@
 
 .rw-detail-head h2 {
   margin: 3px 0 0;
-  font-size: 17px;
+  font-size: var(--ui-type-section);
   letter-spacing: -0.01em;
   word-break: break-all;
 }
@@ -267,7 +267,7 @@
   padding: 8px 0;
   border-top: 1px solid var(--color-divider);
   border-bottom: 1px solid var(--color-divider);
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
   color: var(--color-text-secondary);
 }
 
@@ -275,13 +275,13 @@
   display: block;
   margin-bottom: 2px;
   font-weight: 500;
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
   color: var(--color-text-tertiary);
 }
 
 .rw-section-title {
   margin: 4px 0 0;
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
   font-weight: 600;
   color: var(--color-text-secondary);
 }
@@ -298,13 +298,13 @@
   gap: 12px;
   padding: 6px 0;
   border-bottom: 1px solid var(--color-divider);
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
   color: var(--color-text-secondary);
 }
 
 .rw-table-row code {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
   color: var(--color-text-tertiary);
 }
 
@@ -319,7 +319,7 @@
 .rw-hint,
 .rw-note {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
   line-height: 1.5;
   color: var(--color-text-tertiary);
 }
@@ -335,7 +335,7 @@
 
 .rw-rail h2 {
   margin: 0 0 3px;
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--color-text-tertiary);
@@ -345,7 +345,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
   color: var(--color-text-secondary);
 }
 
@@ -368,7 +368,7 @@
   margin-left: auto;
   font-weight: 600;
   color: var(--color-text-primary);
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
 }
 
 .rw-rail-divider {
@@ -383,7 +383,7 @@
   gap: 8px;
   padding: 6px 0;
   border-bottom: 1px solid var(--color-divider);
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
   color: var(--color-text-secondary);
 }
 
@@ -394,7 +394,7 @@
 
 .rw-rail-copy {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--ui-type-caption);
   line-height: 1.5;
   color: var(--color-text-tertiary);
 }
@@ -450,3 +450,15 @@
 .rw-head-right .rw-version-control { margin-bottom: 2px; }
 
 .rw-filter { margin: 4px 6px 6px; width: calc(100% - 12px); }
+
+/* ADR-0092: the workbench sits on the page, not inside another card; one header row; empty = one focal prompt. */
+:root .po-shell .rw-page > .rw-shell { padding: 0; border-color: transparent !important; border-radius: 0; background: transparent !important; box-shadow: none !important; }
+.rw-page .rw-head { align-items: center; padding: 0 0 var(--ui-space-4); }
+.rw-page .rw-head h1 { margin: 0 0 var(--ui-space-1); line-height: var(--ui-leading-tight); }
+.rw-page .rw-head p { color: var(--ui-muted); font-size: var(--ui-type-body); }
+.rw-page .rw-head-right { flex-direction: row; align-items: center; gap: var(--ui-space-2); }
+.rw-page .rw-head-right .rw-version-control { margin: 0; }
+.rw-empty { display: flex; align-items: center; min-height: 300px; padding: var(--ui-space-6) var(--ui-space-2); }
+.rw-empty-copy { max-width: 460px; }
+.rw-empty-copy h2 { margin: 0 0 var(--ui-space-2); color: var(--ui-ink); font-size: var(--ui-type-title); font-weight: 650; line-height: var(--ui-leading-tight); }
+.rw-empty-copy p { margin: 0 0 var(--ui-space-5); color: var(--ui-muted); font-size: var(--ui-type-body); line-height: var(--ui-leading-body); }
