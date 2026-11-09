@@ -14,6 +14,8 @@ export interface RuntimeConfig {
   seedDemoReviewQueue?: boolean
   seedDemoReviewHistory?: boolean
   seedDemoResources?: boolean
+  /** Dev/screenshot only: bind a requirement flow so the requirement stage bar has stages. */
+  seedDemoFlow?: boolean
   /**
    * Hard execution budgets. Omitted means "use environment defaults"; tests
    * pass explicit small values instead of waiting for real long runs.
@@ -54,6 +56,7 @@ export function loadRuntimeConfig(): RuntimeConfig {
     seedDemoReviewQueue: process.env.PROJECTOS_SEED_DEMO_REVIEW_QUEUE === '1',
     seedDemoReviewHistory: process.env.PROJECTOS_SEED_DEMO_REVIEW_HISTORY === '1',
     seedDemoResources: process.env.PROJECTOS_SEED_DEMO_RESOURCES === '1',
+    seedDemoFlow: process.env.PROJECTOS_SEED_DEMO_FLOW === '1',
   }
 }
 

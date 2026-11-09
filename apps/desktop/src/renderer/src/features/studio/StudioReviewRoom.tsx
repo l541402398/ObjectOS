@@ -526,7 +526,7 @@ export function StudioReviewRoom(): ReactElement {
                     {focusedKind.batchable && sameKind.length > 1 ? (
                       <button type="button" className="rv-kind-action" onClick={() => setConfirm({ mode: 'kind' })}>
                         <span className="rv-stack" aria-hidden>{sameKind.slice(0, 4).map((approval) => <i key={approval.id} />)}</span>
-                        <span><strong>本 Run 同类全部放行</strong><small>{sameKind.length} 项「{focusedKind.label}」</small></span>
+                        <span><strong>同类全部放行</strong><small>{sameKind.length} 项「{focusedKind.label}」</small></span>
                       </button>
                     ) : null}
                     <button type="button" className="rv-reject" onClick={() => setConfirm({ mode: 'single', decision: 'rejected' })}>

@@ -1,0 +1,43 @@
+/* ADR-0092 requirement stage bars.
+ * Full track (inside a requirement): one quiet bead row, no glass slab; only the focus stage is
+ * labelled with its state, other states live in the tooltip / stage dialog.
+ * Compact track (global top bar): reuses the goal-journey bead classes so both bars read the same. */
+:root .rq-workspace > ol.rq-flow-journey,
+:root ol.rq-flow-journey {
+  display: flex; align-items: center; gap: 0; margin: var(--ui-space-2) 0 0; padding: var(--ui-space-2) 0 var(--ui-space-4);
+  overflow-x: auto; list-style: none; border: 0; border-bottom: 1px solid var(--ui-divider); border-radius: 0;
+  background: none; box-shadow: none; scrollbar-width: none;
+}
+:root ol.rq-flow-journey > li { display: flex; flex: 1 1 0; align-items: center; min-width: 0; background: none !important; box-shadow: none !important; }
+:root ol.rq-flow-journey > li:not(:last-child)::after { content: ''; flex: 1; min-width: 12px; height: 1.5px; margin: 0 var(--ui-space-2); border-radius: 2px; background: var(--ui-border); }
+:root ol.rq-flow-journey > li.is-complete:not(:last-child)::after { background: color-mix(in srgb, var(--ui-ok) 50%, var(--ui-border)); }
+:root ol.rq-flow-journey button {
+  display: inline-flex !important; flex: none; align-items: center; gap: var(--ui-space-2); min-width: 0; padding: 4px 8px 4px 4px;
+  border: 0; border-radius: 999px; background: transparent; box-shadow: none; color: var(--ui-muted); font: inherit; cursor: pointer;
+}
+:root ol.rq-flow-journey button:hover { background: var(--ui-surface-hover, var(--gl-control-hover)); box-shadow: none; }
+:root ol.rq-flow-journey button strong { color: var(--ui-ink-2); font-size: var(--ui-type-body); font-weight: 550; white-space: nowrap; }
+:root ol.rq-flow-journey .rq-journey-state { color: var(--ui-muted); font-size: var(--ui-type-caption); white-space: nowrap; }
+:root ol.rq-flow-journey > li:not(.is-focus):not(.is-failed):not(.is-stale) .rq-journey-state { display: none; }
+:root ol.rq-flow-journey .rq-journey-mark {
+  width: 24px !important; height: 24px !important; border: 0; background: none; box-shadow: inset 0 0 0 1.5px var(--ui-border-strong);
+  color: var(--ui-muted); font-family: var(--ui-font); font-size: var(--ui-type-caption); font-weight: 650;
+}
+:root ol.rq-flow-journey > li.is-complete .rq-journey-mark { box-shadow: none; background: color-mix(in srgb, var(--ui-ok) 16%, transparent); color: var(--ui-ok); }
+:root ol.rq-flow-journey > li.is-focus .rq-journey-mark { box-shadow: 0 0 0 4px var(--ui-accent-soft); background: var(--ui-accent); color: var(--ui-inverse); }
+:root ol.rq-flow-journey > li.is-focus strong { color: var(--ui-ink); font-weight: var(--ui-weight-strong); }
+:root ol.rq-flow-journey > li.is-focus .rq-journey-state { color: var(--ui-accent-strong); }
+:root ol.rq-flow-journey > li:is(.is-failed, .is-stale) .rq-journey-mark { box-shadow: inset 0 0 0 1.5px currentColor; color: var(--ui-danger); }
+:root ol.rq-flow-journey > li.is-failed .rq-journey-state { color: var(--ui-danger); }
+:root ol.rq-flow-journey > li.is-stale .rq-journey-state { color: var(--ui-warn); }
+@media (max-width: 1200px) {
+  :root ol.rq-flow-journey > li:not(.is-focus) strong { display: none; }
+}
+
+/* Top bar (requirement variant) */
+:root .rq-top-journey { padding: 0; }
+:root .rq-top-journey .rq-top-journey-select { width: auto; min-width: 0; max-width: 260px; }
+:root .rq-top-journey .rq-top-journey-select .ant-select-selection-item { color: var(--ui-ink); font-weight: 600; }
+:root .rq-journey-beads .po-journey-step.is-failed .po-journey-step-marker { color: var(--ui-danger); box-shadow: inset 0 0 0 1.5px currentColor; }
+/* The focus stage carries a label + state; let it take its natural width so the connector never runs under it. */
+:root ol.rq-flow-journey > li.is-focus { flex: 1 0 auto; }

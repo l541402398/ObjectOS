@@ -367,35 +367,19 @@ export default function ProjectOverviewPage() {
                       <FlagOutlined />
                     </div>
                     <div className="po-milestone-body">
-                      <div className="po-milestone-head">
-                        <strong>{milestone.title}</strong>
-                        <StatusPill tone={toneForStatus(milestone.status)}>{MILESTONE_LABELS[milestone.status]}</StatusPill>
-                      </div>
-                      <div className="po-milestone-description">{milestone.description || '未填写说明'}</div>
-                      <div className="po-milestone-meta">
-                        <span>截止 {formatDate(milestone.dueAt)}</span>
+                      <strong className="po-milestone-title">{milestone.title}</strong>
+                      <div className="po-milestone-description" title={milestone.description || undefined}>{milestone.description || '未填写说明'}</div>
+                    </div>
+                    <div className="po-milestone-side">
+                      <StatusPill tone={toneForStatus(milestone.status)}>{MILESTONE_LABELS[milestone.status]}</StatusPill>
+                      <span className="po-milestone-due">
+                        {formatDate(milestone.dueAt)}
                         {milestone.status === 'planned' ? (
-                          <Button
-                            type="link"
-                            size="small"
-                            onClick={() =>
-                              setLifecycleStatus.mutate({ kind: 'milestone', id: milestone.id, status: 'active' })
-                            }
-                          >
-                            开始
-                          </Button>
+                          <button type="button" className="po-milestone-act" onClick={() => setLifecycleStatus.mutate({ kind: 'milestone', id: milestone.id, status: 'active' })}>开始</button>
                         ) : milestone.status === 'active' ? (
-                          <Button
-                            type="link"
-                            size="small"
-                            onClick={() =>
-                              setLifecycleStatus.mutate({ kind: 'milestone', id: milestone.id, status: 'completed' })
-                            }
-                          >
-                            标记完成
-                          </Button>
+                          <button type="button" className="po-milestone-act" onClick={() => setLifecycleStatus.mutate({ kind: 'milestone', id: milestone.id, status: 'completed' })}>完成</button>
                         ) : null}
-                      </div>
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -521,13 +505,10 @@ export default function ProjectOverviewPage() {
                     />
                     <span className="po-agent-info">
                       <strong>{agentView.agent.name}</strong>
-                      <span>{agentView.agent.role}</span>
+                      <span>{agentView.agent.role}{agentView.completedRuns ? ` · ${agentView.completedRuns} 次完成` : ''}</span>
                     </span>
-                    <span className="po-agent-meta">
-                      <StatusPill tone={toneForStatus(agentView.status)}>
-                        {agentView.status === 'working' ? '执行中' : '空闲'}
-                      </StatusPill>
-                      <span className="po-caption po-muted">{agentView.completedRuns} 次完成</span>
+                    <span className={`po-agent-state is-${agentView.status}`}>
+                      {agentView.status === 'working' ? '执行中' : '空闲'}
                     </span>
                   </button>
                 ))}

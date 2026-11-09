@@ -924,7 +924,7 @@
   border-radius: 999px;
   background: rgba(79, 70, 229, 0.12);
   color: #4f46e5;
-  font-size: var(--ui-type-caption);
+  font-size: var(--ui-type-badge);
   font-weight: 700;
 }
 
@@ -1212,7 +1212,7 @@
   border-radius: 999px;
   background: rgba(59, 130, 246, 0.12);
   color: #1d4ed8;
-  font-size: var(--ui-type-caption);
+  font-size: var(--ui-type-badge);
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -1246,3 +1246,34 @@
   font-size: var(--ui-type-caption);
   color: var(--ui-ink-2);
 }
+
+/* ADR-0092: one caption row replaces the four governance pills; acceptance coverage is the only live signal. */
+.rq-governance-strip { gap: var(--ui-space-2); margin: 0 0 var(--ui-space-2); }
+.rq-flow-caption { gap: var(--ui-space-4); padding: var(--ui-space-2) 0 0; }
+.rq-flow-meta { flex: 1; min-width: 0; overflow: hidden; color: var(--ui-muted); font-size: var(--ui-type-caption); text-overflow: ellipsis; white-space: nowrap; }
+.rq-criteria-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 0; border-radius: 999px; background: transparent; color: var(--ui-ink-2); font: inherit; font-size: var(--ui-type-caption); cursor: pointer; }
+.rq-criteria-toggle:hover:not(:disabled) { background: var(--ui-surface-hover, var(--gl-control-hover)); }
+.rq-criteria-toggle:disabled { cursor: default; color: var(--ui-muted); }
+.rq-criteria-toggle .rq-gov-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ui-muted); }
+.rq-criteria-toggle.is-ok .rq-gov-dot { background: var(--ui-ok); }
+.rq-criteria-toggle.is-warn .rq-gov-dot { background: var(--ui-warn); }
+
+/* ADR-0092 dark-safe surfaces: the requirement switcher, view toggle, task ledger and deliverable cells
+ * used hard-coded white fills, which turned into light slabs with light text in dark mode. */
+:root .rq-requirements { border-color: var(--gl-sheet-edge, var(--ui-border)) !important; background: var(--gl-control) !important; box-shadow: none; }
+:root .rq-list-label { border-right-color: var(--ui-divider); }
+:root .rq-list-label span { background: var(--ui-accent-soft); color: var(--ui-accent-strong, var(--ui-accent)); }
+:root .rq-dl-viewbar { border-color: var(--gl-sheet-edge, var(--ui-border)); background: var(--gl-control); box-shadow: none; backdrop-filter: none; }
+:root .rq-dl-viewbar button.is-active { background: var(--gl-active); color: var(--ui-accent-strong, var(--ui-accent)); box-shadow: inset 0 0 0 1px var(--gl-active-edge, var(--ui-accent-line)); }
+:root .rq-dl-ledger-panel { border-color: var(--gl-sheet-edge, var(--ui-border)); background: var(--gl-sheet); box-shadow: inset 0 1px 0 var(--gl-sheet-highlight, transparent); }
+:root .rq-step-deliverable-card.is-produced { border-color: color-mix(in srgb, var(--ui-ok) 40%, transparent); background: color-mix(in srgb, var(--ui-ok) 10%, transparent); }
+:root .rq-step-deliverable-card.is-expected { border-color: var(--ui-border); background: transparent; }
+:root[data-theme='dark'] :is(.rq-dl-panel-head, .rq-dl-readiness-box, .rq-dl-agent-chip, .rq-dl-dag-wrap, .rq-dl-dag-canvas, .rq-dl-dag-inspector-bar, .rq-task-flow-detail, .rq-arrangement-task-card) {
+  border-color: var(--gl-sheet-edge, var(--ui-border)); background: var(--gl-sheet); box-shadow: none;
+}
+:root[data-theme='dark'] :is(.rq-dl-stage-code, .rq-dl-dag-node, .rq-dl-port, .rq-arrangement-stage-chip) { border-color: var(--ui-border); background: var(--gl-control); color: var(--ui-ink-2); box-shadow: none; }
+:root[data-theme='dark'] :is(.rq-dl-stage-row.is-current, .rq-dl-dag-node.is-task-root) { background: var(--gl-active); }
+:root[data-theme='dark'] .rq-dl-dag-node.is-done { background: color-mix(in srgb, var(--ui-ok) 12%, transparent); }
+:root[data-theme='dark'] .rq-step-list > li.rq-unified-step-row:is(.is-running, .is-starting) { background: var(--gl-active); }
+/* The chip strip wraps at every width, so the narrow-screen select duplicated it. */
+:root .rq-mobile-select { display: none !important; }

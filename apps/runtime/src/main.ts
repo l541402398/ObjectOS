@@ -8,7 +8,7 @@ import { SqliteStore } from '@projectos/persistence'
 import { CoreServices } from '@projectos/application'
 import { AgentRunner } from './agent-runner.js'
 import { RuntimeDispatcher } from './dispatcher.js'
-import { seedDemoResources, seedDemoReviewHistory, seedDemoReviewQueue } from './demo.js'
+import { seedDemoFlow, seedDemoResources, seedDemoReviewHistory, seedDemoReviewQueue } from './demo.js'
 import { serializeError } from '@projectos/contracts'
 
 async function main(): Promise<void> {
@@ -115,6 +115,7 @@ async function main(): Promise<void> {
       if (config.seedDemoReviewQueue) logger.info({ added: seedDemoReviewQueue(store, result.projectId) }, 'demo review queue seeded')
       if (config.seedDemoReviewHistory) logger.info({ added: seedDemoReviewHistory(store, result.projectId) }, 'demo review history seeded')
       if (config.seedDemoResources) logger.info({ added: seedDemoResources(store, result.projectId) }, 'demo resources seeded')
+      if (config.seedDemoFlow) logger.info({ requirementId: await seedDemoFlow((method, input) => dispatcher.dispatch(method, input), store, result.projectId) }, 'demo requirement flow seeded')
     } catch (error) {
       logger.warn({ err: error }, 'failed to seed demo project')
     }

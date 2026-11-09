@@ -161,12 +161,10 @@ function TaskFlowDetails({ flow, materials, flashStepId, projectId, onRefresh, o
 }) {
   const agents = useAgents(projectId)
   const action = useMutation({ mutationFn: async (operation: () => Promise<unknown>) => { await operation(); await onRefresh() } })
-  const pad2 = (n: number) => String(n).padStart(2, '0')
 
   return <aside className="rq-task-flow-detail" aria-label="任务流程详情">
     <div className="rq-section-title rq-detail-head-bar">
       <div>
-        <span className="rq-dl-eyebrow">STAGE EXECUTION &amp; DELIVERABLES · 阶段执行、产出与负责人一体表</span>
         <h3>节点与负责人</h3>
       </div>
       <div className="rq-inline-actions">
@@ -208,7 +206,6 @@ function TaskFlowDetails({ flow, materials, flashStepId, projectId, onRefresh, o
             <span className="rq-step-number">{isStepDone ? '✓' : index + 1}</span>
             <div className="rq-step-title-stack">
               <div className="rq-step-title-line">
-                <span className="rq-step-code-tag">STAGE {pad2(index + 1)}</span>
                 <strong>{step.title}</strong>
               </div>
               <div className="rq-step-meta-line">
@@ -425,7 +422,6 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
   }, [req.acceptanceCriteria, view.tasks])
   const coveredCriteriaCount = criteriaCoverage.filter((item) => item.status !== 'unmapped').length
   const verifiedCriteriaCount = criteriaCoverage.filter((item) => item.status === 'verified').length
-  const completedFlowsCount = data?.tasks.filter((t) => t.status === 'completed').length ?? 0
   return <section className="rq-workspace" aria-label={req.title}>
     <div className="rq-heading">
       <div className="rq-heading-main">
@@ -456,51 +452,29 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
         tasks={view.tasks.map(t => ({ id: t.id, title: t.title }))}
         onNavigate={go}
       />}
-      <div className="rq-flow-caption"><span>{binding.templateName} · {binding.assignmentMode === 'ai' ? 'AI 自动分配' : '手动分配 Agent'}{parallel?.hasParallelActive && parallel.activeNodes.length > 1 ? ` · ${parallel.headline}` : ''}</span><Tooltip title={binding.lockedAt ? '执行中的需求固定使用所选流程版本' : undefined}><Button type="text" disabled={Boolean(binding.lockedAt)} onClick={() => setTemplateEditor(templates.data?.templates.find(template => template.versionId === binding.templateVersionId) ?? 'new')}>调整流程</Button></Tooltip></div>
-      <div className="rq-governance-strip" role="region" aria-label="全链路工程治理与验收覆盖">
-        <div className="rq-governance-pills">
-          <div className="rq-gov-pill is-ok" title="规划与执行上下文完整装载，不发生静默截断">
-            <span className="rq-gov-dot" aria-hidden />
-            <span className="rq-gov-label">上下文契约</span>
-            <strong>全文装载 · {(req.body?.length ?? 0) + req.acceptanceCriteria.join('').length} 字</strong>
-          </div>
+      <div className="rq-governance-strip" role="region" aria-label="流程与验收覆盖">
+        <div className="rq-flow-caption">
+          <span className="rq-flow-meta" title={`${binding.lockedAt ? `流程版本已锁定 v${binding.version}` : `结构化预检就绪 v${binding.version}`} · 上下文全文装载 ${(req.body?.length ?? 0) + req.acceptanceCriteria.join('').length} 字 · 验证按命令独立裁决`}>
+            {binding.templateName} · {binding.assignmentMode === 'ai' ? 'AI 分配' : '手动分配'}{binding.lockedAt ? ' · 已锁定' : ''}
+            {parallel?.hasParallelActive && parallel.activeNodes.length > 1 ? ` · ${parallel.headline}` : ''}
+          </span>
           <button
             type="button"
-            className={`rq-gov-pill is-interactive ${
-              req.acceptanceCriteria.length === 0
-                ? 'is-neutral'
-                : coveredCriteriaCount === req.acceptanceCriteria.length
-                  ? 'is-ok'
-                  : 'is-warn'
-            }`}
+            className={`rq-criteria-toggle ${req.acceptanceCriteria.length === 0 ? 'is-neutral' : coveredCriteriaCount === req.acceptanceCriteria.length ? 'is-ok' : 'is-warn'}`}
             aria-expanded={criteriaOpen}
+            disabled={req.acceptanceCriteria.length === 0}
             onClick={() => setCriteriaOpen((prev) => !prev)}
           >
             <span className="rq-gov-dot" aria-hidden />
-            <span className="rq-gov-label">验收标准覆盖</span>
-            <strong>
-              {req.acceptanceCriteria.length > 0
-                ? `${coveredCriteriaCount}/${req.acceptanceCriteria.length} 已承接 · ${verifiedCriteriaCount} 已验证`
-                : '未设独立条目'}
-            </strong>
-            <span className="rq-gov-toggle">{criteriaOpen ? '收起' : '矩阵'}</span>
+            验收 {req.acceptanceCriteria.length > 0 ? `${coveredCriteriaCount}/${req.acceptanceCriteria.length} 已承接 · ${verifiedCriteriaCount} 已验证` : '未设条目'}
           </button>
-          <div className="rq-gov-pill is-ok" title="所有流程节点均经过结构化能力预检，执行期锁定模板版本">
-            <span className="rq-gov-dot" aria-hidden />
-            <span className="rq-gov-label">执行器门禁</span>
-            <strong>{binding.lockedAt ? `版本已锁定 v${binding.version}` : `结构化预检就绪 v${binding.version}`}</strong>
-          </div>
-          <div className="rq-gov-pill is-ok" title="测试、构建、代码检查按命令分组独立裁决，后续命令不会掩盖失败">
-            <span className="rq-gov-dot" aria-hidden />
-            <span className="rq-gov-label">逐项验证隔离</span>
-            <strong>{completedFlowsCount}/{view.tasks.length} 流程完结</strong>
-          </div>
+          <Tooltip title={binding.lockedAt ? '执行中的需求固定使用所选流程版本' : undefined}><Button type="text" size="small" disabled={Boolean(binding.lockedAt)} onClick={() => setTemplateEditor(templates.data?.templates.find(template => template.versionId === binding.templateVersionId) ?? 'new')}>调整流程</Button></Tooltip>
         </div>
         {criteriaOpen && req.acceptanceCriteria.length > 0 && (
           <div className="rq-criteria-matrix" aria-label="需求验收标准追踪矩阵">
             <div className="rq-criteria-matrix-head">
-              <strong>需求验收标准追踪矩阵（Acceptance Coverage Matrix）</strong>
-              <span className="rq-secondary">点击关联任务可直接定位至下方任务与流程节点</span>
+              <strong>验收标准追踪</strong>
+              <span className="rq-secondary">点击任务可定位</span>
             </div>
             <ul className="rq-criteria-list">
               {criteriaCoverage.map((item) => (
@@ -548,7 +522,7 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
           <>
             <div className="rq-section-title rq-dl-viewbar-row">
               <div className="rq-dl-viewbar-left">
-                <h3>{view.tasks.length ? '这次交付的任务' : '接下来，添加任务'}</h3>
+                <h3>{view.tasks.length ? '这次交付的任务' : binding ? '接下来，添加任务' : '任务'}</h3>
                 {view.tasks.length > 0 && (
                   <div className="rq-dl-viewbar" role="tablist" aria-label="需求任务与依赖视图">
                     <button
@@ -574,17 +548,17 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
                   </div>
                 )}
               </div>
-              <div className="rq-inline-actions">
+              {binding ? <div className="rq-inline-actions">
                 <Button disabled={!binding || req.status === 'implemented' || planOpen || action.isPending || assignAIMutation.isPending} onClick={() => setPlanOpen(true)}>AI 拆分任务</Button>
                 {binding && view.tasks.length > 0 && (
                   <Button loading={assignAIMutation.isPending} disabled={assignAIMutation.isPending || action.isPending} onClick={() => assignAIMutation.mutate()}>AI 分配 Agent</Button>
                 )}
                 <Button type={view.tasks.length ? 'default' : 'primary'} icon={<PlusOutlined aria-hidden />} disabled={!binding || req.status === 'implemented' || action.isPending || assignAIMutation.isPending} onClick={() => onEdit({ kind: 'task' })}>添加任务</Button>
-              </div>
+              </div> : null}
             </div>
 
             {!view.tasks.length ? (
-              <EmptyState title="将需求拆成可以独立完成的任务" description="每个任务都会执行上方所选流程，可由不同 Agent 接力完成。" />
+              <EmptyState title={binding ? '将需求拆成可以独立完成的任务' : '选好流程后再拆分任务'} description={binding ? '每个任务都会执行所选流程，可由不同 Agent 接力完成。' : '任务会沿用这个流程，由不同 Agent 接力完成。'} />
             ) : viewMode === 'dag' ? (
               <RequirementDependencyGraph
                 graph={binding?.graph}
@@ -601,17 +575,8 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
             ) : (
               <div className={`rq-task-workbench${selectedFlow ? ' has-detail' : ''}`}>
                 <div className="rq-dl-ledger-panel">
-                  <div className="rq-dl-panel-head">
-                    <div>
-                      <span className="rq-dl-eyebrow">DELIVERY TASKS &amp; READINESS</span>
-                      <h4>交付任务与协作团队</h4>
-                    </div>
-                    <span className="rq-dl-panel-note">
-                      {view.tasks.length} 项任务 · {stageCount} 阶段
-                    </span>
-                  </div>
                   <ul className="rq-task-list">
-                    {view.tasks.map((task, taskIdx) => {
+                    {view.tasks.map((task) => {
                       const taskFlow = data?.tasks.find((item) => item.taskId === task.id)
                       const activeSteps = taskFlow?.steps.filter((step) => ['starting', 'running', 'waiting_approval', 'failed', 'needs_reconciliation'].includes(step.status)) ?? []
                       const staleSteps = taskFlow?.steps.filter((step) => step.status === 'completed' && step.stale) ?? []
@@ -637,10 +602,9 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
                           <div className="rq-task-top-row">
                             <div className="rq-task-main">
                               <div className="rq-dl-task-kicker">
-                                <span className="rq-dl-task-code">TASK {pad2(taskIdx + 1)}</span>
                                 {totalStepCount > 0 && (
                                   <span className="rq-dl-task-progress">
-                                    阶段进度 {doneStepCount}/{totalStepCount}
+                                    {doneStepCount}/{totalStepCount} 阶段
                                   </span>
                                 )}
                               </div>
@@ -728,14 +692,14 @@ function RequirementWorkspace({ view, onEdit, onRefresh }: { view: RequirementWo
                     return (
                       <div className="rq-dl-readiness-box rq-dl-left-readiness" aria-label="阶段准备度与协作团队">
                         <div className="rq-dl-readiness-top">
-                          <span className="rq-dl-eyebrow">REVIEW &amp; EXECUTION READINESS</span>
+                          
                           <span className={`rq-dl-ready-badge ${selectedFlow.status === 'completed' ? 'is-ok' : selectedFlow.pendingApprovalId ? 'is-warn' : 'is-accent'}`}>
                             <CheckCircle2 size={13} />
                             {selectedFlow.status === 'completed' ? '全部阶段已完成' : selectedFlow.pendingApprovalId ? '有待处理授权' : `阶段 ${completedSteps}/${totalSteps}`}
                           </span>
                         </div>
                         <div className="rq-dl-readiness-score">
-                          <strong>{pad2(completedSteps)}<span> / {pad2(totalSteps)} 阶段</span></strong>
+                          <strong>{completedSteps}<span> / {totalSteps} 阶段</span></strong>
                           <div className="rq-dl-readiness-stats">
                             <div><span>参与 Agent</span><strong>{uniqueAgents.length} 位</strong></div>
                             <div><span>产出资料</span><strong>{taskMaterials.length} 份</strong></div>

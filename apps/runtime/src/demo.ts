@@ -1442,3 +1442,31 @@ export function seedDemoResources(store: SqliteStore, projectId: string): number
   }
   return hosts.length
 }
+
+type DemoDispatch = (method: string, input: unknown) => Promise<unknown>
+
+/**
+ * Opt-in (`PROJECTOS_SEED_DEMO_FLOW=1`) requirement flow for the demo project, so the requirement
+ * stage bar can be inspected with real stages. Binds the built-in template to the first requirement
+ * whose tasks have not started, through the same `requirement.flow.bind` path the UI uses; adds two
+ * planned tasks when that requirement has none. Nothing is started and no run is created.
+ */
+export async function seedDemoFlow(dispatch: DemoDispatch, store: SqliteStore, projectId: string): Promise<string | null> {
+  const bound = store.db.prepare('SELECT b.requirement_id FROM requirement_flow_bindings b JOIN requirements r ON r.id=b.requirement_id WHERE r.project_id=? LIMIT 1').get(projectId)
+  if (bound) return null
+  const { templates } = await dispatch('workflow.templates', { projectId }) as { templates: Array<{ versionId: string }> }
+  const templateVersionId = (templates.find((template) => template.versionId === 'wfv_standard1') ?? templates[0])?.versionId
+  if (!templateVersionId) return null
+  const tasks = store.read.listTasks(projectId)
+  const requirement = store.read.listRequirements(projectId)
+    .find((item) => !tasks.some((task) => task.requirementId === item.id && ['done', 'running', 'review', 'blocked'].includes(task.status)))
+  if (!requirement) return null
+  if (!tasks.some((task) => task.requirementId === requirement.id)) {
+    for (const title of ['同步协议与冲突合并', '端到端加密与密钥轮换']) {
+      await dispatch('task.create', { projectId, requirementId: requirement.id, title, description: `${requirement.title} · ${title}` })
+    }
+  }
+  const fresh = store.read.listRequirements(projectId).find((item) => item.id === requirement.id) ?? requirement
+  await dispatch('requirement.flow.bind', { requirementId: fresh.id, templateVersionId, expectedRequirementVersion: fresh.version, assignmentMode: 'manual', assignments: {} })
+  return fresh.id
+}

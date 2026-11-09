@@ -595,7 +595,7 @@ export default function AppLayout() {
           >
             <div className="po-project-hub-menu" role="menu" aria-label="项目档案与配置二级菜单">
               <div className="po-project-hub-head">
-                <span className="po-project-hub-kicker">PROJECT HUB</span>
+                
                 <strong>{truncate(currentProject.name, 22)} · 项目档案与配置</strong>
               </div>
               <div className="po-project-hub-list">

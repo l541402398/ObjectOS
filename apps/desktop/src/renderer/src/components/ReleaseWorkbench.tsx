@@ -129,12 +129,12 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
         </div>
       </header>
 
-      <div className="rw-stepper" aria-label="发布流程">
+      {isEmpty ? null : <div className="rw-stepper" aria-label="发布流程">
         <div className={approvedRequest ? 'is-done' : 'is-current'}><i />变更审批</div>
         <div className={latestCandidate ? 'is-done' : approvedRequest ? 'is-current' : ''}><i />门禁/证据</div>
         <div className={latestCandidate ? 'is-done' : ''}><i />候选冻结</div>
         <div className={latestRelease ? 'is-done' : ''}><i />Release 登记</div>
-      </div>
+      </div>}
 
       {isEmpty ? (
         <section className="rw-empty" aria-label="发布准备">
@@ -143,6 +143,19 @@ export function ReleaseWorkbench({ projectId, versionId, versionLabel, versionCo
             <p>变更获批并有真实制品后，就能生成候选并登记 Release。</p>
             <Button type="primary" onClick={() => { setTitle(''); setDescription(''); setCreateOpen(true) }}>新建变更</Button>
           </div>
+          <ol className="rw-empty-path" aria-label="发布路径">
+            {[
+              ['新建变更并提交审批', '说明范围、风险与目标环境', approvedRequest ? 'done' : 'next'],
+              ['准备真实制品', versionArtifacts.length ? `${versionArtifacts.length} 个制品已关联` : '由任务产出关联到本版本', versionArtifacts.length ? 'done' : 'todo'],
+              ['生成并冻结候选', '门禁通过后锁定提交与制品', 'todo'],
+              ['登记 Release', '本地可追溯；外部回执才算已分发', 'todo'],
+            ].map(([title, detail, state], index) => (
+              <li key={title} className={`is-${state}`}>
+                <span className="rw-empty-dot" aria-hidden>{state === 'done' ? '✓' : index + 1}</span>
+                <span><strong>{title}</strong><small>{detail}</small></span>
+              </li>
+            ))}
+          </ol>
         </section>
       ) : <div className="rw-body">
         <aside className="rw-list" aria-label="发布记录">

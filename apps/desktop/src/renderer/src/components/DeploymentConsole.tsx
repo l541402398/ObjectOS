@@ -252,7 +252,7 @@ export function DeploymentConsole({ projectId, versionId, versionControl }: { pr
           ) : (
             <>
               <div className="dc-deploy-head">
-                <div><span className="rw-kicker">DEPLOYMENT</span><h2>{target?.name ?? '未命名目标'} · {environment?.name ?? '环境'}</h2></div>
+                <div><h2>{target?.name ?? '未命名目标'} · {environment?.name ?? '环境'}</h2></div>
                 <Tag>{deploymentStatusLabel(selected)}</Tag>
               </div>
               <div className="dc-steps">

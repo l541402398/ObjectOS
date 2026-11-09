@@ -66,7 +66,7 @@
 
 .rv-keys { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px 6px 0; border-top: 1px solid var(--studio-line); color: var(--studio-muted); font-size: var(--ui-type-caption); }
 .rv-keys span { display: inline-flex; align-items: center; gap: 3px; }
-.rv-keys kbd { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px; border: 1px solid var(--studio-line-strong); border-bottom-width: 2px; border-radius: 5px; background: var(--studio-surface); color: var(--studio-ink-2); font-family: var(--rv-mono); font-size: var(--ui-type-caption); line-height: 1; }
+.rv-keys kbd { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px; border: 1px solid var(--studio-line-strong); border-bottom-width: 2px; border-radius: 5px; background: var(--studio-surface); color: var(--studio-ink-2); font-family: var(--rv-mono); font-size: var(--ui-type-badge); line-height: 1; }
 
 /* ---------------------------------------------------------------- sheet */
 .rv-sheet {
@@ -262,7 +262,7 @@
 .rv-lenses button { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 13px; border: 0; border-radius: 9px; background: transparent; color: var(--studio-muted); font-size: var(--ui-type-body); font-weight: 600; transition: background-color 140ms ease, color 140ms ease; }
 .rv-lenses button:hover { color: var(--studio-ink); }
 .rv-lenses button[aria-selected='true'] { background: var(--studio-raised); color: var(--studio-ink); box-shadow: var(--ui-shadow-sm); }
-.rv-lenses b { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--studio-accent); color: var(--ui-inverse); font-size: var(--ui-type-caption); font-weight: 700; font-variant-numeric: tabular-nums; }
+.rv-lenses b { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--studio-accent); color: var(--ui-inverse); font-size: var(--ui-type-badge); font-weight: 700; font-variant-numeric: tabular-nums; }
 
 .rv-clear-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .rv-clear-links .studio-ghost, .rv-clear-links .studio-cta { gap: 6px; }
@@ -340,3 +340,25 @@
 .rv-reason.is-bad { border-left-color: var(--studio-danger); }
 .rv-reason svg { flex: none; margin-top: 3px; color: var(--studio-muted); }
 .rv-reason p { margin: 0; color: var(--studio-ink); font-size: var(--ui-type-body); line-height: 1.6; }
+
+/* ADR-0092 pending lens: one primary decision; batch and reject are quiet secondary rows; policy reads as settings text. */
+.rv-rail { gap: var(--ui-space-5); }
+.rv-actions { gap: var(--ui-space-1); }
+.rv-actions .rv-primary { margin-bottom: var(--ui-space-2); }
+.rv-kind-action { gap: var(--ui-space-2); padding: 6px 10px; border: 0; border-radius: 10px; color: var(--studio-ink-2, var(--studio-ink)); }
+.rv-kind-action:hover { background: var(--studio-accent-soft); }
+.rv-kind-action > span:last-child { flex-direction: row; align-items: baseline; gap: 6px; }
+.rv-kind-action strong { font-size: var(--ui-type-body); font-weight: 550; }
+.rv-kind-action .rv-stack { width: 24px; height: 18px; }
+.rv-kind-action .rv-stack i { top: 2px; width: 14px; height: 14px; border-radius: 5px; }
+.rv-kind-action .rv-stack i:nth-child(2) { left: 3px; } .rv-kind-action .rv-stack i:nth-child(3) { left: 6px; } .rv-kind-action .rv-stack i:nth-child(4) { left: 9px; }
+.rv-reject { justify-content: flex-start; height: 32px; padding: 0 10px; font-weight: 550; }
+.rv-rail-policy { padding-top: var(--ui-space-4); }
+.wt-allow-glyph { width: 24px; height: 24px; border-radius: 8px; }
+.wt-allow-families { gap: 2px var(--ui-space-3); padding-left: 34px; }
+.wt-allow-families button { height: 22px; padding: 0; border: 0; background: transparent !important; color: var(--ui-muted); }
+.wt-allow-families button::before { content: '○ '; }
+.wt-allow-families button.is-on { color: var(--ui-ok); }
+.wt-allow-families button.is-on::before { content: '● '; }
+.wt-allow.is-compact .wt-allow-families { padding-left: 34px; }
+.rv-why { color: var(--studio-muted); font-size: var(--ui-type-caption); }

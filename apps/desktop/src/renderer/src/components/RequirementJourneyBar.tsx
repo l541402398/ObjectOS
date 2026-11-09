@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Button, Select } from 'antd'
-import { ArrowRightOutlined } from '@ant-design/icons'
+import { Button, Dropdown, Select } from 'antd'
+import { ArrowRightOutlined, MoreOutlined } from '@ant-design/icons'
 import type {
   RequirementFlowBinding,
   RequirementFlowGraph,
@@ -17,6 +17,7 @@ import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '..
 import { RequirementMaterials } from '../pages/RequirementMaterials'
 import { GoalJourneyBar } from './GoalJourneyBar'
 import '../pages/requirement-flow.css'
+import './journey.css'
 
 export interface StageAggregation {
   nodeId: string
@@ -159,6 +160,7 @@ export function RequirementJourneyTrack({
   flow,
   tasks = [],
   onNavigate,
+  variant = 'full',
 }: {
   projectId: string
   requirementId: string
@@ -167,6 +169,8 @@ export function RequirementJourneyTrack({
   flow: RequirementFlowView
   tasks?: Array<{ id: string; title: string }>
   onNavigate?: (path: string) => void
+  /** `compact` renders the bead track used in the global top bar: only the focus stage is labelled. */
+  variant?: 'full' | 'compact'
 }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const urlStage = searchParams.get('stage')
@@ -200,6 +204,12 @@ export function RequirementJourneyTrack({
     [binding.graph.nodes, flow.tasks],
   )
 
+  // The focus stage: the first stage with live work, otherwise the first one that is not complete.
+  const focusId = useMemo(() => {
+    const parallel = summarizeParallelStages(binding.graph, flow.tasks)
+    return parallel.activeNodes[0]?.nodeId ?? stageSummaries.find(({ summary }) => !summary.allCompleted)?.node.id ?? null
+  }, [binding.graph, flow.tasks, stageSummaries])
+
   const activeStageNode = openStageId
     ? binding.graph.nodes.find((node) => node.id === openStageId) ?? null
     : null
@@ -217,25 +227,56 @@ export function RequirementJourneyTrack({
 
   return (
     <>
-      <nav className="rq-flow-journey" aria-label="需求流程旅程">
-        {stageSummaries.map(({ node, summary }, index) => (
-          <button
-            key={node.id}
-            ref={(el) => {
-              triggerRefs.current[node.id] = el
-            }}
-            type="button"
-            className={summary.stateClass}
-            data-stage-node={node.id}
-            data-testid={`journey-stage-${node.id}`}
-            onClick={() => setOpenStageId(node.id)}
-          >
-            <span className="rq-journey-mark">{summary.allCompleted ? '✓' : index + 1}</span>
-            <strong>{node.title}</strong>
-            <span>{summary.label}</span>
-          </button>
-        ))}
-      </nav>
+      {variant === 'compact' ? (
+        <ol className="po-journey-track is-compact rq-journey-beads" aria-label="需求流程阶段" aria-live="polite">
+          {stageSummaries.map(({ node, summary }, index) => {
+            const state = summary.allCompleted ? 'done' : node.id === focusId ? 'active' : 'pending'
+            const isFocus = node.id === focusId
+            return (
+              <li key={node.id} className={`po-journey-step is-${state}${isFocus ? ' is-current' : ''}${summary.failed > 0 ? ' is-failed' : ''}`}>
+                <button
+                  ref={(el) => { triggerRefs.current[node.id] = el }}
+                  type="button"
+                  className="po-journey-step-button"
+                  data-stage-node={node.id}
+                  data-testid={`journey-stage-${node.id}`}
+                  aria-current={isFocus ? 'step' : undefined}
+                  aria-label={`${node.title}，${summary.label}`}
+                  title={`${node.title} · ${summary.label}`}
+                  onClick={() => setOpenStageId(node.id)}
+                >
+                  <span className="po-journey-step-marker" aria-hidden="true">{summary.allCompleted ? '✓' : index + 1}</span>
+                  <span className="po-journey-step-label">{node.title}</span>
+                  {isFocus ? <span className="po-journey-step-state is-active" data-testid="requirement-journey-headline">{summary.label}</span> : null}
+                </button>
+              </li>
+            )
+          })}
+        </ol>
+      ) : (
+        <ol className="rq-flow-journey" aria-label="需求流程旅程">
+          {stageSummaries.map(({ node, summary }, index) => {
+            const isFocus = node.id === focusId
+            return (
+              <li key={node.id} className={`${summary.stateClass}${isFocus ? ' is-focus' : ''}`}>
+                <button
+                  ref={(el) => { triggerRefs.current[node.id] = el }}
+                  type="button"
+                  data-stage-node={node.id}
+                  data-testid={`journey-stage-${node.id}`}
+                  aria-current={isFocus ? 'step' : undefined}
+                  title={`${node.title} · ${summary.label}`}
+                  onClick={() => setOpenStageId(node.id)}
+                >
+                  <span className="rq-journey-mark">{summary.allCompleted ? '✓' : index + 1}</span>
+                  <strong>{node.title}</strong>
+                  <span className="rq-journey-state">{summary.label}</span>
+                </button>
+              </li>
+            )
+          })}
+        </ol>
+      )}
       {activeStageNode ? (
         <DialogShell
           open
@@ -327,7 +368,6 @@ export function TopJourneyBar({ projectId }: { projectId: string | null }) {
   }
 
   const binding = flow.data.binding
-  const parallel = summarizeParallelStages(binding.graph, flow.data.tasks)
   const reqTasks = (board.data?.tasks ?? [])
     .filter((task) => task.requirementId === selectedRequirement.id && task.status !== 'cancelled')
     .map((task) => ({ id: task.id, title: task.title }))
@@ -346,6 +386,12 @@ export function TopJourneyBar({ projectId }: { projectId: string | null }) {
     navigate(`/projects/${projectId}/${subpath}${sep}requirement=${encodeURIComponent(selectedRequirement.id)}`)
   }
 
+  const moreItems = [
+    activeKey !== 'tasks' ? { key: 'tasks', label: `任务看板 · ${reqTasks.length || flow.data.tasks.length}` } : null,
+    activeKey !== 'agents' ? { key: 'agents', label: 'Agent 协作' } : null,
+    { key: 'legacy', label: '切换到项目阶段' },
+  ].filter((item): item is { key: string; label: string } => Boolean(item))
+
   return (
     <section
       className="po-journey rq-top-journey"
@@ -353,82 +399,61 @@ export function TopJourneyBar({ projectId }: { projectId: string | null }) {
       data-requirement-id={selectedRequirement.id}
       aria-label="全局需求流程旅程"
     >
-      <div className="po-journey-header rq-top-journey-header">
+      <div className="po-journey-header">
         <div className="po-journey-left">
-          <span className="po-journey-eyebrow">需求流程</span>
+          <span className="po-journey-eyebrow" title={binding.templateName}>需求</span>
           {list.length > 1 ? (
             <Select
               size="small"
+              variant="borderless"
               aria-label="切换当前需求"
               value={selectedRequirement.id}
               onChange={chooseRequirement}
               options={list.map((req) => ({ value: req.id, label: req.title }))}
               className="rq-top-journey-select"
+              popupMatchSelectWidth={false}
             />
           ) : (
             <strong className="po-journey-goal" title={selectedRequirement.title}>
               {selectedRequirement.title}
             </strong>
           )}
-          <span className="po-journey-project">{binding.templateName}</span>
         </div>
 
-        <div className="po-journey-location" aria-live="polite" aria-atomic="true">
-          <span>{parallel.hasParallelActive ? '并行进度' : '当前阶段'}</span>
-          <strong className="po-journey-current" data-testid="requirement-journey-headline">
-            {parallel.headline}
-          </strong>
-        </div>
+        <RequirementJourneyTrack
+          projectId={projectId}
+          requirementId={selectedRequirement.id}
+          requirementTitle={selectedRequirement.title}
+          binding={binding}
+          flow={flow.data}
+          tasks={reqTasks}
+          onNavigate={navigateWithRequirement}
+          variant="compact"
+        />
 
-        <div className="po-journey-next rq-top-journey-links">
-          {activeKey !== 'requirements' ? (
-            <button
-              type="button"
-              className="po-journey-action"
-              onClick={() => navigateWithRequirement('requirements')}
-              data-testid="journey-open-requirement"
-            >
-              需求工作台 <ArrowRightOutlined />
-            </button>
-          ) : null}
-          {activeKey !== 'tasks' ? (
-            <button
-              type="button"
-              className="po-journey-bg"
-              onClick={() => navigateWithRequirement('tasks')}
-            >
-              任务看板 ({reqTasks.length || flow.data.tasks.length})
-            </button>
-          ) : null}
-          {activeKey !== 'agents' ? (
-            <button
-              type="button"
-              className="po-journey-bg"
-              onClick={() => navigateWithRequirement('agents')}
-            >
-              Agent 协作
-            </button>
-          ) : null}
+        <div className="po-journey-next">
           <button
             type="button"
-            className="po-journey-bg"
-            onClick={() => setLegacyMode(true)}
-            title="切换到项目九阶段目标旅程"
+            className="po-journey-action"
+            onClick={() => navigateWithRequirement('requirements')}
+            data-testid="journey-open-requirement"
           >
-            项目阶段
+            需求工作台 <ArrowRightOutlined />
           </button>
+          <Dropdown
+            trigger={['click']}
+            placement="bottomRight"
+            menu={{
+              items: moreItems,
+              onClick: ({ key }) => (key === 'legacy' ? setLegacyMode(true) : navigateWithRequirement(key)),
+            }}
+          >
+            <button type="button" className="po-journey-toggle" aria-label="更多入口" data-testid="journey-more">
+              <MoreOutlined />
+            </button>
+          </Dropdown>
         </div>
       </div>
-
-      <RequirementJourneyTrack
-        projectId={projectId}
-        requirementId={selectedRequirement.id}
-        requirementTitle={selectedRequirement.title}
-        binding={binding}
-        flow={flow.data}
-        tasks={reqTasks}
-        onNavigate={navigateWithRequirement}
-      />
     </section>
   )
 }

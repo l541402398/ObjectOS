@@ -98,7 +98,7 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
         aria-label="全局目标旅程"
       >
         <div className="po-journey-left">
-          <span className="po-journey-eyebrow">目标旅程</span>
+          <span className="po-journey-eyebrow">目标</span>
           <strong className="po-journey-goal">还没有项目</strong>
         </div>
         <div className="po-journey-next">
@@ -146,7 +146,7 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
     >
       <div className="po-journey-header">
         <div className="po-journey-left">
-          <span className="po-journey-eyebrow">目标旅程</span>
+          <span className="po-journey-eyebrow">目标</span>
           <strong className="po-journey-goal" title={data?.goal ?? ''}>
             {data?.goal || data?.projectName || '未命名目标'}
           </strong>
@@ -162,7 +162,7 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
               {data.background.runningProjects} 个项目在运行
             </button>
           ) : null}
-          {data && data.background.pendingApprovals > 0 ? (
+          {data && data.background.pendingApprovals > 0 && !data.nextAction.route?.includes('approvals') ? (
             <button
               type="button"
               className="po-journey-bg is-warn"
