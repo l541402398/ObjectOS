@@ -4,6 +4,7 @@ import { motion } from 'motion/react'
 import { useReducedMotionPreference } from '../../hooks/useReducedMotionPreference'
 import ELK from 'elkjs/lib/elk.bundled.js'
 import '@xyflow/react/dist/style.css'
+import './agent-beam.css'
 import {
   Background,
   Handle,
@@ -157,7 +158,7 @@ function AgentNode({ data }: NodeProps<Node<AgentData, 'aco-agent'>>): ReactElem
   const tone = waiting ? 'warn' : agent.status === 'working' ? 'accent' : data.stageCountLabel?.includes('完成') ? 'ok' : 'neutral'
   const currentLine = data.stageSummary ?? agent.taskTitle ?? '暂无进行中的任务'
   return (
-    <div className={`aco-gnode aco-gnode-agent${data.selected ? ' is-selected' : ''}${data.related ? ' is-related' : ''}`} data-testid={`collaboration-agent-${agent.id}`}>
+    <div className={`aco-gnode aco-gnode-agent${data.selected ? ' is-selected' : ''}${data.related ? ' is-related' : ''}${waiting ? ' has-beam is-waiting' : agent.status === 'working' ? ' has-beam is-working' : ''}`} data-testid={`collaboration-agent-${agent.id}`}>
       <Handle type="target" position={Position.Left} className="aco-port" isConnectable={false} />
       <div className="aco-gnode-agent-top">
         <AgentAvatar

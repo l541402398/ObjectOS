@@ -1,0 +1,26 @@
+/* ADR-0091: quiet "border beam" on agents that are executing (accent) or waiting for you (warn).
+   Pattern re-implemented in plain CSS (no dependency, no WebGL); token colours only. */
+@property --aco-beam-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.aco-gnode.has-beam { position: relative; isolation: isolate; }
+.aco-gnode.has-beam::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--aco-beam-angle), transparent 0deg, transparent 250deg, var(--aco-beam-color) 320deg, transparent 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: .85;
+  pointer-events: none;
+  animation: aco-beam 4.2s linear infinite;
+}
+.aco-gnode.has-beam.is-working { --aco-beam-color: var(--ui-accent); }
+.aco-gnode.has-beam.is-waiting { --aco-beam-color: var(--ui-warn); }
+.aco-gnode.has-beam.is-waiting::after { animation-duration: 2.8s; }
+@keyframes aco-beam { to { --aco-beam-angle: 360deg; } }
+@media (prefers-reduced-motion: reduce) {
+  .aco-gnode.has-beam::after { animation: none; background: none; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--aco-beam-color) 55%, transparent); padding: 0; -webkit-mask: none; mask: none; }
+}

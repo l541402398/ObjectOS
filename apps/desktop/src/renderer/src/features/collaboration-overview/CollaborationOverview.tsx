@@ -263,7 +263,7 @@ export function CollaborationOverview({
     void navigate(`/projects/${projectId}/tasks`)
   }
   const openApprovals = (): void => {
-    void navigate(`/projects/${projectId}/approvals`)
+    void navigate(`/projects/${projectId}/approvals?return=agents`)
   }
   const openOrchestration = (): void => {
     void navigate('/projects/' + projectId + '/orchestration?return=agents')
