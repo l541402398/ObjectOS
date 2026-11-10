@@ -1,5 +1,14 @@
 # ProjectOS UI Design Changelog
 
+## 2026-11-10 — UX refactor consolidation fixes: contextual review jumps, dark-safe ledger, E2E parity (ADR-0094)
+
+- Contextual Review Room flow: 工作台待审批行、运行审计提示条/按钮与项目态势 KPI 待授权项进入审阅室时携带 `?approval=<id>` 与 `return=runs|overview`，审阅室返回按钮与清空态操作准确回到来源页；深链 `focusId` 在首次查询未落定时不被首项覆盖。
+- 状态闭环与标签统一：抽取 `lib/action-kinds.ts` 统一 `ActionCenterPanel` 与 `NextStepPanel` 的待办分类与主按钮文案（修复 `plan_review` 误回退为「处理对账」）；`AppLayout` 在项目事件上同步失效 `['release-approvals', projectId]` 与 `['release-overview']`，并使用 `event.projectId` 修复审批通知闭包过期；审阅室三个视图均提供 `role="alert"` 读取失败提示与「重试」动作；`RunsPage ?run=` 深链支持回退读取 `runDetail`。
+- 键盘与无障碍：新增 `lib/list-keys.ts` 将方向键限定在队列聚焦或空焦点态，保留 `.rv-diff` 与标签栏原生键盘行为；批量审批确认栏进入自动聚焦备注输入框、取消/提交归还队列焦点；`KpiRail` 可点击项改为原生 `<button type="button">`；移除轮询阶段条上的 `aria-live="polite"`。
+- 去嵌套框、Token 收敛与深色模式修复：展平审阅室 `.rv-evidence`、需求页 `.rq-criteria-matrix` / `.rq-gov-pill` 与版本页 `.lc-disclosure` 外层套框，清理死样式 `.lc-relationship` / `.lc-scope-*`；补齐 `unified.css` 开关旋钮与品牌投影 token，修正审阅主按钮与 Diff 行号对比度；将 `requirement-flow.css` 阶段账本与状态文字全面切换为深色安全 `--ui-*` token 并修复 `:root[data-theme='dark']` 选择器优先级覆盖 `.ok/.warn` 的问题；将 `type-scale.css` 页面级规则收敛到 `.po-shell` 作用域以保护 `#/design-lab`。
+- 参考来源与技能核验：读取本地 `ui-ux-pro-max` (`623a9a9`)、`impeccable` (`e07dc01`, 含 `craft-floor.md`)、`vercel-composition-patterns` / `vercel-react-best-practices` (`063bee9`)，核对 `DesignLabPage.tsx`、`OpticalGlass.tsx`、`Aurora.jsx` 归属注释及受保护基线截图；拒绝 `ui-ux-pro-max` 返回的 `#0F172A/#EF4444` 与纯黑 `#000000` 调色板候选（与冻结的深海蓝 `#111b30` / 光学冷蓝紫基线冲突）；用户提供的组件库清单（BoardUI、Bencho、HeroUI Pro、beUI Pro、Libraries.dev、Watermelon UI）仅作为去卡片化与单焦点排版的交互结构参考，未引入任何第三方品牌资产或偏离 ProjectOS 光学玻璃材质。当前运行时未暴露独立 `skill` 工具，技能文件通过直接读取与检索脚本执行。
+- 证据与脚本对齐：更新 18 个 `scripts/*.mjs` 选择器至合并后的工作台/审阅室/运行审计结构；实跑 `e2e`、`agent-e2e`、`v12-e2e`、`v13-e2e`、`scale125-e2e`、`premium-lab-e2e`（32/32）与 `phase2-ui-e2e` 全部通过；多视口（1440×900 / 1024×768、浅色 / 深色、125% 缩放）截图与无障碍对比度记录见 `docs/v2/evidence/ux-refactor-fixes/`。安全策略收紧（H1 / M1–M6）与 Diff 截断改造（H2）按用户排期留待重构收口后统一修复。
+
 ## 2026-11-10 — UX polish 5: stage bars, 执行 views, review pending (ADR-0093)
 
 - Top 目标/需求 bar: one row, bead track, only the focus stage labelled, one primary action + overflow menu.

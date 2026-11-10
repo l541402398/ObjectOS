@@ -36,18 +36,18 @@ try {
   if (await page.locator('.v16-project-visual').count()) {
     await page.locator('.v16-project-visual').first().click()
   }
-  await page.waitForSelector('.po-work-center', { timeout: 30_000 })
+  await page.waitForSelector('.studio-workbench', { timeout: 30_000 }) // ADR-0090: 工作台 home
   await page.waitForTimeout(800)
 
-  const shellText = await page.locator('body').innerText()
-  for (const label of ['需求', '待审批', '待验收', '运行中', '成果']) {
-    if (!shellText.includes(label)) throw new Error(`missing metric ${label}`)
+  const shellText = await page.locator('.studio-workbench').innerText()
+  for (const label of ['任务完成', '进行中', '待审批', '最近运行']) {
+    if (!shellText.includes(label)) throw new Error(`missing home fact ${label}`)
   }
-  if (!shellText.includes('全项目')) throw new Error('metric scope is not visible')
+  if (!(await page.locator('.studio-workbench [data-testid="next-step-panel"], .studio-workbench .wc-next').count())) throw new Error('home next-step panel is not visible')
   const versionText = await page.locator('.po-sidebar-runtime-version').innerText()
   if (versionText !== 'v1.7.0') throw new Error(`product version mismatch: ${versionText}`)
   console.log('[phase11-ui] product version', versionText)
-  log('work-center metrics/version PASS')
+  log('home facts/version PASS')
 
   await page.getByRole('button', { name: /记录需求/ }).first().click()
   await page.locator('input[placeholder="要解决什么问题？"]').fill('UI E2E 真实需求')

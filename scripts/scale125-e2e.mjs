@@ -28,7 +28,7 @@ try {
   if (await page.locator('.v16-project-visual').count()) {
     await page.locator('.v16-project-visual').first().click()
   }
-  await page.waitForSelector('.po-work-center', { timeout: 30_000 })
+  await page.waitForSelector('.studio-workbench', { timeout: 30_000 }) // ADR-0090: 工作台 home replaced WorkCenterPage
   await page.waitForTimeout(900)
   await page.evaluate(() => { document.documentElement.dataset.theme = 'light' })
   await page.waitForTimeout(500)
@@ -36,8 +36,8 @@ try {
   const metrics = await page.evaluate(() => {
     const viewport = window.innerWidth
     const doc = document.documentElement
-    const focus = document.querySelector('.wc-focus')
-    const cards = [...document.querySelectorAll('.wc-metrics > *')]
+    const focus = document.querySelector('.studio-workbench .wc-next')
+    const cards = [...document.querySelectorAll('.studio-workbench > *')]
     const right = Math.max(...cards.map((card) => card.getBoundingClientRect().right), 0)
     return {
       devicePixelRatio: window.devicePixelRatio,
@@ -50,6 +50,7 @@ try {
   })
   console.log('[scale125]', JSON.stringify(metrics))
   if (metrics.devicePixelRatio !== 1.25) throw new Error(`expected devicePixelRatio 1.25, got ${metrics.devicePixelRatio}`)
+  if (!metrics.metrics) throw new Error('home sections missing')
   if (metrics.scrollWidth > metrics.innerWidth + 1) throw new Error(`horizontal overflow: ${metrics.scrollWidth} > ${metrics.innerWidth}`)
   if (metrics.lastMetricRight && metrics.lastMetricRight > metrics.innerWidth + 1) {
     throw new Error(`metrics clipped: ${metrics.lastMetricRight} > ${metrics.innerWidth}`)
@@ -61,7 +62,7 @@ try {
   for (const theme of ['light', 'dark']) {
     await page.evaluate((next) => { document.documentElement.dataset.theme = next }, theme)
     await page.waitForTimeout(500)
-    const file = join(root, 'docs', 'screenshots', `1440x900-125-actual-${theme}-work-center.png`)
+    const file = join(root, 'docs', 'screenshots', `1440x900-125-actual-${theme}-home.png`)
     await page.screenshot({ path: file })
     console.log(`[scale125] captured ${file} (${Math.round(statSync(file).size / 1024)} KB)`)
   }

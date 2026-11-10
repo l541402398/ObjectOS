@@ -100,8 +100,8 @@ async function runViewport(width, height) {
 
     await navigate(page, '#/')
     await capture(page, size, 'light', 'project-center')
-    await navigate(page, `#/projects/${projectId}/work`, '.po-work-center')
-    await capture(page, size, 'light', 'work-center')
+    await navigate(page, `#/projects/${projectId}`, '.studio-workbench')
+    await capture(page, size, 'light', 'home')
     await navigate(page, `#/projects/${projectId}/overview`, '.po-overview-page')
     await capture(page, size, 'light', 'overview')
     await navigate(page, `#/projects/${projectId}/tasks`, '.po-task-tile')
@@ -134,7 +134,7 @@ async function runViewport(width, height) {
     await navigate(page, `#/projects/${projectId}/workspace`, '.monaco-editor')
     await page.waitForTimeout(800)
     await capture(page, size, 'light', 'workspace')
-    await navigate(page, `#/projects/${projectId}/runs`, '.po-run-detail-panel')
+    await navigate(page, `#/projects/${projectId}/runs`, '.ra-page')
     await capture(page, size, 'light', 'runs')
 
     await page.locator('.po-nav-item').filter({ hasText: '设置' }).last().click()
@@ -174,8 +174,8 @@ async function runViewport(width, height) {
     }
 
     await setTheme(page, 'dark')
-    await navigate(page, `#/projects/${projectId}/work`, '.po-work-center')
-    await capture(page, size, 'dark', 'work-center')
+    await navigate(page, `#/projects/${projectId}`, '.studio-workbench')
+    await capture(page, size, 'dark', 'home')
     await navigate(page, `#/projects/${projectId}/overview`, '.po-overview-page')
     await capture(page, size, 'dark', 'overview')
     await navigate(page, `#/projects/${projectId}/tasks`, '.po-task-tile')

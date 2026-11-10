@@ -315,7 +315,7 @@ export class ActionCenter {
         requiredDecision: subjectType === 'deployment' ? '批准或拒绝该部署授权（目标、制品与凭据快照已绑定）' : '批准或拒绝该发布变更',
         resume,
         risk: subjectType === 'deployment' ? 'high' : 'medium',
-        route: `/projects/${projectId}/approvals?approval=${encodeURIComponent(String(row.id))}&scope=delivery`,
+        route: `/projects/${projectId}/approvals?approval=${encodeURIComponent(String(row.id))}&lens=delivery`,
         approvalId: String(row.id), versionId, runId: null, taskId: null, deploymentId,
         createdAt: Number(row.requested_at), stale: expired,
       })

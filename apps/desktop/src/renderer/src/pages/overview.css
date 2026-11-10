@@ -7,7 +7,7 @@
 .ov-stage:not(:last-child)::after { content: ''; flex: 1; min-width: 10px; height: 1.5px; margin: 0 var(--ui-space-2); border-radius: 2px; background: var(--ui-border); }
 .ov-stage.is-done:not(:last-child)::after { background: color-mix(in srgb, var(--ui-accent) 45%, var(--ui-border)); }
 .ov-stage-dot { display: grid; flex: none; place-items: center; width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--ui-border-strong); color: var(--ui-muted); font-size: var(--ui-type-badge); font-weight: 650; font-variant-numeric: tabular-nums; }
-.ov-stage.is-done .ov-stage-dot { box-shadow: none; background: var(--ui-accent-soft); color: var(--ui-accent-strong, var(--ui-accent)); font-size: 11px; }
+.ov-stage.is-done .ov-stage-dot { box-shadow: none; background: var(--ui-accent-soft); color: var(--ui-accent-strong, var(--ui-accent)); font-size: var(--ui-type-badge); }
 .ov-stage.is-active .ov-stage-dot { box-shadow: 0 0 0 4px var(--ui-accent-soft); background: var(--ui-accent); color: var(--ui-inverse); }
 .ov-stage-label { flex: none; color: var(--ui-muted); font-size: var(--ui-type-caption); white-space: nowrap; }
 .ov-stage.is-active .ov-stage-label { color: var(--ui-ink); font-size: var(--ui-type-body); font-weight: var(--ui-weight-strong); }

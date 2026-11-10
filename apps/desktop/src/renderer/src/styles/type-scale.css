@@ -16,11 +16,11 @@
   font-size: var(--ui-type-title); font-weight: 700; line-height: var(--ui-leading-tight); letter-spacing: -.015em;
 }
 /* Page description: one muted line; it supports the title, never competes with it. */
-:root .po-page-description {
+.po-shell .po-page-description {
   max-width: 72ch; margin-top: var(--ui-space-1); overflow: hidden;
   color: var(--ui-muted); font-size: var(--ui-type-body); line-height: var(--ui-leading-body);
   text-overflow: ellipsis; white-space: nowrap;
 }
-:root .po-page-meta { color: var(--ui-muted); font-size: var(--ui-type-caption); }
-:root :is(.po-section-title, .po-card-title, .v16-section-title) { font-size: var(--ui-type-section); font-weight: var(--ui-weight-strong); }
-:root :is(.po-card-subtitle, .po-section-subtitle) { overflow: hidden; color: var(--ui-muted); font-size: var(--ui-type-caption); text-overflow: ellipsis; white-space: nowrap; }
+.po-shell .po-page-meta { color: var(--ui-muted); font-size: var(--ui-type-caption); }
+.po-shell :is(.po-section-title, .po-card-title, .v16-section-title) { font-size: var(--ui-type-section); font-weight: var(--ui-weight-strong); }
+.po-shell :is(.po-card-subtitle, .po-section-subtitle) { overflow: hidden; color: var(--ui-muted); font-size: var(--ui-type-caption); text-overflow: ellipsis; white-space: nowrap; }

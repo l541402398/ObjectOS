@@ -20,7 +20,7 @@ async function launch() {
   await page.waitForSelector('.po-shell', { timeout: 30_000 })
   if (await page.locator('.po-shell.is-collapsed').count()) await page.getByRole('button', { name: '切换侧边栏' }).click()
   if (await page.locator('.v16-project-visual').count()) await page.locator('.v16-project-visual').first().click()
-  await page.waitForSelector('.po-work-center', { timeout: 30_000 })
+  await page.waitForSelector('.studio-workbench', { timeout: 30_000 })
   return { app, page }
 }
 

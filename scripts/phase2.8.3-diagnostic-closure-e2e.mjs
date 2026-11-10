@@ -206,7 +206,7 @@ async function main() {
   }
 
   record('渲染进程无 console error', errors.length === 0 ? 'PASS' : 'FAIL', errors.slice(0, 2).join(' | ').slice(0, 160))
-  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/work` }, { projectId: project.id }).catch(() => undefined)
+  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}` }, { projectId: project.id }).catch(() => undefined)
   await page.waitForTimeout(1500)
   await page.screenshot({ path: join(shots, 'p283-01-work-center.png') }).catch(() => undefined)
   summarise()

@@ -228,7 +228,7 @@ export function RequirementJourneyTrack({
   return (
     <>
       {variant === 'compact' ? (
-        <ol className="po-journey-track is-compact rq-journey-beads" aria-label="需求流程阶段" aria-live="polite">
+        <ol className="po-journey-track is-compact rq-journey-beads" aria-label="需求流程阶段">
           {stageSummaries.map(({ node, summary }, index) => {
             const state = summary.allCompleted ? 'done' : node.id === focusId ? 'active' : 'pending'
             const isFocus = node.id === focusId

@@ -186,6 +186,8 @@ export default function AppLayout() {
         void queryClient.invalidateQueries({ queryKey: ['workspace', eventProjectId] })
         void queryClient.invalidateQueries({ queryKey: ['approvals', eventProjectId] })
         void queryClient.invalidateQueries({ queryKey: ['approvals', 'all'] })
+        void queryClient.invalidateQueries({ queryKey: ['release-approvals', eventProjectId] })
+        void queryClient.invalidateQueries({ queryKey: ['release-overview'] })
         void queryClient.invalidateQueries({ queryKey: ['action-center', eventProjectId] })
         void queryClient.invalidateQueries({ queryKey: ['lifecycle', eventProjectId] })
         void queryClient.invalidateQueries({ queryKey: ['gate-overview', eventProjectId] })
@@ -223,20 +225,21 @@ export default function AppLayout() {
       }
       if (event.type === 'approval.changed' && event.status === 'pending') {
         const approvalId = encodeURIComponent(String(event.approvalId))
+        const targetProjectId = event.projectId
         notification.warning({
           key: `approval-${event.approvalId}`,
           message: '有操作在等待你的授权',
           description: '打开对应审批，查看真实 Diff 与作用范围后决定。',
           placement: 'bottomRight',
           duration: 8,
-          btn: projectId
+          btn: targetProjectId
             ? (
               <Button
                 size="small"
                 type="primary"
                 onClick={() => {
                   notification.destroy(`approval-${event.approvalId}`)
-                  navigate(`/projects/${projectId}/approvals?approval=${approvalId}`)
+                  navigate(`/projects/${targetProjectId}/approvals?approval=${approvalId}`)
                 }}
               >
                 查看审批
@@ -247,7 +250,7 @@ export default function AppLayout() {
       }
     })
     return unsubscribe
-  }, [notification, queryClient])
+  }, [navigate, notification, queryClient])
 
   useEffect(() => {
     const handler = (event: KeyboardEvent): void => {

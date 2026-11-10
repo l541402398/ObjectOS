@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactElement } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactElement, type RefObject } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
@@ -8,6 +8,7 @@ import { errorMessage } from '../../lib/errors'
 import { formatDateTime, formatDuration, formatRelative, formatTime } from '../../lib/format'
 import { diffStats, lineDiff } from '../../lib/line-diff'
 import { ReviewDiff } from './ReviewDiff'
+import { listKeyStep } from '../../lib/list-keys'
 
 /* ------------------------------------------------------------------ shared */
 
@@ -33,22 +34,19 @@ function subjectLabel(approval: ApprovalRequest): string {
   return approval.subjectType === 'change_request' ? '发布变更' : '部署'
 }
 
-function useListKeys(ids: string[], focus: string | null, setFocus: (id: string) => void, enabled = true): void {
+function useListKeys(ids: string[], focus: string | null, setFocus: (id: string) => void, listRef: RefObject<HTMLElement | null>, enabled = true): void {
   useEffect(() => {
     if (!enabled) return
     const onKey = (event: KeyboardEvent): void => {
-      const target = event.target as HTMLElement | null
-      if (target && (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT' || target.isContentEditable)) return
-      if (event.metaKey || event.ctrlKey || event.altKey) return
-      const index = ids.indexOf(focus ?? '')
-      const step = event.key === 'j' || event.key === 'ArrowDown' ? 1 : event.key === 'k' || event.key === 'ArrowUp' ? -1 : 0
+      const step = listKeyStep(event, listRef.current)
       if (!step) return
+      const index = ids.indexOf(focus ?? '')
       const next = ids[Math.min(ids.length - 1, Math.max(0, index + step))]
       if (next) { setFocus(next); event.preventDefault() }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [ids, focus, setFocus, enabled])
+  }, [ids, focus, setFocus, listRef, enabled])
 }
 
 function dayLabel(timestamp: number): string {
@@ -76,7 +74,9 @@ export function DeliveryLens({ projectId, approvals, initialId }: { projectId: s
   const [error, setError] = useState<string | null>(null)
   const [outcome, setOutcome] = useState<string | null>(null)
   const focused = pending.find((approval) => approval.id === focusId) ?? pending[0] ?? null
-  useListKeys(pending.map((approval) => approval.id), focused?.id ?? null, setFocusId)
+  const pendingIds = useMemo(() => pending.map((approval) => approval.id), [pending])
+  const queueRef = useRef<HTMLElement | null>(null)
+  useListKeys(pendingIds, focused?.id ?? null, setFocusId, queueRef)
   useEffect(() => { setConfirm(null); setNote(''); setVerified(false); setError(null) }, [focused?.id])
 
   const decide = async (decision: 'approved' | 'rejected'): Promise<void> => {
@@ -116,7 +116,7 @@ export function DeliveryLens({ projectId, approvals, initialId }: { projectId: s
 
   return (
     <div className="rv-layout">
-      <nav className="rv-queue" aria-label="交付审批">
+      <nav className="rv-queue" aria-label="交付审批" ref={queueRef}>
         <section className="rv-group">
           <header><span className="rv-lock"><PackageCheck size={11} /></span><strong>交付审批</strong><em>{pending.length}</em></header>
           <ul>
@@ -232,13 +232,17 @@ export function HistoryLens({ tool, delivery, initialId }: { tool: ApprovalView[
     const map = new Map<string, HistoryEntry[]>()
     for (const entry of visible) {
       const key = dayLabel(entry.at)
-      map.set(key, [...(map.get(key) ?? []), entry])
+      const bucket = map.get(key)
+      if (bucket) bucket.push(entry)
+      else map.set(key, [entry])
     }
     return [...map.entries()]
   }, [visible])
   const [focusId, setFocusId] = useState<string | null>(initialId)
   const focused = visible.find((entry) => entry.id === focusId) ?? visible[0] ?? null
-  useListKeys(visible.map((entry) => entry.id), focused?.id ?? null, setFocusId)
+  const visibleIds = useMemo(() => visible.map((entry) => entry.id), [visible])
+  const queueRef = useRef<HTMLElement | null>(null)
+  useListKeys(visibleIds, focused?.id ?? null, setFocusId, queueRef)
   const focusedTool = focused?.source === 'tool' ? focused.tool : null
   const preview = useQuery({
     queryKey: ['approval-preview', focusedTool?.id ?? ''],
@@ -284,7 +288,7 @@ export function HistoryLens({ tool, delivery, initialId }: { tool: ApprovalView[
 
   return (
     <div className="rv-layout is-history">
-      <nav className="rv-queue" aria-label="审批记录">
+      <nav className="rv-queue" aria-label="审批记录" ref={queueRef}>
         <div className="rv-hist-summary" aria-label="审批概况">
           <div><b>{entries.length}</b><small>次决定</small></div>
           <div><b className="is-ok">{counts.all ? Math.round((counts.approved / counts.all) * 100) : 0}%</b><small>批准</small></div>
@@ -340,7 +344,7 @@ export function HistoryLens({ tool, delivery, initialId }: { tool: ApprovalView[
           <h2 className={`rv-target ${focused.source === 'delivery' ? 'is-text' : ''}`}>{focused.target}</h2>
           <p className="rv-byline">
             <span className="rv-by"><UserRound size={12} />{focused.source === 'tool' ? focused.who : focused.delivery.requestedBy} 发起</span>
-            <span className="rv-by"><CheckCircle2 size={12} />{focused.source === 'delivery' ? focused.delivery.decidedBy ?? '你' : focused.status === 'expired' ? '系统' : '你'} 决定</span>
+            <span className="rv-by"><CheckCircle2 size={12} />{focused.source === 'delivery' && focused.delivery.decidedBy ? `${focused.delivery.decidedBy} 决定` : statusText(focused)}</span>
             {focused.at > focused.requestedAt ? <span className="rv-by"><Clock3 size={12} />用时 {formatDuration(focused.requestedAt, focused.at)}</span> : null}
             {focused.source === 'tool' && focused.tool.taskTitle ? <span>{focused.tool.taskTitle}</span> : null}
           </p>
@@ -376,7 +380,7 @@ export function HistoryLens({ tool, delivery, initialId }: { tool: ApprovalView[
               ) : preview.data?.command ? (
                 <div className="rv-terminal"><div className="rv-terminal-line"><span className="rv-prompt"><Terminal size={13} /></span><code>{preview.data.command}</code></div></div>
               ) : diff && stats && (stats.added > 0 || stats.removed > 0) ? (
-                <ReviewDiff lines={diff} label={`${focused.target} 的改动`} />
+                <ReviewDiff key={focused.id} lines={diff} label={`${focused.target} 的改动`} />
               ) : diff ? (
                 <div className="rv-evidence-wait">工作区内容已与请求一致（改动已写入）</div>
               ) : (

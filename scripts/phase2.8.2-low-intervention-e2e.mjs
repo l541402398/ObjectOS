@@ -301,7 +301,7 @@ async function main() {
   }
 
   record('setup', '渲染进程无 console error', errors.length === 0 ? 'PASS' : 'FAIL', errors.slice(0, 2).join(' | ').slice(0, 160))
-  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/work` }, { projectId: A.projectId }).catch(() => undefined)
+  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}` }, { projectId: A.projectId }).catch(() => undefined)
   await page.waitForTimeout(1500)
   await page.screenshot({ path: join(shots, 'p282-01-work-center.png') }).catch(() => undefined)
   summarise()

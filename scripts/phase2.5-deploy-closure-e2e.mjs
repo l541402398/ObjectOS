@@ -67,8 +67,22 @@ async function launch() {
     await page.waitForTimeout(300)
   }
   if (await page.locator('.v16-project-visual').count()) await page.locator('.v16-project-visual').first().click()
-  await page.waitForSelector('.po-work-center', { timeout: 30_000 })
+  await page.waitForSelector('.studio-workbench', { timeout: 30_000 })
   return page
+}
+
+// ADR-0090: delivery approvals are decided in the review room's 交付审批 lens.
+async function approveDeliveryInReviewRoom(page, projectId) {
+  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/approvals?lens=delivery` }, { projectId })
+  await page.locator('.rv-room h1', { hasText: '审阅与决策' }).waitFor({ timeout: 20_000 })
+  const sheet = page.locator('.rv-sheet[aria-label="交付审批详情"]')
+  if (!(await sheet.waitFor({ timeout: 20_000 }).then(() => true).catch(() => false))) return null
+  const subject = (await sheet.locator('.rv-target').innerText()).trim()
+  await page.locator('.rv-rail .rv-primary').click()
+  await page.locator('.rv-rail .rv-verify input[type="checkbox"]').check()
+  await page.locator('.rv-confirm-actions .studio-cta').click()
+  await page.waitForFunction((text) => (document.querySelector('.rv-room')?.textContent ?? '').includes(`已批准：${text}`), subject, { timeout: 15_000 })
+  return subject
 }
 
 async function main() {
@@ -264,12 +278,7 @@ async function main() {
     await page.getByRole('button', { name: '提交审批' }).first().click()
     await page.waitForTimeout(700)
 
-    await go(`#/projects/${project.id}/approvals`)
-    await page.waitForSelector('.ap-list', { timeout: 15_000 })
-    await page.locator('.ap-row').filter({ has: page.locator('.ap-kind.delivery') }).first().click()
-    await page.waitForTimeout(300)
-    await page.locator('.ap-actions button').last().click()
-    await page.waitForTimeout(900)
+    if (!(await approveDeliveryInReviewRoom(page, project.id))) throw new Error('change request approval absent in review room')
 
     await go(`#/projects/${project.id}/releases?version=${versionId}`)
     await page.waitForSelector('.po-delivery-page', { timeout: 20_000 })
@@ -286,12 +295,7 @@ async function main() {
     await page.locator('.ant-modal:visible .ant-modal-footer button').last().click()
     await page.waitForTimeout(900)
 
-    await go(`#/projects/${project.id}/approvals`)
-    await page.waitForSelector('.ap-list', { timeout: 15_000 })
-    await page.locator('.ap-row').filter({ has: page.locator('.ap-kind.delivery') }).first().click()
-    await page.waitForTimeout(300)
-    await page.locator('.ap-actions button').last().click()
-    await page.waitForTimeout(900)
+    if (!(await approveDeliveryInReviewRoom(page, project.id))) throw new Error('deployment approval absent in review room')
 
     await go(`#/projects/${project.id}/deployments?version=${versionId}`)
     await page.waitForSelector('.dc-shell', { timeout: 20_000 })
@@ -373,26 +377,13 @@ async function main() {
     approvalsAfter === approvalsBefore + 1 ? 'PASS' : 'FAIL',
     `pendingApprovals ${approvalsBefore} → ${approvalsAfter} toast="${rollbackToast}"`)
 
-  await go(`#/projects/${project.id}/approvals`)
-  await page.waitForSelector('.ap-list', { timeout: 20_000 })
-  await page.waitForTimeout(900)
-  let rollbackApprovalRow = page.locator('.ap-row').filter({ has: page.locator('.ap-kind.delivery') }).first()
-  if (!(await rollbackApprovalRow.count())) rollbackApprovalRow = page.locator('.ap-row').first()
-  if (!(await rollbackApprovalRow.count())) {
+  const rollbackSubject = await approveDeliveryInReviewRoom(page, project.id)
+  if (!rollbackSubject) {
     await page.screenshot({ path: join(shots, 'p25-rollback-approval-missing.png') })
-    record('UI 回滚审批行可见', 'FAIL', (await page.locator('.ap-list').innerText().catch(() => '')).slice(0, 220).replace(/\n/g, ' '))
+    record('UI 回滚审批行可见', 'FAIL', (await page.locator('.rv-room').innerText().catch(() => '')).slice(0, 220).replace(/\n/g, ' '))
     throw new Error('rollback approval row absent')
   }
-  await rollbackApprovalRow.click()
-  await page.waitForTimeout(400)
-  const approveButton = page.locator('.ap-actions button').last()
-  if (!(await approveButton.count())) {
-    record('UI 回滚审批操作可用', 'FAIL', (await page.locator('.ap-list').innerText()).slice(0, 200).replace(/\n/g, ' '))
-    throw new Error('approve button absent')
-  }
-  await approveButton.click()
-  await page.waitForTimeout(900)
-  record('UI 回滚独立审批通过', 'PASS')
+  record('UI 回滚独立审批通过', 'PASS', rollbackSubject)
 
   // A rollback is a new Deployment of the *previous* Release, so it is listed under
   // that Release's version, not the one we rolled back from.

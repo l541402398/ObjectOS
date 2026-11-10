@@ -45,7 +45,7 @@ function SnapshotCard({ entry }: { entry: { title: string; body: string; status:
         {rows.map(([label, items, empty]) => (
           <div key={label}>
             <dt>{label}</dt>
-            <dd>{items.length ? items.map((item) => <span key={item}>{item}</span>) : <em>{empty}</em>}</dd>
+            <dd>{items.length ? items.map((item, idx) => <span key={`${idx}:${item}`}>{item}</span>) : <em>{empty}</em>}</dd>
           </div>
         ))}
       </dl>

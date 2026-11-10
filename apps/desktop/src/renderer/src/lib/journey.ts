@@ -30,6 +30,14 @@ export function journeyProgress(stages: JourneyStage[]): { done: number; total: 
   return { done: stages.filter((stage) => stage.state === 'done').length, total: stages.length }
 }
 
+/**
+ * The journey asks for a new requirement with `/projects/:id?intent=requirement`; the retired
+ * `/projects/:id/work` form is still recognised for persisted/older routes.
+ */
+export function isRequirementIntentRoute(route: string): boolean {
+  return /\/projects\/[^/?#]+\/work(?:\?|$)/.test(route) || /[?&]intent=requirement(?:&|$)/.test(route)
+}
+
 /** Short, concrete destination labels; the server remains the source of the next action. */
 export function journeyActionLabel(action: ProjectJourney['nextAction']): string {
   if (action.action === 'reverify') return '重新验证'
@@ -43,6 +51,6 @@ export function journeyActionLabel(action: ProjectJourney['nextAction']): string
   if (route.includes('/releases')) return '处理发布'
   if (route.includes('/knowledge')) return '查看成果'
   if (route.includes('/agents')) return '查看协作'
-  if (route.includes('/work')) return '打开当前工作'
+  if (isRequirementIntentRoute(route)) return '提交需求'
   return '查看下一步'
 }

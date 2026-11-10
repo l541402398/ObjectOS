@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactElement } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
@@ -27,6 +27,8 @@ import { diffStats, lineDiff } from '../../lib/line-diff'
 import { ReviewDiff } from '../review/ReviewDiff'
 import { WorktreeAutoAllowControl } from '../review/WorktreeAutoAllowControl'
 import { DeliveryLens, HistoryLens } from '../review/ReviewLenses'
+import { isProtectedKeyTarget, listKeyStep } from '../../lib/list-keys'
+import { pageByKey } from '../../page-registry'
 import './studio.css'
 import '../review/review.css'
 
@@ -77,11 +79,19 @@ export function StudioReviewRoom(): ReactElement {
   const [searchParams, setSearchParams] = useSearchParams()
   const reduceMotion = useReducedMotion()
   const returnRequirement = searchParams.get('requirement')
-  const returnAgents = searchParams.get('return') === 'agents'
-  const returnPath = returnRequirement
-    ? `/projects/${projectId}/requirements?requirement=${encodeURIComponent(returnRequirement)}`
-    : returnAgents ? `/projects/${projectId}/agents` : `/projects/${projectId}`
-  const returnLabel = returnRequirement ? '返回需求工作台' : returnAgents ? '返回 Agent 协作' : '返回工作台'
+  const returnTo = searchParams.get('return')
+  const returnRun = searchParams.get('run')
+  const origin = returnRequirement
+    ? { path: `/projects/${projectId}/requirements?requirement=${encodeURIComponent(returnRequirement)}`, name: '需求工作台', resume: '继续需求开发' }
+    : returnTo === 'agents'
+      ? { path: `/projects/${projectId}/agents`, name: 'Agent 协作', resume: '回到 Agent 协作' }
+      : returnTo === 'runs'
+        ? { path: `/projects/${projectId}/runs${returnRun ? `?run=${encodeURIComponent(returnRun)}` : ''}`, name: pageByKey('runs')?.label ?? '运行审计', resume: `回到${pageByKey('runs')?.label ?? '运行审计'}` }
+        : returnTo === 'overview'
+          ? { path: `/projects/${projectId}/overview`, name: pageByKey('overview')?.label ?? '项目姿态', resume: `回到${pageByKey('overview')?.label ?? '项目姿态'}` }
+          : { path: `/projects/${projectId}`, name: '工作台', resume: '回到工作台' }
+  const returnPath = origin.path
+  const returnLabel = `返回${origin.name}`
   const queryClient = useQueryClient()
   const theme = useResolvedTheme()
   const approvals = useApprovals(projectId)
@@ -90,6 +100,7 @@ export function StudioReviewRoom(): ReactElement {
     queryKey: ['release-approvals', projectId],
     queryFn: () => window.projectos.release.approvals(projectId),
     enabled: Boolean(projectId),
+    refetchInterval: 5_000,
   })
   const deliveryPending = (delivery.data?.approvals ?? []).filter((approval) => approval.status === 'pending').length
   const deepLinkId = searchParams.get('approval')
@@ -133,11 +144,32 @@ export function StudioReviewRoom(): ReactElement {
   const [error, setError] = useState<string | null>(null)
   const [outcome, setOutcome] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null)
   const [view, setView] = useState<'diff' | 'raw'>('diff')
+  const queueRef = useRef<HTMLElement | null>(null)
+  const dockNoteRef = useRef<HTMLInputElement | null>(null)
+  const batchConfirming = confirm?.mode === 'batch'
+
+  /** Batch confirm is entered from the dock; leaving it hands focus back to the queue selection. */
+  const restoreQueueFocus = useCallback((): void => {
+    window.requestAnimationFrame(() => {
+      const queue = queueRef.current
+      const target = queue?.querySelector<HTMLElement>('li.is-focus .rv-check') ?? queue?.querySelector<HTMLElement>('li.is-focus .rv-item') ?? queue?.querySelector<HTMLElement>('.rv-item')
+      target?.focus()
+    })
+  }, [])
+  const cancelBatch = useCallback((): void => {
+    setConfirm(null)
+    restoreQueueFocus()
+  }, [restoreQueueFocus])
+  useEffect(() => {
+    if (batchConfirming) dockNoteRef.current?.focus()
+  }, [batchConfirming])
 
   useEffect(() => {
     if (focusId && list.some((approval) => approval.id === focusId)) return
+    // A deep-linked request stays selected until a settled read confirms it is no longer pending.
+    if (focusId && focusId === deepLinkId && (!approvals.isSuccess || approvals.isFetching)) return
     setFocusId(ordered[0]?.id ?? null)
-  }, [list, ordered, focusId])
+  }, [list, ordered, focusId, deepLinkId, approvals.isSuccess, approvals.isFetching])
   useEffect(() => {
     setChecked((current) => {
       const next = new Set([...current].filter((id) => list.some((approval) => approval.id === id)))
@@ -225,6 +257,7 @@ export function StudioReviewRoom(): ReactElement {
     const ids = [...checked]
     const result = await window.projectos.approvals.decideBatch({ projectId, decision, note: note.trim(), approvalIds: ids, rememberForRun: false })
     setChecked(new Set())
+    restoreQueueFocus()
     return summarize(result)
   })
 
@@ -259,26 +292,24 @@ export function StudioReviewRoom(): ReactElement {
   useEffect(() => {
     if (lens !== 'pending') return
     const onKey = (event: KeyboardEvent): void => {
-      const target = event.target as HTMLElement | null
-      if (target && (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT' || target.isContentEditable)) return
-      if (event.metaKey || event.ctrlKey || event.altKey) return
-      const index = ordered.findIndex((approval) => approval.id === focused?.id)
-      if (event.key === 'j' || event.key === 'ArrowDown') {
-        const next = ordered[Math.min(ordered.length - 1, index + 1)]
-        if (next) { setFocusId(next.id); event.preventDefault() }
-      } else if (event.key === 'k' || event.key === 'ArrowUp') {
-        const next = ordered[Math.max(0, index - 1)]
+      if (isProtectedKeyTarget(event)) return
+      const step = listKeyStep(event, queueRef.current)
+      if (step) {
+        const index = ordered.findIndex((approval) => approval.id === focused?.id)
+        const next = ordered[Math.min(ordered.length - 1, Math.max(0, index + step))]
         if (next) { setFocusId(next.id); event.preventDefault() }
       } else if (event.key === 'x' && focused) {
         toggle(focused)
         event.preventDefault()
+      } else if (event.key === 'Escape' && batchConfirming) {
+        cancelBatch()
       } else if (event.key === 'Escape' && checked.size) {
         setChecked(new Set())
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [ordered, focused, toggle, checked.size, lens])
+  }, [ordered, focused, toggle, checked.size, lens, batchConfirming, cancelBatch])
 
   const checkedItems = list.filter((approval) => checked.has(approval.id))
   const checkedByKind = Object.entries(
@@ -327,20 +358,25 @@ export function StudioReviewRoom(): ReactElement {
 
       {lens === 'delivery' ? (
         delivery.isError ? (
-          <div className="studio-empty"><CircleAlert size={20} /><h2>交付审批读取失败</h2><p>{errorMessage(delivery.error)}</p></div>
+          <div className="studio-empty" role="alert"><CircleAlert size={20} /><h2>交付审批读取失败</h2><p>{errorMessage(delivery.error)}</p><button type="button" className="studio-ghost" disabled={delivery.isFetching} onClick={() => void delivery.refetch()}>重试</button></div>
         ) : delivery.isLoading ? (
           <div className="studio-loading">正在读取交付审批…</div>
         ) : (
           <DeliveryLens projectId={projectId} approvals={delivery.data?.approvals ?? []} initialId={deepLinkId} />
         )
       ) : lens === 'history' ? (
-        approvals.isLoading || delivery.isLoading ? (
+        approvals.isError || delivery.isError ? (
+          <div className="studio-empty" role="alert">
+            <CircleAlert size={20} /><h2>审批记录读取失败</h2><p>{errorMessage(approvals.error ?? delivery.error)}</p>
+            <button type="button" className="studio-ghost" disabled={approvals.isFetching || delivery.isFetching} onClick={() => { if (approvals.isError) void approvals.refetch(); if (delivery.isError) void delivery.refetch() }}>重试</button>
+          </div>
+        ) : approvals.isLoading || delivery.isLoading ? (
           <div className="studio-loading">正在读取审批记录…</div>
         ) : (
           <HistoryLens tool={approvals.data?.approvals ?? []} delivery={delivery.data?.approvals ?? []} initialId={deepLinkId} />
         )
       ) : approvals.isError ? (
-        <div className="studio-empty"><CircleAlert size={20} /><h2>审批读取失败</h2><p>{errorMessage(approvals.error)}</p></div>
+        <div className="studio-empty" role="alert"><CircleAlert size={20} /><h2>审批读取失败</h2><p>{errorMessage(approvals.error)}</p><button type="button" className="studio-ghost" disabled={approvals.isFetching} onClick={() => void approvals.refetch()}>重试</button></div>
       ) : approvals.isLoading ? (
         <div className="studio-loading">正在读取审批…</div>
       ) : list.length === 0 ? (
@@ -350,14 +386,14 @@ export function StudioReviewRoom(): ReactElement {
           {outcome ? <p className={`rv-clear-outcome is-${outcome.tone}`}>{outcome.text}</p> : null}
           <div className="rv-clear-links">
             {deliveryPending ? <button type="button" className="studio-cta" onClick={() => setLens('delivery')}>处理 {deliveryPending} 项交付审批 <ArrowRight size={13} /></button> : null}
-            <button type="button" className={deliveryPending ? 'studio-ghost' : 'studio-cta'} onClick={() => navigate(returnPath)}>{returnRequirement ? '继续需求开发' : returnAgents ? '回到 Agent 协作' : '回到工作台'} <ArrowRight size={13} /></button>
+            <button type="button" className={deliveryPending ? 'studio-ghost' : 'studio-cta'} onClick={() => navigate(returnPath)}>{origin.resume} <ArrowRight size={13} /></button>
             <button type="button" className="studio-ghost" onClick={() => setLens('history')}>查看记录</button>
           </div>
           <div className="rv-clear-policy"><WorktreeAutoAllowControl projectId={projectId} compact /></div>
         </div>
       ) : (
         <div className="rv-layout">
-          <nav className="rv-queue" aria-label="待处理请求">
+          <nav className="rv-queue" aria-label="待处理请求" ref={queueRef}>
             {groups.map((group) => {
               const all = group.batchable && group.items.every((item) => checked.has(item.id))
               const some = group.batchable && group.items.some((item) => checked.has(item.id))
@@ -467,7 +503,7 @@ export function StudioReviewRoom(): ReactElement {
                     </dl>
                   </div>
                 ) : diff ? (
-                  <ReviewDiff lines={diff} label={`${request.path ?? ''} 的改动`} />
+                  <ReviewDiff key={focused.id} lines={diff} label={`${request.path ?? ''} 的改动`} />
                 ) : (
                   <div className="rv-evidence-wait">该请求没有可预览的内容</div>
                 )}
@@ -551,8 +587,17 @@ export function StudioReviewRoom(): ReactElement {
             <span className="rv-dock-kinds">{checkedByKind.map(([label, count]) => <span key={label}>{label} {count}</span>)}</span>
             {confirm?.mode === 'batch' ? (
               <>
-                <input className="rv-dock-note" value={note} onChange={(event) => setNote(event.target.value)} placeholder="审计备注（可选）" maxLength={2000} aria-label="审计备注" />
-                <button type="button" className="studio-ghost" disabled={busy} onClick={() => setConfirm(null)}>返回</button>
+                <input
+                  ref={dockNoteRef}
+                  className="rv-dock-note"
+                  value={note}
+                  onChange={(event) => setNote(event.target.value)}
+                  onKeyDown={(event) => { if (event.key === 'Escape' && !busy) { event.preventDefault(); event.stopPropagation(); cancelBatch() } }}
+                  placeholder="审计备注（可选）"
+                  maxLength={2000}
+                  aria-label="审计备注"
+                />
+                <button type="button" className="studio-ghost" disabled={busy} onClick={cancelBatch}>返回</button>
                 <button type="button" className={confirm.decision === 'approved' ? 'studio-cta' : 'studio-danger is-solid'} disabled={busy} onClick={() => void decideChecked(confirm.decision)}>
                   {busy ? '提交中…' : confirm.decision === 'approved' ? `确认批准 ${checked.size} 项` : `确认拒绝 ${checked.size} 项`}
                 </button>

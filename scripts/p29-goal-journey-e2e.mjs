@@ -155,7 +155,7 @@ try {
     { planId: plan.id, grantId: grant.id },
   )
 
-  const routes = ['/work', '/tasks', '/approvals', '/runs', '/versions', '/orchestration']
+  const routes = ['', '/tasks', '/approvals', '/runs', '/versions', '/orchestration'] // '' = 工作台 home (ADR-0090; /work redirects here)
   let barOnEveryPage = true
   for (const route of routes) {
     await page.evaluate(
@@ -167,7 +167,7 @@ try {
     await page.waitForTimeout(900)
     const count = await page.locator('[data-testid="goal-journey"]').count()
     if (count === 0) barOnEveryPage = false
-    record(`旅程栏在 ${route} 持续存在`, count > 0 ? 'PASS' : 'FAIL', `bars=${count}`)
+    record(`旅程栏在 ${route || '/'} 持续存在`, count > 0 ? 'PASS' : 'FAIL', `bars=${count}`)
   }
   record('换页时旅程栏始终存在', barOnEveryPage ? 'PASS' : 'FAIL')
 

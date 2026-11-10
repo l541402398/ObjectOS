@@ -60,7 +60,7 @@ const launch = async () => {
   await page.waitForSelector('.po-shell', { timeout: 30_000 })
   if (await page.locator('.po-shell.is-collapsed').count()) await page.getByRole('button', { name: '切换侧边栏' }).click()
   if (await page.locator('.v16-project-visual').count()) await page.locator('.v16-project-visual').first().click()
-  await page.waitForSelector('.po-work-center', { timeout: 30_000 })
+  await page.waitForSelector('.studio-workbench', { timeout: 30_000 })
   return page
 }
 
@@ -146,7 +146,7 @@ async function main() {
   }
 
   // The bell must open the exact approval with its real diff.
-  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/work` }, { projectId: project.id })
+  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}` }, { projectId: project.id })
   await page.waitForSelector('[data-testid="action-center-button"]', { timeout: 20_000 })
   await page.waitForTimeout(1200)
   await page.locator('[data-testid="action-center-button"]').click()

@@ -10,7 +10,7 @@
 .ra-refresh .is-spinning { animation: ra-spin 900ms linear infinite; }
 @keyframes ra-spin { to { transform: rotate(360deg); } }
 
-.ra-await { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 14px; border: 0; border-radius: 12px;
+.ra-await { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 14px; border: 0; border-radius: var(--ui-radius-lg);
   background: color-mix(in srgb, var(--studio-warn) 12%, transparent); color: var(--studio-ink-2); text-align: left; font-size: var(--ui-type-body); }
 .ra-await strong { color: var(--studio-ink); margin-right: 4px; }
 .ra-await-pulse { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: color-mix(in srgb, var(--studio-warn) 22%, transparent); color: var(--studio-warn); }
@@ -27,7 +27,7 @@
 .ra-day h3::after { content: ''; flex: 1; height: 1px; background: var(--studio-line); }
 .ra-day ul, .ra-day ol { list-style: none; margin: 0; padding: 0; }
 .ra-run { position: relative; display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 10px; align-items: start; width: 100%;
-  padding: 10px 10px 10px 8px; border: 0; border-radius: 10px; background: transparent; color: inherit; text-align: left; transition: background-color 120ms ease; }
+  padding: 10px 10px 10px 8px; border: 0; border-radius: var(--ui-radius-md); background: transparent; color: inherit; text-align: left; transition: background-color 120ms ease; }
 .ra-run:hover { background: color-mix(in srgb, var(--studio-accent-soft) 55%, transparent); }
 .ra-run.is-focus { background: var(--studio-accent-soft); }
 .ra-run.is-focus::before { content: ''; position: absolute; left: -1px; top: 10px; bottom: 10px; width: 3px; border-radius: 3px; background: var(--studio-accent); }
@@ -63,7 +63,7 @@
 .ra-facts dt { color: var(--studio-muted); font-size: var(--ui-type-caption); }
 .ra-facts dd { margin: 1px 0 0; overflow: hidden; color: var(--studio-ink); font-size: var(--ui-type-body); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .ra-facts dd.is-num { font-variant-numeric: tabular-nums; }
-.ra-error { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 14px; padding: 10px 12px; border-radius: 10px;
+.ra-error { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 14px; padding: 10px 12px; border-radius: var(--ui-radius-md);
   background: color-mix(in srgb, var(--studio-danger) 10%, transparent); color: var(--studio-danger); font-size: var(--ui-type-body); white-space: pre-wrap; word-break: break-word; }
 .ra-error svg { flex: none; margin-top: 3px; }
 .ra-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
@@ -75,7 +75,7 @@
 .ra-files { list-style: none; margin: 0; padding: 0; }
 .ra-files li { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-size: var(--ui-type-caption); }
 .ra-files code { overflow: hidden; color: var(--studio-ink-2); font-family: var(--pw-mono, ui-monospace, monospace); text-overflow: ellipsis; white-space: nowrap; }
-.ra-change { flex: none; width: 34px; text-align: center; border-radius: 6px; font-size: var(--ui-type-caption); font-weight: 700; }
+.ra-change { flex: none; width: 34px; text-align: center; border-radius: var(--ui-radius-sm); font-size: var(--ui-type-caption); font-weight: 700; }
 .ra-change.is-added { background: color-mix(in srgb, var(--studio-ok) 14%, transparent); color: var(--studio-ok); }
 .ra-change.is-modified { background: var(--studio-accent-soft); color: var(--studio-accent); }
 .ra-change.is-deleted { background: color-mix(in srgb, var(--studio-danger) 12%, transparent); color: var(--studio-danger); }
@@ -100,7 +100,7 @@
 .ra-events { max-width: 920px; border-top: 1px solid var(--studio-line); padding-top: 12px; }
 .ra-events .ra-day { margin-bottom: 14px; }
 .ra-event-list { position: relative; }
-.ra-event-list li { display: grid; grid-template-columns: 48px 14px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 7px 4px; border-radius: 8px; }
+.ra-event-list li { display: grid; grid-template-columns: 48px 14px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 7px 4px; border-radius: var(--ui-radius-sm); }
 .ra-event-list li:hover { background: color-mix(in srgb, var(--studio-accent-soft) 45%, transparent); }
 .ra-event-list time { color: var(--studio-muted); font-size: var(--ui-type-caption); font-variant-numeric: tabular-nums; text-align: right; }
 .ra-event-node { width: 7px; height: 7px; border-radius: 50%; background: var(--studio-accent); justify-self: center; }

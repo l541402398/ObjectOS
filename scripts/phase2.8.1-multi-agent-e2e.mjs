@@ -263,7 +263,7 @@ async function main() {
   record('B', '计划完成', runB.plan?.execution?.status === 'completed' ? 'PASS' : 'FAIL', `status=${runB.plan?.execution?.status} error=${String(runB.plan?.execution?.error ?? '').slice(0, 140)}`)
 
   record('setup', '渲染进程无 console error', errors.length === 0 ? 'PASS' : 'FAIL', errors.slice(0, 3).join(' | ').slice(0, 200))
-  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/work` }, { projectId: A.projectId }).catch(() => undefined)
+  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}` }, { projectId: A.projectId }).catch(() => undefined)
   await page.waitForTimeout(1200)
   await page.screenshot({ path: join(shots, 'p281-01-work-center.png') }).catch(() => undefined)
   summarise()

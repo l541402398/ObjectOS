@@ -62,9 +62,9 @@ try {
   if (!projectId) throw new Error('The persisted demo fixture was not created')
   const routes = [
     ['project-center', '#/'], ['project-home', `#/projects/${projectId}`],
-    ['work-center', `#/projects/${projectId}/work`], ['tasks', `#/projects/${projectId}/tasks`],
+    ['tasks', `#/projects/${projectId}/tasks`],
     ['agents', `#/projects/${projectId}/agents`], ['orchestration', `#/projects/${projectId}/orchestration`],
-    ['approvals', `#/projects/${projectId}/approvals`], ['approval-center', `#/projects/${projectId}/approvals/center`],
+    ['approvals', `#/projects/${projectId}/approvals`], ['approval-history', `#/projects/${projectId}/approvals?lens=history`],
     ['runs', `#/projects/${projectId}/runs`], ['versions', `#/projects/${projectId}/versions`],
     ['releases', `#/projects/${projectId}/releases`], ['deployments', `#/projects/${projectId}/deployments`],
     ['connections', `#/projects/${projectId}/connections`], ['overview', `#/projects/${projectId}/overview`],

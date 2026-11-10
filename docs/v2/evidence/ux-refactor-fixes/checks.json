@@ -1,0 +1,351 @@
+{
+  "checks": [
+    {
+      "name": "Demo project loaded",
+      "status": "PASS",
+      "detail": "prj_01m71j2swfgvf2k5c30cs8a55t"
+    },
+    {
+      "name": "KpiRail interactive block renders as native <button>",
+      "status": "PASS",
+      "detail": "BUTTON"
+    },
+    {
+      "name": "Overview -> Review Room preserves return=overview back label",
+      "status": "PASS",
+      "detail": "返回项目姿态"
+    },
+    {
+      "name": "Review Room back button returns to 项目态势",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Runs -> Review Room preserves return=runs back button",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Review Room back button returns to 运行审计",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Home approval row deep-links ?approval=<id>",
+      "status": "PASS",
+      "detail": "#/projects/prj_01m71j2swfgvf2k5c30cs8a55t/approvals?approval=apr_01m71j2t050eqdcy05mdhzvwdm"
+    },
+    {
+      "name": "Capture 1440-light-home",
+      "status": "PASS",
+      "detail": "71 KB"
+    },
+    {
+      "name": "Capture 1440-light-review-pending",
+      "status": "PASS",
+      "detail": "73 KB"
+    },
+    {
+      "name": "1440-light-review-pending axe WCAG AA",
+      "status": "PASS",
+      "detail": "[]"
+    },
+    {
+      "name": "Capture 1440-light-review-history",
+      "status": "PASS",
+      "detail": "70 KB"
+    },
+    {
+      "name": "Capture 1440-light-requirements",
+      "status": "PASS",
+      "detail": "80 KB"
+    },
+    {
+      "name": "1440-light-requirements axe WCAG AA",
+      "status": "PASS",
+      "detail": "[]"
+    },
+    {
+      "name": "Capture 1440-light-overview",
+      "status": "PASS",
+      "detail": "82 KB"
+    },
+    {
+      "name": "1440-light-overview axe WCAG AA",
+      "status": "PASS",
+      "detail": "[]"
+    },
+    {
+      "name": "Capture 1440-light-tasks",
+      "status": "PASS",
+      "detail": "118 KB"
+    },
+    {
+      "name": "Capture 1440-light-runs",
+      "status": "PASS",
+      "detail": "86 KB"
+    },
+    {
+      "name": "Capture 1440-light-versions",
+      "status": "PASS",
+      "detail": "60 KB"
+    },
+    {
+      "name": "1440-light-versions axe WCAG AA",
+      "status": "PASS",
+      "detail": "[]"
+    },
+    {
+      "name": "Capture 1440-light-resources",
+      "status": "PASS",
+      "detail": "65 KB"
+    },
+    {
+      "name": "Capture 1440-dark-home",
+      "status": "PASS",
+      "detail": "73 KB"
+    },
+    {
+      "name": "Capture 1440-dark-review-pending",
+      "status": "PASS",
+      "detail": "75 KB"
+    },
+    {
+      "name": "1440-dark-review-pending axe WCAG AA",
+      "status": "PASS",
+      "detail": "[]"
+    },
+    {
+      "name": "Capture 1440-dark-review-history",
+      "status": "PASS",
+      "detail": "71 KB"
+    },
+    {
+      "name": "Capture 1440-dark-requirements",
+      "status": "PASS",
+      "detail": "84 KB"
+    },
+    {
+      "name": "1440-dark-requirements axe WCAG AA",
+      "status": "PASS",
+      "detail": "[]"
+    },
+    {
+      "name": "Capture 1440-dark-overview",
+      "status": "PASS",
+      "detail": "84 KB"
+    },
+    {
+      "name": "1440-dark-overview axe WCAG AA",
+      "status": "PASS",
+      "detail": "[]"
+    },
+    {
+      "name": "Capture 1440-dark-tasks",
+      "status": "PASS",
+      "detail": "121 KB"
+    },
+    {
+      "name": "Capture 1440-dark-runs",
+      "status": "PASS",
+      "detail": "90 KB"
+    },
+    {
+      "name": "Capture 1440-dark-versions",
+      "status": "PASS",
+      "detail": "62 KB"
+    },
+    {
+      "name": "1440-dark-versions axe WCAG AA",
+      "status": "PASS",
+      "detail": "[]"
+    },
+    {
+      "name": "Capture 1440-dark-resources",
+      "status": "PASS",
+      "detail": "67 KB"
+    },
+    {
+      "name": "Capture 1024-light-home",
+      "status": "PASS",
+      "detail": "59 KB"
+    },
+    {
+      "name": "Capture 1024-light-review-pending",
+      "status": "PASS",
+      "detail": "56 KB"
+    },
+    {
+      "name": "Capture 1024-light-requirements",
+      "status": "PASS",
+      "detail": "59 KB"
+    },
+    {
+      "name": "Capture 1024-light-overview",
+      "status": "PASS",
+      "detail": "59 KB"
+    },
+    {
+      "name": "Capture 1024-light-versions",
+      "status": "PASS",
+      "detail": "51 KB"
+    },
+    {
+      "name": "Capture 1024-dark-home",
+      "status": "PASS",
+      "detail": "61 KB"
+    },
+    {
+      "name": "Capture 1024-dark-review-pending",
+      "status": "PASS",
+      "detail": "57 KB"
+    },
+    {
+      "name": "Capture 1024-dark-requirements",
+      "status": "PASS",
+      "detail": "62 KB"
+    },
+    {
+      "name": "Capture 1024-dark-overview",
+      "status": "PASS",
+      "detail": "61 KB"
+    },
+    {
+      "name": "Capture 1024-dark-versions",
+      "status": "PASS",
+      "detail": "53 KB"
+    },
+    {
+      "name": "Capture 1440-125-light-home",
+      "status": "PASS",
+      "detail": "54 KB"
+    },
+    {
+      "name": "Capture 1440-125-light-review-pending",
+      "status": "PASS",
+      "detail": "57 KB"
+    },
+    {
+      "name": "Capture 1440-125-light-requirements",
+      "status": "PASS",
+      "detail": "54 KB"
+    },
+    {
+      "name": "Capture 1440-125-light-overview",
+      "status": "PASS",
+      "detail": "52 KB"
+    },
+    {
+      "name": "Capture 1440-125-light-versions",
+      "status": "PASS",
+      "detail": "47 KB"
+    },
+    {
+      "name": "Capture 1440-125-dark-home",
+      "status": "PASS",
+      "detail": "55 KB"
+    },
+    {
+      "name": "Capture 1440-125-dark-review-pending",
+      "status": "PASS",
+      "detail": "57 KB"
+    },
+    {
+      "name": "Capture 1440-125-dark-requirements",
+      "status": "PASS",
+      "detail": "55 KB"
+    },
+    {
+      "name": "Capture 1440-125-dark-overview",
+      "status": "PASS",
+      "detail": "52 KB"
+    },
+    {
+      "name": "Capture 1440-125-dark-versions",
+      "status": "PASS",
+      "detail": "48 KB"
+    },
+    {
+      "name": "Capture 1440-light-design-lab-dag",
+      "status": "PASS",
+      "detail": "50 KB"
+    },
+    {
+      "name": "Capture 1440-dark-design-lab-dag",
+      "status": "PASS",
+      "detail": "51 KB"
+    },
+    {
+      "name": "Zero uncaught renderer errors",
+      "status": "PASS",
+      "detail": ""
+    }
+  ],
+  "audits": [
+    {
+      "label": "1440-light-review-pending",
+      "axePasses": 15,
+      "axeViolations": [],
+      "contrastSamples": 78,
+      "contrastMin": 4.21,
+      "contrastBelow45": 4
+    },
+    {
+      "label": "1440-light-requirements",
+      "axePasses": 22,
+      "axeViolations": [],
+      "contrastSamples": 82,
+      "contrastMin": 3.78,
+      "contrastBelow45": 4
+    },
+    {
+      "label": "1440-light-overview",
+      "axePasses": 22,
+      "axeViolations": [],
+      "contrastSamples": 80,
+      "contrastMin": 3.82,
+      "contrastBelow45": 4
+    },
+    {
+      "label": "1440-light-versions",
+      "axePasses": 15,
+      "axeViolations": [],
+      "contrastSamples": 39,
+      "contrastMin": 4.7,
+      "contrastBelow45": 0
+    },
+    {
+      "label": "1440-dark-review-pending",
+      "axePasses": 15,
+      "axeViolations": [],
+      "contrastSamples": 78,
+      "contrastMin": 1.59,
+      "contrastBelow45": 4
+    },
+    {
+      "label": "1440-dark-requirements",
+      "axePasses": 22,
+      "axeViolations": [],
+      "contrastSamples": 82,
+      "contrastMin": 3.9,
+      "contrastBelow45": 4
+    },
+    {
+      "label": "1440-dark-overview",
+      "axePasses": 22,
+      "axeViolations": [],
+      "contrastSamples": 80,
+      "contrastMin": 5.61,
+      "contrastBelow45": 0
+    },
+    {
+      "label": "1440-dark-versions",
+      "axePasses": 15,
+      "axeViolations": [],
+      "contrastSamples": 39,
+      "contrastMin": 5.08,
+      "contrastBelow45": 0
+    }
+  ],
+  "consoleErrors": []
+}

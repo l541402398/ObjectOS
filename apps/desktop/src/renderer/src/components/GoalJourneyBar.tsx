@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { DownOutlined, RightOutlined, UpOutlined } from '@ant-design/icons'
 import type { JourneyStage } from '@projectos/contracts'
 import {
+  isRequirementIntentRoute,
   journeyActionLabel,
   JOURNEY_OWNER_LABEL,
   JOURNEY_STATE_LABEL,
@@ -117,10 +118,10 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
   }
 
   const resolveJourneyRoute = (route: string, stageKey?: string): string => {
-    if (/\/projects\/[^/]+\/work(?:\?|$)/.test(route)) {
+    if (isRequirementIntentRoute(route)) {
       const targetProjectId = data?.projectId ?? projectId
       if (!targetProjectId) return route
-      if (stageKey === 'requirement' || current?.key === 'requirement') {
+      if (stageKey === 'requirement' || current?.key === 'requirement' || route.includes('intent=requirement')) {
         return `/projects/${targetProjectId}?intent=requirement`
       }
       return `/projects/${targetProjectId}`
@@ -174,7 +175,7 @@ export function GoalJourneyBar({ projectId }: { projectId: string | null }) {
           ) : null}
         </div>
 
-        <ol className="po-journey-track is-compact" aria-label="项目阶段" aria-live="polite">
+        <ol className="po-journey-track is-compact" aria-label="项目阶段">
           {stages.map((stage, index) => (
             <li
               key={stage.key}

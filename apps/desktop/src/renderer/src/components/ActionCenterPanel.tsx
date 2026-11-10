@@ -5,22 +5,11 @@ import { App as AntApp, Badge, Button, Empty, Popover, Tag } from 'antd'
 import { BellOutlined, RightOutlined, SyncOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import type { ActionItem } from '@projectos/contracts'
 import { useActionCenter, useAutonomySettings } from '../lib/queries'
+import { ACTION_KIND_LABEL as KIND_LABEL } from '../lib/action-kinds'
 import { errorMessage } from '../lib/errors'
 import './action-center.css'
 import { PROJECT_MODES, ProjectModeControl } from './ProjectModeControl'
 import { WorktreeAutoAllowControl } from '../features/review/WorktreeAutoAllowControl'
-
-const KIND_LABEL: Record<string, string> = {
-  tool_approval: '工具授权',
-  task_acceptance: '任务验收',
-  delivery_approval: '发布/部署审批',
-  version_gate: '版本门禁',
-  deployment_reconciliation: '部署对账',
-  run_failure: 'Run 失败',
-  plan_review: '计划审核',
-  replan_scope: '范围变更',
-  plan_delivery: '计划交付',
-}
 
 /**
  * Global action panel. Every row is a real persisted object with an exact route, so

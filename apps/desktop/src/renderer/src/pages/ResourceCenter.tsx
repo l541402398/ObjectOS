@@ -263,7 +263,8 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
     onError: (error) => message.error(errorMessage(error)),
   })
 
-  const openCreate = (kind: 'host' | 'kubernetes' | 'pipeline' | 'gitops'): void => { setResourceType(kind); setCreateOpen(true) }
+  const clearCreateSecrets = (): void => { setSecret(''); setPassphrase('') }
+  const openCreate = (kind: 'host' | 'kubernetes' | 'pipeline' | 'gitops'): void => { clearCreateSecrets(); setResourceType(kind); setCreateOpen(true) }
   const allResources = data?.resources ?? []
   const healthOf = (resourceId: string): Health => health(data?.profiles.find((item) => item.resourceId === resourceId)?.lastTestStatus ?? null, allResources.find((item) => item.id === resourceId)?.type ?? 'host')
   const healthCounts = allResources.reduce<Record<Health, number>>((acc, item) => { acc[healthOf(item.id)] += 1; return acc }, { ok: 0, warn: 0, bad: 0, idle: 0 })
@@ -460,7 +461,7 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
         </section>
       )}
 
-      <FormDialog open={createOpen} title={resourceType === 'host' ? '登记主机' : '登记平台资源'} okText={resourceType === 'host' ? '保存并测试' : '保存'} cancelText="取消" width={560} confirmLoading={create.isPending} okButtonProps={{ disabled: !name.trim() || (resourceType === 'host' && (!host.trim() || !secret)) }} onOk={() => create.mutate()} onCancel={() => setCreateOpen(false)}>
+      <FormDialog open={createOpen} title={resourceType === 'host' ? '登记主机' : '登记平台资源'} okText={resourceType === 'host' ? '保存并测试' : '保存'} cancelText="取消" width={560} confirmLoading={create.isPending} okButtonProps={{ disabled: !name.trim() || (resourceType === 'host' && (!host.trim() || !secret)) }} onOk={() => create.mutate()} onCancel={() => { clearCreateSecrets(); setCreateOpen(false) }}>
         <div className="rc-form">
           <label><span>资源类型</span><Select value={resourceType} onChange={setResourceType} options={[{ value: 'host', label: '主机 / VPS' }, { value: 'kubernetes', label: 'Kubernetes 集群' }, { value: 'pipeline', label: 'CI/CD 流水线' }, { value: 'gitops', label: 'GitOps 控制器' }]} /></label>
           <div className="rc-form-grid">
@@ -510,7 +511,7 @@ export function ResourceCenter({ projectId }: { projectId: string }) {
         </div>
       </FormDialog>
 
-      <FormDialog open={Boolean(rotateCredentialId)} title="轮换凭据" okText="轮换" cancelText="取消" confirmLoading={rotateCredential.isPending} okButtonProps={{ disabled: !rotateSecret.trim() }} onOk={() => rotateCredential.mutate()} onCancel={() => setRotateCredentialId(null)}>
+      <FormDialog open={Boolean(rotateCredentialId)} title="轮换凭据" okText="轮换" cancelText="取消" confirmLoading={rotateCredential.isPending} okButtonProps={{ disabled: !rotateSecret.trim() }} onOk={() => rotateCredential.mutate()} onCancel={() => { setRotateSecret(''); setRotatePassphrase(''); setRotateCredentialId(null) }}>
         <div className="rc-form">
           <label><span>新私钥（不读回）</span><Input.TextArea rows={4} value={rotateSecret} onChange={(event) => setRotateSecret(event.target.value)} placeholder="-----BEGIN OPENSSH PRIVATE KEY-----" /></label>
           <label><span>Passphrase（可选）</span><Input.Password value={rotatePassphrase} onChange={(event) => setRotatePassphrase(event.target.value)} /></label>

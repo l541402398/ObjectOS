@@ -9,7 +9,7 @@
 :root .po-agent-roster-bar.is-dock .po-roster-info { min-width: 0; }
 :root .po-agent-roster-bar.is-dock .po-roster-name-row strong { font-size: var(--ui-type-body); }
 :root .po-agent-roster-bar.is-dock .po-roster-role { display: block; max-width: 120px; overflow: hidden; color: var(--ui-muted); font-size: var(--ui-type-caption); text-overflow: ellipsis; white-space: nowrap; }
-:root .po-agent-roster-bar.is-dock .po-roster-status-pill { font-size: 11px; }
+:root .po-agent-roster-bar.is-dock .po-roster-status-pill { font-size: var(--ui-type-caption); }
 
 /* Requirement summary: one line (title · focus stage · bead progress · link); stage cards fold behind a disclosure. */
 :root .po-req-whole-panel { gap: 0; margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
@@ -31,8 +31,9 @@
 :root .po-req-whole-panel .po-req-whole-card { gap: 2px; }
 
 /* ADR-0092: requirement-stage tiles on the board were white-filled in both themes. */
-:root .po-stage-flow-tile { background: var(--gl-control); border-color: var(--ui-accent-line, rgba(99, 102, 241, 0.32)); }
+:root .po-stage-flow-tile { background: var(--gl-control); border-color: var(--ui-accent-line); }
 :root .po-stage-flow-tile.is-completed, :root .po-stage-flow-tile.is-done { background: color-mix(in srgb, var(--ui-ok) 8%, transparent); }
 :root .po-stage-flow-tile:is(.is-running, .is-starting, .is-active) { background: var(--gl-active); }
-:root .po-stage-flow-badge, :root .po-stage-flow-status, :root .po-stage-flow-state { font-size: var(--ui-type-badge); }
+:root .po-stage-flow-badge { font-size: var(--ui-type-badge); }
+:root .po-stage-flow-status, :root .po-stage-flow-state { font-size: var(--ui-type-caption); }
 :root .po-stage-flow-badge { background: var(--ui-accent-soft); color: var(--ui-accent-strong, var(--ui-accent)); }

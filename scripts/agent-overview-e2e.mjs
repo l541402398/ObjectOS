@@ -385,7 +385,7 @@ try {
     ['approvals/center', 'unification-approval-center-1440-light.png'],
   ]) {
     await page.evaluate((hash) => { window.location.hash = hash }, `#/projects/${projectId}/${route}`)
-    const heading = route === 'tasks' ? '任务看板' : route === 'runs' ? '运行审计' : '审批工作台'
+    const heading = route === 'tasks' ? '任务看板' : route === 'runs' ? '运行审计' : '审阅与决策'
     await page.getByRole('heading', { name: heading, exact: true }).waitFor({ timeout: 20_000 })
     await page.waitForTimeout(900)
     await shot(file)

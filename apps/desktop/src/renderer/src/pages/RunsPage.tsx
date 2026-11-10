@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactElement } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { App as AntApp, Button, Input, Select } from 'antd'
@@ -26,6 +26,7 @@ import { useApprovals, useProjectEvents, useRunDetail, useRuns } from '../lib/qu
 import { formatDateTime, formatDuration, formatTime } from '../lib/format'
 import { eventTypeLabel, runStatusLabel } from '../lib/labels'
 import { errorMessage } from '../lib/errors'
+import { listKeyStep } from '../lib/list-keys'
 import { useResolvedTheme } from '../stores/ui'
 import { DialogShell, OverlayFooter, OverlayHeader, OverlayScrollArea } from '../next-ui/overlay/overlay-shell'
 import '../features/studio/studio.css'
@@ -149,6 +150,7 @@ export default function RunsPage(): ReactElement {
   const runDetail = useRunDetail(selectedRunId)
   const approvals = useApprovals(projectId)
   const events = useProjectEvents(projectId, 100)
+  const listRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const runFromQuery = searchParams.get('run')
@@ -179,10 +181,7 @@ export default function RunsPage(): ReactElement {
   useEffect(() => {
     if (lens !== 'runs') return
     const onKey = (event: KeyboardEvent): void => {
-      const target = event.target as HTMLElement | null
-      if (target && (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT' || target.isContentEditable)) return
-      if (event.metaKey || event.ctrlKey || event.altKey) return
-      const step = event.key === 'j' || event.key === 'ArrowDown' ? 1 : event.key === 'k' || event.key === 'ArrowUp' ? -1 : 0
+      const step = listKeyStep(event, listRef.current)
       if (!step) return
       const index = runList.findIndex((run) => run.id === selectedRunId)
       const next = runList[Math.min(runList.length - 1, Math.max(0, index + step))]
@@ -217,10 +216,19 @@ export default function RunsPage(): ReactElement {
   })
 
   const pendingApprovals = (approvals.data?.approvals ?? []).filter((approval) => approval.status === 'pending')
-  const selectedRun = allRuns.find((run) => run.id === selectedRunId) ?? null
+  // A deep-linked Run may be older than the loaded page; its detail read still carries the summary.
+  const selectedRun = allRuns.find((run) => run.id === selectedRunId) ?? (runDetail.data?.run.id === selectedRunId ? runDetail.data.run : null)
   const detail = runDetail.data
   const longest = Math.max(1, ...allRuns.map((run) => (run.finishedAt ?? now) - (run.startedAt ?? run.createdAt)))
   const live = allRuns.filter((run) => ACTIVE.has(run.status)).length
+  const reviewRoute = (approvalId?: string): string => {
+    const params = new URLSearchParams()
+    if (approvalId) params.set('approval', approvalId)
+    params.set('return', 'runs')
+    if (selectedRunId) params.set('run', selectedRunId)
+    return `/projects/${projectId}/approvals?${params.toString()}`
+  }
+  const selectedRunApproval = selectedRun ? pendingApprovals.find((approval) => approval.runId === selectedRun.id) ?? null : null
 
   return (
     <div className="studio-theme ra-page" data-theme={theme}>
@@ -241,7 +249,7 @@ export default function RunsPage(): ReactElement {
       </header>
 
       {pendingApprovals.length > 0 ? (
-        <button type="button" className="ra-await" onClick={() => navigate(`/projects/${projectId}/approvals`)}>
+        <button type="button" className="ra-await" onClick={() => navigate(reviewRoute(pendingApprovals.length === 1 ? pendingApprovals[0]!.id : undefined))}>
           <span className="ra-await-pulse" aria-hidden><CirclePause size={15} /></span>
           <span><strong>{pendingApprovals.length} 个工具请求</strong>让运行暂停，等待你的审阅</span>
           <span className="ra-await-go">去审阅室 <ArrowRight size={13} /></span>
@@ -274,7 +282,7 @@ export default function RunsPage(): ReactElement {
         </section>
       ) : (
         <div className="ra-split">
-          <nav className="ra-list" aria-label="运行列表">
+          <nav className="ra-list" aria-label="运行列表" ref={listRef}>
             <div className="rv-search">
               <Search size={13} aria-hidden />
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索 Agent、任务或会话" aria-label="搜索运行" />
@@ -353,7 +361,7 @@ export default function RunsPage(): ReactElement {
 
                 <div className="ra-actions">
                   <button type="button" className="studio-ghost" onClick={() => navigate(`/projects/${projectId}/agents?session=${encodeURIComponent(selectedRun.sessionId)}`)}><MessageSquareText size={13} />打开会话</button>
-                  {selectedRun.pendingApprovals > 0 ? <button type="button" className="studio-cta" onClick={() => navigate(`/projects/${projectId}/approvals`)}><ShieldAlert size={13} />审阅 {selectedRun.pendingApprovals} 个请求</button> : null}
+                  {selectedRun.pendingApprovals > 0 ? <button type="button" className="studio-cta" onClick={() => navigate(reviewRoute(selectedRunApproval?.id))}><ShieldAlert size={13} />审阅 {selectedRun.pendingApprovals} 个请求</button> : null}
                   {selectedRun.status === 'needs_reconciliation' ? <button type="button" className="studio-cta" onClick={() => { setReconcileDecision('completed'); setReconcileNote(''); setReconcileOpen(true) }}>人工核对</button> : null}
                   {ACTIVE.has(selectedRun.status) ? <button type="button" className="studio-danger" disabled={cancel.isPending} onClick={() => cancel.mutate(selectedRun.id)}><Square size={12} />取消运行</button> : null}
                 </div>

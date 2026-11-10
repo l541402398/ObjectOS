@@ -318,7 +318,7 @@ export default function ProjectOverviewPage() {
             key: 'approvals', label: '待授权', value: pendingApprovals.length, tone: pendingApprovals.length > 0 ? 'warn' : 'neutral',
             visual: { kind: 'pulse', active: pendingApprovals.length > 0 },
             status: pendingApprovals.length > 0 ? `运行已暂停，等待你决定：${pendingApprovals[0]!.title}` : '没有等待你的决定',
-            actionLabel: '去审阅', onOpen: () => navigate(`/projects/${projectId}/approvals`),
+            actionLabel: '去审阅', onOpen: () => navigate(`/projects/${projectId}/approvals?${pendingApprovals.length === 1 ? `approval=${encodeURIComponent(pendingApprovals[0]!.id)}&` : ''}return=overview`),
           },
           {
             key: 'outputs', label: '交付物', value: verifiedArtifacts, tone: 'ok',

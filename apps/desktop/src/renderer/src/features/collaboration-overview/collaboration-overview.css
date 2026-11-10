@@ -1681,4 +1681,4 @@
 .aco-req-stage-pill:not(.is-running):not(.is-starting):not(.is-waiting_approval):not(.is-selected) .aco-req-stage-agent { display: none; }
 .aco-req-stage-pill.is-completed { border-color: transparent; background: transparent; }
 .aco-req-stage-name { font-weight: 550; }
-.aco-req-stage-idx { width: 18px; height: 18px; font-size: 11px; font-variant-numeric: tabular-nums; }
+.aco-req-stage-idx { width: 18px; height: 18px; font-size: var(--ui-type-badge); font-variant-numeric: tabular-nums; }

@@ -22,7 +22,7 @@ async function launch(width, height, scale) {
     await page.waitForTimeout(200)
   }
   if (await page.locator('.v16-project-visual').count()) await page.locator('.v16-project-visual').first().click()
-  await page.waitForSelector('.po-work-center', { timeout: 30_000 })
+  await page.waitForSelector('.studio-workbench', { timeout: 30_000 })
   const ids = await page.evaluate(async () => {
     const project = (await window.projectos.projects.list()).projects[0]
     const lifecycle = await window.projectos.lifecycle.overview(project.id)
@@ -50,7 +50,7 @@ try {
   await capture(compact.page, '1024x768-light-deployment-center', 'light')
   await capture(compact.page, '1024x768-dark-deployment-center', 'dark')
   await compact.page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/approvals` }, compact.ids)
-  await compact.page.waitForSelector('.ap-shell', { timeout: 30_000 })
+  await compact.page.waitForSelector('.rv-room', { timeout: 30_000 })
   await capture(compact.page, '1024x768-light-approval-center', 'light')
   await capture(compact.page, '1024x768-dark-approval-center', 'dark')
   await compact.app.close()
@@ -68,7 +68,7 @@ try {
   await capture(scaled.page, '1440x900-125-actual-light-deployment-center', 'light')
   await capture(scaled.page, '1440x900-125-actual-dark-deployment-center', 'dark')
   await scaled.page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/approvals` }, scaled.ids)
-  await scaled.page.waitForSelector('.ap-shell', { timeout: 30_000 })
+  await scaled.page.waitForSelector('.rv-room', { timeout: 30_000 })
   await capture(scaled.page, '1440x900-125-actual-light-approval-center', 'light')
   await capture(scaled.page, '1440x900-125-actual-dark-approval-center', 'dark')
   console.log('PHASE 2 DELIVERY SCREENSHOTS PASS', JSON.stringify(metrics))

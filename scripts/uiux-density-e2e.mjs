@@ -12,7 +12,7 @@ try {
   const page = await app.firstWindow()
   await page.waitForSelector('.po-shell', { timeout: 30_000 })
   if (await page.locator('.v16-project-visual').count()) await page.locator('.v16-project-visual').first().click()
-  await page.waitForSelector('.po-work-center', { timeout: 30_000 })
+  await page.waitForSelector('.studio-workbench', { timeout: 30_000 })
   const setup = await page.evaluate(async () => {
     const project = (await window.projectos.projects.list()).projects[0]
     const lifecycle = await window.projectos.lifecycle.overview(project.id)

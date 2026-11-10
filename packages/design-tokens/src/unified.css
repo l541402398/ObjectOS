@@ -47,6 +47,11 @@
   --ui-shadow-sm: 0 1px 2px rgba(36, 54, 90, 0.06);
   --ui-shadow-md: 0 16px 38px -20px rgba(36, 54, 90, 0.24);
   --ui-shadow-lg: 0 28px 70px -34px rgba(36, 54, 90, 0.34);
+  --ui-shadow-brand: 0 14px 30px -18px var(--ui-accent);
+  --ui-shadow-brand-hover: 0 18px 34px -18px var(--ui-accent);
+  /* Toggle-switch knob: a raised disc that stays legible on both the track and the checked fill. */
+  --ui-knob: #FFFFFF;
+  --ui-shadow-knob: 0 1px 3px rgba(36, 54, 90, 0.25);
   --ui-blur: 18px;
   --ui-radius-xs: 5px;
   --ui-radius-sm: 7px;
@@ -280,6 +285,10 @@
   --ui-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.28);
   --ui-shadow-md: 0 18px 42px -22px rgba(0, 0, 0, 0.52);
   --ui-shadow-lg: 0 30px 76px -34px rgba(0, 0, 0, 0.68);
+  --ui-shadow-brand: 0 14px 30px -18px var(--ui-accent);
+  --ui-shadow-brand-hover: 0 18px 34px -18px var(--ui-accent);
+  --ui-knob: #EFF4FF;
+  --ui-shadow-knob: 0 1px 3px rgba(0, 0, 0, 0.45);
   --ui-ambient: radial-gradient(70% 60% at 6% -6%, rgba(100,116,218,.24), transparent 70%), radial-gradient(70% 60% at 94% 0%, rgba(65,183,196,.16), transparent 70%), linear-gradient(132deg, #101a30, #0c1629 54%, #18152d);
 
   --color-canvas: var(--ui-bg-app);

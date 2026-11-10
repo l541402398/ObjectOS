@@ -62,7 +62,7 @@ describe('ADR-0053 project journey projection', () => {
     expect(requirement.owner).toBe('user')
     expect(view.nextAction.owner).toBe('user')
     expect(view.nextAction.label).toContain('需求')
-    expect(view.nextAction.route).toContain('/work')
+    expect(view.nextAction.route).toBe(`/projects/${view.projectId}?intent=requirement`)
     // Nothing is claimed as done by accident.
     expect(view.stages.filter((stage) => stage.state === 'done')).toHaveLength(1)
   })

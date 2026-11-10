@@ -43,22 +43,22 @@ async function open(label, { width, height, scale }) {
   if (await page.locator('.v16-project-visual').count()) {
     await page.locator('.v16-project-visual').first().click()
   }
-  await page.waitForSelector('.po-work-center', { timeout: 60_000 })
-  await page.waitForSelector('.wc-goal-states', { timeout: 30_000 })
+  await page.waitForSelector('.studio-workbench', { timeout: 60_000 })
+  await page.waitForSelector('[data-testid="goal-journey"]', { timeout: 30_000 })
   await page.waitForTimeout(1200)
   return { app, page }
 }
 
 async function inspect(page) {
   return await page.evaluate(() => {
-    const states = [...document.querySelectorAll('.wc-goal-state')].map((node) => ({
-      label: node.querySelector('.wc-goal-state-label')?.textContent ?? '',
-      value: node.querySelector('.wc-goal-state-value')?.textContent ?? '',
+    const states = [...document.querySelectorAll('.po-journey-step')].map((node) => ({
+      label: node.querySelector('.po-journey-step-label')?.textContent ?? '',
+      value: node.className,
     }))
-    const autopilot = document.querySelector('.wc-goal-autopilot')
+    const nextOwner = document.querySelector('.po-journey-owner, .wc-next')
     return {
       states,
-      autopilotText: autopilot ? (autopilot.textContent ?? '').slice(0, 240) : null,
+      autopilotText: nextOwner ? (nextOwner.textContent ?? '').slice(0, 240) : null,
       viewport: window.innerWidth,
       scrollWidth: document.documentElement.scrollWidth,
       devicePixelRatio: window.devicePixelRatio,

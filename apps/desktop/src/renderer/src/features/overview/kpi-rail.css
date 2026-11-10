@@ -13,7 +13,11 @@
   gap: 4px;
   min-width: 0;
   padding: 16px 22px 16px 20px;
-  border-radius: 14px;
+  border: 0;
+  border-radius: var(--ui-radius-lg);
+  background: transparent;
+  font: inherit;
+  text-align: left;
   outline: none;
   transition: background-color 160ms ease;
 }
@@ -82,5 +86,5 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .kpi-pulse.is-on::after { animation: none; opacity: .6; }
-  .kpi-arc-value, .kpi-segments i, .kpi-go { transition: none; }
+  .kpi-block, .kpi-arc-value, .kpi-segments i, .kpi-go { transition: none; }
 }

@@ -39,7 +39,7 @@ try {
   await page.waitForSelector('.po-shell', { timeout: 30_000 })
   if (await page.locator('.po-shell.is-collapsed').count()) await page.getByRole('button', { name: '切换侧边栏' }).click()
   if (await page.locator('.v16-project-visual').count()) await page.locator('.v16-project-visual').first().click()
-  await page.waitForSelector('.po-work-center', { timeout: 30_000 })
+  await page.waitForSelector('.studio-workbench', { timeout: 30_000 })
   const project = await page.evaluate(async () => (await window.projectos.projects.list()).projects[0])
   const lifecycle = await page.evaluate(async ({ projectId }) => window.projectos.lifecycle.overview(projectId), { projectId: project.id })
   const versionId = lifecycle.versions[0].id

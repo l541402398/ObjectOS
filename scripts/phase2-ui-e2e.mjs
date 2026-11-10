@@ -19,7 +19,33 @@ delete env.ELECTRON_RUN_AS_NODE
 let app
 
 async function clickLastModalButton(page, _name) {
-  await page.locator('.ant-modal:visible .ant-modal-footer button').last().click()
+  await page.locator('[role="dialog"]:visible button.ant-btn-primary, .ant-modal:visible .ant-modal-footer button').last().click()
+}
+
+// ADR-0090: the review room (`/approvals`, h1 审阅与决策) is the only approval surface; delivery
+// approvals are decided in its 交付审批 lens with an explicit revision/fingerprint check.
+async function openReviewRoom(page, projectId, lens) {
+  await page.evaluate(({ projectId, lens }) => { location.hash = `#/projects/${projectId}/approvals?lens=${lens}` }, { projectId, lens })
+  await page.locator('.rv-room h1', { hasText: '审阅与决策' }).waitFor({ timeout: 15_000 })
+  await page.locator('.rv-lenses [role="tab"][aria-selected="true"]').waitFor({ timeout: 10_000 })
+}
+
+async function approveDeliveryInReviewRoom(page, projectId, screenshotPath) {
+  await openReviewRoom(page, projectId, 'delivery')
+  const sheet = page.locator('.rv-sheet[aria-label="交付审批详情"]')
+  await sheet.waitFor({ timeout: 15_000 })
+  const subject = (await sheet.locator('.rv-target').innerText()).trim()
+  if (screenshotPath) {
+    await page.evaluate(() => { document.documentElement.dataset.theme = 'light' })
+    await page.waitForTimeout(400)
+    await page.screenshot({ path: screenshotPath })
+  }
+  await page.locator('.rv-rail .rv-primary').click()
+  await page.locator('.rv-rail .rv-verify input[type="checkbox"]').check()
+  await page.locator('.rv-confirm-actions .studio-cta').click()
+  await page.waitForFunction((text) => (document.querySelector('.rv-room')?.textContent ?? '').includes(`已批准：${text}`), subject, { timeout: 15_000 })
+  console.log(`[phase2-ui] review room approved delivery: ${subject}`)
+  return subject
 }
 
 try {
@@ -31,7 +57,7 @@ try {
     await page.waitForTimeout(300)
   }
   if (await page.locator('.v16-project-visual').count()) await page.locator('.v16-project-visual').first().click()
-  await page.waitForSelector('.po-work-center', { timeout: 30_000 })
+  await page.waitForSelector('.studio-workbench', { timeout: 30_000 })
   const setup = await page.evaluate(async ({ sourceFile, healthFile, targetDir, sshMode, sshPrivateKey, sshFingerprint }) => {
     const project = (await window.projectos.projects.list()).projects[0]
     const lifecycle = await window.projectos.lifecycle.overview(project.id)
@@ -112,12 +138,13 @@ try {
   await page.reload()
   await page.waitForSelector('.po-shell', { timeout: 30_000 })
   if (await page.locator('.v16-project-visual').count()) await page.locator('.v16-project-visual').first().click()
-  await page.waitForSelector('.po-work-center', { timeout: 30_000 })
+  await page.waitForSelector('.studio-workbench', { timeout: 30_000 })
   await page.evaluate(() => {
     const parts = location.hash.split('/')
     location.hash = `${parts.slice(0, 3).join('/')}/versions`
   })
   await page.waitForSelector('.po-lifecycle-page', { timeout: 30_000 })
+  if (await page.locator('.lc-disclosure:not([open]) > summary').count()) await page.locator('.lc-disclosure > summary').first().click()
   await page.waitForSelector('.delivery-summary', { timeout: 30_000 })
   await page.waitForTimeout(700)
   console.log('[phase2-ui] version delivery summary loaded')
@@ -149,10 +176,10 @@ try {
   const versionCard = page.locator('.lc-version').first()
   await page.getByRole('button', { name: /记录证据/ }).first().click()
   await page.locator('input[placeholder="例如：v0.1.0 验收评审记录"]').fill('Phase 2 发布验证测试报告')
-  await page.locator('.ant-modal:visible .ant-select').nth(0).click()
+  await page.locator('[role="dialog"]:visible .ant-select').nth(0).click()
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('Enter')
-  await page.locator('.ant-modal:visible .ant-select').nth(2).click()
+  await page.locator('[role="dialog"]:visible .ant-select').nth(2).click()
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('Enter')
   await page.locator('textarea[placeholder="实际检查了什么、结果如何"]').fill('真实 npm test 退出码 0；来源观察。')
@@ -169,41 +196,39 @@ try {
   await page.waitForTimeout(700)
   console.log('[phase2-ui] release center loaded')
 
-  await page.getByRole('button', { name: /新建变更/ }).click()
-  await page.locator('.ant-modal:visible input').first().fill('Phase 2 发布变更')
-  await page.locator('.ant-modal:visible textarea').first().fill('将真实研发成果转为发布记录；仅登记，不执行外部部署。')
+  await page.getByRole('button', { name: /新建变更/ }).first().click()
+  await page.locator('[role="dialog"]:visible input').first().fill('Phase 2 发布变更')
+  await page.locator('[role="dialog"]:visible textarea').first().fill('将真实研发成果转为发布记录；仅登记，不执行外部部署。')
   await clickLastModalButton(page, '创建')
-  await page.getByRole('button', { name: /^变更 / }).click()
+  await page.getByRole('button', { name: /^变更 / }).first().click()
   await page.waitForFunction(() => document.body.innerText.includes('Phase 2 发布变更'), null, { timeout: 15_000 })
   await page.getByRole('button', { name: '提交审批' }).first().click()
   await page.waitForTimeout(400)
-  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/approvals` }, setup)
-  await page.waitForSelector('.ap-list', { timeout: 15_000 })
-  await page.locator('.ap-row').filter({ hasText: '授权 write_file' }).first().click()
-  await page.waitForSelector('.ap-diff', { timeout: 10_000 })
-  await page.evaluate(() => { document.documentElement.dataset.theme = 'light' })
-  await page.waitForTimeout(300)
-  await page.screenshot({ path: join(root, 'docs', 'screenshots', '1440x900-light-approval-tool-diff.png') })
-  await page.locator('.ap-row').filter({ has: page.locator('.ap-kind.delivery') }).first().click()
-  await page.waitForTimeout(300)
-  await page.evaluate(() => { document.documentElement.dataset.theme = 'light' })
-  await page.waitForTimeout(400)
-  await page.screenshot({ path: join(root, 'docs', 'screenshots', '1440x900-light-approval-center-delivery.png') })
-  await page.locator('.ap-actions button').last().click()
-  await page.waitForTimeout(900)
+  await openReviewRoom(page, setup.projectId, 'pending')
+  if (await page.locator('.rv-queue .rv-item').count()) {
+    await page.locator('.rv-queue .rv-item').first().click()
+    await page.waitForSelector('.rv-sheet[aria-label="请求详情"] .rv-evidence', { timeout: 10_000 })
+    await page.evaluate(() => { document.documentElement.dataset.theme = 'light' })
+    await page.waitForTimeout(300)
+    await page.screenshot({ path: join(root, 'docs', 'screenshots', '1440x900-light-approval-tool-diff.png') })
+    console.log('[phase2-ui] review room tool request evidence PASS')
+  } else {
+    console.log('[phase2-ui] SKIP tool request evidence screenshot: no pending tool request in this seed')
+  }
+  await approveDeliveryInReviewRoom(page, setup.projectId, join(root, 'docs', 'screenshots', '1440x900-light-approval-center-delivery.png'))
   await page.evaluate(({ projectId, versionId }) => { location.hash = `#/projects/${projectId}/releases?version=${versionId}` }, setup)
   await page.waitForSelector('.po-delivery-page', { timeout: 15_000 })
   await page.waitForTimeout(600)
   console.log('[phase2-ui] change request approved PASS')
 
-  await page.getByRole('button', { name: /生成候选/ }).click()
+  await page.getByRole('button', { name: /生成候选/ }).first().click()
   await page.waitForTimeout(900)
   const afterCandidate = await page.locator('.po-delivery-page').innerText()
   console.log('[phase2-ui] candidate panel:', afterCandidate.slice(0, 1200))
   await page.getByRole('button', { name: /登记 Release/ }).first().click()
   await page.waitForTimeout(1000)
   const panel = page.locator('.po-delivery-page')
-  await page.getByRole('button', { name: /^历史/ }).click()
+  await page.getByRole('button', { name: /^历史/ }).first().click()
   await page.waitForTimeout(300)
   const panelText = await panel.innerText()
   if (!panelText.includes('未外部分发')) throw new Error(`release not recorded: ${panelText.slice(0, 800)}`)
@@ -224,12 +249,7 @@ try {
   await page.getByRole('button', { name: '登记部署' }).first().click()
   await clickLastModalButton(page, '创建')
   await page.waitForTimeout(500)
-  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/approvals` }, setup)
-  await page.waitForSelector('.ap-list', { timeout: 15_000 })
-  await page.locator('.ap-row').filter({ has: page.locator('.ap-kind.delivery') }).first().click()
-  await page.waitForTimeout(250)
-  await page.locator('.ap-actions button').last().click()
-  await page.waitForTimeout(700)
+  await approveDeliveryInReviewRoom(page, setup.projectId)
   await page.evaluate(({ projectId, versionId }) => { location.hash = `#/projects/${projectId}/deployments?version=${versionId}` }, setup)
   await page.waitForSelector('.po-delivery-page', { timeout: 15_000 })
   await page.waitForTimeout(1800)

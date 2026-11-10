@@ -98,7 +98,7 @@ try {
   await shot('page-cross-session')
   await navigate(`#/projects/${projectId}/workspace`, '.monaco-editor')
   await shot('page-workspace')
-  await navigate(`#/projects/${projectId}/runs`, '.po-run-detail-panel')
+  await navigate(`#/projects/${projectId}/runs`, '.ra-page')
   await shot('page-runs')
 
   await page.locator('.po-nav-item').filter({ hasText: '设置' }).first().click()

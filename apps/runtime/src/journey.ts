@@ -162,7 +162,8 @@ export function projectJourney(input: {
     }
     return null
   })()
-  const workRoute = `/projects/${projectId}/work`
+  const createRequirementRoute = `/projects/${projectId}?intent=requirement`
+  const requirementsRoute = `/projects/${projectId}/requirements`
   const planRoute = `/projects/${projectId}/orchestration${plan ? `?plan=${plan.id}` : ''}`
   const runsRoute = `/projects/${projectId}/runs`
   const approvalsRoute = `/projects/${projectId}/approvals`
@@ -202,7 +203,7 @@ export function projectJourney(input: {
     requirements: ['至少一条需求'],
     satisfied: requirement ? [`需求「${requirement.title.slice(0, 60)}」`] : [],
     objects: {},
-    entry: { label: requirement ? '查看/新增需求' : '提交需求', route: workRoute },
+    entry: { label: requirement ? '查看/新增需求' : '提交需求', route: requirement ? requirementsRoute : createRequirementRoute },
   })
 
   // 3) 计划
@@ -488,7 +489,7 @@ export function projectJourney(input: {
       return { owner: 'user', label: nextStage.detail, detail: nextStage.label, route: nextStage.entry?.route ?? null, objectId: null }
     }
     if (!requirement) {
-      return { owner: 'user', label: '提交你的第一个需求', detail: '写下你要完成的目标，AI 才能开始规划', route: workRoute, objectId: null }
+      return { owner: 'user', label: '提交你的第一个需求', detail: '写下你要完成的目标，AI 才能开始规划', route: createRequirementRoute, objectId: null }
     }
     if (!planExists) {
       return {

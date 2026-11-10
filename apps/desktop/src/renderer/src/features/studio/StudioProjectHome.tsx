@@ -181,7 +181,7 @@ export function StudioProjectHome(): ReactElement {
           ) : (
             <div className="studio-approval-list">
               {pending.slice(0, 4).map((approval) => (
-                <button key={approval.id} type="button" className="studio-approval-row" onClick={() => navigate(`/projects/${projectId}/approvals`)}>
+                <button key={approval.id} type="button" className="studio-approval-row" onClick={() => navigate(`/projects/${projectId}/approvals?approval=${encodeURIComponent(approval.id)}`)}>
                   <span className="studio-approval-icon"><ShieldAlert size={14} /></span>
                   <span><strong>{approval.title}</strong><small>{approval.agentName} · {formatRelative(approval.requestedAt)}</small></span>
                   <ArrowRight size={13} />

@@ -38,7 +38,7 @@ async function launch() {
   await page.waitForSelector('.po-shell', { timeout: 30_000 })
   if (await page.locator('.po-shell.is-collapsed').count()) await page.getByRole('button', { name: '切换侧边栏' }).click()
   if (await page.locator('.v16-project-visual').count()) await page.locator('.v16-project-visual').first().click()
-  await page.waitForSelector('.po-work-center', { timeout: 30_000 })
+  await page.waitForSelector('.studio-workbench', { timeout: 30_000 })
   return page
 }
 
@@ -52,9 +52,9 @@ async function main() {
   record('默认为自主模式', autonomy.mode === 'autonomous' ? 'PASS' : 'FAIL', `mode=${autonomy.mode}`)
 
   // ---------- 2. Bell opens the unified action panel (not /agents) ----------
-  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/work` }, { projectId: project.id })
+  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}` }, { projectId: project.id })
   await page.waitForSelector('[data-testid="next-step-panel"]', { timeout: 20_000 })
-  record('研发工作中心出现统一「下一步」区', 'PASS')
+  record('工作台出现统一「下一步」区', 'PASS')
 
   await page.locator('[data-testid="action-center-button"]').click()
   await page.waitForSelector('.ac-panel', { timeout: 10_000 })
@@ -118,7 +118,7 @@ async function main() {
   }
 
   // ---------- 5. The bell row actually lands on the exact approval ----------
-  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/work` }, { projectId: project.id })
+  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}` }, { projectId: project.id })
   await page.waitForSelector('[data-testid="next-step-panel"]', { timeout: 20_000 })
   await page.waitForTimeout(1500)
   await page.locator('[data-testid="action-center-button"]').click()
@@ -132,7 +132,7 @@ async function main() {
     await page.waitForTimeout(1600)
     const landed = await page.evaluate(() => location.hash)
     record('点击铃铛待办直达对应对象', landed.includes(`approval=${encodeURIComponent(expectItem.approvalId ?? '')}`) || /approvals\?approval=/.test(landed) ? 'PASS' : 'FAIL', `${landed} (expected approvalId=${expectItem.approvalId ?? 'n/a'})`)
-    const detail = await page.locator('.ap-list, .ap-detail, .ap-diff').count()
+    const detail = await page.locator('.rv-room .rv-sheet').count()
     record('审批页显示对应审批与 Diff 区域', detail > 0 ? 'PASS' : 'FAIL', `panels=${detail}`)
     await page.screenshot({ path: join(shots, 'p26-03-approval-deeplink.png'), timeout: 15_000 })
   } else {
@@ -143,7 +143,7 @@ async function main() {
   // ---------- 6. Approvals page honours ?approval= ----------
   await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/approvals?approval=apr_nonexistent_000` }, { projectId: project.id })
   await page.waitForTimeout(1200)
-  const survived = await page.locator('.ap-list, .po-page').count()
+  const survived = await page.locator('.rv-room, .po-page').count()
   record('无效审批深链接不崩溃', survived > 0 ? 'PASS' : 'FAIL')
 
   // ---------- 7. Restart keeps autonomy + action state ----------
@@ -157,7 +157,7 @@ async function main() {
   const phaseAfterRestart = await page.evaluate(async ({ projectId, versionId }) => (await window.projectos.lifecycle.overview(projectId)).versions.find((v) => v.id === versionId)?.phase, { projectId: project.id, versionId: seeded.versionId })
   record('重启后自动推进结果保持', phaseAfterRestart === afterPhase ? 'PASS' : 'FAIL', `${afterPhase} → ${phaseAfterRestart}`)
 
-  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}/work` }, { projectId: project.id })
+  await page.evaluate(({ projectId }) => { location.hash = `#/projects/${projectId}` }, { projectId: project.id })
   await page.waitForSelector('[data-testid="next-step-panel"]', { timeout: 20_000 })
   await page.waitForTimeout(700)
   await page.screenshot({ path: join(shots, 'p26-02-next-step-after-restart.png') })

@@ -161,7 +161,7 @@
 .dc-empty-center strong { color: var(--color-text-primary); font-size: var(--ui-type-body); }
 .dc-empty-center p { margin: 0; font-size: var(--ui-type-caption); }
 .dc-release-options { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.dc-release-options button { border: 1px solid var(--color-border); background: var(--color-surface); border-radius: 6px; padding: 5px 8px; font-size: var(--ui-type-caption); cursor: pointer; }
+.dc-release-options button { border: 1px solid var(--color-border); background: var(--color-surface); border-radius: var(--ui-radius-sm); padding: 5px 8px; font-size: var(--ui-type-caption); cursor: pointer; }
 
 .dc-deploy-head {
   display: flex;
@@ -423,7 +423,7 @@
 .dc-start { gap: var(--ui-space-6); padding-top: var(--ui-space-3); }
 .dc-start-hero { grid-template-columns: minmax(0, 1fr); padding: var(--ui-space-2) 0 0; border: 0; background: none; box-shadow: none; backdrop-filter: none; }
 .dc-start-copy { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: var(--ui-space-4); align-items: center; }
-.dc-start-icon { grid-row: span 2; width: 44px; height: 44px; margin: 0; border-radius: 14px; }
+.dc-start-icon { grid-row: span 2; width: 44px; height: 44px; margin: 0; border-radius: var(--ui-radius-lg); }
 .dc-start-copy h2 { margin: 0; font-size: var(--ui-type-title); line-height: var(--ui-leading-tight); letter-spacing: -.015em; }
 .dc-start-copy p { grid-column: 2; margin: 4px 0 0; color: var(--ui-muted); line-height: var(--ui-leading-body); }
 .dc-start-copy > .ant-btn { grid-column: 3; grid-row: 1 / span 2; }

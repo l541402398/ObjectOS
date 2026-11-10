@@ -1,4 +1,4 @@
-import type { KeyboardEvent, ReactElement, ReactNode } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 import { ArrowUpRight } from 'lucide-react'
 import './kpi-rail.css'
 
@@ -52,31 +52,29 @@ export function KpiRail({ blocks, label }: { blocks: KpiBlock[]; label: string }
     <section className="kpi-rail" aria-label={label}>
       {blocks.map((block) => {
         const interactive = Boolean(block.onOpen)
-        const onKey = (event: KeyboardEvent<HTMLDivElement>): void => {
-          if (!block.onOpen) return
-          if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); block.onOpen() }
-        }
-        return (
-          <div
-            key={block.key}
-            className={`kpi-block is-${block.tone ?? 'neutral'}${block.emphasis ? ' is-key' : ''}${interactive ? ' is-link' : ''}`}
-            role={interactive ? 'link' : undefined}
-            tabIndex={interactive ? 0 : undefined}
-            aria-label={interactive ? `${block.label}，${block.actionLabel ?? '查看'}` : undefined}
-            onClick={block.onOpen}
-            onKeyDown={onKey}
-          >
-            <div className="kpi-top">
+        const className = `kpi-block is-${block.tone ?? 'neutral'}${block.emphasis ? ' is-key' : ''}${interactive ? ' is-link' : ''}`
+        const content = (
+          <>
+            <span className="kpi-top">
               <span className="kpi-label">{block.label}</span>
               {interactive ? <span className="kpi-go">{block.actionLabel ?? '查看'}<ArrowUpRight size={12} /></span> : null}
-            </div>
-            <div className="kpi-main">
+            </span>
+            <span className="kpi-main">
               <span className="kpi-value">{block.value}{block.suffix ? <small>{block.suffix}</small> : null}</span>
               {block.visual?.kind === 'arc' ? <Arc value={block.visual.value} /> : null}
               {block.visual?.kind === 'segments' ? <Segments filled={block.visual.filled} total={block.visual.total} /> : null}
               {block.visual?.kind === 'pulse' ? <span className={`kpi-pulse ${block.visual.active ? 'is-on' : ''}`} aria-hidden><i /></span> : null}
-            </div>
-            <p className="kpi-status">{block.status}</p>
+            </span>
+            <span className="kpi-status">{block.status}</span>
+          </>
+        )
+        return interactive ? (
+          <button key={block.key} type="button" className={className} onClick={block.onOpen}>
+            {content}
+          </button>
+        ) : (
+          <div key={block.key} className={className}>
+            {content}
           </div>
         )
       })}

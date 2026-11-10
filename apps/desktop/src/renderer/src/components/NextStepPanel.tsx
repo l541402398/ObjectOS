@@ -3,18 +3,10 @@ import { Button, Tag } from 'antd'
 import { ArrowRightOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import { useActionCenter } from '../lib/queries'
-import { journeyActionLabel, JOURNEY_OWNER_LABEL } from '../lib/journey'
+import { isRequirementIntentRoute, journeyActionLabel, JOURNEY_OWNER_LABEL } from '../lib/journey'
+import { actionKindCta, actionKindLabel } from '../lib/action-kinds'
 import type { ActionItem } from '@projectos/contracts'
 import '../pages/work-center.css'
-
-const KIND_LABEL: Record<string, string> = {
-  tool_approval: '工具授权',
-  task_acceptance: '任务验收',
-  delivery_approval: '发布/部署审批',
-  version_gate: '版本门禁',
-  deployment_reconciliation: '部署对账',
-  run_failure: 'Run 失败',
-}
 
 const RISK_LABEL: Record<string, string> = { low: '低风险', medium: '需确认', high: '高风险' }
 
@@ -40,7 +32,7 @@ export function NextStepPanel({
   const rest = items.slice(1)
 
   const handleNextAction = (route: string) => {
-    if (/\/projects\/[^/]+\/work(?:\?|$)/.test(route)) {
+    if (isRequirementIntentRoute(route)) {
       if (onCreateRequirement) {
         onCreateRequirement()
         return
@@ -63,7 +55,7 @@ export function NextStepPanel({
         <div className="wc-next-body">
           <div className="wc-next-main">
             <div className="wc-next-title">
-              <Tag>{KIND_LABEL[first.kind] ?? first.kind}</Tag>
+              <Tag>{actionKindLabel(first.kind)}</Tag>
               <span className={`wc-next-risk is-${first.risk}`}>{RISK_LABEL[first.risk] ?? first.risk}</span>
               <h3>{first.title}</h3>
             </div>
@@ -72,7 +64,7 @@ export function NextStepPanel({
             <p className="wc-next-resume">处理后：{first.resume}</p>
           </div>
           <Button type="primary" icon={<ArrowRightOutlined />} onClick={() => navigate(first.route)}>
-            {first.kind === 'tool_approval' || first.kind === 'delivery_approval' ? '处理审批' : first.kind === 'task_acceptance' ? '查看验收' : first.kind === 'version_gate' ? '查看版本门禁' : first.kind === 'run_failure' ? '查看失败原因' : '处理对账'}
+            {actionKindCta(first.kind)}
           </Button>
         </div>
       ) : (
@@ -90,7 +82,7 @@ export function NextStepPanel({
         <details className="wc-next-rest"><summary>其他 {items.length - 1} 项待处理</summary>
           {rest.map((item: ActionItem) => (
             <button type="button" key={item.id} className="wc-next-row" onClick={() => navigate(item.route)}>
-              <Tag>{KIND_LABEL[item.kind] ?? item.kind}</Tag>
+              <Tag>{actionKindLabel(item.kind)}</Tag>
               <span>{item.title}</span>
               <ArrowRightOutlined />
             </button>
